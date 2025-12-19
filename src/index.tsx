@@ -3958,7 +3958,7 @@ app.get('/tools/landing-builder', (c) => {
                 <!-- 템플릿 선택 -->
                 <div class="bg-white rounded-xl p-8 border border-gray-200 mb-6">
                     <h2 class="text-2xl font-bold text-gray-900 mb-6">1️⃣ 템플릿 선택</h2>
-                    <div class="grid md:grid-cols-2 gap-4">
+                    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                         <button onclick="selectTemplate('academy-intro')" class="template-btn p-6 border-2 border-gray-200 rounded-xl hover:border-purple-600 transition text-left">
                             <div class="text-3xl mb-3">🏫</div>
                             <div class="font-bold text-lg mb-2">학원 소개 페이지</div>
@@ -3978,6 +3978,21 @@ app.get('/tools/landing-builder', (c) => {
                             <div class="text-3xl mb-3">📊</div>
                             <div class="font-bold text-lg mb-2">학생 성과 리포트</div>
                             <p class="text-sm text-gray-600">월간 학습 리포트 공유 페이지</p>
+                        </button>
+                        <button onclick="selectTemplate('admission-info')" class="template-btn p-6 border-2 border-gray-200 rounded-xl hover:border-purple-600 transition text-left">
+                            <div class="text-3xl mb-3">🎓</div>
+                            <div class="font-bold text-lg mb-2">입학 설명회</div>
+                            <p class="text-sm text-gray-600">설명회 안내 및 참석 유도 페이지</p>
+                        </button>
+                        <button onclick="selectTemplate('academy-stats')" class="template-btn p-6 border-2 border-gray-200 rounded-xl hover:border-purple-600 transition text-left">
+                            <div class="text-3xl mb-3">📈</div>
+                            <div class="font-bold text-lg mb-2">학원 성과 통계</div>
+                            <p class="text-sm text-gray-600">실적과 성과를 수치로 보여주는 페이지</p>
+                        </button>
+                        <button onclick="selectTemplate('teacher-intro')" class="template-btn p-6 border-2 border-gray-200 rounded-xl hover:border-purple-600 transition text-left">
+                            <div class="text-3xl mb-3">👨‍🏫</div>
+                            <div class="font-bold text-lg mb-2">선생님 소개</div>
+                            <p class="text-sm text-gray-600">강사진의 경력과 전문성을 소개</p>
                         </button>
                     </div>
                 </div>
@@ -4160,6 +4175,112 @@ app.get('/tools/landing-builder', (c) => {
                             <input type="text" name="teacherName" placeholder="예: 김영희 선생님" class="w-full px-4 py-3 border border-gray-300 rounded-xl">
                         </div>
                     </div>
+                \`,
+                'admission-info': \`
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 mb-2">설명회 제목 *</label>
+                            <input type="text" name="eventTitle" placeholder="예: 2025학년도 신입생 모집 설명회" required class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-900 mb-2">날짜 *</label>
+                                <input type="text" name="eventDate" placeholder="예: 2024년 12월 28일" required class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-900 mb-2">시간 *</label>
+                                <input type="text" name="eventTime" placeholder="예: 오후 2시" required class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 mb-2">장소 *</label>
+                            <input type="text" name="location" placeholder="예: 꾸메땅학원 2층 세미나실" required class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 mb-2">대상 학년</label>
+                            <input type="text" name="targetGrade" placeholder="예: 예비 초1~초6" class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 mb-2">설명회 안내 (1개당 한 줄) *</label>
+                            <textarea name="agenda" rows="4" placeholder="학원 교육 철학 소개&#10;강사진 소개 및 커리큘럼 안내&#10;입학 절차 및 등록 방법&#10;질의응답 시간" required class="w-full px-4 py-3 border border-gray-300 rounded-xl"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 mb-2">참석 혜택 (1개당 한 줄) *</label>
+                            <textarea name="benefits" rows="3" placeholder="등록비 50% 할인 쿠폰&#10;교재비 전액 무료&#10;레벨 테스트 무료" required class="w-full px-4 py-3 border border-gray-300 rounded-xl"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 mb-2">연락처 *</label>
+                            <input type="text" name="contact" placeholder="예: 032-123-4567" required class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                        </div>
+                    </div>
+                \`,
+                'academy-stats': \`
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 mb-2">학원명 *</label>
+                            <input type="text" name="academyName" required class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 mb-2">기간 *</label>
+                            <input type="text" name="period" placeholder="예: 2024년 2학기" required class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-900 mb-2">총 재학생 수</label>
+                                <input type="text" name="totalStudents" placeholder="예: 150" class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-900 mb-2">평균 성적 향상</label>
+                                <input type="text" name="gradeImprovement" placeholder="예: 2등급" class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 mb-2">주요 성과 (1개당 한 줄) *</label>
+                            <textarea name="achievements" rows="4" placeholder="전국 모의고사 1등급 달성 10명&#10;내신 평균 2등급 이상 향상&#10;명문대 합격률 85%&#10;학부모 만족도 95%" required class="w-full px-4 py-3 border border-gray-300 rounded-xl"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 mb-2">학부모 후기 (1개당 한 줄) *</label>
+                            <textarea name="testimonials" rows="3" placeholder="아이 성적이 2등급이나 올랐어요!&#10;선생님들이 정말 친절하고 열정적입니다&#10;체계적인 관리 덕분에 안심하고 맡깁니다" required class="w-full px-4 py-3 border border-gray-300 rounded-xl"></textarea>
+                        </div>
+                    </div>
+                \`,
+                'teacher-intro': \`
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 mb-2">선생님 이름 *</label>
+                            <input type="text" name="teacherName" required class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-900 mb-2">전문 과목 *</label>
+                                <input type="text" name="subject" placeholder="예: 영어" required class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-900 mb-2">경력 (년) *</label>
+                                <input type="text" name="experience" placeholder="예: 10" required class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 mb-2">학력 *</label>
+                            <input type="text" name="education" placeholder="예: 서울대학교 영어교육과 졸업" required class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 mb-2">전문 분야 *</label>
+                            <input type="text" name="specialty" placeholder="예: 수능 영어, 내신 대비, 영문법 특화" required class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 mb-2">주요 실적 (1개당 한 줄) *</label>
+                            <textarea name="achievements" rows="3" placeholder="수능 1등급 학생 50명 이상 배출&#10;학생 평균 2등급 향상 달성&#10;학부모 만족도 98%" required class="w-full px-4 py-3 border border-gray-300 rounded-xl"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 mb-2">수업 방식 *</label>
+                            <textarea name="teachingStyle" rows="3" placeholder="개인별 맞춤 진도, 체계적인 오답 관리, 실전 문제 풀이 중심" required class="w-full px-4 py-3 border border-gray-300 rounded-xl"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 mb-2">연락처</label>
+                            <input type="text" name="contact" placeholder="예: 032-123-4567" class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                        </div>
+                    </div>
                 \`
             };
 
@@ -4191,6 +4312,13 @@ app.get('/tools/landing-builder', (c) => {
             else if (selectedTemplate === 'program-promo') title = data.programName;
             else if (selectedTemplate === 'event-promo') title = data.eventName;
             else if (selectedTemplate === 'student-report') title = data.studentName + ' ' + data.month + ' 리포트';
+            else if (selectedTemplate === 'admission-info') title = data.eventTitle;
+            else if (selectedTemplate === 'academy-stats') title = data.academyName + ' ' + data.period + ' 성과';
+            else if (selectedTemplate === 'teacher-intro') title = data.teacherName + ' 선생님';
+
+            // 배열 필드 처리 - 새로운 템플릿 포함
+            if (data.agenda) data.agenda = data.agenda.split('\\n').filter(s => s.trim());
+            if (data.testimonials) data.testimonials = data.testimonials.split('\\n').filter(s => s.trim());
 
             try {
                 const response = await fetch('/api/landing/create', {
