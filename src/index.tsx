@@ -5347,14 +5347,15 @@ app.get('/admin/users', (c) => {
 // ==================== SMS 발송 헬퍼 함수 ====================
 
 // Aligo SMS API 발송 함수
-async function sendSMSAligo(phone: string, message: string, apiKey: string, userId: string): Promise<any> {
+// Aligo SMS API 발송 함수
+async function sendSMSAligo(phone: string, message: string, apiKey: string, userId: string, sender: string, realMode: string): Promise<any> {
   const formData = new FormData()
   formData.append('key', apiKey)
   formData.append('user_id', userId)
-  formData.append('sender', '01012345678') // 발신번호 (등록된 번호)
+  formData.append('sender', sender)
   formData.append('receiver', phone)
   formData.append('msg', message)
-  formData.append('testmode_yn', 'Y') // 테스트 모드 (실제 발송 시 'N')
+  formData.append('testmode_yn', realMode === 'Y' ? 'N' : 'Y') // realMode=Y면 실제발송
   
   try {
     const response = await fetch('https://apis.aligo.in/send/', {
@@ -5432,24 +5433,41 @@ app.post('/api/sms/send', async (c) => {
     const { recipient_phone, recipient_name, message_content, template_id } = await c.req.json()
     const user = JSON.parse(c.req.header('X-User-Data-Base64') ? decodeURIComponent(escape(atob(c.req.header('X-User-Data-Base64') || ''))) : '{"id":1}')
     
-    // 실제 환경에서는 환경변수에서 API 키를 가져옴
-    // const apiKey = c.env.ALIGO_API_KEY
-    // const userId = c.env.ALIGO_USER_ID
+    // 환경변수에서 API 키 가져오기
+    const apiKey = c.env.ALIGO_API_KEY || ''
+    const userId = c.env.ALIGO_USER_ID || ''
+    const sender = c.env.ALIGO_SENDER || '01012345678'
+    const realMode = c.env.SMS_REAL_MODE || 'N'
     
-    // 테스트: DB에만 기록
+    let smsResult = null
+    let status = 'sent'
+    let resultCode = null
+    let resultMessage = null
+    
+    // API 키가 있으면 실제 발송 시도
+    if (apiKey && userId) {
+      smsResult = await sendSMSAligo(recipient_phone, message_content, apiKey, userId, sender, realMode)
+      resultCode = smsResult.result_code?.toString() || null
+      resultMessage = smsResult.message || null
+      
+      // 발송 실패 시 status를 failed로
+      if (smsResult.result_code !== 1) {
+        status = 'failed'
+      }
+    }
+    
+    // DB에 기록
     const result = await c.env.DB.prepare(`
-      INSERT INTO sms_history (template_id, recipient_name, recipient_phone, message_content, status, sent_at, created_by)
-      VALUES (?, ?, ?, ?, 'sent', CURRENT_TIMESTAMP, ?)
-    `).bind(template_id || null, recipient_name, recipient_phone, message_content, user.id).run()
-    
-    // 실제 발송 (API 키가 있을 때)
-    // const smsResult = await sendSMSAligo(recipient_phone, message_content, apiKey, userId)
+      INSERT INTO sms_history (template_id, recipient_name, recipient_phone, message_content, status, sent_at, result_code, result_message, created_by)
+      VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?, ?)
+    `).bind(template_id || null, recipient_name, recipient_phone, message_content, status, resultCode, resultMessage, user.id).run()
     
     return c.json({ 
-      success: true, 
-      message: 'SMS가 발송되었습니다.',
+      success: status !== 'failed', 
+      message: status === 'failed' ? 'SMS 발송 실패: ' + resultMessage : 'SMS가 발송되었습니다.',
       id: result.meta.last_row_id,
-      note: 'API 키 설정 시 실제 발송됩니다.'
+      note: apiKey ? (realMode === 'Y' ? '실제 발송 완료' : '테스트 모드 (실제 발송 안됨)') : 'API 키를 설정하면 실제 발송됩니다.',
+      smsResult: smsResult
     })
   } catch (error) {
     console.error('Send SMS error:', error)
