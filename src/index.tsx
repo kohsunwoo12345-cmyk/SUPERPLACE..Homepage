@@ -5216,29 +5216,31 @@ app.get('/about', (c) => {
                 <div class="grid md:grid-cols-2 gap-12 max-w-5xl mx-auto">
                     <div class="bg-white rounded-3xl p-10">
                         <div class="w-32 h-32 gradient-purple rounded-3xl flex items-center justify-center mx-auto mb-6">
-                            <span class="text-5xl text-white font-bold">김</span>
+                            <span class="text-5xl text-white font-bold">고</span>
                         </div>
-                        <h3 class="text-2xl font-bold text-gray-900 text-center mb-3">김 원장님</h3>
-                        <p class="text-center text-purple-600 font-medium mb-6">영어 교육 전문</p>
+                        <h3 class="text-2xl font-bold text-gray-900 text-center mb-3">고희준 대표이사</h3>
+                        <p class="text-center text-purple-600 font-medium mb-6">CEO · 인문학 박사</p>
                         <div class="space-y-3 text-gray-600">
-                            <p>✓ 꾸메땅학원 영어 담당</p>
-                            <p>✓ 네이버 플레이스 1위 달성</p>
-                            <p>✓ 블로그 마케팅 전문가</p>
-                            <p>✓ 학원장 커뮤니티 운영</p>
+                            <p>✓ 2001~ 인문학 박사 및 교수</p>
+                            <p>✓ 2008~ 공부방 시작</p>
+                            <p>✓ 2015~ 인천 검단 꾸메땅학원 원장</p>
+                            <p>✓ 2024~ (주)우리는 슈퍼플레이스다 대표이사</p>
                         </div>
                     </div>
 
                     <div class="bg-white rounded-3xl p-10">
                         <div class="w-32 h-32 bg-orange-500 rounded-3xl flex items-center justify-center mx-auto mb-6">
-                            <span class="text-5xl text-white font-bold">이</span>
+                            <span class="text-5xl text-white font-bold">고</span>
                         </div>
-                        <h3 class="text-2xl font-bold text-gray-900 text-center mb-3">이 원장님</h3>
-                        <p class="text-center text-orange-600 font-medium mb-6">수학 교육 전문</p>
+                        <h3 class="text-2xl font-bold text-gray-900 text-center mb-3">고선우 마케팅 1팀장</h3>
+                        <p class="text-center text-orange-600 font-medium mb-6">Marketing Team Leader</p>
                         <div class="space-y-3 text-gray-600">
-                            <p>✓ 꾸메땅학원 수학 담당</p>
-                            <p>✓ 퍼널 마케팅 전문가</p>
-                            <p>✓ 학생 관리 시스템 구축</p>
-                            <p>✓ 오프라인 교육 진행</p>
+                            <p>✓ 자동화 퍼널 전문가</p>
+                            <p>✓ 인스타그램 바이럴 영상 제작</p>
+                            <p>✓ 네이버 플레이스 상위노출</p>
+                            <p>✓ 랜딩페이지 제작 및 개발</p>
+                            <p>✓ 블로그 상위노출 글 작성</p>
+                            <p>✓ AI 컨설턴트 전문가</p>
                         </div>
                     </div>
                 </div>
