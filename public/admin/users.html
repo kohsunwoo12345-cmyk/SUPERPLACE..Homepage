@@ -193,9 +193,17 @@
                 </td>
                 <td class="px-6 py-4 text-sm text-gray-600">${new Date(u.created_at).toLocaleDateString()}</td>
                 <td class="px-6 py-4">
-                    <button onclick="openModal(${u.id})" class="text-purple-600 hover:text-purple-700 text-sm font-medium">
-                        프로그램 부여
-                    </button>
+                    <div class="flex flex-col gap-2">
+                        <button onclick="openModal(${u.id})" class="text-purple-600 hover:text-purple-700 text-sm font-medium">
+                            📚 프로그램 부여
+                        </button>
+                        <button onclick="resetPassword(${u.id}, '${u.name}')" class="text-orange-600 hover:text-orange-700 text-sm font-medium">
+                            🔑 비밀번호 초기화
+                        </button>
+                        <button onclick="toggleUserStatus(${u.id}, '${u.status || 'active'}', '${u.name}')" class="text-blue-600 hover:text-blue-700 text-sm font-medium">
+                            ${(u.status === 'inactive') ? '✅ 활성화' : '🔒 비활성화'}
+                        </button>
+                    </div>
                 </td>
             </tr>
         `).join('')
@@ -313,6 +321,52 @@
                 loadUsers()
             } else {
                 alert('삭제 실패: ' + data.error)
+            }
+        } catch (error) {
+            alert('오류가 발생했습니다.')
+        }
+    }
+
+    // 비밀번호 초기화
+    async function resetPassword(userId, userName) {
+        if (!confirm(`${userName} 님의 비밀번호를 초기화하시겠습니까?\n초기 비밀번호: academy1234`)) return
+
+        try {
+            const res = await fetch('/api/admin/reset-password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: userId })
+            })
+            const data = await res.json()
+            if (data.success) {
+                alert(data.message)
+            } else {
+                alert('비밀번호 초기화 실패: ' + data.error)
+            }
+        } catch (error) {
+            alert('오류가 발생했습니다.')
+        }
+    }
+
+    // 사용자 활성화/비활성화
+    async function toggleUserStatus(userId, currentStatus, userName) {
+        const newStatus = currentStatus === 'active' ? 'inactive' : 'active'
+        const actionText = newStatus === 'active' ? '활성화' : '비활성화'
+        
+        if (!confirm(`${userName} 님을 ${actionText}하시겠습니까?`)) return
+
+        try {
+            const res = await fetch('/api/admin/toggle-user-status', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: userId, is_active: newStatus === 'active' })
+            })
+            const data = await res.json()
+            if (data.success) {
+                alert(data.message)
+                loadUsers() // 목록 새로고침
+            } else {
+                alert('상태 변경 실패: ' + data.error)
             }
         } catch (error) {
             alert('오류가 발생했습니다.')

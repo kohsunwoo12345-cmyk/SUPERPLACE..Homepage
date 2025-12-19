@@ -197,6 +197,32 @@ app.delete('/api/admin/remove-program/:id', async (c) => {
   }
 })
 
+// 관리자 - 비밀번호 초기화
+app.post('/api/admin/reset-password', async (c) => {
+  try {
+    const { user_id } = await c.req.json()
+    const newPassword = 'academy1234' // 기본 초기화 비밀번호
+    const query = 'UPDATE users SET password = ? WHERE id = ?'
+    await c.env.DB.prepare(query).bind(newPassword, user_id).run()
+    return c.json({ success: true, message: `비밀번호가 초기화되었습니다. (초기 비밀번호: ${newPassword})` })
+  } catch (error) {
+    return c.json({ success: false, error: '비밀번호 초기화 실패' }, 500)
+  }
+})
+
+// 관리자 - 사용자 활성화/비활성화
+app.post('/api/admin/toggle-user-status', async (c) => {
+  try {
+    const { user_id, is_active } = await c.req.json()
+    const status = is_active ? 'active' : 'inactive'
+    const query = 'UPDATE users SET status = ? WHERE id = ?'
+    await c.env.DB.prepare(query).bind(status, user_id).run()
+    return c.json({ success: true, message: `사용자가 ${is_active ? '활성화' : '비활성화'}되었습니다.` })
+  } catch (error) {
+    return c.json({ success: false, error: '상태 변경 실패' }, 500)
+  }
+})
+
 // 관리자 - 문의 상태 변경
 app.put('/api/admin/contacts/:id/status', async (c) => {
   try {
@@ -630,9 +656,21 @@ app.get('/', (c) => {
                         <a href="/programs" class="text-gray-700 hover:text-purple-600 font-medium transition">교육 프로그램</a>
                         <a href="/success" class="text-gray-700 hover:text-purple-600 font-medium transition">성공 사례</a>
                         <a href="/contact" class="text-gray-700 hover:text-purple-600 font-medium transition">문의하기</a>
-                        <a href="/login" class="gradient-purple text-white px-6 py-2.5 rounded-full font-medium hover:shadow-lg transition-all">
+                        
+                        <!-- 로그인 전 -->
+                        <a href="/login" id="loginBtn" class="gradient-purple text-white px-6 py-2.5 rounded-full font-medium hover:shadow-lg transition-all">
                             로그인
                         </a>
+                        
+                        <!-- 로그인 후 -->
+                        <div id="userMenu" class="hidden flex items-center space-x-4">
+                            <a href="/dashboard" class="text-gray-700 hover:text-purple-600 font-medium">대시보드</a>
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold" id="userAvatar"></div>
+                                <span id="userName" class="text-gray-900 font-medium"></span>
+                            </div>
+                            <button onclick="logout()" class="text-gray-600 hover:text-red-600">로그아웃</button>
+                        </div>
                     </div>
                     <div class="md:hidden">
                         <button id="mobile-menu-btn" class="text-gray-700">
@@ -1032,6 +1070,30 @@ app.get('/', (c) => {
         </footer>
 
         <script>
+            // 로그인 상태 체크
+            function checkLoginStatus() {
+                const user = JSON.parse(localStorage.getItem('user') || 'null');
+                if (user) {
+                    // 로그인된 상태
+                    document.getElementById('loginBtn').classList.add('hidden');
+                    document.getElementById('userMenu').classList.remove('hidden');
+                    document.getElementById('userMenu').classList.add('flex');
+                    document.getElementById('userName').textContent = user.name;
+                    document.getElementById('userAvatar').textContent = user.name.charAt(0);
+                } else {
+                    // 로그아웃 상태
+                    document.getElementById('loginBtn').classList.remove('hidden');
+                    document.getElementById('userMenu').classList.add('hidden');
+                }
+            }
+
+            function logout() {
+                if (confirm('로그아웃 하시겠습니까?')) {
+                    localStorage.removeItem('user');
+                    location.reload();
+                }
+            }
+
             // Mobile menu toggle
             document.getElementById('mobile-menu-btn').addEventListener('click', function() {
                 const menu = document.getElementById('mobile-menu');
@@ -1058,6 +1120,7 @@ app.get('/', (c) => {
 
             // Initialize
             document.addEventListener('DOMContentLoaded', () => {
+                checkLoginStatus(); // 로그인 상태 체크 추가
                 observeElements();
                 
                 // Add visible class to hero immediately
@@ -1306,8 +1369,14 @@ app.get('/login', (c) => {
                         messageEl.className = 'mt-4 p-4 rounded-xl bg-green-50 text-green-800 border border-green-200'
                         messageEl.textContent = result.message
                         localStorage.setItem('user', JSON.stringify(result.user))
+                        
+                        // 역할에 따라 자동 리다이렉트
                         setTimeout(() => {
-                            window.location.href = '/dashboard'
+                            if (result.user.role === 'admin') {
+                                window.location.href = '/admin/dashboard.html'
+                            } else {
+                                window.location.href = '/dashboard'
+                            }
                         }, 1000)
                     } else {
                         messageEl.className = 'mt-4 p-4 rounded-xl bg-red-50 text-red-800 border border-red-200'
@@ -3505,6 +3574,16 @@ app.get('/about', (c) => {
     </body>
     </html>
   `)
+})
+
+// 관리자 페이지 리다이렉트 (로컬 개발용)
+// 프로덕션에서는 Cloudflare Pages가 자동으로 dist/admin/*.html을 서빙합니다
+app.get('/admin/dashboard', (c) => {
+  return c.redirect('/admin/dashboard.html')
+})
+
+app.get('/admin/users', (c) => {
+  return c.redirect('/admin/users.html')
 })
 
 export default app
