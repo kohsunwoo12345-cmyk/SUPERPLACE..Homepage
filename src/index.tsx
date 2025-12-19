@@ -243,8 +243,18 @@ app.put('/api/admin/contacts/:id/status', async (c) => {
 app.post('/api/landing/create', async (c) => {
   try {
     const { title, template_type, input_data } = await c.req.json()
-    const userHeader = c.req.header('X-User-Data')
-    const user = userHeader ? JSON.parse(userHeader) : { id: 1 }
+    
+    // Base64 인코딩된 사용자 데이터 디코딩
+    const userHeaderBase64 = c.req.header('X-User-Data-Base64')
+    let user = { id: 1 }
+    if (userHeaderBase64) {
+      try {
+        const userDataStr = decodeURIComponent(escape(atob(userHeaderBase64)))
+        user = JSON.parse(userDataStr)
+      } catch (e) {
+        console.warn('Failed to decode user data:', e)
+      }
+    }
     
     // 고유 slug 생성 (랜덤 8자리)
     const slug = Math.random().toString(36).substring(2, 10)
@@ -4329,11 +4339,15 @@ app.get('/tools/landing-builder', (c) => {
             if (data.testimonials) data.testimonials = data.testimonials.split('\\n').filter(s => s.trim());
 
             try {
+                // 한글 포함된 사용자 데이터를 Base64로 인코딩
+                const userDataStr = JSON.stringify(user || {id: 1});
+                const userDataBase64 = btoa(unescape(encodeURIComponent(userDataStr)));
+                
                 const response = await fetch('/api/landing/create', {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json',
-                        'X-User-Data': JSON.stringify(user || {id: 1})
+                        'X-User-Data-Base64': userDataBase64
                     },
                     body: JSON.stringify({
                         title,
