@@ -4,6 +4,8 @@ import { serveStatic } from 'hono/cloudflare-workers'
 
 type Bindings = {
   DB: D1Database
+  OPENAI_API_KEY?: string
+  OPENAI_BASE_URL?: string
 }
 
 const app = new Hono<{ Bindings: Bindings }>()
@@ -123,6 +125,164 @@ app.get('/api/contacts', async (c) => {
   } catch (error) {
     console.error('Fetch contacts error:', error)
     return c.json({ success: false, error: '문의 목록 조회 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
+// AI 학부모 메시지 생성 API
+app.post('/api/generate-parent-message', async (c) => {
+  try {
+    const { studentName, grade, subject, shortMessage } = await c.req.json()
+    
+    if (!studentName || !grade || !subject || !shortMessage) {
+      return c.json({ success: false, error: '필수 항목을 입력해주세요.' }, 400)
+    }
+
+    // OpenAI API 호출
+    const apiKey = c.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY
+    const baseURL = c.env.OPENAI_BASE_URL || process.env.OPENAI_BASE_URL || 'https://www.genspark.ai/api/llm_proxy/v1'
+
+    if (!apiKey) {
+      return c.json({ success: false, error: 'AI 서비스 설정이 필요합니다.' }, 500)
+    }
+
+    const response = await fetch(`${baseURL}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: 'gpt-5-mini',
+        messages: [
+          {
+            role: 'system',
+            content: `당신은 학원 원장님입니다. 학부모님께 학생의 학습 현황을 따뜻하고 격려하는 말투로 전달하는 메시지를 작성합니다.
+
+규칙:
+1. 존댓말 사용 (학부모님께)
+2. 따뜻하고 긍정적인 톤
+3. 구체적인 칭찬 포함
+4. 앞으로의 학습 방향 제시
+5. 200-300자 정도의 적절한 길이
+6. 이모지 2-3개 자연스럽게 사용
+7. 학부모님이 안심하고 신뢰할 수 있는 내용`
+          },
+          {
+            role: 'user',
+            content: `학생 이름: ${studentName}
+학년: ${grade}
+과목: ${subject}
+원장님의 짧은 메모: ${shortMessage}
+
+위 정보를 바탕으로 학부모님께 보낼 따뜻한 메시지를 작성해주세요.`
+          }
+        ],
+        temperature: 0.8,
+        max_tokens: 500
+      })
+    })
+
+    const data = await response.json()
+    
+    if (!response.ok) {
+      console.error('OpenAI API error:', data)
+      return c.json({ success: false, error: 'AI 메시지 생성 중 오류가 발생했습니다.' }, 500)
+    }
+
+    const generatedMessage = data.choices[0]?.message?.content || ''
+
+    return c.json({ 
+      success: true, 
+      message: generatedMessage,
+      metadata: {
+        studentName,
+        grade,
+        subject,
+        originalMessage: shortMessage
+      }
+    })
+  } catch (error) {
+    console.error('Generate message error:', error)
+    return c.json({ success: false, error: '메시지 생성 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
+// AI 블로그 글 생성 API
+app.post('/api/generate-blog-post', async (c) => {
+  try {
+    const { topic, keywords, tone } = await c.req.json()
+    
+    if (!topic) {
+      return c.json({ success: false, error: '주제를 입력해주세요.' }, 400)
+    }
+
+    const apiKey = c.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY
+    const baseURL = c.env.OPENAI_BASE_URL || process.env.OPENAI_BASE_URL || 'https://www.genspark.ai/api/llm_proxy/v1'
+
+    if (!apiKey) {
+      return c.json({ success: false, error: 'AI 서비스 설정이 필요합니다.' }, 500)
+    }
+
+    const response = await fetch(`${baseURL}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: 'gpt-5',
+        messages: [
+          {
+            role: 'system',
+            content: `당신은 학원 마케팅 전문 블로그 작가입니다. 네이버 블로그 SEO에 최적화된 글을 작성합니다.
+
+글쓰기 원칙:
+1. 제목: 검색 키워드를 포함한 매력적인 제목
+2. 서론: 독자의 관심을 끄는 공감 내용
+3. 본론: 구체적이고 실용적인 정보 (3-5가지 핵심 포인트)
+4. 결론: 행동을 유도하는 마무리
+5. 키워드: 자연스럽게 3-5회 반복
+6. 길이: 1500-2000자
+7. 톤: ${tone || '친근하고 전문적인'}
+8. 문단: 3-4문장으로 구성, 가독성 높게
+9. 이모지 적절히 사용`
+          },
+          {
+            role: 'user',
+            content: `블로그 주제: ${topic}
+${keywords ? `포함할 키워드: ${keywords}` : ''}
+
+위 주제로 네이버 블로그에 올릴 글을 작성해주세요.
+제목, 서론, 본론, 결론을 명확히 구분해서 작성해주세요.`
+          }
+        ],
+        temperature: 0.9,
+        max_tokens: 2500
+      })
+    })
+
+    const data = await response.json()
+    
+    if (!response.ok) {
+      console.error('OpenAI API error:', data)
+      return c.json({ success: false, error: 'AI 블로그 글 생성 중 오류가 발생했습니다.' }, 500)
+    }
+
+    const generatedPost = data.choices[0]?.message?.content || ''
+
+    return c.json({ 
+      success: true, 
+      content: generatedPost,
+      metadata: {
+        topic,
+        keywords,
+        tone,
+        wordCount: generatedPost.length
+      }
+    })
+  } catch (error) {
+    console.error('Generate blog post error:', error)
+    return c.json({ success: false, error: '블로그 글 생성 중 오류가 발생했습니다.' }, 500)
   }
 })
 
@@ -592,7 +752,7 @@ app.get('/', (c) => {
                     <div>
                         <h4 class="font-bold text-gray-900 mb-4">회사</h4>
                         <ul class="space-y-3 text-sm">
-                            <li><a href="#" class="hover:text-purple-600 transition">회사 소개</a></li>
+                            <li><a href="/about" class="hover:text-purple-600 transition">회사 소개</a></li>
                             <li><a href="#" class="hover:text-purple-600 transition">이용약관</a></li>
                             <li><a href="#" class="hover:text-purple-600 transition">개인정보처리방침</a></li>
                         </ul>
@@ -1610,6 +1770,58 @@ app.get('/dashboard', (c) => {
                     </div>
                 </div>
 
+                <!-- Marketing Tools -->
+                <div class="mb-12">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6">🎯 마케팅 도구</h2>
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <a href="/tools/parent-message" class="block bg-gradient-to-br from-purple-500 to-purple-700 rounded-2xl p-8 hover:shadow-2xl transition-all hover:-translate-y-1">
+                            <div class="flex items-center gap-4 mb-4">
+                                <div class="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="text-2xl font-bold text-white">학부모 소통 시스템</h3>
+                                    <p class="text-purple-100 text-sm">AI 메시지 자동 생성</p>
+                                </div>
+                            </div>
+                            <p class="text-white/90 leading-relaxed mb-4">
+                                간단한 메모만 작성하면 AI가 따뜻한 메시지로 변환해드립니다. 학부모님과의 소통이 더욱 편리해집니다.
+                            </p>
+                            <div class="flex items-center text-white font-medium">
+                                <span>바로 사용하기</span>
+                                <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                </svg>
+                            </div>
+                        </a>
+
+                        <a href="/tools/blog-writer" class="block bg-gradient-to-br from-orange-500 to-orange-700 rounded-2xl p-8 hover:shadow-2xl transition-all hover:-translate-y-1">
+                            <div class="flex items-center gap-4 mb-4">
+                                <div class="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="text-2xl font-bold text-white">블로그 작성 도구</h3>
+                                    <p class="text-orange-100 text-sm">SEO 최적화 글 생성</p>
+                                </div>
+                            </div>
+                            <p class="text-white/90 leading-relaxed mb-4">
+                                주제만 입력하면 네이버 SEO에 최적화된 블로그 글을 자동으로 생성합니다. 상위노출을 위한 필수 도구입니다.
+                            </p>
+                            <div class="flex items-center text-white font-medium">
+                                <span>바로 사용하기</span>
+                                <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                </svg>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
                 <!-- Content Grid -->
                 <div class="grid lg:grid-cols-2 gap-8">
                     <!-- My Programs -->
@@ -1729,6 +1941,849 @@ app.get('/dashboard', (c) => {
                 window.location.href = '/'
             }
         </script>
+    </body>
+    </html>
+  `)
+})
+
+// 학부모 소통 시스템 페이지
+app.get('/tools/parent-message', (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>학부모 소통 시스템 - 우리는 슈퍼플레이스다</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <style>
+          @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
+          * {
+            font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+          }
+          .gradient-purple {
+            background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+          }
+          .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+          }
+          @keyframes spin {
+            to { transform: rotate(360deg); }
+          }
+        </style>
+    </head>
+    <body class="bg-gray-50">
+        <!-- Navigation -->
+        <nav class="fixed w-full top-0 z-50 bg-white border-b border-gray-100 shadow-sm">
+            <div class="max-w-7xl mx-auto px-6 lg:px-8">
+                <div class="flex justify-between items-center h-16">
+                    <a href="/" class="flex items-center space-x-3">
+                        <span class="text-xl font-bold text-gray-900">슈퍼플레이스</span>
+                    </a>
+                    <div class="flex items-center space-x-6">
+                        <a href="/dashboard" class="text-gray-600 hover:text-purple-600">대시보드</a>
+                        <a href="/tools/parent-message" class="text-purple-600 font-medium">학부모 소통</a>
+                        <a href="/tools/blog-writer" class="text-gray-600 hover:text-purple-600">블로그 작성</a>
+                        <a href="/logout" class="text-gray-600 hover:text-purple-600">로그아웃</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="pt-24 pb-12 px-6">
+            <div class="max-w-5xl mx-auto">
+                <div class="text-center mb-10">
+                    <h1 class="text-4xl font-bold text-gray-900 mb-4">📱 학부모 소통 시스템</h1>
+                    <p class="text-xl text-gray-600">간단한 메모만 작성하면 AI가 따뜻한 메시지로 변환해드립니다</p>
+                </div>
+
+                <div class="grid lg:grid-cols-2 gap-8">
+                    <!-- 입력 폼 -->
+                    <div class="bg-white rounded-2xl shadow-lg p-8">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-6">학생 정보 입력</h2>
+                        
+                        <form id="messageForm" class="space-y-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-900 mb-2">학생 이름 *</label>
+                                <input type="text" id="studentName" required 
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none"
+                                       placeholder="예: 김민수">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-900 mb-2">학년 *</label>
+                                <select id="grade" required
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none">
+                                    <option value="">학년 선택</option>
+                                    <option value="초등 1학년">초등 1학년</option>
+                                    <option value="초등 2학년">초등 2학년</option>
+                                    <option value="초등 3학년">초등 3학년</option>
+                                    <option value="초등 4학년">초등 4학년</option>
+                                    <option value="초등 5학년">초등 5학년</option>
+                                    <option value="초등 6학년">초등 6학년</option>
+                                    <option value="중등 1학년">중등 1학년</option>
+                                    <option value="중등 2학년">중등 2학년</option>
+                                    <option value="중등 3학년">중등 3학년</option>
+                                    <option value="고등 1학년">고등 1학년</option>
+                                    <option value="고등 2학년">고등 2학년</option>
+                                    <option value="고등 3학년">고등 3학년</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-900 mb-2">과목 *</label>
+                                <select id="subject" required
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none">
+                                    <option value="">과목 선택</option>
+                                    <option value="영어">영어</option>
+                                    <option value="수학">수학</option>
+                                    <option value="국어">국어</option>
+                                    <option value="과학">과학</option>
+                                    <option value="사회">사회</option>
+                                    <option value="논술">논술</option>
+                                    <option value="코딩">코딩</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-900 mb-2">간단한 메모 (2줄 정도) *</label>
+                                <textarea id="shortMessage" required rows="4"
+                                          class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none resize-none"
+                                          placeholder="예: 오늘 수업에서 적극적으로 발표했음. 영어 단어 암기력이 좋아지고 있음."></textarea>
+                                <p class="text-sm text-gray-500 mt-2">💡 간단하게 작성하시면 AI가 학부모님께 전달할 따뜻한 메시지로 변환합니다</p>
+                            </div>
+
+                            <button type="submit" 
+                                    class="w-full gradient-purple text-white py-4 rounded-xl text-lg font-medium hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                    id="generateBtn">
+                                <span id="btnText">✨ AI 메시지 생성하기</span>
+                                <span id="btnLoading" class="hidden items-center justify-center">
+                                    <span class="loading mr-2"></span>
+                                    생성 중...
+                                </span>
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- 생성된 메시지 -->
+                    <div class="bg-white rounded-2xl shadow-lg p-8">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-6">생성된 메시지</h2>
+                        
+                        <div id="resultArea" class="hidden">
+                            <div class="bg-purple-50 border-l-4 border-purple-600 rounded-lg p-6 mb-6">
+                                <div class="flex items-start gap-3 mb-4">
+                                    <div class="w-10 h-10 rounded-full bg-purple-600 flex items-center justify-center text-white flex-shrink-0">
+                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                        </svg>
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="font-bold text-gray-900 mb-1" id="studentInfo"></div>
+                                        <div class="text-sm text-gray-600" id="subjectInfo"></div>
+                                    </div>
+                                </div>
+                                
+                                <div id="generatedMessage" class="text-gray-800 leading-relaxed whitespace-pre-wrap"></div>
+                            </div>
+
+                            <div class="flex gap-3">
+                                <button onclick="copyMessage()" 
+                                        class="flex-1 bg-purple-600 text-white py-3 rounded-xl font-medium hover:bg-purple-700 transition">
+                                    📋 복사하기
+                                </button>
+                                <button onclick="resetForm()" 
+                                        class="flex-1 bg-gray-200 text-gray-700 py-3 rounded-xl font-medium hover:bg-gray-300 transition">
+                                    🔄 새로 작성
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="emptyState" class="text-center py-16">
+                            <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
+                                </svg>
+                            </div>
+                            <p class="text-gray-500">왼쪽 폼을 작성하고<br>메시지를 생성해보세요</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 사용 가이드 -->
+                <div class="mt-12 bg-gradient-to-br from-purple-50 to-blue-50 rounded-2xl p-8">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-6">💡 사용 가이드</h3>
+                    <div class="grid md:grid-cols-3 gap-6">
+                        <div class="bg-white rounded-xl p-6">
+                            <div class="text-3xl mb-3">1️⃣</div>
+                            <h4 class="font-bold text-gray-900 mb-2">학생 정보 입력</h4>
+                            <p class="text-sm text-gray-600">이름, 학년, 과목을 선택하고 간단한 메모를 2줄 정도 작성하세요</p>
+                        </div>
+                        <div class="bg-white rounded-xl p-6">
+                            <div class="text-3xl mb-3">2️⃣</div>
+                            <h4 class="font-bold text-gray-900 mb-2">AI가 자동 변환</h4>
+                            <p class="text-sm text-gray-600">AI가 학부모님께 전달할 따뜻하고 격려하는 메시지로 변환합니다</p>
+                        </div>
+                        <div class="bg-white rounded-xl p-6">
+                            <div class="text-3xl mb-3">3️⃣</div>
+                            <h4 class="font-bold text-gray-900 mb-2">복사해서 전송</h4>
+                            <p class="text-sm text-gray-600">생성된 메시지를 복사해서 카톡이나 문자로 학부모님께 전송하세요</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            let generatedMessageText = '';
+
+            document.getElementById('messageForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const studentName = document.getElementById('studentName').value;
+                const grade = document.getElementById('grade').value;
+                const subject = document.getElementById('subject').value;
+                const shortMessage = document.getElementById('shortMessage').value;
+
+                // 버튼 로딩 상태
+                const btn = document.getElementById('generateBtn');
+                const btnText = document.getElementById('btnText');
+                const btnLoading = document.getElementById('btnLoading');
+                
+                btn.disabled = true;
+                btnText.classList.add('hidden');
+                btnLoading.classList.remove('hidden');
+                btnLoading.classList.add('flex');
+
+                try {
+                    const response = await fetch('/api/generate-parent-message', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            studentName,
+                            grade,
+                            subject,
+                            shortMessage
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        generatedMessageText = data.message;
+                        
+                        // 결과 표시
+                        document.getElementById('studentInfo').textContent = studentName + ' 학생';
+                        document.getElementById('subjectInfo').textContent = grade + ' · ' + subject;
+                        document.getElementById('generatedMessage').textContent = data.message;
+                        
+                        document.getElementById('emptyState').classList.add('hidden');
+                        document.getElementById('resultArea').classList.remove('hidden');
+                    } else {
+                        alert('오류: ' + data.error);
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('메시지 생성 중 오류가 발생했습니다.');
+                } finally {
+                    btn.disabled = false;
+                    btnText.classList.remove('hidden');
+                    btnLoading.classList.add('hidden');
+                }
+            });
+
+            function copyMessage() {
+                navigator.clipboard.writeText(generatedMessageText).then(() => {
+                    alert('✅ 메시지가 복사되었습니다!\\n\\n카톡이나 문자로 학부모님께 전송하세요.');
+                });
+            }
+
+            function resetForm() {
+                document.getElementById('messageForm').reset();
+                document.getElementById('emptyState').classList.remove('hidden');
+                document.getElementById('resultArea').classList.add('hidden');
+                generatedMessageText = '';
+            }
+        </script>
+    </body>
+    </html>
+  `)
+})
+
+// 블로그 작성 도구 페이지
+app.get('/tools/blog-writer', (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>블로그 작성 도구 - 우리는 슈퍼플레이스다</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <style>
+          @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
+          * {
+            font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+          }
+          .gradient-purple {
+            background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+          }
+          .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+          }
+          @keyframes spin {
+            to { transform: rotate(360deg); }
+          }
+        </style>
+    </head>
+    <body class="bg-gray-50">
+        <!-- Navigation -->
+        <nav class="fixed w-full top-0 z-50 bg-white border-b border-gray-100 shadow-sm">
+            <div class="max-w-7xl mx-auto px-6 lg:px-8">
+                <div class="flex justify-between items-center h-16">
+                    <a href="/" class="flex items-center space-x-3">
+                        <span class="text-xl font-bold text-gray-900">슈퍼플레이스</span>
+                    </a>
+                    <div class="flex items-center space-x-6">
+                        <a href="/dashboard" class="text-gray-600 hover:text-purple-600">대시보드</a>
+                        <a href="/tools/parent-message" class="text-gray-600 hover:text-purple-600">학부모 소통</a>
+                        <a href="/tools/blog-writer" class="text-purple-600 font-medium">블로그 작성</a>
+                        <a href="/logout" class="text-gray-600 hover:text-purple-600">로그아웃</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="pt-24 pb-12 px-6">
+            <div class="max-w-7xl mx-auto">
+                <div class="text-center mb-10">
+                    <h1 class="text-4xl font-bold text-gray-900 mb-4">✍️ AI 블로그 작성 도구</h1>
+                    <p class="text-xl text-gray-600">주제만 입력하면 SEO 최적화된 블로그 글을 자동으로 생성합니다</p>
+                </div>
+
+                <div class="grid lg:grid-cols-3 gap-8">
+                    <!-- 입력 폼 -->
+                    <div class="lg:col-span-1">
+                        <div class="bg-white rounded-2xl shadow-lg p-8 sticky top-24">
+                            <h2 class="text-2xl font-bold text-gray-900 mb-6">글 정보 입력</h2>
+                            
+                            <form id="blogForm" class="space-y-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-900 mb-2">주제 *</label>
+                                    <input type="text" id="topic" required 
+                                           class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none"
+                                           placeholder="예: 초등 영어 학습법">
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-900 mb-2">키워드 (선택)</label>
+                                    <input type="text" id="keywords"
+                                           class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none"
+                                           placeholder="예: 영어학원, 초등영어">
+                                    <p class="text-xs text-gray-500 mt-1">쉼표로 구분</p>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-900 mb-2">톤 앤 매너</label>
+                                    <select id="tone"
+                                            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none">
+                                        <option value="친근하고 전문적인">친근하고 전문적인</option>
+                                        <option value="따뜻하고 공감하는">따뜻하고 공감하는</option>
+                                        <option value="전문적이고 신뢰감 있는">전문적이고 신뢰감 있는</option>
+                                        <option value="유머러스하고 재미있는">유머러스하고 재미있는</option>
+                                    </select>
+                                </div>
+
+                                <button type="submit" 
+                                        class="w-full gradient-purple text-white py-4 rounded-xl text-lg font-medium hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                        id="generateBtn">
+                                    <span id="btnText">✨ 블로그 글 생성하기</span>
+                                    <span id="btnLoading" class="hidden items-center justify-center">
+                                        <span class="loading mr-2"></span>
+                                        생성 중... (30초 소요)
+                                    </span>
+                                </button>
+
+                                <div class="bg-blue-50 rounded-xl p-4 text-sm text-blue-800">
+                                    💡 AI가 제목, 서론, 본론, 결론을 포함한 완성된 블로그 글을 작성합니다
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- 생성된 블로그 글 -->
+                    <div class="lg:col-span-2">
+                        <div class="bg-white rounded-2xl shadow-lg p-8 min-h-[600px]">
+                            <div class="flex justify-between items-center mb-6">
+                                <h2 class="text-2xl font-bold text-gray-900">생성된 블로그 글</h2>
+                                <div id="wordCount" class="hidden text-sm text-gray-500"></div>
+                            </div>
+                            
+                            <div id="resultArea" class="hidden">
+                                <div id="generatedBlog" class="prose max-w-none">
+                                    <!-- 생성된 블로그 내용 -->
+                                </div>
+
+                                <div class="mt-8 flex gap-3">
+                                    <button onclick="copyBlog()" 
+                                            class="flex-1 bg-purple-600 text-white py-3 rounded-xl font-medium hover:bg-purple-700 transition">
+                                        📋 전체 복사하기
+                                    </button>
+                                    <button onclick="resetForm()" 
+                                            class="bg-gray-200 text-gray-700 px-6 py-3 rounded-xl font-medium hover:bg-gray-300 transition">
+                                        🔄 새로 작성
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div id="emptyState" class="text-center py-24">
+                                <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                    </svg>
+                                </div>
+                                <p class="text-gray-500 text-lg">주제를 입력하고<br>블로그 글을 생성해보세요</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 블로그 작성 팁 -->
+                <div class="mt-12 bg-gradient-to-br from-orange-50 to-yellow-50 rounded-2xl p-8">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-6">📝 블로그 SEO 팁</h3>
+                    <div class="grid md:grid-cols-4 gap-6">
+                        <div class="bg-white rounded-xl p-6">
+                            <div class="text-3xl mb-3">🎯</div>
+                            <h4 class="font-bold text-gray-900 mb-2">키워드 선택</h4>
+                            <p class="text-sm text-gray-600">검색량이 많은 키워드를 자연스럽게 3-5회 반복</p>
+                        </div>
+                        <div class="bg-white rounded-xl p-6">
+                            <div class="text-3xl mb-3">📏</div>
+                            <h4 class="font-bold text-gray-900 mb-2">적절한 길이</h4>
+                            <p class="text-sm text-gray-600">1500-2000자가 SEO에 가장 효과적</p>
+                        </div>
+                        <div class="bg-white rounded-xl p-6">
+                            <div class="text-3xl mb-3">🖼️</div>
+                            <h4 class="font-bold text-gray-900 mb-2">이미지 추가</h4>
+                            <p class="text-sm text-gray-600">2-3장의 관련 이미지로 가독성 향상</p>
+                        </div>
+                        <div class="bg-white rounded-xl p-6">
+                            <div class="text-3xl mb-3">⏰</div>
+                            <h4 class="font-bold text-gray-900 mb-2">꾸준한 포스팅</h4>
+                            <p class="text-sm text-gray-600">주 2-3회 규칙적인 업로드가 중요</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            let generatedBlogText = '';
+
+            document.getElementById('blogForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const topic = document.getElementById('topic').value;
+                const keywords = document.getElementById('keywords').value;
+                const tone = document.getElementById('tone').value;
+
+                // 버튼 로딩 상태
+                const btn = document.getElementById('generateBtn');
+                const btnText = document.getElementById('btnText');
+                const btnLoading = document.getElementById('btnLoading');
+                
+                btn.disabled = true;
+                btnText.classList.add('hidden');
+                btnLoading.classList.remove('hidden');
+                btnLoading.classList.add('flex');
+
+                try {
+                    const response = await fetch('/api/generate-blog-post', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            topic,
+                            keywords,
+                            tone
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        generatedBlogText = data.content;
+                        
+                        // 결과 표시 (줄바꿈을 <br>로 변환)
+                        const formattedContent = data.content
+                            .replace(/\\n\\n/g, '</p><p class="mb-4">')
+                            .replace(/\\n/g, '<br>');
+                        
+                        document.getElementById('generatedBlog').innerHTML = 
+                            '<div class="text-gray-800 leading-relaxed"><p class="mb-4">' + 
+                            formattedContent + 
+                            '</p></div>';
+                        
+                        document.getElementById('wordCount').textContent = 
+                            '총 ' + data.metadata.wordCount + '자';
+                        document.getElementById('wordCount').classList.remove('hidden');
+                        
+                        document.getElementById('emptyState').classList.add('hidden');
+                        document.getElementById('resultArea').classList.remove('hidden');
+
+                        // 상단으로 스크롤
+                        document.getElementById('resultArea').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    } else {
+                        alert('오류: ' + data.error);
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('블로그 글 생성 중 오류가 발생했습니다.');
+                } finally {
+                    btn.disabled = false;
+                    btnText.classList.remove('hidden');
+                    btnLoading.classList.add('hidden');
+                }
+            });
+
+            function copyBlog() {
+                navigator.clipboard.writeText(generatedBlogText).then(() => {
+                    alert('✅ 블로그 글이 복사되었습니다!\\n\\n네이버 블로그에 붙여넣기 하세요.');
+                });
+            }
+
+            function resetForm() {
+                document.getElementById('blogForm').reset();
+                document.getElementById('emptyState').classList.remove('hidden');
+                document.getElementById('resultArea').classList.add('hidden');
+                document.getElementById('wordCount').classList.add('hidden');
+                generatedBlogText = '';
+            }
+        </script>
+    </body>
+    </html>
+  `)
+})
+
+// 회사 소개 페이지
+app.get('/about', (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>회사 소개 - 우리는 슈퍼플레이스다</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <style>
+          @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
+          * {
+            font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+          }
+          .gradient-purple {
+            background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+          }
+        </style>
+    </head>
+    <body class="bg-white">
+        <!-- Navigation -->
+        <nav class="fixed w-full top-0 z-50 bg-white border-b border-gray-100">
+            <div class="max-w-7xl mx-auto px-6 lg:px-8">
+                <div class="flex justify-between items-center h-20">
+                    <a href="/" class="flex items-center space-x-3">
+                        <span class="text-xl font-bold text-gray-900">우리는 슈퍼플레이스다</span>
+                    </a>
+                    <div class="hidden md:flex items-center space-x-10">
+                        <a href="/" class="text-gray-700 hover:text-purple-600 font-medium">홈</a>
+                        <a href="/programs" class="text-gray-700 hover:text-purple-600 font-medium">교육 프로그램</a>
+                        <a href="/success" class="text-gray-700 hover:text-purple-600 font-medium">성공 사례</a>
+                        <a href="/about" class="text-purple-600 font-medium">회사 소개</a>
+                        <a href="/contact" class="text-gray-700 hover:text-purple-600 font-medium">문의하기</a>
+                        <a href="/login" class="gradient-purple text-white px-6 py-2.5 rounded-full font-medium">로그인</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Hero Section -->
+        <section class="pt-32 pb-20 px-6 bg-gradient-to-br from-purple-50 to-white">
+            <div class="max-w-7xl mx-auto text-center">
+                <h1 class="text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
+                    우리는<br>
+                    <span class="text-purple-600">슈퍼플레이스다</span>
+                </h1>
+                <p class="text-xl lg:text-2xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+                    현업 학원장이 직접 운영하며<br>
+                    전국 500개 학원의 성공을 함께한<br>
+                    <span class="font-bold text-gray-900">학원 마케팅 전문 교육 기업</span>입니다
+                </p>
+            </div>
+        </section>
+
+        <!-- Story Section -->
+        <section class="py-20 px-6">
+            <div class="max-w-7xl mx-auto">
+                <div class="grid lg:grid-cols-2 gap-16 items-center">
+                    <div>
+                        <h2 class="text-4xl font-bold text-gray-900 mb-6">우리의 시작</h2>
+                        <div class="space-y-4 text-lg text-gray-600 leading-relaxed">
+                            <p>
+                                인천 서구에서 <strong class="text-gray-900">꾸메땅학원</strong>을 운영하던 우리 부부는 
+                                처음에는 학생 모집에 큰 어려움을 겪었습니다.
+                            </p>
+                            <p>
+                                하지만 네이버 플레이스 최적화, 블로그 마케팅, 퍼널 시스템을 
+                                직접 공부하고 적용하면서 <strong class="text-purple-600">놀라운 변화</strong>를 경험했습니다.
+                            </p>
+                            <p>
+                                3개월 만에 신규 문의가 2배 증가했고,<br>
+                                1년 만에 학원 규모가 3배로 성장했습니다.
+                            </p>
+                            <p class="text-gray-900 font-bold">
+                                "이 노하우를 다른 학원장님들과 나누고 싶다"<br>
+                                그렇게 '우리는 슈퍼플레이스다'가 시작되었습니다.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="bg-purple-50 rounded-3xl p-12">
+                        <div class="space-y-8">
+                            <div class="flex items-start gap-4">
+                                <div class="w-12 h-12 rounded-full gradient-purple flex items-center justify-center text-white font-bold flex-shrink-0">1</div>
+                                <div>
+                                    <h3 class="font-bold text-gray-900 mb-2">2020년 초</h3>
+                                    <p class="text-gray-600">꾸메땅학원 개원, 학생 모집 어려움</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-4">
+                                <div class="w-12 h-12 rounded-full gradient-purple flex items-center justify-center text-white font-bold flex-shrink-0">2</div>
+                                <div>
+                                    <h3 class="font-bold text-gray-900 mb-2">2020년 중반</h3>
+                                    <p class="text-gray-600">플레이스 마케팅 독학, 1위 달성</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-4">
+                                <div class="w-12 h-12 rounded-full gradient-purple flex items-center justify-center text-white font-bold flex-shrink-0">3</div>
+                                <div>
+                                    <h3 class="font-bold text-gray-900 mb-2">2021년</h3>
+                                    <p class="text-gray-600">오픈채팅방 시작, 노하우 공유</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-4">
+                                <div class="w-12 h-12 rounded-full gradient-purple flex items-center justify-center text-white font-bold flex-shrink-0">4</div>
+                                <div>
+                                    <h3 class="font-bold text-gray-900 mb-2">2022년~현재</h3>
+                                    <p class="text-gray-600">전국 500개 학원 교육 진행</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Values Section -->
+        <section class="py-20 px-6 bg-gray-50">
+            <div class="max-w-7xl mx-auto">
+                <div class="text-center mb-16">
+                    <h2 class="text-4xl font-bold text-gray-900 mb-4">우리의 가치</h2>
+                    <p class="text-xl text-gray-600">슈퍼플레이스를 만드는 3가지 원칙</p>
+                </div>
+
+                <div class="grid md:grid-cols-3 gap-8">
+                    <div class="bg-white rounded-3xl p-10 text-center">
+                        <div class="w-20 h-20 gradient-purple rounded-2xl flex items-center justify-center mx-auto mb-6">
+                            <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-900 mb-4">실전 경험</h3>
+                        <p class="text-gray-600 leading-relaxed">
+                            이론이 아닌 우리가 직접 학원을 운영하며 검증한 
+                            실전 마케팅 노하우만 전달합니다
+                        </p>
+                    </div>
+
+                    <div class="bg-white rounded-3xl p-10 text-center">
+                        <div class="w-20 h-20 bg-orange-500 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                            <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-900 mb-4">커뮤니티</h3>
+                        <p class="text-gray-600 leading-relaxed">
+                            오픈채팅방과 오프라인 모임을 통해 
+                            전국 학원장님들과 함께 성장합니다
+                        </p>
+                    </div>
+
+                    <div class="bg-white rounded-3xl p-10 text-center">
+                        <div class="w-20 h-20 gradient-purple rounded-2xl flex items-center justify-center mx-auto mb-6">
+                            <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-900 mb-4">지속 성장</h3>
+                        <p class="text-gray-600 leading-relaxed">
+                            일회성 교육이 아닌 지속적인 콘텐츠 업데이트와 
+                            실시간 Q&A로 계속 함께합니다
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Achievements Section -->
+        <section class="py-20 px-6">
+            <div class="max-w-7xl mx-auto">
+                <div class="text-center mb-16">
+                    <h2 class="text-4xl font-bold text-gray-900 mb-4">우리의 성과</h2>
+                    <p class="text-xl text-gray-600">숫자로 증명하는 실전 노하우</p>
+                </div>
+
+                <div class="grid md:grid-cols-4 gap-8">
+                    <div class="text-center">
+                        <div class="text-5xl font-bold text-purple-600 mb-3">500+</div>
+                        <div class="text-lg text-gray-700 font-medium">교육 수료 학원</div>
+                        <div class="text-sm text-gray-500 mt-2">전국 각지의 학원</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-5xl font-bold text-orange-500 mb-3">95%</div>
+                        <div class="text-lg text-gray-700 font-medium">만족도</div>
+                        <div class="text-sm text-gray-500 mt-2">실제 효과 체감</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-5xl font-bold text-purple-600 mb-3">24/7</div>
+                        <div class="text-lg text-gray-700 font-medium">커뮤니티 운영</div>
+                        <div class="text-sm text-gray-500 mt-2">실시간 질의응답</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-5xl font-bold text-orange-500 mb-3">4년+</div>
+                        <div class="text-lg text-gray-700 font-medium">운영 경험</div>
+                        <div class="text-sm text-gray-500 mt-2">축적된 노하우</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Team Section -->
+        <section class="py-20 px-6 bg-gradient-to-br from-purple-50 to-blue-50">
+            <div class="max-w-7xl mx-auto">
+                <div class="text-center mb-16">
+                    <h2 class="text-4xl font-bold text-gray-900 mb-4">대표 소개</h2>
+                    <p class="text-xl text-gray-600">현업 학원장이 직접 가르칩니다</p>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-12 max-w-5xl mx-auto">
+                    <div class="bg-white rounded-3xl p-10">
+                        <div class="w-32 h-32 gradient-purple rounded-3xl flex items-center justify-center mx-auto mb-6">
+                            <span class="text-5xl text-white font-bold">김</span>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-900 text-center mb-3">김 원장님</h3>
+                        <p class="text-center text-purple-600 font-medium mb-6">영어 교육 전문</p>
+                        <div class="space-y-3 text-gray-600">
+                            <p>✓ 꾸메땅학원 영어 담당</p>
+                            <p>✓ 네이버 플레이스 1위 달성</p>
+                            <p>✓ 블로그 마케팅 전문가</p>
+                            <p>✓ 학원장 커뮤니티 운영</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-3xl p-10">
+                        <div class="w-32 h-32 bg-orange-500 rounded-3xl flex items-center justify-center mx-auto mb-6">
+                            <span class="text-5xl text-white font-bold">이</span>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-900 text-center mb-3">이 원장님</h3>
+                        <p class="text-center text-orange-600 font-medium mb-6">수학 교육 전문</p>
+                        <div class="space-y-3 text-gray-600">
+                            <p>✓ 꾸메땅학원 수학 담당</p>
+                            <p>✓ 퍼널 마케팅 전문가</p>
+                            <p>✓ 학생 관리 시스템 구축</p>
+                            <p>✓ 오프라인 교육 진행</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="py-20 px-6 gradient-purple">
+            <div class="max-w-4xl mx-auto text-center">
+                <h2 class="text-4xl lg:text-5xl font-bold text-white mb-8">
+                    함께 성장하는 학원을<br>
+                    만들어가실 준비가 되셨나요?
+                </h2>
+                <p class="text-xl text-white/90 mb-12">
+                    우리의 경험과 노하우가 여러분의 학원 성공에 도움이 되길 바랍니다
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <a href="/contact" class="bg-white text-purple-600 px-12 py-5 rounded-full text-lg font-medium shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all">
+                        무료 상담 신청하기
+                    </a>
+                    <a href="/programs" class="bg-white/10 backdrop-blur-sm border-2 border-white/40 text-white px-12 py-5 rounded-full text-lg font-medium hover:bg-white hover:text-purple-600 transition-all">
+                        교육 프로그램 보기
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="bg-gray-50 text-gray-600 py-20 px-6 border-t border-gray-100">
+            <div class="max-w-7xl mx-auto">
+                <div class="grid md:grid-cols-4 gap-12 mb-16">
+                    <div>
+                        <div class="flex items-center space-x-2 mb-4">
+                            <span class="text-xl font-bold text-gray-900">슈퍼플레이스</span>
+                        </div>
+                        <p class="text-gray-500 text-sm leading-relaxed">
+                            학원 마케팅의 새로운 기준
+                        </p>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-gray-900 mb-4">서비스</h4>
+                        <ul class="space-y-3 text-sm">
+                            <li><a href="/programs" class="hover:text-purple-600 transition">교육 프로그램</a></li>
+                            <li><a href="/success" class="hover:text-purple-600 transition">성공 사례</a></li>
+                            <li><a href="/contact" class="hover:text-purple-600 transition">문의하기</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-gray-900 mb-4">회사</h4>
+                        <ul class="space-y-3 text-sm">
+                            <li><a href="/about" class="hover:text-purple-600 transition">회사 소개</a></li>
+                            <li><a href="#" class="hover:text-purple-600 transition">이용약관</a></li>
+                            <li><a href="#" class="hover:text-purple-600 transition">개인정보처리방침</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-gray-900 mb-4">연락처</h4>
+                        <ul class="space-y-3 text-sm">
+                            <li>인천광역시 서구</li>
+                            <li>contact@superplace.kr</li>
+                            <li>문의 양식 이용 가능</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="border-t border-gray-200 pt-8 text-center text-gray-500 text-sm">
+                    <p>&copy; 2024 우리는 슈퍼플레이스다. All rights reserved.</p>
+                </div>
+            </div>
+        </footer>
     </body>
     </html>
   `)
