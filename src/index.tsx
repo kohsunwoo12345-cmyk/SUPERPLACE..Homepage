@@ -3106,6 +3106,9 @@ app.get('/dashboard', (c) => {
                     </div>
                     <div class="flex items-center space-x-6">
                         <span id="userName" class="text-gray-700"></span>
+                        <a id="adminDashboardBtn" href="/admin/dashboard.html" class="hidden bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition font-medium">
+                            🔐 관리자 전용 대시보드
+                        </a>
                         <button onclick="logout()" class="text-gray-600 hover:text-purple-600 transition">로그아웃</button>
                     </div>
                 </div>
@@ -3371,6 +3374,11 @@ app.get('/dashboard', (c) => {
             } else {
                 document.getElementById('userName').textContent = user.name
                 document.getElementById('userNameDisplay').textContent = user.name
+                
+                // 관리자일 경우 관리자 대시보드 버튼 표시
+                if (user.role === 'admin') {
+                    document.getElementById('adminDashboardBtn').classList.remove('hidden')
+                }
             }
 
             function logout() {
