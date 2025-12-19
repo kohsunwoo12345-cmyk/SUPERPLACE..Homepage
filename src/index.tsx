@@ -271,8 +271,8 @@ app.get('/', (c) => {
                     <!-- Right: Hero Image -->
                     <div class="animate-fade-in" style="transition-delay: 0.2s">
                         <div class="relative rounded-3xl overflow-hidden shadow-2xl">
-                            <img src="https://images.pexels.com/photos/5427651/pexels-photo-5427651.jpeg?auto=compress&cs=tinysrgb&w=1260" 
-                                 alt="학생들이 교실에서 공부하는 모습" 
+                            <img src="https://sspark.genspark.ai/cfimages?u1=lr2PgsjvJYOtAUFJfXxlSFL3%2Fxn4A%2Fp4N%2FiD4RDqwc8zC35yqZ6POCnT3YuvehzHp8ysrzZXSmYZACr2cMnHD%2B2YYus6nyD72VCciIm1cGtUgP4Q%2BNOsAHzUzardGCwfVO3CTcFez%2BXdhrQ0C8f5iVUwu6GpvNSpLpm1vY0RbunLx%2FxKu6XmZA%3D%3D&u2=CLc1bHiOVvIvQBdT&width=1200" 
+                                 alt="밝은 햇살이 드는 현대적인 교실에서 공부하는 학생들" 
                                  class="w-full h-auto object-cover">
                             <div class="absolute inset-0 bg-gradient-to-t from-purple-900/20 to-transparent"></div>
                         </div>
@@ -456,18 +456,18 @@ app.get('/', (c) => {
                 <div class="grid lg:grid-cols-2 gap-8 mb-20">
                     <!-- Left: Image Grid -->\n                    <div class="grid grid-cols-2 gap-4 animate-fade-in">
                         <div class="col-span-2 rounded-2xl overflow-hidden">
-                            <img src="https://images.pexels.com/photos/5905709/pexels-photo-5905709.jpeg?auto=compress&cs=tinysrgb&w=800" 
-                                 alt="학원 원장님들" 
+                            <img src="https://sspark.genspark.ai/cfimages?u1=oN4UyWPdeAnPHGAuOl9u3ofPC4RFl6RqarrwUpvaLiPTm7mh2Lobo%2F4wTKiEG0Gvb59tAroNlqzwB6uxIgeDcFIisxkpK%2ByvzoLOBRUwq3wAPg%3D%3D&u2=Rn455fc046%2BoFW1M&width=1200" 
+                                 alt="함께 공부하는 학생들" 
                                  class="w-full h-72 object-cover">
                         </div>
                         <div class="rounded-2xl overflow-hidden">
-                            <img src="https://images.pexels.com/photos/3184418/pexels-photo-3184418.jpeg?auto=compress&cs=tinysrgb&w=600" 
-                                 alt="교육 현장" 
+                            <img src="https://sspark.genspark.ai/cfimages?u1=1RD4sGY%2Bj%2FjVEiNnMp02RJ56JfOtx4T5bs1GgjUg6GEd4uGzK1AKFOOoq6XOkJFszy3jtO4RLD7Ryw%2FKFPEMm1AoG8OlqkQ9hJGNA7p4XK4RtA%3D%3D&u2=F%2B3PvGjIdbBbGmsf&width=800" 
+                                 alt="도서관에서 학습하는 학생들" 
                                  class="w-full h-48 object-cover">
                         </div>
                         <div class="rounded-2xl overflow-hidden">
-                            <img src="https://images.pexels.com/photos/3184338/pexels-photo-3184338.jpeg?auto=compress&cs=tinysrgb&w=600" 
-                                 alt="학습 환경" 
+                            <img src="https://sspark.genspark.ai/cfimages?u1=jrigc7hbpDQlc0ndcd0CI4xg%2FTgfegGGDHZTWXZd65zSnxkNxB8cITZ%2FxJbI5sgTLPkpd4LkzWQ5jLAbmq41VVI0WvzqGiOZ%2BIsnYwxcCUzPoMZvbl%2F7dvCbB4sm1oeP%2BEn1sJ8nvKk%2BkIjcPdULWHRkfHpSU%2F5w&u2=RrPeTMJGJ6oB5lsw&width=800" 
+                                 alt="현대적인 디지털 학습 환경" 
                                  class="w-full h-48 object-cover">
                         </div>
                     </div>
