@@ -3446,6 +3446,98 @@ app.get('/dashboard', (c) => {
                                 </svg>
                             </div>
                         </a>
+
+                        <a href="/tools/student-management" class="block bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-2xl p-8 hover:shadow-2xl transition-all hover:-translate-y-1">
+                            <div class="flex items-center gap-4 mb-4">
+                                <div class="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="text-2xl font-bold text-white">학생 관리</h3>
+                                    <p class="text-indigo-100 text-sm">출결·성적·상담 기록</p>
+                                </div>
+                            </div>
+                            <p class="text-white/90 leading-relaxed mb-4">
+                                학생 정보, 출결 관리, 성적 기록, 상담 내역을 한 곳에서 체계적으로 관리하세요.
+                            </p>
+                            <div class="flex items-center text-white font-medium">
+                                <span>바로 사용하기</span>
+                                <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                </svg>
+                            </div>
+                        </a>
+
+                        <a href="/tools/consultation-booking" class="block bg-gradient-to-br from-pink-500 to-pink-700 rounded-2xl p-8 hover:shadow-2xl transition-all hover:-translate-y-1">
+                            <div class="flex items-center gap-4 mb-4">
+                                <div class="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="text-2xl font-bold text-white">상담 예약 관리</h3>
+                                    <p class="text-pink-100 text-sm">학부모 상담 일정 관리</p>
+                                </div>
+                            </div>
+                            <p class="text-white/90 leading-relaxed mb-4">
+                                학부모 상담 예약을 효율적으로 관리하고, 자동 알림으로 노쇼를 방지하세요.
+                            </p>
+                            <div class="flex items-center text-white font-medium">
+                                <span>바로 사용하기</span>
+                                <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                </svg>
+                            </div>
+                        </a>
+
+                        <a href="/tools/reenrollment-tracking" class="block bg-gradient-to-br from-yellow-500 to-yellow-700 rounded-2xl p-8 hover:shadow-2xl transition-all hover:-translate-y-1">
+                            <div class="flex items-center gap-4 mb-4">
+                                <div class="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="text-2xl font-bold text-white">재등록 관리</h3>
+                                    <p class="text-yellow-100 text-sm">만료 예정 학생 추적</p>
+                                </div>
+                            </div>
+                            <p class="text-white/90 leading-relaxed mb-4">
+                                수강 만료 예정 학생을 자동으로 추적하고, 재등록률을 높이세요.
+                            </p>
+                            <div class="flex items-center text-white font-medium">
+                                <span>바로 사용하기</span>
+                                <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                </svg>
+                            </div>
+                        </a>
+
+                        <a href="/tools/dashboard-analytics" class="block bg-gradient-to-br from-teal-500 to-teal-700 rounded-2xl p-8 hover:shadow-2xl transition-all hover:-translate-y-1">
+                            <div class="flex items-center gap-4 mb-4">
+                                <div class="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="text-2xl font-bold text-white">통합 분석 대시보드</h3>
+                                    <p class="text-teal-100 text-sm">매출·학생·마케팅 통계</p>
+                                </div>
+                            </div>
+                            <p class="text-white/90 leading-relaxed mb-4">
+                                학원 운영 현황을 한눈에 파악하고, 데이터 기반 의사결정을 하세요.
+                            </p>
+                            <div class="flex items-center text-white font-medium">
+                                <span>바로 사용하기</span>
+                                <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                </svg>
+                            </div>
+                        </a>
                     </div>
                 </div>
 
@@ -5586,6 +5678,260 @@ app.post('/api/students', async (c) => {
     console.error('Add student error:', error)
     return c.json({ success: false, error: '학생 추가 실패' }, 500)
   }
+})
+
+// 학생 관리 페이지
+app.get('/tools/student-management', (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>학생 관리 - 슈퍼플레이스</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+    </head>
+    <body class="bg-gradient-to-br from-indigo-50 to-purple-50 min-h-screen">
+        <div class="max-w-7xl mx-auto p-8">
+            <div class="flex justify-between items-center mb-8">
+                <h1 class="text-4xl font-bold text-gray-900">📚 학생 관리</h1>
+                <a href="/dashboard" class="px-6 py-3 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition">
+                    대시보드로 돌아가기
+                </a>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-white rounded-2xl p-6 border-2 border-indigo-200">
+                    <div class="text-sm text-gray-600 mb-2">전체 학생</div>
+                    <div class="text-3xl font-bold text-indigo-600">0명</div>
+                </div>
+                <div class="bg-white rounded-2xl p-6 border-2 border-green-200">
+                    <div class="text-sm text-gray-600 mb-2">수강 중</div>
+                    <div class="text-3xl font-bold text-green-600">0명</div>
+                </div>
+                <div class="bg-white rounded-2xl p-6 border-2 border-yellow-200">
+                    <div class="text-sm text-gray-600 mb-2">만료 예정</div>
+                    <div class="text-3xl font-bold text-yellow-600">0명</div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl p-8 border border-gray-200">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold">학생 목록</h2>
+                    <button onclick="alert('학생 추가 기능은 곧 제공됩니다')" class="px-6 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition">
+                        + 학생 추가
+                    </button>
+                </div>
+                <p class="text-gray-500 text-center py-12">학생을 추가하면 여기에 목록이 표시됩니다.</p>
+            </div>
+        </div>
+    </body>
+    </html>
+  `)
+})
+
+// 상담 예약 관리 페이지
+app.get('/tools/consultation-booking', (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>상담 예약 관리 - 슈퍼플레이스</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+    </head>
+    <body class="bg-gradient-to-br from-pink-50 to-red-50 min-h-screen">
+        <div class="max-w-7xl mx-auto p-8">
+            <div class="flex justify-between items-center mb-8">
+                <h1 class="text-4xl font-bold text-gray-900">📅 상담 예약 관리</h1>
+                <a href="/dashboard" class="px-6 py-3 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition">
+                    대시보드로 돌아가기
+                </a>
+            </div>
+
+            <div class="grid md:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white rounded-2xl p-6 border-2 border-blue-200">
+                    <div class="text-sm text-gray-600 mb-2">대기중</div>
+                    <div class="text-3xl font-bold text-blue-600">0건</div>
+                </div>
+                <div class="bg-white rounded-2xl p-6 border-2 border-green-200">
+                    <div class="text-sm text-gray-600 mb-2">확정</div>
+                    <div class="text-3xl font-bold text-green-600">0건</div>
+                </div>
+                <div class="bg-white rounded-2xl p-6 border-2 border-purple-200">
+                    <div class="text-sm text-gray-600 mb-2">완료</div>
+                    <div class="text-3xl font-bold text-purple-600">0건</div>
+                </div>
+                <div class="bg-white rounded-2xl p-6 border-2 border-gray-200">
+                    <div class="text-sm text-gray-600 mb-2">노쇼</div>
+                    <div class="text-3xl font-bold text-gray-600">0건</div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl p-8 border border-gray-200">
+                <h2 class="text-2xl font-bold mb-6">예약 캘린더</h2>
+                <p class="text-gray-500 text-center py-12">상담 예약 캘린더 기능은 곧 제공됩니다.</p>
+            </div>
+        </div>
+    </body>
+    </html>
+  `)
+})
+
+// 재등록 관리 페이지
+app.get('/tools/reenrollment-tracking', (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>재등록 관리 - 슈퍼플레이스</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+    </head>
+    <body class="bg-gradient-to-br from-yellow-50 to-orange-50 min-h-screen">
+        <div class="max-w-7xl mx-auto p-8">
+            <div class="flex justify-between items-center mb-8">
+                <h1 class="text-4xl font-bold text-gray-900">🔄 재등록 관리</h1>
+                <a href="/dashboard" class="px-6 py-3 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition">
+                    대시보드로 돌아가기
+                </a>
+            </div>
+
+            <div class="grid md:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white rounded-2xl p-6 border-2 border-red-200">
+                    <div class="text-sm text-gray-600 mb-2">7일 이내 만료</div>
+                    <div class="text-3xl font-bold text-red-600">0명</div>
+                </div>
+                <div class="bg-white rounded-2xl p-6 border-2 border-yellow-200">
+                    <div class="text-sm text-gray-600 mb-2">30일 이내 만료</div>
+                    <div class="text-3xl font-bold text-yellow-600">0명</div>
+                </div>
+                <div class="bg-white rounded-2xl p-6 border-2 border-green-200">
+                    <div class="text-sm text-gray-600 mb-2">재등록 확정</div>
+                    <div class="text-3xl font-bold text-green-600">0명</div>
+                </div>
+                <div class="bg-white rounded-2xl p-6 border-2 border-blue-200">
+                    <div class="text-sm text-gray-600 mb-2">재등록률</div>
+                    <div class="text-3xl font-bold text-blue-600">0%</div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl p-8 border border-gray-200">
+                <h2 class="text-2xl font-bold mb-6">만료 예정 학생</h2>
+                <p class="text-gray-500 text-center py-12">만료 예정 학생 목록이 여기에 표시됩니다.</p>
+            </div>
+        </div>
+    </body>
+    </html>
+  `)
+})
+
+// 통합 분석 대시보드 페이지
+app.get('/tools/dashboard-analytics', (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>통합 분석 대시보드 - 슈퍼플레이스</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    </head>
+    <body class="bg-gradient-to-br from-teal-50 to-blue-50 min-h-screen">
+        <div class="max-w-7xl mx-auto p-8">
+            <div class="flex justify-between items-center mb-8">
+                <h1 class="text-4xl font-bold text-gray-900">📊 통합 분석 대시보드</h1>
+                <a href="/dashboard" class="px-6 py-3 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition">
+                    대시보드로 돌아가기
+                </a>
+            </div>
+
+            <div class="grid md:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white rounded-2xl p-6 border-2 border-green-200">
+                    <div class="text-sm text-gray-600 mb-2">이번 달 매출</div>
+                    <div class="text-3xl font-bold text-green-600">₩0</div>
+                </div>
+                <div class="bg-white rounded-2xl p-6 border-2 border-blue-200">
+                    <div class="text-sm text-gray-600 mb-2">신규 학생</div>
+                    <div class="text-3xl font-bold text-blue-600">0명</div>
+                </div>
+                <div class="bg-white rounded-2xl p-6 border-2 border-purple-200">
+                    <div class="text-sm text-gray-600 mb-2">전체 학생</div>
+                    <div class="text-3xl font-bold text-purple-600">0명</div>
+                </div>
+                <div class="bg-white rounded-2xl p-6 border-2 border-orange-200">
+                    <div class="text-sm text-gray-600 mb-2">평균 출석률</div>
+                    <div class="text-3xl font-bold text-orange-600">0%</div>
+                </div>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-6">
+                <div class="bg-white rounded-2xl p-8 border border-gray-200">
+                    <h2 class="text-xl font-bold mb-4">월별 매출 추이</h2>
+                    <canvas id="revenueChart" height="200"></canvas>
+                </div>
+
+                <div class="bg-white rounded-2xl p-8 border border-gray-200">
+                    <h2 class="text-xl font-bold mb-4">학생 현황</h2>
+                    <canvas id="studentChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            // 매출 추이 차트
+            const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+            new Chart(revenueCtx, {
+                type: 'line',
+                data: {
+                    labels: ['1월', '2월', '3월', '4월', '5월', '6월'],
+                    datasets: [{
+                        label: '매출 (만원)',
+                        data: [0, 0, 0, 0, 0, 0],
+                        borderColor: 'rgb(34, 197, 94)',
+                        backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        }
+                    }
+                }
+            });
+
+            // 학생 현황 차트
+            const studentCtx = document.getElementById('studentChart').getContext('2d');
+            new Chart(studentCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['수강 중', '일시정지', '졸업'],
+                    datasets: [{
+                        data: [0, 0, 0],
+                        backgroundColor: [
+                            'rgb(34, 197, 94)',
+                            'rgb(234, 179, 8)',
+                            'rgb(156, 163, 175)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        </script>
+    </body>
+    </html>
+  `)
 })
 
 export default app
