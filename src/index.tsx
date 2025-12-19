@@ -128,6 +128,87 @@ app.get('/api/contacts', async (c) => {
   }
 })
 
+// ==================== 관리자 API ====================
+
+// 관리자 - 사용자 목록
+app.get('/api/admin/users', async (c) => {
+  try {
+    const { results } = await c.env.DB.prepare('SELECT id, email, name, phone, academy_name, role, created_at FROM users ORDER BY created_at DESC').all()
+    return c.json({ success: true, users: results })
+  } catch (error) {
+    return c.json({ success: false, error: '사용자 목록 조회 실패' }, 500)
+  }
+})
+
+// 관리자 - 프로그램 목록
+app.get('/api/admin/programs', async (c) => {
+  try {
+    const { results } = await c.env.DB.prepare('SELECT * FROM programs WHERE status = ?').bind('active').all()
+    return c.json({ success: true, programs: results })
+  } catch (error) {
+    console.error('Programs error:', error)
+    return c.json({ success: false, error: '프로그램 목록 조회 실패' }, 500)
+  }
+})
+
+// 관리자 - 수강 현황
+app.get('/api/admin/enrollments', async (c) => {
+  try {
+    const query = 'SELECT up.*, u.name as user_name, p.name as program_name FROM user_programs up JOIN users u ON up.user_id = u.id JOIN programs p ON up.program_id = p.id WHERE up.status = ? ORDER BY up.created_at DESC'
+    const { results } = await c.env.DB.prepare(query).bind('active').all()
+    return c.json({ success: true, enrollments: results })
+  } catch (error) {
+    return c.json({ success: false, error: '수강 현황 조회 실패' }, 500)
+  }
+})
+
+// 관리자 - 사용자별 프로그램 조회
+app.get('/api/admin/users/:id/programs', async (c) => {
+  try {
+    const userId = c.req.param('id')
+    const query = 'SELECT up.*, p.name as program_name, p.duration_days FROM user_programs up JOIN programs p ON up.program_id = p.id WHERE up.user_id = ? AND up.status = ? ORDER BY up.created_at DESC'
+    const { results } = await c.env.DB.prepare(query).bind(userId, 'active').all()
+    return c.json({ success: true, programs: results })
+  } catch (error) {
+    return c.json({ success: false, error: '프로그램 조회 실패' }, 500)
+  }
+})
+
+// 관리자 - 프로그램 부여
+app.post('/api/admin/assign-program', async (c) => {
+  try {
+    const { user_id, program_id, end_date } = await c.req.json()
+    const query = 'INSERT INTO user_programs (user_id, program_id, end_date, status) VALUES (?, ?, ?, ?)'
+    await c.env.DB.prepare(query).bind(user_id, program_id, end_date || null, 'active').run()
+    return c.json({ success: true, message: '프로그램이 부여되었습니다.' })
+  } catch (error) {
+    return c.json({ success: false, error: '프로그램 부여 실패' }, 500)
+  }
+})
+
+// 관리자 - 프로그램 삭제
+app.delete('/api/admin/remove-program/:id', async (c) => {
+  try {
+    const id = c.req.param('id')
+    await c.env.DB.prepare('DELETE FROM user_programs WHERE id = ?').bind(id).run()
+    return c.json({ success: true, message: '프로그램이 삭제되었습니다.' })
+  } catch (error) {
+    return c.json({ success: false, error: '프로그램 삭제 실패' }, 500)
+  }
+})
+
+// 관리자 - 문의 상태 변경
+app.put('/api/admin/contacts/:id/status', async (c) => {
+  try {
+    const id = c.req.param('id')
+    const { status } = await c.req.json()
+    await c.env.DB.prepare('UPDATE contacts SET status = ? WHERE id = ?').bind(status, id).run()
+    return c.json({ success: true, message: '상태가 변경되었습니다.' })
+  } catch (error) {
+    return c.json({ success: false, error: '상태 변경 실패' }, 500)
+  }
+})
+
 // AI 학부모 메시지 생성 API
 app.post('/api/generate-parent-message', async (c) => {
   try {
