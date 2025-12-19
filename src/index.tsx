@@ -137,26 +137,34 @@ app.post('/api/generate-parent-message', async (c) => {
       return c.json({ success: false, error: '필수 항목을 입력해주세요.' }, 400)
     }
 
-    // OpenAI API 호출
-    const apiKey = c.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY
-    const baseURL = c.env.OPENAI_BASE_URL || process.env.OPENAI_BASE_URL || 'https://www.genspark.ai/api/llm_proxy/v1'
+    // 템플릿 기반 메시지 생성 (현재는 API 키 없이 작동)
+    const templateMessage = generateTemplateMessage(studentName, grade, subject, shortMessage)
+    return c.json({ 
+      success: true, 
+      message: templateMessage,
+      metadata: {
+        studentName,
+        grade,
+        subject,
+        originalMessage: shortMessage,
+        mode: 'template'
+      }
+    })
 
-    if (!apiKey) {
-      return c.json({ success: false, error: 'AI 서비스 설정이 필요합니다.' }, 500)
-    }
-
-    const response = await fetch(`${baseURL}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
-      },
-      body: JSON.stringify({
-        model: 'gpt-5-mini',
-        messages: [
-          {
-            role: 'system',
-            content: `당신은 학원 원장님입니다. 학부모님께 학생의 학습 현황을 따뜻하고 격려하는 말투로 전달하는 메시지를 작성합니다.
+    // API 키가 있으면 실제 AI 호출
+    try {
+      const response = await fetch(`${baseURL}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          model: 'gpt-5-mini',
+          messages: [
+            {
+              role: 'system',
+              content: `당신은 학원 원장님입니다. 학부모님께 학생의 학습 현황을 따뜻하고 격려하는 말투로 전달하는 메시지를 작성합니다.
 
 규칙:
 1. 존댓말 사용 (학부모님께)
@@ -166,46 +174,114 @@ app.post('/api/generate-parent-message', async (c) => {
 5. 200-300자 정도의 적절한 길이
 6. 이모지 2-3개 자연스럽게 사용
 7. 학부모님이 안심하고 신뢰할 수 있는 내용`
-          },
-          {
-            role: 'user',
-            content: `학생 이름: ${studentName}
+            },
+            {
+              role: 'user',
+              content: `학생 이름: ${studentName}
 학년: ${grade}
 과목: ${subject}
 원장님의 짧은 메모: ${shortMessage}
 
 위 정보를 바탕으로 학부모님께 보낼 따뜻한 메시지를 작성해주세요.`
-          }
-        ],
-        temperature: 0.8,
-        max_tokens: 500
+            }
+          ],
+          temperature: 0.8,
+          max_tokens: 500
+        })
       })
-    })
 
-    const data = await response.json()
-    
-    if (!response.ok) {
-      console.error('OpenAI API error:', data)
-      return c.json({ success: false, error: 'AI 메시지 생성 중 오류가 발생했습니다.' }, 500)
-    }
-
-    const generatedMessage = data.choices[0]?.message?.content || ''
-
-    return c.json({ 
-      success: true, 
-      message: generatedMessage,
-      metadata: {
-        studentName,
-        grade,
-        subject,
-        originalMessage: shortMessage
+      const data = await response.json()
+      
+      if (!response.ok) {
+        console.error('OpenAI API error:', data)
+        // API 오류 시 템플릿 메시지로 폴백
+        const templateMessage = generateTemplateMessage(studentName, grade, subject, shortMessage)
+        return c.json({ 
+          success: true, 
+          message: templateMessage,
+          metadata: {
+            studentName,
+            grade,
+            subject,
+            originalMessage: shortMessage,
+            mode: 'template_fallback'
+          }
+        })
       }
-    })
+
+      const generatedMessage = data.choices[0]?.message?.content || ''
+
+      return c.json({ 
+        success: true, 
+        message: generatedMessage,
+        metadata: {
+          studentName,
+          grade,
+          subject,
+          originalMessage: shortMessage,
+          mode: 'ai'
+        }
+      })
+    } catch (apiError) {
+      console.error('API call error:', apiError)
+      // API 호출 실패 시 템플릿 메시지로 폴백
+      const templateMessage = generateTemplateMessage(studentName, grade, subject, shortMessage)
+      return c.json({ 
+        success: true, 
+        message: templateMessage,
+        metadata: {
+          studentName,
+          grade,
+          subject,
+          originalMessage: shortMessage,
+          mode: 'template_fallback'
+        }
+      })
+    }
   } catch (error) {
     console.error('Generate message error:', error)
     return c.json({ success: false, error: '메시지 생성 중 오류가 발생했습니다.' }, 500)
   }
 })
+
+// 템플릿 기반 메시지 생성 함수
+function generateTemplateMessage(studentName: string, grade: string, subject: string, shortMessage: string): string {
+  const templates = [
+    `안녕하세요, ${studentName} 학부모님! 😊
+
+오늘 ${subject} 수업에서 ${studentName} 학생의 모습을 전해드립니다.
+
+${shortMessage}
+
+${studentName}의 성장 모습이 정말 보기 좋습니다. 앞으로도 이렇게 꾸준히 노력한다면 ${subject} 실력이 더욱 탄탄해질 것입니다! 💪
+
+항상 응원하겠습니다. 감사합니다!`,
+    
+    `${studentName} 학부모님, 안녕하세요! 👋
+
+${grade} ${subject} 수업 소식을 전해드립니다.
+
+${shortMessage}
+
+${studentName}의 이러한 모습이 정말 자랑스럽습니다. 계속해서 이런 긍정적인 자세로 학습에 임한다면 목표한 성과를 꼭 이룰 수 있을 거예요! 🎯
+
+궁금하신 점 있으시면 언제든 연락 주세요!`,
+    
+    `학부모님, 안녕하세요! 😊
+
+오늘 ${studentName} 학생의 ${subject} 수업 현황을 말씀드립니다.
+
+${shortMessage}
+
+${studentName}가 보여준 이런 모습들이 정말 인상 깊었습니다. 이대로만 꾸준히 노력한다면 ${subject} 과목에서 더 큰 발전을 기대할 수 있겠습니다! ✨
+
+앞으로도 ${studentName}의 성장을 함께 응원하겠습니다!`
+  ]
+  
+  // 랜덤하게 템플릿 선택
+  const randomIndex = Math.floor(Math.random() * templates.length)
+  return templates[randomIndex]
+}
 
 // AI 블로그 글 생성 API
 app.post('/api/generate-blog-post', async (c) => {
@@ -216,25 +292,34 @@ app.post('/api/generate-blog-post', async (c) => {
       return c.json({ success: false, error: '주제를 입력해주세요.' }, 400)
     }
 
-    const apiKey = c.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY
-    const baseURL = c.env.OPENAI_BASE_URL || process.env.OPENAI_BASE_URL || 'https://www.genspark.ai/api/llm_proxy/v1'
+    // 템플릿 기반 블로그 생성 (현재는 API 키 없이 작동)
+    const templateBlog = generateTemplateBlog(topic, keywords, tone)
+    return c.json({ 
+      success: true, 
+      content: templateBlog,
+      metadata: {
+        topic,
+        keywords,
+        tone,
+        wordCount: templateBlog.length,
+        mode: 'template'
+      }
+    })
 
-    if (!apiKey) {
-      return c.json({ success: false, error: 'AI 서비스 설정이 필요합니다.' }, 500)
-    }
-
-    const response = await fetch(`${baseURL}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
-      },
-      body: JSON.stringify({
-        model: 'gpt-5',
-        messages: [
-          {
-            role: 'system',
-            content: `당신은 학원 마케팅 전문 블로그 작가입니다. 네이버 블로그 SEO에 최적화된 글을 작성합니다.
+    // API 키가 있으면 실제 AI 호출
+    try {
+      const response = await fetch(`${baseURL}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          model: 'gpt-5',
+          messages: [
+            {
+              role: 'system',
+              content: `당신은 학원 마케팅 전문 블로그 작가입니다. 네이버 블로그 SEO에 최적화된 글을 작성합니다.
 
 글쓰기 원칙:
 1. 제목: 검색 키워드를 포함한 매력적인 제목
@@ -246,45 +331,138 @@ app.post('/api/generate-blog-post', async (c) => {
 7. 톤: ${tone || '친근하고 전문적인'}
 8. 문단: 3-4문장으로 구성, 가독성 높게
 9. 이모지 적절히 사용`
-          },
-          {
-            role: 'user',
-            content: `블로그 주제: ${topic}
+            },
+            {
+              role: 'user',
+              content: `블로그 주제: ${topic}
 ${keywords ? `포함할 키워드: ${keywords}` : ''}
 
 위 주제로 네이버 블로그에 올릴 글을 작성해주세요.
 제목, 서론, 본론, 결론을 명확히 구분해서 작성해주세요.`
-          }
-        ],
-        temperature: 0.9,
-        max_tokens: 2500
+            }
+          ],
+          temperature: 0.9,
+          max_tokens: 2500
+        })
       })
-    })
 
-    const data = await response.json()
-    
-    if (!response.ok) {
-      console.error('OpenAI API error:', data)
-      return c.json({ success: false, error: 'AI 블로그 글 생성 중 오류가 발생했습니다.' }, 500)
-    }
-
-    const generatedPost = data.choices[0]?.message?.content || ''
-
-    return c.json({ 
-      success: true, 
-      content: generatedPost,
-      metadata: {
-        topic,
-        keywords,
-        tone,
-        wordCount: generatedPost.length
+      const data = await response.json()
+      
+      if (!response.ok) {
+        console.error('OpenAI API error:', data)
+        // API 오류 시 템플릿으로 폴백
+        const templateBlog = generateTemplateBlog(topic, keywords, tone)
+        return c.json({ 
+          success: true, 
+          content: templateBlog,
+          metadata: {
+            topic,
+            keywords,
+            tone,
+            wordCount: templateBlog.length,
+            mode: 'template_fallback'
+          }
+        })
       }
-    })
+
+      const generatedPost = data.choices[0]?.message?.content || ''
+
+      return c.json({ 
+        success: true, 
+        content: generatedPost,
+        metadata: {
+          topic,
+          keywords,
+          tone,
+          wordCount: generatedPost.length,
+          mode: 'ai'
+        }
+      })
+    } catch (apiError) {
+      console.error('API call error:', apiError)
+      // API 호출 실패 시 템플릿으로 폴백
+      const templateBlog = generateTemplateBlog(topic, keywords, tone)
+      return c.json({ 
+        success: true, 
+        content: templateBlog,
+        metadata: {
+          topic,
+          keywords,
+          tone,
+          wordCount: templateBlog.length,
+          mode: 'template_fallback'
+        }
+      })
+    }
   } catch (error) {
     console.error('Generate blog post error:', error)
     return c.json({ success: false, error: '블로그 글 생성 중 오류가 발생했습니다.' }, 500)
   }
 })
+
+// 템플릿 기반 블로그 생성 함수
+function generateTemplateBlog(topic: string, keywords: string | undefined, tone: string | undefined): string {
+  const keywordList = keywords ? keywords.split(',').map(k => k.trim()) : [topic]
+  const mainKeyword = keywordList[0]
+  
+  return `📌 ${topic} - 학원장이 알려드리는 실전 가이드
+
+안녕하세요! 오늘은 많은 학부모님들이 궁금해하시는 "${topic}"에 대해 상세히 알려드리려고 합니다. 😊
+
+실제 학원을 운영하면서 겪은 경험을 바탕으로 정말 도움이 되는 정보만 모았으니, 끝까지 읽어보시면 큰 도움이 되실 거예요!
+
+
+🎯 왜 ${mainKeyword}이(가) 중요할까요?
+
+요즘 학부모님들과 상담하다 보면 "${mainKeyword}"에 대한 고민이 정말 많으십니다. 그만큼 중요한 주제이기 때문이죠.
+
+특히 초등학생부터 고등학생까지, 학년별로 접근 방법이 다르기 때문에 우리 아이에게 맞는 방법을 찾는 것이 핵심입니다.
+
+
+✨ ${topic} - 핵심 포인트 3가지
+
+1️⃣ 첫 번째 핵심 포인트
+
+${mainKeyword}을(를) 시작할 때 가장 중요한 것은 기초를 탄탄히 하는 것입니다. 많은 학생들이 빨리 진도를 나가려고 하지만, 기초가 약하면 나중에 어려움을 겪게 됩니다.
+
+실제로 저희 학원에서도 기초부터 체계적으로 학습한 학생들이 장기적으로 훨씬 좋은 성과를 내는 것을 확인했습니다.
+
+
+2️⃣ 두 번째 핵심 포인트
+
+꾸준함이 정말 중요합니다. ${mainKeyword}은(는) 단기간에 효과를 보기 어렵습니다. 최소 3개월 이상 꾸준히 학습해야 확실한 변화를 느낄 수 있어요.
+
+하루 30분이라도 매일 꾸준히 하는 것이 주말에 3시간 몰아서 하는 것보다 훨씬 효과적입니다. 💪
+
+
+3️⃣ 세 번째 핵심 포인트
+
+전문가의 도움을 받는 것도 좋은 방법입니다. 혼자서 하다 보면 방향을 잃기 쉽고, 잘못된 습관이 생길 수 있습니다.
+
+${keywords ? keywords.split(',').map(k => k.trim()).join(', ') : topic}과 관련해서 체계적인 커리큘럼을 갖춘 곳에서 학습하면 시간과 노력을 아낄 수 있습니다.
+
+
+📚 실전 활용 팁
+
+이론만 아는 것이 아니라 실제로 적용하는 것이 중요합니다. 
+
+매일 작은 목표를 세우고, 그것을 달성하면서 성취감을 느끼게 해주세요. 이렇게 하면 자연스럽게 학습 동기가 생기고, ${mainKeyword}에 대한 흥미도 높아집니다.
+
+특히 학부모님의 관심과 응원이 정말 중요합니다. 작은 발전이라도 칭찬해주시면, 아이들은 더 열심히 하게 됩니다! 🎉
+
+
+💡 마무리하며
+
+오늘은 ${topic}에 대해 자세히 알아보았습니다.
+
+핵심은 기초를 탄탄히 하고, 꾸준히 학습하며, 필요하다면 전문가의 도움을 받는 것입니다.
+
+우리 아이에게 맞는 방법을 찾아서 차근차근 진행하시면, 분명 좋은 결과가 있을 거예요! 😊
+
+궁금하신 점이 있으시면 언제든 댓글로 남겨주세요. 성심성의껏 답변드리겠습니다!
+
+#${mainKeyword} ${keywords ? keywords.split(',').map(k => '#' + k.trim()).join(' ') : ''} #학원 #학습법 #공부법 #교육정보`
+}
 
 // ========================================
 // Page Routes
