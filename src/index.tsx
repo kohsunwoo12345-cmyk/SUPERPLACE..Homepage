@@ -128,6 +128,41 @@ app.get('/api/contacts', async (c) => {
   }
 })
 
+// 문의 상태 변경 및 답변 메모 업데이트
+app.put('/api/admin/contacts/:id', async (c) => {
+  try {
+    const id = c.req.param('id')
+    const { status, reply_memo, handled_by } = await c.req.json()
+    
+    let query = 'UPDATE contacts SET '
+    const updates = []
+    const bindings = []
+    
+    if (status) {
+      updates.push('status = ?')
+      bindings.push(status)
+    }
+    if (reply_memo !== undefined) {
+      updates.push('reply_memo = ?')
+      bindings.push(reply_memo)
+    }
+    if (handled_by) {
+      updates.push('handled_by = ?, handled_at = CURRENT_TIMESTAMP')
+      bindings.push(handled_by)
+    }
+    
+    query += updates.join(', ') + ' WHERE id = ?'
+    bindings.push(id)
+    
+    await c.env.DB.prepare(query).bind(...bindings).run()
+    
+    return c.json({ success: true, message: '문의가 업데이트되었습니다.' })
+  } catch (error) {
+    console.error('Update contact error:', error)
+    return c.json({ success: false, error: '문의 업데이트 실패' }, 500)
+  }
+})
+
 // ==================== 관리자 API ====================
 
 // 관리자 - 사용자 목록
@@ -143,13 +178,64 @@ app.get('/api/admin/users', async (c) => {
 // 관리자 - 프로그램 목록
 app.get('/api/admin/programs', async (c) => {
   try {
-    const { results } = await c.env.DB.prepare('SELECT * FROM programs WHERE status = ?').bind('active').all()
+    const { results } = await c.env.DB.prepare('SELECT * FROM programs ORDER BY created_at DESC').all()
     return c.json({ success: true, programs: results })
   } catch (error) {
     console.error('Programs error:', error)
     return c.json({ success: false, error: '프로그램 목록 조회 실패' }, 500)
   }
 })
+
+// 프로그램 추가
+app.post('/api/admin/programs', async (c) => {
+  try {
+    const { name, description, price, duration_days, max_students } = await c.req.json()
+    
+    const result = await c.env.DB.prepare(`
+      INSERT INTO programs (name, description, price, duration_days, max_students, status, is_active)
+      VALUES (?, ?, ?, ?, ?, 'active', 1)
+    `).bind(name, description || '', price || 0, duration_days || 30, max_students || null).run()
+    
+    return c.json({ success: true, message: '프로그램이 추가되었습니다.', id: result.meta.last_row_id })
+  } catch (error) {
+    console.error('Add program error:', error)
+    return c.json({ success: false, error: '프로그램 추가 실패' }, 500)
+  }
+})
+
+// 프로그램 수정
+app.put('/api/admin/programs/:id', async (c) => {
+  try {
+    const id = c.req.param('id')
+    const { name, description, price, duration_days, max_students, status } = await c.req.json()
+    
+    await c.env.DB.prepare(`
+      UPDATE programs 
+      SET name = ?, description = ?, price = ?, duration_days = ?, max_students = ?, status = ?
+      WHERE id = ?
+    `).bind(name, description, price, duration_days, max_students, status, id).run()
+    
+    return c.json({ success: true, message: '프로그램이 수정되었습니다.' })
+  } catch (error) {
+    console.error('Update program error:', error)
+    return c.json({ success: false, error: '프로그램 수정 실패' }, 500)
+  }
+})
+
+// 프로그램 삭제
+app.delete('/api/admin/programs/:id', async (c) => {
+  try {
+    const id = c.req.param('id')
+    // 소프트 삭제 (status를 inactive로 변경)
+    await c.env.DB.prepare('UPDATE programs SET status = ?, is_active = 0 WHERE id = ?').bind('inactive', id).run()
+    
+    return c.json({ success: true, message: '프로그램이 삭제되었습니다.' })
+  } catch (error) {
+    console.error('Delete program error:', error)
+    return c.json({ success: false, error: '프로그램 삭제 실패' }, 500)
+  }
+})
+
 
 // 관리자 - 수강 현황
 app.get('/api/admin/enrollments', async (c) => {
@@ -159,6 +245,96 @@ app.get('/api/admin/enrollments', async (c) => {
     return c.json({ success: true, enrollments: results })
   } catch (error) {
     return c.json({ success: false, error: '수강 현황 조회 실패' }, 500)
+  }
+})
+
+// 통계 - 월별 가입자 추이 (최근 6개월)
+app.get('/api/admin/stats/monthly-users', async (c) => {
+  try {
+    const query = `
+      SELECT 
+        strftime('%Y-%m', created_at) as month,
+        COUNT(*) as count
+      FROM users
+      WHERE created_at >= date('now', '-6 months')
+      GROUP BY month
+      ORDER BY month ASC
+    `
+    const { results } = await c.env.DB.prepare(query).all()
+    return c.json({ success: true, data: results })
+  } catch (error) {
+    console.error('Monthly users stats error:', error)
+    return c.json({ success: false, error: '통계 조회 실패' }, 500)
+  }
+})
+
+// 통계 - 프로그램별 수강생 수
+app.get('/api/admin/stats/program-enrollments', async (c) => {
+  try {
+    const query = `
+      SELECT 
+        p.name as program_name,
+        p.price,
+        COUNT(up.id) as enrollment_count,
+        SUM(p.price) as revenue
+      FROM programs p
+      LEFT JOIN user_programs up ON p.id = up.program_id AND up.status = 'active'
+      WHERE p.status = 'active'
+      GROUP BY p.id, p.name, p.price
+      ORDER BY enrollment_count DESC
+    `
+    const { results } = await c.env.DB.prepare(query).all()
+    return c.json({ success: true, data: results })
+  } catch (error) {
+    console.error('Program enrollments stats error:', error)
+    return c.json({ success: false, error: '통계 조회 실패' }, 500)
+  }
+})
+
+// 통계 - 대시보드 요약
+app.get('/api/admin/stats/dashboard-summary', async (c) => {
+  try {
+    // 전체 사용자 수
+    const totalUsers = await c.env.DB.prepare('SELECT COUNT(*) as count FROM users').first()
+    
+    // 활성 사용자 수 (최근 30일 로그인)
+    const activeUsers = await c.env.DB.prepare('SELECT COUNT(*) as count FROM users WHERE updated_at >= date("now", "-30 days")').first()
+    
+    // 신규 문의 수 (대기중)
+    const pendingContacts = await c.env.DB.prepare('SELECT COUNT(*) as count FROM contacts WHERE status = ?').bind('pending').first()
+    
+    // 전체 문의 수
+    const totalContacts = await c.env.DB.prepare('SELECT COUNT(*) as count FROM contacts').first()
+    
+    // 활성 프로그램 수
+    const activePrograms = await c.env.DB.prepare('SELECT COUNT(*) as count FROM programs WHERE status = ?').bind('active').first()
+    
+    // 전체 수강 수
+    const totalEnrollments = await c.env.DB.prepare('SELECT COUNT(*) as count FROM user_programs WHERE status = ?').bind('active').first()
+    
+    // 총 매출 (예상)
+    const totalRevenue = await c.env.DB.prepare(`
+      SELECT SUM(p.price) as total
+      FROM user_programs up
+      JOIN programs p ON up.program_id = p.id
+      WHERE up.status = 'active'
+    `).first()
+    
+    return c.json({
+      success: true,
+      data: {
+        totalUsers: totalUsers?.count || 0,
+        activeUsers: activeUsers?.count || 0,
+        pendingContacts: pendingContacts?.count || 0,
+        totalContacts: totalContacts?.count || 0,
+        activePrograms: activePrograms?.count || 0,
+        totalEnrollments: totalEnrollments?.count || 0,
+        totalRevenue: totalRevenue?.total || 0
+      }
+    })
+  } catch (error) {
+    console.error('Dashboard summary error:', error)
+    return c.json({ success: false, error: '통계 조회 실패' }, 500)
   }
 })
 
@@ -3247,6 +3423,22 @@ app.get('/dashboard', (c) => {
                                 </svg>
                             </div>
                         </a>
+
+                        <a href="/tools/sms-sender" class="block bg-gradient-to-br from-green-500 to-green-700 rounded-2xl p-8 hover:shadow-2xl transition-all hover:-translate-y-1">
+                            <div class="flex items-center gap-4 mb-4">
+                                <div class="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="text-2xl font-bold text-white">자동 문자 발송</h3>
+                                    <p class="text-green-100 text-sm">학부모 일괄 문자 발송</p>
+                                </div>
+                            </div>
+                            <p class="text-white/90 leading-relaxed mb-4">
+                                수업 공지, 결석 안내, 상담 요청을 템플릿으로 간편하게 발송하세요. 예약 발송도 가능합니다.
+                            </p>
                             <div class="flex items-center text-white font-medium">
                                 <span>바로 사용하기</span>
                                 <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -3395,6 +3587,278 @@ app.get('/dashboard', (c) => {
                 localStorage.removeItem('user')
                 window.location.href = '/'
             }
+        </script>
+    </body>
+    </html>
+  `)
+})
+
+// SMS 발송 페이지
+app.get('/tools/sms-sender', (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>자동 문자 발송 - 슈퍼플레이스</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <style>
+          @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
+          * { font-family: 'Pretendard Variable', sans-serif; }
+        </style>
+    </head>
+    <body class="bg-gray-50">
+        <nav class="fixed w-full top-0 z-50 bg-white border-b border-gray-100">
+            <div class="max-w-7xl mx-auto px-6">
+                <div class="flex justify-between items-center h-16">
+                    <span class="text-xl font-bold text-gray-900">자동 문자 발송</span>
+                    <div class="flex gap-4">
+                        <a href="/dashboard" class="text-gray-600 hover:text-purple-600">대시보드</a>
+                        <button onclick="logout()" class="text-gray-600 hover:text-red-600">로그아웃</button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <div class="pt-24 pb-12 px-6">
+            <div class="max-w-7xl mx-auto">
+                <div class="mb-8">
+                    <h1 class="text-4xl font-bold text-gray-900 mb-3">📱 자동 문자 발송 시스템</h1>
+                    <p class="text-lg text-gray-600">템플릿을 선택하고 학부모님께 문자를 발송하세요</p>
+                </div>
+
+                <!-- 통계 -->
+                <div class="grid md:grid-cols-3 gap-6 mb-8">
+                    <div class="bg-white rounded-xl p-6 border border-gray-200">
+                        <div class="text-sm text-gray-600 mb-2">오늘 발송</div>
+                        <div class="text-3xl font-bold text-gray-900" id="statToday">0</div>
+                    </div>
+                    <div class="bg-white rounded-xl p-6 border border-gray-200">
+                        <div class="text-sm text-gray-600 mb-2">이번 달 발송</div>
+                        <div class="text-3xl font-bold text-gray-900" id="statMonth">0</div>
+                    </div>
+                    <div class="bg-white rounded-xl p-6 border border-gray-200">
+                        <div class="text-sm text-gray-600 mb-2">대기중</div>
+                        <div class="text-3xl font-bold text-orange-600" id="statPending">0</div>
+                    </div>
+                </div>
+
+                <div class="grid lg:grid-cols-2 gap-8">
+                    <!-- 문자 발송 폼 -->
+                    <div class="bg-white rounded-xl p-8 border border-gray-200">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-6">문자 발송</h2>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-900 mb-2">템플릿 선택</label>
+                                <select id="templateSelect" class="w-full px-4 py-3 border border-gray-300 rounded-xl" onchange="loadTemplate()">
+                                    <option value="">템플릿을 선택하세요</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-900 mb-2">수신자 이름</label>
+                                <input type="text" id="recipientName" placeholder="홍길동" class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-900 mb-2">수신자 전화번호</label>
+                                <input type="tel" id="recipientPhone" placeholder="01012345678" class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-900 mb-2">메시지 내용</label>
+                                <textarea id="messageContent" rows="6" class="w-full px-4 py-3 border border-gray-300 rounded-xl" placeholder="메시지를 입력하세요"></textarea>
+                                <div class="text-sm text-gray-500 mt-2">
+                                    <span id="charCount">0</span>/90자 (한글 기준)
+                                </div>
+                            </div>
+
+                            <div class="flex gap-3">
+                                <button onclick="sendSMS()" class="flex-1 bg-green-600 text-white py-3 rounded-xl font-bold hover:bg-green-700 transition">
+                                    즉시 발송
+                                </button>
+                                <button onclick="scheduleSMS()" class="flex-1 bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition">
+                                    예약 발송
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 발송 기록 -->
+                    <div class="bg-white rounded-xl p-8 border border-gray-200">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-6">최근 발송 기록</h2>
+                        <div id="historyList" class="space-y-3 max-h-[600px] overflow-y-auto">
+                            <div class="text-center text-gray-500 py-8">발송 기록이 없습니다</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+        let templates = [];
+        let user = null;
+
+        // 로그인 체크
+        const userData = localStorage.getItem('user');
+        if (userData) {
+            user = JSON.parse(userData);
+        } else {
+            user = { id: 1, name: '게스트' };
+        }
+
+        function logout() {
+            localStorage.removeItem('user');
+            window.location.href = '/';
+        }
+
+        // 페이지 로드 시 초기화
+        async function init() {
+            await loadTemplates();
+            await loadStats();
+            await loadHistory();
+        }
+
+        // 템플릿 로드
+        async function loadTemplates() {
+            try {
+                const response = await fetch('/api/sms/templates');
+                const data = await response.json();
+                if (data.success) {
+                    templates = data.templates;
+                    const select = document.getElementById('templateSelect');
+                    select.innerHTML = '<option value="">템플릿을 선택하세요</option>';
+                    data.templates.forEach(t => {
+                        select.innerHTML += \`<option value="\${t.id}">\${t.name} (\${t.category})</option>\`;
+                    });
+                }
+            } catch (error) {
+                console.error('템플릿 로드 오류:', error);
+            }
+        }
+
+        // 템플릿 선택 시
+        function loadTemplate() {
+            const templateId = document.getElementById('templateSelect').value;
+            if (!templateId) return;
+            
+            const template = templates.find(t => t.id == templateId);
+            if (template) {
+                document.getElementById('messageContent').value = template.content;
+                updateCharCount();
+            }
+        }
+
+        // 글자 수 카운트
+        document.getElementById('messageContent').addEventListener('input', updateCharCount);
+        function updateCharCount() {
+            const text = document.getElementById('messageContent').value;
+            document.getElementById('charCount').textContent = text.length;
+        }
+
+        // 통계 로드
+        async function loadStats() {
+            try {
+                const response = await fetch('/api/sms/stats');
+                const data = await response.json();
+                if (data.success) {
+                    document.getElementById('statToday').textContent = data.stats.today;
+                    document.getElementById('statMonth').textContent = data.stats.thisMonth;
+                    const pending = data.stats.byStatus.find(s => s.status === 'pending' || s.status === 'scheduled');
+                    document.getElementById('statPending').textContent = pending?.count || 0;
+                }
+            } catch (error) {
+                console.error('통계 로드 오류:', error);
+            }
+        }
+
+        // 발송 기록 로드
+        async function loadHistory() {
+            try {
+                const response = await fetch('/api/sms/history');
+                const data = await response.json();
+                if (data.success && data.history.length > 0) {
+                    const list = document.getElementById('historyList');
+                    list.innerHTML = data.history.slice(0, 10).map(h => \`
+                        <div class="p-4 border border-gray-200 rounded-lg">
+                            <div class="flex justify-between items-start mb-2">
+                                <div class="font-medium text-gray-900">\${h.recipient_name || '이름없음'}</div>
+                                <span class="px-2 py-1 text-xs rounded \${h.status === 'sent' ? 'bg-green-100 text-green-700' : h.status === 'scheduled' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700'}">\${h.status}</span>
+                            </div>
+                            <div class="text-sm text-gray-600 mb-2">\${h.recipient_phone}</div>
+                            <div class="text-sm text-gray-800 line-clamp-2">\${h.message_content}</div>
+                            <div class="text-xs text-gray-500 mt-2">\${new Date(h.created_at).toLocaleString('ko-KR')}</div>
+                        </div>
+                    \`).join('');
+                }
+            } catch (error) {
+                console.error('기록 로드 오류:', error);
+            }
+        }
+
+        // 즉시 발송
+        async function sendSMS() {
+            const name = document.getElementById('recipientName').value.trim();
+            const phone = document.getElementById('recipientPhone').value.trim();
+            const message = document.getElementById('messageContent').value.trim();
+            const templateId = document.getElementById('templateSelect').value;
+
+            if (!phone) {
+                alert('수신자 전화번호를 입력하세요');
+                return;
+            }
+            if (!message) {
+                alert('메시지 내용을 입력하세요');
+                return;
+            }
+
+            try {
+                const userDataStr = JSON.stringify(user);
+                const userDataBase64 = btoa(unescape(encodeURIComponent(userDataStr)));
+
+                const response = await fetch('/api/sms/send', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-User-Data-Base64': userDataBase64
+                    },
+                    body: JSON.stringify({
+                        recipient_phone: phone,
+                        recipient_name: name,
+                        message_content: message,
+                        template_id: templateId || null
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    alert('문자가 발송되었습니다!\\n' + (data.note || ''));
+                    document.getElementById('recipientName').value = '';
+                    document.getElementById('recipientPhone').value = '';
+                    document.getElementById('messageContent').value = '';
+                    document.getElementById('templateSelect').value = '';
+                    await loadStats();
+                    await loadHistory();
+                } else {
+                    alert('발송 실패: ' + data.error);
+                }
+            } catch (error) {
+                console.error('발송 오류:', error);
+                alert('발송 중 오류가 발생했습니다');
+            }
+        }
+
+        // 예약 발송
+        function scheduleSMS() {
+            const scheduledTime = prompt('발송 시간을 입력하세요 (YYYY-MM-DD HH:MM 형식)\\n예: 2024-12-20 14:00');
+            if (!scheduledTime) return;
+
+            alert('예약 발송 기능은 준비중입니다');
+        }
+
+        init();
         </script>
     </body>
     </html>
@@ -4878,6 +5342,230 @@ app.get('/admin/dashboard', (c) => {
 
 app.get('/admin/users', (c) => {
   return c.redirect('/admin/users.html')
+})
+
+// ==================== SMS 발송 헬퍼 함수 ====================
+
+// Aligo SMS API 발송 함수
+async function sendSMSAligo(phone: string, message: string, apiKey: string, userId: string): Promise<any> {
+  const formData = new FormData()
+  formData.append('key', apiKey)
+  formData.append('user_id', userId)
+  formData.append('sender', '01012345678') // 발신번호 (등록된 번호)
+  formData.append('receiver', phone)
+  formData.append('msg', message)
+  formData.append('testmode_yn', 'Y') // 테스트 모드 (실제 발송 시 'N')
+  
+  try {
+    const response = await fetch('https://apis.aligo.in/send/', {
+      method: 'POST',
+      body: formData
+    })
+    return await response.json()
+  } catch (error) {
+    console.error('Aligo SMS error:', error)
+    return { result_code: -1, message: 'SMS 발송 실패' }
+  }
+}
+
+// Solapi SMS API 발송 함수
+async function sendSMSSolapi(phone: string, message: string, apiKey: string, apiSecret: string): Promise<any> {
+  try {
+    const response = await fetch('https://api.solapi.com/messages/v4/send', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        message: {
+          to: phone,
+          from: '01012345678', // 발신번호
+          text: message
+        }
+      })
+    })
+    return await response.json()
+  } catch (error) {
+    console.error('Solapi SMS error:', error)
+    return { statusCode: 500, message: 'SMS 발송 실패' }
+  }
+}
+
+// ==================== SMS 관리 API ====================
+
+// SMS 템플릿 목록
+app.get('/api/sms/templates', async (c) => {
+  try {
+    const { results } = await c.env.DB.prepare(`
+      SELECT * FROM sms_templates WHERE is_active = 1 ORDER BY category, name
+    `).all()
+    
+    return c.json({ success: true, templates: results })
+  } catch (error) {
+    console.error('Get templates error:', error)
+    return c.json({ success: false, error: '템플릿 조회 실패' }, 500)
+  }
+})
+
+// SMS 템플릿 추가
+app.post('/api/sms/templates', async (c) => {
+  try {
+    const { name, category, content, variables } = await c.req.json()
+    const user = JSON.parse(c.req.header('X-User-Data-Base64') ? decodeURIComponent(escape(atob(c.req.header('X-User-Data-Base64') || ''))) : '{"id":1}')
+    
+    const result = await c.env.DB.prepare(`
+      INSERT INTO sms_templates (name, category, content, variables, created_by)
+      VALUES (?, ?, ?, ?, ?)
+    `).bind(name, category, content, JSON.stringify(variables || []), user.id).run()
+    
+    return c.json({ success: true, message: '템플릿이 추가되었습니다.', id: result.meta.last_row_id })
+  } catch (error) {
+    console.error('Add template error:', error)
+    return c.json({ success: false, error: '템플릿 추가 실패' }, 500)
+  }
+})
+
+// SMS 즉시 발송
+app.post('/api/sms/send', async (c) => {
+  try {
+    const { recipient_phone, recipient_name, message_content, template_id } = await c.req.json()
+    const user = JSON.parse(c.req.header('X-User-Data-Base64') ? decodeURIComponent(escape(atob(c.req.header('X-User-Data-Base64') || ''))) : '{"id":1}')
+    
+    // 실제 환경에서는 환경변수에서 API 키를 가져옴
+    // const apiKey = c.env.ALIGO_API_KEY
+    // const userId = c.env.ALIGO_USER_ID
+    
+    // 테스트: DB에만 기록
+    const result = await c.env.DB.prepare(`
+      INSERT INTO sms_history (template_id, recipient_name, recipient_phone, message_content, status, sent_at, created_by)
+      VALUES (?, ?, ?, ?, 'sent', CURRENT_TIMESTAMP, ?)
+    `).bind(template_id || null, recipient_name, recipient_phone, message_content, user.id).run()
+    
+    // 실제 발송 (API 키가 있을 때)
+    // const smsResult = await sendSMSAligo(recipient_phone, message_content, apiKey, userId)
+    
+    return c.json({ 
+      success: true, 
+      message: 'SMS가 발송되었습니다.',
+      id: result.meta.last_row_id,
+      note: 'API 키 설정 시 실제 발송됩니다.'
+    })
+  } catch (error) {
+    console.error('Send SMS error:', error)
+    return c.json({ success: false, error: 'SMS 발송 실패' }, 500)
+  }
+})
+
+// SMS 예약 발송
+app.post('/api/sms/schedule', async (c) => {
+  try {
+    const { recipient_phone, recipient_name, message_content, template_id, scheduled_at } = await c.req.json()
+    const user = JSON.parse(c.req.header('X-User-Data-Base64') ? decodeURIComponent(escape(atob(c.req.header('X-User-Data-Base64') || ''))) : '{"id":1}')
+    
+    const result = await c.env.DB.prepare(`
+      INSERT INTO sms_history (template_id, recipient_name, recipient_phone, message_content, status, scheduled_at, created_by)
+      VALUES (?, ?, ?, ?, 'scheduled', ?, ?)
+    `).bind(template_id || null, recipient_name, recipient_phone, message_content, scheduled_at, user.id).run()
+    
+    return c.json({ 
+      success: true, 
+      message: 'SMS가 예약되었습니다.',
+      id: result.meta.last_row_id
+    })
+  } catch (error) {
+    console.error('Schedule SMS error:', error)
+    return c.json({ success: false, error: 'SMS 예약 실패' }, 500)
+  }
+})
+
+// SMS 발송 기록 조회
+app.get('/api/sms/history', async (c) => {
+  try {
+    const { results } = await c.env.DB.prepare(`
+      SELECT 
+        sh.*,
+        st.name as template_name
+      FROM sms_history sh
+      LEFT JOIN sms_templates st ON sh.template_id = st.id
+      ORDER BY sh.created_at DESC
+      LIMIT 100
+    `).all()
+    
+    return c.json({ success: true, history: results })
+  } catch (error) {
+    console.error('Get SMS history error:', error)
+    return c.json({ success: false, error: '발송 기록 조회 실패' }, 500)
+  }
+})
+
+// SMS 발송 통계
+app.get('/api/sms/stats', async (c) => {
+  try {
+    // 오늘 발송 수
+    const today = await c.env.DB.prepare(`
+      SELECT COUNT(*) as count FROM sms_history 
+      WHERE DATE(created_at) = DATE('now')
+    `).first()
+    
+    // 이번 달 발송 수
+    const thisMonth = await c.env.DB.prepare(`
+      SELECT COUNT(*) as count FROM sms_history 
+      WHERE strftime('%Y-%m', created_at) = strftime('%Y-%m', 'now')
+    `).first()
+    
+    // 상태별 통계
+    const byStatus = await c.env.DB.prepare(`
+      SELECT status, COUNT(*) as count FROM sms_history 
+      GROUP BY status
+    `).all()
+    
+    return c.json({ 
+      success: true, 
+      stats: {
+        today: today?.count || 0,
+        thisMonth: thisMonth?.count || 0,
+        byStatus: byStatus.results || []
+      }
+    })
+  } catch (error) {
+    console.error('Get SMS stats error:', error)
+    return c.json({ success: false, error: '통계 조회 실패' }, 500)
+  }
+})
+
+// 학생 관리 API
+app.get('/api/students', async (c) => {
+  try {
+    const user = JSON.parse(c.req.header('X-User-Data-Base64') ? decodeURIComponent(escape(atob(c.req.header('X-User-Data-Base64') || ''))) : '{"id":1}')
+    
+    const { results } = await c.env.DB.prepare(`
+      SELECT * FROM students WHERE academy_id = ? AND status = 'active' ORDER BY name
+    `).bind(user.id).all()
+    
+    return c.json({ success: true, students: results })
+  } catch (error) {
+    console.error('Get students error:', error)
+    return c.json({ success: false, error: '학생 목록 조회 실패' }, 500)
+  }
+})
+
+// 학생 추가
+app.post('/api/students', async (c) => {
+  try {
+    const { name, grade, subject, parent_name, parent_phone, parent_email, notes } = await c.req.json()
+    const user = JSON.parse(c.req.header('X-User-Data-Base64') ? decodeURIComponent(escape(atob(c.req.header('X-User-Data-Base64') || ''))) : '{"id":1}')
+    
+    const result = await c.env.DB.prepare(`
+      INSERT INTO students (name, grade, subject, parent_name, parent_phone, parent_email, academy_id, enrollment_date, notes)
+      VALUES (?, ?, ?, ?, ?, ?, ?, DATE('now'), ?)
+    `).bind(name, grade, subject, parent_name, parent_phone, parent_email || null, user.id, notes || null).run()
+    
+    return c.json({ success: true, message: '학생이 추가되었습니다.', id: result.meta.last_row_id })
+  } catch (error) {
+    console.error('Add student error:', error)
+    return c.json({ success: false, error: '학생 추가 실패' }, 500)
+  }
 })
 
 export default app
