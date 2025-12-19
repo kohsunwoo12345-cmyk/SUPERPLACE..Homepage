@@ -235,6 +235,349 @@ app.put('/api/admin/contacts/:id/status', async (c) => {
   }
 })
 
+// ========================================
+// 랜딩페이지 생성기 API
+// ========================================
+
+// 랜딩페이지 생성
+app.post('/api/landing/create', async (c) => {
+  try {
+    const { title, template_type, input_data } = await c.req.json()
+    const user = JSON.parse(c.req.header('X-User-Data') || '{"id":1}')
+    
+    // 고유 slug 생성 (랜덤 8자리)
+    const slug = Math.random().toString(36).substring(2, 10)
+    
+    // AI가 HTML 생성 (템플릿 기반)
+    const htmlContent = generateLandingPageHTML(template_type, input_data)
+    
+    // DB 저장
+    const query = `
+      INSERT INTO landing_pages (user_id, slug, title, template_type, content_json, html_content, status)
+      VALUES (?, ?, ?, ?, ?, ?, 'active')
+    `
+    const result = await c.env.DB.prepare(query)
+      .bind(user.id, slug, title, template_type, JSON.stringify(input_data), htmlContent)
+      .run()
+    
+    return c.json({ 
+      success: true, 
+      message: '랜딩페이지가 생성되었습니다.',
+      slug,
+      url: `/landing/${slug}`,
+      id: result.meta.last_row_id
+    })
+  } catch (error) {
+    return c.json({ success: false, error: '랜딩페이지 생성 실패' }, 500)
+  }
+})
+
+// 사용자 랜딩페이지 목록
+app.get('/api/landing/my-pages', async (c) => {
+  try {
+    const user = JSON.parse(c.req.header('X-User-Data') || '{"id":1}')
+    const query = 'SELECT id, slug, title, template_type, view_count, status, created_at FROM landing_pages WHERE user_id = ? ORDER BY created_at DESC'
+    const { results } = await c.env.DB.prepare(query).bind(user.id).all()
+    return c.json({ success: true, pages: results })
+  } catch (error) {
+    return c.json({ success: false, error: '목록 조회 실패' }, 500)
+  }
+})
+
+// 랜딩페이지 조회
+app.get('/api/landing/:slug', async (c) => {
+  try {
+    const slug = c.req.param('slug')
+    const query = 'SELECT * FROM landing_pages WHERE slug = ? AND status = ?'
+    const result = await c.env.DB.prepare(query).bind(slug, 'active').first()
+    
+    if (!result) {
+      return c.json({ success: false, error: '페이지를 찾을 수 없습니다.' }, 404)
+    }
+    
+    // 조회수 증가
+    await c.env.DB.prepare('UPDATE landing_pages SET view_count = view_count + 1 WHERE slug = ?').bind(slug).run()
+    
+    return c.json({ success: true, page: result })
+  } catch (error) {
+    return c.json({ success: false, error: '페이지 조회 실패' }, 500)
+  }
+})
+
+// 랜딩페이지 삭제
+app.delete('/api/landing/:id', async (c) => {
+  try {
+    const id = c.req.param('id')
+    const user = JSON.parse(c.req.header('X-User-Data') || '{"id":1}')
+    await c.env.DB.prepare('DELETE FROM landing_pages WHERE id = ? AND user_id = ?').bind(id, user.id).run()
+    return c.json({ success: true, message: '삭제되었습니다.' })
+  } catch (error) {
+    return c.json({ success: false, error: '삭제 실패' }, 500)
+  }
+})
+
+// 랜딩페이지 HTML 생성 함수
+function generateLandingPageHTML(template_type: string, data: any): string {
+  const templates: any = {
+    'academy-intro': generateAcademyIntroHTML,
+    'program-promo': generateProgramPromoHTML,
+    'event-promo': generateEventPromoHTML,
+    'student-report': generateStudentReportHTML
+  }
+  
+  const generator = templates[template_type] || templates['academy-intro']
+  return generator(data)
+}
+
+// 학원 소개 페이지 템플릿
+function generateAcademyIntroHTML(data: any): string {
+  const { academyName, location, features, specialties, contact } = data
+  return `
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${academyName} - 학원 소개</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
+      * { font-family: 'Pretendard Variable', sans-serif; }
+      .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="gradient-bg text-white py-20 px-6">
+        <div class="max-w-4xl mx-auto text-center">
+            <h1 class="text-5xl font-bold mb-6">${academyName}</h1>
+            <p class="text-2xl mb-4">📍 ${location}</p>
+            <p class="text-xl opacity-90">${features || '우리 학원에서 꿈을 이루세요'}</p>
+        </div>
+    </div>
+    
+    <div class="max-w-4xl mx-auto px-6 py-16">
+        <div class="bg-white rounded-2xl shadow-xl p-10 mb-12">
+            <h2 class="text-3xl font-bold text-gray-900 mb-8 text-center">✨ 특별한 강점</h2>
+            <div class="grid md:grid-cols-2 gap-6">
+                ${(specialties || []).map((s: string, i: number) => `
+                    <div class="flex items-start gap-4 p-5 bg-purple-50 rounded-xl">
+                        <div class="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
+                            ${i + 1}
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-gray-800 text-lg leading-relaxed">${s}</p>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+        
+        <div class="bg-gradient-to-br from-purple-600 to-purple-800 rounded-2xl shadow-xl p-10 text-white text-center">
+            <h2 class="text-3xl font-bold mb-6">📞 상담 문의</h2>
+            <p class="text-xl mb-8">${contact || '지금 바로 문의하세요!'}</p>
+            <a href="tel:${contact}" class="inline-block bg-white text-purple-600 px-10 py-4 rounded-full text-lg font-bold hover:bg-gray-100 transition">
+                📱 전화 상담하기
+            </a>
+        </div>
+    </div>
+</body>
+</html>
+  `
+}
+
+// 프로그램 홍보 페이지 템플릿
+function generateProgramPromoHTML(data: any): string {
+  const { programName, target, features, price, duration, cta } = data
+  return `
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${programName} - 프로그램 안내</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
+      * { font-family: 'Pretendard Variable', sans-serif; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-purple-50 min-h-screen py-12 px-6">
+    <div class="max-w-3xl mx-auto">
+        <div class="bg-white rounded-3xl shadow-2xl overflow-hidden">
+            <div class="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-12 text-center">
+                <div class="inline-block bg-white/20 px-6 py-2 rounded-full text-sm font-medium mb-6">
+                    ${target || '누구나 참여 가능'}
+                </div>
+                <h1 class="text-4xl md:text-5xl font-bold mb-4">${programName}</h1>
+                <p class="text-xl opacity-90">${duration || '지금 바로 시작하세요'}</p>
+            </div>
+            
+            <div class="p-10">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">🎯 이런 분들에게 추천합니다</h2>
+                <div class="space-y-4 mb-10">
+                    ${(features || []).map((f: string) => `
+                        <div class="flex items-center gap-3 p-4 bg-blue-50 rounded-xl">
+                            <span class="text-2xl">✅</span>
+                            <span class="text-lg text-gray-800">${f}</span>
+                        </div>
+                    `).join('')}
+                </div>
+                
+                <div class="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-2xl p-8 mb-10 border-2 border-yellow-200">
+                    <div class="text-center">
+                        <p class="text-gray-600 text-lg mb-2">특별 가격</p>
+                        <p class="text-5xl font-bold text-gray-900 mb-2">${price}원</p>
+                        <p class="text-gray-500">${duration}</p>
+                    </div>
+                </div>
+                
+                <a href="${cta || '#'}" class="block w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white text-center py-5 rounded-xl text-xl font-bold hover:shadow-2xl transition transform hover:scale-105">
+                    🚀 지금 바로 신청하기
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+  `
+}
+
+// 이벤트 프로모션 페이지 템플릿
+function generateEventPromoHTML(data: any): string {
+  const { eventName, period, benefits, urgency, cta } = data
+  return `
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${eventName} - 특별 이벤트</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
+      * { font-family: 'Pretendard Variable', sans-serif; }
+      @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+      .pulse-animation { animation: pulse 2s infinite; }
+    </style>
+</head>
+<body class="bg-black text-white min-h-screen">
+    <div class="min-h-screen flex items-center justify-center px-6 py-12">
+        <div class="max-w-2xl w-full">
+            <div class="bg-gradient-to-br from-red-600 via-pink-600 to-purple-600 rounded-3xl p-1">
+                <div class="bg-black rounded-3xl p-10">
+                    <div class="text-center mb-10">
+                        <div class="inline-block bg-red-600 px-6 py-2 rounded-full text-sm font-bold mb-6 pulse-animation">
+                            ⚡ ${urgency || '한정 특가'}
+                        </div>
+                        <h1 class="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-yellow-300 to-red-300 bg-clip-text text-transparent">
+                            ${eventName}
+                        </h1>
+                        <p class="text-2xl text-gray-300 mb-4">📅 ${period}</p>
+                    </div>
+                    
+                    <div class="bg-gradient-to-br from-yellow-500/10 to-red-500/10 rounded-2xl p-8 mb-10 border border-yellow-500/30">
+                        <h2 class="text-2xl font-bold mb-6 text-yellow-300">🎁 특별 혜택</h2>
+                        <div class="space-y-4">
+                            ${(benefits || []).map((b: string) => `
+                                <div class="flex items-center gap-3">
+                                    <span class="text-3xl">⭐</span>
+                                    <span class="text-lg">${b}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    
+                    <a href="${cta || '#'}" class="block w-full bg-gradient-to-r from-yellow-400 to-red-500 text-black text-center py-6 rounded-xl text-2xl font-bold hover:shadow-2xl transition transform hover:scale-105">
+                        🔥 지금 바로 신청하기
+                    </a>
+                    
+                    <p class="text-center text-gray-400 text-sm mt-6">⏰ 서두르세요! 조기 마감될 수 있습니다</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+  `
+}
+
+// 학생 성과 리포트 페이지 템플릿
+function generateStudentReportHTML(data: any): string {
+  const { studentName, month, achievements, improvements, nextGoals, teacherName } = data
+  return `
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${studentName} 학생 ${month} 학습 리포트</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
+      * { font-family: 'Pretendard Variable', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-50 py-12 px-6">
+    <div class="max-w-3xl mx-auto">
+        <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
+            <div class="bg-gradient-to-r from-green-400 to-blue-500 text-white p-10 text-center">
+                <h1 class="text-4xl font-bold mb-2">${month} 학습 리포트</h1>
+                <p class="text-2xl font-medium">${studentName} 학생</p>
+            </div>
+            
+            <div class="p-10">
+                <div class="mb-10">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+                        <span class="text-3xl">🏆</span> 이달의 성과
+                    </h2>
+                    <div class="space-y-4">
+                        ${(achievements || []).map((a: string) => `
+                            <div class="bg-green-50 border-l-4 border-green-500 p-5 rounded-r-xl">
+                                <p class="text-gray-800 text-lg">${a}</p>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                
+                <div class="mb-10">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+                        <span class="text-3xl">📈</span> 개선이 필요한 부분
+                    </h2>
+                    <div class="space-y-4">
+                        ${(improvements || []).map((i: string) => `
+                            <div class="bg-blue-50 border-l-4 border-blue-500 p-5 rounded-r-xl">
+                                <p class="text-gray-800 text-lg">${i}</p>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                
+                <div class="mb-10">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+                        <span class="text-3xl">🎯</span> 다음 달 목표
+                    </h2>
+                    <div class="space-y-4">
+                        ${(nextGoals || []).map((g: string) => `
+                            <div class="bg-purple-50 border-l-4 border-purple-500 p-5 rounded-r-xl">
+                                <p class="text-gray-800 text-lg">${g}</p>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                
+                <div class="bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-8 text-center border border-gray-200">
+                    <p class="text-gray-600 mb-2">담당 선생님</p>
+                    <p class="text-2xl font-bold text-gray-900">${teacherName || '선생님'}</p>
+                    <p class="text-gray-500 mt-4">항상 응원합니다! 💪</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+  `
+}
+
 // AI 학부모 메시지 생성 API
 app.post('/api/generate-parent-message', async (c) => {
   try {
@@ -2591,6 +2934,36 @@ app.get('/dashboard', (c) => {
                                 </svg>
                             </div>
                         </a>
+
+                        <a href="/tools/landing-builder" class="block bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl p-8 hover:shadow-2xl transition-all hover:-translate-y-1">
+                            <div class="flex items-center gap-4 mb-4">
+                                <div class="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="text-2xl font-bold text-white">랜딩페이지 생성기</h3>
+                                    <p class="text-blue-100 text-sm">AI 자동 페이지 제작</p>
+                                </div>
+                            </div>
+                            <p class="text-white/90 leading-relaxed mb-4">
+                                학원 소개, 프로그램 홍보, 학생 리포트 페이지를 간단한 입력만으로 자동 생성합니다. 카카오톡으로 바로 공유하세요.
+                            </p>
+                            <div class="flex items-center text-white font-medium">
+                                <span>바로 사용하기</span>
+                                <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                </svg>
+                            </div>
+                        </a>
+                            <div class="flex items-center text-white font-medium">
+                                <span>바로 사용하기</span>
+                                <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                </svg>
+                            </div>
+                        </a>
                     </div>
                 </div>
 
@@ -3268,6 +3641,477 @@ app.get('/tools/blog-writer', (c) => {
   `)
 })
 
+// 랜딩페이지 생성 도구
+app.get('/tools/landing-builder', (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>랜딩페이지 생성기 - 우리는 슈퍼플레이스다</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <style>
+          @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
+          * { font-family: 'Pretendard Variable', sans-serif; }
+          .gradient-purple { background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%); }
+        </style>
+    </head>
+    <body class="bg-gray-50">
+        <nav class="fixed w-full top-0 z-50 bg-white border-b border-gray-100">
+            <div class="max-w-7xl mx-auto px-6">
+                <div class="flex justify-between items-center h-16">
+                    <span class="text-xl font-bold text-gray-900">랜딩페이지 생성기</span>
+                    <div class="flex gap-4">
+                        <a href="/dashboard" class="text-gray-600 hover:text-purple-600">대시보드</a>
+                        <a href="/tools/landing-manager" class="text-gray-600 hover:text-purple-600">내 랜딩페이지</a>
+                        <button onclick="logout()" class="text-gray-600 hover:text-red-600">로그아웃</button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <div class="pt-24 pb-12 px-6">
+            <div class="max-w-4xl mx-auto">
+                <div class="mb-8">
+                    <h1 class="text-4xl font-bold text-gray-900 mb-3">🎨 AI 랜딩페이지 생성기</h1>
+                    <p class="text-lg text-gray-600">간단한 정보만 입력하면 완성된 랜딩페이지를 만들어드립니다</p>
+                </div>
+
+                <!-- 템플릿 선택 -->
+                <div class="bg-white rounded-xl p-8 border border-gray-200 mb-6">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6">1️⃣ 템플릿 선택</h2>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <button onclick="selectTemplate('academy-intro')" class="template-btn p-6 border-2 border-gray-200 rounded-xl hover:border-purple-600 transition text-left">
+                            <div class="text-3xl mb-3">🏫</div>
+                            <div class="font-bold text-lg mb-2">학원 소개 페이지</div>
+                            <p class="text-sm text-gray-600">학원의 강점과 특징을 효과적으로 홍보</p>
+                        </button>
+                        <button onclick="selectTemplate('program-promo')" class="template-btn p-6 border-2 border-gray-200 rounded-xl hover:border-purple-600 transition text-left">
+                            <div class="text-3xl mb-3">📚</div>
+                            <div class="font-bold text-lg mb-2">프로그램 홍보</div>
+                            <p class="text-sm text-gray-600">특정 프로그램 등록을 유도하는 페이지</p>
+                        </button>
+                        <button onclick="selectTemplate('event-promo')" class="template-btn p-6 border-2 border-gray-200 rounded-xl hover:border-purple-600 transition text-left">
+                            <div class="text-3xl mb-3">🎉</div>
+                            <div class="font-bold text-lg mb-2">이벤트 프로모션</div>
+                            <p class="text-sm text-gray-600">긴급감 있는 한정 이벤트 페이지</p>
+                        </button>
+                        <button onclick="selectTemplate('student-report')" class="template-btn p-6 border-2 border-gray-200 rounded-xl hover:border-purple-600 transition text-left">
+                            <div class="text-3xl mb-3">📊</div>
+                            <div class="font-bold text-lg mb-2">학생 성과 리포트</div>
+                            <p class="text-sm text-gray-600">월간 학습 리포트 공유 페이지</p>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 입력 폼 영역 -->
+                <div id="formArea" class="hidden">
+                    <div class="bg-white rounded-xl p-8 border border-gray-200 mb-6">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-6">2️⃣ 정보 입력</h2>
+                        <form id="landingForm" class="space-y-6"></form>
+                    </div>
+
+                    <button onclick="generateLanding()" class="w-full gradient-purple text-white py-4 rounded-xl text-lg font-bold hover:shadow-xl transition">
+                        🚀 랜딩페이지 생성하기
+                    </button>
+                </div>
+
+                <!-- 결과 영역 -->
+                <div id="resultArea" class="hidden">
+                    <div class="bg-white rounded-xl p-8 border-2 border-green-500">
+                        <h2 class="text-2xl font-bold text-green-600 mb-4">✅ 랜딩페이지 생성 완료!</h2>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">공유 링크</label>
+                                <div class="flex gap-2">
+                                    <input type="text" id="shareUrl" readonly class="flex-1 px-4 py-3 border border-gray-300 rounded-lg bg-gray-50">
+                                    <button onclick="copyUrl()" class="px-6 py-3 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700">
+                                        📋 복사
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="flex gap-3">
+                                <a id="previewBtn" href="#" target="_blank" class="flex-1 text-center py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700">
+                                    👁️ 미리보기
+                                </a>
+                                <a href="/tools/landing-manager" class="flex-1 text-center py-3 bg-gray-600 text-white rounded-lg font-medium hover:bg-gray-700">
+                                    📁 관리 페이지
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+        let selectedTemplate = '';
+        let user = null;
+
+        // 로그인 체크
+        const userData = localStorage.getItem('user');
+        if (!userData) {
+            alert('로그인이 필요합니다.');
+            window.location.href = '/login';
+        } else {
+            user = JSON.parse(userData);
+        }
+
+        function logout() {
+            localStorage.removeItem('user');
+            window.location.href = '/';
+        }
+
+        function selectTemplate(type) {
+            selectedTemplate = type;
+            document.querySelectorAll('.template-btn').forEach(btn => {
+                btn.classList.remove('border-purple-600', 'bg-purple-50');
+            });
+            event.target.closest('.template-btn').classList.add('border-purple-600', 'bg-purple-50');
+            
+            showForm(type);
+        }
+
+        function showForm(type) {
+            const forms = {
+                'academy-intro': \`
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 mb-2">학원명 *</label>
+                            <input type="text" name="academyName" required class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 mb-2">위치 *</label>
+                            <input type="text" name="location" placeholder="예: 인천 서구 청라동" required class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 mb-2">한 줄 소개 *</label>
+                            <input type="text" name="features" placeholder="예: 1:1 맞춤 교육으로 성적 향상을 책임집니다" required class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 mb-2">특별한 강점 (1개당 한 줄, 최대 4개) *</label>
+                            <textarea name="specialties" rows="4" placeholder="10년 경력의 전문 강사진&#10;소규모 그룹 수업으로 집중 케어&#10;입시 전문 컨설팅 무료 제공&#10;내신 평균 2등급 향상 실적" required class="w-full px-4 py-3 border border-gray-300 rounded-xl"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 mb-2">연락처 *</label>
+                            <input type="text" name="contact" placeholder="예: 010-1234-5678" required class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                        </div>
+                    </div>
+                \`,
+                'program-promo': \`
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 mb-2">프로그램명 *</label>
+                            <input type="text" name="programName" placeholder="예: 중등 영어 특강반" required class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 mb-2">대상 *</label>
+                            <input type="text" name="target" placeholder="예: 중1~중3" required class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 mb-2">특징 (1개당 한 줄) *</label>
+                            <textarea name="features" rows="3" placeholder="내신 대비 완벽 준비&#10;문법부터 독해까지 체계적 학습&#10;주 3회 소그룹 수업" required class="w-full px-4 py-3 border border-gray-300 rounded-xl"></textarea>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-900 mb-2">가격 *</label>
+                                <input type="text" name="price" placeholder="예: 350,000" required class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-900 mb-2">기간 *</label>
+                                <input type="text" name="duration" placeholder="예: 3개월 과정" required class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 mb-2">신청 링크 또는 전화번호</label>
+                            <input type="text" name="cta" placeholder="예: 010-1234-5678 또는 URL" class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                        </div>
+                    </div>
+                \`,
+                'event-promo': \`
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 mb-2">이벤트명 *</label>
+                            <input type="text" name="eventName" placeholder="예: 겨울방학 특강 조기등록 이벤트" required class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 mb-2">기간 *</label>
+                            <input type="text" name="period" placeholder="예: 12월 20일 ~ 12월 31일" required class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 mb-2">긴급감 문구 *</label>
+                            <input type="text" name="urgency" placeholder="예: 선착순 20명 한정" required class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 mb-2">혜택 (1개당 한 줄) *</label>
+                            <textarea name="benefits" rows="3" placeholder="등록비 50% 할인&#10;교재비 전액 무료&#10;1:1 레벨 테스트 무료 제공" required class="w-full px-4 py-3 border border-gray-300 rounded-xl"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 mb-2">신청 링크 또는 전화번호</label>
+                            <input type="text" name="cta" placeholder="예: 010-1234-5678" class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                        </div>
+                    </div>
+                \`,
+                'student-report': \`
+                    <div class="space-y-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-900 mb-2">학생 이름 *</label>
+                                <input type="text" name="studentName" required class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-900 mb-2">월 *</label>
+                                <input type="text" name="month" placeholder="예: 2024년 12월" required class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 mb-2">이달의 성과 (1개당 한 줄) *</label>
+                            <textarea name="achievements" rows="3" placeholder="중간고사 영어 90점 달성&#10;단어 암기 500개 완료&#10;모의고사 3등급에서 2등급 향상" required class="w-full px-4 py-3 border border-gray-300 rounded-xl"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 mb-2">개선이 필요한 부분 (1개당 한 줄) *</label>
+                            <textarea name="improvements" rows="2" placeholder="독해 속도 향상 필요&#10;문법 심화 학습 권장" required class="w-full px-4 py-3 border border-gray-300 rounded-xl"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 mb-2">다음 달 목표 (1개당 한 줄) *</label>
+                            <textarea name="nextGoals" rows="2" placeholder="기말고사 95점 목표&#10;듣기 평가 만점 도전" required class="w-full px-4 py-3 border border-gray-300 rounded-xl"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 mb-2">담당 선생님</label>
+                            <input type="text" name="teacherName" placeholder="예: 김영희 선생님" class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                        </div>
+                    </div>
+                \`
+            };
+
+            document.getElementById('landingForm').innerHTML = forms[type];
+            document.getElementById('formArea').classList.remove('hidden');
+            document.getElementById('formArea').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        async function generateLanding() {
+            if (!selectedTemplate) {
+                alert('템플릿을 선택해주세요.');
+                return;
+            }
+
+            const formData = new FormData(document.getElementById('landingForm'));
+            const data = Object.fromEntries(formData);
+
+            // 배열로 변환이 필요한 필드들
+            if (data.specialties) data.specialties = data.specialties.split('\\n').filter(s => s.trim());
+            if (data.features) data.features = data.features.split('\\n').filter(s => s.trim());
+            if (data.benefits) data.benefits = data.benefits.split('\\n').filter(s => s.trim());
+            if (data.achievements) data.achievements = data.achievements.split('\\n').filter(s => s.trim());
+            if (data.improvements) data.improvements = data.improvements.split('\\n').filter(s => s.trim());
+            if (data.nextGoals) data.nextGoals = data.nextGoals.split('\\n').filter(s => s.trim());
+
+            // 제목 생성
+            let title = '';
+            if (selectedTemplate === 'academy-intro') title = data.academyName + ' 소개';
+            else if (selectedTemplate === 'program-promo') title = data.programName;
+            else if (selectedTemplate === 'event-promo') title = data.eventName;
+            else if (selectedTemplate === 'student-report') title = data.studentName + ' ' + data.month + ' 리포트';
+
+            try {
+                const response = await fetch('/api/landing/create', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'X-User-Data': JSON.stringify(user)
+                    },
+                    body: JSON.stringify({
+                        title,
+                        template_type: selectedTemplate,
+                        input_data: data
+                    })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    const fullUrl = window.location.origin + result.url;
+                    document.getElementById('shareUrl').value = fullUrl;
+                    document.getElementById('previewBtn').href = result.url;
+                    document.getElementById('resultArea').classList.remove('hidden');
+                    document.getElementById('resultArea').scrollIntoView({ behavior: 'smooth' });
+                } else {
+                    alert('오류: ' + result.error);
+                }
+            } catch (error) {
+                alert('랜딩페이지 생성 중 오류가 발생했습니다.');
+            }
+        }
+
+        function copyUrl() {
+            const input = document.getElementById('shareUrl');
+            input.select();
+            document.execCommand('copy');
+            alert('링크가 복사되었습니다!');
+        }
+        </script>
+    </body>
+    </html>
+  `)
+})
+
+// 랜딩페이지 관리 페이지
+app.get('/tools/landing-manager', (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>내 랜딩페이지 - 우리는 슈퍼플레이스다</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <style>
+          @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
+          * { font-family: 'Pretendard Variable', sans-serif; }
+        </style>
+    </head>
+    <body class="bg-gray-50">
+        <nav class="fixed w-full top-0 z-50 bg-white border-b border-gray-100">
+            <div class="max-w-7xl mx-auto px-6">
+                <div class="flex justify-between items-center h-16">
+                    <span class="text-xl font-bold text-gray-900">내 랜딩페이지</span>
+                    <div class="flex gap-4">
+                        <a href="/dashboard" class="text-gray-600 hover:text-purple-600">대시보드</a>
+                        <a href="/tools/landing-builder" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">+ 새로 만들기</a>
+                        <button onclick="logout()" class="text-gray-600 hover:text-red-600">로그아웃</button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <div class="pt-24 pb-12 px-6">
+            <div class="max-w-6xl mx-auto">
+                <div class="mb-8">
+                    <h1 class="text-3xl font-bold text-gray-900 mb-2">📁 내 랜딩페이지</h1>
+                    <p class="text-gray-600">생성한 랜딩페이지를 관리하고 공유하세요</p>
+                </div>
+
+                <div id="pagesList" class="space-y-4">
+                    <div class="text-center py-12 text-gray-500">로딩중...</div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+        let user = null;
+
+        const userData = localStorage.getItem('user');
+        if (!userData) {
+            alert('로그인이 필요합니다.');
+            window.location.href = '/login';
+        } else {
+            user = JSON.parse(userData);
+            loadPages();
+        }
+
+        function logout() {
+            localStorage.removeItem('user');
+            window.location.href = '/';
+        }
+
+        async function loadPages() {
+            try {
+                const response = await fetch('/api/landing/my-pages', {
+                    headers: { 'X-User-Data': JSON.stringify(user) }
+                });
+                const result = await response.json();
+                
+                if (result.success && result.pages.length > 0) {
+                    const html = result.pages.map(p => {
+                        const typeNames = {
+                            'academy-intro': '🏫 학원 소개',
+                            'program-promo': '📚 프로그램 홍보',
+                            'event-promo': '🎉 이벤트',
+                            'student-report': '📊 학생 리포트'
+                        };
+                        const url = window.location.origin + '/landing/' + p.slug;
+                        return \`
+                            <div class="bg-white rounded-xl p-6 border border-gray-200 hover:shadow-lg transition">
+                                <div class="flex items-start justify-between">
+                                    <div class="flex-1">
+                                        <div class="flex items-center gap-3 mb-2">
+                                            <span class="px-3 py-1 bg-purple-100 text-purple-700 text-xs rounded-full font-medium">
+                                                \${typeNames[p.template_type]}
+                                            </span>
+                                            <span class="text-sm text-gray-500">조회수: \${p.view_count}</span>
+                                        </div>
+                                        <h3 class="text-xl font-bold text-gray-900 mb-3">\${p.title}</h3>
+                                        <div class="flex items-center gap-2 mb-3">
+                                            <input type="text" value="\${url}" readonly 
+                                                   class="flex-1 px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg text-sm">
+                                            <button onclick="copyUrl('\${url}')" 
+                                                    class="px-4 py-2 bg-gray-600 text-white rounded-lg text-sm hover:bg-gray-700">
+                                                복사
+                                            </button>
+                                        </div>
+                                        <p class="text-sm text-gray-500">생성일: \${new Date(p.created_at).toLocaleString('ko-KR')}</p>
+                                    </div>
+                                    <div class="flex gap-2 ml-4">
+                                        <a href="/landing/\${p.slug}" target="_blank" 
+                                           class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm">
+                                            미리보기
+                                        </a>
+                                        <button onclick="deletePage(\${p.id})" 
+                                                class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm">
+                                            삭제
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        \`;
+                    }).join('');
+                    document.getElementById('pagesList').innerHTML = html;
+                } else {
+                    document.getElementById('pagesList').innerHTML = \`
+                        <div class="text-center py-12">
+                            <p class="text-gray-500 mb-4">아직 생성한 랜딩페이지가 없습니다.</p>
+                            <a href="/tools/landing-builder" class="inline-block px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
+                                첫 랜딩페이지 만들기
+                            </a>
+                        </div>
+                    \`;
+                }
+            } catch (error) {
+                document.getElementById('pagesList').innerHTML = '<div class="text-center py-12 text-red-500">로딩 실패</div>';
+            }
+        }
+
+        function copyUrl(url) {
+            navigator.clipboard.writeText(url).then(() => {
+                alert('링크가 복사되었습니다!');
+            });
+        }
+
+        async function deletePage(id) {
+            if (!confirm('정말 삭제하시겠습니까?')) return;
+            
+            try {
+                const response = await fetch('/api/landing/' + id, {
+                    method: 'DELETE',
+                    headers: { 'X-User-Data': JSON.stringify(user) }
+                });
+                const result = await response.json();
+                if (result.success) {
+                    alert('삭제되었습니다.');
+                    loadPages();
+                } else {
+                    alert('삭제 실패: ' + result.error);
+                }
+            } catch (error) {
+                alert('오류가 발생했습니다.');
+            }
+        }
+        </script>
+    </body>
+    </html>
+  `)
+})
+
 // 회사 소개 페이지
 app.get('/about', (c) => {
   return c.html(`
@@ -3574,6 +4418,27 @@ app.get('/about', (c) => {
     </body>
     </html>
   `)
+})
+
+// 랜딩페이지 보기 라우트
+app.get('/landing/:slug', async (c) => {
+  try {
+    const slug = c.req.param('slug')
+    const query = 'SELECT * FROM landing_pages WHERE slug = ? AND status = ?'
+    const page = await c.env.DB.prepare(query).bind(slug, 'active').first()
+    
+    if (!page) {
+      return c.html('<h1>페이지를 찾을 수 없습니다.</h1>', 404)
+    }
+    
+    // 조회수 증가
+    await c.env.DB.prepare('UPDATE landing_pages SET view_count = view_count + 1 WHERE slug = ?').bind(slug).run()
+    
+    // HTML 반환
+    return c.html(page.html_content as string)
+  } catch (error) {
+    return c.html('<h1>오류가 발생했습니다.</h1>', 500)
+  }
 })
 
 // 관리자 페이지 리다이렉트 (로컬 개발용)
