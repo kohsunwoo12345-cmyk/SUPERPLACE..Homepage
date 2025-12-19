@@ -4026,13 +4026,14 @@ app.get('/tools/landing-builder', (c) => {
         let selectedTemplate = '';
         let user = null;
 
-        // 로그인 체크
+        // 로그인 체크 (선택적)
         const userData = localStorage.getItem('user');
-        if (!userData) {
-            alert('로그인이 필요합니다.');
-            window.location.href = '/login';
-        } else {
+        if (userData) {
             user = JSON.parse(userData);
+        } else {
+            // 로그인 없이도 테스트 가능하도록 기본 사용자 설정
+            user = { id: 1, name: '게스트' };
+            console.warn('로그인하지 않았습니다. 게스트 모드로 사용합니다.');
         }
 
         function logout() {
@@ -4196,7 +4197,7 @@ app.get('/tools/landing-builder', (c) => {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json',
-                        'X-User-Data': JSON.stringify(user)
+                        'X-User-Data': JSON.stringify(user || {id: 1})
                     },
                     body: JSON.stringify({
                         title,
@@ -4216,7 +4217,8 @@ app.get('/tools/landing-builder', (c) => {
                     alert('오류: ' + result.error);
                 }
             } catch (error) {
-                alert('랜딩페이지 생성 중 오류가 발생했습니다.');
+                console.error('랜딩페이지 생성 에러:', error);
+                alert('랜딩페이지 생성 중 오류가 발생했습니다. 콘솔을 확인하세요: ' + error.message);
             }
         }
 
