@@ -1843,6 +1843,173 @@ app.get('/success', (c) => {
             </div>
         </section>
 
+        <!-- FAQ Section -->
+        <section class="py-24 px-6 bg-gray-50">
+            <div class="max-w-4xl mx-auto">
+                <div class="text-center mb-16">
+                    <h2 class="text-4xl lg:text-5xl font-bold text-gray-900 mb-4">자주 묻는 질문</h2>
+                    <p class="text-xl text-gray-600">학원장님들이 가장 궁금해하시는 질문들입니다</p>
+                </div>
+                
+                <div class="space-y-4">
+                    <details class="bg-white rounded-2xl border border-gray-200 overflow-hidden group">
+                        <summary class="px-8 py-6 cursor-pointer font-bold text-lg text-gray-900 hover:text-purple-600 transition flex items-center justify-between">
+                            <span>💰 교육 비용은 얼마인가요?</span>
+                            <svg class="w-6 h-6 transform group-open:rotate-180 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </summary>
+                        <div class="px-8 pb-6 text-gray-600">
+                            <p class="mb-4">프로그램별로 상이하며, 무료 상담을 통해 학원 규모와 목표에 맞는 맞춤 견적을 제공해드립니다.</p>
+                            <p class="text-sm text-purple-600">평균 ROI: 340% (투자 대비 3.4배 수익)</p>
+                        </div>
+                    </details>
+
+                    <details class="bg-white rounded-2xl border border-gray-200 overflow-hidden group">
+                        <summary class="px-8 py-6 cursor-pointer font-bold text-lg text-gray-900 hover:text-purple-600 transition flex items-center justify-between">
+                            <span>⏱️ 효과를 보기까지 얼마나 걸리나요?</span>
+                            <svg class="w-6 h-6 transform group-open:rotate-180 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </summary>
+                        <div class="px-8 pb-6 text-gray-600">
+                            <p class="mb-2">• <strong>즉시 효과</strong>: 학부모 소통 개선 (1주일 내)</p>
+                            <p class="mb-2">• <strong>단기 효과</strong>: 네이버 플레이스 문의 증가 (2~4주)</p>
+                            <p>• <strong>장기 효과</strong>: 블로그 유입 증가, 브랜드 인지도 상승 (3개월~)</p>
+                        </div>
+                    </details>
+
+                    <details class="bg-white rounded-2xl border border-gray-200 overflow-hidden group">
+                        <summary class="px-8 py-6 cursor-pointer font-bold text-lg text-gray-900 hover:text-purple-600 transition flex items-center justify-between">
+                            <span>🎯 컴퓨터를 잘 못 다뤄도 괜찮나요?</span>
+                            <svg class="w-6 h-6 transform group-open:rotate-180 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </summary>
+                        <div class="px-8 pb-6 text-gray-600">
+                            <p class="mb-4">네! 전혀 걱정하지 않으셔도 됩니다. 저희 교육은 초보자도 쉽게 따라할 수 있도록 설계되었습니다.</p>
+                            <ul class="space-y-2 text-sm">
+                                <li>✓ 1:1 맞춤 지도</li>
+                                <li>✓ 단계별 영상 강의</li>
+                                <li>✓ 24시간 카카오톡 지원</li>
+                            </ul>
+                        </div>
+                    </details>
+
+                    <details class="bg-white rounded-2xl border border-gray-200 overflow-hidden group">
+                        <summary class="px-8 py-6 cursor-pointer font-bold text-lg text-gray-900 hover:text-purple-600 transition flex items-center justify-between">
+                            <span>🏫 어떤 학원에 적합한가요?</span>
+                            <svg class="w-6 h-6 transform group-open:rotate-180 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </summary>
+                        <div class="px-8 pb-6 text-gray-600">
+                            <p class="mb-4">모든 규모의 학원에 적합합니다:</p>
+                            <ul class="space-y-2">
+                                <li>• 영어학원, 수학학원, 종합학원</li>
+                                <li>• 소규모 개인학원 ~ 대형 프랜차이즈</li>
+                                <li>• 온라인/오프라인 학원 모두 가능</li>
+                            </ul>
+                        </div>
+                    </details>
+
+                    <details class="bg-white rounded-2xl border border-gray-200 overflow-hidden group">
+                        <summary class="px-8 py-6 cursor-pointer font-bold text-lg text-gray-900 hover:text-purple-600 transition flex items-center justify-between">
+                            <span>📱 오프라인 모임도 있나요?</span>
+                            <svg class="w-6 h-6 transform group-open:rotate-180 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </summary>
+                        <div class="px-8 pb-6 text-gray-600">
+                            <p class="mb-4">네! 정기적으로 오프라인 워크샵과 네트워킹 모임을 진행합니다.</p>
+                            <p class="text-sm text-purple-600">• 월 1회 오프라인 특강 (인천/서울)</p>
+                            <p class="text-sm text-purple-600">• 연 2회 전국 학원장 컨퍼런스</p>
+                        </div>
+                    </details>
+
+                    <details class="bg-white rounded-2xl border border-gray-200 overflow-hidden group">
+                        <summary class="px-8 py-6 cursor-pointer font-bold text-lg text-gray-900 hover:text-purple-600 transition flex items-center justify-between">
+                            <span>🔄 환불 정책은 어떻게 되나요?</span>
+                            <svg class="w-6 h-6 transform group-open:rotate-180 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </summary>
+                        <div class="px-8 pb-6 text-gray-600">
+                            <p class="mb-4">교육 시작 후 7일 이내 100% 환불이 가능합니다.</p>
+                            <p class="text-sm text-gray-500">만족도 95% 이상! 대부분의 학원장님들이 만족하시고 재구매하십니다.</p>
+                        </div>
+                    </details>
+                </div>
+
+                <div class="mt-12 text-center">
+                    <p class="text-gray-600 mb-6">더 궁금한 점이 있으신가요?</p>
+                    <a href="/contact" class="inline-block bg-purple-600 text-white px-8 py-4 rounded-full font-medium hover:bg-purple-700 transition">
+                        1:1 무료 상담 신청하기
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Customer Reviews Slider -->
+        <section class="py-24 px-6 bg-white">
+            <div class="max-w-6xl mx-auto">
+                <div class="text-center mb-16">
+                    <h2 class="text-4xl lg:text-5xl font-bold text-gray-900 mb-4">실제 후기</h2>
+                    <p class="text-xl text-gray-600">슈퍼플레이스와 함께한 학원장님들의 생생한 후기입니다</p>
+                </div>
+
+                <div class="grid md:grid-cols-3 gap-8">
+                    <!-- Review 1 -->
+                    <div class="bg-gradient-to-br from-purple-50 to-white p-8 rounded-2xl border border-purple-100 hover:shadow-xl transition">
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold text-xl">김</div>
+                            <div class="ml-4">
+                                <div class="font-bold text-gray-900">김지수 원장님</div>
+                                <div class="text-sm text-gray-600">인천 부평구 영어학원</div>
+                            </div>
+                        </div>
+                        <div class="text-yellow-500 mb-4">★★★★★</div>
+                        <p class="text-gray-700 mb-4">"네이버 플레이스 교육 받고 한 달 만에 문의가 3배 늘었어요! 실제로 효과가 있는 마케팅을 배울 수 있었습니다."</p>
+                        <div class="text-sm text-purple-600 font-medium">문의 수 3배 증가 ↑</div>
+                    </div>
+
+                    <!-- Review 2 -->
+                    <div class="bg-gradient-to-br from-orange-50 to-white p-8 rounded-2xl border border-orange-100 hover:shadow-xl transition">
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center text-white font-bold text-xl">박</div>
+                            <div class="ml-4">
+                                <div class="font-bold text-gray-900">박민준 원장님</div>
+                                <div class="text-sm text-gray-600">서울 강남구 수학학원</div>
+                            </div>
+                        </div>
+                        <div class="text-yellow-500 mb-4">★★★★★</div>
+                        <p class="text-gray-700 mb-4">"블로그 상위노출 전략을 배우고 검색 유입이 폭발적으로 늘었습니다. 투자 대비 최고의 선택이었어요!"</p>
+                        <div class="text-sm text-orange-600 font-medium">블로그 유입 500% 증가 ↑</div>
+                    </div>
+
+                    <!-- Review 3 -->
+                    <div class="bg-gradient-to-br from-purple-50 to-white p-8 rounded-2xl border border-purple-100 hover:shadow-xl transition">
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold text-xl">이</div>
+                            <div class="ml-4">
+                                <div class="font-bold text-gray-900">이서연 원장님</div>
+                                <div class="text-sm text-gray-600">인천 서구 종합학원</div>
+                            </div>
+                        </div>
+                        <div class="text-yellow-500 mb-4">★★★★★</div>
+                        <p class="text-gray-700 mb-4">"학부모 소통 시스템 덕분에 재수강률이 크게 올랐어요. 실전에서 바로 써먹을 수 있는 노하우가 최고입니다!"</p>
+                        <div class="text-sm text-purple-600 font-medium">재수강률 20% 증가 ↑</div>
+                    </div>
+                </div>
+
+                <div class="mt-12 text-center">
+                    <a href="/success" class="inline-block text-purple-600 font-medium hover:underline">
+                        더 많은 성공 사례 보기 →
+                    </a>
+                </div>
+            </div>
+        </section>
+
         <!-- CTA -->
         <section class="py-24 px-6 gradient-purple">
             <div class="max-w-4xl mx-auto text-center">
@@ -1857,6 +2024,283 @@ app.get('/success', (c) => {
                 </a>
             </div>
         </section>
+    </body>
+    </html>
+  `)
+})
+
+// 학원장 전용 리소스 페이지
+app.get('/resources', (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>마케팅 리소스 - 우리는 슈퍼플레이스다</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <style>
+          @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
+          * {
+            font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+          }
+          .gradient-purple {
+            background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+          }
+          .resource-card:hover {
+            transform: translateY(-4px);
+          }
+        </style>
+    </head>
+    <body class="bg-gray-50">
+        <!-- Navigation -->
+        <nav class="fixed w-full top-0 z-50 bg-white border-b border-gray-100 shadow-sm">
+            <div class="max-w-7xl mx-auto px-6 lg:px-8">
+                <div class="flex justify-between items-center h-16">
+                    <a href="/" class="flex items-center space-x-3">
+                        <span class="text-xl font-bold text-gray-900">슈퍼플레이스</span>
+                    </a>
+                    <div class="flex items-center space-x-6">
+                        <a href="/dashboard" class="text-gray-600 hover:text-purple-600">대시보드</a>
+                        <a href="/resources" class="text-purple-600 font-medium">리소스</a>
+                        <a href="/success" class="text-gray-600 hover:text-purple-600">성공사례</a>
+                        <a href="/about" class="text-gray-600 hover:text-purple-600">회사소개</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Hero -->
+        <div class="pt-24 pb-12 px-6 gradient-purple">
+            <div class="max-w-7xl mx-auto text-center">
+                <h1 class="text-4xl lg:text-5xl font-bold text-white mb-4">학원 마케팅 리소스</h1>
+                <p class="text-xl text-white/90">실전에서 바로 사용할 수 있는 체크리스트와 가이드</p>
+            </div>
+        </div>
+
+        <!-- Resources Content -->
+        <div class="py-12 px-6">
+            <div class="max-w-7xl mx-auto">
+                
+                <!-- 네이버 플레이스 체크리스트 -->
+                <section class="mb-16">
+                    <h2 class="text-3xl font-bold text-gray-900 mb-8">📍 네이버 플레이스 최적화 체크리스트</h2>
+                    <div class="bg-white rounded-2xl p-8 border border-gray-200 resource-card transition">
+                        <div class="grid md:grid-cols-2 gap-8">
+                            <div>
+                                <h3 class="text-xl font-bold text-purple-600 mb-4">기본 정보 완성도</h3>
+                                <ul class="space-y-3 text-gray-700">
+                                    <li class="flex items-start">
+                                        <span class="text-green-500 mr-2">✓</span>
+                                        <span><strong>학원명:</strong> 지역명 + 과목 포함 (예: 인천서구영어학원)</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <span class="text-green-500 mr-2">✓</span>
+                                        <span><strong>카테고리:</strong> 정확한 업종 분류 (학원 > 영어학원)</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <span class="text-green-500 mr-2">✓</span>
+                                        <span><strong>영업시간:</strong> 정확한 시간대 입력 (변동 시 즉시 업데이트)</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <span class="text-green-500 mr-2">✓</span>
+                                        <span><strong>전화번호:</strong> 클릭 통화 가능한 번호</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <span class="text-green-500 mr-2">✓</span>
+                                        <span><strong>주소:</strong> 정확한 주소 + 상세 위치 (건물명, 층수)</span>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-purple-600 mb-4">콘텐츠 & 이미지</h3>
+                                <ul class="space-y-3 text-gray-700">
+                                    <li class="flex items-start">
+                                        <span class="text-green-500 mr-2">✓</span>
+                                        <span><strong>대표 사진:</strong> 밝고 깨끗한 학원 전경 (최소 10장)</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <span class="text-green-500 mr-2">✓</span>
+                                        <span><strong>강의실 사진:</strong> 학습 환경이 잘 보이는 사진</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <span class="text-green-500 mr-2">✓</span>
+                                        <span><strong>메뉴/가격:</strong> 강좌별 상세 가격표 등록</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <span class="text-green-500 mr-2">✓</span>
+                                        <span><strong>소개글:</strong> 500자 이상, 키워드 3회 이상 포함</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <span class="text-green-500 mr-2">✓</span>
+                                        <span><strong>포스팅:</strong> 주 2회 이상 업데이트</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-8 p-6 bg-purple-50 rounded-xl">
+                            <h4 class="font-bold text-purple-900 mb-3">🎯 리뷰 관리 전략</h4>
+                            <ul class="space-y-2 text-gray-700">
+                                <li>• <strong>리뷰 요청:</strong> 수업 종료 후 만족도 높을 때 요청</li>
+                                <li>• <strong>빠른 답변:</strong> 모든 리뷰에 24시간 내 답변</li>
+                                <li>• <strong>부정 리뷰:</strong> 감정적 대응 금지, 개선 의지 표현</li>
+                                <li>• <strong>목표:</strong> 월 5개 이상 신규 리뷰 확보</li>
+                            </ul>
+                        </div>
+
+                        <div class="mt-6 text-center">
+                            <button onclick="downloadChecklist('naver')" class="bg-purple-600 text-white px-8 py-3 rounded-full font-medium hover:bg-purple-700 transition">
+                                체크리스트 다운로드 (PDF)
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 블로그 키워드 -->
+                <section class="mb-16">
+                    <h2 class="text-3xl font-bold text-gray-900 mb-8">📝 블로그 포스팅 키워드 추천</h2>
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <!-- 영어학원 키워드 -->
+                        <div class="bg-white rounded-2xl p-8 border border-gray-200 resource-card transition">
+                            <h3 class="text-xl font-bold text-orange-600 mb-4">영어학원 키워드</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <div class="text-sm text-gray-600 mb-2">🔥 핫 키워드 (검색량 높음)</div>
+                                    <div class="flex flex-wrap gap-2">
+                                        <span class="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm">초등영어학원</span>
+                                        <span class="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm">중등영어내신</span>
+                                        <span class="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm">영어회화학원</span>
+                                        <span class="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm">파닉스</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="text-sm text-gray-600 mb-2">💎 롱테일 키워드 (경쟁 낮음)</div>
+                                    <div class="flex flex-wrap gap-2">
+                                        <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">인천서구영어학원추천</span>
+                                        <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">초등영어공부법</span>
+                                        <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">영어학원선택기준</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 수학학원 키워드 -->
+                        <div class="bg-white rounded-2xl p-8 border border-gray-200 resource-card transition">
+                            <h3 class="text-xl font-bold text-purple-600 mb-4">수학학원 키워드</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <div class="text-sm text-gray-600 mb-2">🔥 핫 키워드 (검색량 높음)</div>
+                                    <div class="flex flex-wrap gap-2">
+                                        <span class="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm">초등수학학원</span>
+                                        <span class="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm">중등수학내신</span>
+                                        <span class="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm">고등수학</span>
+                                        <span class="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm">수학학원비교</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="text-sm text-gray-600 mb-2">💎 롱테일 키워드 (경쟁 낮음)</div>
+                                    <div class="flex flex-wrap gap-2">
+                                        <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">수학개념학원</span>
+                                        <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">초등수학문제집추천</span>
+                                        <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">수학선행학습</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 학부모 소통 예시 -->
+                <section class="mb-16">
+                    <h2 class="text-3xl font-bold text-gray-900 mb-8">💬 학부모 소통 예시 문구</h2>
+                    <div class="bg-white rounded-2xl p-8 border border-gray-200 resource-card transition">
+                        <div class="grid md:grid-cols-3 gap-6">
+                            <div class="p-6 bg-green-50 rounded-xl">
+                                <h4 class="font-bold text-green-900 mb-3">📈 성적 향상 시</h4>
+                                <p class="text-sm text-gray-700">"학부모님, 이번 모의고사에서 수학 등급이 3등급에서 1등급으로 향상되었습니다! 꾸준히 노력한 결과가 드러나고 있습니다."</p>
+                            </div>
+                            <div class="p-6 bg-blue-50 rounded-xl">
+                                <h4 class="font-bold text-blue-900 mb-3">🎯 학습 태도 개선</h4>
+                                <p class="text-sm text-gray-700">"최근 수업 참여도가 눈에 띄게 좋아졌습니다. 질문도 적극적으로 하고, 과제 완성도도 높아졌어요. 이대로만 가면 다음 시험에서 좋은 결과 기대됩니다!"</p>
+                            </div>
+                            <div class="p-6 bg-purple-50 rounded-xl">
+                                <h4 class="font-bold text-purple-900 mb-3">📚 추가 학습 제안</h4>
+                                <p class="text-sm text-gray-700">"기초가 탄탄해져서 다음 단계로 넘어가도 좋을 것 같습니다. 심화 과정을 추천드리며, 자세한 내용은 상담 시 말씀드리겠습니다."</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 월별 마케팅 캘린더 -->
+                <section class="mb-16">
+                    <h2 class="text-3xl font-bold text-gray-900 mb-8">📅 월별 학원 마케팅 캘린더</h2>
+                    <div class="bg-white rounded-2xl p-8 border border-gray-200 resource-card transition">
+                        <div class="space-y-6">
+                            <div class="flex items-start space-x-4 p-4 bg-gray-50 rounded-xl">
+                                <div class="w-20 text-center">
+                                    <div class="text-2xl font-bold text-purple-600">1~2월</div>
+                                </div>
+                                <div class="flex-1">
+                                    <h4 class="font-bold text-gray-900 mb-2">겨울방학 특강 & 신학기 준비</h4>
+                                    <p class="text-sm text-gray-700">• 겨울방학 특강 홍보<br>• 신학기 등록 조기 할인<br>• 학부모 설명회 개최</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-start space-x-4 p-4 bg-gray-50 rounded-xl">
+                                <div class="w-20 text-center">
+                                    <div class="text-2xl font-bold text-orange-600">3~4월</div>
+                                </div>
+                                <div class="flex-1">
+                                    <h4 class="font-bold text-gray-900 mb-2">신학기 집중 마케팅</h4>
+                                    <p class="text-sm text-gray-700">• 첫 중간고사 대비반 홍보<br>• 학부모 간담회<br>• 네이버 플레이스 리뷰 이벤트</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-start space-x-4 p-4 bg-gray-50 rounded-xl">
+                                <div class="w-20 text-center">
+                                    <div class="text-2xl font-bold text-green-600">5~6월</div>
+                                </div>
+                                <div class="flex-1">
+                                    <h4 class="font-bold text-gray-900 mb-2">중간고사 후 재등록 집중</h4>
+                                    <p class="text-sm text-gray-700">• 성적 향상 사례 블로그 포스팅<br>• 기말고사 대비반 예약<br>• 형제/자매 할인 프로모션</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-start space-x-4 p-4 bg-gray-50 rounded-xl">
+                                <div class="w-20 text-center">
+                                    <div class="text-2xl font-bold text-blue-600">7~8월</div>
+                                </div>
+                                <div class="flex-1">
+                                    <h4 class="font-bold text-gray-900 mb-2">여름방학 특강 시즌</h4>
+                                    <p class="text-sm text-gray-700">• 여름방학 집중 캠프<br>• 2학기 선행 학습반<br>• 추천 이벤트 (친구 데려오기)</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-start space-x-4 p-4 bg-gray-50 rounded-xl">
+                                <div class="w-20 text-center">
+                                    <div class="text-2xl font-bold text-purple-600">11~12월</div>
+                                </div>
+                                <div class="flex-1">
+                                    <h4 class="font-bold text-gray-900 mb-2">수능 & 기말고사 마케팅</h4>
+                                    <p class="text-sm text-gray-700">• 수능 대박 이벤트<br>• 연말 재등록 조기 할인<br>• 학부모 감사 이벤트</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </div>
+
+        <script>
+        function downloadChecklist(type) {
+            if (type === 'naver') {
+                alert('네이버 플레이스 체크리스트를 다운로드합니다.\\n\\n실제 서비스에서는 PDF 파일이 다운로드됩니다.');
+                // 실제로는 PDF 파일 다운로드 로직 추가
+            }
+        }
+        </script>
     </body>
     </html>
   `)
@@ -2071,6 +2515,21 @@ app.get('/dashboard', (c) => {
                                     <span class="font-medium text-gray-900">성공 사례</span>
                                 </div>
                                 <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                </svg>
+                            </a>
+
+                            <a href="/resources" class="flex items-center justify-between p-5 bg-gradient-to-r from-purple-50 to-orange-50 rounded-xl hover:shadow-md transition border-2 border-purple-200">
+                                <div class="flex items-center">
+                                    <svg class="w-6 h-6 text-purple-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                                    </svg>
+                                    <div>
+                                        <div class="font-bold text-gray-900">마케팅 리소스</div>
+                                        <div class="text-xs text-gray-600">체크리스트 & 가이드</div>
+                                    </div>
+                                </div>
+                                <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                                 </svg>
                             </a>
