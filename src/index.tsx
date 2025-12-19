@@ -243,7 +243,8 @@ app.put('/api/admin/contacts/:id/status', async (c) => {
 app.post('/api/landing/create', async (c) => {
   try {
     const { title, template_type, input_data } = await c.req.json()
-    const user = JSON.parse(c.req.header('X-User-Data') || '{"id":1}')
+    const userHeader = c.req.header('X-User-Data')
+    const user = userHeader ? JSON.parse(userHeader) : { id: 1 }
     
     // 고유 slug 생성 (랜덤 8자리)
     const slug = Math.random().toString(36).substring(2, 10)
@@ -251,13 +252,17 @@ app.post('/api/landing/create', async (c) => {
     // AI가 HTML 생성 (템플릿 기반)
     const htmlContent = generateLandingPageHTML(template_type, input_data)
     
+    // QR 코드 URL 생성 (Google Charts API 사용)
+    const landingUrl = `${c.req.header('origin') || 'https://example.com'}/landing/${slug}`
+    const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(landingUrl)}`
+    
     // DB 저장
     const query = `
-      INSERT INTO landing_pages (user_id, slug, title, template_type, content_json, html_content, status)
-      VALUES (?, ?, ?, ?, ?, ?, 'active')
+      INSERT INTO landing_pages (user_id, slug, title, template_type, content_json, html_content, qr_code_url, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, 'active')
     `
     const result = await c.env.DB.prepare(query)
-      .bind(user.id, slug, title, template_type, JSON.stringify(input_data), htmlContent)
+      .bind(user.id, slug, title, template_type, JSON.stringify(input_data), htmlContent, qrCodeUrl)
       .run()
     
     return c.json({ 
@@ -265,10 +270,12 @@ app.post('/api/landing/create', async (c) => {
       message: '랜딩페이지가 생성되었습니다.',
       slug,
       url: `/landing/${slug}`,
+      qrCodeUrl,
       id: result.meta.last_row_id
     })
   } catch (error) {
-    return c.json({ success: false, error: '랜딩페이지 생성 실패' }, 500)
+    console.error('Landing page creation error:', error)
+    return c.json({ success: false, error: '랜딩페이지 생성 실패: ' + (error as Error).message }, 500)
   }
 })
 
@@ -298,9 +305,45 @@ app.get('/api/landing/:slug', async (c) => {
     // 조회수 증가
     await c.env.DB.prepare('UPDATE landing_pages SET view_count = view_count + 1 WHERE slug = ?').bind(slug).run()
     
+    // 상세 조회 로그 저장
+    const viewQuery = 'INSERT INTO landing_page_views (landing_page_id, user_agent, referrer) VALUES (?, ?, ?)'
+    await c.env.DB.prepare(viewQuery).bind(
+      result.id,
+      c.req.header('user-agent') || '',
+      c.req.header('referer') || ''
+    ).run()
+    
     return c.json({ success: true, page: result })
   } catch (error) {
     return c.json({ success: false, error: '페이지 조회 실패' }, 500)
+  }
+})
+
+// 랜딩페이지 통계
+app.get('/api/landing/stats/summary', async (c) => {
+  try {
+    const userHeader = c.req.header('X-User-Data')
+    const user = userHeader ? JSON.parse(userHeader) : { id: 1 }
+    
+    // 총 페이지 수
+    const totalPages = await c.env.DB.prepare('SELECT COUNT(*) as count FROM landing_pages WHERE user_id = ?').bind(user.id).first()
+    
+    // 총 조회수
+    const totalViews = await c.env.DB.prepare('SELECT SUM(view_count) as total FROM landing_pages WHERE user_id = ?').bind(user.id).first()
+    
+    // 가장 인기있는 페이지 top 5
+    const topPages = await c.env.DB.prepare('SELECT id, title, slug, view_count FROM landing_pages WHERE user_id = ? ORDER BY view_count DESC LIMIT 5').bind(user.id).all()
+    
+    return c.json({
+      success: true,
+      stats: {
+        totalPages: totalPages?.count || 0,
+        totalViews: totalViews?.total || 0,
+        topPages: topPages.results || []
+      }
+    })
+  } catch (error) {
+    return c.json({ success: false, error: '통계 조회 실패' }, 500)
   }
 })
 
@@ -322,7 +365,10 @@ function generateLandingPageHTML(template_type: string, data: any): string {
     'academy-intro': generateAcademyIntroHTML,
     'program-promo': generateProgramPromoHTML,
     'event-promo': generateEventPromoHTML,
-    'student-report': generateStudentReportHTML
+    'student-report': generateStudentReportHTML,
+    'admission-info': generateAdmissionInfoHTML,
+    'academy-stats': generateAcademyStatsHTML,
+    'teacher-intro': generateTeacherIntroHTML
   }
   
   const generator = templates[template_type] || templates['academy-intro']
@@ -569,6 +615,237 @@ function generateStudentReportHTML(data: any): string {
                     <p class="text-gray-600 mb-2">담당 선생님</p>
                     <p class="text-2xl font-bold text-gray-900">${teacherName || '선생님'}</p>
                     <p class="text-gray-500 mt-4">항상 응원합니다! 💪</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+  `
+}
+
+// 입학 설명회 페이지 템플릿
+function generateAdmissionInfoHTML(data: any): string {
+  const { eventTitle, eventDate, eventTime, location, agenda, benefits, targetGrade, contact } = data
+  return `
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${eventTitle} - 입학 설명회</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
+      * { font-family: 'Pretendard Variable', sans-serif; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 min-h-screen py-12 px-6">
+    <div class="max-w-4xl mx-auto">
+        <div class="bg-white rounded-3xl shadow-2xl overflow-hidden">
+            <div class="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white p-12 text-center">
+                <div class="inline-block bg-white/20 px-6 py-2 rounded-full text-sm font-bold mb-6">
+                    🎓 ${targetGrade || '전체 학년'} 대상
+                </div>
+                <h1 class="text-4xl md:text-5xl font-bold mb-4">${eventTitle}</h1>
+                <div class="flex flex-col md:flex-row justify-center items-center gap-4 text-xl mt-8">
+                    <div class="flex items-center gap-2">
+                        <span>📅</span>
+                        <span>${eventDate}</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span>🕐</span>
+                        <span>${eventTime}</span>
+                    </div>
+                </div>
+                <p class="text-lg mt-4 opacity-90">📍 ${location}</p>
+            </div>
+            
+            <div class="p-10">
+                <div class="mb-10">
+                    <h2 class="text-3xl font-bold text-gray-900 mb-6 text-center">📋 설명회 안내</h2>
+                    <div class="space-y-4">
+                        ${(agenda || []).map((item: string, i: number) => `
+                            <div class="flex items-start gap-4 p-5 bg-indigo-50 rounded-xl">
+                                <div class="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0">
+                                    ${i + 1}
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-gray-800 text-lg leading-relaxed">${item}</p>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                
+                <div class="mb-10">
+                    <h2 class="text-3xl font-bold text-gray-900 mb-6 text-center">🎁 참석 혜택</h2>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        ${(benefits || []).map((benefit: string) => `
+                            <div class="flex items-center gap-3 p-5 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl border-2 border-purple-200">
+                                <span class="text-3xl">⭐</span>
+                                <span class="text-gray-800 font-medium">${benefit}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                
+                <div class="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-8 text-white text-center">
+                    <h3 class="text-2xl font-bold mb-4">참석 신청</h3>
+                    <p class="text-lg mb-6">전화 또는 카카오톡으로 신청하세요</p>
+                    <a href="tel:${contact}" class="inline-block bg-white text-purple-600 px-10 py-4 rounded-full text-xl font-bold hover:bg-gray-100 transition">
+                        📞 ${contact}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+  `
+}
+
+// 학원 성과 통계 페이지 템플릿
+function generateAcademyStatsHTML(data: any): string {
+  const { academyName, period, totalStudents, achievements, testimonials, gradeImprovement } = data
+  return `
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${academyName} - 성과 통계</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+      @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
+      * { font-family: 'Pretendard Variable', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-50 py-12 px-6">
+    <div class="max-w-5xl mx-auto">
+        <div class="text-center mb-12">
+            <h1 class="text-5xl font-bold text-gray-900 mb-4">${academyName}</h1>
+            <p class="text-2xl text-gray-600">${period} 성과 보고서</p>
+        </div>
+        
+        <div class="grid md:grid-cols-3 gap-6 mb-12">
+            <div class="bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl p-8 text-white text-center">
+                <div class="text-5xl font-bold mb-2">${totalStudents || 0}</div>
+                <div class="text-xl opacity-90">총 재학생</div>
+            </div>
+            <div class="bg-gradient-to-br from-green-500 to-green-700 rounded-2xl p-8 text-white text-center">
+                <div class="text-5xl font-bold mb-2">${gradeImprovement || '2'}등급</div>
+                <div class="text-xl opacity-90">평균 성적 향상</div>
+            </div>
+            <div class="bg-gradient-to-br from-purple-500 to-purple-700 rounded-2xl p-8 text-white text-center">
+                <div class="text-5xl font-bold mb-2">95%</div>
+                <div class="text-xl opacity-90">재등록률</div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-2xl shadow-xl p-10 mb-12">
+            <h2 class="text-3xl font-bold text-gray-900 mb-8 text-center">🏆 주요 성과</h2>
+            <div class="space-y-4">
+                ${(achievements || []).map((ach: string) => `
+                    <div class="flex items-start gap-4 p-5 bg-yellow-50 border-l-4 border-yellow-500 rounded-r-xl">
+                        <span class="text-3xl">🎯</span>
+                        <p class="text-gray-800 text-lg leading-relaxed flex-1">${ach}</p>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-2xl shadow-xl p-10">
+            <h2 class="text-3xl font-bold text-gray-900 mb-8 text-center">💬 학부모 후기</h2>
+            <div class="space-y-6">
+                ${(testimonials || []).map((test: string) => `
+                    <div class="bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-6 border border-gray-200">
+                        <div class="flex items-center gap-2 mb-3">
+                            <div class="flex text-yellow-400">
+                                ${'⭐'.repeat(5)}
+                            </div>
+                        </div>
+                        <p class="text-gray-700 leading-relaxed">"${test}"</p>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+  `
+}
+
+// 선생님 소개 페이지 템플릿
+function generateTeacherIntroHTML(data: any): string {
+  const { teacherName, subject, experience, education, specialty, achievements, teachingStyle, contact } = data
+  return `
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${teacherName} 선생님 - 소개</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
+      * { font-family: 'Pretendard Variable', sans-serif; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-teal-50 to-cyan-50 min-h-screen py-12 px-6">
+    <div class="max-w-4xl mx-auto">
+        <div class="bg-white rounded-3xl shadow-2xl overflow-hidden">
+            <div class="bg-gradient-to-r from-teal-600 to-cyan-600 text-white p-12 text-center">
+                <div class="w-32 h-32 bg-white/20 rounded-full mx-auto mb-6 flex items-center justify-center">
+                    <span class="text-6xl">👨‍🏫</span>
+                </div>
+                <h1 class="text-4xl font-bold mb-3">${teacherName} 선생님</h1>
+                <p class="text-2xl opacity-90">${subject} 전문</p>
+                <div class="mt-6 inline-block bg-white/20 px-6 py-2 rounded-full">
+                    <span class="text-lg font-medium">경력 ${experience}년</span>
+                </div>
+            </div>
+            
+            <div class="p-10">
+                <div class="mb-10">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">🎓 학력</h2>
+                    <div class="bg-teal-50 rounded-xl p-6">
+                        <p class="text-gray-800 text-lg leading-relaxed">${education}</p>
+                    </div>
+                </div>
+                
+                <div class="mb-10">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">💡 전문 분야</h2>
+                    <div class="bg-cyan-50 rounded-xl p-6">
+                        <p class="text-gray-800 text-lg leading-relaxed">${specialty}</p>
+                    </div>
+                </div>
+                
+                <div class="mb-10">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6">🏆 주요 실적</h2>
+                    <div class="space-y-3">
+                        ${(achievements || []).map((ach: string) => `
+                            <div class="flex items-center gap-3 p-4 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-xl">
+                                <span class="text-2xl">🎯</span>
+                                <span class="text-gray-800">${ach}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                
+                <div class="mb-10">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">📚 수업 방식</h2>
+                    <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-6 border border-gray-200">
+                        <p class="text-gray-700 text-lg leading-relaxed">${teachingStyle}</p>
+                    </div>
+                </div>
+                
+                <div class="bg-gradient-to-r from-teal-600 to-cyan-600 rounded-2xl p-8 text-white text-center">
+                    <h3 class="text-2xl font-bold mb-4">수업 문의</h3>
+                    <a href="tel:${contact}" class="inline-block bg-white text-teal-600 px-10 py-4 rounded-full text-xl font-bold hover:bg-gray-100 transition">
+                        📞 ${contact || '문의하기'}
+                    </a>
                 </div>
             </div>
         </div>
