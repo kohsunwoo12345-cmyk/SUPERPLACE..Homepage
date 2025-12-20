@@ -5688,13 +5688,18 @@ app.get('/api/students', async (c) => {
 // 학생 추가
 app.post('/api/students', async (c) => {
   try {
-    const { name, grade, subject, parent_name, parent_phone, parent_email, notes } = await c.req.json()
+    const { name, phone, grade, school, subjects, parent_name, parent_phone, parent_email, notes } = await c.req.json()
     const user = JSON.parse(c.req.header('X-User-Data-Base64') ? decodeURIComponent(escape(atob(c.req.header('X-User-Data-Base64') || ''))) : '{"id":1}')
     
+    // 필수 항목 확인
+    if (!name || !grade || !parent_name || !parent_phone) {
+      return c.json({ success: false, error: '필수 항목을 입력해주세요.' }, 400)
+    }
+    
     const result = await c.env.DB.prepare(`
-      INSERT INTO students (name, grade, subject, parent_name, parent_phone, parent_email, academy_id, enrollment_date, notes)
-      VALUES (?, ?, ?, ?, ?, ?, ?, DATE('now'), ?)
-    `).bind(name, grade, subject, parent_name, parent_phone, parent_email || null, user.id, notes || null).run()
+      INSERT INTO students (name, phone, grade, school, subjects, parent_name, parent_phone, parent_email, academy_id, enrollment_date, notes, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, DATE('now'), ?, 'active')
+    `).bind(name, phone || null, grade, school || null, subjects || '', parent_name, parent_phone, parent_email || null, user.id, notes || null).run()
     
     return c.json({ success: true, message: '학생이 추가되었습니다.', id: result.meta.last_row_id })
   } catch (error) {
@@ -5726,28 +5731,269 @@ app.get('/tools/student-management', (c) => {
             <div class="grid md:grid-cols-3 gap-6 mb-8">
                 <div class="bg-white rounded-2xl p-6 border-2 border-indigo-200">
                     <div class="text-sm text-gray-600 mb-2">전체 학생</div>
-                    <div class="text-3xl font-bold text-indigo-600">0명</div>
+                    <div id="totalStudents" class="text-3xl font-bold text-indigo-600">0명</div>
                 </div>
                 <div class="bg-white rounded-2xl p-6 border-2 border-green-200">
                     <div class="text-sm text-gray-600 mb-2">수강 중</div>
-                    <div class="text-3xl font-bold text-green-600">0명</div>
+                    <div id="activeStudents" class="text-3xl font-bold text-green-600">0명</div>
                 </div>
                 <div class="bg-white rounded-2xl p-6 border-2 border-yellow-200">
-                    <div class="text-sm text-gray-600 mb-2">만료 예정</div>
-                    <div class="text-3xl font-bold text-yellow-600">0명</div>
+                    <div class="text-sm text-gray-600 mb-2">일시정지</div>
+                    <div id="pausedStudents" class="text-3xl font-bold text-yellow-600">0명</div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl p-8 border border-gray-200 mb-8">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold">학생 추가</h2>
+                    <button onclick="toggleAddForm()" id="toggleBtn" class="px-6 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition">
+                        + 학생 추가
+                    </button>
+                </div>
+
+                <div id="addStudentForm" class="hidden">
+                    <form onsubmit="addStudent(event)" class="space-y-6">
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">학생 이름 *</label>
+                                <input type="text" id="studentName" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent" placeholder="홍길동">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">학생 연락처</label>
+                                <input type="tel" id="studentPhone" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent" placeholder="010-1234-5678">
+                            </div>
+                        </div>
+
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">학년 *</label>
+                                <select id="studentGrade" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                                    <option value="">학년 선택</option>
+                                    <option value="초1">초등 1학년</option>
+                                    <option value="초2">초등 2학년</option>
+                                    <option value="초3">초등 3학년</option>
+                                    <option value="초4">초등 4학년</option>
+                                    <option value="초5">초등 5학년</option>
+                                    <option value="초6">초등 6학년</option>
+                                    <option value="중1">중학 1학년</option>
+                                    <option value="중2">중학 2학년</option>
+                                    <option value="중3">중학 3학년</option>
+                                    <option value="고1">고등 1학년</option>
+                                    <option value="고2">고등 2학년</option>
+                                    <option value="고3">고등 3학년</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">학교</label>
+                                <input type="text" id="studentSchool" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent" placeholder="검단초등학교">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">수강 과목</label>
+                            <input type="text" id="studentSubjects" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent" placeholder="영어, 수학">
+                        </div>
+
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">학부모 이름 *</label>
+                                <input type="text" id="parentName" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent" placeholder="홍부모">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">학부모 연락처 *</label>
+                                <input type="tel" id="parentPhone" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent" placeholder="010-9876-5432">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">학부모 이메일</label>
+                            <input type="email" id="parentEmail" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent" placeholder="parent@example.com">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">메모</label>
+                            <textarea id="studentNotes" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent" placeholder="특이사항이나 중요한 정보를 입력하세요"></textarea>
+                        </div>
+
+                        <div class="flex gap-4">
+                            <button type="submit" class="flex-1 px-6 py-4 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition">
+                                ✅ 학생 추가
+                            </button>
+                            <button type="button" onclick="toggleAddForm()" class="px-6 py-4 bg-gray-200 text-gray-700 rounded-xl font-bold hover:bg-gray-300 transition">
+                                취소
+                            </button>
+                        </div>
+                    </form>
+
+                    <div id="addResult" class="mt-4"></div>
                 </div>
             </div>
 
             <div class="bg-white rounded-2xl p-8 border border-gray-200">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold">학생 목록</h2>
-                    <button onclick="alert('학생 추가 기능은 곧 제공됩니다')" class="px-6 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition">
-                        + 학생 추가
-                    </button>
+                <h2 class="text-2xl font-bold mb-6">학생 목록</h2>
+                <div id="studentsList" class="space-y-4">
+                    <p class="text-gray-500 text-center py-12">학생을 추가하면 여기에 목록이 표시됩니다.</p>
                 </div>
-                <p class="text-gray-500 text-center py-12">학생을 추가하면 여기에 목록이 표시됩니다.</p>
             </div>
         </div>
+
+        <script>
+            let currentUser = null;
+
+            // 로그인 체크
+            window.addEventListener('DOMContentLoaded', () => {
+                const userData = localStorage.getItem('user');
+                if (!userData) {
+                    alert('로그인이 필요합니다.');
+                    window.location.href = '/login';
+                    return;
+                }
+                currentUser = JSON.parse(userData);
+                loadStudents();
+            });
+
+            // 학생 추가 폼 토글
+            function toggleAddForm() {
+                const form = document.getElementById('addStudentForm');
+                const btn = document.getElementById('toggleBtn');
+                if (form.classList.contains('hidden')) {
+                    form.classList.remove('hidden');
+                    btn.textContent = '− 폼 닫기';
+                } else {
+                    form.classList.add('hidden');
+                    btn.textContent = '+ 학생 추가';
+                    // 폼 초기화
+                    document.querySelector('form').reset();
+                    document.getElementById('addResult').innerHTML = '';
+                }
+            }
+
+            // 학생 추가
+            async function addStudent(event) {
+                event.preventDefault();
+                const resultDiv = document.getElementById('addResult');
+
+                const data = {
+                    name: document.getElementById('studentName').value,
+                    phone: document.getElementById('studentPhone').value,
+                    grade: document.getElementById('studentGrade').value,
+                    school: document.getElementById('studentSchool').value,
+                    subjects: document.getElementById('studentSubjects').value,
+                    parent_name: document.getElementById('parentName').value,
+                    parent_phone: document.getElementById('parentPhone').value,
+                    parent_email: document.getElementById('parentEmail').value,
+                    notes: document.getElementById('studentNotes').value
+                };
+
+                resultDiv.innerHTML = '<div class="p-4 bg-blue-50 text-blue-600 rounded-xl">학생 정보를 저장하고 있습니다...</div>';
+
+                try {
+                    const userDataBase64 = btoa(unescape(encodeURIComponent(JSON.stringify(currentUser))));
+                    const response = await fetch('/api/students', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-User-Data-Base64': userDataBase64
+                        },
+                        body: JSON.stringify(data)
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        resultDiv.innerHTML = '<div class="p-4 bg-green-50 text-green-600 rounded-xl font-bold">✅ ' + result.message + '</div>';
+                        document.querySelector('form').reset();
+                        setTimeout(() => {
+                            toggleAddForm();
+                            loadStudents();
+                        }, 1500);
+                    } else {
+                        resultDiv.innerHTML = '<div class="p-4 bg-red-50 text-red-600 rounded-xl">' + result.error + '</div>';
+                    }
+                } catch (error) {
+                    console.error('학생 추가 실패:', error);
+                    resultDiv.innerHTML = '<div class="p-4 bg-red-50 text-red-600 rounded-xl">학생 추가 중 오류가 발생했습니다.</div>';
+                }
+            }
+
+            // 학생 목록 로드
+            async function loadStudents() {
+                try {
+                    const userDataBase64 = btoa(unescape(encodeURIComponent(JSON.stringify(currentUser))));
+                    const response = await fetch('/api/students', {
+                        headers: {
+                            'X-User-Data-Base64': userDataBase64
+                        }
+                    });
+                    const data = await response.json();
+
+                    if (data.success && data.students) {
+                        const students = data.students;
+                        
+                        // 통계 업데이트
+                        document.getElementById('totalStudents').textContent = students.length + '명';
+                        document.getElementById('activeStudents').textContent = students.filter(s => s.status === 'active').length + '명';
+                        document.getElementById('pausedStudents').textContent = students.filter(s => s.status === 'paused').length + '명';
+
+                        // 학생 목록 표시
+                        const listDiv = document.getElementById('studentsList');
+                        if (students.length === 0) {
+                            listDiv.innerHTML = '<p class="text-gray-500 text-center py-12">학생을 추가하면 여기에 목록이 표시됩니다.</p>';
+                        } else {
+                            listDiv.innerHTML = students.map(student => {
+                                const statusColors = {
+                                    'active': 'bg-green-100 text-green-700',
+                                    'paused': 'bg-yellow-100 text-yellow-700',
+                                    'graduated': 'bg-blue-100 text-blue-700',
+                                    'withdrawn': 'bg-gray-100 text-gray-700'
+                                };
+                                const statusTexts = {
+                                    'active': '수강중',
+                                    'paused': '일시정지',
+                                    'graduated': '졸업',
+                                    'withdrawn': '퇴원'
+                                };
+                                return '<div class="p-6 border-2 border-gray-200 rounded-xl hover:border-indigo-400 transition">' +
+                                    '<div class="flex justify-between items-start mb-4">' +
+                                        '<div class="flex-1">' +
+                                            '<div class="flex items-center gap-3 mb-2">' +
+                                                '<h3 class="text-xl font-bold text-gray-900">' + student.name + '</h3>' +
+                                                '<span class="px-3 py-1 ' + statusColors[student.status] + ' rounded-full text-xs font-medium">' + statusTexts[student.status] + '</span>' +
+                                            '</div>' +
+                                            '<div class="text-sm text-gray-600">' + student.grade + (student.school ? ' · ' + student.school : '') + '</div>' +
+                                        '</div>' +
+                                    '</div>' +
+                                    '<div class="grid md:grid-cols-2 gap-4 text-sm">' +
+                                        '<div>' +
+                                            '<div class="text-gray-600 mb-1">👨‍🎓 학생 연락처</div>' +
+                                            '<div class="font-medium text-gray-900">' + (student.phone || '-') + '</div>' +
+                                        '</div>' +
+                                        '<div>' +
+                                            '<div class="text-gray-600 mb-1">📚 수강 과목</div>' +
+                                            '<div class="font-medium text-gray-900">' + (student.subjects || '-') + '</div>' +
+                                        '</div>' +
+                                        '<div>' +
+                                            '<div class="text-gray-600 mb-1">👪 학부모</div>' +
+                                            '<div class="font-medium text-gray-900">' + student.parent_name + ' (' + student.parent_phone + ')</div>' +
+                                        '</div>' +
+                                        '<div>' +
+                                            '<div class="text-gray-600 mb-1">📅 등록일</div>' +
+                                            '<div class="font-medium text-gray-900">' + new Date(student.enrollment_date).toLocaleDateString('ko-KR') + '</div>' +
+                                        '</div>' +
+                                    '</div>' +
+                                    (student.notes ? '<div class="mt-4 p-3 bg-gray-50 rounded-lg text-sm text-gray-700">' +
+                                        '<div class="font-medium mb-1">📝 메모</div>' +
+                                        student.notes +
+                                    '</div>' : '') +
+                                '</div>';
+                            }).join('');
+                        }
+                    }
+                } catch (error) {
+                    console.error('학생 목록 로드 실패:', error);
+                }
+            }
+        </script>
     </body>
     </html>
   `)
