@@ -1719,19 +1719,19 @@ app.get('/', (c) => {
                 <div class="grid lg:grid-cols-2 gap-8 mb-20">
                     <!-- Left: Image Grid -->\n                    <div class="grid grid-cols-2 gap-4 animate-fade-in">
                         <div class="col-span-2 rounded-2xl overflow-hidden">
-                            <img src="https://sspark.genspark.ai/cfimages?u1=oN4UyWPdeAnPHGAuOl9u3ofPC4RFl6RqarrwUpvaLiPTm7mh2Lobo%2F4wTKiEG0Gvb59tAroNlqzwB6uxIgeDcFIisxkpK%2ByvzoLOBRUwq3wAPg%3D%3D&u2=Rn455fc046%2BoFW1M&width=1200" 
-                                 alt="함께 공부하는 학생들" 
+                            <img src="/static/images/kumetang-classroom-1.jpg" 
+                                 alt="꾸메땅학원 교실 내부" 
                                  class="w-full h-72 object-cover">
                         </div>
                         <div class="rounded-2xl overflow-hidden">
-                            <img src="https://sspark.genspark.ai/cfimages?u1=1RD4sGY%2Bj%2FjVEiNnMp02RJ56JfOtx4T5bs1GgjUg6GEd4uGzK1AKFOOoq6XOkJFszy3jtO4RLD7Ryw%2FKFPEMm1AoG8OlqkQ9hJGNA7p4XK4RtA%3D%3D&u2=F%2B3PvGjIdbBbGmsf&width=800" 
-                                 alt="도서관에서 학습하는 학생들" 
+                            <img src="/static/images/kumetang-classroom-2.jpg" 
+                                 alt="꾸메땅학원 학습 공간" 
                                  class="w-full h-48 object-cover">
                         </div>
-                        <div class="rounded-2xl overflow-hidden">
-                            <img src="https://sspark.genspark.ai/cfimages?u1=jrigc7hbpDQlc0ndcd0CI4xg%2FTgfegGGDHZTWXZd65zSnxkNxB8cITZ%2FxJbI5sgTLPkpd4LkzWQ5jLAbmq41VVI0WvzqGiOZ%2BIsnYwxcCUzPoMZvbl%2F7dvCbB4sm1oeP%2BEn1sJ8nvKk%2BkIjcPdULWHRkfHpSU%2F5w&u2=RrPeTMJGJ6oB5lsw&width=800" 
-                                 alt="현대적인 디지털 학습 환경" 
-                                 class="w-full h-48 object-cover">
+                        <div class="rounded-2xl overflow-hidden bg-white flex items-center justify-center p-4">
+                            <img src="/static/images/kumetang-logo.png" 
+                                 alt="꾸메땅학원 로고" 
+                                 class="w-full h-auto object-contain">
                         </div>
                     </div>
                     
