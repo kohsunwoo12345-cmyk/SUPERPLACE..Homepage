@@ -3538,6 +3538,29 @@ app.get('/dashboard', (c) => {
                                 </svg>
                             </div>
                         </a>
+
+                        <a href="/tools/ai-learning-report" class="block bg-gradient-to-br from-violet-500 to-fuchsia-700 rounded-2xl p-8 hover:shadow-2xl transition-all hover:-translate-y-1">
+                            <div class="flex items-center gap-4 mb-4">
+                                <div class="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="text-2xl font-bold text-white">AI 학습 분석 리포트</h3>
+                                    <p class="text-violet-100 text-sm">개인별 맞춤 학습 분석</p>
+                                </div>
+                            </div>
+                            <p class="text-white/90 leading-relaxed mb-4">
+                                AI가 학생의 성적, 출석, 학습 태도를 종합 분석하여 맞춤형 리포트를 자동 생성합니다.
+                            </p>
+                            <div class="flex items-center text-white font-medium">
+                                <span>바로 사용하기</span>
+                                <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                </svg>
+                            </div>
+                        </a>
                     </div>
                 </div>
 
@@ -5828,6 +5851,331 @@ app.get('/tools/reenrollment-tracking', (c) => {
   `)
 })
 
+// AI 학습 분석 리포트 페이지
+app.get('/tools/ai-learning-report', (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>AI 학습 분석 리포트 - 슈퍼플레이스</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+    </head>
+    <body class="bg-gradient-to-br from-purple-50 to-pink-50 min-h-screen">
+        <div class="max-w-7xl mx-auto p-8">
+            <div class="flex justify-between items-center mb-8">
+                <h1 class="text-4xl font-bold text-gray-900">🤖 AI 학습 분석 리포트</h1>
+                <a href="/dashboard" class="px-6 py-3 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition">
+                    대시보드로 돌아가기
+                </a>
+            </div>
+
+            <!-- 안내 카드 -->
+            <div class="bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl p-8 text-white mb-8">
+                <h2 class="text-2xl font-bold mb-4">✨ AI가 자동으로 학습 분석 리포트를 생성합니다</h2>
+                <div class="grid md:grid-cols-3 gap-6">
+                    <div class="bg-white/20 backdrop-blur-sm rounded-xl p-4">
+                        <div class="text-3xl mb-2">📊</div>
+                        <div class="font-bold mb-1">성적 분석</div>
+                        <div class="text-sm text-white/90">과목별 성적 추이와 강약점 파악</div>
+                    </div>
+                    <div class="bg-white/20 backdrop-blur-sm rounded-xl p-4">
+                        <div class="text-3xl mb-2">📈</div>
+                        <div class="font-bold mb-1">학습 패턴</div>
+                        <div class="text-sm text-white/90">출석률, 학습 태도 종합 분석</div>
+                    </div>
+                    <div class="bg-white/20 backdrop-blur-sm rounded-xl p-4">
+                        <div class="text-3xl mb-2">💡</div>
+                        <div class="font-bold mb-1">맞춤 추천</div>
+                        <div class="text-sm text-white/90">개인별 학습 전략 제시</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 리포트 생성 섹션 -->
+            <div class="bg-white rounded-2xl p-8 border border-gray-200 mb-8">
+                <h2 class="text-2xl font-bold mb-6">📝 리포트 생성</h2>
+                
+                <div class="grid md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">학생 선택</label>
+                        <select id="studentSelect" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                            <option value="">학생을 선택하세요</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">리포트 월</label>
+                        <input type="month" id="reportMonth" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                    </div>
+                </div>
+
+                <button onclick="generateReport()" class="w-full px-6 py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-bold text-lg hover:from-purple-700 hover:to-pink-700 transition-all">
+                    🤖 AI 리포트 자동 생성
+                </button>
+
+                <div id="generateResult" class="mt-4"></div>
+            </div>
+
+            <!-- 생성된 리포트 목록 -->
+            <div class="bg-white rounded-2xl p-8 border border-gray-200">
+                <h2 class="text-2xl font-bold mb-6">📚 생성된 리포트</h2>
+                <div id="reportsList" class="space-y-4">
+                    <p class="text-gray-500 text-center py-12">리포트를 생성하면 여기에 표시됩니다.</p>
+                </div>
+            </div>
+
+            <!-- 리포트 상세 모달 -->
+            <div id="reportModal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                <div class="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                    <div class="sticky top-0 bg-white border-b border-gray-200 p-6 flex justify-between items-center">
+                        <h3 class="text-2xl font-bold">학습 분석 리포트</h3>
+                        <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <div id="reportDetail" class="p-6"></div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            let currentUser = null;
+
+            // 로그인 체크
+            window.addEventListener('DOMContentLoaded', () => {
+                const userData = localStorage.getItem('user');
+                if (!userData) {
+                    alert('로그인이 필요합니다.');
+                    window.location.href = '/login';
+                    return;
+                }
+                currentUser = JSON.parse(userData);
+                loadStudents();
+                setDefaultMonth();
+            });
+
+            // 기본 월 설정 (이번 달)
+            function setDefaultMonth() {
+                const now = new Date();
+                const month = String(now.getMonth() + 1).padStart(2, '0');
+                const year = now.getFullYear();
+                document.getElementById('reportMonth').value = \`\${year}-\${month}\`;
+            }
+
+            // 학생 목록 로드
+            async function loadStudents() {
+                try {
+                    const userDataBase64 = btoa(unescape(encodeURIComponent(JSON.stringify(currentUser))));
+                    const response = await fetch('/api/students', {
+                        headers: {
+                            'X-User-Data-Base64': userDataBase64
+                        }
+                    });
+                    const data = await response.json();
+                    
+                    const select = document.getElementById('studentSelect');
+                    select.innerHTML = '<option value="">학생을 선택하세요</option>';
+                    
+                    if (data.success && data.students) {
+                        data.students.forEach(student => {
+                            const option = document.createElement('option');
+                            option.value = student.id;
+                            option.textContent = \`\${student.name} (\${student.grade})\`;
+                            select.appendChild(option);
+                        });
+                    }
+                } catch (error) {
+                    console.error('학생 목록 로드 실패:', error);
+                }
+            }
+
+            // AI 리포트 생성
+            async function generateReport() {
+                const studentId = document.getElementById('studentSelect').value;
+                const reportMonth = document.getElementById('reportMonth').value;
+                const resultDiv = document.getElementById('generateResult');
+
+                if (!studentId) {
+                    resultDiv.innerHTML = '<div class="p-4 bg-red-50 text-red-600 rounded-xl">학생을 선택해주세요.</div>';
+                    return;
+                }
+
+                if (!reportMonth) {
+                    resultDiv.innerHTML = '<div class="p-4 bg-red-50 text-red-600 rounded-xl">리포트 월을 선택해주세요.</div>';
+                    return;
+                }
+
+                resultDiv.innerHTML = '<div class="p-4 bg-blue-50 text-blue-600 rounded-xl">🤖 AI가 리포트를 생성하고 있습니다...</div>';
+
+                try {
+                    const response = await fetch('/api/learning-reports/generate', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            student_id: studentId,
+                            report_month: reportMonth
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        resultDiv.innerHTML = \`
+                            <div class="p-6 bg-green-50 border-2 border-green-200 rounded-xl">
+                                <div class="text-green-600 font-bold text-lg mb-3">✅ AI 리포트 생성 완료!</div>
+                                <div class="grid grid-cols-3 gap-4 text-sm">
+                                    <div>
+                                        <div class="text-gray-600 mb-1">평균 점수</div>
+                                        <div class="text-2xl font-bold text-green-600">\${data.preview.overall_score}점</div>
+                                    </div>
+                                    <div>
+                                        <div class="text-gray-600 mb-1">출석률</div>
+                                        <div class="text-2xl font-bold text-blue-600">\${data.preview.attendance_rate}%</div>
+                                    </div>
+                                    <div>
+                                        <div class="text-gray-600 mb-1">학습 태도</div>
+                                        <div class="text-2xl font-bold text-purple-600">\${data.preview.study_attitude}</div>
+                                    </div>
+                                </div>
+                                <button onclick="viewReport(\${data.report_id})" class="mt-4 w-full px-4 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 transition">
+                                    📄 리포트 자세히 보기
+                                </button>
+                            </div>
+                        \`;
+                        loadReportsForStudent(studentId);
+                    } else {
+                        resultDiv.innerHTML = \`<div class="p-4 bg-red-50 text-red-600 rounded-xl">\${data.error}</div>\`;
+                    }
+                } catch (error) {
+                    console.error('리포트 생성 실패:', error);
+                    resultDiv.innerHTML = '<div class="p-4 bg-red-50 text-red-600 rounded-xl">리포트 생성 중 오류가 발생했습니다.</div>';
+                }
+            }
+
+            // 학생별 리포트 목록 로드
+            async function loadReportsForStudent(studentId) {
+                try {
+                    const response = await fetch(\`/api/learning-reports/\${studentId}\`);
+                    const data = await response.json();
+
+                    const listDiv = document.getElementById('reportsList');
+                    
+                    if (data.success && data.reports && data.reports.length > 0) {
+                        listDiv.innerHTML = data.reports.map(report => \`
+                            <div class="p-6 border-2 border-gray-200 rounded-xl hover:border-purple-400 transition cursor-pointer" onclick="viewReport(\${report.id})">
+                                <div class="flex justify-between items-start mb-4">
+                                    <div>
+                                        <div class="text-lg font-bold text-gray-900">\${report.report_month} 리포트</div>
+                                        <div class="text-sm text-gray-600">\${new Date(report.created_at).toLocaleDateString('ko-KR')}</div>
+                                    </div>
+                                    <span class="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">\${report.study_attitude}</span>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4 text-sm">
+                                    <div class="text-gray-600">평균 점수: <span class="font-bold text-gray-900">\${report.overall_score}점</span></div>
+                                    <div class="text-gray-600">생성일: <span class="font-bold text-gray-900">\${new Date(report.created_at).toLocaleDateString('ko-KR')}</span></div>
+                                </div>
+                            </div>
+                        \`).join('');
+                    }
+                } catch (error) {
+                    console.error('리포트 목록 로드 실패:', error);
+                }
+            }
+
+            // 리포트 상세 보기
+            async function viewReport(reportId) {
+                try {
+                    const response = await fetch(\`/api/learning-reports/detail/\${reportId}\`);
+                    const data = await response.json();
+
+                    if (data.success && data.report) {
+                        const report = data.report;
+                        document.getElementById('reportDetail').innerHTML = \`
+                            <div class="space-y-6">
+                                <div class="bg-gradient-to-r from-purple-100 to-pink-100 p-6 rounded-xl">
+                                    <div class="text-sm text-gray-600 mb-2">\${report.report_month}</div>
+                                    <div class="text-2xl font-bold text-gray-900 mb-2">\${report.student_name} 학생 학습 분석 리포트</div>
+                                    <div class="flex gap-4 text-sm">
+                                        <span class="px-3 py-1 bg-purple-500 text-white rounded-full">\${report.study_attitude}</span>
+                                        <span class="px-3 py-1 bg-pink-500 text-white rounded-full">평균 \${report.overall_score}점</span>
+                                    </div>
+                                </div>
+
+                                <div class="border-l-4 border-green-500 pl-4">
+                                    <div class="text-sm text-gray-600 mb-1">💪 강점</div>
+                                    <div class="text-gray-900">\${report.strengths}</div>
+                                </div>
+
+                                <div class="border-l-4 border-yellow-500 pl-4">
+                                    <div class="text-sm text-gray-600 mb-1">🎯 개선 필요</div>
+                                    <div class="text-gray-900">\${report.weaknesses}</div>
+                                </div>
+
+                                <div class="border-l-4 border-blue-500 pl-4">
+                                    <div class="text-sm text-gray-600 mb-1">📝 개선사항</div>
+                                    <div class="text-gray-900">\${report.improvements}</div>
+                                </div>
+
+                                <div class="border-l-4 border-purple-500 pl-4">
+                                    <div class="text-sm text-gray-600 mb-1">💡 선생님의 추천</div>
+                                    <div class="text-gray-900">\${report.recommendations}</div>
+                                </div>
+
+                                <div class="border-l-4 border-pink-500 pl-4">
+                                    <div class="text-sm text-gray-600 mb-1">🎯 다음 달 목표</div>
+                                    <div class="text-gray-900">\${report.next_month_goals}</div>
+                                </div>
+
+                                <div class="bg-gray-50 p-6 rounded-xl">
+                                    <div class="text-sm text-gray-600 mb-2">🤖 AI 종합 분석</div>
+                                    <div class="text-gray-900 whitespace-pre-line">\${report.ai_analysis}</div>
+                                </div>
+
+                                <div class="bg-gradient-to-r from-purple-50 to-pink-50 p-6 rounded-xl border-2 border-purple-200">
+                                    <div class="text-sm text-gray-600 mb-2">💌 학부모님께 보낼 메시지</div>
+                                    <div id="parentMessage\${report.id}" class="text-gray-900 whitespace-pre-line text-sm leading-relaxed">\${report.parent_message}</div>
+                                    <button onclick="copyMessageById('parentMessage\${report.id}')" class="mt-4 px-4 py-2 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition">
+                                        📋 메시지 복사하기
+                                    </button>
+                                </div>
+                            </div>
+                        \`;
+                        document.getElementById('reportModal').classList.remove('hidden');
+                    }
+                } catch (error) {
+                    console.error('리포트 상세 조회 실패:', error);
+                    alert('리포트를 불러오는 중 오류가 발생했습니다.');
+                }
+            }
+
+            // 모달 닫기
+            function closeModal() {
+                document.getElementById('reportModal').classList.add('hidden');
+            }
+
+            // 메시지 복사
+            function copyMessageById(elementId) {
+                const element = document.getElementById(elementId);
+                if (element) {
+                    const message = element.textContent;
+                    navigator.clipboard.writeText(message).then(() => {
+                        alert('메시지가 클립보드에 복사되었습니다!');
+                    }).catch(err => {
+                        console.error('복사 실패:', err);
+                    });
+                }
+            }
+        </script>
+    </body>
+    </html>
+  `)
+})
+
 // 통합 분석 대시보드 페이지
 app.get('/tools/dashboard-analytics', (c) => {
   return c.html(`
@@ -5932,6 +6280,199 @@ app.get('/tools/dashboard-analytics', (c) => {
     </body>
     </html>
   `)
+})
+
+// AI 학습 분석 리포트 API
+
+// 학생별 리포트 목록 조회
+app.get('/api/learning-reports/:student_id', async (c) => {
+  try {
+    const studentId = c.req.param('student_id')
+    
+    const { results } = await c.env.DB.prepare(`
+      SELECT * FROM learning_reports 
+      WHERE student_id = ? 
+      ORDER BY report_month DESC
+    `).bind(studentId).all()
+    
+    return c.json({ success: true, reports: results })
+  } catch (error) {
+    console.error('Get learning reports error:', error)
+    return c.json({ success: false, error: '리포트 조회 실패' }, 500)
+  }
+})
+
+// AI 리포트 자동 생성
+app.post('/api/learning-reports/generate', async (c) => {
+  try {
+    const { student_id, report_month } = await c.req.json()
+    
+    // 학생 정보 조회
+    const student = await c.env.DB.prepare(`
+      SELECT * FROM students WHERE id = ?
+    `).bind(student_id).first()
+    
+    if (!student) {
+      return c.json({ success: false, error: '학생을 찾을 수 없습니다.' }, 404)
+    }
+    
+    // 해당 월의 성적 데이터 조회
+    const { results: grades } = await c.env.DB.prepare(`
+      SELECT * FROM grades 
+      WHERE student_id = ? 
+      AND strftime('%Y-%m', test_date) = ?
+      ORDER BY test_date DESC
+    `).bind(student_id, report_month).all()
+    
+    // 출석 데이터 조회
+    const { results: attendance } = await c.env.DB.prepare(`
+      SELECT status, COUNT(*) as count
+      FROM attendance 
+      WHERE student_id = ? 
+      AND strftime('%Y-%m', attendance_date) = ?
+      GROUP BY status
+    `).bind(student_id, report_month).all()
+    
+    // 상담 기록 조회
+    const { results: counselings } = await c.env.DB.prepare(`
+      SELECT * FROM counseling 
+      WHERE student_id = ? 
+      AND strftime('%Y-%m', counseling_date) = ?
+      ORDER BY counseling_date DESC
+      LIMIT 3
+    `).bind(student_id, report_month).all()
+    
+    // AI 분석 생성 (템플릿 기반)
+    const totalAttendance = attendance.reduce((sum, a) => sum + (a.count || 0), 0)
+    const presentCount = attendance.find(a => a.status === 'present')?.count || 0
+    const attendanceRate = totalAttendance > 0 ? (presentCount / totalAttendance * 100).toFixed(1) : 0
+    
+    const avgScore = grades.length > 0 
+      ? (grades.reduce((sum, g) => sum + (g.score / g.max_score * 100), 0) / grades.length).toFixed(1)
+      : 0
+    
+    // 학습 태도 판단
+    let studyAttitude = '양호'
+    if (attendanceRate >= 95 && avgScore >= 85) studyAttitude = '매우 우수'
+    else if (attendanceRate >= 90 && avgScore >= 80) studyAttitude = '우수'
+    else if (attendanceRate < 85 || avgScore < 70) studyAttitude = '개선 필요'
+    
+    // 강점 분석
+    const topSubject = grades.length > 0 
+      ? grades.reduce((max, g) => (g.score / g.max_score) > (max.score / max.max_score) ? g : max)
+      : null
+    
+    const strengths = topSubject 
+      ? topSubject.subject + ' 과목에서 ' + (topSubject.score / topSubject.max_score * 100).toFixed(1) + '점으로 우수한 성적을 보였습니다. 꾸준한 노력이 돋보입니다.'
+      : '기본기가 탄탄하며, 수업 참여도가 높습니다.'
+    
+    // 약점 분석
+    const weakSubject = grades.length > 0 
+      ? grades.reduce((min, g) => (g.score / g.max_score) < (min.score / min.max_score) ? g : min)
+      : null
+    
+    const weaknesses = weakSubject && (weakSubject.score / weakSubject.max_score * 100) < 75
+      ? weakSubject.subject + ' 과목에서 ' + (weakSubject.score / weakSubject.max_score * 100).toFixed(1) + '점으로 보완이 필요합니다.'
+      : '전반적으로 균형잡힌 학습을 하고 있습니다.'
+    
+    // 개선사항
+    const improvements = attendanceRate < 90 
+      ? '출석률 개선이 필요합니다. 규칙적인 수업 참여가 성적 향상의 기본입니다.'
+      : avgScore < 80
+      ? '기본 개념 복습에 더 많은 시간을 투자하면 좋겠습니다.'
+      : '현재 학습 패턴을 유지하면서 심화 학습으로 나아가면 좋겠습니다.'
+    
+    // 추천사항
+    const recommendations = avgScore >= 85
+      ? '상위권 유지를 위해 심화 문제 풀이를 추천합니다. 경시대회 준비도 고려해볼 만합니다.'
+      : avgScore >= 75
+      ? '기본기 강화와 함께 문제 풀이 속도를 높이는 연습이 필요합니다.'
+      : '개념 이해를 위한 1:1 보충 수업을 추천합니다. 기초부터 차근차근 다져가면 충분히 성적이 오를 수 있습니다.'
+    
+    // 다음 달 목표
+    const nextMonthGoals = avgScore >= 85
+      ? '현재 평균 ' + avgScore + '점 수준을 유지하면서, ' + (weakSubject?.subject || '취약 과목') + '에서 5점 이상 향상 목표'
+      : '평균 점수 ' + avgScore + '점에서 ' + Math.min(100, parseFloat(avgScore) + 10).toFixed(0) + '점으로 향상, 출석률 ' + attendanceRate + '%에서 95% 이상 달성'
+    
+    // AI 종합 분석
+    const aiAnalysis = '[' + student.name + '] 학생은 이번 달 평균 ' + avgScore + '점의 성적을 기록했으며, 출석률은 ' + attendanceRate + '%입니다. ' +
+      (studyAttitude === '매우 우수' || studyAttitude === '우수' 
+        ? '전반적으로 성실하게 학업에 임하고 있으며, 지속적인 성장이 기대됩니다.' 
+        : '학습 태도와 출석 관리에 더 많은 관심이 필요합니다.') +
+      (topSubject ? ' 특히 ' + topSubject.subject + ' 과목에서 강점을 보이고 있습니다.' : '') +
+      ' 꾸준한 노력으로 더욱 발전할 수 있습니다.'
+    
+    // 학부모 메시지
+    const parentMessage = '학부모님, 안녕하세요.\\n\\n' +
+      student.name + ' 학생의 ' + report_month + ' 학습 분석 리포트를 전달드립니다.\\n\\n' +
+      '📊 이번 달 성과\\n' +
+      '- 평균 점수: ' + avgScore + '점\\n' +
+      '- 출석률: ' + attendanceRate + '%\\n' +
+      '- 학습 태도: ' + studyAttitude + '\\n\\n' +
+      '💪 강점\\n' + strengths + '\\n\\n' +
+      '🎯 개선 필요 사항\\n' + weaknesses + '\\n\\n' +
+      '📝 선생님의 추천\\n' + recommendations + '\\n\\n' +
+      '다음 달 목표: ' + nextMonthGoals + '\\n\\n' +
+      '앞으로도 ' + student.name + ' 학생이 더욱 성장할 수 있도록 최선을 다하겠습니다.\\n' +
+      '궁금하신 점은 언제든 연락 주세요!\\n\\n' +
+      '- 꾸메땅학원 ' + (counselings[0]?.counselor_name || '선생님')
+    
+    // 리포트 저장
+    const result = await c.env.DB.prepare(`
+      INSERT INTO learning_reports 
+      (student_id, report_month, overall_score, study_attitude, strengths, weaknesses, improvements, recommendations, next_month_goals, ai_analysis, parent_message)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).bind(
+      student_id, 
+      report_month, 
+      avgScore, 
+      studyAttitude, 
+      strengths, 
+      weaknesses, 
+      improvements, 
+      recommendations, 
+      nextMonthGoals, 
+      aiAnalysis, 
+      parentMessage
+    ).run()
+    
+    return c.json({ 
+      success: true, 
+      message: 'AI 학습 분석 리포트가 생성되었습니다.',
+      report_id: result.meta.last_row_id,
+      preview: {
+        overall_score: avgScore,
+        attendance_rate: attendanceRate,
+        study_attitude: studyAttitude
+      }
+    })
+  } catch (error) {
+    console.error('Generate learning report error:', error)
+    return c.json({ success: false, error: 'AI 리포트 생성 실패' }, 500)
+  }
+})
+
+// 리포트 상세 조회
+app.get('/api/learning-reports/detail/:report_id', async (c) => {
+  try {
+    const reportId = c.req.param('report_id')
+    
+    const report = await c.env.DB.prepare(`
+      SELECT lr.*, s.name as student_name, s.parent_name, s.parent_phone
+      FROM learning_reports lr
+      JOIN students s ON lr.student_id = s.id
+      WHERE lr.id = ?
+    `).bind(reportId).first()
+    
+    if (!report) {
+      return c.json({ success: false, error: '리포트를 찾을 수 없습니다.' }, 404)
+    }
+    
+    return c.json({ success: true, report })
+  } catch (error) {
+    console.error('Get report detail error:', error)
+    return c.json({ success: false, error: '리포트 조회 실패' }, 500)
+  }
 })
 
 export default app
