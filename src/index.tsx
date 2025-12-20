@@ -5403,7 +5403,7 @@ app.get('/about', (c) => {
 
                 <div class="grid md:grid-cols-2 gap-12 max-w-5xl mx-auto">
                     <div class="bg-white rounded-3xl p-10">
-                        <div class="w-48 h-48 mx-auto mb-6 rounded-3xl overflow-hidden">
+                        <div class="w-64 h-64 mx-auto mb-6 rounded-3xl overflow-hidden">
                             <img src="/static/images/ceo-ko-heejun.jpg" 
                                  alt="고희준 대표이사" 
                                  class="w-full h-full object-cover">
@@ -5411,15 +5411,17 @@ app.get('/about', (c) => {
                         <h3 class="text-2xl font-bold text-gray-900 text-center mb-3">고희준 대표이사</h3>
                         <p class="text-center text-purple-600 font-medium mb-6">CEO · 인문학 박사</p>
                         <div class="space-y-3 text-gray-600">
-                            <p>✓ 2001~ 인문학 박사 및 교수</p>
-                            <p>✓ 2008~ 공부방 시작</p>
-                            <p>✓ 2015~ 인천 검단 꾸메땅학원 원장</p>
-                            <p>✓ 2024~ (주)우리는 슈퍼플레이스다 대표이사</p>
+                            <p>✓ 2005~ 공부방 시작</p>
+                            <p>✓ 2012~ 인문학 박사 취득</p>
+                            <p>✓ 2015~ 꾸메땅학원 창립</p>
+                            <p>✓ 2022~ (주)맘스온 대표이사</p>
+                            <p>✓ 2022~ 킹클래스 학원장소통 오픈</p>
+                            <p>✓ 2025~ (주)우리는 슈퍼플레이스다 대표이사</p>
                         </div>
                     </div>
 
                     <div class="bg-white rounded-3xl p-10">
-                        <div class="w-48 h-48 mx-auto mb-6 rounded-3xl overflow-hidden">
+                        <div class="w-64 h-64 mx-auto mb-6 rounded-3xl overflow-hidden">
                             <img src="/static/images/team-ko-sunwoo.jpg" 
                                  alt="고선우 마케팅 1팀장" 
                                  class="w-full h-full object-cover">
