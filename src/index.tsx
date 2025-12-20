@@ -5688,7 +5688,7 @@ app.get('/api/students', async (c) => {
 // 학생 추가
 app.post('/api/students', async (c) => {
   try {
-    const { name, phone, grade, school, subjects, parent_name, parent_phone, parent_email, notes } = await c.req.json()
+    const { name, phone, grade, school, subjects, parent_name, parent_phone, notes } = await c.req.json()
     const user = JSON.parse(c.req.header('X-User-Data-Base64') ? decodeURIComponent(escape(atob(c.req.header('X-User-Data-Base64') || ''))) : '{"id":1}')
     
     // 필수 항목 확인
@@ -5697,9 +5697,9 @@ app.post('/api/students', async (c) => {
     }
     
     const result = await c.env.DB.prepare(`
-      INSERT INTO students (name, phone, grade, school, subjects, parent_name, parent_phone, parent_email, academy_id, enrollment_date, notes, status)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, DATE('now'), ?, 'active')
-    `).bind(name, phone || null, grade, school || null, subjects || '', parent_name, parent_phone, parent_email || null, user.id, notes || null).run()
+      INSERT INTO students (name, phone, grade, school, subjects, parent_name, parent_phone, academy_id, enrollment_date, notes, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, DATE('now'), ?, 'active')
+    `).bind(name, phone || null, grade, school || null, subjects || '', parent_name, parent_phone, user.id, notes || null).run()
     
     return c.json({ success: true, message: '학생이 추가되었습니다.', id: result.meta.last_row_id })
   } catch (error) {
@@ -5806,11 +5806,6 @@ app.get('/tools/student-management', (c) => {
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">학부모 이메일</label>
-                            <input type="email" id="parentEmail" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent" placeholder="parent@example.com">
-                        </div>
-
-                        <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">메모</label>
                             <textarea id="studentNotes" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent" placeholder="특이사항이나 중요한 정보를 입력하세요"></textarea>
                         </div>
@@ -5881,7 +5876,7 @@ app.get('/tools/student-management', (c) => {
                     subjects: document.getElementById('studentSubjects').value,
                     parent_name: document.getElementById('parentName').value,
                     parent_phone: document.getElementById('parentPhone').value,
-                    parent_email: document.getElementById('parentEmail').value,
+
                     notes: document.getElementById('studentNotes').value
                 };
 
