@@ -197,6 +197,9 @@
                         <button onclick="openModal(${u.id})" class="text-purple-600 hover:text-purple-700 text-sm font-medium">
                             📚 프로그램 부여
                         </button>
+                        <button onclick="impersonateUser(${u.id}, '${u.name}')" class="text-green-600 hover:text-green-700 text-sm font-medium">
+                            👤 사용자로 로그인
+                        </button>
                         <button onclick="resetPassword(${u.id}, '${u.name}')" class="text-orange-600 hover:text-orange-700 text-sm font-medium">
                             🔑 비밀번호 초기화
                         </button>
@@ -367,6 +370,37 @@
                 loadUsers() // 목록 새로고침
             } else {
                 alert('상태 변경 실패: ' + data.error)
+            }
+        } catch (error) {
+            alert('오류가 발생했습니다.')
+        }
+    }
+
+    // 사용자로 로그인 (Impersonate)
+    async function impersonateUser(userId, userName) {
+        if (!confirm(`${userName} 님의 계정으로 로그인하시겠습니까?\\n\\n이 기능은 관리자가 사용자 화면을 확인하기 위한 용도입니다.`)) return
+
+        try {
+            const res = await fetch('/api/admin/impersonate', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-User-Id': user.id
+                },
+                body: JSON.stringify({ user_id: userId })
+            })
+            const data = await res.json()
+            if (data.success) {
+                // 원래 관리자 정보 백업
+                localStorage.setItem('original_admin', JSON.stringify(user))
+                // 사용자로 로그인
+                localStorage.setItem('user', JSON.stringify(data.user))
+                localStorage.setItem('is_impersonating', 'true')
+                
+                alert(`${userName} 님으로 로그인되었습니다.\\n대시보드로 이동합니다.`)
+                window.location.href = '/dashboard'
+            } else {
+                alert('사용자 로그인 실패: ' + data.error)
             }
         } catch (error) {
             alert('오류가 발생했습니다.')

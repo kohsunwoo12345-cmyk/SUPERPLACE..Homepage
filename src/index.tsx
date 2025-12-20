@@ -2143,6 +2143,37 @@ app.get('/login', (c) => {
                         <div id="message" class="hidden mt-4 p-4 rounded-xl"></div>
                     </form>
 
+                    <!-- 소셜 로그인 -->
+                    <div class="mt-6">
+                        <div class="relative">
+                            <div class="absolute inset-0 flex items-center">
+                                <div class="w-full border-t border-gray-200"></div>
+                            </div>
+                            <div class="relative flex justify-center text-sm">
+                                <span class="px-4 bg-white text-gray-500">또는 간편 로그인</span>
+                            </div>
+                        </div>
+
+                        <div class="mt-6 space-y-3">
+                            <button onclick="loginWithGoogle()" class="w-full flex items-center justify-center gap-3 px-4 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition-all">
+                                <svg class="w-5 h-5" viewBox="0 0 24 24">
+                                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                                </svg>
+                                <span class="font-medium text-gray-700">구글로 계속하기</span>
+                            </button>
+
+                            <button onclick="loginWithKakao()" class="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl transition-all" style="background-color: #FEE500;">
+                                <svg class="w-5 h-5" viewBox="0 0 24 24">
+                                    <path fill="#000000" d="M12 3c5.799 0 10.5 3.664 10.5 8.185 0 4.52-4.701 8.184-10.5 8.184a13.5 13.5 0 0 1-1.727-.11l-4.408 2.883c-.501.265-.678.236-.472-.413l.892-3.678c-2.88-1.46-4.785-3.99-4.785-6.866C1.5 6.665 6.201 3 12 3zm5.907 8.06l1.47-1.424a.472.472 0 0 0-.656-.678l-1.928 1.866V9.282a.472.472 0 0 0-.944 0v2.557a.471.471 0 0 0 0 .222V13.5a.472.472 0 0 0 .944 0v-1.363l.427-.413 1.428 2.033a.472.472 0 1 0 .773-.543l-1.514-2.155zm-2.958 1.924h-1.46V9.297a.472.472 0 0 0-.943 0v4.159c0 .26.21.472.471.472h1.932a.472.472 0 1 0 0-.944zm-5.857-1.092l.696-1.707.638 1.707H9.092zm2.523.488l.002-.016a.469.469 0 0 0-.127-.32l-1.046-2.8a.69.69 0 0 0-.627-.474.696.696 0 0 0-.653.447l-1.661 4.075a.472.472 0 0 0 .874.357l.33-.813h2.07l.299.8a.472.472 0 1 0 .884-.33l-.345-.926zM8.294 9.302a.472.472 0 0 0-.471-.472H5.185a.472.472 0 1 0 0 .944h1.039v3.736a.472.472 0 0 0 .943 0V9.774h1.127a.472.472 0 0 0 .47-.472z"/>
+                                </svg>
+                                <span class="font-medium text-gray-900">카카오로 계속하기</span>
+                            </button>
+                        </div>
+                    </div>
+
                     <div class="mt-6 text-center text-sm text-gray-600">
                         계정이 없으신가요? <a href="/signup" class="text-purple-600 hover:text-purple-700 font-medium">회원가입</a>
                     </div>
@@ -2151,6 +2182,16 @@ app.get('/login', (c) => {
         </div>
 
         <script>
+            // 구글 로그인
+            function loginWithGoogle() {
+                alert('구글 로그인은 Google OAuth 2.0 설정이 필요합니다.\\n\\n설정 방법:\\n1. Google Cloud Console에서 프로젝트 생성\\n2. OAuth 2.0 클라이언트 ID 생성\\n3. 승인된 리디렉션 URI 추가\\n4. 클라이언트 ID를 환경변수에 설정\\n\\n현재는 일반 로그인을 사용해주세요.')
+            }
+
+            // 카카오 로그인
+            function loginWithKakao() {
+                alert('카카오 로그인은 Kakao Developers 설정이 필요합니다.\\n\\n설정 방법:\\n1. Kakao Developers에서 앱 생성\\n2. JavaScript 키 발급\\n3. 플랫폼 설정에서 Web 플랫폼 추가\\n4. Redirect URI 등록\\n\\n현재는 일반 로그인을 사용해주세요.')
+            }
+
             document.getElementById('loginForm').addEventListener('submit', async (e) => {
                 e.preventDefault()
                 
@@ -3298,6 +3339,7 @@ app.get('/dashboard', (c) => {
                     </div>
                     <div class="flex items-center space-x-6">
                         <span id="userName" class="text-gray-700"></span>
+                        <a href="/profile" class="text-gray-600 hover:text-purple-600 transition">프로필</a>
                         <a id="adminDashboardBtn" href="/admin/dashboard.html" class="hidden bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition font-medium">
                             🔐 관리자 전용 대시보드
                         </a>
@@ -3692,6 +3734,8 @@ app.get('/dashboard', (c) => {
         <script>
             // Check authentication
             const user = JSON.parse(localStorage.getItem('user') || 'null')
+            const isImpersonating = localStorage.getItem('is_impersonating') === 'true'
+            
             if (!user) {
                 window.location.href = '/login'
             } else {
@@ -3702,10 +3746,33 @@ app.get('/dashboard', (c) => {
                 if (user.role === 'admin') {
                     document.getElementById('adminDashboardBtn').classList.remove('hidden')
                 }
+                
+                // Impersonating 중이면 복귀 버튼 표시
+                if (isImpersonating) {
+                    const nav = document.querySelector('nav .flex.items-center.space-x-4')
+                    const returnBtn = document.createElement('button')
+                    returnBtn.onclick = returnToAdmin
+                    returnBtn.className = 'px-4 py-2 bg-red-500 text-white rounded-lg font-medium hover:bg-red-600 transition-all'
+                    returnBtn.innerHTML = '🔙 관리자로 돌아가기'
+                    nav.insertBefore(returnBtn, nav.firstChild)
+                }
+            }
+
+            function returnToAdmin() {
+                const originalAdmin = JSON.parse(localStorage.getItem('original_admin'))
+                if (originalAdmin) {
+                    localStorage.setItem('user', JSON.stringify(originalAdmin))
+                    localStorage.removeItem('original_admin')
+                    localStorage.removeItem('is_impersonating')
+                    alert('관리자 계정으로 복귀합니다.')
+                    window.location.href = '/admin/users.html'
+                }
             }
 
             function logout() {
                 localStorage.removeItem('user')
+                localStorage.removeItem('original_admin')
+                localStorage.removeItem('is_impersonating')
                 window.location.href = '/'
             }
         </script>
@@ -6719,6 +6786,382 @@ app.get('/api/learning-reports/detail/:report_id', async (c) => {
   } catch (error) {
     console.error('Get report detail error:', error)
     return c.json({ success: false, error: '리포트 조회 실패' }, 500)
+  }
+})
+
+// 프로필 수정 페이지
+app.get('/profile', (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>프로필 수정 - 우리는 슈퍼플레이스다</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <style>
+          @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
+          * {
+            font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+          }
+          .gradient-purple {
+            background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+          }
+        </style>
+    </head>
+    <body class="bg-gray-50">
+        <!-- Navigation -->
+        <nav class="fixed w-full top-0 z-50 bg-white border-b border-gray-100">
+            <div class="max-w-7xl mx-auto px-6">
+                <div class="flex justify-between items-center h-16">
+                    <a href="/dashboard" class="text-xl font-bold text-purple-600">우리는 슈퍼플레이스다</a>
+                    <div class="flex items-center space-x-4">
+                        <a href="/dashboard" class="text-gray-600 hover:text-purple-600">대시보드</a>
+                        <a href="/profile" class="text-purple-600 font-medium">프로필</a>
+                        <button onclick="logout()" class="text-red-600 hover:text-red-700">로그아웃</button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <div class="pt-24 pb-12 px-6">
+            <div class="max-w-4xl mx-auto">
+                <div class="mb-8">
+                    <h1 class="text-3xl font-bold text-gray-900 mb-2">프로필 수정</h1>
+                    <p class="text-gray-600">회원 정보를 수정하고 비밀번호를 변경할 수 있습니다</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- 프로필 정보 수정 -->
+                    <div class="bg-white rounded-2xl border border-gray-200 p-8">
+                        <h2 class="text-xl font-bold text-gray-900 mb-6">📝 기본 정보</h2>
+                        <form id="profileForm" class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-900 mb-2">이메일</label>
+                                <input type="email" id="email" readonly class="w-full px-4 py-3 border border-gray-300 rounded-xl bg-gray-50 text-gray-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-900 mb-2">원장님 성함 <span class="text-red-500">*</span></label>
+                                <input type="text" id="name" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-900 mb-2">연락처 <span class="text-red-500">*</span></label>
+                                <input type="tel" id="phone" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-900 mb-2">학원 이름 <span class="text-red-500">*</span></label>
+                                <input type="text" id="academy_name" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-900 mb-2">학원 위치 <span class="text-red-500">*</span></label>
+                                <input type="text" id="academy_location" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition">
+                            </div>
+                            <button type="submit" class="w-full gradient-purple text-white py-3 rounded-xl font-medium hover:shadow-xl transition-all">
+                                프로필 저장
+                            </button>
+                            <div id="profileMessage" class="hidden mt-4 p-4 rounded-xl"></div>
+                        </form>
+                    </div>
+
+                    <!-- 비밀번호 변경 -->
+                    <div class="bg-white rounded-2xl border border-gray-200 p-8">
+                        <h2 class="text-xl font-bold text-gray-900 mb-6">🔐 비밀번호 변경</h2>
+                        <form id="passwordForm" class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-900 mb-2">현재 비밀번호 <span class="text-red-500">*</span></label>
+                                <input type="password" id="current_password" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-900 mb-2">새 비밀번호 <span class="text-red-500">*</span></label>
+                                <input type="password" id="new_password" required minlength="6" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition">
+                                <p class="text-xs text-gray-500 mt-1">최소 6자 이상</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-900 mb-2">새 비밀번호 확인 <span class="text-red-500">*</span></label>
+                                <input type="password" id="new_password_confirm" required minlength="6" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition">
+                            </div>
+                            <button type="submit" class="w-full bg-orange-500 text-white py-3 rounded-xl font-medium hover:bg-orange-600 transition-all">
+                                비밀번호 변경
+                            </button>
+                            <div id="passwordMessage" class="hidden mt-4 p-4 rounded-xl"></div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- 가입 정보 -->
+                <div class="mt-6 bg-white rounded-2xl border border-gray-200 p-6">
+                    <h2 class="text-lg font-bold text-gray-900 mb-4">ℹ️ 계정 정보</h2>
+                    <div class="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <span class="text-gray-600">가입일:</span>
+                            <span id="created_at" class="ml-2 font-medium text-gray-900"></span>
+                        </div>
+                        <div>
+                            <span class="text-gray-600">회원 등급:</span>
+                            <span id="role" class="ml-2 font-medium text-purple-600"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+        const user = JSON.parse(localStorage.getItem('user') || 'null')
+        if (!user) {
+            alert('로그인이 필요합니다.')
+            window.location.href = '/login'
+        }
+
+        function logout() {
+            localStorage.removeItem('user')
+            window.location.href = '/'
+        }
+
+        // 프로필 로드
+        async function loadProfile() {
+            try {
+                const res = await fetch('/api/user/profile', {
+                    headers: { 'X-User-Id': user.id }
+                })
+                const data = await res.json()
+                if (data.success) {
+                    document.getElementById('email').value = data.user.email
+                    document.getElementById('name').value = data.user.name
+                    document.getElementById('phone').value = data.user.phone || ''
+                    document.getElementById('academy_name').value = data.user.academy_name || ''
+                    document.getElementById('academy_location').value = data.user.academy_location || ''
+                    document.getElementById('created_at').textContent = new Date(data.user.created_at).toLocaleDateString()
+                    document.getElementById('role').textContent = data.user.role === 'admin' ? '관리자' : '일반 회원'
+                }
+            } catch (error) {
+                console.error('프로필 로드 실패:', error)
+            }
+        }
+
+        // 프로필 수정
+        document.getElementById('profileForm').addEventListener('submit', async (e) => {
+            e.preventDefault()
+            
+            const data = {
+                name: document.getElementById('name').value,
+                phone: document.getElementById('phone').value,
+                academy_name: document.getElementById('academy_name').value,
+                academy_location: document.getElementById('academy_location').value
+            }
+
+            try {
+                const res = await fetch('/api/user/profile', {
+                    method: 'PUT',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'X-User-Id': user.id
+                    },
+                    body: JSON.stringify(data)
+                })
+                const result = await res.json()
+                const messageEl = document.getElementById('profileMessage')
+                messageEl.classList.remove('hidden')
+
+                if (result.success) {
+                    messageEl.className = 'mt-4 p-4 rounded-xl bg-green-50 text-green-800 border border-green-200'
+                    messageEl.textContent = result.message
+                    
+                    // localStorage 업데이트
+                    user.name = data.name
+                    user.academy_name = data.academy_name
+                    localStorage.setItem('user', JSON.stringify(user))
+                } else {
+                    messageEl.className = 'mt-4 p-4 rounded-xl bg-red-50 text-red-800 border border-red-200'
+                    messageEl.textContent = result.error
+                }
+            } catch (error) {
+                const messageEl = document.getElementById('profileMessage')
+                messageEl.classList.remove('hidden')
+                messageEl.className = 'mt-4 p-4 rounded-xl bg-red-50 text-red-800 border border-red-200'
+                messageEl.textContent = '프로필 수정 중 오류가 발생했습니다.'
+            }
+        })
+
+        // 비밀번호 변경
+        document.getElementById('passwordForm').addEventListener('submit', async (e) => {
+            e.preventDefault()
+            
+            const current_password = document.getElementById('current_password').value
+            const new_password = document.getElementById('new_password').value
+            const new_password_confirm = document.getElementById('new_password_confirm').value
+
+            if (new_password !== new_password_confirm) {
+                const messageEl = document.getElementById('passwordMessage')
+                messageEl.classList.remove('hidden')
+                messageEl.className = 'mt-4 p-4 rounded-xl bg-red-50 text-red-800 border border-red-200'
+                messageEl.textContent = '새 비밀번호가 일치하지 않습니다.'
+                return
+            }
+
+            try {
+                const res = await fetch('/api/user/change-password', {
+                    method: 'PUT',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'X-User-Id': user.id
+                    },
+                    body: JSON.stringify({ current_password, new_password })
+                })
+                const result = await res.json()
+                const messageEl = document.getElementById('passwordMessage')
+                messageEl.classList.remove('hidden')
+
+                if (result.success) {
+                    messageEl.className = 'mt-4 p-4 rounded-xl bg-green-50 text-green-800 border border-green-200'
+                    messageEl.textContent = result.message
+                    document.getElementById('passwordForm').reset()
+                } else {
+                    messageEl.className = 'mt-4 p-4 rounded-xl bg-red-50 text-red-800 border border-red-200'
+                    messageEl.textContent = result.error
+                }
+            } catch (error) {
+                const messageEl = document.getElementById('passwordMessage')
+                messageEl.classList.remove('hidden')
+                messageEl.className = 'mt-4 p-4 rounded-xl bg-red-50 text-red-800 border border-red-200'
+                messageEl.textContent = '비밀번호 변경 중 오류가 발생했습니다.'
+            }
+        })
+
+        loadProfile()
+        </script>
+    </body>
+    </html>
+  `)
+})
+
+// 회원 프로필 조회 API
+app.get('/api/user/profile', async (c) => {
+  try {
+    const userId = c.req.header('X-User-Id')
+    if (!userId) {
+      return c.json({ success: false, error: '로그인이 필요합니다.' }, 401)
+    }
+
+    const user = await c.env.DB.prepare(`
+      SELECT id, email, name, phone, academy_name, academy_location, role, created_at
+      FROM users WHERE id = ?
+    `).bind(userId).first()
+
+    if (!user) {
+      return c.json({ success: false, error: '사용자를 찾을 수 없습니다.' }, 404)
+    }
+
+    return c.json({ success: true, user })
+  } catch (error) {
+    console.error('Get profile error:', error)
+    return c.json({ success: false, error: '프로필 조회 실패' }, 500)
+  }
+})
+
+// 회원 프로필 수정 API
+app.put('/api/user/profile', async (c) => {
+  try {
+    const userId = c.req.header('X-User-Id')
+    if (!userId) {
+      return c.json({ success: false, error: '로그인이 필요합니다.' }, 401)
+    }
+
+    const { name, phone, academy_name, academy_location } = await c.req.json()
+
+    if (!name || !phone || !academy_name || !academy_location) {
+      return c.json({ success: false, error: '모든 필드를 입력해주세요.' }, 400)
+    }
+
+    await c.env.DB.prepare(`
+      UPDATE users 
+      SET name = ?, phone = ?, academy_name = ?, academy_location = ?, updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `).bind(name, phone, academy_name, academy_location, userId).run()
+
+    return c.json({ success: true, message: '프로필이 수정되었습니다.' })
+  } catch (error) {
+    console.error('Update profile error:', error)
+    return c.json({ success: false, error: '프로필 수정 실패' }, 500)
+  }
+})
+
+// 회원 비밀번호 변경 API
+app.put('/api/user/change-password', async (c) => {
+  try {
+    const userId = c.req.header('X-User-Id')
+    if (!userId) {
+      return c.json({ success: false, error: '로그인이 필요합니다.' }, 401)
+    }
+
+    const { current_password, new_password } = await c.req.json()
+
+    if (!current_password || !new_password) {
+      return c.json({ success: false, error: '현재 비밀번호와 새 비밀번호를 입력해주세요.' }, 400)
+    }
+
+    if (new_password.length < 6) {
+      return c.json({ success: false, error: '새 비밀번호는 최소 6자 이상이어야 합니다.' }, 400)
+    }
+
+    // 현재 비밀번호 확인
+    const user = await c.env.DB.prepare(`
+      SELECT id FROM users WHERE id = ? AND password = ?
+    `).bind(userId, current_password).first()
+
+    if (!user) {
+      return c.json({ success: false, error: '현재 비밀번호가 일치하지 않습니다.' }, 400)
+    }
+
+    // 비밀번호 변경
+    await c.env.DB.prepare(`
+      UPDATE users SET password = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?
+    `).bind(new_password, userId).run()
+
+    return c.json({ success: true, message: '비밀번호가 변경되었습니다.' })
+  } catch (error) {
+    console.error('Change password error:', error)
+    return c.json({ success: false, error: '비밀번호 변경 실패' }, 500)
+  }
+})
+
+// 관리자 - 회원으로 로그인 (Impersonate)
+app.post('/api/admin/impersonate', async (c) => {
+  try {
+    const adminId = c.req.header('X-User-Id')
+    if (!adminId) {
+      return c.json({ success: false, error: '로그인이 필요합니다.' }, 401)
+    }
+
+    // 관리자 권한 확인
+    const admin = await c.env.DB.prepare(`
+      SELECT role FROM users WHERE id = ? AND role = 'admin'
+    `).bind(adminId).first()
+
+    if (!admin) {
+      return c.json({ success: false, error: '관리자 권한이 필요합니다.' }, 403)
+    }
+
+    const { user_id } = await c.req.json()
+
+    // 대상 사용자 조회
+    const targetUser = await c.env.DB.prepare(`
+      SELECT id, email, name, role, academy_name FROM users WHERE id = ?
+    `).bind(user_id).first()
+
+    if (!targetUser) {
+      return c.json({ success: false, error: '사용자를 찾을 수 없습니다.' }, 404)
+    }
+
+    return c.json({ 
+      success: true, 
+      message: '사용자로 로그인되었습니다.',
+      user: targetUser,
+      is_impersonating: true,
+      original_admin_id: adminId
+    })
+  } catch (error) {
+    console.error('Impersonate error:', error)
+    return c.json({ success: false, error: '사용자 로그인 실패' }, 500)
   }
 })
 
