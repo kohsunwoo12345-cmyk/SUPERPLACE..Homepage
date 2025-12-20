@@ -1534,7 +1534,7 @@ app.get('/', (c) => {
                     <!-- Right: Hero Image -->
                     <div class="animate-fade-in" style="transition-delay: 0.2s">
                         <div class="relative rounded-3xl overflow-hidden shadow-2xl">
-                            <img src="/static/images/hero-main.jpg" 
+                            <img src="/static/images/hero-main.png" 
                                  alt="학원 전문 마케팅 - 우리는 슈퍼플레이스다" 
                                  class="w-full h-auto object-cover">
                             <div class="absolute inset-0 bg-gradient-to-t from-purple-900/20 to-transparent"></div>
@@ -1583,7 +1583,7 @@ app.get('/', (c) => {
                     <!-- Service 1 -->
                     <div class="bg-white rounded-3xl overflow-hidden border border-gray-100 card-hover animate-fade-in" style="transition-delay: 0.1s">
                         <div class="h-48 overflow-hidden">
-                            <img src="/static/images/naver-place.jpg" 
+                            <img src="/static/images/naver-place.png" 
                                  alt="네이버 플레이스 마케팅" 
                                  class="w-full h-full object-cover hover:scale-105 transition-transform duration-500">
                         </div>
@@ -1664,7 +1664,7 @@ app.get('/', (c) => {
                     <!-- Service 3 -->
                     <div class="bg-white rounded-3xl overflow-hidden border border-gray-100 card-hover animate-fade-in" style="transition-delay: 0.3s">
                         <div class="h-48 overflow-hidden">
-                            <img src="/static/images/funnel-marketing.jpg" 
+                            <img src="/static/images/funnel-marketing.png" 
                                  alt="퍼널 마케팅" 
                                  class="w-full h-full object-cover hover:scale-105 transition-transform duration-500">
                         </div>
