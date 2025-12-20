@@ -1534,7 +1534,7 @@ app.get('/', (c) => {
                     <!-- Right: Hero Image -->
                     <div class="animate-fade-in" style="transition-delay: 0.2s">
                         <div class="relative rounded-3xl overflow-hidden shadow-2xl">
-                            <img src="https://www.genspark.ai/api/files/s/K9Qgos6X" 
+                            <img src="/static/images/hero-main.jpg" 
                                  alt="학원 전문 마케팅 - 우리는 슈퍼플레이스다" 
                                  class="w-full h-auto object-cover">
                             <div class="absolute inset-0 bg-gradient-to-t from-purple-900/20 to-transparent"></div>
@@ -1583,7 +1583,7 @@ app.get('/', (c) => {
                     <!-- Service 1 -->
                     <div class="bg-white rounded-3xl overflow-hidden border border-gray-100 card-hover animate-fade-in" style="transition-delay: 0.1s">
                         <div class="h-48 overflow-hidden">
-                            <img src="https://www.genspark.ai/api/files/s/jyiRfPWw" 
+                            <img src="/static/images/naver-place.jpg" 
                                  alt="네이버 플레이스 마케팅" 
                                  class="w-full h-full object-cover hover:scale-105 transition-transform duration-500">
                         </div>
@@ -1624,7 +1624,7 @@ app.get('/', (c) => {
                     <!-- Service 2 -->
                     <div class="bg-white rounded-3xl overflow-hidden border border-gray-100 card-hover animate-fade-in" style="transition-delay: 0.2s">
                         <div class="h-48 overflow-hidden">
-                            <img src="https://www.genspark.ai/api/files/s/uCWwxmx5" 
+                            <img src="/static/images/blog-marketing.jpg" 
                                  alt="블로그 마케팅" 
                                  class="w-full h-full object-cover hover:scale-105 transition-transform duration-500">
                         </div>
@@ -1664,7 +1664,7 @@ app.get('/', (c) => {
                     <!-- Service 3 -->
                     <div class="bg-white rounded-3xl overflow-hidden border border-gray-100 card-hover animate-fade-in" style="transition-delay: 0.3s">
                         <div class="h-48 overflow-hidden">
-                            <img src="https://www.genspark.ai/api/files/s/crdeTXYG" 
+                            <img src="/static/images/funnel-marketing.jpg" 
                                  alt="퍼널 마케팅" 
                                  class="w-full h-full object-cover hover:scale-105 transition-transform duration-500">
                         </div>
@@ -5404,7 +5404,7 @@ app.get('/about', (c) => {
                 <div class="grid md:grid-cols-2 gap-12 max-w-5xl mx-auto">
                     <div class="bg-white rounded-3xl p-10">
                         <div class="w-48 h-48 mx-auto mb-6 rounded-3xl overflow-hidden">
-                            <img src="https://www.genspark.ai/api/files/s/xReVn7xP" 
+                            <img src="/static/images/ceo-ko-heejun.jpg" 
                                  alt="고희준 대표이사" 
                                  class="w-full h-full object-cover">
                         </div>
@@ -5420,7 +5420,7 @@ app.get('/about', (c) => {
 
                     <div class="bg-white rounded-3xl p-10">
                         <div class="w-48 h-48 mx-auto mb-6 rounded-3xl overflow-hidden">
-                            <img src="https://www.genspark.ai/api/files/s/q28P4XVJ" 
+                            <img src="/static/images/team-ko-sunwoo.jpg" 
                                  alt="고선우 마케팅 1팀장" 
                                  class="w-full h-full object-cover">
                         </div>
