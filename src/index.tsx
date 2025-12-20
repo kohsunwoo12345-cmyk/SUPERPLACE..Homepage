@@ -50,10 +50,10 @@ app.post('/api/contact', async (c) => {
 // 회원가입 API
 app.post('/api/signup', async (c) => {
   try {
-    const { email, password, name, phone, academy_name } = await c.req.json()
+    const { email, password, name, phone, academy_name, academy_location } = await c.req.json()
     
-    if (!email || !password || !name) {
-      return c.json({ success: false, error: '필수 항목을 입력해주세요.' }, 400)
+    if (!email || !password || !name || !phone || !academy_name || !academy_location) {
+      return c.json({ success: false, error: '모든 필수 항목을 입력해주세요.' }, 400)
     }
 
     // 이메일 중복 확인
@@ -70,9 +70,9 @@ app.post('/api/signup', async (c) => {
 
     // DB 저장
     const result = await c.env.DB.prepare(`
-      INSERT INTO users (email, password, name, phone, academy_name, role)
-      VALUES (?, ?, ?, ?, ?, 'member')
-    `).bind(email, hashedPassword, name, phone || '', academy_name || '').run()
+      INSERT INTO users (email, password, name, phone, academy_name, academy_location, role)
+      VALUES (?, ?, ?, ?, ?, ?, 'member')
+    `).bind(email, hashedPassword, name, phone, academy_name, academy_location).run()
 
     return c.json({ 
       success: true, 
@@ -2235,13 +2235,13 @@ app.get('/signup', (c) => {
                 <div class="bg-white rounded-2xl border border-gray-200 p-8">
                     <form id="signupForm" class="space-y-5">
                         <div>
-                            <label class="block text-sm font-medium text-gray-900 mb-2">이름 <span class="text-red-500">*</span></label>
-                            <input type="text" name="name" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition">
+                            <label class="block text-sm font-medium text-gray-900 mb-2">원장님 성함 <span class="text-red-500">*</span></label>
+                            <input type="text" name="name" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition" placeholder="홍길동">
                         </div>
 
                         <div>
                             <label class="block text-sm font-medium text-gray-900 mb-2">이메일 <span class="text-red-500">*</span></label>
-                            <input type="email" name="email" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition">
+                            <input type="email" name="email" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition" placeholder="example@email.com">
                         </div>
 
                         <div>
@@ -2251,13 +2251,18 @@ app.get('/signup', (c) => {
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-900 mb-2">연락처</label>
-                            <input type="tel" name="phone" placeholder="010-0000-0000" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition">
+                            <label class="block text-sm font-medium text-gray-900 mb-2">연락처 <span class="text-red-500">*</span></label>
+                            <input type="tel" name="phone" required placeholder="010-0000-0000" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition">
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-900 mb-2">학원명</label>
-                            <input type="text" name="academy_name" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition">
+                            <label class="block text-sm font-medium text-gray-900 mb-2">학원 이름 <span class="text-red-500">*</span></label>
+                            <input type="text" name="academy_name" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition" placeholder="꾸메땅학원">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 mb-2">학원 위치 <span class="text-red-500">*</span></label>
+                            <input type="text" name="academy_location" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition" placeholder="인천 서구 검단동">
                         </div>
 
                         <button type="submit" class="w-full gradient-purple text-white py-3 rounded-xl font-medium hover:shadow-xl transition-all">
@@ -2284,7 +2289,8 @@ app.get('/signup', (c) => {
                     email: formData.get('email'),
                     password: formData.get('password'),
                     phone: formData.get('phone'),
-                    academy_name: formData.get('academy_name')
+                    academy_name: formData.get('academy_name'),
+                    academy_location: formData.get('academy_location')
                 }
 
                 try {
