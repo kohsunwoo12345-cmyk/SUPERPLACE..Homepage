@@ -5278,14 +5278,14 @@ app.get('/about', (c) => {
                             <div class="flex items-start gap-4">
                                 <div class="w-12 h-12 rounded-full gradient-purple flex items-center justify-center text-white font-bold flex-shrink-0">1</div>
                                 <div>
-                                    <h3 class="font-bold text-gray-900 mb-2">2020년 초</h3>
+                                    <h3 class="font-bold text-gray-900 mb-2">2015년</h3>
                                     <p class="text-gray-600">꾸메땅학원 개원, 학생 모집 어려움</p>
                                 </div>
                             </div>
                             <div class="flex items-start gap-4">
                                 <div class="w-12 h-12 rounded-full gradient-purple flex items-center justify-center text-white font-bold flex-shrink-0">2</div>
                                 <div>
-                                    <h3 class="font-bold text-gray-900 mb-2">2020년 중반</h3>
+                                    <h3 class="font-bold text-gray-900 mb-2">2020년</h3>
                                     <p class="text-gray-600">플레이스 마케팅 독학, 1위 달성</p>
                                 </div>
                             </div>
@@ -5416,6 +5416,7 @@ app.get('/about', (c) => {
                             <p>✓ 2015~ 꾸메땅학원 창립</p>
                             <p>✓ 2022~ (주)맘스온 대표이사</p>
                             <p>✓ 2022~ 킹클래스 학원장소통 오픈</p>
+                            <p>✓ 2024~ 한국학원대학교 협업</p>
                             <p>✓ 2025~ (주)우리는 슈퍼플레이스다 대표이사</p>
                         </div>
                     </div>
