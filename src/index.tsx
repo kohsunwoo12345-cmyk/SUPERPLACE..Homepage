@@ -1719,8 +1719,8 @@ app.get('/', (c) => {
                 <div class="grid lg:grid-cols-2 gap-8 mb-20">
                     <!-- Left: Image Grid -->\n                    <div class="grid grid-cols-2 gap-4 animate-fade-in">
                         <div class="col-span-2 rounded-2xl overflow-hidden">
-                            <img src="/static/images/kumetang-classroom-1.jpg" 
-                                 alt="꾸메땅학원 교실 내부" 
+                            <img src="/static/images/seminar-education.jpg" 
+                                 alt="휴지통(休知通) 교육 세미나 - 학원장 교육 현장" 
                                  class="w-full h-72 object-cover">
                         </div>
                         <div class="rounded-2xl overflow-hidden">
