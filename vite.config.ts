@@ -5,7 +5,17 @@ import { defineConfig } from 'vite'
 
 export default defineConfig({
   plugins: [
-    build(),
+    build({
+      outputDir: 'dist',
+      minify: true,
+      // Cloudflare Pages routing 설정
+      cloudflarePages: {
+        routes: {
+          include: ['/*'],
+          exclude: ['/static/*']
+        }
+      }
+    }),
     devServer({
       adapter,
       entry: 'src/index.tsx'
