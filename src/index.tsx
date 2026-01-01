@@ -2321,7 +2321,7 @@ app.get('/login', (c) => {
                         // 역할에 따라 자동 리다이렉트
                         setTimeout(() => {
                             if (result.user.role === 'admin') {
-                                window.location.href = '/admin/dashboard.html'
+                                window.location.href = '/admin/dashboard'
                             } else {
                                 window.location.href = '/dashboard'
                             }
@@ -9346,6 +9346,74 @@ app.post('/api/contact', async (c) => {
   } catch (error) {
     console.error('Contact error:', error)
     return c.json({ success: false, error: '문의 접수 실패' }, 500)
+  }
+})
+
+// 로그인 API
+app.post('/api/login', async (c) => {
+  try {
+    const { email, password } = await c.req.json()
+    const { env } = c
+    
+    // 사용자 조회
+    const user = await env.DB.prepare('SELECT * FROM users WHERE email = ?').bind(email).first()
+    
+    if (!user) {
+      return c.json({ success: false, error: '이메일 또는 비밀번호가 일치하지 않습니다' }, 401)
+    }
+    
+    // 비밀번호 확인 (실제로는 해시 비교를 해야 하지만, 현재는 단순 비교)
+    if (user.password !== password) {
+      return c.json({ success: false, error: '이메일 또는 비밀번호가 일치하지 않습니다' }, 401)
+    }
+    
+    // 비밀번호 제외하고 사용자 정보 반환
+    const userInfo = {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      phone: user.phone,
+      academy_name: user.academy_name,
+      role: user.role
+    }
+    
+    return c.json({ 
+      success: true, 
+      message: '로그인 성공',
+      user: userInfo
+    })
+  } catch (error) {
+    console.error('Login error:', error)
+    return c.json({ success: false, error: '로그인 처리 중 오류가 발생했습니다' }, 500)
+  }
+})
+
+// 회원가입 API
+app.post('/api/signup', async (c) => {
+  try {
+    const { email, password, name, phone, academy_name } = await c.req.json()
+    const { env } = c
+    
+    // 이메일 중복 확인
+    const existing = await env.DB.prepare('SELECT * FROM users WHERE email = ?').bind(email).first()
+    
+    if (existing) {
+      return c.json({ success: false, error: '이미 가입된 이메일입니다' }, 400)
+    }
+    
+    // 사용자 생성
+    await env.DB.prepare(`
+      INSERT INTO users (email, password, name, phone, academy_name, role, created_at)
+      VALUES (?, ?, ?, ?, ?, 'member', datetime('now'))
+    `).bind(email, password, name, phone || '', academy_name || '').run()
+    
+    return c.json({ 
+      success: true, 
+      message: '회원가입이 완료되었습니다. 로그인해주세요.'
+    })
+  } catch (error) {
+    console.error('Signup error:', error)
+    return c.json({ success: false, error: '회원가입 처리 중 오류가 발생했습니다' }, 500)
   }
 })
 
