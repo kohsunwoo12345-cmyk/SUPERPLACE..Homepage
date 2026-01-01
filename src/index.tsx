@@ -1713,6 +1713,98 @@ app.get('/', (c) => {
             </div>
         </section>
 
+        <!-- Program CTA Section -->
+        <section class="py-20 px-6 bg-gradient-to-br from-purple-50 to-white">
+            <div class="max-w-7xl mx-auto">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
+                        관심있는 프로그램을 선택하세요
+                    </h2>
+                    <p class="text-lg text-gray-600">
+                        각 프로그램의 상세 내용을 확인하고 바로 신청하세요
+                    </p>
+                </div>
+                
+                <div class="grid md:grid-cols-3 gap-6 mb-12">
+                    <!-- 네이버 플레이스 버튼 -->
+                    <a href="/programs/naver-place" class="group bg-white rounded-2xl p-8 border-2 border-purple-200 hover:border-purple-600 hover:shadow-xl transition-all duration-300 hover:-translate-y-2">
+                        <div class="w-16 h-16 gradient-purple rounded-2xl flex items-center justify-center mb-6 mx-auto group-hover:scale-110 transition-transform">
+                            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-900 text-center mb-3">
+                            네이버 플레이스<br>상위노출
+                        </h3>
+                        <p class="text-gray-600 text-center mb-4">
+                            지역 검색 1위 달성 전략
+                        </p>
+                        <div class="text-center">
+                            <span class="text-purple-600 font-bold group-hover:text-purple-700">
+                                자세히 보기 →
+                            </span>
+                        </div>
+                    </a>
+
+                    <!-- 블로그 버튼 -->
+                    <a href="/programs/blog" class="group bg-white rounded-2xl p-8 border-2 border-orange-200 hover:border-orange-500 hover:shadow-xl transition-all duration-300 hover:-translate-y-2">
+                        <div class="w-16 h-16 gradient-orange rounded-2xl flex items-center justify-center mb-6 mx-auto group-hover:scale-110 transition-transform">
+                            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-900 text-center mb-3">
+                            블로그<br>상위노출
+                        </h3>
+                        <p class="text-gray-600 text-center mb-4">
+                            검색 최상위 진입 전략
+                        </p>
+                        <div class="text-center">
+                            <span class="text-orange-500 font-bold group-hover:text-orange-600">
+                                자세히 보기 →
+                            </span>
+                        </div>
+                    </a>
+
+                    <!-- 퍼널 마케팅 버튼 -->
+                    <a href="/programs/funnel" class="group bg-white rounded-2xl p-8 border-2 border-purple-200 hover:border-purple-600 hover:shadow-xl transition-all duration-300 hover:-translate-y-2">
+                        <div class="w-16 h-16 gradient-purple rounded-2xl flex items-center justify-center mb-6 mx-auto group-hover:scale-110 transition-transform">
+                            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-900 text-center mb-3">
+                            퍼널<br>마케팅
+                        </h3>
+                        <p class="text-gray-600 text-center mb-4">
+                            24시간 자동 학생 모집
+                        </p>
+                        <div class="text-center">
+                            <span class="text-purple-600 font-bold group-hover:text-purple-700">
+                                자세히 보기 →
+                            </span>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- 대행 문의 큰 버튼 -->
+                <div class="text-center">
+                    <a href="/contact" class="inline-block gradient-purple text-white px-16 py-6 rounded-full text-xl font-bold shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
+                        <span class="flex items-center gap-3">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                            </svg>
+                            <span>대행 문의하기</span>
+                        </span>
+                    </a>
+                    <p class="text-gray-500 mt-4">
+                        24시간 내에 답변드립니다
+                    </p>
+                </div>
+            </div>
+        </section>
+
         <!-- Why Us Section -->
         <section class="py-32 px-6 bg-white">
             <div class="max-w-7xl mx-auto">
@@ -7891,6 +7983,423 @@ app.post('/api/contact', async (c) => {
   } catch (error) {
     console.error('Contact error:', error)
     return c.json({ success: false, error: '문의 접수 실패' }, 500)
+  }
+})
+
+// ============================================
+// 관리자 페이지
+// ============================================
+
+// 관리자 대시보드
+app.get('/admin', async (c) => {
+  const { env } = c
+  
+  // 통계 데이터 조회
+  const totalUsers = await env.DB.prepare('SELECT COUNT(*) as count FROM users').first()
+  const totalContacts = await env.DB.prepare('SELECT COUNT(*) as count FROM contacts').first()
+  const pendingContacts = await env.DB.prepare('SELECT COUNT(*) as count FROM contacts WHERE status = ?').bind('pending').first()
+  
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>관리자 대시보드 - 슈퍼플레이스</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+        <style>
+            .gradient-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+            .card-hover { transition: all 0.3s ease; }
+            .card-hover:hover { transform: translateY(-4px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
+        </style>
+    </head>
+    <body class="bg-gray-50">
+        <!-- 헤더 -->
+        <nav class="bg-white border-b border-gray-200 sticky top-0 z-50">
+            <div class="max-w-7xl mx-auto px-6 py-4">
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center gap-8">
+                        <a href="/" class="text-2xl font-bold text-purple-600">슈퍼플레이스 관리자</a>
+                        <div class="flex gap-4">
+                            <a href="/admin" class="text-purple-600 font-medium">대시보드</a>
+                            <a href="/admin/users" class="text-gray-600 hover:text-purple-600">사용자</a>
+                            <a href="/admin/contacts" class="text-gray-600 hover:text-purple-600">문의</a>
+                        </div>
+                    </div>
+                    <button onclick="logout()" class="text-gray-600 hover:text-red-600">
+                        <i class="fas fa-sign-out-alt mr-2"></i>로그아웃
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- 메인 컨텐츠 -->
+        <div class="max-w-7xl mx-auto px-6 py-8">
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">관리자 대시보드</h1>
+                <p class="text-gray-600">시스템 전체 현황을 한눈에 확인하세요</p>
+            </div>
+
+            <!-- 통계 카드 -->
+            <div class="grid md:grid-cols-3 gap-6 mb-8">
+                <!-- 전체 사용자 -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm card-hover border border-gray-100">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 gradient-purple rounded-xl flex items-center justify-center">
+                            <i class="fas fa-users text-white text-xl"></i>
+                        </div>
+                        <span class="text-sm text-gray-500">전체</span>
+                    </div>
+                    <div class="text-3xl font-bold text-gray-900 mb-1">${totalUsers?.count || 0}</div>
+                    <div class="text-sm text-gray-600">전체 사용자</div>
+                </div>
+
+                <!-- 전체 문의 -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm card-hover border border-gray-100">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-envelope text-white text-xl"></i>
+                        </div>
+                        <span class="text-sm text-gray-500">전체</span>
+                    </div>
+                    <div class="text-3xl font-bold text-gray-900 mb-1">${totalContacts?.count || 0}</div>
+                    <div class="text-sm text-gray-600">전체 문의</div>
+                </div>
+
+                <!-- 대기중 문의 -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm card-hover border border-gray-100">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-orange-500 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-clock text-white text-xl"></i>
+                        </div>
+                        <span class="text-sm text-orange-500">처리 필요</span>
+                    </div>
+                    <div class="text-3xl font-bold text-gray-900 mb-1">${pendingContacts?.count || 0}</div>
+                    <div class="text-sm text-gray-600">대기중 문의</div>
+                </div>
+            </div>
+
+            <!-- 빠른 메뉴 -->
+            <div class="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
+                <h2 class="text-xl font-bold text-gray-900 mb-6">빠른 메뉴</h2>
+                <div class="grid md:grid-cols-3 gap-4">
+                    <a href="/admin/users" class="flex items-center gap-4 p-4 rounded-xl border border-gray-200 hover:border-purple-300 hover:bg-purple-50 transition">
+                        <div class="w-12 h-12 gradient-purple rounded-xl flex items-center justify-center">
+                            <i class="fas fa-users text-white"></i>
+                        </div>
+                        <div>
+                            <div class="font-bold text-gray-900">사용자 관리</div>
+                            <div class="text-sm text-gray-600">회원 목록 및 관리</div>
+                        </div>
+                    </a>
+
+                    <a href="/admin/contacts" class="flex items-center gap-4 p-4 rounded-xl border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition">
+                        <div class="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-envelope text-white"></i>
+                        </div>
+                        <div>
+                            <div class="font-bold text-gray-900">문의 관리</div>
+                            <div class="text-sm text-gray-600">대행 문의 확인</div>
+                        </div>
+                    </a>
+
+                    <a href="/" class="flex items-center gap-4 p-4 rounded-xl border border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition">
+                        <div class="w-12 h-12 bg-gray-500 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-home text-white"></i>
+                        </div>
+                        <div>
+                            <div class="font-bold text-gray-900">메인 사이트</div>
+                            <div class="text-sm text-gray-600">홈페이지로 이동</div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            function logout() {
+                if(confirm('로그아웃 하시겠습니까?')) {
+                    localStorage.removeItem('user');
+                    window.location.href = '/';
+                }
+            }
+        </script>
+    </body>
+    </html>
+  `)
+})
+
+// 사용자 관리 페이지
+app.get('/admin/users', async (c) => {
+  const { env } = c
+  
+  // 사용자 목록 조회
+  const users = await env.DB.prepare('SELECT id, email, name, phone, academy_name, role, created_at FROM users ORDER BY created_at DESC').all()
+  
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>사용자 관리 - 슈퍼플레이스</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+        <style>
+            .gradient-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        </style>
+    </head>
+    <body class="bg-gray-50">
+        <!-- 헤더 -->
+        <nav class="bg-white border-b border-gray-200 sticky top-0 z-50">
+            <div class="max-w-7xl mx-auto px-6 py-4">
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center gap-8">
+                        <a href="/admin" class="text-2xl font-bold text-purple-600">슈퍼플레이스 관리자</a>
+                        <div class="flex gap-4">
+                            <a href="/admin" class="text-gray-600 hover:text-purple-600">대시보드</a>
+                            <a href="/admin/users" class="text-purple-600 font-medium">사용자</a>
+                            <a href="/admin/contacts" class="text-gray-600 hover:text-purple-600">문의</a>
+                        </div>
+                    </div>
+                    <button onclick="logout()" class="text-gray-600 hover:text-red-600">
+                        <i class="fas fa-sign-out-alt mr-2"></i>로그아웃
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- 메인 컨텐츠 -->
+        <div class="max-w-7xl mx-auto px-6 py-8">
+            <div class="mb-8 flex justify-between items-center">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900 mb-2">사용자 관리</h1>
+                    <p class="text-gray-600">전체 ${users?.results?.length || 0}명의 사용자</p>
+                </div>
+            </div>
+
+            <!-- 사용자 목록 테이블 -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50 border-b border-gray-200">
+                            <tr>
+                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">이메일</th>
+                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">이름</th>
+                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">전화번호</th>
+                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">학원명</th>
+                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">권한</th>
+                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">가입일</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            ${users?.results?.map(user => `
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${user.id}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${user.email}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${user.name}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${user.phone || '-'}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${user.academy_name || '-'}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-3 py-1 text-xs font-medium rounded-full ${user.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-700'}">
+                                            ${user.role === 'admin' ? '관리자' : '일반회원'}
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${new Date(user.created_at).toLocaleDateString('ko-KR')}</td>
+                                </tr>
+                            `).join('') || '<tr><td colspan="7" class="px-6 py-8 text-center text-gray-500">등록된 사용자가 없습니다</td></tr>'}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            function logout() {
+                if(confirm('로그아웃 하시겠습니까?')) {
+                    localStorage.removeItem('user');
+                    window.location.href = '/';
+                }
+            }
+        </script>
+    </body>
+    </html>
+  `)
+})
+
+// 문의 관리 페이지
+app.get('/admin/contacts', async (c) => {
+  const { env } = c
+  
+  // 문의 목록 조회
+  const contacts = await env.DB.prepare('SELECT * FROM contacts ORDER BY created_at DESC').all()
+  
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>문의 관리 - 슈퍼플레이스</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+        <style>
+            .gradient-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        </style>
+    </head>
+    <body class="bg-gray-50">
+        <!-- 헤더 -->
+        <nav class="bg-white border-b border-gray-200 sticky top-0 z-50">
+            <div class="max-w-7xl mx-auto px-6 py-4">
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center gap-8">
+                        <a href="/admin" class="text-2xl font-bold text-purple-600">슈퍼플레이스 관리자</a>
+                        <div class="flex gap-4">
+                            <a href="/admin" class="text-gray-600 hover:text-purple-600">대시보드</a>
+                            <a href="/admin/users" class="text-gray-600 hover:text-purple-600">사용자</a>
+                            <a href="/admin/contacts" class="text-purple-600 font-medium">문의</a>
+                        </div>
+                    </div>
+                    <button onclick="logout()" class="text-gray-600 hover:text-red-600">
+                        <i class="fas fa-sign-out-alt mr-2"></i>로그아웃
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- 메인 컨텐츠 -->
+        <div class="max-w-7xl mx-auto px-6 py-8">
+            <div class="mb-8 flex justify-between items-center">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900 mb-2">문의 관리</h1>
+                    <p class="text-gray-600">전체 ${contacts?.results?.length || 0}건의 문의</p>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="filterContacts('all')" class="px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium">전체</button>
+                    <button onclick="filterContacts('pending')" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm font-medium">대기중</button>
+                    <button onclick="filterContacts('completed')" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm font-medium">처리완료</button>
+                </div>
+            </div>
+
+            <!-- 문의 목록 -->
+            <div class="space-y-4">
+                ${contacts?.results?.map(contact => `
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition" data-status="${contact.status || 'pending'}">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-3 mb-2">
+                                    <h3 class="text-lg font-bold text-gray-900">${contact.name}</h3>
+                                    <span class="px-3 py-1 text-xs font-medium rounded-full ${contact.status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}">
+                                        ${contact.status === 'completed' ? '처리완료' : '대기중'}
+                                    </span>
+                                    <span class="px-3 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-700">
+                                        ${contact.inquiry || '일반문의'}
+                                    </span>
+                                </div>
+                                <div class="flex gap-4 text-sm text-gray-600">
+                                    <span><i class="fas fa-building mr-1"></i>${contact.academy || '-'}</span>
+                                    <span><i class="fas fa-phone mr-1"></i>${contact.phone}</span>
+                                    <span><i class="fas fa-envelope mr-1"></i>${contact.email}</span>
+                                </div>
+                            </div>
+                            <div class="text-sm text-gray-500">
+                                ${new Date(contact.created_at).toLocaleString('ko-KR')}
+                            </div>
+                        </div>
+
+                        <div class="bg-gray-50 rounded-xl p-4 mb-4">
+                            <div class="text-sm text-gray-700 whitespace-pre-wrap">${contact.message}</div>
+                        </div>
+
+                        ${contact.programs ? `
+                            <div class="flex gap-2 mb-4">
+                                <span class="text-sm text-gray-600">관심 프로그램:</span>
+                                ${JSON.parse(contact.programs || '[]').map(p => `
+                                    <span class="px-2 py-1 bg-purple-50 text-purple-700 text-xs rounded-lg">${p}</span>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+
+                        <div class="flex gap-2">
+                            <button onclick="updateStatus(${contact.id}, 'completed')" class="px-4 py-2 bg-green-500 text-white rounded-lg text-sm font-medium hover:bg-green-600">
+                                <i class="fas fa-check mr-1"></i>처리완료
+                            </button>
+                            <button onclick="updateStatus(${contact.id}, 'pending')" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-300">
+                                <i class="fas fa-undo mr-1"></i>대기중으로
+                            </button>
+                        </div>
+                    </div>
+                `).join('') || '<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center text-gray-500">등록된 문의가 없습니다</div>'}
+            </div>
+        </div>
+
+        <script>
+            function logout() {
+                if(confirm('로그아웃 하시겠습니까?')) {
+                    localStorage.removeItem('user');
+                    window.location.href = '/';
+                }
+            }
+
+            function filterContacts(status) {
+                const items = document.querySelectorAll('[data-status]');
+                const buttons = document.querySelectorAll('button[onclick^="filterContacts"]');
+                
+                buttons.forEach(btn => {
+                    btn.classList.remove('bg-purple-600', 'text-white');
+                    btn.classList.add('bg-gray-200', 'text-gray-700');
+                });
+                event.target.classList.add('bg-purple-600', 'text-white');
+                event.target.classList.remove('bg-gray-200', 'text-gray-700');
+                
+                items.forEach(item => {
+                    if(status === 'all') {
+                        item.style.display = 'block';
+                    } else {
+                        item.style.display = item.dataset.status === status ? 'block' : 'none';
+                    }
+                });
+            }
+
+            async function updateStatus(id, status) {
+                try {
+                    const response = await fetch('/api/admin/contacts/' + id, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ status })
+                    });
+
+                    if(response.ok) {
+                        alert('상태가 변경되었습니다');
+                        location.reload();
+                    } else {
+                        alert('상태 변경 실패');
+                    }
+                } catch(error) {
+                    alert('오류가 발생했습니다');
+                }
+            }
+        </script>
+    </body>
+    </html>
+  `)
+})
+
+// 문의 상태 업데이트 API
+app.patch('/api/admin/contacts/:id', async (c) => {
+  try {
+    const id = c.req.param('id')
+    const { status } = await c.req.json()
+    const { env } = c
+    
+    await env.DB.prepare('UPDATE contacts SET status = ? WHERE id = ?').bind(status, id).run()
+    
+    return c.json({ success: true })
+  } catch (error) {
+    console.error('Update contact status error:', error)
+    return c.json({ success: false }, 500)
   }
 })
 
