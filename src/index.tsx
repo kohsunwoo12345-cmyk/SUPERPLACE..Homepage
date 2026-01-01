@@ -11784,6 +11784,11 @@ app.get('/admin/dashboard', async (c) => {
   `)
 })
 
+// .html 확장자 접근 시 리다이렉트
+app.get('/admin/programs.html', (c) => {
+  return c.redirect('/admin/programs', 301)
+})
+
 // 관리자 프로그램 관리 페이지
 app.get('/admin/programs', (c) => {
   return c.html(`
