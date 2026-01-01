@@ -11817,25 +11817,21 @@ app.get('/admin/dashboard', async (c) => {
                     </div>
                 </a>
                 
-                <div onclick="showPrograms()" class="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition border border-gray-200 cursor-pointer">
+                <a href="/admin/programs" class="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition border border-gray-200">
                     <div class="flex items-center gap-4">
                         <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
                             <i class="fas fa-graduation-cap text-purple-600 text-xl"></i>
                         </div>
                         <div>
                             <h3 class="text-lg font-bold text-gray-900">프로그램 관리</h3>
-                            <p class="text-gray-600">교육 프로그램 12개 등록됨</p>
+                            <p class="text-gray-600">교육 프로그램 13개 등록됨</p>
                         </div>
                     </div>
-                </div>
+                </a>
             </div>
         </div>
 
         <script>
-            function showPrograms() {
-                alert('프로그램 관리\\n\\n현재 등록된 12개 프로그램:\\n\\n1. 네이버 플레이스 상위노출\\n2. 블로그 상위노출\\n3. 퍼널 마케팅\\n4. 당근 비즈니스 마케팅\\n5. 메타 광고 (Facebook/Instagram)\\n6. 유튜브 광고\\n7. SNS 마케팅\\n8. 영상 마케팅\\n9. 쓰레드 마케팅\\n10. 커뮤니티 마케팅\\n11. 브랜딩\\n12. 데이터 분석\\n\\n각 프로그램은 /programs 페이지에서 확인 가능합니다.');
-            }
-
             function logout() {
                 if(confirm('로그아웃 하시겠습니까?')) {
                     localStorage.removeItem('user');
@@ -11854,7 +11850,12 @@ app.get('/admin/programs.html', (c) => {
 })
 
 // 관리자 프로그램 관리 페이지
-app.get('/admin/programs', (c) => {
+app.get('/admin/programs', async (c) => {
+  const { env } = c
+  
+  // 모든 사용자와 프로그램 목록 조회
+  const users = await env.DB.prepare('SELECT id, email, name, role FROM users WHERE role != ? ORDER BY created_at DESC').bind('admin').all()
+
   return c.html(`
     <!DOCTYPE html>
     <html lang="ko">
@@ -11866,7 +11867,7 @@ app.get('/admin/programs', (c) => {
         <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
     </head>
     <body class="bg-gray-50">
-        <nav class="bg-white border-b border-gray-200">
+        <nav class="bg-white border-b border-gray-200 sticky top-0 z-50">
             <div class="max-w-7xl mx-auto px-6 py-4">
                 <div class="flex justify-between items-center">
                     <div class="flex items-center gap-8">
@@ -11888,103 +11889,176 @@ app.get('/admin/programs', (c) => {
         <div class="max-w-7xl mx-auto px-6 py-8">
             <div class="mb-8">
                 <h1 class="text-3xl font-bold text-gray-900 mb-2">프로그램 관리</h1>
-                <p class="text-gray-600">총 12개의 교육 프로그램이 등록되어 있습니다</p>
+                <p class="text-gray-600">총 13개의 교육 프로그램이 등록되어 있습니다. 클릭하여 권한을 관리하세요.</p>
             </div>
 
-            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-                    <div class="text-4xl mb-3">🗺️</div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-2">네이버 플레이스 상위노출</h3>
-                    <p class="text-gray-600 text-sm mb-4">지역 검색 1위를 위한 실전 노하우</p>
-                    <span class="px-3 py-1 bg-green-100 text-green-700 text-xs rounded-full">활성화</span>
+            <div id="programsGrid" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+        </div>
+
+        <!-- 권한 관리 모달 -->
+        <div id="permissionModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div class="bg-white rounded-2xl p-8 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-900">
+                        <span id="modalProgramIcon"></span>
+                        <span id="modalProgramName"></span> 권한 관리
+                    </h2>
+                    <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-times text-2xl"></i>
+                    </button>
                 </div>
 
-                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-                    <div class="text-4xl mb-3">📝</div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-2">블로그 상위노출</h3>
-                    <p class="text-gray-600 text-sm mb-4">검색 1페이지 진입을 위한 블로그 마케팅</p>
-                    <span class="px-3 py-1 bg-green-100 text-green-700 text-xs rounded-full">활성화</span>
+                <div class="mb-6">
+                    <h3 class="text-lg font-bold mb-4">사용자별 권한 설정</h3>
+                    <div id="usersList" class="space-y-3 max-h-96 overflow-y-auto"></div>
                 </div>
 
-                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-                    <div class="text-4xl mb-3">🎯</div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-2">퍼널 마케팅</h3>
-                    <p class="text-gray-600 text-sm mb-4">자동화된 학생 모집 시스템 구축</p>
-                    <span class="px-3 py-1 bg-green-100 text-green-700 text-xs rounded-full">활성화</span>
-                </div>
-
-                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-                    <div class="text-4xl mb-3">🥕</div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-2">당근 비즈니스 마케팅</h3>
-                    <p class="text-gray-600 text-sm mb-4">당근마켓으로 지역 고객 확보</p>
-                    <span class="px-3 py-1 bg-green-100 text-green-700 text-xs rounded-full">활성화</span>
-                </div>
-
-                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-                    <div class="text-4xl mb-3">📘</div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-2">메타 광고</h3>
-                    <p class="text-gray-600 text-sm mb-4">Facebook·Instagram 광고 마스터</p>
-                    <span class="px-3 py-1 bg-green-100 text-green-700 text-xs rounded-full">활성화</span>
-                </div>
-
-                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-                    <div class="text-4xl mb-3">📺</div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-2">유튜브 광고</h3>
-                    <p class="text-gray-600 text-sm mb-4">유튜브 광고로 학생 모집</p>
-                    <span class="px-3 py-1 bg-green-100 text-green-700 text-xs rounded-full">활성화</span>
-                </div>
-
-                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-                    <div class="text-4xl mb-3">📱</div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-2">SNS 마케팅</h3>
-                    <p class="text-gray-600 text-sm mb-4">인스타그램, 페이스북 활용 전략</p>
-                    <span class="px-3 py-1 bg-green-100 text-green-700 text-xs rounded-full">활성화</span>
-                </div>
-
-                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-                    <div class="text-4xl mb-3">🎥</div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-2">영상 마케팅</h3>
-                    <p class="text-gray-600 text-sm mb-4">유튜브, 숏폼 콘텐츠 제작</p>
-                    <span class="px-3 py-1 bg-green-100 text-green-700 text-xs rounded-full">활성화</span>
-                </div>
-
-                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-                    <div class="text-4xl mb-3">🧵</div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-2">쓰레드 마케팅</h3>
-                    <p class="text-gray-600 text-sm mb-4">새로운 SNS 플랫폼 쓰레드 활용</p>
-                    <span class="px-3 py-1 bg-green-100 text-green-700 text-xs rounded-full">활성화</span>
-                </div>
-
-                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-                    <div class="text-4xl mb-3">👥</div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-2">커뮤니티 마케팅</h3>
-                    <p class="text-gray-600 text-sm mb-4">학부모 커뮤니티 활성화 전략</p>
-                    <span class="px-3 py-1 bg-green-100 text-green-700 text-xs rounded-full">활성화</span>
-                </div>
-
-                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-                    <div class="text-4xl mb-3">🎨</div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-2">브랜딩</h3>
-                    <p class="text-gray-600 text-sm mb-4">학원 브랜드 아이덴티티 구축</p>
-                    <span class="px-3 py-1 bg-green-100 text-green-700 text-xs rounded-full">활성화</span>
-                </div>
-
-                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-                    <div class="text-4xl mb-3">📊</div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-2">데이터 분석</h3>
-                    <p class="text-gray-600 text-sm mb-4">마케팅 성과 분석 및 최적화</p>
-                    <span class="px-3 py-1 bg-green-100 text-green-700 text-xs rounded-full">활성화</span>
+                <div class="flex gap-4">
+                    <button onclick="savePermissions()" class="flex-1 px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-semibold">
+                        <i class="fas fa-save mr-2"></i>저장
+                    </button>
+                    <button onclick="closeModal()" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-semibold">
+                        취소
+                    </button>
                 </div>
             </div>
         </div>
 
         <script>
+            const programs = [
+                { id: 'naver-place', name: '네이버 플레이스 상위노출', desc: '지역 검색 1위를 위한 실전 노하우', icon: '🗺️', url: '/programs/naver-place' },
+                { id: 'blog', name: '블로그 상위노출', desc: '검색 1페이지 진입을 위한 블로그 마케팅', icon: '📝', url: '/programs/blog' },
+                { id: 'funnel', name: '퍼널 마케팅', desc: '자동화된 학생 모집 시스템 구축', icon: '🎯', url: '/programs/funnel' },
+                { id: 'sns', name: 'SNS 마케팅', desc: '인스타그램, 페이스북 활용 전략', icon: '📱', url: '/programs/sns' },
+                { id: 'video', name: '영상 마케팅', desc: '유튜브, 숏폼 콘텐츠 제작', icon: '🎥', url: '/programs/video' },
+                { id: 'ad', name: '온라인 광고', desc: '네이버, 구글 광고 운영 전략', icon: '💰', url: '/programs/ad' },
+                { id: 'community', name: '커뮤니티 마케팅', desc: '학부모 커뮤니티 활성화 전략', icon: '👥', url: '/programs/community' },
+                { id: 'branding', name: '브랜딩', desc: '학원 브랜드 아이덴티티 구축', icon: '🎨', url: '/programs/branding' },
+                { id: 'data', name: '데이터 분석', desc: '마케팅 성과 분석 및 최적화', icon: '📊', url: '/programs/data' },
+                { id: 'carrot', name: '당근 비즈니스 마케팅', desc: '지역 기반 당근마켓 활용 전략', icon: '🥕', url: '/programs/carrot' },
+                { id: 'meta', name: '메타 광고', desc: 'Facebook/Instagram 광고 운영', icon: '📘', url: '/programs/meta' },
+                { id: 'youtube-ad', name: '유튜브 광고', desc: '유튜브 광고 캠페인 운영', icon: '📺', url: '/programs/youtube-ad' },
+                { id: 'threads', name: '쓰레드 마케팅', desc: 'Meta Threads 활용 전략', icon: '🧵', url: '/programs/threads' }
+            ];
+
+            const users = \${JSON.stringify(users.results || [])};
+            let currentProgram = null;
+            let userPermissions = {};
+
+            // 프로그램 카드 렌더링
+            function renderPrograms() {
+                const grid = document.getElementById('programsGrid');
+                grid.innerHTML = programs.map(p => \`
+                    <div onclick="openPermissionModal('\${p.id}')" 
+                         class="bg-white rounded-xl shadow-sm p-6 border border-gray-200 hover:border-purple-300 hover:shadow-lg transition cursor-pointer">
+                        <div class="text-4xl mb-3">\${p.icon}</div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-2">\${p.name}</h3>
+                        <p class="text-gray-600 text-sm mb-4">\${p.desc}</p>
+                        <div class="flex gap-2">
+                            <span class="px-3 py-1 bg-green-100 text-green-700 text-xs rounded-full">활성화</span>
+                            <a href="\${p.url}" target="_blank" onclick="event.stopPropagation()" 
+                               class="px-3 py-1 bg-blue-100 text-blue-700 text-xs rounded-full hover:bg-blue-200">
+                                <i class="fas fa-external-link-alt mr-1"></i>보기
+                            </a>
+                        </div>
+                    </div>
+                \`).join('');
+            }
+
+            // 권한 관리 모달 열기
+            async function openPermissionModal(programId) {
+                currentProgram = programs.find(p => p.id === programId);
+                document.getElementById('modalProgramIcon').textContent = currentProgram.icon;
+                document.getElementById('modalProgramName').textContent = currentProgram.name;
+
+                // 사용자별 권한 조회
+                userPermissions = {};
+                for (const user of users) {
+                    const response = await fetch(\`/api/user/\${user.id}/permissions\`);
+                    const data = await response.json();
+                    const permissions = data.permissions || [];
+                    userPermissions[user.id] = permissions.some(
+                        p => p.permission_type === 'program' && p.permission_name === programId && p.is_active === 1
+                    );
+                }
+
+                renderUsersList();
+                document.getElementById('permissionModal').classList.remove('hidden');
+            }
+
+            // 사용자 목록 렌더링
+            function renderUsersList() {
+                const list = document.getElementById('usersList');
+                list.innerHTML = users.map(user => \`
+                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                        <div class="flex-1">
+                            <p class="font-semibold text-gray-900">\${user.name}</p>
+                            <p class="text-sm text-gray-600">\${user.email}</p>
+                        </div>
+                        <label class="flex items-center cursor-pointer">
+                            <input type="checkbox" 
+                                   id="user-\${user.id}" 
+                                   \${userPermissions[user.id] ? 'checked' : ''}
+                                   class="w-5 h-5 text-purple-600 rounded focus:ring-purple-500">
+                            <span class="ml-3 text-sm font-medium text-gray-900">권한 부여</span>
+                        </label>
+                    </div>
+                \`).join('');
+            }
+
+            // 권한 저장
+            async function savePermissions() {
+                const updates = [];
+                
+                for (const user of users) {
+                    const checkbox = document.getElementById(\`user-\${user.id}\`);
+                    const hasPermission = checkbox.checked;
+                    const hadPermission = userPermissions[user.id];
+
+                    if (hasPermission !== hadPermission) {
+                        updates.push({ userId: user.id, hasPermission });
+                    }
+                }
+
+                if (updates.length === 0) {
+                    alert('변경사항이 없습니다.');
+                    return;
+                }
+
+                for (const update of updates) {
+                    const url = update.hasPermission 
+                        ? '/api/admin/permissions/grant'
+                        : '/api/admin/permissions/revoke';
+
+                    await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            userId: update.userId,
+                            permissionType: 'program',
+                            permissionName: currentProgram.id
+                        })
+                    });
+                }
+
+                alert('권한이 성공적으로 저장되었습니다.');
+                closeModal();
+            }
+
+            function closeModal() {
+                document.getElementById('permissionModal').classList.add('hidden');
+                currentProgram = null;
+            }
+
             function logout() {
                 if(confirm('로그아웃 하시겠습니까?')) {
                     localStorage.removeItem('user');
                     window.location.href = '/';
                 }
             }
+
+            // 페이지 로드 시 프로그램 렌더링
+            renderPrograms();
         </script>
     </body>
     </html>
