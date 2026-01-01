@@ -11768,4 +11768,142 @@ app.get('/admin/dashboard', async (c) => {
   `)
 })
 
+// 관리자 프로그램 관리 페이지
+app.get('/admin/programs', (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>프로그램 관리 - 슈퍼플레이스</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    </head>
+    <body class="bg-gray-50">
+        <nav class="bg-white border-b border-gray-200">
+            <div class="max-w-7xl mx-auto px-6 py-4">
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center gap-8">
+                        <a href="/admin/dashboard" class="text-2xl font-bold text-purple-600">슈퍼플레이스 관리자</a>
+                        <div class="flex gap-4">
+                            <a href="/admin/dashboard" class="text-gray-600 hover:text-purple-600">대시보드</a>
+                            <a href="/admin/users" class="text-gray-600 hover:text-purple-600">사용자</a>
+                            <a href="/admin/contacts" class="text-gray-600 hover:text-purple-600">문의</a>
+                            <a href="/admin/programs" class="text-purple-600 font-semibold">프로그램</a>
+                        </div>
+                    </div>
+                    <button onclick="logout()" class="text-gray-600 hover:text-red-600">
+                        <i class="fas fa-sign-out-alt mr-2"></i>로그아웃
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <div class="max-w-7xl mx-auto px-6 py-8">
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">프로그램 관리</h1>
+                <p class="text-gray-600">총 12개의 교육 프로그램이 등록되어 있습니다</p>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                    <div class="text-4xl mb-3">🗺️</div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">네이버 플레이스 상위노출</h3>
+                    <p class="text-gray-600 text-sm mb-4">지역 검색 1위를 위한 실전 노하우</p>
+                    <span class="px-3 py-1 bg-green-100 text-green-700 text-xs rounded-full">활성화</span>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                    <div class="text-4xl mb-3">📝</div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">블로그 상위노출</h3>
+                    <p class="text-gray-600 text-sm mb-4">검색 1페이지 진입을 위한 블로그 마케팅</p>
+                    <span class="px-3 py-1 bg-green-100 text-green-700 text-xs rounded-full">활성화</span>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                    <div class="text-4xl mb-3">🎯</div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">퍼널 마케팅</h3>
+                    <p class="text-gray-600 text-sm mb-4">자동화된 학생 모집 시스템 구축</p>
+                    <span class="px-3 py-1 bg-green-100 text-green-700 text-xs rounded-full">활성화</span>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                    <div class="text-4xl mb-3">🥕</div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">당근 비즈니스 마케팅</h3>
+                    <p class="text-gray-600 text-sm mb-4">당근마켓으로 지역 고객 확보</p>
+                    <span class="px-3 py-1 bg-green-100 text-green-700 text-xs rounded-full">활성화</span>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                    <div class="text-4xl mb-3">📘</div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">메타 광고</h3>
+                    <p class="text-gray-600 text-sm mb-4">Facebook·Instagram 광고 마스터</p>
+                    <span class="px-3 py-1 bg-green-100 text-green-700 text-xs rounded-full">활성화</span>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                    <div class="text-4xl mb-3">📺</div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">유튜브 광고</h3>
+                    <p class="text-gray-600 text-sm mb-4">유튜브 광고로 학생 모집</p>
+                    <span class="px-3 py-1 bg-green-100 text-green-700 text-xs rounded-full">활성화</span>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                    <div class="text-4xl mb-3">📱</div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">SNS 마케팅</h3>
+                    <p class="text-gray-600 text-sm mb-4">인스타그램, 페이스북 활용 전략</p>
+                    <span class="px-3 py-1 bg-green-100 text-green-700 text-xs rounded-full">활성화</span>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                    <div class="text-4xl mb-3">🎥</div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">영상 마케팅</h3>
+                    <p class="text-gray-600 text-sm mb-4">유튜브, 숏폼 콘텐츠 제작</p>
+                    <span class="px-3 py-1 bg-green-100 text-green-700 text-xs rounded-full">활성화</span>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                    <div class="text-4xl mb-3">🧵</div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">쓰레드 마케팅</h3>
+                    <p class="text-gray-600 text-sm mb-4">새로운 SNS 플랫폼 쓰레드 활용</p>
+                    <span class="px-3 py-1 bg-green-100 text-green-700 text-xs rounded-full">활성화</span>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                    <div class="text-4xl mb-3">👥</div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">커뮤니티 마케팅</h3>
+                    <p class="text-gray-600 text-sm mb-4">학부모 커뮤니티 활성화 전략</p>
+                    <span class="px-3 py-1 bg-green-100 text-green-700 text-xs rounded-full">활성화</span>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                    <div class="text-4xl mb-3">🎨</div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">브랜딩</h3>
+                    <p class="text-gray-600 text-sm mb-4">학원 브랜드 아이덴티티 구축</p>
+                    <span class="px-3 py-1 bg-green-100 text-green-700 text-xs rounded-full">활성화</span>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                    <div class="text-4xl mb-3">📊</div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">데이터 분석</h3>
+                    <p class="text-gray-600 text-sm mb-4">마케팅 성과 분석 및 최적화</p>
+                    <span class="px-3 py-1 bg-green-100 text-green-700 text-xs rounded-full">활성화</span>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            function logout() {
+                if(confirm('로그아웃 하시겠습니까?')) {
+                    localStorage.removeItem('user');
+                    window.location.href = '/';
+                }
+            }
+        </script>
+    </body>
+    </html>
+  `)
+})
+
 export default app
