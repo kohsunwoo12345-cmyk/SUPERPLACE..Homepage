@@ -1618,6 +1618,9 @@ app.get('/', (c) => {
                                     <span>지역 SEO 완벽 가이드</span>
                                 </li>
                             </ul>
+                            <a href="/programs/naver-place" class="mt-6 block w-full py-3 text-center gradient-purple text-white rounded-xl font-bold hover:shadow-lg transition-all">
+                                자세히 보기 →
+                            </a>
                         </div>
                     </div>
 
@@ -1658,6 +1661,9 @@ app.get('/', (c) => {
                                     <span>콘텐츠 전략 수립</span>
                                 </li>
                             </ul>
+                            <a href="/programs/blog" class="mt-6 block w-full py-3 text-center gradient-orange text-white rounded-xl font-bold hover:shadow-lg transition-all">
+                                자세히 보기 →
+                            </a>
                         </div>
                     </div>
 
@@ -1698,6 +1704,9 @@ app.get('/', (c) => {
                                     <span>전환율 극대화 전략</span>
                                 </li>
                             </ul>
+                            <a href="/programs/funnel" class="mt-6 block w-full py-3 text-center gradient-purple text-white rounded-xl font-bold hover:shadow-lg transition-all">
+                                자세히 보기 →
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -7169,6 +7178,719 @@ app.post('/api/admin/impersonate', async (c) => {
   } catch (error) {
     console.error('Impersonate error:', error)
     return c.json({ success: false, error: '사용자 로그인 실패' }, 500)
+  }
+})
+
+// 교육 프로그램 상세 페이지 - 네이버 플레이스
+app.get('/programs/naver-place', (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>네이버 플레이스 상위노출 교육 - 슈퍼플레이스</title>
+        <meta name="description" content="지역 검색 1위 달성을 위한 네이버 플레이스 마케팅 실전 교육">
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+        <style>
+            .gradient-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+            .gradient-orange { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+        </style>
+    </head>
+    <body class="bg-gray-50">
+        <!-- Navigation -->
+        <nav class="bg-white shadow-sm fixed w-full top-0 z-50">
+            <div class="max-w-7xl mx-auto px-6 py-4">
+                <div class="flex justify-between items-center">
+                    <a href="/" class="text-2xl font-bold gradient-purple bg-clip-text text-transparent">슈퍼플레이스</a>
+                    <div class="hidden md:flex space-x-8">
+                        <a href="/" class="text-gray-600 hover:text-purple-600">홈</a>
+                        <a href="/about" class="text-gray-600 hover:text-purple-600">회사 소개</a>
+                        <a href="/contact" class="text-gray-600 hover:text-purple-600">대행 문의</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <div class="pt-24 pb-20">
+            <!-- Hero Section -->
+            <section class="bg-gradient-to-br from-purple-50 to-white py-20 px-6">
+                <div class="max-w-4xl mx-auto text-center">
+                    <div class="w-20 h-20 gradient-purple rounded-3xl flex items-center justify-center mx-auto mb-6">
+                        <i class="fas fa-map-marker-alt text-3xl text-white"></i>
+                    </div>
+                    <h1 class="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
+                        네이버 플레이스 상위노출
+                    </h1>
+                    <p class="text-xl text-gray-600 mb-8">
+                        지역 검색 1위 달성을 위한 실전 노하우<br>
+                        키워드 분석부터 리뷰 관리까지 완벽하게 마스터
+                    </p>
+                    <div class="flex flex-wrap justify-center gap-4">
+                        <a href="/contact" class="px-8 py-4 gradient-purple text-white rounded-full font-bold hover:shadow-lg transition-all">
+                            교육 신청하기
+                        </a>
+                        <a href="/" class="px-8 py-4 bg-white text-gray-700 rounded-full font-bold border-2 border-gray-200 hover:border-purple-600 transition-all">
+                            돌아가기
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 교육 내용 -->
+            <section class="py-20 px-6">
+                <div class="max-w-6xl mx-auto">
+                    <h2 class="text-3xl font-bold text-gray-900 mb-12 text-center">무엇을 배우나요?</h2>
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <div class="bg-white rounded-2xl p-8 shadow-sm">
+                            <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-4">
+                                <i class="fas fa-search text-purple-600 text-xl"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-900 mb-3">키워드 최적화 전략</h3>
+                            <ul class="space-y-2 text-gray-600">
+                                <li>✓ 지역별 핵심 키워드 발굴</li>
+                                <li>✓ 경쟁 분석 및 틈새 키워드 찾기</li>
+                                <li>✓ 카테고리 설정 최적화</li>
+                                <li>✓ 상호명 작성 전략</li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-white rounded-2xl p-8 shadow-sm">
+                            <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-4">
+                                <i class="fas fa-star text-purple-600 text-xl"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-900 mb-3">리뷰 관리 시스템</h3>
+                            <ul class="space-y-2 text-gray-600">
+                                <li>✓ 리뷰 유도 전략</li>
+                                <li>✓ 별점 관리 노하우</li>
+                                <li>✓ 답글 작성 가이드</li>
+                                <li>✓ 악성 리뷰 대응법</li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-white rounded-2xl p-8 shadow-sm">
+                            <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-4">
+                                <i class="fas fa-camera text-purple-600 text-xl"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-900 mb-3">사진 및 콘텐츠 관리</h3>
+                            <ul class="space-y-2 text-gray-600">
+                                <li>✓ 대표 사진 선정 기준</li>
+                                <li>✓ 메뉴 사진 최적화</li>
+                                <li>✓ 정기 업데이트 전략</li>
+                                <li>✓ 스토리 활용법</li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-white rounded-2xl p-8 shadow-sm">
+                            <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-4">
+                                <i class="fas fa-chart-line text-purple-600 text-xl"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-900 mb-3">지역 SEO 완벽 가이드</h3>
+                            <ul class="space-y-2 text-gray-600">
+                                <li>✓ 네이버 알고리즘 이해</li>
+                                <li>✓ 스마트플레이스 최적화</li>
+                                <li>✓ 통계 분석 및 개선</li>
+                                <li>✓ 경쟁업체 모니터링</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 실제 성과 -->
+            <section class="py-20 px-6 bg-white">
+                <div class="max-w-4xl mx-auto text-center">
+                    <h2 class="text-3xl font-bold text-gray-900 mb-12">실제 성과</h2>
+                    <div class="grid md:grid-cols-3 gap-8">
+                        <div>
+                            <div class="text-5xl font-bold text-purple-600 mb-2">1위</div>
+                            <div class="text-gray-600">평균 달성 기간<br>2-3개월</div>
+                        </div>
+                        <div>
+                            <div class="text-5xl font-bold text-purple-600 mb-2">300%</div>
+                            <div class="text-gray-600">평균 문의 증가율</div>
+                        </div>
+                        <div>
+                            <div class="text-5xl font-bold text-purple-600 mb-2">4.8점</div>
+                            <div class="text-gray-600">평균 별점 달성</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- CTA -->
+            <section class="py-20 px-6 gradient-purple">
+                <div class="max-w-4xl mx-auto text-center">
+                    <h2 class="text-4xl font-bold text-white mb-8">
+                        지금 바로 시작하세요
+                    </h2>
+                    <p class="text-xl text-white/90 mb-12">
+                        실전 노하우로 여러분의 학원을 1등으로 만들어드립니다
+                    </p>
+                    <a href="/contact" class="inline-block px-12 py-5 bg-white text-purple-600 rounded-full font-bold text-lg hover:shadow-2xl transition-all">
+                        교육 신청하기 →
+                    </a>
+                </div>
+            </section>
+        </div>
+    </body>
+    </html>
+  `)
+})
+
+// 교육 프로그램 상세 페이지 - 블로그
+app.get('/programs/blog', (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>블로그 상위노출 교육 - 슈퍼플레이스</title>
+        <meta name="description" content="네이버 블로그 검색 최상위 진입을 위한 SEO 최적화 실전 교육">
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+        <style>
+            .gradient-orange { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+        </style>
+    </head>
+    <body class="bg-gray-50">
+        <!-- Navigation -->
+        <nav class="bg-white shadow-sm fixed w-full top-0 z-50">
+            <div class="max-w-7xl mx-auto px-6 py-4">
+                <div class="flex justify-between items-center">
+                    <a href="/" class="text-2xl font-bold gradient-orange bg-clip-text text-transparent">슈퍼플레이스</a>
+                    <div class="hidden md:flex space-x-8">
+                        <a href="/" class="text-gray-600 hover:text-orange-500">홈</a>
+                        <a href="/about" class="text-gray-600 hover:text-orange-500">회사 소개</a>
+                        <a href="/contact" class="text-gray-600 hover:text-orange-500">대행 문의</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <div class="pt-24 pb-20">
+            <!-- Hero Section -->
+            <section class="bg-gradient-to-br from-pink-50 to-white py-20 px-6">
+                <div class="max-w-4xl mx-auto text-center">
+                    <div class="w-20 h-20 gradient-orange rounded-3xl flex items-center justify-center mx-auto mb-6">
+                        <i class="fas fa-blog text-3xl text-white"></i>
+                    </div>
+                    <h1 class="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
+                        블로그 상위노출
+                    </h1>
+                    <p class="text-xl text-gray-600 mb-8">
+                        네이버 블로그 검색 최상위 진입 전략<br>
+                        SEO 최적화와 콘텐츠 기획의 모든 것
+                    </p>
+                    <div class="flex flex-wrap justify-center gap-4">
+                        <a href="/contact" class="px-8 py-4 gradient-orange text-white rounded-full font-bold hover:shadow-lg transition-all">
+                            교육 신청하기
+                        </a>
+                        <a href="/" class="px-8 py-4 bg-white text-gray-700 rounded-full font-bold border-2 border-gray-200 hover:border-pink-500 transition-all">
+                            돌아가기
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 교육 내용 -->
+            <section class="py-20 px-6">
+                <div class="max-w-6xl mx-auto">
+                    <h2 class="text-3xl font-bold text-gray-900 mb-12 text-center">무엇을 배우나요?</h2>
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <div class="bg-white rounded-2xl p-8 shadow-sm">
+                            <div class="w-12 h-12 bg-pink-100 rounded-xl flex items-center justify-center mb-4">
+                                <i class="fas fa-brain text-pink-600 text-xl"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-900 mb-3">검색 알고리즘 완벽 이해</h3>
+                            <ul class="space-y-2 text-gray-600">
+                                <li>✓ 네이버 검색 로직 분석</li>
+                                <li>✓ 상위노출 핵심 요소</li>
+                                <li>✓ C-Rank, DA 점수 이해</li>
+                                <li>✓ 알고리즘 변화 대응법</li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-white rounded-2xl p-8 shadow-sm">
+                            <div class="w-12 h-12 bg-pink-100 rounded-xl flex items-center justify-center mb-4">
+                                <i class="fas fa-pen text-pink-600 text-xl"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-900 mb-3">SEO 최적화 글쓰기</h3>
+                            <ul class="space-y-2 text-gray-600">
+                                <li>✓ 키워드 리서치 방법</li>
+                                <li>✓ 제목/본문 최적화</li>
+                                <li>✓ 이미지 SEO 전략</li>
+                                <li>✓ 내부링크 활용법</li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-white rounded-2xl p-8 shadow-sm">
+                            <div class="w-12 h-12 bg-pink-100 rounded-xl flex items-center justify-center mb-4">
+                                <i class="fas fa-lightbulb text-pink-600 text-xl"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-900 mb-3">콘텐츠 기획 전략</h3>
+                            <ul class="space-y-2 text-gray-600">
+                                <li>✓ 학원업 특화 주제 발굴</li>
+                                <li>✓ 시리즈 콘텐츠 기획</li>
+                                <li>✓ 계절별 콘텐츠 전략</li>
+                                <li>✓ 바이럴 콘텐츠 제작</li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-white rounded-2xl p-8 shadow-sm">
+                            <div class="w-12 h-12 bg-pink-100 rounded-xl flex items-center justify-center mb-4">
+                                <i class="fas fa-rocket text-pink-600 text-xl"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-900 mb-3">지속 성장 전략</h3>
+                            <ul class="space-y-2 text-gray-600">
+                                <li>✓ 포스팅 주기 관리</li>
+                                <li>✓ 이웃 관리 노하우</li>
+                                <li>✓ 공감/댓글 전략</li>
+                                <li>✓ 통계 분석 및 개선</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 실제 성과 -->
+            <section class="py-20 px-6 bg-white">
+                <div class="max-w-4xl mx-auto text-center">
+                    <h2 class="text-3xl font-bold text-gray-900 mb-12">실제 성과</h2>
+                    <div class="grid md:grid-cols-3 gap-8">
+                        <div>
+                            <div class="text-5xl font-bold text-pink-600 mb-2">Top 3</div>
+                            <div class="text-gray-600">평균 달성 기간<br>1-2개월</div>
+                        </div>
+                        <div>
+                            <div class="text-5xl font-bold text-pink-600 mb-2">500%</div>
+                            <div class="text-gray-600">평균 방문자 증가율</div>
+                        </div>
+                        <div>
+                            <div class="text-5xl font-bold text-pink-600 mb-2">50+</div>
+                            <div class="text-gray-600">월평균 신규 문의</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- CTA -->
+            <section class="py-20 px-6 gradient-orange">
+                <div class="max-w-4xl mx-auto text-center">
+                    <h2 class="text-4xl font-bold text-white mb-8">
+                        지금 바로 시작하세요
+                    </h2>
+                    <p class="text-xl text-white/90 mb-12">
+                        검색 1페이지 진입, 더 이상 어렵지 않습니다
+                    </p>
+                    <a href="/contact" class="inline-block px-12 py-5 bg-white text-pink-600 rounded-full font-bold text-lg hover:shadow-2xl transition-all">
+                        교육 신청하기 →
+                    </a>
+                </div>
+            </section>
+        </div>
+    </body>
+    </html>
+  `)
+})
+
+// 교육 프로그램 상세 페이지 - 퍼널 마케팅
+app.get('/programs/funnel', (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>퍼널 마케팅 교육 - 슈퍼플레이스</title>
+        <meta name="description" content="자동화 퍼널로 24시간 학생 모집 시스템 구축 실전 교육">
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+        <style>
+            .gradient-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        </style>
+    </head>
+    <body class="bg-gray-50">
+        <!-- Navigation -->
+        <nav class="bg-white shadow-sm fixed w-full top-0 z-50">
+            <div class="max-w-7xl mx-auto px-6 py-4">
+                <div class="flex justify-between items-center">
+                    <a href="/" class="text-2xl font-bold gradient-purple bg-clip-text text-transparent">슈퍼플레이스</a>
+                    <div class="hidden md:flex space-x-8">
+                        <a href="/" class="text-gray-600 hover:text-purple-600">홈</a>
+                        <a href="/about" class="text-gray-600 hover:text-purple-600">회사 소개</a>
+                        <a href="/contact" class="text-gray-600 hover:text-purple-600">대행 문의</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <div class="pt-24 pb-20">
+            <!-- Hero Section -->
+            <section class="bg-gradient-to-br from-purple-50 to-white py-20 px-6">
+                <div class="max-w-4xl mx-auto text-center">
+                    <div class="w-20 h-20 gradient-purple rounded-3xl flex items-center justify-center mx-auto mb-6">
+                        <i class="fas fa-filter text-3xl text-white"></i>
+                    </div>
+                    <h1 class="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
+                        퍼널 마케팅
+                    </h1>
+                    <p class="text-xl text-gray-600 mb-8">
+                        자동화 퍼널로 24시간 학생 모집<br>
+                        랜딩페이지부터 전환까지 완벽한 시스템 구축
+                    </p>
+                    <div class="flex flex-wrap justify-center gap-4">
+                        <a href="/contact" class="px-8 py-4 gradient-purple text-white rounded-full font-bold hover:shadow-lg transition-all">
+                            교육 신청하기
+                        </a>
+                        <a href="/" class="px-8 py-4 bg-white text-gray-700 rounded-full font-bold border-2 border-gray-200 hover:border-purple-600 transition-all">
+                            돌아가기
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 교육 내용 -->
+            <section class="py-20 px-6">
+                <div class="max-w-6xl mx-auto">
+                    <h2 class="text-3xl font-bold text-gray-900 mb-12 text-center">무엇을 배우나요?</h2>
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <div class="bg-white rounded-2xl p-8 shadow-sm">
+                            <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-4">
+                                <i class="fas fa-file-alt text-purple-600 text-xl"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-900 mb-3">랜딩페이지 제작</h3>
+                            <ul class="space-y-2 text-gray-600">
+                                <li>✓ 고전환 랜딩페이지 설계</li>
+                                <li>✓ 카피라이팅 기법</li>
+                                <li>✓ CTA 최적화 전략</li>
+                                <li>✓ 무료 도구 활용법</li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-white rounded-2xl p-8 shadow-sm">
+                            <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-4">
+                                <i class="fas fa-ad text-purple-600 text-xl"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-900 mb-3">광고 운영 전략</h3>
+                            <ul class="space-y-2 text-gray-600">
+                                <li>✓ 네이버/구글 광고 세팅</li>
+                                <li>✓ 타겟팅 최적화</li>
+                                <li>✓ 예산 관리 노하우</li>
+                                <li>✓ A/B 테스트 방법</li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-white rounded-2xl p-8 shadow-sm">
+                            <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-4">
+                                <i class="fas fa-robot text-purple-600 text-xl"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-900 mb-3">자동화 시스템 구축</h3>
+                            <ul class="space-y-2 text-gray-600">
+                                <li>✓ 챗봇 상담 시스템</li>
+                                <li>✓ 자동 SMS/이메일</li>
+                                <li>✓ CRM 도구 활용</li>
+                                <li>✓ 리타게팅 전략</li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-white rounded-2xl p-8 shadow-sm">
+                            <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-4">
+                                <i class="fas fa-chart-pie text-purple-600 text-xl"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-900 mb-3">전환율 최적화</h3>
+                            <ul class="space-y-2 text-gray-600">
+                                <li>✓ 고객 여정 설계</li>
+                                <li>✓ 데이터 분석 및 개선</li>
+                                <li>✓ 전환 포인트 최적화</li>
+                                <li>✓ ROI 극대화 전략</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 실제 성과 -->
+            <section class="py-20 px-6 bg-white">
+                <div class="max-w-4xl mx-auto text-center">
+                    <h2 class="text-3xl font-bold text-gray-900 mb-12">실제 성과</h2>
+                    <div class="grid md:grid-cols-3 gap-8">
+                        <div>
+                            <div class="text-5xl font-bold text-purple-600 mb-2">24시간</div>
+                            <div class="text-gray-600">자동 상담 시스템<br>운영</div>
+                        </div>
+                        <div>
+                            <div class="text-5xl font-bold text-purple-600 mb-2">800%</div>
+                            <div class="text-gray-600">평균 ROI<br>광고비 대비</div>
+                        </div>
+                        <div>
+                            <div class="text-5xl font-bold text-purple-600 mb-2">70%</div>
+                            <div class="text-gray-600">평균 전환율<br>문의→등록</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- CTA -->
+            <section class="py-20 px-6 gradient-purple">
+                <div class="max-w-4xl mx-auto text-center">
+                    <h2 class="text-4xl font-bold text-white mb-8">
+                        지금 바로 시작하세요
+                    </h2>
+                    <p class="text-xl text-white/90 mb-12">
+                        자는 동안에도 학생이 모집되는 시스템을 만드세요
+                    </p>
+                    <a href="/contact" class="inline-block px-12 py-5 bg-white text-purple-600 rounded-full font-bold text-lg hover:shadow-2xl transition-all">
+                        교육 신청하기 →
+                    </a>
+                </div>
+            </section>
+        </div>
+    </body>
+    </html>
+  `)
+})
+
+// 대행 문의 페이지
+app.get('/contact', (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>대행 문의 - 슈퍼플레이스</title>
+        <meta name="description" content="학원 마케팅 대행 및 교육 문의">
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+        <style>
+            .gradient-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        </style>
+    </head>
+    <body class="bg-gray-50">
+        <!-- Navigation -->
+        <nav class="bg-white shadow-sm fixed w-full top-0 z-50">
+            <div class="max-w-7xl mx-auto px-6 py-4">
+                <div class="flex justify-between items-center">
+                    <a href="/" class="text-2xl font-bold gradient-purple bg-clip-text text-transparent">슈퍼플레이스</a>
+                    <div class="hidden md:flex space-x-8">
+                        <a href="/" class="text-gray-600 hover:text-purple-600">홈</a>
+                        <a href="/about" class="text-gray-600 hover:text-purple-600">회사 소개</a>
+                        <a href="/contact" class="text-purple-600 font-bold">대행 문의</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <div class="pt-24 pb-20">
+            <!-- Hero Section -->
+            <section class="bg-gradient-to-br from-purple-50 to-white py-20 px-6">
+                <div class="max-w-4xl mx-auto text-center">
+                    <h1 class="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
+                        대행 문의
+                    </h1>
+                    <p class="text-xl text-gray-600 mb-8">
+                        학원 마케팅 교육 및 대행 서비스 문의<br>
+                        24시간 내에 연락드리겠습니다
+                    </p>
+                </div>
+            </section>
+
+            <!-- 문의 양식 -->
+            <section class="py-20 px-6">
+                <div class="max-w-3xl mx-auto">
+                    <div class="bg-white rounded-3xl shadow-lg p-8 md:p-12">
+                        <form id="contactForm" class="space-y-6">
+                            <!-- 문의 유형 -->
+                            <div>
+                                <label class="block text-gray-700 font-bold mb-3">문의 유형 *</label>
+                                <div class="grid md:grid-cols-2 gap-4">
+                                    <label class="flex items-center p-4 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-purple-600">
+                                        <input type="radio" name="type" value="교육" required class="mr-3">
+                                        <span>교육 프로그램 문의</span>
+                                    </label>
+                                    <label class="flex items-center p-4 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-purple-600">
+                                        <input type="radio" name="type" value="대행" required class="mr-3">
+                                        <span>마케팅 대행 문의</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- 학원명 -->
+                            <div>
+                                <label class="block text-gray-700 font-bold mb-3">학원명 *</label>
+                                <input type="text" name="academy" required 
+                                    class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-600 focus:outline-none"
+                                    placeholder="예: 꾸메땅학원">
+                            </div>
+
+                            <!-- 원장님 성함 -->
+                            <div>
+                                <label class="block text-gray-700 font-bold mb-3">원장님 성함 *</label>
+                                <input type="text" name="name" required 
+                                    class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-600 focus:outline-none"
+                                    placeholder="이름을 입력해주세요">
+                            </div>
+
+                            <!-- 연락처 -->
+                            <div>
+                                <label class="block text-gray-700 font-bold mb-3">연락처 *</label>
+                                <input type="tel" name="phone" required 
+                                    class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-600 focus:outline-none"
+                                    placeholder="010-0000-0000">
+                            </div>
+
+                            <!-- 이메일 -->
+                            <div>
+                                <label class="block text-gray-700 font-bold mb-3">이메일</label>
+                                <input type="email" name="email" 
+                                    class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-600 focus:outline-none"
+                                    placeholder="academy@example.com">
+                            </div>
+
+                            <!-- 관심 프로그램 -->
+                            <div>
+                                <label class="block text-gray-700 font-bold mb-3">관심 프로그램</label>
+                                <div class="space-y-2">
+                                    <label class="flex items-center">
+                                        <input type="checkbox" name="program" value="네이버플레이스" class="mr-2">
+                                        <span>네이버 플레이스 상위노출</span>
+                                    </label>
+                                    <label class="flex items-center">
+                                        <input type="checkbox" name="program" value="블로그" class="mr-2">
+                                        <span>블로그 상위노출</span>
+                                    </label>
+                                    <label class="flex items-center">
+                                        <input type="checkbox" name="program" value="퍼널" class="mr-2">
+                                        <span>퍼널 마케팅</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- 문의 내용 -->
+                            <div>
+                                <label class="block text-gray-700 font-bold mb-3">문의 내용 *</label>
+                                <textarea name="message" required rows="6"
+                                    class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-600 focus:outline-none"
+                                    placeholder="궁금하신 내용을 자유롭게 작성해주세요"></textarea>
+                            </div>
+
+                            <!-- 제출 버튼 -->
+                            <button type="submit" 
+                                class="w-full py-4 gradient-purple text-white rounded-xl font-bold text-lg hover:shadow-lg transition-all">
+                                문의하기
+                            </button>
+
+                            <p class="text-center text-sm text-gray-500">
+                                * 표시는 필수 입력 항목입니다
+                            </p>
+                        </form>
+
+                        <!-- 성공 메시지 (숨김) -->
+                        <div id="successMessage" class="hidden text-center py-12">
+                            <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                                <i class="fas fa-check text-3xl text-green-600"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold text-gray-900 mb-4">문의가 접수되었습니다!</h3>
+                            <p class="text-gray-600 mb-8">
+                                빠른 시간 내에 연락드리겠습니다.<br>
+                                감사합니다.
+                            </p>
+                            <a href="/" class="inline-block px-8 py-3 gradient-purple text-white rounded-full font-bold hover:shadow-lg transition-all">
+                                홈으로 돌아가기
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 연락처 정보 -->
+            <section class="py-20 px-6 bg-white">
+                <div class="max-w-4xl mx-auto">
+                    <h2 class="text-3xl font-bold text-gray-900 mb-12 text-center">연락처</h2>
+                    <div class="grid md:grid-cols-3 gap-8">
+                        <div class="text-center">
+                            <div class="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-phone text-purple-600 text-2xl"></i>
+                            </div>
+                            <h3 class="font-bold text-gray-900 mb-2">전화 문의</h3>
+                            <p class="text-gray-600">032-1234-5678</p>
+                        </div>
+                        <div class="text-center">
+                            <div class="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-envelope text-purple-600 text-2xl"></i>
+                            </div>
+                            <h3 class="font-bold text-gray-900 mb-2">이메일</h3>
+                            <p class="text-gray-600">contact@superplace.kr</p>
+                        </div>
+                        <div class="text-center">
+                            <div class="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-map-marker-alt text-purple-600 text-2xl"></i>
+                            </div>
+                            <h3 class="font-bold text-gray-900 mb-2">위치</h3>
+                            <p class="text-gray-600">인천 서구 검단동</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <script>
+            document.getElementById('contactForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(e.target);
+                const data = {
+                    type: formData.get('type'),
+                    academy: formData.get('academy'),
+                    name: formData.get('name'),
+                    phone: formData.get('phone'),
+                    email: formData.get('email'),
+                    programs: formData.getAll('program'),
+                    message: formData.get('message')
+                };
+
+                try {
+                    const response = await fetch('/api/contact', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+
+                    if (response.ok) {
+                        document.getElementById('contactForm').classList.add('hidden');
+                        document.getElementById('successMessage').classList.remove('hidden');
+                    } else {
+                        alert('문의 접수 중 오류가 발생했습니다. 다시 시도해주세요.');
+                    }
+                } catch (error) {
+                    alert('문의 접수 중 오류가 발생했습니다. 다시 시도해주세요.');
+                }
+            });
+        </script>
+    </body>
+    </html>
+  `)
+})
+
+// 대행 문의 API
+app.post('/api/contact', async (c) => {
+  try {
+    const { type, academy, name, phone, email, programs, message } = await c.req.json()
+    
+    // 데이터베이스에 저장
+    const { env } = c
+    await env.DB.prepare(`
+      INSERT INTO contacts (inquiry, academy, name, phone, email, programs, message, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))
+    `).bind(type, academy, name, phone, email || '', JSON.stringify(programs || []), message).run()
+
+    return c.json({ success: true, message: '문의가 접수되었습니다' })
+  } catch (error) {
+    console.error('Contact error:', error)
+    return c.json({ success: false, error: '문의 접수 실패' }, 500)
   }
 })
 
