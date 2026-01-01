@@ -11119,13 +11119,13 @@ app.get('/admin', async (c) => {
                         </div>
                     </a>
 
-                    <a href="/" class="flex items-center gap-4 p-4 rounded-xl border border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition">
-                        <div class="w-12 h-12 bg-gray-500 rounded-xl flex items-center justify-center">
-                            <i class="fas fa-home text-white"></i>
+                    <a href="/admin/programs" class="flex items-center gap-4 p-4 rounded-xl border border-gray-200 hover:border-green-300 hover:bg-green-50 transition">
+                        <div class="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-graduation-cap text-white"></i>
                         </div>
                         <div>
-                            <div class="font-bold text-gray-900">메인 사이트</div>
-                            <div class="text-sm text-gray-600">홈페이지로 이동</div>
+                            <div class="font-bold text-gray-900">프로그램 관리</div>
+                            <div class="text-sm text-gray-600">교육 프로그램 관리</div>
                         </div>
                     </a>
                 </div>
