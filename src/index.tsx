@@ -9884,6 +9884,673 @@ app.get('/tools/consultation-calendar', (c) => {
   `)
 })
 
+// 4. 학원 홍보 문구 생성기
+app.get('/tools/promo-generator', (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>학원 홍보 문구 생성기 - 슈퍼플레이스</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+        <style>
+            .gradient-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        </style>
+    </head>
+    <body class="bg-gray-50">
+        <nav class="bg-white border-b border-gray-200">
+            <div class="max-w-7xl mx-auto px-6 py-4">
+                <div class="flex justify-between items-center">
+                    <a href="/" class="text-2xl font-bold text-purple-600">슈퍼플레이스</a>
+                    <a href="/tools" class="text-gray-600 hover:text-purple-600">← 툴 목록</a>
+                </div>
+            </div>
+        </nav>
+
+        <div class="max-w-4xl mx-auto px-6 py-12">
+            <h1 class="text-4xl font-bold text-gray-900 mb-4">
+                <i class="fas fa-bullhorn text-purple-600 mr-3"></i>학원 홍보 문구 생성기
+            </h1>
+            <p class="text-xl text-gray-600 mb-8">학생 모집에 효과적인 홍보 문구를 자동으로 생성합니다</p>
+
+            <div class="bg-white rounded-2xl shadow-sm border p-8 mb-8">
+                <div class="grid md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">학원 유형</label>
+                        <select id="type" class="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-purple-500 outline-none">
+                            <option>영어학원</option>
+                            <option>수학학원</option>
+                            <option>과학학원</option>
+                            <option>논술학원</option>
+                            <option>입시학원</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">타겟 학년</label>
+                        <select id="grade" class="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-purple-500 outline-none">
+                            <option>초등</option>
+                            <option>중등</option>
+                            <option>고등</option>
+                            <option>전학년</option>
+                        </select>
+                    </div>
+                </div>
+                <button onclick="generate()" class="w-full gradient-purple text-white py-4 rounded-xl font-bold">
+                    <i class="fas fa-magic mr-2"></i>문구 생성하기
+                </button>
+            </div>
+
+            <div id="results" class="hidden space-y-4"></div>
+        </div>
+
+        <script>
+            function generate() {
+                const type = document.getElementById('type').value;
+                const grade = document.getElementById('grade').value;
+                const templates = [
+                    \`\${grade} \${type} 1등의 비결, 지금 바로 확인하세요!\`,
+                    \`\${grade}생 성적 향상 프로그램 무료 체험 이벤트\`,
+                    \`소수 정예 \${grade} \${type} - 1:1 맞춤 관리\`,
+                    \`\${grade} 내신·수능 완벽 대비 \${type}\`,
+                    \`합격률 98%! \${grade} 전문 \${type}\`,
+                    \`\${grade} \${type} 겨울방학 특강 모집 중\`,
+                    \`\${grade}생 학부모님, 성적 걱정 끝! 검증된 커리큘럼\`,
+                    \`\${grade} \${type} 신규 오픈 이벤트 - 첫달 50% 할인\`,
+                    \`\${grade}생 전문 강사진의 1:1 케어 시스템\`,
+                    \`\${grade} \${type} 성적 보장반 운영 중\`
+                ];
+
+                const html = templates.map((text, i) => \`
+                    <div class="bg-white rounded-xl p-6 shadow-sm border">
+                        <div class="flex justify-between items-start">
+                            <div class="flex-1">
+                                <div class="text-sm text-purple-600 font-medium mb-2">홍보 문구 \${i+1}</div>
+                                <div class="text-lg font-medium text-gray-900">\${text}</div>
+                            </div>
+                            <button onclick="copy('\${text.replace(/'/g, "\\\\'")}', this)" 
+                                    class="px-4 py-2 text-sm text-purple-600 hover:bg-purple-50 rounded-lg">
+                                <i class="fas fa-copy"></i> 복사
+                            </button>
+                        </div>
+                    </div>
+                \`).join('');
+
+                document.getElementById('results').innerHTML = html;
+                document.getElementById('results').classList.remove('hidden');
+            }
+
+            function copy(text, btn) {
+                navigator.clipboard.writeText(text);
+                btn.innerHTML = '<i class="fas fa-check"></i> 복사됨';
+                setTimeout(() => btn.innerHTML = '<i class="fas fa-copy"></i> 복사', 2000);
+            }
+        </script>
+    </body>
+    </html>
+  `)
+})
+
+// 5. 리뷰 답변 템플릿
+app.get('/tools/review-template', (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>리뷰 답변 템플릿 - 슈퍼플레이스</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <style>
+            .gradient-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        </style>
+    </head>
+    <body class="bg-gray-50">
+        <nav class="bg-white border-b">
+            <div class="max-w-7xl mx-auto px-6 py-4">
+                <div class="flex justify-between items-center">
+                    <a href="/" class="text-2xl font-bold text-purple-600">슈퍼플레이스</a>
+                    <a href="/tools" class="text-gray-600 hover:text-purple-600">← 툴 목록</a>
+                </div>
+            </div>
+        </nav>
+
+        <div class="max-w-4xl mx-auto px-6 py-12">
+            <h1 class="text-4xl font-bold text-gray-900 mb-4">
+                <i class="fas fa-comment-dots text-purple-600 mr-3"></i>리뷰 답변 템플릿
+            </h1>
+            <p class="text-xl text-gray-600 mb-8">긍정/부정 리뷰에 즉시 사용 가능한 전문적인 답변 템플릿</p>
+
+            <div class="grid md:grid-cols-2 gap-6">
+                <div class="bg-white rounded-2xl p-6 shadow-sm border">
+                    <h2 class="text-xl font-bold text-green-600 mb-4">
+                        <i class="fas fa-smile mr-2"></i>긍정 리뷰 답변
+                    </h2>
+                    <div class="space-y-4">
+                        ${['감사합니다! 앞으로도 최선을 다하겠습니다.', '소중한 후기 감사드립니다. 더욱 발전하는 학원이 되겠습니다.', '아이들의 성장이 저희의 가장 큰 보람입니다. 항상 응원해주세요!'].map((text, i) => `
+                            <div class="p-4 bg-green-50 rounded-xl">
+                                <div class="text-sm text-gray-600 mb-2">템플릿 ${i+1}</div>
+                                <div class="text-gray-900">${text}</div>
+                                <button onclick="copyText('${text}')" class="mt-2 text-sm text-green-600 hover:underline">
+                                    <i class="fas fa-copy"></i> 복사
+                                </button>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl p-6 shadow-sm border">
+                    <h2 class="text-xl font-bold text-orange-600 mb-4">
+                        <i class="fas fa-frown mr-2"></i>부정 리뷰 답변
+                    </h2>
+                    <div class="space-y-4">
+                        ${['소중한 의견 감사합니다. 더 나은 서비스를 제공하도록 노력하겠습니다.', '불편을 드려 죄송합니다. 빠르게 개선하겠습니다.', '전화 주시면 자세히 상담드리겠습니다. 감사합니다.'].map((text, i) => `
+                            <div class="p-4 bg-orange-50 rounded-xl">
+                                <div class="text-sm text-gray-600 mb-2">템플릿 ${i+1}</div>
+                                <div class="text-gray-900">${text}</div>
+                                <button onclick="copyText('${text}')" class="mt-2 text-sm text-orange-600 hover:underline">
+                                    <i class="fas fa-copy"></i> 복사
+                                </button>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            function copyText(text) {
+                navigator.clipboard.writeText(text);
+                alert('복사되었습니다!');
+            }
+        </script>
+    </body>
+    </html>
+  `)
+})
+
+// 6. 학부모 문자 메시지 템플릿
+app.get('/tools/parent-sms-template', (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>학부모 문자 템플릿 - 슈퍼플레이스</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <style>
+            .gradient-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        </style>
+    </head>
+    <body class="bg-gray-50">
+        <nav class="bg-white border-b">
+            <div class="max-w-7xl mx-auto px-6 py-4">
+                <div class="flex justify-between items-center">
+                    <a href="/" class="text-2xl font-bold text-purple-600">슈퍼플레이스</a>
+                    <a href="/tools" class="text-gray-600 hover:text-purple-600">← 툴 목록</a>
+                </div>
+            </div>
+        </nav>
+
+        <div class="max-w-5xl mx-auto px-6 py-12">
+            <h1 class="text-4xl font-bold mb-4">
+                <i class="fas fa-sms text-purple-600 mr-3"></i>학부모 문자 메시지 템플릿
+            </h1>
+            <p class="text-xl text-gray-600 mb-8">상황별로 바로 사용 가능한 학부모 문자 템플릿</p>
+
+            <div class="grid md:grid-cols-3 gap-6">
+                ${[
+                    {title: '성적 향상 안내', icon: 'chart-line', color: 'green', messages: [
+                        '안녕하세요. 이번 시험에서 수학 성적이 많이 향상되었습니다! 앞으로도 응원 부탁드립니다.',
+                        '학생의 꾸준한 노력으로 성적이 올랐습니다. 축하드립니다!',
+                        '이번 달 학습 진도가 우수합니다. 계속 응원해주세요.'
+                    ]},
+                    {title: '결석 확인', icon: 'calendar-times', color: 'orange', messages: [
+                        '안녕하세요. 오늘 수업에 불참하셨는데 괜찮으신가요?',
+                        '결석 사유 확인 부탁드립니다. 보강 수업 안내드리겠습니다.',
+                        '수업 불참 확인되었습니다. 건강 상태 괜찮으신지요?'
+                    ]},
+                    {title: '이벤트 안내', icon: 'gift', color: 'purple', messages: [
+                        '[이벤트] 친구 추천 시 상품권 증정! 자세한 내용은 학원으로 문의주세요.',
+                        '겨울방학 특강 안내드립니다. 조기 등록 시 할인 혜택!',
+                        '학부모 상담 주간 운영 중입니다. 예약 부탁드립니다.'
+                    ]}
+                ].map(category => `
+                    <div class="bg-white rounded-2xl p-6 shadow-sm border">
+                        <h2 class="text-lg font-bold text-${category.color}-600 mb-4">
+                            <i class="fas fa-${category.icon} mr-2"></i>${category.title}
+                        </h2>
+                        <div class="space-y-3">
+                            ${category.messages.map((msg, i) => `
+                                <div class="p-3 bg-gray-50 rounded-lg text-sm">
+                                    <div class="text-gray-900 mb-2">${msg}</div>
+                                    <button onclick="copy('${msg.replace(/'/g, "\\\\'")}', this)" 
+                                            class="text-xs text-purple-600 hover:underline">
+                                        복사하기
+                                    </button>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+
+        <script>
+            function copy(text, btn) {
+                navigator.clipboard.writeText(text);
+                btn.textContent = '복사됨!';
+                setTimeout(() => btn.textContent = '복사하기', 2000);
+            }
+        </script>
+    </body>
+    </html>
+  `)
+})
+
+// 7. 학원 포스터 문구 생성기
+app.get('/tools/poster-generator', (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>학원 포스터 문구 생성기 - 슈퍼플레이스</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <style>
+            .gradient-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+            .poster-preview { aspect-ratio: 3/4; }
+        </style>
+    </head>
+    <body class="bg-gray-50">
+        <nav class="bg-white border-b">
+            <div class="max-w-7xl mx-auto px-6 py-4">
+                <div class="flex justify-between items-center">
+                    <a href="/" class="text-2xl font-bold text-purple-600">슈퍼플레이스</a>
+                    <a href="/tools" class="text-gray-600 hover:text-purple-600">← 툴 목록</a>
+                </div>
+            </div>
+        </nav>
+
+        <div class="max-w-6xl mx-auto px-6 py-12">
+            <h1 class="text-4xl font-bold mb-4">
+                <i class="fas fa-image text-purple-600 mr-3"></i>학원 포스터 문구 생성기
+            </h1>
+            <p class="text-xl text-gray-600 mb-8">눈에 띄는 학원 홍보 포스터 문구를 생성합니다</p>
+
+            <div class="grid lg:grid-cols-2 gap-8">
+                <div class="bg-white rounded-2xl p-8 shadow-sm">
+                    <h2 class="text-xl font-bold mb-6">포스터 설정</h2>
+                    <div class="space-y-4 mb-6">
+                        <input type="text" id="title" placeholder="메인 문구 (예: 겨울방학 특강)" 
+                               class="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-purple-500 outline-none">
+                        <input type="text" id="subtitle" placeholder="부제목 (예: 성적 향상 보장)" 
+                               class="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-purple-500 outline-none">
+                        <input type="text" id="discount" placeholder="할인율 (예: 30% 할인)" 
+                               class="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-purple-500 outline-none">
+                    </div>
+                    <button onclick="generatePoster()" class="w-full gradient-purple text-white py-4 rounded-xl font-bold">
+                        포스터 미리보기
+                    </button>
+                </div>
+
+                <div class="bg-white rounded-2xl p-8 shadow-sm">
+                    <h2 class="text-xl font-bold mb-6">미리보기</h2>
+                    <div id="preview" class="poster-preview bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl p-8 flex flex-col justify-center items-center text-white">
+                        <div class="text-center">
+                            <div id="previewTitle" class="text-4xl font-bold mb-4">겨울방학 특강</div>
+                            <div id="previewSubtitle" class="text-2xl mb-4">성적 향상 보장</div>
+                            <div id="previewDiscount" class="text-5xl font-bold mb-4">30% 할인</div>
+                            <div class="text-lg">슈퍼플레이스 학원</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            function generatePoster() {
+                const title = document.getElementById('title').value || '겨울방학 특강';
+                const subtitle = document.getElementById('subtitle').value || '성적 향상 보장';
+                const discount = document.getElementById('discount').value || '30% 할인';
+
+                document.getElementById('previewTitle').textContent = title;
+                document.getElementById('previewSubtitle').textContent = subtitle;
+                document.getElementById('previewDiscount').textContent = discount;
+            }
+        </script>
+    </body>
+    </html>
+  `)
+})
+
+// 8. 경쟁사 분석 도구
+app.get('/tools/competitor-analysis', (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>경쟁사 분석 도구 - 슈퍼플레이스</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <style>
+            .gradient-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        </style>
+    </head>
+    <body class="bg-gray-50">
+        <nav class="bg-white border-b">
+            <div class="max-w-7xl mx-auto px-6 py-4">
+                <div class="flex justify-between items-center">
+                    <a href="/" class="text-2xl font-bold text-purple-600">슈퍼플레이스</a>
+                    <a href="/tools" class="text-gray-600 hover:text-purple-600">← 툴 목록</a>
+                </div>
+            </div>
+        </nav>
+
+        <div class="max-w-7xl mx-auto px-6 py-12">
+            <h1 class="text-4xl font-bold mb-4">
+                <i class="fas fa-chart-bar text-purple-600 mr-3"></i>경쟁사 분석 도구
+            </h1>
+            <p class="text-xl text-gray-600 mb-8">주변 학원 정보를 분석하여 차별화 전략을 수립하세요</p>
+
+            <div class="grid lg:grid-cols-3 gap-6">
+                <div class="bg-white rounded-2xl p-6 shadow-sm">
+                    <h2 class="text-lg font-bold mb-4">
+                        <i class="fas fa-map-marker-alt text-purple-600 mr-2"></i>지역 검색
+                    </h2>
+                    <input type="text" id="location" placeholder="예: 인천 서구" 
+                           class="w-full px-4 py-3 border rounded-xl mb-4 focus:ring-2 focus:ring-purple-500 outline-none">
+                    <button onclick="analyze()" class="w-full gradient-purple text-white py-3 rounded-xl font-bold">
+                        분석 시작
+                    </button>
+                </div>
+
+                <div class="lg:col-span-2 bg-white rounded-2xl p-6 shadow-sm">
+                    <h2 class="text-lg font-bold mb-4">분석 결과</h2>
+                    <div id="results" class="space-y-4">
+                        <div class="text-center py-12 text-gray-500">
+                            지역을 입력하고 분석을 시작하세요
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            function analyze() {
+                const location = document.getElementById('location').value;
+                if (!location) {
+                    alert('지역을 입력해주세요');
+                    return;
+                }
+
+                const data = [
+                    { name: 'A 영어학원', rating: 4.5, reviews: 120, price: '중간' },
+                    { name: 'B 학원', rating: 4.2, reviews: 85, price: '높음' },
+                    { name: 'C 영어', rating: 4.7, reviews: 200, price: '낮음' }
+                ];
+
+                const html = data.map(item => \`
+                    <div class="p-4 border rounded-xl hover:border-purple-400 transition">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="font-bold text-lg">\${item.name}</h3>
+                            <span class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm">
+                                ⭐ \${item.rating}
+                            </span>
+                        </div>
+                        <div class="text-sm text-gray-600 space-y-1">
+                            <div>리뷰: \${item.reviews}개</div>
+                            <div>가격대: \${item.price}</div>
+                        </div>
+                    </div>
+                \`).join('');
+
+                document.getElementById('results').innerHTML = html;
+            }
+        </script>
+    </body>
+    </html>
+  `)
+})
+
+// 9. 학원 운영 체크리스트
+app.get('/tools/operation-checklist', (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>학원 운영 체크리스트 - 슈퍼플레이스</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <style>
+            .gradient-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        </style>
+    </head>
+    <body class="bg-gray-50">
+        <nav class="bg-white border-b">
+            <div class="max-w-7xl mx-auto px-6 py-4">
+                <div class="flex justify-between items-center">
+                    <a href="/" class="text-2xl font-bold text-purple-600">슈퍼플레이스</a>
+                    <a href="/tools" class="text-gray-600 hover:text-purple-600">← 툴 목록</a>
+                </div>
+            </div>
+        </nav>
+
+        <div class="max-w-4xl mx-auto px-6 py-12">
+            <h1 class="text-4xl font-bold mb-4">
+                <i class="fas fa-tasks text-purple-600 mr-3"></i>학원 운영 체크리스트
+            </h1>
+            <p class="text-xl text-gray-600 mb-8">매일 확인해야 할 필수 체크리스트</p>
+
+            <div class="space-y-6">
+                ${[
+                    {title: '오전 업무', items: ['교실 청소 및 환기', '학생 출결 확인', '오늘의 수업 자료 준비', '학부모 문의 답변']},
+                    {title: '수업 중', items: ['학생 집중도 체크', '숙제 검사', '이해도 확인', '보충 필요 학생 파악']},
+                    {title: '수업 후', items: ['오늘의 진도 기록', '학부모 상담 예약', '다음 수업 준비', '시설 점검']}
+                ].map(section => `
+                    <div class="bg-white rounded-2xl p-6 shadow-sm">
+                        <h2 class="text-xl font-bold text-purple-600 mb-4">
+                            <i class="fas fa-clock mr-2"></i>${section.title}
+                        </h2>
+                        <div class="space-y-3">
+                            ${section.items.map((item, i) => `
+                                <label class="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer">
+                                    <input type="checkbox" class="w-5 h-5 text-purple-600 rounded">
+                                    <span class="text-gray-900">${item}</span>
+                                </label>
+                            `).join('')}
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+
+            <div class="mt-8 text-center">
+                <button onclick="resetAll()" class="px-8 py-3 bg-gray-200 text-gray-700 rounded-xl font-bold hover:bg-gray-300">
+                    전체 초기화
+                </button>
+            </div>
+        </div>
+
+        <script>
+            function resetAll() {
+                document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+            }
+        </script>
+    </body>
+    </html>
+  `)
+})
+
+// 10. 마케팅 캠페인 플래너
+app.get('/tools/campaign-planner', (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>마케팅 캠페인 플래너 - 슈퍼플레이스</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <style>
+            .gradient-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        </style>
+    </head>
+    <body class="bg-gray-50">
+        <nav class="bg-white border-b">
+            <div class="max-w-7xl mx-auto px-6 py-4">
+                <div class="flex justify-between items-center">
+                    <a href="/" class="text-2xl font-bold text-purple-600">슈퍼플레이스</a>
+                    <a href="/tools" class="text-gray-600 hover:text-purple-600">← 툴 목록</a>
+                </div>
+            </div>
+        </nav>
+
+        <div class="max-w-5xl mx-auto px-6 py-12">
+            <h1 class="text-4xl font-bold mb-4">
+                <i class="fas fa-calendar-alt text-purple-600 mr-3"></i>마케팅 캠페인 플래너
+            </h1>
+            <p class="text-xl text-gray-600 mb-8">월별 마케팅 캠페인을 체계적으로 계획하세요</p>
+
+            <div class="bg-white rounded-2xl p-8 shadow-sm mb-8">
+                <h2 class="text-2xl font-bold mb-6">2025년 연간 캠페인 계획</h2>
+                
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    ${[
+                        {month: '1월', campaign: '겨울방학 특강', status: 'active'},
+                        {month: '2월', campaign: '신학기 준비반', status: 'planning'},
+                        {month: '3월', campaign: '봄 신규 등록 이벤트', status: 'upcoming'},
+                        {month: '4월', campaign: '중간고사 대비반', status: 'upcoming'},
+                        {month: '7월', campaign: '여름방학 캠프', status: 'upcoming'},
+                        {month: '12월', campaign: '연말 결산 이벤트', status: 'upcoming'}
+                    ].map(item => `
+                        <div class="p-6 border-2 ${item.status === 'active' ? 'border-purple-500 bg-purple-50' : 'border-gray-200'} rounded-xl">
+                            <div class="flex justify-between items-start mb-3">
+                                <h3 class="font-bold text-lg">${item.month}</h3>
+                                <span class="px-2 py-1 text-xs rounded-full ${
+                                    item.status === 'active' ? 'bg-purple-200 text-purple-700' : 
+                                    item.status === 'planning' ? 'bg-blue-200 text-blue-700' : 
+                                    'bg-gray-200 text-gray-700'
+                                }">
+                                    ${item.status === 'active' ? '진행중' : item.status === 'planning' ? '준비중' : '예정'}
+                                </span>
+                            </div>
+                            <p class="text-gray-700">${item.campaign}</p>
+                            <button onclick="alert('캠페인 상세 페이지')" 
+                                    class="mt-4 w-full py-2 text-sm text-purple-600 border border-purple-300 rounded-lg hover:bg-purple-50">
+                                자세히 보기
+                            </button>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+
+            <div class="bg-gradient-to-r from-purple-50 to-blue-50 rounded-2xl p-8">
+                <h3 class="text-xl font-bold mb-4">💡 효과적인 캠페인 전략</h3>
+                <div class="grid md:grid-cols-3 gap-6">
+                    <div>
+                        <h4 class="font-bold text-purple-600 mb-2">타이밍</h4>
+                        <p class="text-sm text-gray-700">방학 2주 전부터 홍보 시작</p>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-purple-600 mb-2">채널</h4>
+                        <p class="text-sm text-gray-700">네이버 플레이스, 블로그, 문자</p>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-purple-600 mb-2">혜택</h4>
+                        <p class="text-sm text-gray-700">조기 등록 할인 + 사은품</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+    </html>
+  `)
+})
+
+// 툴 메인 페이지 (목록)
+app.get('/tools', (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>마케팅 툴 - 슈퍼플레이스</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+        <style>
+            .gradient-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+            .tool-card { transition: all 0.3s; }
+            .tool-card:hover { transform: translateY(-4px); }
+        </style>
+    </head>
+    <body class="bg-gray-50">
+        <nav class="bg-white border-b border-gray-200">
+            <div class="max-w-7xl mx-auto px-6 py-4">
+                <div class="flex justify-between items-center">
+                    <a href="/" class="text-2xl font-bold text-purple-600">슈퍼플레이스</a>
+                    <a href="/" class="text-gray-600 hover:text-purple-600">← 홈으로</a>
+                </div>
+            </div>
+        </nav>
+
+        <div class="max-w-7xl mx-auto px-6 py-12">
+            <div class="text-center mb-12">
+                <h1 class="text-5xl font-bold text-gray-900 mb-4">마케팅 툴</h1>
+                <p class="text-xl text-gray-600">학원 마케팅에 필요한 모든 도구를 한 곳에서</p>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                ${[
+                    {url: '/tools/place-keyword-analyzer', icon: 'search', title: '네이버 플레이스 키워드 분석기', desc: '최적의 키워드로 상위 노출', color: 'purple'},
+                    {url: '/tools/blog-title-generator', icon: 'lightbulb', title: '블로그 제목 생성기', desc: '클릭률 높은 제목 자동 생성', color: 'orange'},
+                    {url: '/tools/consultation-calendar', icon: 'calendar-check', title: '상담 예약 캘린더', desc: '간편한 상담 예약 시스템', color: 'green'},
+                    {url: '/tools/promo-generator', icon: 'bullhorn', title: '학원 홍보 문구 생성기', desc: '효과적인 홍보 문구 생성', color: 'blue'},
+                    {url: '/tools/review-template', icon: 'comment-dots', title: '리뷰 답변 템플릿', desc: '즉시 사용 가능한 답변', color: 'pink'},
+                    {url: '/tools/parent-sms-template', icon: 'sms', title: '학부모 문자 템플릿', desc: '상황별 문자 메시지', color: 'indigo'},
+                    {url: '/tools/poster-generator', icon: 'image', title: '포스터 문구 생성기', desc: '눈에 띄는 포스터 제작', color: 'red'},
+                    {url: '/tools/competitor-analysis', icon: 'chart-bar', title: '경쟁사 분석 도구', desc: '주변 학원 정보 분석', color: 'teal'},
+                    {url: '/tools/operation-checklist', icon: 'tasks', title: '학원 운영 체크리스트', desc: '필수 업무 관리', color: 'yellow'},
+                    {url: '/tools/campaign-planner', icon: 'calendar-alt', title: '마케팅 캠페인 플래너', desc: '연간 캠페인 계획', color: 'cyan'}
+                ].map(tool => `
+                    <a href="${tool.url}" class="tool-card block bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-lg">
+                        <div class="flex items-start gap-4">
+                            <div class="w-12 h-12 bg-${tool.color}-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-${tool.icon} text-${tool.color}-600 text-xl"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="font-bold text-lg text-gray-900 mb-2">${tool.title}</h3>
+                                <p class="text-sm text-gray-600">${tool.desc}</p>
+                            </div>
+                            <i class="fas fa-chevron-right text-gray-400"></i>
+                        </div>
+                    </a>
+                `).join('')}
+            </div>
+
+            <div class="mt-12 text-center">
+                <div class="inline-block bg-gradient-to-r from-purple-50 to-blue-50 rounded-2xl p-8">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">
+                        <i class="fas fa-rocket text-purple-600 mr-2"></i>
+                        더 많은 기능이 계속 추가됩니다!
+                    </h3>
+                    <p class="text-gray-600 mb-6">학원 운영에 필요한 툴이 있다면 제안해주세요</p>
+                    <a href="/contact" class="inline-block gradient-purple text-white px-8 py-4 rounded-xl font-bold hover:shadow-lg">
+                        기능 제안하기
+                    </a>
+                </div>
+            </div>
+        </div>
+    </body>
+    </html>
+  `)
+})
+
 // ============================================
 // 관리자 페이지
 // ============================================
