@@ -11728,7 +11728,7 @@ app.get('/admin/dashboard', async (c) => {
                 </div>
             </div>
             
-            <div class="grid md:grid-cols-2 gap-6">
+            <div class="grid md:grid-cols-3 gap-6">
                 <a href="/admin/users" class="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition border border-gray-200">
                     <div class="flex items-center gap-4">
                         <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -11752,10 +11752,26 @@ app.get('/admin/dashboard', async (c) => {
                         </div>
                     </div>
                 </a>
+                
+                <div onclick="showPrograms()" class="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition border border-gray-200 cursor-pointer">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-graduation-cap text-purple-600 text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900">프로그램 관리</h3>
+                            <p class="text-gray-600">교육 프로그램 12개 등록됨</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
         <script>
+            function showPrograms() {
+                alert('프로그램 관리\\n\\n현재 등록된 12개 프로그램:\\n\\n1. 네이버 플레이스 상위노출\\n2. 블로그 상위노출\\n3. 퍼널 마케팅\\n4. 당근 비즈니스 마케팅\\n5. 메타 광고 (Facebook/Instagram)\\n6. 유튜브 광고\\n7. SNS 마케팅\\n8. 영상 마케팅\\n9. 쓰레드 마케팅\\n10. 커뮤니티 마케팅\\n11. 브랜딩\\n12. 데이터 분석\\n\\n각 프로그램은 /programs 페이지에서 확인 가능합니다.');
+            }
+
             function logout() {
                 if(confirm('로그아웃 하시겠습니까?')) {
                     localStorage.removeItem('user');
