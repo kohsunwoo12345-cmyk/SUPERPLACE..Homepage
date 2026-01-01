@@ -11941,28 +11941,28 @@ app.get('/admin/programs', async (c) => {
                 { id: 'threads', name: '쓰레드 마케팅', desc: 'Meta Threads 활용 전략', icon: '🧵', url: '/programs/threads' }
             ];
 
-            const users = \${JSON.stringify(users.results || [])};
+            const users = ${JSON.stringify(users.results || [])};
             let currentProgram = null;
             let userPermissions = {};
 
             // 프로그램 카드 렌더링
             function renderPrograms() {
                 const grid = document.getElementById('programsGrid');
-                grid.innerHTML = programs.map(p => \`
-                    <div onclick="openPermissionModal('\${p.id}')" 
-                         class="bg-white rounded-xl shadow-sm p-6 border border-gray-200 hover:border-purple-300 hover:shadow-lg transition cursor-pointer">
-                        <div class="text-4xl mb-3">\${p.icon}</div>
-                        <h3 class="text-xl font-bold text-gray-900 mb-2">\${p.name}</h3>
-                        <p class="text-gray-600 text-sm mb-4">\${p.desc}</p>
-                        <div class="flex gap-2">
-                            <span class="px-3 py-1 bg-green-100 text-green-700 text-xs rounded-full">활성화</span>
-                            <a href="\${p.url}" target="_blank" onclick="event.stopPropagation()" 
-                               class="px-3 py-1 bg-blue-100 text-blue-700 text-xs rounded-full hover:bg-blue-200">
-                                <i class="fas fa-external-link-alt mr-1"></i>보기
-                            </a>
-                        </div>
-                    </div>
-                \`).join('');
+                grid.innerHTML = programs.map(p => 
+                    '<div onclick="openPermissionModal(\\'' + p.id + '\\')" ' +
+                         'class="bg-white rounded-xl shadow-sm p-6 border border-gray-200 hover:border-purple-300 hover:shadow-lg transition cursor-pointer">' +
+                        '<div class="text-4xl mb-3">' + p.icon + '</div>' +
+                        '<h3 class="text-xl font-bold text-gray-900 mb-2">' + p.name + '</h3>' +
+                        '<p class="text-gray-600 text-sm mb-4">' + p.desc + '</p>' +
+                        '<div class="flex gap-2">' +
+                            '<span class="px-3 py-1 bg-green-100 text-green-700 text-xs rounded-full">활성화</span>' +
+                            '<a href="' + p.url + '" target="_blank" onclick="event.stopPropagation()" ' +
+                               'class="px-3 py-1 bg-blue-100 text-blue-700 text-xs rounded-full hover:bg-blue-200">' +
+                                '<i class="fas fa-external-link-alt mr-1"></i>보기' +
+                            '</a>' +
+                        '</div>' +
+                    '</div>'
+                ).join('');
             }
 
             // 권한 관리 모달 열기
@@ -11974,7 +11974,7 @@ app.get('/admin/programs', async (c) => {
                 // 사용자별 권한 조회
                 userPermissions = {};
                 for (const user of users) {
-                    const response = await fetch(\`/api/user/\${user.id}/permissions\`);
+                    const response = await fetch('/api/user/' + user.id + '/permissions');
                     const data = await response.json();
                     const permissions = data.permissions || [];
                     userPermissions[user.id] = permissions.some(
@@ -11989,21 +11989,21 @@ app.get('/admin/programs', async (c) => {
             // 사용자 목록 렌더링
             function renderUsersList() {
                 const list = document.getElementById('usersList');
-                list.innerHTML = users.map(user => \`
-                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                        <div class="flex-1">
-                            <p class="font-semibold text-gray-900">\${user.name}</p>
-                            <p class="text-sm text-gray-600">\${user.email}</p>
-                        </div>
-                        <label class="flex items-center cursor-pointer">
-                            <input type="checkbox" 
-                                   id="user-\${user.id}" 
-                                   \${userPermissions[user.id] ? 'checked' : ''}
-                                   class="w-5 h-5 text-purple-600 rounded focus:ring-purple-500">
-                            <span class="ml-3 text-sm font-medium text-gray-900">권한 부여</span>
-                        </label>
-                    </div>
-                \`).join('');
+                list.innerHTML = users.map(user =>
+                    '<div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">' +
+                        '<div class="flex-1">' +
+                            '<p class="font-semibold text-gray-900">' + user.name + '</p>' +
+                            '<p class="text-sm text-gray-600">' + user.email + '</p>' +
+                        '</div>' +
+                        '<label class="flex items-center cursor-pointer">' +
+                            '<input type="checkbox" ' +
+                                   'id="user-' + user.id + '" ' +
+                                   (userPermissions[user.id] ? 'checked' : '') +
+                                   ' class="w-5 h-5 text-purple-600 rounded focus:ring-purple-500">' +
+                            '<span class="ml-3 text-sm font-medium text-gray-900">권한 부여</span>' +
+                        '</label>' +
+                    '</div>'
+                ).join('');
             }
 
             // 권한 저장
@@ -12011,7 +12011,7 @@ app.get('/admin/programs', async (c) => {
                 const updates = [];
                 
                 for (const user of users) {
-                    const checkbox = document.getElementById(\`user-\${user.id}\`);
+                    const checkbox = document.getElementById('user-' + user.id);
                     const hasPermission = checkbox.checked;
                     const hadPermission = userPermissions[user.id];
 
