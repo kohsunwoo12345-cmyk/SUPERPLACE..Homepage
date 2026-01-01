@@ -2727,7 +2727,389 @@ app.get('/programs', (c) => {
   `)
 })
 
+// 프로그램 목록 페이지
+app.get('/programs', (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>교육 프로그램 - 슈퍼플레이스</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+        <style>
+            .gradient-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+            .gradient-orange { background: linear-gradient(135deg, #fb923c 0%, #f97316 100%); }
+            .card-hover { transition: all 0.3s; }
+            .card-hover:hover { transform: translateY(-4px); }
+        </style>
+    </head>
+    <body class="bg-gray-50">
+        <nav class="bg-white border-b border-gray-200 sticky top-0 z-50">
+            <div class="max-w-7xl mx-auto px-6 py-4">
+                <div class="flex justify-between items-center">
+                    <a href="/" class="text-2xl font-bold text-purple-600">슈퍼플레이스</a>
+                    <div class="flex items-center gap-6">
+                        <a href="/" class="text-gray-600 hover:text-purple-600">홈</a>
+                        <a href="/programs" class="text-purple-600 font-medium">교육 프로그램</a>
+                        <a href="/tools" class="text-gray-600 hover:text-purple-600">마케팅 툴</a>
+                        <a href="/contact" class="text-gray-600 hover:text-purple-600">문의하기</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <div class="max-w-7xl mx-auto px-6 py-12">
+            <div class="text-center mb-12">
+                <h1 class="text-5xl font-bold text-gray-900 mb-4">교육 프로그램</h1>
+                <p class="text-xl text-gray-600">실전에서 바로 적용 가능한 학원 마케팅 전략</p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- 네이버 플레이스 -->
+                <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden card-hover">
+                    <div class="h-48 bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center">
+                        <i class="fas fa-map-marker-alt text-white text-6xl"></i>
+                    </div>
+                    <div class="p-8">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-3">네이버 플레이스<br>상위노출</h2>
+                        <p class="text-gray-600 mb-6">지역 검색 1위 달성을 위한 실전 노하우</p>
+                        
+                        <div class="space-y-2 mb-6">
+                            <div class="flex items-center text-sm text-gray-700">
+                                <i class="fas fa-check text-purple-600 mr-2"></i>
+                                키워드 최적화 전략
+                            </div>
+                            <div class="flex items-center text-sm text-gray-700">
+                                <i class="fas fa-check text-purple-600 mr-2"></i>
+                                리뷰 관리 시스템
+                            </div>
+                            <div class="flex items-center text-sm text-gray-700">
+                                <i class="fas fa-check text-purple-600 mr-2"></i>
+                                지역 SEO 완벽 가이드
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between mb-6">
+                            <span class="text-2xl font-bold text-purple-600">₩300,000</span>
+                            <span class="text-sm text-gray-500">4주 과정</span>
+                        </div>
+
+                        <a href="/programs/naver-place" class="block w-full py-3 text-center gradient-purple text-white rounded-xl font-bold hover:shadow-lg transition">
+                            자세히 보기
+                        </a>
+                    </div>
+                </div>
+
+                <!-- 블로그 마케팅 -->
+                <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden card-hover">
+                    <div class="h-48 bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center">
+                        <i class="fas fa-blog text-white text-6xl"></i>
+                    </div>
+                    <div class="p-8">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-3">블로그<br>상위노출</h2>
+                        <p class="text-gray-600 mb-6">검색 최상위 진입을 위한 SEO 전략</p>
+                        
+                        <div class="space-y-2 mb-6">
+                            <div class="flex items-center text-sm text-gray-700">
+                                <i class="fas fa-check text-orange-600 mr-2"></i>
+                                검색 알고리즘 완벽 이해
+                            </div>
+                            <div class="flex items-center text-sm text-gray-700">
+                                <i class="fas fa-check text-orange-600 mr-2"></i>
+                                효과적인 글쓰기 기법
+                            </div>
+                            <div class="flex items-center text-sm text-gray-700">
+                                <i class="fas fa-check text-orange-600 mr-2"></i>
+                                콘텐츠 전략 수립
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between mb-6">
+                            <span class="text-2xl font-bold text-orange-600">₩250,000</span>
+                            <span class="text-sm text-gray-500">3주 과정</span>
+                        </div>
+
+                        <a href="/programs/blog" class="block w-full py-3 text-center gradient-orange text-white rounded-xl font-bold hover:shadow-lg transition">
+                            자세히 보기
+                        </a>
+                    </div>
+                </div>
+
+                <!-- 퍼널 마케팅 -->
+                <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden card-hover">
+                    <div class="h-48 bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center">
+                        <i class="fas fa-funnel-dollar text-white text-6xl"></i>
+                    </div>
+                    <div class="p-8">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-3">퍼널<br>마케팅</h2>
+                        <p class="text-gray-600 mb-6">24시간 자동 학생 모집 시스템</p>
+                        
+                        <div class="space-y-2 mb-6">
+                            <div class="flex items-center text-sm text-gray-700">
+                                <i class="fas fa-check text-purple-600 mr-2"></i>
+                                고객 여정 완벽 설계
+                            </div>
+                            <div class="flex items-center text-sm text-gray-700">
+                                <i class="fas fa-check text-purple-600 mr-2"></i>
+                                마케팅 자동화 도구
+                            </div>
+                            <div class="flex items-center text-sm text-gray-700">
+                                <i class="fas fa-check text-purple-600 mr-2"></i>
+                                전환율 극대화 전략
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between mb-6">
+                            <span class="text-2xl font-bold text-purple-600">₩400,000</span>
+                            <span class="text-sm text-gray-500">6주 과정</span>
+                        </div>
+
+                        <a href="/programs/funnel" class="block w-full py-3 text-center gradient-purple text-white rounded-xl font-bold hover:shadow-lg transition">
+                            자세히 보기
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CTA 섹션 -->
+            <div class="mt-16 bg-gradient-to-r from-purple-600 to-pink-600 rounded-3xl p-12 text-center text-white">
+                <h2 class="text-4xl font-bold mb-4">전체 패키지로 더 저렴하게!</h2>
+                <p class="text-xl mb-8 opacity-90">3개 프로그램 전체 수강 시 30% 할인</p>
+                <div class="flex items-center justify-center gap-4 mb-8">
+                    <span class="text-3xl line-through opacity-75">₩950,000</span>
+                    <span class="text-5xl font-bold">₩665,000</span>
+                </div>
+                <a href="/contact" class="inline-block bg-white text-purple-600 px-12 py-4 rounded-full text-lg font-bold hover:shadow-2xl transition">
+                    패키지 문의하기
+                </a>
+            </div>
+        </div>
+    </body>
+    </html>
+  `)
+})
+
 // 성공 사례 페이지
+// 프로그램 목록 페이지
+app.get('/programs', (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>교육 프로그램 - 우리는 슈퍼플레이스다</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link rel="preconnect" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+        <style>
+          body { font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
+        </style>
+    </head>
+    <body class="bg-gray-50">
+        <!-- 헤더 -->
+        <header class="bg-white shadow-sm border-b">
+            <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+                <div class="flex justify-between items-center">
+                    <a href="/" class="text-2xl font-bold text-blue-600">슈퍼플레이스</a>
+                    <div class="flex gap-8 items-center">
+                        <a href="/" class="text-gray-600 hover:text-blue-600">홈</a>
+                        <a href="/programs" class="text-blue-600 font-semibold">교육 프로그램</a>
+                        <a href="/tools" class="text-gray-600 hover:text-blue-600">마케팅 툴</a>
+                        <a href="/contact" class="text-gray-600 hover:text-blue-600">문의하기</a>
+                        <a href="/login" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">로그인</a>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            <!-- 페이지 헤더 -->
+            <div class="text-center mb-16">
+                <h1 class="text-4xl font-bold text-gray-900 mb-4">교육 프로그램</h1>
+                <p class="text-xl text-gray-600">학원 마케팅 전문가가 되기 위한 실전 교육 프로그램</p>
+            </div>
+
+            <!-- 프로그램 카드 그리드 -->
+            <div id="programsGrid" class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+                <!-- 프로그램 카드들이 여기에 동적으로 로드됩니다 -->
+            </div>
+
+            <!-- CTA 섹션 -->
+            <div class="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-12 text-center text-white">
+                <h2 class="text-3xl font-bold mb-4">프로그램 신청하기</h2>
+                <p class="text-xl mb-8 text-blue-100">원하시는 프로그램을 선택하고 지금 바로 시작하세요</p>
+                <a href="/contact" class="inline-block px-8 py-4 bg-white text-blue-600 rounded-lg font-semibold hover:bg-blue-50 transition">
+                    문의하기 →
+                </a>
+            </div>
+        </main>
+
+        <script>
+          const user = JSON.parse(localStorage.getItem('user') || '{}');
+          
+          // 프로그램 목록 데이터
+          const programs = [
+            {
+              id: 'naver-place',
+              name: '네이버 플레이스 상위노출',
+              description: '지역 검색 1위를 위한 실전 노하우',
+              details: '네이버 플레이스 최적화, 리뷰 관리, 키워드 전략',
+              image: '/static/images/naver-place.png',
+              icon: '🗺️',
+              features: ['지역 검색 최적화', '리뷰 관리 전략', '키워드 분석', '경쟁사 분석']
+            },
+            {
+              id: 'blog',
+              name: '블로그 상위노출',
+              description: '검색 1페이지 진입을 위한 블로그 마케팅',
+              details: 'SEO 최적화, 콘텐츠 전략, 유입 증대 방법',
+              image: '/static/images/blog-marketing.png',
+              icon: '📝',
+              features: ['SEO 최적화', '콘텐츠 기획', '키워드 전략', '유입 분석']
+            },
+            {
+              id: 'funnel',
+              name: '퍼널 마케팅',
+              description: '자동화된 학생 모집 시스템 구축',
+              details: '랜딩페이지, 자동화 시스템, 전환율 최적화',
+              image: '/static/images/funnel-marketing.png',
+              icon: '🎯',
+              features: ['랜딩페이지 제작', '마케팅 자동화', '전환율 최적화', 'CRM 시스템']
+            },
+            {
+              id: 'sns',
+              name: 'SNS 마케팅',
+              description: '인스타그램, 페이스북 활용 전략',
+              details: '콘텐츠 제작, 광고 운영, 팔로워 확보',
+              icon: '📱',
+              features: ['콘텐츠 제작', '광고 운영', '팔로워 확보', '인플루언서 협업']
+            },
+            {
+              id: 'video',
+              name: '영상 마케팅',
+              description: '유튜브, 숏폼 콘텐츠 제작',
+              details: '영상 기획, 촬영/편집, 채널 운영',
+              icon: '🎥',
+              features: ['영상 기획', '촬영/편집', '채널 운영', '유튜브 SEO']
+            },
+            {
+              id: 'ad',
+              name: '온라인 광고',
+              description: '네이버, 구글 광고 운영 전략',
+              details: '광고 집행, 예산 관리, ROI 최적화',
+              icon: '💰',
+              features: ['광고 집행', '예산 관리', 'ROI 분석', 'A/B 테스트']
+            },
+            {
+              id: 'community',
+              name: '커뮤니티 마케팅',
+              description: '학부모 커뮤니티 활성화 전략',
+              details: '커뮤니티 운영, 이벤트 기획, 구전 마케팅',
+              icon: '👥',
+              features: ['커뮤니티 운영', '이벤트 기획', '구전 마케팅', '학부모 소통']
+            },
+            {
+              id: 'branding',
+              name: '브랜딩',
+              description: '학원 브랜드 아이덴티티 구축',
+              details: '브랜드 전략, 로고/디자인, 스토리텔링',
+              icon: '🎨',
+              features: ['브랜드 전략', '로고/디자인', '스토리텔링', 'BI/CI 구축']
+            },
+            {
+              id: 'data',
+              name: '데이터 분석',
+              description: '마케팅 성과 분석 및 최적화',
+              details: 'GA4, 네이버 애널리틱스, 데이터 기반 의사결정',
+              icon: '📊',
+              features: ['데이터 수집', '성과 분석', '대시보드 구축', '의사결정 지원']
+            }
+          ];
+
+          // 사용자 권한 확인
+          async function loadPrograms() {
+            const grid = document.getElementById('programsGrid');
+            
+            let userPermissions = [];
+            if (user.id) {
+              try {
+                const response = await fetch(\`/api/user/\${user.id}/permissions\`);
+                const data = await response.json();
+                userPermissions = data.permissions || [];
+              } catch (error) {
+                console.error('권한 조회 실패:', error);
+              }
+            }
+
+            // 프로그램 권한 필터링
+            const programPermissions = userPermissions
+              .filter(p => p.permission_type === 'program')
+              .map(p => p.permission_name);
+
+            // 프로그램 카드 렌더링
+            programs.forEach(program => {
+              const hasPermission = user.role === 'admin' || programPermissions.includes(program.id);
+              
+              const card = \`
+                <div class="bg-white rounded-xl shadow-sm hover:shadow-lg transition p-6 border border-gray-200">
+                  <div class="text-5xl mb-4">\${program.icon}</div>
+                  <h3 class="text-2xl font-bold text-gray-900 mb-3">\${program.name}</h3>
+                  <p class="text-gray-600 mb-4">\${program.description}</p>
+                  <p class="text-sm text-gray-500 mb-6">\${program.details}</p>
+                  
+                  <div class="mb-6">
+                    <p class="text-sm font-semibold text-gray-700 mb-2">주요 내용:</p>
+                    <ul class="space-y-1">
+                      \${program.features.map(f => \`
+                        <li class="text-sm text-gray-600 flex items-center">
+                          <span class="text-blue-600 mr-2">✓</span> \${f}
+                        </li>
+                      \`).join('')}
+                    </ul>
+                  </div>
+                  
+                  \${hasPermission ? \`
+                    <a href="/programs/\${program.id}" 
+                       class="block w-full py-3 bg-blue-600 text-white text-center rounded-lg hover:bg-blue-700 transition font-semibold">
+                      프로그램 시작하기 →
+                    </a>
+                  \` : \`
+                    <button onclick="requestAccess('\${program.id}', '\${program.name}')" 
+                            class="w-full py-3 bg-gray-200 text-gray-600 rounded-lg hover:bg-gray-300 transition font-semibold">
+                      🔒 권한 요청하기
+                    </button>
+                  \`}
+                </div>
+              \`;
+              
+              grid.innerHTML += card;
+            });
+          }
+
+          // 권한 요청
+          function requestAccess(programId, programName) {
+            if (!user.id) {
+              alert('로그인이 필요합니다.');
+              window.location.href = '/login';
+              return;
+            }
+            
+            alert(\`"\${programName}" 프로그램에 대한 권한 요청이 접수되었습니다.\\n관리자 승인 후 이용하실 수 있습니다.\`);
+            
+            // 실제로는 권한 요청 API 호출
+            // 예: POST /api/access-requests { userId, programId, programName }
+          }
+
+          // 페이지 로드 시 프로그램 목록 로드
+          loadPrograms();
+        </script>
+    </body>
+    </html>
+  `)
+})
+
 app.get('/success', (c) => {
   return c.html(`
     <!DOCTYPE html>
@@ -10825,6 +11207,7 @@ app.get('/admin/users', async (c) => {
                                 <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">학원명</th>
                                 <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">권한</th>
                                 <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">가입일</th>
+                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">관리</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
@@ -10841,15 +11224,179 @@ app.get('/admin/users', async (c) => {
                                         </span>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${new Date(user.created_at).toLocaleDateString('ko-KR')}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                        ${user.role !== 'admin' ? `
+                                            <button onclick="managePermissions(${user.id}, '${user.name}')" 
+                                                    class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm font-medium">
+                                                권한 관리
+                                            </button>
+                                        ` : '-'}
+                                    </td>
                                 </tr>
-                            `).join('') || '<tr><td colspan="7" class="px-6 py-8 text-center text-gray-500">등록된 사용자가 없습니다</td></tr>'}
+                            `).join('') || '<tr><td colspan="8" class="px-6 py-8 text-center text-gray-500">등록된 사용자가 없습니다</td></tr>'}
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
 
+        <!-- 권한 관리 모달 -->
+        <div id="permissionModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                <div class="p-6 border-b border-gray-200">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-2xl font-bold text-gray-900">프로그램 권한 관리</h2>
+                        <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+                            <i class="fas fa-times text-2xl"></i>
+                        </button>
+                    </div>
+                    <p id="modalUserName" class="text-gray-600 mt-2"></p>
+                </div>
+                
+                <div class="p-6">
+                    <!-- 프로그램 권한 섹션 -->
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">교육 프로그램</h3>
+                    <div id="programPermissions" class="grid md:grid-cols-2 gap-4 mb-6">
+                        <!-- 프로그램 권한 체크박스 -->
+                    </div>
+
+                    <!-- 툴 권한 섹션 -->
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">마케팅 툴</h3>
+                    <div id="toolPermissions" class="grid md:grid-cols-2 gap-4">
+                        <!-- 툴 권한 체크박스 -->
+                    </div>
+                </div>
+
+                <div class="p-6 border-t border-gray-200 flex justify-end gap-3">
+                    <button onclick="closeModal()" class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                        취소
+                    </button>
+                    <button onclick="savePermissions()" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">
+                        저장
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <script>
+            let currentUserId = null;
+
+            const programs = [
+                { id: 'naver-place', name: '네이버 플레이스 상위노출' },
+                { id: 'blog', name: '블로그 상위노출' },
+                { id: 'funnel', name: '퍼널 마케팅' },
+                { id: 'sns', name: 'SNS 마케팅' },
+                { id: 'video', name: '영상 마케팅' },
+                { id: 'ad', name: '온라인 광고' },
+                { id: 'community', name: '커뮤니티 마케팅' },
+                { id: 'branding', name: '브랜딩' },
+                { id: 'data', name: '데이터 분석' }
+            ];
+
+            const tools = [
+                { id: 'place-keyword-analyzer', name: '키워드 분석기' },
+                { id: 'blog-title-generator', name: '블로그 제목 생성기' },
+                { id: 'consultation-calendar', name: '상담 예약 캘린더' },
+                { id: 'promo-generator', name: '홍보 문구 생성기' },
+                { id: 'review-template', name: '리뷰 답변 템플릿' },
+                { id: 'parent-sms-template', name: '학부모 문자 템플릿' },
+                { id: 'poster-generator', name: '포스터 문구 생성기' },
+                { id: 'competitor-analysis', name: '경쟁사 분석' },
+                { id: 'operation-checklist', name: '운영 체크리스트' },
+                { id: 'campaign-planner', name: '캠페인 플래너' }
+            ];
+
+            async function managePermissions(userId, userName) {
+                currentUserId = userId;
+                document.getElementById('modalUserName').textContent = userName + '님의 권한 설정';
+                
+                // 현재 권한 조회
+                const response = await fetch(\`/api/user/\${userId}/permissions\`);
+                const data = await response.json();
+                const currentPermissions = data.permissions || [];
+                
+                // 프로그램 권한 렌더링
+                const programPerms = document.getElementById('programPermissions');
+                programPerms.innerHTML = programs.map(prog => {
+                    const hasPermission = currentPermissions.some(p => 
+                        p.permission_type === 'program' && p.permission_name === prog.id
+                    );
+                    return \`
+                        <label class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                            <input type="checkbox" 
+                                   class="w-5 h-5 text-blue-600 rounded mr-3" 
+                                   data-type="program" 
+                                   data-name="\${prog.id}" 
+                                   \${hasPermission ? 'checked' : ''}>
+                            <span class="text-sm font-medium text-gray-900">\${prog.name}</span>
+                        </label>
+                    \`;
+                }).join('');
+
+                // 툴 권한 렌더링
+                const toolPerms = document.getElementById('toolPermissions');
+                toolPerms.innerHTML = tools.map(tool => {
+                    const hasPermission = currentPermissions.some(p => 
+                        p.permission_type === 'tool' && p.permission_name === tool.id
+                    );
+                    return \`
+                        <label class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                            <input type="checkbox" 
+                                   class="w-5 h-5 text-blue-600 rounded mr-3" 
+                                   data-type="tool" 
+                                   data-name="\${tool.id}" 
+                                   \${hasPermission ? 'checked' : ''}>
+                            <span class="text-sm font-medium text-gray-900">\${tool.name}</span>
+                        </label>
+                    \`;
+                }).join('');
+
+                // 모달 표시
+                document.getElementById('permissionModal').classList.remove('hidden');
+            }
+
+            async function savePermissions() {
+                const checkboxes = document.querySelectorAll('#permissionModal input[type="checkbox"]');
+                
+                for (const checkbox of checkboxes) {
+                    const type = checkbox.dataset.type;
+                    const name = checkbox.dataset.name;
+                    
+                    if (checkbox.checked) {
+                        // 권한 부여
+                        await fetch('/api/admin/permissions/grant', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                userId: currentUserId,
+                                permissionType: type,
+                                permissionName: name,
+                                expiresAt: null
+                            })
+                        });
+                    } else {
+                        // 권한 회수
+                        await fetch('/api/admin/permissions/revoke', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                userId: currentUserId,
+                                permissionType: type,
+                                permissionName: name
+                            })
+                        });
+                    }
+                }
+
+                alert('권한이 업데이트되었습니다.');
+                closeModal();
+            }
+
+            function closeModal() {
+                document.getElementById('permissionModal').classList.add('hidden');
+                currentUserId = null;
+            }
+
             function logout() {
                 if(confirm('로그아웃 하시겠습니까?')) {
                     localStorage.removeItem('user');
@@ -11020,6 +11567,64 @@ app.get('/admin/contacts', async (c) => {
   `)
 })
 
+// 권한 관리 API
+// 사용자 권한 조회 API
+app.get('/api/user/:id/permissions', async (c) => {
+  try {
+    const { env } = c;
+    const userId = c.req.param('id');
+    
+    const permissions = await env.DB.prepare(`
+      SELECT permission_type, permission_name, granted_at, expires_at, is_active
+      FROM user_permissions
+      WHERE user_id = ? AND is_active = 1
+      ORDER BY granted_at DESC
+    `).bind(userId).all();
+    
+    return c.json({ permissions: permissions.results });
+  } catch (error) {
+    console.error('Get permissions error:', error);
+    return c.json({ success: false, error: '권한 조회 실패' }, 500);
+  }
+});
+
+// 권한 부여 API (관리자 전용)
+app.post('/api/admin/permissions/grant', async (c) => {
+  try {
+    const { env } = c;
+    const { userId, permissionType, permissionName, expiresAt } = await c.req.json();
+    
+    const result = await env.DB.prepare(`
+      INSERT INTO user_permissions (user_id, permission_type, permission_name, granted_by, expires_at, is_active)
+      VALUES (?, ?, ?, 1, ?, 1)
+    `).bind(userId, permissionType, permissionName, expiresAt || null).run();
+    
+    return c.json({ success: true, message: '권한이 부여되었습니다' });
+  } catch (error) {
+    console.error('Grant permission error:', error);
+    return c.json({ success: false, error: '권한 부여 실패' }, 500);
+  }
+});
+
+// 권한 회수 API (관리자 전용)
+app.post('/api/admin/permissions/revoke', async (c) => {
+  try {
+    const { env } = c;
+    const { userId, permissionType, permissionName } = await c.req.json();
+    
+    await env.DB.prepare(`
+      UPDATE user_permissions
+      SET is_active = 0
+      WHERE user_id = ? AND permission_type = ? AND permission_name = ?
+    `).bind(userId, permissionType, permissionName).run();
+    
+    return c.json({ success: true, message: '권한이 회수되었습니다' });
+  } catch (error) {
+    console.error('Revoke permission error:', error);
+    return c.json({ success: false, error: '권한 회수 실패' }, 500);
+  }
+});
+
 // 문의 상태 업데이트 API
 app.patch('/api/admin/contacts/:id', async (c) => {
   try {
@@ -11034,6 +11639,133 @@ app.patch('/api/admin/contacts/:id', async (c) => {
     console.error('Update contact status error:', error)
     return c.json({ success: false }, 500)
   }
+})
+
+// 문의 상태 업데이트 API
+app.patch('/api/admin/contacts/:id', async (c) => {
+  try {
+    const id = c.req.param('id')
+    const { status } = await c.req.json()
+    const { env } = c
+    
+    await env.DB.prepare('UPDATE contacts SET status = ? WHERE id = ?').bind(status, id).run()
+    
+    return c.json({ success: true })
+  } catch (error) {
+    console.error('Update contact status error:', error)
+    return c.json({ success: false }, 500)
+  }
+})
+
+// 관리자 대시보드
+app.get('/admin/dashboard', async (c) => {
+  const { env } = c
+  
+  // 통계 데이터 조회
+  const usersCount = await env.DB.prepare('SELECT COUNT(*) as count FROM users').all()
+  const contactsCount = await env.DB.prepare('SELECT COUNT(*) as count FROM contacts').all()
+  const pendingContacts = await env.DB.prepare('SELECT COUNT(*) as count FROM contacts WHERE status = "pending"').all()
+  
+  const totalUsers = usersCount.results[0]?.count || 0
+  const totalContacts = contactsCount.results[0]?.count || 0
+  const pendingCount = pendingContacts.results[0]?.count || 0
+  
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>관리자 대시보드 - 슈퍼플레이스</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    </head>
+    <body class="bg-gray-50">
+        <nav class="bg-white border-b border-gray-200">
+            <div class="max-w-7xl mx-auto px-6 py-4">
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center gap-8">
+                        <a href="/admin/dashboard" class="text-2xl font-bold text-purple-600">슈퍼플레이스 관리자</a>
+                        <div class="flex gap-4">
+                            <a href="/admin/dashboard" class="text-purple-600 font-semibold">대시보드</a>
+                            <a href="/admin/users" class="text-gray-600 hover:text-purple-600">사용자</a>
+                            <a href="/admin/contacts" class="text-gray-600 hover:text-purple-600">문의</a>
+                        </div>
+                    </div>
+                    <button onclick="logout()" class="text-gray-600 hover:text-red-600">
+                        <i class="fas fa-sign-out-alt mr-2"></i>로그아웃
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <div class="max-w-7xl mx-auto px-6 py-8">
+            <h1 class="text-3xl font-bold text-gray-900 mb-8">관리자 대시보드</h1>
+            
+            <div class="grid md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-gray-600">전체 사용자</span>
+                        <i class="fas fa-users text-blue-600 text-2xl"></i>
+                    </div>
+                    <p class="text-3xl font-bold text-gray-900">${totalUsers}</p>
+                </div>
+                
+                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-gray-600">전체 문의</span>
+                        <i class="fas fa-envelope text-green-600 text-2xl"></i>
+                    </div>
+                    <p class="text-3xl font-bold text-gray-900">${totalContacts}</p>
+                </div>
+                
+                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-gray-600">대기중 문의</span>
+                        <i class="fas fa-clock text-orange-600 text-2xl"></i>
+                    </div>
+                    <p class="text-3xl font-bold text-gray-900">${pendingCount}</p>
+                </div>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-6">
+                <a href="/admin/users" class="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition border border-gray-200">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-user-cog text-blue-600 text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900">사용자 관리</h3>
+                            <p class="text-gray-600">사용자 목록 및 권한 관리</p>
+                        </div>
+                    </div>
+                </a>
+                
+                <a href="/admin/contacts" class="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition border border-gray-200">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-comments text-green-600 text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900">문의 관리</h3>
+                            <p class="text-gray-600">대행 문의 처리 및 관리</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <script>
+            function logout() {
+                if(confirm('로그아웃 하시겠습니까?')) {
+                    localStorage.removeItem('user');
+                    window.location.href = '/';
+                }
+            }
+        </script>
+    </body>
+    </html>
+  `)
 })
 
 export default app
