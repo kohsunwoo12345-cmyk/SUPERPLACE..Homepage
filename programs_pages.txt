@@ -1,0 +1,151 @@
+// SNS 마케팅 페이지
+app.get('/programs/sns', (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>SNS 마케팅 - 슈퍼플레이스</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    </head>
+    <body class="bg-gray-50">
+        <nav class="bg-white shadow-sm border-b">
+            <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+                <a href="/" class="text-2xl font-bold text-blue-600">슈퍼플레이스</a>
+                <button onclick="history.back()" class="px-6 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">
+                    <i class="fas fa-arrow-left mr-2"></i>뒤로 가기
+                </button>
+            </div>
+        </nav>
+
+        <main class="max-w-5xl mx-auto px-6 py-16">
+            <div class="text-center mb-12">
+                <div class="text-6xl mb-4">📱</div>
+                <h1 class="text-4xl font-bold text-gray-900 mb-4">SNS 마케팅</h1>
+                <p class="text-xl text-gray-600">인스타그램, 페이스북으로 학생 모집</p>
+            </div>
+
+            <div class="bg-white rounded-2xl p-8 shadow-sm mb-8">
+                <h2 class="text-2xl font-bold mb-6">🎯 교육 내용</h2>
+                <div class="space-y-4">
+                    <div class="flex items-start gap-3">
+                        <i class="fas fa-check text-green-500 mt-1"></i>
+                        <div>
+                            <h3 class="font-bold text-gray-900">콘텐츠 제작 전략</h3>
+                            <p class="text-gray-600">학원에 최적화된 SNS 콘텐츠 기획과 제작 방법</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <i class="fas fa-check text-green-500 mt-1"></i>
+                        <div>
+                            <h3 class="font-bold text-gray-900">광고 운영 노하우</h3>
+                            <p class="text-gray-600">효과적인 SNS 광고 집행과 타겟팅 방법</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <i class="fas fa-check text-green-500 mt-1"></i>
+                        <div>
+                            <h3 class="font-bold text-gray-900">팔로워 확보</h3>
+                            <p class="text-gray-600">유기적 팔로워 증가와 인게이지먼트 향상</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <i class="fas fa-check text-green-500 mt-1"></i>
+                        <div>
+                            <h3 class="font-bold text-gray-900">인플루언서 협업</h3>
+                            <p class="text-gray-600">지역 인플루언서와의 효과적인 협업 전략</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-12 text-center text-white">
+                <h2 class="text-3xl font-bold mb-4">프로그램 시작하기</h2>
+                <p class="text-xl mb-8 text-blue-100">SNS 마케팅으로 학원을 알리세요</p>
+                <a href="/contact" class="inline-block px-8 py-4 bg-white text-blue-600 rounded-lg font-semibold hover:bg-blue-50 transition">
+                    교육 신청하기 →
+                </a>
+            </div>
+        </main>
+    </body>
+    </html>
+  `)
+})
+
+// 영상 마케팅 페이지
+app.get('/programs/video', (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>영상 마케팅 - 슈퍼플레이스</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    </head>
+    <body class="bg-gray-50">
+        <nav class="bg-white shadow-sm border-b">
+            <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+                <a href="/" class="text-2xl font-bold text-blue-600">슈퍼플레이스</a>
+                <button onclick="history.back()" class="px-6 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">
+                    <i class="fas fa-arrow-left mr-2"></i>뒤로 가기
+                </button>
+            </div>
+        </nav>
+
+        <main class="max-w-5xl mx-auto px-6 py-16">
+            <div class="text-center mb-12">
+                <div class="text-6xl mb-4">🎥</div>
+                <h1 class="text-4xl font-bold text-gray-900 mb-4">영상 마케팅</h1>
+                <p class="text-xl text-gray-600">유튜브, 숏폼으로 학원 홍보</p>
+            </div>
+
+            <div class="bg-white rounded-2xl p-8 shadow-sm mb-8">
+                <h2 class="text-2xl font-bold mb-6">🎯 교육 내용</h2>
+                <div class="space-y-4">
+                    <div class="flex items-start gap-3">
+                        <i class="fas fa-check text-green-500 mt-1"></i>
+                        <div>
+                            <h3 class="font-bold text-gray-900">영상 기획</h3>
+                            <p class="text-gray-600">학원 홍보에 효과적인 영상 콘텐츠 기획</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <i class="fas fa-check text-green-500 mt-1"></i>
+                        <div>
+                            <h3 class="font-bold text-gray-900">촬영/편집</h3>
+                            <p class="text-gray-600">스마트폰으로 전문가급 영상 만들기</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <i class="fas fa-check text-green-500 mt-1"></i>
+                        <div>
+                            <h3 class="font-bold text-gray-900">채널 운영</h3>
+                            <p class="text-gray-600">유튜브 채널 최적화와 구독자 확보</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <i class="fas fa-check text-green-500 mt-1"></i>
+                        <div>
+                            <h3 class="font-bold text-gray-900">유튜브 SEO</h3>
+                            <p class="text-gray-600">검색 노출을 위한 최적화 전략</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-gradient-to-r from-red-600 to-pink-600 rounded-2xl p-12 text-center text-white">
+                <h2 class="text-3xl font-bold mb-4">프로그램 시작하기</h2>
+                <p class="text-xl mb-8 text-red-100">영상으로 학원을 알리세요</p>
+                <a href="/contact" class="inline-block px-8 py-4 bg-white text-red-600 rounded-lg font-semibold hover:bg-red-50 transition">
+                    교육 신청하기 →
+                </a>
+            </div>
+        </main>
+    </body>
+    </html>
+  `)
+})
