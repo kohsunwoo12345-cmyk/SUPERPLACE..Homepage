@@ -7687,7 +7687,7 @@ app.post('/api/admin/impersonate', async (c) => {
   }
 })
 
-// 교육 프로그램 상세 페이지 - 네이버 플레이스
+// 네이버 플레이스 마케팅 도구
 app.get('/programs/naver-place', (c) => {
   return c.html(`
     <!DOCTYPE html>
@@ -7695,159 +7695,485 @@ app.get('/programs/naver-place', (c) => {
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>네이버 플레이스 상위노출 교육 - 슈퍼플레이스</title>
-        <meta name="description" content="지역 검색 1위 달성을 위한 네이버 플레이스 마케팅 실전 교육">
+        <title>네이버 플레이스 마케팅 도구 - 슈퍼플레이스</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
-        <style>
-            .gradient-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-            .gradient-orange { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
-        </style>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     </head>
     <body class="bg-gray-50">
-        <!-- Navigation -->
-        <nav class="bg-white shadow-sm fixed w-full top-0 z-50">
-            <div class="max-w-7xl mx-auto px-6 py-4">
+        <!-- 헤더 -->
+        <nav class="bg-white shadow-sm sticky top-0 z-50">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
                 <div class="flex justify-between items-center">
-                    <a href="/" class="text-2xl font-bold gradient-purple bg-clip-text text-transparent">슈퍼플레이스</a>
-                    <div class="hidden md:flex space-x-8">
-                        <a href="/" class="text-gray-600 hover:text-purple-600">홈</a>
-                        <a href="/about" class="text-gray-600 hover:text-purple-600">회사 소개</a>
-                        <a href="/contact" class="text-gray-600 hover:text-purple-600">대행 문의</a>
+                    <div class="flex items-center gap-8">
+                        <a href="/programs" class="text-2xl font-bold text-blue-600">🗺️ 네이버 플레이스 도구</a>
+                        <div class="hidden md:flex gap-6">
+                            <a href="#keyword" class="text-gray-600 hover:text-blue-600">키워드 분석</a>
+                            <a href="#competitor" class="text-gray-600 hover:text-blue-600">경쟁사 분석</a>
+                            <a href="#review" class="text-gray-600 hover:text-blue-600">리뷰 관리</a>
+                            <a href="#optimization" class="text-gray-600 hover:text-blue-600">최적화</a>
+                        </div>
+                    </div>
+                    <div class="flex gap-3">
+                        <button onclick="history.back()" class="px-4 py-2 text-gray-600 hover:text-gray-900">
+                            <i class="fas fa-arrow-left mr-2"></i>뒤로
+                        </button>
+                        <a href="/programs" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                            프로그램 목록
+                        </a>
                     </div>
                 </div>
             </div>
         </nav>
 
-        <div class="pt-24 pb-20">
-            <!-- Hero Section -->
-            <section class="bg-gradient-to-br from-purple-50 to-white py-20 px-6">
-                <div class="max-w-4xl mx-auto text-center">
-                    <div class="w-20 h-20 gradient-purple rounded-3xl flex items-center justify-center mx-auto mb-6">
-                        <i class="fas fa-map-marker-alt text-3xl text-white"></i>
-                    </div>
-                    <h1 class="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
-                        네이버 플레이스 상위노출
-                    </h1>
-                    <p class="text-xl text-gray-600 mb-8">
-                        지역 검색 1위 달성을 위한 실전 노하우<br>
-                        키워드 분석부터 리뷰 관리까지 완벽하게 마스터
-                    </p>
-                    <div class="flex flex-wrap justify-center gap-4">
-                        <a href="/contact" class="px-8 py-4 gradient-purple text-white rounded-full font-bold hover:shadow-lg transition-all">
-                            교육 신청하기
-                        </a>
-                        <a href="/" class="px-8 py-4 bg-white text-gray-700 rounded-full font-bold border-2 border-gray-200 hover:border-purple-600 transition-all">
-                            돌아가기
-                        </a>
-                    </div>
-                </div>
-            </section>
-
-            <!-- 교육 내용 -->
-            <section class="py-20 px-6">
-                <div class="max-w-6xl mx-auto">
-                    <h2 class="text-3xl font-bold text-gray-900 mb-12 text-center">무엇을 배우나요?</h2>
-                    <div class="grid md:grid-cols-2 gap-8">
-                        <div class="bg-white rounded-2xl p-8 shadow-sm">
-                            <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-4">
-                                <i class="fas fa-search text-purple-600 text-xl"></i>
-                            </div>
-                            <h3 class="text-xl font-bold text-gray-900 mb-3">키워드 최적화 전략</h3>
-                            <ul class="space-y-2 text-gray-600">
-                                <li>✓ 지역별 핵심 키워드 발굴</li>
-                                <li>✓ 경쟁 분석 및 틈새 키워드 찾기</li>
-                                <li>✓ 카테고리 설정 최적화</li>
-                                <li>✓ 상호명 작성 전략</li>
-                            </ul>
-                        </div>
-
-                        <div class="bg-white rounded-2xl p-8 shadow-sm">
-                            <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-4">
-                                <i class="fas fa-star text-purple-600 text-xl"></i>
-                            </div>
-                            <h3 class="text-xl font-bold text-gray-900 mb-3">리뷰 관리 시스템</h3>
-                            <ul class="space-y-2 text-gray-600">
-                                <li>✓ 리뷰 유도 전략</li>
-                                <li>✓ 별점 관리 노하우</li>
-                                <li>✓ 답글 작성 가이드</li>
-                                <li>✓ 악성 리뷰 대응법</li>
-                            </ul>
-                        </div>
-
-                        <div class="bg-white rounded-2xl p-8 shadow-sm">
-                            <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-4">
-                                <i class="fas fa-camera text-purple-600 text-xl"></i>
-                            </div>
-                            <h3 class="text-xl font-bold text-gray-900 mb-3">사진 및 콘텐츠 관리</h3>
-                            <ul class="space-y-2 text-gray-600">
-                                <li>✓ 대표 사진 선정 기준</li>
-                                <li>✓ 메뉴 사진 최적화</li>
-                                <li>✓ 정기 업데이트 전략</li>
-                                <li>✓ 스토리 활용법</li>
-                            </ul>
-                        </div>
-
-                        <div class="bg-white rounded-2xl p-8 shadow-sm">
-                            <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-4">
-                                <i class="fas fa-chart-line text-purple-600 text-xl"></i>
-                            </div>
-                            <h3 class="text-xl font-bold text-gray-900 mb-3">지역 SEO 완벽 가이드</h3>
-                            <ul class="space-y-2 text-gray-600">
-                                <li>✓ 네이버 알고리즘 이해</li>
-                                <li>✓ 스마트플레이스 최적화</li>
-                                <li>✓ 통계 분석 및 개선</li>
-                                <li>✓ 경쟁업체 모니터링</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- 실제 성과 -->
-            <section class="py-20 px-6 bg-white">
-                <div class="max-w-4xl mx-auto text-center">
-                    <h2 class="text-3xl font-bold text-gray-900 mb-12">실제 성과</h2>
-                    <div class="grid md:grid-cols-3 gap-8">
-                        <div>
-                            <div class="text-5xl font-bold text-purple-600 mb-2">1위</div>
-                            <div class="text-gray-600">평균 달성 기간<br>2-3개월</div>
-                        </div>
-                        <div>
-                            <div class="text-5xl font-bold text-purple-600 mb-2">300%</div>
-                            <div class="text-gray-600">평균 문의 증가율</div>
-                        </div>
-                        <div>
-                            <div class="text-5xl font-bold text-purple-600 mb-2">4.8점</div>
-                            <div class="text-gray-600">평균 별점 달성</div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- CTA -->
-            <section class="py-20 px-6 gradient-purple">
-                <div class="max-w-4xl mx-auto text-center">
-                    <h2 class="text-4xl font-bold text-white mb-8">
-                        지금 바로 시작하세요
+        <!-- 메인 컨텐츠 -->
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            
+            <!-- 1. 키워드 검색량 분석 -->
+            <section id="keyword" class="mb-12">
+                <div class="bg-white rounded-2xl shadow-sm p-8">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6">
+                        <i class="fas fa-search text-blue-600 mr-3"></i>
+                        키워드 검색량 분석
                     </h2>
-                    <p class="text-xl text-white/90 mb-12">
-                        실전 노하우로 여러분의 학원을 1등으로 만들어드립니다
-                    </p>
-                    <a href="/contact" class="inline-block px-12 py-5 bg-white text-purple-600 rounded-full font-bold text-lg hover:shadow-2xl transition-all">
-                        교육 신청하기 →
-                    </a>
+                    <p class="text-gray-600 mb-6">우리 학원이 타겟해야 할 지역 + 업종 키워드의 예상 검색량을 확인하세요</p>
+                    
+                    <div class="grid md:grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">지역 선택</label>
+                            <input type="text" id="location" placeholder="예: 인천 서구, 강남구, 목동" 
+                                   class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">업종/키워드</label>
+                            <input type="text" id="keyword" placeholder="예: 영어학원, 수학학원, 코딩학원" 
+                                   class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                        </div>
+                    </div>
+                    
+                    <button onclick="analyzeKeyword()" class="w-full md:w-auto px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold">
+                        <i class="fas fa-chart-line mr-2"></i>검색량 분석하기
+                    </button>
+                    
+                    <div id="keywordResult" class="hidden mt-8">
+                        <div class="bg-blue-50 border-l-4 border-blue-600 p-6 rounded-lg">
+                            <h3 class="text-xl font-bold text-gray-900 mb-4">분석 결과</h3>
+                            <div class="grid md:grid-cols-3 gap-6">
+                                <div class="bg-white p-4 rounded-lg">
+                                    <div class="text-sm text-gray-600 mb-1">월평균 검색량</div>
+                                    <div class="text-3xl font-bold text-blue-600" id="searchVolume">-</div>
+                                    <div class="text-xs text-gray-500 mt-1">지역 내 검색 추정치</div>
+                                </div>
+                                <div class="bg-white p-4 rounded-lg">
+                                    <div class="text-sm text-gray-600 mb-1">경쟁 강도</div>
+                                    <div class="text-3xl font-bold" id="competition">-</div>
+                                    <div class="text-xs text-gray-500 mt-1">낮을수록 유리</div>
+                                </div>
+                                <div class="bg-white p-4 rounded-lg">
+                                    <div class="text-sm text-gray-600 mb-1">추천 점수</div>
+                                    <div class="text-3xl font-bold text-green-600" id="score">-</div>
+                                    <div class="text-xs text-gray-500 mt-1">/100점</div>
+                                </div>
+                            </div>
+                            <div class="mt-6 p-4 bg-white rounded-lg">
+                                <h4 class="font-semibold text-gray-900 mb-3">추천 키워드 조합</h4>
+                                <div id="keywordSuggestions" class="space-y-2"></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </section>
-        </div>
+
+            <!-- 2. 경쟁사 분석 -->
+            <section id="competitor" class="mb-12">
+                <div class="bg-white rounded-2xl shadow-sm p-8">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6">
+                        <i class="fas fa-users text-purple-600 mr-3"></i>
+                        경쟁사 벤치마킹
+                    </h2>
+                    <p class="text-gray-600 mb-6">주변 경쟁 학원과 우리 학원을 비교 분석하세요</p>
+                    
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">우리 학원 정보</label>
+                        <div class="grid md:grid-cols-3 gap-4">
+                            <input type="text" id="myAcademy" placeholder="학원명" class="px-4 py-3 border rounded-lg">
+                            <input type="number" id="myReviews" placeholder="리뷰 수" class="px-4 py-3 border rounded-lg">
+                            <input type="number" id="myRating" placeholder="평점 (1-5)" step="0.1" max="5" class="px-4 py-3 border rounded-lg">
+                        </div>
+                    </div>
+                    
+                    <button onclick="analyzeCompetitor()" class="w-full md:w-auto px-8 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-semibold">
+                        <i class="fas fa-chart-bar mr-2"></i>경쟁력 분석하기
+                    </button>
+                    
+                    <div id="competitorResult" class="hidden mt-8">
+                        <div class="bg-purple-50 border-l-4 border-purple-600 p-6 rounded-lg">
+                            <h3 class="text-xl font-bold text-gray-900 mb-4">벤치마킹 결과</h3>
+                            <canvas id="competitorChart" class="max-w-2xl mx-auto"></canvas>
+                            <div class="mt-6 grid md:grid-cols-2 gap-4">
+                                <div class="bg-white p-4 rounded-lg">
+                                    <h4 class="font-semibold mb-3 text-green-600">💪 우리의 강점</h4>
+                                    <ul id="strengths" class="space-y-2 text-sm"></ul>
+                                </div>
+                                <div class="bg-white p-4 rounded-lg">
+                                    <h4 class="font-semibold mb-3 text-orange-600">📈 개선 포인트</h4>
+                                    <ul id="improvements" class="space-y-2 text-sm"></ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. 리뷰 응답 템플릿 생성기 -->
+            <section id="review" class="mb-12">
+                <div class="bg-white rounded-2xl shadow-sm p-8">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6">
+                        <i class="fas fa-star text-yellow-500 mr-3"></i>
+                        리뷰 응답 자동 생성기
+                    </h2>
+                    <p class="text-gray-600 mb-6">고객 리뷰에 맞춤형 응답을 자동으로 생성하세요</p>
+                    
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">리뷰 유형 선택</label>
+                        <select id="reviewType" class="w-full px-4 py-3 border rounded-lg">
+                            <option value="positive">긍정적 리뷰 (⭐⭐⭐⭐⭐)</option>
+                            <option value="neutral">보통 리뷰 (⭐⭐⭐)</option>
+                            <option value="negative">부정적 리뷰 (⭐⭐)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">리뷰 내용 (선택)</label>
+                        <textarea id="reviewContent" rows="3" placeholder="예: 선생님이 친절하시고 설명을 잘해주셔서 아이가 좋아합니다" 
+                                  class="w-full px-4 py-3 border rounded-lg"></textarea>
+                    </div>
+                    
+                    <button onclick="generateReviewResponse()" class="w-full md:w-auto px-8 py-3 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 font-semibold">
+                        <i class="fas fa-magic mr-2"></i>응답 생성하기
+                    </button>
+                    
+                    <div id="reviewResponse" class="hidden mt-8">
+                        <div class="bg-yellow-50 border-l-4 border-yellow-500 p-6 rounded-lg">
+                            <h3 class="text-xl font-bold text-gray-900 mb-4">추천 응답</h3>
+                            <div class="bg-white p-6 rounded-lg mb-4">
+                                <p id="responseText" class="text-gray-800 leading-relaxed whitespace-pre-wrap"></p>
+                            </div>
+                            <button onclick="copyResponse()" class="px-6 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600">
+                                <i class="fas fa-copy mr-2"></i>복사하기
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 4. 플레이스 최적화 체크리스트 -->
+            <section id="optimization" class="mb-12">
+                <div class="bg-white rounded-2xl shadow-sm p-8">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6">
+                        <i class="fas fa-check-circle text-green-600 mr-3"></i>
+                        플레이스 최적화 체크리스트
+                    </h2>
+                    <p class="text-gray-600 mb-6">상위노출을 위한 필수 체크 포인트를 확인하세요</p>
+                    
+                    <div class="space-y-4">
+                        <div class="flex items-start gap-4 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
+                            <input type="checkbox" id="check1" class="w-6 h-6 mt-1 text-green-600 rounded">
+                            <label for="check1" class="flex-1 cursor-pointer">
+                                <div class="font-semibold text-gray-900">정확한 카테고리 설정</div>
+                                <div class="text-sm text-gray-600">업종에 맞는 정확한 카테고리를 1순위로 설정했나요?</div>
+                            </label>
+                        </div>
+                        
+                        <div class="flex items-start gap-4 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
+                            <input type="checkbox" id="check2" class="w-6 h-6 mt-1 text-green-600 rounded">
+                            <label for="check2" class="flex-1 cursor-pointer">
+                                <div class="font-semibold text-gray-900">상세 정보 100% 입력</div>
+                                <div class="text-sm text-gray-600">영업시간, 전화번호, 주소, 홈페이지 등 모든 정보를 입력했나요?</div>
+                            </label>
+                        </div>
+                        
+                        <div class="flex items-start gap-4 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
+                            <input type="checkbox" id="check3" class="w-6 h-6 mt-1 text-green-600 rounded">
+                            <label for="check3" class="flex-1 cursor-pointer">
+                                <div class="font-semibold text-gray-900">고퀄리티 사진 등록</div>
+                                <div class="text-sm text-gray-600">내부/외부 사진 10장 이상, 해상도 높은 사진을 등록했나요?</div>
+                            </label>
+                        </div>
+                        
+                        <div class="flex items-start gap-4 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
+                            <input type="checkbox" id="check4" class="w-6 h-6 mt-1 text-green-600 rounded">
+                            <label for="check4" class="flex-1 cursor-pointer">
+                                <div class="font-semibold text-gray-900">정기적인 게시글 업로드</div>
+                                <div class="text-sm text-gray-600">주 2-3회 이상 소식, 이벤트, 수업 후기 등을 올리고 있나요?</div>
+                            </label>
+                        </div>
+                        
+                        <div class="flex items-start gap-4 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
+                            <input type="checkbox" id="check5" class="w-6 h-6 mt-1 text-green-600 rounded">
+                            <label for="check5" class="flex-1 cursor-pointer">
+                                <div class="font-semibold text-gray-900">리뷰 관리 (응답률 80% 이상)</div>
+                                <div class="text-sm text-gray-600">모든 리뷰에 24시간 내 정성스러운 답변을 달고 있나요?</div>
+                            </label>
+                        </div>
+                        
+                        <div class="flex items-start gap-4 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
+                            <input type="checkbox" id="check6" class="w-6 h-6 mt-1 text-green-600 rounded">
+                            <label for="check6" class="flex-1 cursor-pointer">
+                                <div class="font-semibold text-gray-900">예약 / 문의 기능 활성화</div>
+                                <div class="text-sm text-gray-600">네이버 예약 또는 톡톡 상담을 켜두었나요?</div>
+                            </label>
+                        </div>
+                        
+                        <div class="flex items-start gap-4 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
+                            <input type="checkbox" id="check7" class="w-6 h-6 mt-1 text-green-600 rounded">
+                            <label for="check7" class="flex-1 cursor-pointer">
+                                <div class="font-semibold text-gray-900">메뉴/가격 정보 공개</div>
+                                <div class="text-sm text-gray-600">수업료, 수강 프로그램 등 투명한 가격 정보를 제공하나요?</div>
+                            </label>
+                        </div>
+                        
+                        <div class="flex items-start gap-4 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
+                            <input type="checkbox" id="check8" class="w-6 h-6 mt-1 text-green-600 rounded">
+                            <label for="check8" class="flex-1 cursor-pointer">
+                                <div class="font-semibold text-gray-900">키워드 자연스럽게 포함</div>
+                                <div class="text-sm text-gray-600">소개글과 게시글에 지역+업종 키워드가 자연스럽게 들어가 있나요?</div>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-8 p-6 bg-green-50 rounded-lg">
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-lg font-semibold text-gray-900">최적화 점수</span>
+                            <span id="optimizationScore" class="text-3xl font-bold text-green-600">0/8</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-3">
+                            <div id="optimizationBar" class="bg-green-600 h-3 rounded-full transition-all duration-500" style="width: 0%"></div>
+                        </div>
+                        <p class="text-sm text-gray-600 mt-3">💡 8개 항목을 모두 체크하면 상위노출 확률이 크게 높아집니다!</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 5. 최적 영업시간 추천 -->
+            <section class="mb-12">
+                <div class="bg-white rounded-2xl shadow-sm p-8">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6">
+                        <i class="fas fa-clock text-indigo-600 mr-3"></i>
+                        최적 영업시간 & 게시 시간 추천
+                    </h2>
+                    <p class="text-gray-600 mb-6">학원 업종 특성에 맞는 최적의 운영 시간을 추천합니다</p>
+                    
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div class="p-6 bg-indigo-50 rounded-lg">
+                            <h3 class="font-bold text-gray-900 mb-4">📌 추천 영업시간</h3>
+                            <div class="space-y-3 text-sm">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">평일</span>
+                                    <span class="font-semibold">14:00 - 22:00</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">주말</span>
+                                    <span class="font-semibold">09:00 - 18:00</span>
+                                </div>
+                                <p class="text-xs text-gray-500 mt-3">* 학원 업종은 방과 후 ~ 저녁 시간대 집중 노출이 유리합니다</p>
+                            </div>
+                        </div>
+                        
+                        <div class="p-6 bg-indigo-50 rounded-lg">
+                            <h3 class="font-bold text-gray-900 mb-4">📱 추천 게시글 업로드 시간</h3>
+                            <div class="space-y-3 text-sm">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-24 text-gray-600">평일 오전</span>
+                                    <span class="font-semibold">10:00 - 11:00</span>
+                                    <span class="text-xs text-gray-500">(학부모 활동 시간)</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="w-24 text-gray-600">평일 저녁</span>
+                                    <span class="font-semibold">19:00 - 20:00</span>
+                                    <span class="text-xs text-gray-500">(퇴근 후 검색)</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="w-24 text-gray-600">주말</span>
+                                    <span class="font-semibold">11:00 - 13:00</span>
+                                    <span class="text-xs text-gray-500">(주말 학원 검색)</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <script>
+            // 키워드 분석
+            function analyzeKeyword() {
+                const location = document.getElementById('location').value.trim();
+                const keyword = document.getElementById('keyword').value.trim();
+                
+                if (!location || !keyword) {
+                    alert('지역과 키워드를 모두 입력해주세요');
+                    return;
+                }
+                
+                // 시뮬레이션 데이터
+                const searchVolume = Math.floor(Math.random() * 1500) + 500;
+                const competition = ['낮음', '보통', '높음'][Math.floor(Math.random() * 3)];
+                const score = Math.floor(Math.random() * 30) + 70;
+                
+                document.getElementById('searchVolume').textContent = searchVolume.toLocaleString();
+                document.getElementById('competition').textContent = competition;
+                document.getElementById('competition').className = 'text-3xl font-bold ' + 
+                    (competition === '낮음' ? 'text-green-600' : competition === '보통' ? 'text-yellow-600' : 'text-red-600');
+                document.getElementById('score').textContent = score;
+                
+                // 추천 키워드
+                const suggestions = [
+                    \`\${location} \${keyword}\`,
+                    \`\${location} \${keyword} 추천\`,
+                    \`\${location} \${keyword} 가격\`,
+                    \`\${location} 초등 \${keyword}\`,
+                    \`\${location} 중등 \${keyword}\`,
+                ];
+                
+                const suggestionsHTML = suggestions.map(s => 
+                    \`<div class="flex items-center gap-3 text-sm">
+                        <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full font-medium">\${s}</span>
+                        <span class="text-gray-500">검색량: \${Math.floor(Math.random() * 500) + 100}</span>
+                    </div>\`
+                ).join('');
+                
+                document.getElementById('keywordSuggestions').innerHTML = suggestionsHTML;
+                document.getElementById('keywordResult').classList.remove('hidden');
+                
+                // 스크롤
+                document.getElementById('keywordResult').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+            
+            // 경쟁사 분석
+            let competitorChart = null;
+            
+            function analyzeCompetitor() {
+                const myAcademy = document.getElementById('myAcademy').value.trim();
+                const myReviews = parseInt(document.getElementById('myReviews').value) || 0;
+                const myRating = parseFloat(document.getElementById('myRating').value) || 0;
+                
+                if (!myAcademy) {
+                    alert('학원명을 입력해주세요');
+                    return;
+                }
+                
+                // 시뮬레이션 데이터
+                const competitors = [
+                    { name: '경쟁사 A', reviews: Math.floor(Math.random() * 100) + 50, rating: (Math.random() * 1 + 4).toFixed(1) },
+                    { name: '경쟁사 B', reviews: Math.floor(Math.random() * 100) + 50, rating: (Math.random() * 1 + 4).toFixed(1) },
+                    { name: '경쟁사 C', reviews: Math.floor(Math.random() * 100) + 50, rating: (Math.random() * 1 + 4).toFixed(1) },
+                ];
+                
+                const avgReviews = Math.floor((competitors.reduce((sum, c) => sum + c.reviews, 0)) / 3);
+                const avgRating = (competitors.reduce((sum, c) => sum + parseFloat(c.rating), 0) / 3).toFixed(1);
+                
+                // 차트 생성
+                const ctx = document.getElementById('competitorChart');
+                if (competitorChart) competitorChart.destroy();
+                
+                competitorChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: [myAcademy, ...competitors.map(c => c.name), '평균'],
+                        datasets: [{
+                            label: '리뷰 수',
+                            data: [myReviews, ...competitors.map(c => c.reviews), avgReviews],
+                            backgroundColor: ['#3B82F6', '#E5E7EB', '#E5E7EB', '#E5E7EB', '#FCD34D'],
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: { y: { beginAtZero: true } }
+                    }
+                });
+                
+                // 강점/개선점
+                const strengths = [];
+                const improvements = [];
+                
+                if (myReviews > avgReviews) strengths.push('리뷰 수가 평균보다 많습니다');
+                else improvements.push(\`리뷰를 \${avgReviews - myReviews}개 더 확보하세요\`);
+                
+                if (myRating >= parseFloat(avgRating)) strengths.push('평점이 평균 이상입니다');
+                else improvements.push('평점을 높이기 위해 서비스 품질 개선이 필요합니다');
+                
+                if (myReviews < 50) improvements.push('리뷰 50개 이상 확보를 목표로 하세요');
+                if (myRating < 4.5) improvements.push('4.5점 이상 평점 유지를 위해 노력하세요');
+                
+                document.getElementById('strengths').innerHTML = strengths.map(s => 
+                    \`<li class="flex items-start gap-2"><span class="text-green-600">✓</span><span>\${s}</span></li>\`
+                ).join('') || '<li class="text-gray-500">분석 결과 없음</li>';
+                
+                document.getElementById('improvements').innerHTML = improvements.map(s => 
+                    \`<li class="flex items-start gap-2"><span class="text-orange-600">→</span><span>\${s}</span></li>\`
+                ).join('') || '<li class="text-gray-500">분석 결과 없음</li>';
+                
+                document.getElementById('competitorResult').classList.remove('hidden');
+                document.getElementById('competitorResult').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+            
+            // 리뷰 응답 생성
+            function generateReviewResponse() {
+                const type = document.getElementById('reviewType').value;
+                const content = document.getElementById('reviewContent').value.trim();
+                
+                const responses = {
+                    positive: [
+                        "소중한 리뷰 정말 감사드립니다! 😊\\n{name} 학부모님의 따뜻한 말씀에 저희 모든 선생님들이 큰 힘을 얻습니다.\\n앞으로도 학생의 성장을 위해 최선을 다하는 {academy}이 되겠습니다.\\n항상 감사합니다! 🙏",
+                        "리뷰 남겨주셔서 진심으로 감사합니다! ❤️\\n학생이 즐겁게 공부하는 모습을 보니 저희도 정말 뿌듯합니다.\\n더 나은 수업, 더 좋은 결과로 보답하겠습니다.\\n언제든지 궁금한 점 있으시면 편하게 연락주세요! 😊"
+                    ],
+                    neutral: [
+                        "소중한 의견 감사합니다.\\n더 나은 수업 환경을 만들기 위해 노력하겠습니다.\\n혹시 개선이 필요한 부분이 있다면 언제든 말씀해 주세요!\\n{name} 학생의 발전을 위해 최선을 다하겠습니다. 🙏",
+                        "리뷰 남겨주셔서 감사합니다!\\n학부모님의 의견을 반영하여 더 나은 학원이 되도록 노력하겠습니다.\\n앞으로도 많은 관심 부탁드립니다. 😊"
+                    ],
+                    negative: [
+                        "불편을 드려 정말 죄송합니다. 😔\\n말씀해주신 부분은 즉시 개선하도록 하겠습니다.\\n학부모님과 직접 통화하여 자세한 이야기를 나누고 싶습니다.\\n학원으로 연락 주시면 성심성의껏 해결해드리겠습니다.\\n다시 한번 죄송하다는 말씀 드립니다.",
+                        "귀한 의견 감사드리며, 불편을 드린 점 진심으로 사과드립니다.\\n즉시 문제를 파악하여 개선 조치를 취하겠습니다.\\n직접 찾아뵙고 말씀드리고 싶습니다.\\n학원으로 연락 부탁드립니다. 🙏"
+                    ]
+                };
+                
+                const templates = responses[type];
+                const response = templates[Math.floor(Math.random() * templates.length)]
+                    .replace('{name}', '학생')
+                    .replace('{academy}', '학원');
+                
+                document.getElementById('responseText').textContent = response;
+                document.getElementById('reviewResponse').classList.remove('hidden');
+                document.getElementById('reviewResponse').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+            
+            function copyResponse() {
+                const text = document.getElementById('responseText').textContent;
+                navigator.clipboard.writeText(text).then(() => {
+                    alert('✅ 응답이 클립보드에 복사되었습니다!');
+                });
+            }
+            
+            // 최적화 체크리스트
+            document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                checkbox.addEventListener('change', updateOptimizationScore);
+            });
+            
+            function updateOptimizationScore() {
+                const total = 8;
+                const checked = document.querySelectorAll('input[type="checkbox"]:checked').length;
+                const percentage = Math.round((checked / total) * 100);
+                
+                document.getElementById('optimizationScore').textContent = \`\${checked}/\${total}\`;
+                document.getElementById('optimizationBar').style.width = percentage + '%';
+            }
+        </script>
     </body>
     </html>
-  `)
+  \`)
 })
-
-// 교육 프로그램 상세 페이지 - 블로그
-app.get('/programs/blog', (c) => {
-  return c.html(`
     <!DOCTYPE html>
     <html lang="ko">
     <head>
