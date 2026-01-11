@@ -12319,31 +12319,34 @@ app.get('/admin/users', async (c) => {
                                     <td class="px-6 py-4 whitespace-nowrap text-sm">
                                         ${user.role !== 'admin' ? `
                                             <div class="flex gap-2 flex-wrap">
-                                                <button data-action="changePassword" data-user-id="${user.id}" data-user-name="${safeName}" 
-                                                        class="admin-btn px-3 py-1.5 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition text-xs font-medium"
-                                                        title="비밀번호 변경">
+                                                <button id="btn-pwd-${user.id}" class="px-3 py-1.5 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition text-xs font-medium" title="비밀번호 변경">
                                                     🔑 비밀번호
                                                 </button>
-                                                <button data-action="givePoints" data-user-id="${user.id}" data-user-name="${safeName}" data-points="${user.points || 0}"
-                                                        class="admin-btn px-3 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-xs font-medium"
-                                                        title="포인트 지급">
+                                                <button id="btn-give-${user.id}" class="px-3 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-xs font-medium" title="포인트 지급">
                                                     💰 지급
                                                 </button>
-                                                <button data-action="deductPoints" data-user-id="${user.id}" data-user-name="${safeName}" data-points="${user.points || 0}"
-                                                        class="admin-btn px-3 py-1.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition text-xs font-medium"
-                                                        title="포인트 차감">
+                                                <button id="btn-deduct-${user.id}" class="px-3 py-1.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition text-xs font-medium" title="포인트 차감">
                                                     ❌ 차감
                                                 </button>
-                                                <button data-action="loginAs" data-user-id="${user.id}" data-user-name="${safeName}"
-                                                        class="admin-btn px-3 py-1.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition text-xs font-medium"
-                                                        title="이 사용자로 로그인">
+                                                <button id="btn-login-${user.id}" class="px-3 py-1.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition text-xs font-medium" title="이 사용자로 로그인">
                                                     👤 로그인
                                                 </button>
-                                                <button data-action="managePermissions" data-user-id="${user.id}" data-user-name="${safeName}"
-                                                        class="admin-btn px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-xs font-medium"
-                                                        title="권한 관리">
+                                                <button id="btn-perm-${user.id}" class="px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-xs font-medium" title="권한 관리">
                                                     ⚙️ 권한
                                                 </button>
+                                                <script>
+                                                (function() {
+                                                    var uid = ${user.id};
+                                                    var uname = "${user.name?.replace(/"/g, '&quot;')}";
+                                                    var pts = ${user.points || 0};
+                                                    
+                                                    document.getElementById('btn-pwd-' + uid).onclick = function() { changePassword(uid, uname); };
+                                                    document.getElementById('btn-give-' + uid).onclick = function() { givePoints(uid, uname, pts); };
+                                                    document.getElementById('btn-deduct-' + uid).onclick = function() { deductPoints(uid, uname, pts); };
+                                                    document.getElementById('btn-login-' + uid).onclick = function() { loginAs(uid, uname); };
+                                                    document.getElementById('btn-perm-' + uid).onclick = function() { managePermissions(uid, uname); };
+                                                })();
+                                                </script>
                                             </div>
                                         ` : '-'}
                                     </td>
@@ -12394,75 +12397,7 @@ app.get('/admin/users', async (c) => {
         </div>
 
         <script>
-            console.log('🚀 Admin page script loaded at:', new Date().toISOString());
-            
             let currentUserId = null;
-            
-            // 즉시 실행 - DOMContentLoaded 기다리지 않음
-            function attachEventListeners() {
-                console.log('📌 Attaching event listeners...');
-                
-                const buttons = document.querySelectorAll('.admin-btn');
-                console.log('🔍 Found buttons:', buttons.length);
-                
-                if (buttons.length === 0) {
-                    console.error('❌ No buttons found! Retrying in 500ms...');
-                    setTimeout(attachEventListeners, 500);
-                    return;
-                }
-                
-                buttons.forEach((button, index) => {
-                    console.log(\`🎯 Attaching listener to button \${index + 1}\`, button.dataset);
-                    
-                    button.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        
-                        const action = this.dataset.action;
-                        const userId = parseInt(this.dataset.userId);
-                        const userName = this.dataset.userName;
-                        const points = parseInt(this.dataset.points || 0);
-                        
-                        console.log('✅ Button clicked!', { action, userId, userName, points });
-                        alert('버튼이 작동합니다! Action: ' + action);
-                        
-                        switch(action) {
-                            case 'changePassword':
-                                changePassword(userId, userName);
-                                break;
-                            case 'givePoints':
-                                givePoints(userId, userName, points);
-                                break;
-                            case 'deductPoints':
-                                deductPoints(userId, userName, points);
-                                break;
-                            case 'loginAs':
-                                loginAs(userId, userName);
-                                break;
-                            case 'managePermissions':
-                                managePermissions(userId, userName);
-                                break;
-                            default:
-                                console.error('Unknown action:', action);
-                        }
-                    });
-                });
-                
-                console.log('✅ All event listeners attached successfully!');
-            }
-            
-            // 페이지 로드 시 즉시 실행
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', attachEventListeners);
-            } else {
-                attachEventListeners();
-            }
-            
-            // 추가 안전장치: 1초 후에도 다시 시도
-            setTimeout(function() {
-                console.log('🔄 Safety check: Re-attaching listeners...');
-                attachEventListeners();
-            }, 1000);
 
             const programs = [
                 { id: 'naver-place', name: '네이버 플레이스 상위노출' },
