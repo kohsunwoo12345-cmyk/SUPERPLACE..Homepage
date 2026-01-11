@@ -4,6 +4,7 @@ import adapter from '@hono/vite-dev-server/cloudflare'
 import { defineConfig } from 'vite'
 
 export default defineConfig({
+  publicDir: 'public',
   plugins: [
     build({
       outputDir: 'dist',
@@ -12,7 +13,7 @@ export default defineConfig({
       cloudflarePages: {
         routes: {
           include: ['/*'],
-          exclude: ['/static/*']
+          exclude: ['/static/*', '/*.jpg', '/*.png', '/*.ico']
         }
       }
     }),
