@@ -12394,24 +12394,37 @@ app.get('/admin/users', async (c) => {
         </div>
 
         <script>
-            console.log('Admin page script loaded!');
+            console.log('🚀 Admin page script loaded at:', new Date().toISOString());
             
-            // 모든 관리 버튼에 이벤트 리스너 추가
-            document.addEventListener('DOMContentLoaded', function() {
-                console.log('DOM loaded, attaching event listeners...');
+            let currentUserId = null;
+            
+            // 즉시 실행 - DOMContentLoaded 기다리지 않음
+            function attachEventListeners() {
+                console.log('📌 Attaching event listeners...');
                 
                 const buttons = document.querySelectorAll('.admin-btn');
-                console.log('Found buttons:', buttons.length);
+                console.log('🔍 Found buttons:', buttons.length);
                 
-                buttons.forEach(button => {
+                if (buttons.length === 0) {
+                    console.error('❌ No buttons found! Retrying in 500ms...');
+                    setTimeout(attachEventListeners, 500);
+                    return;
+                }
+                
+                buttons.forEach((button, index) => {
+                    console.log(\`🎯 Attaching listener to button \${index + 1}\`, button.dataset);
+                    
                     button.addEventListener('click', function(e) {
                         e.preventDefault();
+                        e.stopPropagation();
+                        
                         const action = this.dataset.action;
                         const userId = parseInt(this.dataset.userId);
                         const userName = this.dataset.userName;
                         const points = parseInt(this.dataset.points || 0);
                         
-                        console.log('Button clicked:', action, userId, userName, points);
+                        console.log('✅ Button clicked!', { action, userId, userName, points });
+                        alert('버튼이 작동합니다! Action: ' + action);
                         
                         switch(action) {
                             case 'changePassword':
@@ -12429,12 +12442,27 @@ app.get('/admin/users', async (c) => {
                             case 'managePermissions':
                                 managePermissions(userId, userName);
                                 break;
+                            default:
+                                console.error('Unknown action:', action);
                         }
                     });
                 });
-            });
+                
+                console.log('✅ All event listeners attached successfully!');
+            }
             
-            let currentUserId = null;
+            // 페이지 로드 시 즉시 실행
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', attachEventListeners);
+            } else {
+                attachEventListeners();
+            }
+            
+            // 추가 안전장치: 1초 후에도 다시 시도
+            setTimeout(function() {
+                console.log('🔄 Safety check: Re-attaching listeners...');
+                attachEventListeners();
+            }, 1000);
 
             const programs = [
                 { id: 'naver-place', name: '네이버 플레이스 상위노출' },
