@@ -188,6 +188,47 @@ app.put('/api/admin/users/:id/points', async (c) => {
   }
 })
 
+// 관리자: 포인트 차감 API
+app.put('/api/admin/users/:id/points/deduct', async (c) => {
+  try {
+    const userId = c.req.param('id')
+    const { points } = await c.req.json()
+
+    if (!points || points <= 0) {
+      return c.json({ success: false, error: '올바른 포인트를 입력하세요.' }, 400)
+    }
+
+    // 현재 포인트 조회
+    const user = await c.env.DB.prepare(`
+      SELECT id, email, name, points FROM users WHERE id = ?
+    `).bind(userId).first()
+
+    if (!user) {
+      return c.json({ success: false, error: '사용자를 찾을 수 없습니다.' }, 404)
+    }
+
+    const currentPoints = user?.points || 0
+    const newPoints = currentPoints - points
+
+    console.log('Deduct points:', { userId, userName: user.name, currentPoints, deductPoints: points, newPoints })
+
+    // 포인트 차감 (마이너스 허용)
+    await c.env.DB.prepare(`
+      UPDATE users SET points = ? WHERE id = ?
+    `).bind(newPoints, userId).run()
+
+    return c.json({ 
+      success: true, 
+      message: points + 'P가 차감되었습니다.',
+      deductedPoints: points,
+      newPoints: newPoints 
+    })
+  } catch (error) {
+    console.error('Points deduct error:', error)
+    return c.json({ success: false, error: '포인트 차감 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
 // 관리자: 사용자로 로그인 API
 app.post('/api/admin/login-as/:id', async (c) => {
   try {
@@ -12258,7 +12299,7 @@ app.get('/admin/users', async (c) => {
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${new Date(user.created_at).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit' })}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm">
                                         ${user.role !== 'admin' ? `
-                                            <div class="flex gap-2">
+                                            <div class="flex gap-2 flex-wrap">
                                                 <button onclick="changePassword(${user.id}, '${user.name}')" 
                                                         class="px-3 py-1.5 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition text-xs font-medium"
                                                         title="비밀번호 변경">
@@ -12267,7 +12308,12 @@ app.get('/admin/users', async (c) => {
                                                 <button onclick="givePoints(${user.id}, '${user.name}', ${user.points || 0})" 
                                                         class="px-3 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-xs font-medium"
                                                         title="포인트 지급">
-                                                    💰 포인트
+                                                    💰 지급
+                                                </button>
+                                                <button onclick="deductPoints(${user.id}, '${user.name}', ${user.points || 0})" 
+                                                        class="px-3 py-1.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition text-xs font-medium"
+                                                        title="포인트 차감">
+                                                    ❌ 차감
                                                 </button>
                                                 <button onclick="loginAs(${user.id}, '${user.name}')" 
                                                         class="px-3 py-1.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition text-xs font-medium"
@@ -12502,13 +12548,54 @@ app.get('/admin/users', async (c) => {
 
                     const data = await response.json();
                     if (data.success) {
-                        alert(points + 'P가 지급되었습니다!\n새 잔액: ' + data.newPoints + 'P');
+                        alert(points.toLocaleString() + 'P가 지급되었습니다!\n새 잔액: ' + data.newPoints.toLocaleString() + 'P');
                         location.reload();
                     } else {
                         alert('오류: ' + (data.error || '포인트 지급 실패'));
                     }
                 } catch (error) {
                     alert('포인트 지급 중 오류가 발생했습니다.');
+                }
+            }
+
+            // 포인트 차감 (환수)
+            async function deductPoints(userId, userName, currentPoints) {
+                const pointsStr = prompt(userName + '님의 포인트를 차감합니다\n(현재: ' + currentPoints.toLocaleString() + 'P)\n\n차감할 포인트를 입력하세요:');
+                if (!pointsStr) return;
+                
+                const points = parseInt(pointsStr);
+                if (isNaN(points) || points <= 0) {
+                    alert('올바른 포인트를 입력하세요.');
+                    return;
+                }
+
+                // 현재 포인트보다 많이 차감하려는 경우 경고
+                if (points > currentPoints) {
+                    if (!confirm('⚠️ 경고: 현재 포인트(' + currentPoints.toLocaleString() + 'P)보다 많은 금액(' + points.toLocaleString() + 'P)을 차감하면\n포인트가 마이너스가 됩니다.\n\n계속하시겠습니까?')) {
+                        return;
+                    }
+                }
+
+                if (!confirm(userName + '님의 포인트를 ' + points.toLocaleString() + 'P 차감하시겠습니까?\n\n차감 후 잔액: ' + (currentPoints - points).toLocaleString() + 'P')) {
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/api/admin/users/' + userId + '/points/deduct', {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ points })
+                    });
+
+                    const data = await response.json();
+                    if (data.success) {
+                        alert(points.toLocaleString() + 'P가 차감되었습니다!\n새 잔액: ' + data.newPoints.toLocaleString() + 'P');
+                        location.reload();
+                    } else {
+                        alert('오류: ' + (data.error || '포인트 차감 실패'));
+                    }
+                } catch (error) {
+                    alert('포인트 차감 중 오류가 발생했습니다.');
                 }
             }
 
