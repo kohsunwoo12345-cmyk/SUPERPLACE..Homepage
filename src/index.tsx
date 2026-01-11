@@ -12201,7 +12201,7 @@ app.get('/admin/users', async (c) => {
                                             ${user.role === 'admin' ? '관리자' : '일반회원'}
                                         </span>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${new Date(user.created_at).toLocaleDateString('ko-KR')}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${new Date(user.created_at).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit' })}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm">
                                         ${user.role !== 'admin' ? `
                                             <div class="flex gap-2">
@@ -12586,8 +12586,8 @@ app.get('/admin/deposits', async (c) => {
                                 </div>
                             </div>
                             <div class="text-sm text-gray-500 text-right">
-                                <div>${new Date(deposit.created_at).toLocaleString('ko-KR')}</div>
-                                ${deposit.processed_at ? `<div class="text-xs mt-1">처리: ${new Date(deposit.processed_at).toLocaleString('ko-KR')}</div>` : ''}
+                                <div>${new Date(deposit.created_at).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })}</div>
+                                ${deposit.processed_at ? `<div class="text-xs mt-1">처리: ${new Date(deposit.processed_at).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })}</div>` : ''}
                             </div>
                         </div>
 
@@ -12756,7 +12756,7 @@ app.get('/admin/contacts', async (c) => {
                                 </div>
                             </div>
                             <div class="text-sm text-gray-500">
-                                ${new Date(contact.created_at).toLocaleString('ko-KR')}
+                                ${new Date(contact.created_at).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })}
                             </div>
                         </div>
 
