@@ -114,6 +114,42 @@ app.post('/api/login', async (c) => {
   }
 })
 
+// 회원가입 API
+app.post('/api/register', async (c) => {
+  try {
+    const { email, password, name, phone, academy_name } = await c.req.json()
+
+    // 필수 필드 확인
+    if (!email || !password || !name) {
+      return c.json({ success: false, error: '필수 정보를 모두 입력해주세요.' }, 400)
+    }
+
+    // 이메일 중복 확인
+    const existingUser = await c.env.DB.prepare(`
+      SELECT id FROM users WHERE email = ?
+    `).bind(email).first()
+
+    if (existingUser) {
+      return c.json({ success: false, error: '이미 등록된 이메일입니다.' }, 400)
+    }
+
+    // 사용자 생성
+    const result = await c.env.DB.prepare(`
+      INSERT INTO users (email, password, name, phone, academy_name, role)
+      VALUES (?, ?, ?, ?, ?, 'user')
+    `).bind(email, password, name, phone || null, academy_name || null).run()
+
+    return c.json({ 
+      success: true, 
+      message: '회원가입이 완료되었습니다.',
+      user: { id: result.meta.last_row_id, email, name }
+    })
+  } catch (error) {
+    console.error('Register error:', error)
+    return c.json({ success: false, error: '회원가입 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
 // 문의 목록 조회 API (관리자용)
 app.get('/api/contacts', async (c) => {
   try {
@@ -2194,6 +2230,128 @@ app.get('/contact', (c) => {
   `)
 })
 
+// 회원가입 페이지
+app.get('/register', (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>회원가입 - 우리는 슈퍼플레이스다</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <style>
+          @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
+          * {
+            font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+          }
+          .gradient-purple {
+            background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+          }
+        </style>
+    </head>
+    <body class="bg-gray-50">
+        <div class="min-h-screen flex items-center justify-center px-6 py-12">
+            <div class="max-w-md w-full">
+                <div class="text-center mb-10">
+                    <a href="/" class="inline-block mb-6">
+                        <span class="text-2xl font-bold text-gray-900">우리는 슈퍼플레이스다</span>
+                    </a>
+                    <h1 class="text-3xl font-bold text-gray-900 mb-2">회원가입</h1>
+                    <p class="text-gray-600">학원 마케팅 교육 플랫폼에 가입하세요</p>
+                </div>
+
+                <div class="bg-white rounded-2xl border border-gray-200 p-8">
+                    <form id="registerForm" class="space-y-5">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 mb-2">이름 <span class="text-red-500">*</span></label>
+                            <input type="text" name="name" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 mb-2">이메일 <span class="text-red-500">*</span></label>
+                            <input type="email" name="email" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 mb-2">비밀번호 <span class="text-red-500">*</span></label>
+                            <input type="password" name="password" required minlength="6" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition">
+                            <p class="text-xs text-gray-500 mt-1">최소 6자 이상</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 mb-2">학원명</label>
+                            <input type="text" name="academy_name" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 mb-2">전화번호</label>
+                            <input type="tel" name="phone" placeholder="010-0000-0000" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition">
+                        </div>
+
+                        <div id="errorMessage" class="hidden bg-red-50 text-red-600 px-4 py-3 rounded-xl text-sm"></div>
+
+                        <button type="submit" class="w-full gradient-purple text-white px-6 py-3 rounded-xl font-medium hover:opacity-90 transition">
+                            회원가입
+                        </button>
+                    </form>
+
+                    <div class="mt-6 text-center">
+                        <p class="text-sm text-gray-600">
+                            이미 계정이 있으신가요? 
+                            <a href="/login" class="text-purple-600 hover:text-purple-700 font-medium">로그인</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            document.getElementById('registerForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const formData = new FormData(e.target);
+                const data = {
+                    name: formData.get('name'),
+                    email: formData.get('email'),
+                    password: formData.get('password'),
+                    academy_name: formData.get('academy_name'),
+                    phone: formData.get('phone')
+                };
+
+                const errorDiv = document.getElementById('errorMessage');
+                errorDiv.classList.add('hidden');
+
+                try {
+                    const response = await fetch('/api/register', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(data)
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        alert('회원가입이 완료되었습니다! 로그인 페이지로 이동합니다.');
+                        window.location.href = '/login';
+                    } else {
+                        errorDiv.textContent = result.error || '회원가입에 실패했습니다.';
+                        errorDiv.classList.remove('hidden');
+                    }
+                } catch (error) {
+                    console.error('Register error:', error);
+                    errorDiv.textContent = '회원가입 중 오류가 발생했습니다.';
+                    errorDiv.classList.remove('hidden');
+                }
+            });
+        </script>
+    </body>
+    </html>
+  `)
+})
+
 // 로그인 페이지
 app.get('/login', (c) => {
   return c.html(`
@@ -2276,7 +2434,7 @@ app.get('/login', (c) => {
                     </div>
 
                     <div class="mt-6 text-center text-sm text-gray-600">
-                        계정이 없으신가요? <a href="/signup" class="text-purple-600 hover:text-purple-700 font-medium">회원가입</a>
+                        계정이 없으신가요? <a href="/register" class="text-purple-600 hover:text-purple-700 font-medium">회원가입</a>
                     </div>
                 </div>
             </div>
