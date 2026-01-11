@@ -106,11 +106,35 @@ app.post('/api/login', async (c) => {
     return c.json({ 
       success: true, 
       message: '로그인 성공',
-      user: { id: user.id, email: user.email, name: user.name, role: user.role }
+      user: { id: user.id, email: user.email, name: user.name, role: user.role, points: user.points || 0 }
     })
   } catch (error) {
     console.error('Login error:', error)
     return c.json({ success: false, error: '로그인 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
+// 실시간 포인트 조회 API
+app.get('/api/users/:id/points', async (c) => {
+  try {
+    const userId = c.req.param('id')
+    
+    const user = await c.env.DB.prepare(`
+      SELECT id, email, name, points FROM users WHERE id = ?
+    `).bind(userId).first()
+
+    if (!user) {
+      return c.json({ success: false, error: '사용자를 찾을 수 없습니다.' }, 404)
+    }
+
+    return c.json({ 
+      success: true,
+      points: user.points || 0,
+      user: { id: user.id, email: user.email, name: user.name, points: user.points || 0 }
+    })
+  } catch (error) {
+    console.error('Get points error:', error)
+    return c.json({ success: false, error: '포인트 조회 중 오류가 발생했습니다.' }, 500)
   }
 })
 
@@ -4729,22 +4753,29 @@ app.get('/dashboard', (c) => {
                 window.location.href = '/'
             }
 
-            // 포인트 로드
+            // 포인트 실시간 로드
             async function loadUserPoints() {
                 const user = JSON.parse(localStorage.getItem('user'))
                 if (user && user.id) {
                     try {
-                        const response = await fetch('/api/admin/users')
+                        const response = await fetch('/api/users/' + user.id + '/points')
                         const data = await response.json()
-                        const currentUser = data.results?.find(u => u.id === user.id)
-                        if (currentUser) {
-                            document.getElementById('userPoints').textContent = currentUser.points || 0
+                        if (data.success) {
+                            const points = data.points || 0
+                            document.getElementById('userPoints').textContent = points.toLocaleString()
+                            
+                            // localStorage도 업데이트
+                            user.points = points
+                            localStorage.setItem('user', JSON.stringify(user))
                         }
                     } catch (error) {
                         console.error('포인트 로드 실패:', error)
                     }
                 }
             }
+
+            // 5초마다 포인트 자동 갱신
+            setInterval(loadUserPoints, 5000)
 
             // 입금 신청 모달 열기
             function openDepositModal() {
@@ -4814,7 +4845,9 @@ app.get('/dashboard', (c) => {
                 }
             }
 
-            // 페이지 로드 시
+            // 페이지 로드 시 즉시 포인트 로드
+            loadUserPoints()
+            
             document.addEventListener('DOMContentLoaded', () => {
                 loadUserPoints()
             })
