@@ -4735,6 +4735,16 @@ app.get('/dashboard', (c) => {
                 document.getElementById('depositModal').classList.add('hidden')
             }
 
+            // 계좌번호 복사
+            function copyAccountNumber() {
+                const accountNumber = '746-910023-17004'
+                navigator.clipboard.writeText(accountNumber).then(() => {
+                    alert('계좌번호가 복사되었습니다!\\n' + accountNumber)
+                }).catch(err => {
+                    alert('복사 실패: ' + err)
+                })
+            }
+
             // 입금 신청
             async function submitDeposit() {
                 const user = JSON.parse(localStorage.getItem('user'))
@@ -4799,6 +4809,33 @@ app.get('/dashboard', (c) => {
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                         </svg>
                     </button>
+                </div>
+
+                <!-- 계좌 정보 -->
+                <div class="bg-gradient-to-r from-blue-500 to-blue-700 rounded-xl p-5 mb-6 text-white">
+                    <h4 class="font-bold mb-3 flex items-center gap-2">
+                        <i class="fas fa-university"></i>
+                        입금 계좌 정보
+                    </h4>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between items-center">
+                            <span class="text-blue-100">은행</span>
+                            <span class="font-bold">하나은행</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-blue-100">계좌번호</span>
+                            <div class="flex items-center gap-2">
+                                <span class="font-bold text-lg">746-910023-17004</span>
+                                <button onclick="copyAccountNumber()" class="bg-white text-blue-600 px-3 py-1 rounded text-xs font-bold hover:bg-blue-50 transition">
+                                    복사
+                                </button>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-blue-100">예금주</span>
+                            <span class="font-bold">주식회사 우리는 슈퍼플레이스다</span>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="space-y-4">
@@ -11977,6 +12014,7 @@ app.get('/admin', async (c) => {
                         <div class="flex gap-4">
                             <a href="/admin" class="text-purple-600 font-medium">대시보드</a>
                             <a href="/admin/users" class="text-gray-600 hover:text-purple-600">사용자</a>
+                            <a href="/admin/deposits" class="text-gray-600 hover:text-purple-600">입금 신청</a>
                             <a href="/admin/contacts" class="text-gray-600 hover:text-purple-600">문의</a>
                         </div>
                     </div>
@@ -12439,6 +12477,201 @@ app.get('/admin/users', async (c) => {
                     }
                 } catch (error) {
                     alert('로그인 중 오류가 발생했습니다.');
+                }
+            }
+        </script>
+    </body>
+    </html>
+  `)
+})
+
+// 관리자: 입금 신청 관리 페이지
+app.get('/admin/deposits', async (c) => {
+  const { env } = c
+  
+  // 입금 신청 목록 조회
+  const deposits = await env.DB.prepare('SELECT * FROM deposit_requests ORDER BY created_at DESC').all()
+  
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>입금 신청 관리 - 슈퍼플레이스</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+        <style>
+            .gradient-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        </style>
+    </head>
+    <body class="bg-gray-50">
+        <!-- 헤더 -->
+        <nav class="bg-white border-b border-gray-200 sticky top-0 z-50">
+            <div class="max-w-7xl mx-auto px-6 py-4">
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center gap-8">
+                        <a href="/admin" class="text-2xl font-bold text-purple-600">슈퍼플레이스 관리자</a>
+                        <div class="flex gap-4">
+                            <a href="/admin" class="text-gray-600 hover:text-purple-600">대시보드</a>
+                            <a href="/admin/users" class="text-gray-600 hover:text-purple-600">사용자</a>
+                            <a href="/admin/deposits" class="text-purple-600 font-medium">입금 신청</a>
+                            <a href="/admin/contacts" class="text-gray-600 hover:text-purple-600">문의</a>
+                        </div>
+                    </div>
+                    <button onclick="logout()" class="text-gray-600 hover:text-red-600">
+                        <i class="fas fa-sign-out-alt mr-2"></i>로그아웃
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- 메인 컨텐츠 -->
+        <div class="max-w-7xl mx-auto px-6 py-8">
+            <div class="mb-8 flex justify-between items-center">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900 mb-2">입금 신청 관리</h1>
+                    <p class="text-gray-600">전체 ${deposits?.results?.length || 0}건의 입금 신청</p>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="filterDeposits('all')" class="px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium">전체</button>
+                    <button onclick="filterDeposits('pending')" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm font-medium">대기중</button>
+                    <button onclick="filterDeposits('approved')" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm font-medium">승인</button>
+                    <button onclick="filterDeposits('rejected')" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm font-medium">거절</button>
+                </div>
+            </div>
+
+            <!-- 계좌 정보 -->
+            <div class="bg-gradient-to-r from-blue-500 to-blue-700 rounded-2xl p-6 mb-8 text-white shadow-lg">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h3 class="text-lg font-bold mb-2">입금 계좌 정보</h3>
+                        <div class="space-y-1">
+                            <p class="text-blue-100">은행: <span class="font-bold text-white">하나은행</span></p>
+                            <p class="text-blue-100">계좌번호: <span class="font-bold text-white text-xl">746-910023-17004</span></p>
+                            <p class="text-blue-100">예금주: <span class="font-bold text-white">주식회사 우리는 슈퍼플레이스다</span></p>
+                        </div>
+                    </div>
+                    <button onclick="copyAccountNumber()" class="bg-white text-blue-600 px-6 py-3 rounded-lg hover:bg-blue-50 transition font-bold flex items-center gap-2">
+                        <i class="fas fa-copy"></i>
+                        계좌번호 복사
+                    </button>
+                </div>
+            </div>
+
+            <!-- 입금 신청 목록 -->
+            <div class="space-y-4">
+                ${deposits?.results?.map(deposit => `
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition" data-status="${deposit.status || 'pending'}">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-3 mb-2">
+                                    <h3 class="text-lg font-bold text-gray-900">${deposit.user_name}</h3>
+                                    <span class="px-3 py-1 text-xs font-medium rounded-full ${
+                                        deposit.status === 'approved' ? 'bg-green-100 text-green-700' : 
+                                        deposit.status === 'rejected' ? 'bg-red-100 text-red-700' : 
+                                        'bg-orange-100 text-orange-700'
+                                    }">
+                                        ${deposit.status === 'approved' ? '승인완료' : deposit.status === 'rejected' ? '거절됨' : '대기중'}
+                                    </span>
+                                    <span class="px-3 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-700">
+                                        ${deposit.amount?.toLocaleString()}원
+                                    </span>
+                                </div>
+                                <div class="grid grid-cols-2 gap-2 text-sm text-gray-600">
+                                    <span><i class="fas fa-envelope mr-1"></i>${deposit.user_email}</span>
+                                    <span><i class="fas fa-university mr-1"></i>${deposit.bank_name || '-'}</span>
+                                    <span><i class="fas fa-credit-card mr-1"></i>${deposit.account_number || '-'}</span>
+                                    <span><i class="fas fa-user mr-1"></i>입금자: ${deposit.depositor_name || '-'}</span>
+                                </div>
+                            </div>
+                            <div class="text-sm text-gray-500 text-right">
+                                <div>${new Date(deposit.created_at).toLocaleString('ko-KR')}</div>
+                                ${deposit.processed_at ? `<div class="text-xs mt-1">처리: ${new Date(deposit.processed_at).toLocaleString('ko-KR')}</div>` : ''}
+                            </div>
+                        </div>
+
+                        ${deposit.message ? `
+                            <div class="bg-gray-50 rounded-xl p-4 mb-4">
+                                <div class="text-sm text-gray-700">${deposit.message}</div>
+                            </div>
+                        ` : ''}
+
+                        ${deposit.status === 'pending' ? `
+                            <div class="flex gap-2">
+                                <button onclick="processDeposit(${deposit.id}, 'approved', ${deposit.amount}, '${deposit.user_name}')" 
+                                        class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium">
+                                    <i class="fas fa-check mr-2"></i>승인 (${deposit.amount?.toLocaleString()}P 지급)
+                                </button>
+                                <button onclick="processDeposit(${deposit.id}, 'rejected', 0, '${deposit.user_name}')" 
+                                        class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-medium">
+                                    <i class="fas fa-times mr-2"></i>거절
+                                </button>
+                            </div>
+                        ` : ''}
+                    </div>
+                `).join('') || '<div class="text-center py-12 text-gray-500">입금 신청 내역이 없습니다</div>'}
+            </div>
+        </div>
+
+        <script>
+            function filterDeposits(status) {
+                const deposits = document.querySelectorAll('[data-status]');
+                deposits.forEach(deposit => {
+                    if (status === 'all' || deposit.dataset.status === status) {
+                        deposit.style.display = 'block';
+                    } else {
+                        deposit.style.display = 'none';
+                    }
+                });
+
+                // 버튼 스타일 업데이트
+                document.querySelectorAll('button[onclick^="filterDeposits"]').forEach(btn => {
+                    btn.className = 'px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm font-medium';
+                });
+                event.target.className = 'px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium';
+            }
+
+            function copyAccountNumber() {
+                const accountNumber = '746-910023-17004';
+                navigator.clipboard.writeText(accountNumber).then(() => {
+                    alert('계좌번호가 복사되었습니다!\\n' + accountNumber);
+                }).catch(err => {
+                    alert('복사 실패: ' + err);
+                });
+            }
+
+            async function processDeposit(depositId, status, points, userName) {
+                const action = status === 'approved' ? '승인' : '거절';
+                const message = status === 'approved' 
+                    ? userName + '님의 입금 신청을 승인하고 ' + points.toLocaleString() + 'P를 지급하시겠습니까?' 
+                    : userName + '님의 입금 신청을 거절하시겠습니까?';
+
+                if (!confirm(message)) return;
+
+                try {
+                    const response = await fetch('/api/admin/deposit/requests/' + depositId + '/process', {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ status, points })
+                    });
+
+                    const data = await response.json();
+                    if (data.success) {
+                        alert(action + ' 처리가 완료되었습니다!');
+                        location.reload();
+                    } else {
+                        alert('오류: ' + data.error);
+                    }
+                } catch (error) {
+                    alert('처리 중 오류가 발생했습니다.');
+                }
+            }
+
+            function logout() {
+                if(confirm('로그아웃 하시겠습니까?')) {
+                    localStorage.removeItem('user');
+                    window.location.href = '/';
                 }
             }
         </script>
