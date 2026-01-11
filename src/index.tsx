@@ -150,6 +150,88 @@ app.post('/api/register', async (c) => {
   }
 })
 
+// 관리자: 사용자 비밀번호 변경
+app.put('/api/admin/users/:id/password', async (c) => {
+  try {
+    const userId = c.req.param('id')
+    const { newPassword } = await c.req.json()
+
+    if (!newPassword || newPassword.length < 6) {
+      return c.json({ success: false, error: '비밀번호는 최소 6자 이상이어야 합니다.' }, 400)
+    }
+
+    await c.env.DB.prepare(`
+      UPDATE users SET password = ? WHERE id = ?
+    `).bind(newPassword, userId).run()
+
+    return c.json({ success: true, message: '비밀번호가 변경되었습니다.' })
+  } catch (error) {
+    console.error('Change password error:', error)
+    return c.json({ success: false, error: '비밀번호 변경 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
+// 관리자: 사용자 포인트 추가/차감
+app.put('/api/admin/users/:id/points', async (c) => {
+  try {
+    const userId = c.req.param('id')
+    const { points, action } = await c.req.json() // action: 'add' or 'subtract'
+
+    if (!points || points <= 0) {
+      return c.json({ success: false, error: '유효한 포인트를 입력해주세요.' }, 400)
+    }
+
+    // 현재 포인트 조회
+    const user = await c.env.DB.prepare(`
+      SELECT points FROM users WHERE id = ?
+    `).bind(userId).first()
+
+    if (!user) {
+      return c.json({ success: false, error: '사용자를 찾을 수 없습니다.' }, 404)
+    }
+
+    let newPoints = (user.points || 0)
+    if (action === 'add') {
+      newPoints += points
+    } else if (action === 'subtract') {
+      newPoints = Math.max(0, newPoints - points) // 0 미만으로 떨어지지 않음
+    }
+
+    await c.env.DB.prepare(`
+      UPDATE users SET points = ? WHERE id = ?
+    `).bind(newPoints, userId).run()
+
+    return c.json({ success: true, message: '포인트가 업데이트되었습니다.', newPoints })
+  } catch (error) {
+    console.error('Update points error:', error)
+    return c.json({ success: false, error: '포인트 업데이트 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
+// 관리자: 사용자 아이디로 로그인
+app.post('/api/admin/login-as/:id', async (c) => {
+  try {
+    const userId = c.req.param('id')
+
+    const user = await c.env.DB.prepare(`
+      SELECT id, email, name, role, points FROM users WHERE id = ?
+    `).bind(userId).first()
+
+    if (!user) {
+      return c.json({ success: false, error: '사용자를 찾을 수 없습니다.' }, 404)
+    }
+
+    return c.json({ 
+      success: true, 
+      message: '로그인 성공',
+      user: { id: user.id, email: user.email, name: user.name, role: user.role, points: user.points }
+    })
+  } catch (error) {
+    console.error('Login as user error:', error)
+    return c.json({ success: false, error: '로그인 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
 // 문의 목록 조회 API (관리자용)
 app.get('/api/contacts', async (c) => {
   try {
