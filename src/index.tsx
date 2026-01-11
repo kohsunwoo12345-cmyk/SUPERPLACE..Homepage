@@ -1765,14 +1765,14 @@ app.get('/', (c) => {
         <meta property="og:url" content="https://superplace-academy.pages.dev/">
         <meta property="og:title" content="우리는 슈퍼플레이스다 - 학원 전문 마케팅">
         <meta property="og:description" content="100% 현직 학원장이 알려주는 실전 마케팅! 네이버 플레이스 상위노출, 블로그 마케팅 전문 교육">
-        <meta property="og:image" content="https://superplace-academy.pages.dev/thumbnail.jpg">
+        <meta property="og:image" content="https://superplace-academy.pages.dev/thumbnail-share.jpg">
         
         <!-- Twitter -->
         <meta property="twitter:card" content="summary_large_image">
         <meta property="twitter:url" content="https://superplace-academy.pages.dev/">
         <meta property="twitter:title" content="우리는 슈퍼플레이스다 - 학원 전문 마케팅">
         <meta property="twitter:description" content="100% 현직 학원장이 알려주는 실전 마케팅!">
-        <meta property="twitter:image" content="https://superplace-academy.pages.dev/thumbnail.jpg">
+        <meta property="twitter:image" content="https://superplace-academy.pages.dev/thumbnail-share.jpg">
         
         <script src="https://cdn.tailwindcss.com"></script>
         <style>
@@ -1917,8 +1917,8 @@ app.get('/', (c) => {
                     <!-- Right: Hero Image -->
                     <div class="animate-fade-in" style="transition-delay: 0.2s">
                         <div class="relative rounded-3xl overflow-hidden shadow-2xl">
-                            <img src="/thumbnail.jpg" 
-                                 alt="학원 전문 마케팅 - 대표이사 고희준, 제1팀장 고선우" 
+                            <img src="/static/images/hero-main.png" 
+                                 alt="학원 전문 마케팅 - 우리는 슈퍼플레이스다" 
                                  class="w-full h-auto object-cover">
                             <div class="absolute inset-0 bg-gradient-to-t from-purple-900/10 to-transparent"></div>
                         </div>
