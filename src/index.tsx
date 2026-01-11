@@ -225,6 +225,95 @@ app.post('/api/register', async (c) => {
   }
 })
 
+// 입금 신청 API
+app.post('/api/deposit/request', async (c) => {
+  try {
+    const { userId, userName, userEmail, amount, bankName, accountNumber, depositorName, message } = await c.req.json()
+
+    if (!userId || !amount || amount <= 0) {
+      return c.json({ success: false, error: '필수 정보를 입력해주세요.' }, 400)
+    }
+
+    const result = await c.env.DB.prepare(`
+      INSERT INTO deposit_requests (user_id, user_name, user_email, amount, bank_name, account_number, depositor_name, message, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending')
+    `).bind(userId, userName, userEmail, amount, bankName || null, accountNumber || null, depositorName || null, message || null).run()
+
+    return c.json({ 
+      success: true, 
+      message: '입금 신청이 완료되었습니다.',
+      requestId: result.meta.last_row_id
+    })
+  } catch (error) {
+    console.error('Deposit request error:', error)
+    return c.json({ success: false, error: '입금 신청 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
+// 내 입금 신청 내역 조회 API
+app.get('/api/deposit/my-requests/:userId', async (c) => {
+  try {
+    const userId = c.req.param('userId')
+    
+    const requests = await c.env.DB.prepare(`
+      SELECT * FROM deposit_requests WHERE user_id = ? ORDER BY created_at DESC
+    `).bind(userId).all()
+
+    return c.json({ success: true, requests: requests.results })
+  } catch (error) {
+    console.error('Get deposit requests error:', error)
+    return c.json({ success: false, error: '입금 신청 내역 조회 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
+// 관리자: 입금 신청 목록 조회 API
+app.get('/api/admin/deposit/requests', async (c) => {
+  try {
+    const requests = await c.env.DB.prepare(`
+      SELECT * FROM deposit_requests ORDER BY created_at DESC
+    `).all()
+
+    return c.json({ success: true, requests: requests.results })
+  } catch (error) {
+    console.error('Get all deposit requests error:', error)
+    return c.json({ success: false, error: '입금 신청 목록 조회 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
+// 관리자: 입금 신청 처리 API
+app.put('/api/admin/deposit/requests/:id/process', async (c) => {
+  try {
+    const requestId = c.req.param('id')
+    const { status, points } = await c.req.json()
+
+    // 입금 신청 정보 조회
+    const request = await c.env.DB.prepare(`
+      SELECT * FROM deposit_requests WHERE id = ?
+    `).bind(requestId).first()
+
+    if (!request) {
+      return c.json({ success: false, error: '입금 신청을 찾을 수 없습니다.' }, 404)
+    }
+
+    // 승인인 경우 포인트 지급
+    if (status === 'approved' && points > 0) {
+      await c.env.DB.prepare(`
+        UPDATE users SET points = points + ? WHERE id = ?
+      `).bind(points, request.user_id).run()
+    }
+
+    // 입금 신청 상태 업데이트
+    await c.env.DB.prepare(`
+      UPDATE deposit_requests SET status = ?, processed_at = CURRENT_TIMESTAMP WHERE id = ?
+    `).bind(status, requestId).run()
+
+    return c.json({ success: true, message: '입금 신청이 처리되었습니다.' })
+  } catch (error) {
+    console.error('Process deposit request error:', error)
+    return c.json({ success: false, error: '입금 신청 처리 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
 // 관리자: 사용자 비밀번호 변경
 app.put('/api/admin/users/:id/password', async (c) => {
   try {
@@ -4187,7 +4276,20 @@ app.get('/dashboard', (c) => {
                 </div>
 
                 <!-- Stats Grid -->
-                <div class="grid md:grid-cols-4 gap-6 mb-12">
+                <div class="grid md:grid-cols-5 gap-6 mb-12">
+                    <div class="bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl p-6 text-white shadow-lg">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="text-sm text-blue-100">보유 포인트</div>
+                            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <div class="text-4xl font-bold mb-3"><span id="userPoints">0</span>P</div>
+                        <button onclick="openDepositModal()" class="w-full bg-white text-blue-600 px-4 py-2 rounded-lg hover:bg-blue-50 transition font-medium text-sm">
+                            💰 입금 신청
+                        </button>
+                    </div>
+
                     <div class="bg-white rounded-2xl p-6 border border-gray-200">
                         <div class="flex items-center justify-between mb-4">
                             <div class="text-sm text-gray-600">수강 중인 프로그램</div>
@@ -4605,7 +4707,144 @@ app.get('/dashboard', (c) => {
                 localStorage.removeItem('is_impersonating')
                 window.location.href = '/'
             }
+
+            // 포인트 로드
+            async function loadUserPoints() {
+                const user = JSON.parse(localStorage.getItem('user'))
+                if (user && user.id) {
+                    try {
+                        const response = await fetch('/api/admin/users')
+                        const data = await response.json()
+                        const currentUser = data.results?.find(u => u.id === user.id)
+                        if (currentUser) {
+                            document.getElementById('userPoints').textContent = currentUser.points || 0
+                        }
+                    } catch (error) {
+                        console.error('포인트 로드 실패:', error)
+                    }
+                }
+            }
+
+            // 입금 신청 모달 열기
+            function openDepositModal() {
+                document.getElementById('depositModal').classList.remove('hidden')
+            }
+
+            // 입금 신청 모달 닫기
+            function closeDepositModal() {
+                document.getElementById('depositModal').classList.add('hidden')
+            }
+
+            // 입금 신청
+            async function submitDeposit() {
+                const user = JSON.parse(localStorage.getItem('user'))
+                const amount = document.getElementById('depositAmount').value
+                const bankName = document.getElementById('bankName').value
+                const accountNumber = document.getElementById('accountNumber').value
+                const depositorName = document.getElementById('depositorName').value
+                const message = document.getElementById('depositMessage').value
+
+                if (!amount || amount <= 0) {
+                    alert('입금 금액을 입력해주세요.')
+                    return
+                }
+
+                try {
+                    const response = await fetch('/api/deposit/request', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            userId: user.id,
+                            userName: user.name,
+                            userEmail: user.email,
+                            amount: parseInt(amount),
+                            bankName,
+                            accountNumber,
+                            depositorName,
+                            message
+                        })
+                    })
+
+                    const data = await response.json()
+                    if (data.success) {
+                        alert('입금 신청이 완료되었습니다!\\n관리자 확인 후 포인트가 지급됩니다.')
+                        closeDepositModal()
+                        // 폼 초기화
+                        document.getElementById('depositAmount').value = ''
+                        document.getElementById('bankName').value = ''
+                        document.getElementById('accountNumber').value = ''
+                        document.getElementById('depositorName').value = ''
+                        document.getElementById('depositMessage').value = ''
+                    } else {
+                        alert('오류: ' + data.error)
+                    }
+                } catch (error) {
+                    alert('입금 신청 중 오류가 발생했습니다.')
+                }
+            }
+
+            // 페이지 로드 시
+            document.addEventListener('DOMContentLoaded', () => {
+                loadUserPoints()
+            })
         </script>
+
+        <!-- 입금 신청 모달 -->
+        <div id="depositModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-2xl font-bold text-gray-900">💰 입금 신청</h3>
+                    <button onclick="closeDepositModal()" class="text-gray-400 hover:text-gray-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">입금 금액 *</label>
+                        <input type="number" id="depositAmount" placeholder="10000" 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">은행명</label>
+                        <input type="text" id="bankName" placeholder="국민은행" 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">계좌번호</label>
+                        <input type="text" id="accountNumber" placeholder="123-45-678901" 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">입금자명</label>
+                        <input type="text" id="depositorName" placeholder="홍길동" 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">메모</label>
+                        <textarea id="depositMessage" rows="3" placeholder="추가 메시지 (선택사항)" 
+                                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
+                    </div>
+
+                    <div class="flex gap-3 pt-4">
+                        <button onclick="closeDepositModal()" 
+                                class="flex-1 px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 font-medium">
+                            취소
+                        </button>
+                        <button onclick="submitDeposit()" 
+                                class="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">
+                            신청하기
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </body>
     </html>
   `)
