@@ -12319,28 +12319,28 @@ app.get('/admin/users', async (c) => {
                                     <td class="px-6 py-4 whitespace-nowrap text-sm">
                                         ${user.role !== 'admin' ? `
                                             <div class="flex gap-2 flex-wrap">
-                                                <button onclick="changePassword(${user.id}, '${safeName}')" 
-                                                        class="px-3 py-1.5 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition text-xs font-medium"
+                                                <button data-action="changePassword" data-user-id="${user.id}" data-user-name="${safeName}" 
+                                                        class="admin-btn px-3 py-1.5 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition text-xs font-medium"
                                                         title="비밀번호 변경">
                                                     🔑 비밀번호
                                                 </button>
-                                                <button onclick="givePoints(${user.id}, '${safeName}', ${user.points || 0})" 
-                                                        class="px-3 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-xs font-medium"
+                                                <button data-action="givePoints" data-user-id="${user.id}" data-user-name="${safeName}" data-points="${user.points || 0}"
+                                                        class="admin-btn px-3 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-xs font-medium"
                                                         title="포인트 지급">
                                                     💰 지급
                                                 </button>
-                                                <button onclick="deductPoints(${user.id}, '${safeName}', ${user.points || 0})" 
-                                                        class="px-3 py-1.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition text-xs font-medium"
+                                                <button data-action="deductPoints" data-user-id="${user.id}" data-user-name="${safeName}" data-points="${user.points || 0}"
+                                                        class="admin-btn px-3 py-1.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition text-xs font-medium"
                                                         title="포인트 차감">
                                                     ❌ 차감
                                                 </button>
-                                                <button onclick="loginAs(${user.id}, '${safeName}')" 
-                                                        class="px-3 py-1.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition text-xs font-medium"
+                                                <button data-action="loginAs" data-user-id="${user.id}" data-user-name="${safeName}"
+                                                        class="admin-btn px-3 py-1.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition text-xs font-medium"
                                                         title="이 사용자로 로그인">
                                                     👤 로그인
                                                 </button>
-                                                <button onclick="managePermissions(${user.id}, '${safeName}')" 
-                                                        class="px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-xs font-medium"
+                                                <button data-action="managePermissions" data-user-id="${user.id}" data-user-name="${safeName}"
+                                                        class="admin-btn px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-xs font-medium"
                                                         title="권한 관리">
                                                     ⚙️ 권한
                                                 </button>
@@ -12394,6 +12394,46 @@ app.get('/admin/users', async (c) => {
         </div>
 
         <script>
+            console.log('Admin page script loaded!');
+            
+            // 모든 관리 버튼에 이벤트 리스너 추가
+            document.addEventListener('DOMContentLoaded', function() {
+                console.log('DOM loaded, attaching event listeners...');
+                
+                const buttons = document.querySelectorAll('.admin-btn');
+                console.log('Found buttons:', buttons.length);
+                
+                buttons.forEach(button => {
+                    button.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        const action = this.dataset.action;
+                        const userId = parseInt(this.dataset.userId);
+                        const userName = this.dataset.userName;
+                        const points = parseInt(this.dataset.points || 0);
+                        
+                        console.log('Button clicked:', action, userId, userName, points);
+                        
+                        switch(action) {
+                            case 'changePassword':
+                                changePassword(userId, userName);
+                                break;
+                            case 'givePoints':
+                                givePoints(userId, userName, points);
+                                break;
+                            case 'deductPoints':
+                                deductPoints(userId, userName, points);
+                                break;
+                            case 'loginAs':
+                                loginAs(userId, userName);
+                                break;
+                            case 'managePermissions':
+                                managePermissions(userId, userName);
+                                break;
+                        }
+                    });
+                });
+            });
+            
             let currentUserId = null;
 
             const programs = [
