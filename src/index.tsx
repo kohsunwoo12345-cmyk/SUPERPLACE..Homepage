@@ -1757,8 +1757,23 @@ app.get('/', (c) => {
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>우리는 슈퍼플레이스다 - 학원 마케팅 전문</title>
-        <meta name="description" content="네이버 플레이스 상위노출, 블로그 마케팅, 퍼널 마케팅 전문 교육">
+        <title>우리는 슈퍼플레이스다 - 학원 전문 마케팅 | 슈퍼 플레이스</title>
+        <meta name="description" content="100% 현직 학원장이 알려주는 실전 마케팅! 네이버 플레이스 상위노출, 블로그 마케팅, 퍼널 마케팅 전문 교육. 대표이사 고희준, 제1팀장 고선우와 함께하는 학원 성장 컨설팅.">
+        
+        <!-- Open Graph / Facebook -->
+        <meta property="og:type" content="website">
+        <meta property="og:url" content="https://superplace-academy.pages.dev/">
+        <meta property="og:title" content="우리는 슈퍼플레이스다 - 학원 전문 마케팅">
+        <meta property="og:description" content="100% 현직 학원장이 알려주는 실전 마케팅! 네이버 플레이스 상위노출, 블로그 마케팅 전문 교육">
+        <meta property="og:image" content="https://superplace-academy.pages.dev/thumbnail.jpg">
+        
+        <!-- Twitter -->
+        <meta property="twitter:card" content="summary_large_image">
+        <meta property="twitter:url" content="https://superplace-academy.pages.dev/">
+        <meta property="twitter:title" content="우리는 슈퍼플레이스다 - 학원 전문 마케팅">
+        <meta property="twitter:description" content="100% 현직 학원장이 알려주는 실전 마케팅!">
+        <meta property="twitter:image" content="https://superplace-academy.pages.dev/thumbnail.jpg">
+        
         <script src="https://cdn.tailwindcss.com"></script>
         <style>
           @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
@@ -1902,10 +1917,10 @@ app.get('/', (c) => {
                     <!-- Right: Hero Image -->
                     <div class="animate-fade-in" style="transition-delay: 0.2s">
                         <div class="relative rounded-3xl overflow-hidden shadow-2xl">
-                            <img src="/static/images/hero-main.png" 
-                                 alt="학원 전문 마케팅 - 우리는 슈퍼플레이스다" 
+                            <img src="/thumbnail.jpg" 
+                                 alt="학원 전문 마케팅 - 대표이사 고희준, 제1팀장 고선우" 
                                  class="w-full h-auto object-cover">
-                            <div class="absolute inset-0 bg-gradient-to-t from-purple-900/20 to-transparent"></div>
+                            <div class="absolute inset-0 bg-gradient-to-t from-purple-900/10 to-transparent"></div>
                         </div>
                     </div>
                 </div>
@@ -12283,14 +12298,18 @@ app.get('/admin/users', async (c) => {
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
-                            ${users?.results?.map(user => `
+                            ${users?.results?.map(user => {
+                                // 작은따옴표 이스케이프 (JavaScript 함수에 안전하게 전달)
+                                const safeName = (user.name || '').replace(/'/g, "\\'")
+                                const safeEmail = (user.email || '').replace(/'/g, "\\'")
+                                return `
                                 <tr class="hover:bg-gray-50">
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${user.id}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${user.email}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${user.name}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${user.phone || '-'}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${user.academy_name || '-'}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">${user.points || 0}P</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">${(user.points || 0).toLocaleString()}P</td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <span class="px-3 py-1 text-xs font-medium rounded-full ${user.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-700'}">
                                             ${user.role === 'admin' ? '관리자' : '일반회원'}
@@ -12300,27 +12319,27 @@ app.get('/admin/users', async (c) => {
                                     <td class="px-6 py-4 whitespace-nowrap text-sm">
                                         ${user.role !== 'admin' ? `
                                             <div class="flex gap-2 flex-wrap">
-                                                <button onclick="changePassword(${user.id}, '${user.name}')" 
+                                                <button onclick="changePassword(${user.id}, '${safeName}')" 
                                                         class="px-3 py-1.5 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition text-xs font-medium"
                                                         title="비밀번호 변경">
                                                     🔑 비밀번호
                                                 </button>
-                                                <button onclick="givePoints(${user.id}, '${user.name}', ${user.points || 0})" 
+                                                <button onclick="givePoints(${user.id}, '${safeName}', ${user.points || 0})" 
                                                         class="px-3 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-xs font-medium"
                                                         title="포인트 지급">
                                                     💰 지급
                                                 </button>
-                                                <button onclick="deductPoints(${user.id}, '${user.name}', ${user.points || 0})" 
+                                                <button onclick="deductPoints(${user.id}, '${safeName}', ${user.points || 0})" 
                                                         class="px-3 py-1.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition text-xs font-medium"
                                                         title="포인트 차감">
                                                     ❌ 차감
                                                 </button>
-                                                <button onclick="loginAs(${user.id}, '${user.name}')" 
+                                                <button onclick="loginAs(${user.id}, '${safeName}')" 
                                                         class="px-3 py-1.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition text-xs font-medium"
                                                         title="이 사용자로 로그인">
                                                     👤 로그인
                                                 </button>
-                                                <button onclick="managePermissions(${user.id}, '${user.name}')" 
+                                                <button onclick="managePermissions(${user.id}, '${safeName}')" 
                                                         class="px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-xs font-medium"
                                                         title="권한 관리">
                                                     ⚙️ 권한
@@ -12329,7 +12348,7 @@ app.get('/admin/users', async (c) => {
                                         ` : '-'}
                                     </td>
                                 </tr>
-                            `).join('') || '<tr><td colspan="9" class="px-6 py-8 text-center text-gray-500">등록된 사용자가 없습니다</td></tr>'}
+                            `}).join('') || '<tr><td colspan="9" class="px-6 py-8 text-center text-gray-500">등록된 사용자가 없습니다</td></tr>'}
                         </tbody>
                     </table>
                 </div>
