@@ -8,14 +8,7 @@ export default defineConfig({
   plugins: [
     build({
       outputDir: 'dist',
-      minify: true,
-      // Cloudflare Pages routing 설정
-      cloudflarePages: {
-        routes: {
-          include: ['/*'],
-          exclude: ['/static/*', '/*.jpg', '/*.png', '/*.ico']
-        }
-      }
+      minify: true
     }),
     devServer({
       adapter,
