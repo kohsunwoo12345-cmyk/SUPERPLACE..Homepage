@@ -114,6 +114,81 @@ app.post('/api/login', async (c) => {
   }
 })
 
+// 관리자: 비밀번호 변경 API
+app.post('/api/admin/users/:id/password', async (c) => {
+  try {
+    const userId = c.req.param('id')
+    const { newPassword } = await c.req.json()
+
+    if (!newPassword || newPassword.length < 6) {
+      return c.json({ success: false, error: '비밀번호는 최소 6자 이상이어야 합니다.' }, 400)
+    }
+
+    await c.env.DB.prepare(`
+      UPDATE users SET password = ? WHERE id = ?
+    `).bind(newPassword, userId).run()
+
+    return c.json({ success: true, message: '비밀번호가 변경되었습니다.' })
+  } catch (error) {
+    console.error('Password change error:', error)
+    return c.json({ success: false, error: '비밀번호 변경 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
+// 관리자: 포인트 지급 API
+app.put('/api/admin/users/:id/points', async (c) => {
+  try {
+    const userId = c.req.param('id')
+    const { points } = await c.req.json()
+
+    if (!points || points <= 0) {
+      return c.json({ success: false, error: '올바른 포인트를 입력하세요.' }, 400)
+    }
+
+    // 현재 포인트 조회
+    const user = await c.env.DB.prepare(`
+      SELECT points FROM users WHERE id = ?
+    `).bind(userId).first()
+
+    const newPoints = (user?.points || 0) + points
+
+    // 포인트 업데이트
+    await c.env.DB.prepare(`
+      UPDATE users SET points = ? WHERE id = ?
+    `).bind(newPoints, userId).run()
+
+    return c.json({ success: true, message: '포인트가 지급되었습니다.', newPoints })
+  } catch (error) {
+    console.error('Points update error:', error)
+    return c.json({ success: false, error: '포인트 지급 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
+// 관리자: 사용자로 로그인 API
+app.post('/api/admin/login-as/:id', async (c) => {
+  try {
+    const userId = c.req.param('id')
+
+    // 사용자 조회
+    const user = await c.env.DB.prepare(`
+      SELECT id, email, name, role FROM users WHERE id = ?
+    `).bind(userId).first()
+
+    if (!user) {
+      return c.json({ success: false, error: '사용자를 찾을 수 없습니다.' }, 404)
+    }
+
+    return c.json({ 
+      success: true, 
+      message: '로그인 성공',
+      user: { id: user.id, email: user.email, name: user.name, role: user.role }
+    })
+  } catch (error) {
+    console.error('Login as error:', error)
+    return c.json({ success: false, error: '로그인 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
 // 회원가입 API
 app.post('/api/register', async (c) => {
   try {
@@ -11773,8 +11848,8 @@ app.get('/admin', async (c) => {
 app.get('/admin/users', async (c) => {
   const { env } = c
   
-  // 사용자 목록 조회
-  const users = await env.DB.prepare('SELECT id, email, name, phone, academy_name, role, created_at FROM users ORDER BY created_at DESC').all()
+  // 사용자 목록 조회 (포인트 포함)
+  const users = await env.DB.prepare('SELECT id, email, name, phone, academy_name, role, points, created_at FROM users ORDER BY created_at DESC').all()
   
   return c.html(`
     <!DOCTYPE html>
@@ -11829,6 +11904,7 @@ app.get('/admin/users', async (c) => {
                                 <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">이름</th>
                                 <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">전화번호</th>
                                 <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">학원명</th>
+                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">포인트</th>
                                 <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">권한</th>
                                 <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">가입일</th>
                                 <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">관리</th>
@@ -11842,6 +11918,7 @@ app.get('/admin/users', async (c) => {
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${user.name}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${user.phone || '-'}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${user.academy_name || '-'}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">${user.points || 0}P</td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <span class="px-3 py-1 text-xs font-medium rounded-full ${user.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-700'}">
                                             ${user.role === 'admin' ? '관리자' : '일반회원'}
@@ -11850,14 +11927,32 @@ app.get('/admin/users', async (c) => {
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${new Date(user.created_at).toLocaleDateString('ko-KR')}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm">
                                         ${user.role !== 'admin' ? `
-                                            <button onclick="managePermissions(${user.id}, '${user.name}')" 
-                                                    class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm font-medium">
-                                                권한 관리
-                                            </button>
+                                            <div class="flex gap-2">
+                                                <button onclick="changePassword(${user.id}, '${user.name}')" 
+                                                        class="px-3 py-1.5 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition text-xs font-medium"
+                                                        title="비밀번호 변경">
+                                                    🔑 비밀번호
+                                                </button>
+                                                <button onclick="givePoints(${user.id}, '${user.name}', ${user.points || 0})" 
+                                                        class="px-3 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-xs font-medium"
+                                                        title="포인트 지급">
+                                                    💰 포인트
+                                                </button>
+                                                <button onclick="loginAs(${user.id}, '${user.name}')" 
+                                                        class="px-3 py-1.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition text-xs font-medium"
+                                                        title="이 사용자로 로그인">
+                                                    👤 로그인
+                                                </button>
+                                                <button onclick="managePermissions(${user.id}, '${user.name}')" 
+                                                        class="px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-xs font-medium"
+                                                        title="권한 관리">
+                                                    ⚙️ 권한
+                                                </button>
+                                            </div>
                                         ` : '-'}
                                     </td>
                                 </tr>
-                            `).join('') || '<tr><td colspan="8" class="px-6 py-8 text-center text-gray-500">등록된 사용자가 없습니다</td></tr>'}
+                            `).join('') || '<tr><td colspan="9" class="px-6 py-8 text-center text-gray-500">등록된 사용자가 없습니다</td></tr>'}
                         </tbody>
                     </table>
                 </div>
@@ -12025,6 +12120,86 @@ app.get('/admin/users', async (c) => {
                 if(confirm('로그아웃 하시겠습니까?')) {
                     localStorage.removeItem('user');
                     window.location.href = '/';
+                }
+            }
+
+            // 비밀번호 변경
+            async function changePassword(userId, userName) {
+                const newPassword = prompt(userName + '님의 새 비밀번호를 입력하세요 (최소 6자):');
+                if (!newPassword) return;
+                
+                if (newPassword.length < 6) {
+                    alert('비밀번호는 최소 6자 이상이어야 합니다.');
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/api/admin/users/' + userId + '/password', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ newPassword })
+                    });
+
+                    const data = await response.json();
+                    if (data.success) {
+                        alert('비밀번호가 변경되었습니다!');
+                    } else {
+                        alert('오류: ' + (data.error || '비밀번호 변경 실패'));
+                    }
+                } catch (error) {
+                    alert('비밀번호 변경 중 오류가 발생했습니다.');
+                }
+            }
+
+            // 포인트 지급
+            async function givePoints(userId, userName, currentPoints) {
+                const pointsStr = prompt(userName + '님에게 지급할 포인트를 입력하세요\n(현재: ' + currentPoints + 'P):');
+                if (!pointsStr) return;
+                
+                const points = parseInt(pointsStr);
+                if (isNaN(points) || points <= 0) {
+                    alert('올바른 포인트를 입력하세요.');
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/api/admin/users/' + userId + '/points', {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ points })
+                    });
+
+                    const data = await response.json();
+                    if (data.success) {
+                        alert(points + 'P가 지급되었습니다!\n새 잔액: ' + data.newPoints + 'P');
+                        location.reload();
+                    } else {
+                        alert('오류: ' + (data.error || '포인트 지급 실패'));
+                    }
+                } catch (error) {
+                    alert('포인트 지급 중 오류가 발생했습니다.');
+                }
+            }
+
+            // 사용자로 로그인
+            async function loginAs(userId, userName) {
+                if (!confirm(userName + '님의 계정으로 로그인하시겠습니까?')) return;
+
+                try {
+                    const response = await fetch('/api/admin/login-as/' + userId, {
+                        method: 'POST'
+                    });
+
+                    const data = await response.json();
+                    if (data.success) {
+                        localStorage.setItem('user', JSON.stringify(data.user));
+                        alert(userName + '님으로 로그인되었습니다!');
+                        window.location.href = '/dashboard';
+                    } else {
+                        alert('오류: ' + (data.error || '로그인 실패'));
+                    }
+                } catch (error) {
+                    alert('로그인 중 오류가 발생했습니다.');
                 }
             }
         </script>
