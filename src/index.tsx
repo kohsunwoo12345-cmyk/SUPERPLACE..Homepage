@@ -12336,15 +12336,12 @@ app.get('/admin/users', async (c) => {
                                                 </button>
                                                 <script>
                                                 (function() {
-                                                    var uid = ${user.id};
-                                                    var uname = "${user.name?.replace(/"/g, '&quot;')}";
-                                                    var pts = ${user.points || 0};
-                                                    
-                                                    document.getElementById('btn-pwd-' + uid).onclick = function() { changePassword(uid, uname); };
-                                                    document.getElementById('btn-give-' + uid).onclick = function() { givePoints(uid, uname, pts); };
-                                                    document.getElementById('btn-deduct-' + uid).onclick = function() { deductPoints(uid, uname, pts); };
-                                                    document.getElementById('btn-login-' + uid).onclick = function() { loginAs(uid, uname); };
-                                                    document.getElementById('btn-perm-' + uid).onclick = function() { managePermissions(uid, uname); };
+                                                    var data = ${JSON.stringify({ id: user.id, name: user.name, points: user.points || 0 })};
+                                                    document.getElementById('btn-pwd-' + data.id).onclick = function() { changePassword(data.id, data.name); };
+                                                    document.getElementById('btn-give-' + data.id).onclick = function() { givePoints(data.id, data.name, data.points); };
+                                                    document.getElementById('btn-deduct-' + data.id).onclick = function() { deductPoints(data.id, data.name, data.points); };
+                                                    document.getElementById('btn-login-' + data.id).onclick = function() { loginAs(data.id, data.name); };
+                                                    document.getElementById('btn-perm-' + data.id).onclick = function() { managePermissions(data.id, data.name); };
                                                 })();
                                                 </script>
                                             </div>
