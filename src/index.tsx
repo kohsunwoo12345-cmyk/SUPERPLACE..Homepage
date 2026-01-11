@@ -3855,7 +3855,7 @@ app.get('/dashboard', (c) => {
                     <div class="flex items-center space-x-6">
                         <span id="userName" class="text-gray-700"></span>
                         <a href="/profile" class="text-gray-600 hover:text-purple-600 transition">프로필</a>
-                        <a id="adminDashboardBtn" href="/admin/dashboard.html" class="hidden bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition font-medium">
+                        <a id="adminDashboardBtn" href="/admin/dashboard" class="hidden bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition font-medium">
                             🔐 관리자 전용 대시보드
                         </a>
                         <button onclick="logout()" class="text-gray-600 hover:text-purple-600 transition">로그아웃</button>
@@ -6048,13 +6048,7 @@ app.get('/landing/:slug', async (c) => {
 
 // 관리자 페이지 리다이렉트 (로컬 개발용)
 // 프로덕션에서는 Cloudflare Pages가 자동으로 dist/admin/*.html을 서빙합니다
-app.get('/admin/dashboard', (c) => {
-  return c.redirect('/admin/dashboard.html')
-})
-
-app.get('/admin/users', (c) => {
-  return c.redirect('/admin/users.html')
-})
+// Admin redirects removed - using direct routes
 
 // ==================== SMS 발송 헬퍼 함수 ====================
 
