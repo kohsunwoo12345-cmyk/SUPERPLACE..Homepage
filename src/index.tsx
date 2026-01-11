@@ -96,7 +96,7 @@ app.post('/api/login', async (c) => {
 
     // 사용자 조회
     const user = await c.env.DB.prepare(`
-      SELECT id, email, name, role FROM users WHERE email = ? AND password = ?
+      SELECT id, email, name, role, points FROM users WHERE email = ? AND password = ?
     `).bind(email, password).first()
 
     if (!user) {
@@ -286,10 +286,14 @@ app.put('/api/admin/deposit/requests/:id/process', async (c) => {
     const requestId = c.req.param('id')
     const { status, points } = await c.req.json()
 
+    console.log('Processing deposit:', { requestId, status, points })
+
     // 입금 신청 정보 조회
     const request = await c.env.DB.prepare(`
       SELECT * FROM deposit_requests WHERE id = ?
     `).bind(requestId).first()
+
+    console.log('Found request:', request)
 
     if (!request) {
       return c.json({ success: false, error: '입금 신청을 찾을 수 없습니다.' }, 404)
@@ -297,20 +301,37 @@ app.put('/api/admin/deposit/requests/:id/process', async (c) => {
 
     // 승인인 경우 포인트 지급
     if (status === 'approved' && points > 0) {
-      await c.env.DB.prepare(`
+      console.log('Updating points for user:', request.user_id, 'adding:', points)
+      
+      const updateResult = await c.env.DB.prepare(`
         UPDATE users SET points = points + ? WHERE id = ?
       `).bind(points, request.user_id).run()
+      
+      console.log('Points update result:', updateResult)
+
+      // 업데이트 확인
+      const user = await c.env.DB.prepare(`
+        SELECT id, email, name, points FROM users WHERE id = ?
+      `).bind(request.user_id).first()
+      
+      console.log('User after update:', user)
     }
 
     // 입금 신청 상태 업데이트
-    await c.env.DB.prepare(`
+    const statusUpdateResult = await c.env.DB.prepare(`
       UPDATE deposit_requests SET status = ?, processed_at = CURRENT_TIMESTAMP WHERE id = ?
     `).bind(status, requestId).run()
+    
+    console.log('Status update result:', statusUpdateResult)
 
-    return c.json({ success: true, message: '입금 신청이 처리되었습니다.' })
+    return c.json({ 
+      success: true, 
+      message: '입금 신청이 처리되었습니다.',
+      debug: { requestId, status, points, userId: request.user_id }
+    })
   } catch (error) {
     console.error('Process deposit request error:', error)
-    return c.json({ success: false, error: '입금 신청 처리 중 오류가 발생했습니다.' }, 500)
+    return c.json({ success: false, error: '입금 신청 처리 중 오류가 발생했습니다.', details: error.message }, 500)
   }
 })
 
