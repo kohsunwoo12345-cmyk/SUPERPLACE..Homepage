@@ -786,7 +786,17 @@ app.put('/api/admin/contacts/:id/status', async (c) => {
 // 랜딩페이지 생성
 app.post('/api/landing/create', async (c) => {
   try {
-    const { title, template_type, input_data, thumbnail_url, og_title, og_description } = await c.req.json()
+    const { title, template_type, input_data, thumbnail_url, og_title, og_description, folder_id } = await c.req.json()
+    
+    // 디버깅: 받은 데이터 확인
+    console.log('🔍 API에서 받은 데이터:', {
+      title,
+      template_type,
+      thumbnail_url: thumbnail_url ? (thumbnail_url.length > 100 ? thumbnail_url.substring(0, 100) + '...' : thumbnail_url) : null,
+      og_title,
+      og_description,
+      folder_id
+    })
     
     // Base64 인코딩된 사용자 데이터 디코딩
     const userHeaderBase64 = c.req.header('X-User-Data-Base64')
@@ -812,11 +822,11 @@ app.post('/api/landing/create', async (c) => {
     
     // DB 저장
     const query = `
-      INSERT INTO landing_pages (user_id, slug, title, template_type, content_json, html_content, qr_code_url, thumbnail_url, og_title, og_description, status)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active')
+      INSERT INTO landing_pages (user_id, slug, title, template_type, content_json, html_content, qr_code_url, thumbnail_url, og_title, og_description, folder_id, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active')
     `
     const result = await c.env.DB.prepare(query)
-      .bind(user.id, slug, title, template_type, JSON.stringify(input_data), htmlContent, qrCodeUrl, thumbnail_url || null, og_title || null, og_description || null)
+      .bind(user.id, slug, title, template_type, JSON.stringify(input_data), htmlContent, qrCodeUrl, thumbnail_url || null, og_title || null, og_description || null, folder_id || null)
       .run()
     
     return c.json({ 
@@ -6483,9 +6493,36 @@ app.get('/tools/landing-builder', (c) => {
                         <form id="landingForm" class="space-y-6"></form>
                     </div>
 
+                    <!-- 폴더 선택 -->
+                    <div class="bg-white rounded-xl p-8 border border-gray-200 mb-6">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-3">3️⃣ 폴더 선택 (선택사항)</h2>
+                        <p class="text-sm text-gray-600 mb-4">랜딩페이지를 저장할 폴더를 선택하세요</p>
+                        <div class="space-y-4">
+                            <div class="flex gap-3">
+                                <select id="folderSelect" class="flex-1 px-4 py-3 border border-gray-300 rounded-xl">
+                                    <option value="">폴더 없음 (루트에 저장)</option>
+                                </select>
+                                <button type="button" onclick="showNewFolderInput()" class="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl hover:shadow-lg transition">
+                                    + 새 폴더
+                                </button>
+                            </div>
+                            <div id="newFolderInput" class="hidden">
+                                <div class="flex gap-3">
+                                    <input type="text" id="newFolderName" placeholder="새 폴더 이름 입력" class="flex-1 px-4 py-3 border border-gray-300 rounded-xl">
+                                    <button type="button" onclick="createFolder()" class="px-6 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 transition">
+                                        생성
+                                    </button>
+                                    <button type="button" onclick="hideNewFolderInput()" class="px-6 py-3 bg-gray-300 text-gray-700 rounded-xl hover:bg-gray-400 transition">
+                                        취소
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- 썸네일 업로드 -->
                     <div class="bg-white rounded-xl p-8 border border-gray-200 mb-6">
-                        <h2 class="text-2xl font-bold text-gray-900 mb-3">3️⃣ 썸네일 설정 (선택사항)</h2>
+                        <h2 class="text-2xl font-bold text-gray-900 mb-3">4️⃣ 썸네일 설정 (선택사항)</h2>
                         <p class="text-sm text-gray-600 mb-6">카카오톡, 페이스북 등에서 링크 공유 시 보여질 이미지를 설정하세요</p>
                         <div class="space-y-4">
                             <div>
@@ -6506,7 +6543,7 @@ app.get('/tools/landing-builder', (c) => {
 
                     <!-- 공유 시 표시될 제목/설명 설정 -->
                     <div class="bg-white rounded-xl p-8 border border-gray-200 mb-6">
-                        <h2 class="text-2xl font-bold text-gray-900 mb-3">4️⃣ 공유 시 표시 내용 (선택사항)</h2>
+                        <h2 class="text-2xl font-bold text-gray-900 mb-3">5️⃣ 공유 시 표시 내용 (선택사항)</h2>
                         <p class="text-sm text-gray-600 mb-6">카카오톡, 페이스북 등에서 링크 공유 시 보여질 제목과 설명을 설정하세요</p>
                         <div class="space-y-4">
                             <div>
@@ -6565,15 +6602,104 @@ app.get('/tools/landing-builder', (c) => {
         <script>
         let selectedTemplate = '';
         let user = null;
+        let userFolders = [];
 
         // 로그인 체크 (선택적)
         const userData = localStorage.getItem('user');
         if (userData) {
             user = JSON.parse(userData);
+            // 사용자 폴더 목록 로드
+            loadUserFolders();
         } else {
             // 로그인 없이도 테스트 가능하도록 기본 사용자 설정
             user = { id: 1, name: '게스트' };
             console.warn('로그인하지 않았습니다. 게스트 모드로 사용합니다.');
+            loadUserFolders();
+        }
+
+        // 사용자 폴더 목록 로드
+        async function loadUserFolders() {
+            try {
+                const response = await fetch('/api/landing/folders?userId=' + user.id);
+                const result = await response.json();
+                if (result.success) {
+                    userFolders = result.folders || [];
+                    updateFolderSelect();
+                }
+            } catch (error) {
+                console.error('폴더 로드 실패:', error);
+            }
+        }
+
+        // 폴더 선택 드롭다운 업데이트
+        function updateFolderSelect() {
+            const select = document.getElementById('folderSelect');
+            if (!select) return;
+            
+            // 기존 옵션 제거 (첫 번째 "폴더 없음" 제외)
+            while (select.options.length > 1) {
+                select.remove(1);
+            }
+            
+            // 폴더 목록 추가
+            userFolders.forEach(folder => {
+                const option = document.createElement('option');
+                option.value = folder.id;
+                option.textContent = folder.name;
+                select.appendChild(option);
+            });
+            
+            // 마지막 선택한 폴더가 있으면 자동 선택
+            const lastFolderId = localStorage.getItem('lastSelectedFolder');
+            if (lastFolderId) {
+                select.value = lastFolderId;
+            }
+        }
+
+        // 새 폴더 입력창 표시
+        function showNewFolderInput() {
+            document.getElementById('newFolderInput').classList.remove('hidden');
+            document.getElementById('newFolderName').focus();
+        }
+
+        // 새 폴더 입력창 숨기기
+        function hideNewFolderInput() {
+            document.getElementById('newFolderInput').classList.add('hidden');
+            document.getElementById('newFolderName').value = '';
+        }
+
+        // 새 폴더 생성
+        async function createFolder() {
+            const folderName = document.getElementById('newFolderName').value.trim();
+            if (!folderName) {
+                alert('폴더 이름을 입력해주세요.');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/landing/folders', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId: user.id,
+                        name: folderName
+                    })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    alert('✅ 폴더 "' + folderName + '"가 생성되었습니다!');
+                    hideNewFolderInput();
+                    await loadUserFolders();
+                    // 새로 생성한 폴더 자동 선택
+                    document.getElementById('folderSelect').value = result.folderId;
+                } else {
+                    alert('폴더 생성 실패: ' + result.error);
+                }
+            } catch (error) {
+                console.error('폴더 생성 오류:', error);
+                alert('폴더 생성 중 오류가 발생했습니다.');
+            }
         }
 
         function logout() {
@@ -6878,7 +7004,7 @@ app.get('/tools/landing-builder', (c) => {
                                 document.getElementById('thumbnailPreviewImg').src = imageUrl;
                                 document.getElementById('thumbnailPreview').classList.remove('hidden');
                                 
-                                alert(\`✅ 이미지가 성공적으로 업로드되었습니다!\\n\\nURL: \${imageUrl}\`);
+                                alert('✅ 이미지가 성공적으로 업로드되었습니다!\\n\\nURL: ' + imageUrl);
                             } else {
                                 // imgbb 실패 시 Base64로 폴백
                                 const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
@@ -6887,7 +7013,7 @@ app.get('/tools/landing-builder', (c) => {
                                 document.getElementById('thumbnailPreviewImg').src = dataUrl;
                                 document.getElementById('thumbnailPreview').classList.remove('hidden');
                                 
-                                alert(\`✅ 이미지가 업로드되었습니다!\\n\\n참고: 카카오톡 공유 시 썸네일이 표시되지 않을 수 있습니다.\\n더 안정적인 공유를 위해 이미지 URL을 직접 입력하는 것을 권장합니다.\`);
+                                alert('✅ 이미지가 업로드되었습니다!\n\n참고: 카카오톡 공유 시 썸네일이 표시되지 않을 수 있습니다.\n더 안정적인 공유를 위해 이미지 URL을 직접 입력하는 것을 권장합니다.');
                             }
                         } catch (error) {
                             console.error('imgbb 업로드 오류:', error);
@@ -6899,7 +7025,7 @@ app.get('/tools/landing-builder', (c) => {
                             document.getElementById('thumbnailPreviewImg').src = dataUrl;
                             document.getElementById('thumbnailPreview').classList.remove('hidden');
                             
-                            alert(\`✅ 이미지가 업로드되었습니다!\\n\\n참고: 외부 업로드에 실패하여 로컬에 저장했습니다.\\n카카오톡 공유 시 썸네일이 표시되지 않을 수 있습니다.\`);
+                            alert('✅ 이미지가 업로드되었습니다!\n\n참고: 외부 업로드에 실패하여 로컬에 저장했습니다.\n카카오톡 공유 시 썸네일이 표시되지 않을 수 있습니다.');
                         }
                     }, 'image/jpeg', 0.85);
                 };
@@ -6957,6 +7083,16 @@ app.get('/tools/landing-builder', (c) => {
             // OG 제목/설명 가져오기
             const ogTitle = document.getElementById('ogTitle').value || '';
             const ogDescription = document.getElementById('ogDescription').value || '';
+            
+            // 선택된 폴더 가져오기
+            const folderId = document.getElementById('folderSelect').value || null;
+            
+            // 선택된 폴더를 localStorage에 저장 (다음번에 자동 선택)
+            if (folderId) {
+                localStorage.setItem('lastSelectedFolder', folderId);
+            } else {
+                localStorage.removeItem('lastSelectedFolder');
+            }
 
             // 배열로 변환이 필요한 필드들
             if (data.specialties) data.specialties = data.specialties.split('\\n').filter(s => s.trim());
@@ -6981,6 +7117,16 @@ app.get('/tools/landing-builder', (c) => {
             if (data.testimonials) data.testimonials = data.testimonials.split('\\n').filter(s => s.trim());
 
             try {
+                // 디버깅: 전송할 데이터 확인
+                console.log('🔍 전송할 데이터:', {
+                    title,
+                    template_type: selectedTemplate,
+                    thumbnail_url: thumbnailUrl,
+                    og_title: ogTitle,
+                    og_description: ogDescription,
+                    folder_id: folderId
+                });
+                
                 // 한글 포함된 사용자 데이터를 Base64로 인코딩
                 const userDataStr = JSON.stringify(user || {id: 1});
                 const userDataBase64 = btoa(unescape(encodeURIComponent(userDataStr)));
@@ -6997,7 +7143,8 @@ app.get('/tools/landing-builder', (c) => {
                         input_data: data,
                         thumbnail_url: thumbnailUrl,
                         og_title: ogTitle,
-                        og_description: ogDescription
+                        og_description: ogDescription,
+                        folder_id: folderId
                     })
                 });
 
