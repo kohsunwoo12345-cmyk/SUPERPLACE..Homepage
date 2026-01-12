@@ -6499,7 +6499,7 @@ app.get('/tools/landing-builder', (c) => {
                             </div>
                             <div id="thumbnailPreview" class="hidden">
                                 <p class="text-sm font-medium text-gray-900 mb-2">미리보기</p>
-                                <img id="thumbnailPreviewImg" src="" class="max-w-xs rounded-lg border border-gray-300">
+                                <img id="thumbnailPreviewImg" src="" alt="썸네일 미리보기" class="w-full max-w-md rounded-lg border border-gray-300 shadow-sm">
                             </div>
                         </div>
                     </div>
