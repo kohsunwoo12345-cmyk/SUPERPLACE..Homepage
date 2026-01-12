@@ -12049,16 +12049,17 @@ app.get('/tools', (c) => {
 
             <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 ${[
-                    {url: '/tools/place-keyword-analyzer', icon: 'search', title: '네이버 플레이스 키워드 분석기', desc: '최적의 키워드로 상위 노출', color: 'purple'},
+                    {url: '/tools/landing-builder', icon: 'rocket', title: '랜딩페이지 생성기', desc: '학원 맞춤 랜딩페이지 제작', color: 'purple'},
+                    {url: '/tools/place-keyword-analyzer', icon: 'search', title: '네이버 플레이스 키워드 분석기', desc: '최적의 키워드로 상위 노출', color: 'blue'},
                     {url: '/tools/blog-title-generator', icon: 'lightbulb', title: '블로그 제목 생성기', desc: '클릭률 높은 제목 자동 생성', color: 'orange'},
                     {url: '/tools/consultation-calendar', icon: 'calendar-check', title: '상담 예약 캘린더', desc: '간편한 상담 예약 시스템', color: 'green'},
-                    {url: '/tools/promo-generator', icon: 'bullhorn', title: '학원 홍보 문구 생성기', desc: '효과적인 홍보 문구 생성', color: 'blue'},
+                    {url: '/tools/promo-generator', icon: 'bullhorn', title: '학원 홍보 문구 생성기', desc: '효과적인 홍보 문구 생성', color: 'cyan'},
                     {url: '/tools/review-template', icon: 'comment-dots', title: '리뷰 답변 템플릿', desc: '즉시 사용 가능한 답변', color: 'pink'},
                     {url: '/tools/parent-sms-template', icon: 'sms', title: '학부모 문자 템플릿', desc: '상황별 문자 메시지', color: 'indigo'},
                     {url: '/tools/poster-generator', icon: 'image', title: '포스터 문구 생성기', desc: '눈에 띄는 포스터 제작', color: 'red'},
                     {url: '/tools/competitor-analysis', icon: 'chart-bar', title: '경쟁사 분석 도구', desc: '주변 학원 정보 분석', color: 'teal'},
                     {url: '/tools/operation-checklist', icon: 'tasks', title: '학원 운영 체크리스트', desc: '필수 업무 관리', color: 'yellow'},
-                    {url: '/tools/campaign-planner', icon: 'calendar-alt', title: '마케팅 캠페인 플래너', desc: '연간 캠페인 계획', color: 'cyan'}
+                    {url: '/tools/campaign-planner', icon: 'calendar-alt', title: '마케팅 캠페인 플래너', desc: '연간 캠페인 계획', color: 'emerald'}
                 ].map(tool => `
                     <a href="${tool.url}" class="tool-card block bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-lg">
                         <div class="flex items-start gap-4">
