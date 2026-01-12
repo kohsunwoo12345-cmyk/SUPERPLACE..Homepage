@@ -12529,7 +12529,7 @@ app.get('/admin/users', async (c) => {
 
             // 포인트 지급
             async function givePoints(userId, userName, currentPoints) {
-                const pointsStr = prompt(userName + '님에게 지급할 포인트를 입력하세요\n(현재: ' + currentPoints + 'P):');
+                const pointsStr = prompt(userName + '님에게 지급할 포인트를 입력하세요 (현재: ' + currentPoints + 'P):');
                 if (!pointsStr) return;
                 
                 const points = parseInt(pointsStr);
@@ -12547,7 +12547,7 @@ app.get('/admin/users', async (c) => {
 
                     const data = await response.json();
                     if (data.success) {
-                        alert(points.toLocaleString() + 'P가 지급되었습니다!\n새 잔액: ' + data.newPoints.toLocaleString() + 'P');
+                        alert(points.toLocaleString() + 'P가 지급되었습니다! 새 잔액: ' + data.newPoints.toLocaleString() + 'P');
                         location.reload();
                     } else {
                         alert('오류: ' + (data.error || '포인트 지급 실패'));
@@ -12559,7 +12559,7 @@ app.get('/admin/users', async (c) => {
 
             // 포인트 차감 (환수)
             async function deductPoints(userId, userName, currentPoints) {
-                const pointsStr = prompt(userName + '님의 포인트를 차감합니다\n(현재: ' + currentPoints.toLocaleString() + 'P)\n\n차감할 포인트를 입력하세요:');
+                const pointsStr = prompt(userName + '님의 포인트를 차감합니다 (현재: ' + currentPoints.toLocaleString() + 'P) - 차감할 포인트를 입력하세요:');
                 if (!pointsStr) return;
                 
                 const points = parseInt(pointsStr);
@@ -12570,12 +12570,12 @@ app.get('/admin/users', async (c) => {
 
                 // 현재 포인트보다 많이 차감하려는 경우 경고
                 if (points > currentPoints) {
-                    if (!confirm('⚠️ 경고: 현재 포인트(' + currentPoints.toLocaleString() + 'P)보다 많은 금액(' + points.toLocaleString() + 'P)을 차감하면\n포인트가 마이너스가 됩니다.\n\n계속하시겠습니까?')) {
+                    if (!confirm('경고: 현재 포인트(' + currentPoints.toLocaleString() + 'P)보다 많은 금액(' + points.toLocaleString() + 'P)을 차감하면 포인트가 마이너스가 됩니다. 계속하시겠습니까?')) {
                         return;
                     }
                 }
 
-                if (!confirm(userName + '님의 포인트를 ' + points.toLocaleString() + 'P 차감하시겠습니까?\n\n차감 후 잔액: ' + (currentPoints - points).toLocaleString() + 'P')) {
+                if (!confirm(userName + '님의 포인트를 ' + points.toLocaleString() + 'P 차감하시겠습니까? (차감 후 잔액: ' + (currentPoints - points).toLocaleString() + 'P)')) {
                     return;
                 }
 
@@ -12588,7 +12588,7 @@ app.get('/admin/users', async (c) => {
 
                     const data = await response.json();
                     if (data.success) {
-                        alert(points.toLocaleString() + 'P가 차감되었습니다!\n새 잔액: ' + data.newPoints.toLocaleString() + 'P');
+                        alert(points.toLocaleString() + 'P가 차감되었습니다! 새 잔액: ' + data.newPoints.toLocaleString() + 'P');
                         location.reload();
                     } else {
                         alert('오류: ' + (data.error || '포인트 차감 실패'));
