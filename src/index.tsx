@@ -4650,6 +4650,26 @@ app.get('/dashboard', (c) => {
                     </div>
                 </div>
 
+                <!-- My Landing Pages Section -->
+                <div class="mb-12">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-gray-900">🚀 내 랜딩페이지</h2>
+                        <div class="flex gap-3">
+                            <a href="/tools/landing-builder" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition font-medium text-sm">
+                                + 새 랜딩페이지
+                            </a>
+                            <a href="/tools/landing-manager" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition font-medium text-sm">
+                                전체 관리
+                            </a>
+                        </div>
+                    </div>
+                    <div id="landingPagesContainer" class="grid md:grid-cols-3 gap-6">
+                        <div class="col-span-3 text-center py-12 text-gray-500">
+                            로딩 중...
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Content Grid -->
                 <div class="grid lg:grid-cols-2 gap-8">
                     <!-- My Programs -->
@@ -4797,6 +4817,10 @@ app.get('/dashboard', (c) => {
                     }
                 }
             }
+            
+            // 페이지 로드 시 실행
+            loadUserPoints()
+            loadMyLandingPages()
 
             function returnToAdmin() {
                 const originalAdmin = JSON.parse(localStorage.getItem('original_admin'))
@@ -4835,6 +4859,79 @@ app.get('/dashboard', (c) => {
                         console.error('포인트 로드 실패:', error)
                     }
                 }
+            }
+
+            // 내 랜딩페이지 불러오기
+            async function loadMyLandingPages() {
+                const user = JSON.parse(localStorage.getItem('user'))
+                if (user && user.id) {
+                    try {
+                        const response = await fetch('/api/landing/my-pages?userId=' + user.id)
+                        const data = await response.json()
+                        
+                        const container = document.getElementById('landingPagesContainer')
+                        
+                        if (data.success && data.pages && data.pages.length > 0) {
+                            // 최근 3개만 표시
+                            const recentPages = data.pages.slice(0, 3)
+                            container.innerHTML = recentPages.map(page => {
+                                const pageUrl = window.location.origin + '/landing/' + page.slug
+                                const statusBadge = page.status === 'active' 
+                                    ? '<span class="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">활성</span>'
+                                    : '<span class="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">비활성</span>'
+                                
+                                return '<div class="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition">' +
+                                    '<div class="flex justify-between items-start mb-3">' +
+                                        '<h3 class="font-bold text-gray-900 text-lg">' + page.title + '</h3>' +
+                                        statusBadge +
+                                    '</div>' +
+                                    '<div class="text-sm text-gray-600 mb-4">' +
+                                        '<div class="flex items-center gap-2 mb-2">' +
+                                            '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>' +
+                                            '<span>조회수: ' + (page.view_count || 0) + '회</span>' +
+                                        '</div>' +
+                                        '<div class="text-xs text-gray-500">' +
+                                            '생성일: ' + new Date(page.created_at).toLocaleDateString('ko-KR') +
+                                        '</div>' +
+                                    '</div>' +
+                                    '<div class="flex gap-2">' +
+                                        '<a href="' + pageUrl + '" target="_blank" class="flex-1 px-3 py-2 bg-purple-600 text-white text-sm rounded-lg hover:bg-purple-700 transition text-center">' +
+                                            '미리보기' +
+                                        '</a>' +
+                                        '<button onclick="copyUrl(\'' + pageUrl + '\')" class="px-3 py-2 bg-gray-100 text-gray-700 text-sm rounded-lg hover:bg-gray-200 transition">' +
+                                            '🔗' +
+                                        '</button>' +
+                                    '</div>' +
+                                '</div>'
+                            }).join('')
+                        } else {
+                            container.innerHTML = '<div class="col-span-3 text-center py-12">' +
+                                '<div class="text-gray-400 mb-4">' +
+                                    '<svg class="w-16 h-16 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">' +
+                                        '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>' +
+                                    '</svg>' +
+                                    '<p class="text-lg font-medium">아직 생성한 랜딩페이지가 없습니다</p>' +
+                                '</div>' +
+                                '<a href="/tools/landing-builder" class="inline-block px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition font-medium">' +
+                                    '첫 랜딩페이지 만들기' +
+                                '</a>' +
+                            '</div>'
+                        }
+                    } catch (error) {
+                        console.error('랜딩페이지 로드 실패:', error)
+                        document.getElementById('landingPagesContainer').innerHTML = 
+                            '<div class="col-span-3 text-center py-12 text-gray-500">로딩 실패</div>'
+                    }
+                }
+            }
+
+            // URL 복사
+            function copyUrl(url) {
+                navigator.clipboard.writeText(url).then(() => {
+                    alert('URL이 복사되었습니다!\\n' + url)
+                }).catch(err => {
+                    alert('복사 실패: ' + err)
+                })
             }
 
             // 5초마다 포인트 자동 갱신
