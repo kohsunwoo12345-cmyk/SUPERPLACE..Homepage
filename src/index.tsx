@@ -6826,19 +6826,17 @@ app.get('/tools/landing-builder', (c) => {
                 return;
             }
 
-            // 파일 크기 체크 (5MB 제한)
-            if (file.size > 5 * 1024 * 1024) {
-                alert('파일 크기는 5MB 이하여야 합니다.');
+            // 파일 크기 체크 (10MB 제한 - imgbb는 최대 32MB 지원)
+            if (file.size > 10 * 1024 * 1024) {
+                const sizeMB = (file.size / 1024 / 1024).toFixed(2);
+                alert(\`파일 크기(\${sizeMB}MB)가 너무 큽니다. 10MB 이하의 이미지를 사용해주세요.\`);
                 event.target.value = '';
                 return;
             }
 
             // 로딩 표시
             const uploadBtn = event.target;
-            const originalText = uploadBtn.nextElementSibling?.textContent || '';
-            if (uploadBtn.nextElementSibling) {
-                uploadBtn.nextElementSibling.textContent = '업로드 중...';
-            }
+            alert('이미지 업로드 중입니다. 잠시만 기다려주세요...');
 
             try {
                 // imgbb API를 사용하여 이미지 업로드
@@ -6865,16 +6863,14 @@ app.get('/tools/landing-builder', (c) => {
                     
                     alert('✅ 이미지가 성공적으로 업로드되었습니다!');
                 } else {
-                    throw new Error('이미지 업로드 실패');
+                    throw new Error(result.error?.message || '이미지 업로드 실패');
                 }
             } catch (error) {
                 console.error('업로드 오류:', error);
-                alert('❌ 이미지 업로드에 실패했습니다. 이미지 URL을 직접 입력해주세요.');
+                alert('❌ 이미지 업로드에 실패했습니다.\\n\\n이미지 URL을 직접 입력하시거나, 더 작은 이미지 파일을 사용해주세요.');
                 event.target.value = '';
-            } finally {
-                // 로딩 해제
-                if (uploadBtn.nextElementSibling) {
-                    uploadBtn.nextElementSibling.textContent = originalText;
+            }
+        }
                 }
             }
         }
