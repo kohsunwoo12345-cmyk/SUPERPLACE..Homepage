@@ -786,7 +786,7 @@ app.put('/api/admin/contacts/:id/status', async (c) => {
 // 랜딩페이지 생성
 app.post('/api/landing/create', async (c) => {
   try {
-    const { title, template_type, input_data } = await c.req.json()
+    const { title, template_type, input_data, thumbnail_url } = await c.req.json()
     
     // Base64 인코딩된 사용자 데이터 디코딩
     const userHeaderBase64 = c.req.header('X-User-Data-Base64')
@@ -812,11 +812,11 @@ app.post('/api/landing/create', async (c) => {
     
     // DB 저장
     const query = `
-      INSERT INTO landing_pages (user_id, slug, title, template_type, content_json, html_content, qr_code_url, status)
-      VALUES (?, ?, ?, ?, ?, ?, ?, 'active')
+      INSERT INTO landing_pages (user_id, slug, title, template_type, content_json, html_content, qr_code_url, thumbnail_url, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'active')
     `
     const result = await c.env.DB.prepare(query)
-      .bind(user.id, slug, title, template_type, JSON.stringify(input_data), htmlContent, qrCodeUrl)
+      .bind(user.id, slug, title, template_type, JSON.stringify(input_data), htmlContent, qrCodeUrl, thumbnail_url || null)
       .run()
     
     return c.json({ 
@@ -6483,6 +6483,27 @@ app.get('/tools/landing-builder', (c) => {
                         <form id="landingForm" class="space-y-6"></form>
                     </div>
 
+                    <!-- 썸네일 업로드 -->
+                    <div class="bg-white rounded-xl p-8 border border-gray-200 mb-6">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-3">3️⃣ 썸네일 설정 (선택사항)</h2>
+                        <p class="text-sm text-gray-600 mb-6">카카오톡, 페이스북 등에서 링크 공유 시 보여질 이미지를 설정하세요</p>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-900 mb-2">썸네일 이미지 URL</label>
+                                <input type="text" id="thumbnailUrl" placeholder="https://example.com/image.jpg (선택사항)" class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                                <p class="text-xs text-gray-500 mt-2">💡 이미지 URL을 입력하거나, 파일을 업로드하세요 (권장 크기: 1200x630px)</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-900 mb-2">또는 파일 업로드</label>
+                                <input type="file" id="thumbnailFile" accept="image/*" class="w-full px-4 py-3 border border-gray-300 rounded-xl" onchange="handleThumbnailUpload(event)">
+                            </div>
+                            <div id="thumbnailPreview" class="hidden">
+                                <p class="text-sm font-medium text-gray-900 mb-2">미리보기</p>
+                                <img id="thumbnailPreviewImg" src="" class="max-w-xs rounded-lg border border-gray-300">
+                            </div>
+                        </div>
+                    </div>
+
                     <button onclick="generateLanding()" class="w-full gradient-purple text-white py-4 rounded-xl text-lg font-bold hover:shadow-xl transition">
                         🚀 랜딩페이지 생성하기
                     </button>
@@ -6768,6 +6789,28 @@ app.get('/tools/landing-builder', (c) => {
             document.getElementById('formArea').scrollIntoView({ behavior: 'smooth' });
         }
 
+        // 썸네일 업로드 처리
+        async function handleThumbnailUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // 파일 크기 체크 (5MB 제한)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('파일 크기는 5MB 이하여야 합니다.');
+                event.target.value = '';
+                return;
+            }
+
+            // 미리보기 표시
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('thumbnailUrl').value = e.target.result;
+                document.getElementById('thumbnailPreviewImg').src = e.target.result;
+                document.getElementById('thumbnailPreview').classList.remove('hidden');
+            };
+            reader.readAsDataURL(file);
+        }
+
         async function generateLanding() {
             if (!selectedTemplate) {
                 alert('템플릿을 선택해주세요.');
@@ -6776,6 +6819,9 @@ app.get('/tools/landing-builder', (c) => {
 
             const formData = new FormData(document.getElementById('landingForm'));
             const data = Object.fromEntries(formData);
+
+            // 썸네일 URL 가져오기
+            const thumbnailUrl = document.getElementById('thumbnailUrl').value || '';
 
             // 배열로 변환이 필요한 필드들
             if (data.specialties) data.specialties = data.specialties.split('\\n').filter(s => s.trim());
@@ -6813,7 +6859,8 @@ app.get('/tools/landing-builder', (c) => {
                     body: JSON.stringify({
                         title,
                         template_type: selectedTemplate,
-                        input_data: data
+                        input_data: data,
+                        thumbnail_url: thumbnailUrl
                     })
                 });
 
@@ -7499,8 +7546,35 @@ app.get('/landing/:slug', async (c) => {
     // 조회수 증가
     await c.env.DB.prepare('UPDATE landing_pages SET view_count = view_count + 1 WHERE slug = ?').bind(slug).run()
     
+    // OG 메타 태그 추가
+    let htmlContent = page.html_content as string
+    const fullUrl = `${c.req.header('origin') || 'https://superplace-academy.pages.dev'}/landing/${slug}`
+    const thumbnailUrl = (page.thumbnail_url as string) || 'https://via.placeholder.com/1200x630.png?text=Super+Place+Academy'
+    const title = (page.title as string) || '우리는 슈퍼플레이스다'
+    const description = '꾸메땅학원의 전문적인 교육 서비스를 만나보세요'
+    
+    // <head> 태그에 OG 메타 태그 주입
+    const ogTags = `
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="${fullUrl}">
+    <meta property="og:title" content="${title}">
+    <meta property="og:description" content="${description}">
+    <meta property="og:image" content="${thumbnailUrl}">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="${fullUrl}">
+    <meta property="twitter:title" content="${title}">
+    <meta property="twitter:description" content="${description}">
+    <meta property="twitter:image" content="${thumbnailUrl}">
+    `
+    
+    // </head> 직전에 OG 태그 추가
+    htmlContent = htmlContent.replace('</head>', `${ogTags}</head>`)
+    
     // HTML 반환
-    return c.html(page.html_content as string)
+    return c.html(htmlContent)
   } catch (error) {
     return c.html('<h1>오류가 발생했습니다.</h1>', 500)
   }
