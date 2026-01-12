@@ -12418,7 +12418,7 @@ app.get('/admin/users', async (c) => {
                 document.getElementById('modalUserName').textContent = userName + '님의 권한 설정';
                 
                 // 현재 권한 조회
-                const response = await fetch(\`/api/user/\${userId}/permissions\`);
+                const response = await fetch('/api/user/' + userId + '/permissions');
                 const data = await response.json();
                 const currentPermissions = data.permissions || [];
                 
