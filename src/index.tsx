@@ -4783,11 +4783,13 @@ app.get('/dashboard', (c) => {
                 // Impersonating 중이면 복귀 버튼 표시
                 if (isImpersonating) {
                     const nav = document.querySelector('nav .flex.items-center.space-x-4')
-                    const returnBtn = document.createElement('button')
-                    returnBtn.onclick = returnToAdmin
-                    returnBtn.className = 'px-4 py-2 bg-red-500 text-white rounded-lg font-medium hover:bg-red-600 transition-all'
-                    returnBtn.innerHTML = '🔙 관리자로 돌아가기'
-                    nav.insertBefore(returnBtn, nav.firstChild)
+                    if (nav) {
+                        const returnBtn = document.createElement('button')
+                        returnBtn.onclick = returnToAdmin
+                        returnBtn.className = 'px-4 py-2 bg-red-500 text-white rounded-lg font-medium hover:bg-red-600 transition-all'
+                        returnBtn.innerHTML = '🔙 관리자로 돌아가기'
+                        nav.insertBefore(returnBtn, nav.firstChild)
+                    }
                 }
             }
 
