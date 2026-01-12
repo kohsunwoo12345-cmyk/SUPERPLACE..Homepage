@@ -7013,7 +7013,7 @@ app.get('/tools/landing-builder', (c) => {
                                 document.getElementById('thumbnailPreviewImg').src = dataUrl;
                                 document.getElementById('thumbnailPreview').classList.remove('hidden');
                                 
-                                alert('✅ 이미지가 업로드되었습니다!\n\n참고: 카카오톡 공유 시 썸네일이 표시되지 않을 수 있습니다.\n더 안정적인 공유를 위해 이미지 URL을 직접 입력하는 것을 권장합니다.');
+                                alert('✅ 이미지가 업로드되었습니다!\n\n참고: 모든 크기의 이미지를 업로드할 수 있습니다.');
                             }
                         } catch (error) {
                             console.error('imgbb 업로드 오류:', error);
@@ -7025,7 +7025,7 @@ app.get('/tools/landing-builder', (c) => {
                             document.getElementById('thumbnailPreviewImg').src = dataUrl;
                             document.getElementById('thumbnailPreview').classList.remove('hidden');
                             
-                            alert('✅ 이미지가 업로드되었습니다!\n\n참고: 외부 업로드에 실패하여 로컬에 저장했습니다.\n카카오톡 공유 시 썸네일이 표시되지 않을 수 있습니다.');
+                            alert('✅ 이미지가 로컬에 저장되었습니다!');
                         }
                     }, 'image/jpeg', 0.85);
                 };
