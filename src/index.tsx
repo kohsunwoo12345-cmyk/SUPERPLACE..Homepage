@@ -836,12 +836,99 @@ app.post('/api/landing/create', async (c) => {
 // 사용자 랜딩페이지 목록
 app.get('/api/landing/my-pages', async (c) => {
   try {
-    const user = JSON.parse(c.req.header('X-User-Data') || '{"id":1}')
-    const query = 'SELECT id, slug, title, template_type, view_count, status, created_at FROM landing_pages WHERE user_id = ? ORDER BY created_at DESC'
-    const { results } = await c.env.DB.prepare(query).bind(user.id).all()
+    const userId = c.req.query('userId')
+    const folderId = c.req.query('folderId')
+    
+    let query = 'SELECT id, slug, title, template_type, view_count, status, folder_id, created_at FROM landing_pages WHERE user_id = ?'
+    let params = [userId]
+    
+    if (folderId) {
+      query += ' AND folder_id = ?'
+      params.push(folderId)
+    } else if (folderId === null || folderId === 'null') {
+      // 폴더가 없는 페이지만 조회
+      query += ' AND folder_id IS NULL'
+    }
+    
+    query += ' ORDER BY created_at DESC'
+    
+    const { results } = await c.env.DB.prepare(query).bind(...params).all()
     return c.json({ success: true, pages: results })
   } catch (error) {
+    console.error('목록 조회 실패:', error)
     return c.json({ success: false, error: '목록 조회 실패' }, 500)
+  }
+})
+
+// 폴더 목록 조회
+app.get('/api/landing/folders', async (c) => {
+  try {
+    const userId = c.req.query('userId')
+    
+    // 폴더 목록
+    const foldersQuery = 'SELECT id, name, created_at FROM landing_folders WHERE user_id = ? ORDER BY created_at DESC'
+    const { results: folders } = await c.env.DB.prepare(foldersQuery).bind(userId).all()
+    
+    // 각 폴더의 페이지 수 계산
+    const foldersWithCount = await Promise.all(folders.map(async (folder) => {
+      const countQuery = 'SELECT COUNT(*) as count FROM landing_pages WHERE folder_id = ?'
+      const count = await c.env.DB.prepare(countQuery).bind(folder.id).first()
+      return { ...folder, page_count: count.count || 0 }
+    }))
+    
+    // 전체 페이지 수
+    const totalQuery = 'SELECT COUNT(*) as count FROM landing_pages WHERE user_id = ?'
+    const total = await c.env.DB.prepare(totalQuery).bind(userId).first()
+    
+    return c.json({ 
+      success: true, 
+      folders: foldersWithCount,
+      totalPages: total.count || 0
+    })
+  } catch (error) {
+    console.error('폴더 목록 조회 실패:', error)
+    return c.json({ success: false, error: '폴더 목록 조회 실패' }, 500)
+  }
+})
+
+// 폴더 생성
+app.post('/api/landing/folders', async (c) => {
+  try {
+    const { userId, name } = await c.req.json()
+    
+    if (!name || !name.trim()) {
+      return c.json({ success: false, error: '폴더 이름을 입력하세요.' }, 400)
+    }
+    
+    const query = 'INSERT INTO landing_folders (user_id, name) VALUES (?, ?)'
+    const result = await c.env.DB.prepare(query).bind(userId, name.trim()).run()
+    
+    return c.json({ 
+      success: true, 
+      folderId: result.meta.last_row_id,
+      message: '폴더가 생성되었습니다.' 
+    })
+  } catch (error) {
+    console.error('폴더 생성 실패:', error)
+    return c.json({ success: false, error: '폴더 생성 실패' }, 500)
+  }
+})
+
+// 랜딩페이지를 폴더로 이동
+app.put('/api/landing/move-to-folder', async (c) => {
+  try {
+    const { pageId, folderId } = await c.req.json()
+    
+    const query = 'UPDATE landing_pages SET folder_id = ? WHERE id = ?'
+    await c.env.DB.prepare(query).bind(folderId, pageId).run()
+    
+    return c.json({ 
+      success: true, 
+      message: '폴더로 이동되었습니다.' 
+    })
+  } catch (error) {
+    console.error('폴더 이동 실패:', error)
+    return c.json({ success: false, error: '폴더 이동 실패' }, 500)
   }
 })
 
@@ -6387,19 +6474,67 @@ app.get('/tools/landing-manager', (c) => {
 
         <div class="pt-24 pb-12 px-6">
             <div class="max-w-6xl mx-auto">
-                <div class="mb-8">
-                    <h1 class="text-3xl font-bold text-gray-900 mb-2">📁 내 랜딩페이지</h1>
-                    <p class="text-gray-600">생성한 랜딩페이지를 관리하고 공유하세요</p>
+                <div class="mb-8 flex justify-between items-start">
+                    <div>
+                        <h1 class="text-3xl font-bold text-gray-900 mb-2">📁 내 랜딩페이지</h1>
+                        <p class="text-gray-600">생성한 랜딩페이지를 폴더로 정리하고 관리하세요</p>
+                    </div>
+                    <button onclick="openFolderModal()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium">
+                        + 새 폴더
+                    </button>
                 </div>
 
+                <!-- Folders -->
+                <div class="mb-8">
+                    <div class="flex gap-3 overflow-x-auto pb-4" id="foldersList">
+                        <button onclick="selectFolder(null)" id="folder-all" class="folder-btn px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 whitespace-nowrap">
+                            📁 전체 (0)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Pages List -->
                 <div id="pagesList" class="space-y-4">
                     <div class="text-center py-12 text-gray-500">로딩중...</div>
                 </div>
             </div>
         </div>
 
+        <!-- Folder Modal -->
+        <div id="folderModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">새 폴더 만들기</h2>
+                <input type="text" id="folderName" placeholder="폴더 이름 (예: 학부모 공유용)" 
+                       class="w-full px-4 py-3 border border-gray-300 rounded-xl mb-6">
+                <div class="flex gap-3">
+                    <button onclick="closeFolderModal()" class="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200">
+                        취소
+                    </button>
+                    <button onclick="createFolder()" class="flex-1 px-4 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-700">
+                        생성
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Move to Folder Modal -->
+        <div id="moveFolderModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">폴더로 이동</h2>
+                <div id="folderSelectList" class="space-y-2 mb-6 max-h-96 overflow-y-auto">
+                    <!-- 폴더 목록 -->
+                </div>
+                <button onclick="closeMoveFolderModal()" class="w-full px-4 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200">
+                    취소
+                </button>
+            </div>
+        </div>
+
         <script>
         let user = null;
+        let currentFolder = null;
+        let allFolders = [];
+        let currentPageToMove = null;
 
         const userData = localStorage.getItem('user');
         if (!userData) {
@@ -6407,6 +6542,7 @@ app.get('/tools/landing-manager', (c) => {
             window.location.href = '/login';
         } else {
             user = JSON.parse(userData);
+            loadFolders();
             loadPages();
         }
 
@@ -6415,11 +6551,56 @@ app.get('/tools/landing-manager', (c) => {
             window.location.href = '/';
         }
 
+        // 폴더 불러오기
+        async function loadFolders() {
+            try {
+                const response = await fetch('/api/landing/folders?userId=' + user.id);
+                const result = await response.json();
+                
+                if (result.success && result.folders) {
+                    allFolders = result.folders;
+                    const foldersHtml = allFolders.map(f => 
+                        '<button onclick="selectFolder(' + f.id + ')" id="folder-' + f.id + '" class="folder-btn px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 whitespace-nowrap">' +
+                            '📁 ' + f.name + ' (' + (f.page_count || 0) + ')' +
+                        '</button>'
+                    ).join('');
+                    
+                    document.getElementById('foldersList').innerHTML = 
+                        '<button onclick="selectFolder(null)" id="folder-all" class="folder-btn px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 whitespace-nowrap">' +
+                            '📁 전체 (' + (result.totalPages || 0) + ')' +
+                        '</button>' + foldersHtml;
+                }
+            } catch (error) {
+                console.error('폴더 로드 실패:', error);
+            }
+        }
+
+        // 폴더 선택
+        function selectFolder(folderId) {
+            currentFolder = folderId;
+            
+            // 버튼 스타일 업데이트
+            document.querySelectorAll('.folder-btn').forEach(btn => {
+                btn.className = 'folder-btn px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 whitespace-nowrap';
+            });
+            
+            const selectedBtn = document.getElementById('folder-' + (folderId || 'all'));
+            if (selectedBtn) {
+                selectedBtn.className = 'folder-btn px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 whitespace-nowrap';
+            }
+            
+            loadPages();
+        }
+
+        // 페이지 불러오기
         async function loadPages() {
             try {
-                const response = await fetch('/api/landing/my-pages', {
-                    headers: { 'X-User-Data': JSON.stringify(user) }
-                });
+                let url = '/api/landing/my-pages?userId=' + user.id;
+                if (currentFolder) {
+                    url += '&folderId=' + currentFolder;
+                }
+                
+                const response = await fetch(url);
                 const result = await response.json();
                 
                 if (result.success && result.pages.length > 0) {
@@ -6431,51 +6612,36 @@ app.get('/tools/landing-manager', (c) => {
                             'student-report': '📊 학생 리포트'
                         };
                         const url = window.location.origin + '/landing/' + p.slug;
-                        return \`
-                            <div class="bg-white rounded-xl p-6 border border-gray-200 hover:shadow-lg transition">
-                                <div class="flex items-start justify-between">
-                                    <div class="flex-1">
-                                        <div class="flex items-center gap-3 mb-2">
-                                            <span class="px-3 py-1 bg-purple-100 text-purple-700 text-xs rounded-full font-medium">
-                                                \${typeNames[p.template_type]}
-                                            </span>
-                                            <span class="text-sm text-gray-500">조회수: \${p.view_count}</span>
-                                        </div>
-                                        <h3 class="text-xl font-bold text-gray-900 mb-3">\${p.title}</h3>
-                                        <div class="flex items-center gap-2 mb-3">
-                                            <input type="text" value="\${url}" readonly 
-                                                   class="flex-1 px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg text-sm">
-                                            <button onclick="copyUrl('\${url}')" 
-                                                    class="px-4 py-2 bg-gray-600 text-white rounded-lg text-sm hover:bg-gray-700">
-                                                복사
-                                            </button>
-                                        </div>
-                                        <p class="text-sm text-gray-500">생성일: \${new Date(p.created_at).toLocaleString('ko-KR')}</p>
-                                    </div>
-                                    <div class="flex gap-2 ml-4">
-                                        <a href="/landing/\${p.slug}" target="_blank" 
-                                           class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm">
-                                            미리보기
-                                        </a>
-                                        <button onclick="deletePage(\${p.id})" 
-                                                class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm">
-                                            삭제
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        \`;
+                        return '<div class="bg-white rounded-xl p-6 border border-gray-200 hover:shadow-lg transition">' +
+                                '<div class="flex items-start justify-between">' +
+                                    '<div class="flex-1">' +
+                                        '<div class="flex items-center gap-3 mb-2">' +
+                                            '<span class="px-3 py-1 bg-purple-100 text-purple-700 text-xs rounded-full font-medium">' +
+                                                (typeNames[p.template_type] || p.template_type) +
+                                            '</span>' +
+                                            '<span class="text-sm text-gray-500">조회수: ' + p.view_count + '</span>' +
+                                        '</div>' +
+                                        '<h3 class="text-xl font-bold text-gray-900 mb-3">' + p.title + '</h3>' +
+                                        '<div class="flex items-center gap-2 mb-3">' +
+                                            '<input type="text" value="' + url + '" readonly class="flex-1 px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg text-sm">' +
+                                            '<button onclick="copyUrl(\'' + url + '\')" class="px-4 py-2 bg-gray-600 text-white rounded-lg text-sm hover:bg-gray-700">복사</button>' +
+                                        '</div>' +
+                                        '<p class="text-sm text-gray-500">생성일: ' + new Date(p.created_at).toLocaleString('ko-KR') + '</p>' +
+                                    '</div>' +
+                                    '<div class="flex flex-col gap-2 ml-4">' +
+                                        '<a href="/landing/' + p.slug + '" target="_blank" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm text-center">미리보기</a>' +
+                                        '<button onclick="openMoveFolderModal(' + p.id + ')" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm">폴더 이동</button>' +
+                                        '<button onclick="deletePage(' + p.id + ')" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm">삭제</button>' +
+                                    '</div>' +
+                                '</div>' +
+                            '</div>';
                     }).join('');
                     document.getElementById('pagesList').innerHTML = html;
                 } else {
-                    document.getElementById('pagesList').innerHTML = \`
-                        <div class="text-center py-12">
-                            <p class="text-gray-500 mb-4">아직 생성한 랜딩페이지가 없습니다.</p>
-                            <a href="/tools/landing-builder" class="inline-block px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
-                                첫 랜딩페이지 만들기
-                            </a>
-                        </div>
-                    \`;
+                    document.getElementById('pagesList').innerHTML = '<div class="text-center py-12">' +
+                            '<p class="text-gray-500 mb-4">랜딩페이지가 없습니다.</p>' +
+                            '<a href="/tools/landing-builder" class="inline-block px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700">첫 랜딩페이지 만들기</a>' +
+                        '</div>';
                 }
             } catch (error) {
                 document.getElementById('pagesList').innerHTML = '<div class="text-center py-12 text-red-500">로딩 실패</div>';
@@ -6486,6 +6652,91 @@ app.get('/tools/landing-manager', (c) => {
             navigator.clipboard.writeText(url).then(() => {
                 alert('링크가 복사되었습니다!');
             });
+        }
+
+        // 폴더 모달
+        function openFolderModal() {
+            document.getElementById('folderModal').classList.remove('hidden');
+        }
+
+        function closeFolderModal() {
+            document.getElementById('folderModal').classList.add('hidden');
+            document.getElementById('folderName').value = '';
+        }
+
+        async function createFolder() {
+            const name = document.getElementById('folderName').value.trim();
+            if (!name) {
+                alert('폴더 이름을 입력하세요.');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/landing/folders', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId: user.id, name })
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('폴더가 생성되었습니다!');
+                    closeFolderModal();
+                    loadFolders();
+                } else {
+                    alert('폴더 생성 실패: ' + result.error);
+                }
+            } catch (error) {
+                alert('오류가 발생했습니다.');
+            }
+        }
+
+        // 폴더 이동 모달
+        function openMoveFolderModal(pageId) {
+            currentPageToMove = pageId;
+            
+            const foldersHtml = allFolders.map(f =>
+                '<button onclick="moveToFolder(' + f.id + ')" class="w-full px-4 py-3 bg-gray-50 hover:bg-gray-100 rounded-lg text-left border border-gray-200">' +
+                    '📁 ' + f.name +
+                '</button>'
+            ).join('');
+            
+            document.getElementById('folderSelectList').innerHTML = 
+                '<button onclick="moveToFolder(null)" class="w-full px-4 py-3 bg-gray-50 hover:bg-gray-100 rounded-lg text-left border border-gray-200">' +
+                    '📁 폴더 없음 (전체)' +
+                '</button>' + foldersHtml;
+            
+            document.getElementById('moveFolderModal').classList.remove('hidden');
+        }
+
+        function closeMoveFolderModal() {
+            document.getElementById('moveFolderModal').classList.add('hidden');
+            currentPageToMove = null;
+        }
+
+        async function moveToFolder(folderId) {
+            try {
+                const response = await fetch('/api/landing/move-to-folder', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        pageId: currentPageToMove, 
+                        folderId: folderId 
+                    })
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('폴더로 이동되었습니다!');
+                    closeMoveFolderModal();
+                    loadFolders();
+                    loadPages();
+                } else {
+                    alert('이동 실패: ' + result.error);
+                }
+            } catch (error) {
+                alert('오류가 발생했습니다.');
+            }
         }
 
         async function deletePage(id) {
@@ -6499,6 +6750,7 @@ app.get('/tools/landing-manager', (c) => {
                 const result = await response.json();
                 if (result.success) {
                     alert('삭제되었습니다.');
+                    loadFolders();
                     loadPages();
                 } else {
                     alert('삭제 실패: ' + result.error);
