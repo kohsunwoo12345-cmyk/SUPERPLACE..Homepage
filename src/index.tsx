@@ -6826,48 +6826,113 @@ app.get('/tools/landing-builder', (c) => {
                 return;
             }
 
-            // 파일 크기 체크 (10MB 제한 - imgbb는 최대 32MB 지원)
-            if (file.size > 10 * 1024 * 1024) {
+            // 파일 크기 체크 (5MB 제한)
+            if (file.size > 5 * 1024 * 1024) {
                 const sizeMB = (file.size / 1024 / 1024).toFixed(2);
-                alert(\`파일 크기(\${sizeMB}MB)가 너무 큽니다. 10MB 이하의 이미지를 사용해주세요.\`);
+                alert(\`파일 크기(\${sizeMB}MB)가 너무 큽니다.\\n\\n5MB 이하의 이미지를 사용하시거나,\\n이미지 URL을 직접 입력해주세요.\\n\\n💡 TinyPNG(https://tinypng.com)에서 이미지를 압축할 수 있습니다.\`);
                 event.target.value = '';
                 return;
             }
 
             // 로딩 표시
-            const uploadBtn = event.target;
             alert('이미지 업로드 중입니다. 잠시만 기다려주세요...');
 
             try {
-                // imgbb API를 사용하여 이미지 업로드
-                const formData = new FormData();
-                formData.append('image', file);
-                
-                // imgbb 무료 API 키 (공개 키)
-                const apiKey = '0a23ef6b644bb80dfde639cbd5e4a5b7';
-                
-                const response = await fetch(\`https://api.imgbb.com/1/upload?key=\${apiKey}\`, {
-                    method: 'POST',
-                    body: formData
-                });
-                
-                const result = await response.json();
-                
-                if (result.success) {
-                    const imageUrl = result.data.url;
+                // 이미지를 리사이징하여 Base64로 변환
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
                     
-                    // UI 업데이트
-                    document.getElementById('thumbnailUrl').value = imageUrl;
-                    document.getElementById('thumbnailPreviewImg').src = imageUrl;
-                    document.getElementById('thumbnailPreview').classList.remove('hidden');
+                    // 최대 크기: 1200x630 (OG 이미지 권장 사이즈)
+                    const maxWidth = 1200;
+                    const maxHeight = 630;
                     
-                    alert('✅ 이미지가 성공적으로 업로드되었습니다!');
-                } else {
-                    throw new Error(result.error?.message || '이미지 업로드 실패');
-                }
+                    if (width > maxWidth || height > maxHeight) {
+                        const ratio = Math.min(maxWidth / width, maxHeight / height);
+                        width = Math.floor(width * ratio);
+                        height = Math.floor(height * ratio);
+                    }
+                    
+                    canvas.width = width;
+                    canvas.height = height;
+                    
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    // JPEG로 압축 (품질 0.85)
+                    canvas.toBlob(async function(blob) {
+                        // imgbb API로 업로드
+                        const formData = new FormData();
+                        formData.append('image', blob);
+                        
+                        try {
+                            // imgbb 무료 API 키
+                            const apiKey = '0a23ef6b644bb80dfde639cbd5e4a5b7';
+                            
+                            const response = await fetch(\`https://api.imgbb.com/1/upload?key=\${apiKey}\`, {
+                                method: 'POST',
+                                body: formData
+                            });
+                            
+                            const result = await response.json();
+                            
+                            if (result.success && result.data && result.data.url) {
+                                const imageUrl = result.data.url;
+                                
+                                // UI 업데이트
+                                document.getElementById('thumbnailUrl').value = imageUrl;
+                                document.getElementById('thumbnailPreviewImg').src = imageUrl;
+                                document.getElementById('thumbnailPreview').classList.remove('hidden');
+                                
+                                alert(\`✅ 이미지가 성공적으로 업로드되었습니다!\\n\\nURL: \${imageUrl}\`);
+                            } else {
+                                // imgbb 실패 시 Base64로 폴백
+                                const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+                                const sizeKB = Math.round((dataUrl.length * 3) / 4 / 1024);
+                                
+                                if (sizeKB > 500) {
+                                    alert(\`⚠️ 이미지가 너무 큽니다 (\${sizeKB}KB).\\n\\n작은 이미지를 사용하시거나,\\n이미지 URL을 직접 입력해주세요.\`);
+                                    event.target.value = '';
+                                } else {
+                                    document.getElementById('thumbnailUrl').value = dataUrl;
+                                    document.getElementById('thumbnailPreviewImg').src = dataUrl;
+                                    document.getElementById('thumbnailPreview').classList.remove('hidden');
+                                    
+                                    alert(\`✅ 이미지가 로컬에 저장되었습니다!\\n\\n참고: 카카오톡 썸네일은 외부 URL이 더 안정적입니다.\\n가능하면 이미지 URL을 직접 입력해주세요.\`);
+                                }
+                            }
+                        } catch (error) {
+                            console.error('imgbb 업로드 오류:', error);
+                            
+                            // API 실패 시 Base64로 폴백
+                            const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+                            const sizeKB = Math.round((dataUrl.length * 3) / 4 / 1024);
+                            
+                            document.getElementById('thumbnailUrl').value = dataUrl;
+                            document.getElementById('thumbnailPreviewImg').src = dataUrl;
+                            document.getElementById('thumbnailPreview').classList.remove('hidden');
+                            
+                            alert(\`⚠️ 외부 업로드에 실패했습니다.\\n이미지를 로컬에 저장했습니다 (\${sizeKB}KB).\\n\\n더 안정적인 카카오톡 공유를 위해\\n이미지 URL을 직접 입력하는 것을 권장합니다.\`);
+                        }
+                    }, 'image/jpeg', 0.85);
+                };
+                
+                img.onerror = function() {
+                    alert('❌ 이미지를 불러올 수 없습니다. 다른 이미지를 선택해주세요.');
+                    event.target.value = '';
+                };
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+                
             } catch (error) {
                 console.error('업로드 오류:', error);
-                alert('❌ 이미지 업로드에 실패했습니다.\\n\\n이미지 URL을 직접 입력하시거나, 더 작은 이미지 파일을 사용해주세요.');
+                alert('❌ 이미지 업로드에 실패했습니다.\\n\\n이미지 URL을 직접 입력해주세요.');
                 event.target.value = '';
             }
         }
