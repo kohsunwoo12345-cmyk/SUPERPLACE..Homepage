@@ -4386,9 +4386,14 @@ app.get('/dashboard', (c) => {
                             </svg>
                         </div>
                         <div class="text-4xl font-bold mb-3"><span id="userPoints">0</span>P</div>
-                        <button onclick="openDepositModal()" class="w-full bg-white text-blue-600 px-4 py-2 rounded-lg hover:bg-blue-50 transition font-medium text-sm">
-                            💰 입금 신청
-                        </button>
+                        <div class="space-y-2">
+                            <button onclick="openDepositModal()" class="w-full bg-white text-blue-600 px-4 py-2 rounded-lg hover:bg-blue-50 transition font-medium text-sm">
+                                💰 입금 신청
+                            </button>
+                            <a href="/my-deposits" class="block w-full bg-blue-50 text-blue-600 px-4 py-2 rounded-lg hover:bg-blue-100 transition font-medium text-sm text-center">
+                                📋 입금 내역
+                            </a>
+                        </div>
                     </div>
 
                     <div class="bg-white rounded-2xl p-6 border border-gray-200">
@@ -12617,6 +12622,171 @@ app.get('/admin/users', async (c) => {
                     }
                 } catch (error) {
                     alert('로그인 중 오류가 발생했습니다.');
+                }
+            }
+        </script>
+    </body>
+    </html>
+  `)
+})
+
+// 사용자: 내 입금 내역 페이지
+app.get('/my-deposits', (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>내 입금 내역 - 슈퍼플레이스</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+        <style>
+            .gradient-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        </style>
+    </head>
+    <body class="bg-gray-50">
+        <!-- 헤더 -->
+        <nav class="bg-white border-b border-gray-200 sticky top-0 z-50">
+            <div class="max-w-7xl mx-auto px-6 py-4">
+                <div class="flex justify-between items-center">
+                    <a href="/dashboard" class="text-2xl font-bold text-purple-600">슈퍼플레이스</a>
+                    <div class="flex items-center gap-4">
+                        <span id="userName" class="text-gray-700"></span>
+                        <button onclick="logout()" class="text-gray-600 hover:text-red-600">
+                            <i class="fas fa-sign-out-alt mr-2"></i>로그아웃
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- 메인 컨텐츠 -->
+        <div class="max-w-7xl mx-auto px-6 py-8">
+            <div class="mb-8 flex justify-between items-center">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900 mb-2">내 입금 신청 내역</h1>
+                    <p class="text-gray-600">전체 <span id="totalCount">0</span>건의 입금 신청</p>
+                </div>
+                <a href="/dashboard" class="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition font-medium">
+                    <i class="fas fa-arrow-left mr-2"></i>대시보드로 돌아가기
+                </a>
+            </div>
+
+            <!-- 필터 버튼 -->
+            <div class="mb-6 flex gap-2">
+                <button onclick="filterDeposits('all')" class="filter-btn px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium">전체</button>
+                <button onclick="filterDeposits('pending')" class="filter-btn px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm font-medium">대기중</button>
+                <button onclick="filterDeposits('approved')" class="filter-btn px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm font-medium">승인완료</button>
+                <button onclick="filterDeposits('rejected')" class="filter-btn px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm font-medium">거절됨</button>
+            </div>
+
+            <!-- 입금 신청 목록 -->
+            <div id="depositList" class="space-y-4">
+                <!-- 로딩 중 -->
+                <div class="text-center py-12">
+                    <i class="fas fa-spinner fa-spin text-4xl text-purple-600"></i>
+                    <p class="mt-4 text-gray-600">입금 내역을 불러오는 중...</p>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            let allDeposits = [];
+            let currentFilter = 'all';
+
+            window.onload = async function() {
+                const userStr = localStorage.getItem('user');
+                if (!userStr) {
+                    window.location.href = '/login';
+                    return;
+                }
+
+                const user = JSON.parse(userStr);
+                document.getElementById('userName').textContent = user.name || user.email;
+
+                await loadDeposits(user.id);
+            }
+
+            async function loadDeposits(userId) {
+                try {
+                    const response = await fetch('/api/deposit/my-requests/' + userId);
+                    const data = await response.json();
+
+                    if (data.success) {
+                        allDeposits = data.requests || [];
+                        document.getElementById('totalCount').textContent = allDeposits.length;
+                        renderDeposits();
+                    } else {
+                        showError('입금 내역을 불러올 수 없습니다.');
+                    }
+                } catch (error) {
+                    showError('입금 내역 조회 중 오류가 발생했습니다.');
+                }
+            }
+
+            function renderDeposits() {
+                const container = document.getElementById('depositList');
+                const filtered = currentFilter === 'all' 
+                    ? allDeposits 
+                    : allDeposits.filter(d => d.status === currentFilter);
+
+                if (filtered.length === 0) {
+                    container.innerHTML = '<div class="text-center py-12 text-gray-500">입금 신청 내역이 없습니다</div>';
+                    return;
+                }
+
+                container.innerHTML = filtered.map(deposit => {
+                    const statusBadge = {
+                        'pending': '<span class="px-3 py-1 text-xs font-medium rounded-full bg-orange-100 text-orange-700">대기중</span>',
+                        'approved': '<span class="px-3 py-1 text-xs font-medium rounded-full bg-green-100 text-green-700">승인완료</span>',
+                        'rejected': '<span class="px-3 py-1 text-xs font-medium rounded-full bg-red-100 text-red-700">거절됨</span>'
+                    }[deposit.status] || '<span class="px-3 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700">알 수 없음</span>';
+
+                    return '<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition">' +
+                        '<div class="flex justify-between items-start mb-4">' +
+                            '<div class="flex-1">' +
+                                '<div class="flex items-center gap-3 mb-2">' +
+                                    '<h3 class="text-lg font-bold text-gray-900">' + deposit.amount.toLocaleString() + '원</h3>' +
+                                    statusBadge +
+                                '</div>' +
+                                '<div class="grid grid-cols-2 gap-2 text-sm text-gray-600">' +
+                                    '<span><i class="fas fa-university mr-1"></i>' + (deposit.bank_name || '-') + '</span>' +
+                                    '<span><i class="fas fa-credit-card mr-1"></i>' + (deposit.account_number || '-') + '</span>' +
+                                    '<span><i class="fas fa-user mr-1"></i>입금자: ' + (deposit.depositor_name || '-') + '</span>' +
+                                    '<span><i class="fas fa-clock mr-1"></i>' + new Date(deposit.created_at).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }) + '</span>' +
+                                '</div>' +
+                            '</div>' +
+                        '</div>' +
+                        (deposit.message ? '<div class="bg-gray-50 rounded-xl p-4 mb-4"><div class="text-sm text-gray-700">' + deposit.message + '</div></div>' : '') +
+                        (deposit.processed_at ? '<div class="text-xs text-gray-500 mt-2">처리일시: ' + new Date(deposit.processed_at).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }) + '</div>' : '') +
+                    '</div>';
+                }).join('');
+            }
+
+            function filterDeposits(status) {
+                currentFilter = status;
+                renderDeposits();
+
+                // 버튼 스타일 업데이트
+                document.querySelectorAll('.filter-btn').forEach(btn => {
+                    btn.className = 'filter-btn px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm font-medium';
+                });
+                event.target.className = 'filter-btn px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium';
+            }
+
+            function showError(message) {
+                document.getElementById('depositList').innerHTML = 
+                    '<div class="text-center py-12 text-red-600">' +
+                        '<i class="fas fa-exclamation-circle text-4xl mb-4"></i>' +
+                        '<p>' + message + '</p>' +
+                    '</div>';
+            }
+
+            function logout() {
+                if(confirm('로그아웃 하시겠습니까?')) {
+                    localStorage.removeItem('user');
+                    window.location.href = '/';
                 }
             }
         </script>
