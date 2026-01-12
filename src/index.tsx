@@ -7013,7 +7013,7 @@ app.get('/tools/landing-builder', (c) => {
                                 document.getElementById('thumbnailPreviewImg').src = dataUrl;
                                 document.getElementById('thumbnailPreview').classList.remove('hidden');
                                 
-                                alert('✅ 이미지가 업로드되었습니다!\n\n참고: 모든 크기의 이미지를 업로드할 수 있습니다.');
+                                alert('✅ 이미지가 업로드되었습니다!');
                             }
                         } catch (error) {
                             console.error('imgbb 업로드 오류:', error);
