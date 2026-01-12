@@ -12321,31 +12321,21 @@ app.get('/admin/users', async (c) => {
                                     <td class="px-6 py-4 whitespace-nowrap text-sm">
                                         ${user.role !== 'admin' ? `
                                             <div class="flex gap-2 flex-wrap">
-                                                <button id="btn-pwd-${user.id}" class="px-3 py-1.5 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition text-xs font-medium" title="비밀번호 변경">
+                                                <button onclick="changePassword(${user.id}, '${safeName}')" class="px-3 py-1.5 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition text-xs font-medium" title="비밀번호 변경">
                                                     🔑 비밀번호
                                                 </button>
-                                                <button id="btn-give-${user.id}" class="px-3 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-xs font-medium" title="포인트 지급">
+                                                <button onclick="givePoints(${user.id}, '${safeName}', ${user.points || 0})" class="px-3 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-xs font-medium" title="포인트 지급">
                                                     💰 지급
                                                 </button>
-                                                <button id="btn-deduct-${user.id}" class="px-3 py-1.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition text-xs font-medium" title="포인트 차감">
+                                                <button onclick="deductPoints(${user.id}, '${safeName}', ${user.points || 0})" class="px-3 py-1.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition text-xs font-medium" title="포인트 차감">
                                                     ❌ 차감
                                                 </button>
-                                                <button id="btn-login-${user.id}" class="px-3 py-1.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition text-xs font-medium" title="이 사용자로 로그인">
+                                                <button onclick="loginAs(${user.id}, '${safeName}')" class="px-3 py-1.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition text-xs font-medium" title="이 사용자로 로그인">
                                                     👤 로그인
                                                 </button>
-                                                <button id="btn-perm-${user.id}" class="px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-xs font-medium" title="권한 관리">
+                                                <button onclick="managePermissions(${user.id}, '${safeName}')" class="px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-xs font-medium" title="권한 관리">
                                                     ⚙️ 권한
                                                 </button>
-                                                <script>
-                                                (function() {
-                                                    var data = ${JSON.stringify({ id: user.id, name: user.name, points: user.points || 0 })};
-                                                    document.getElementById('btn-pwd-' + data.id).onclick = function() { changePassword(data.id, data.name); };
-                                                    document.getElementById('btn-give-' + data.id).onclick = function() { givePoints(data.id, data.name, data.points); };
-                                                    document.getElementById('btn-deduct-' + data.id).onclick = function() { deductPoints(data.id, data.name, data.points); };
-                                                    document.getElementById('btn-login-' + data.id).onclick = function() { loginAs(data.id, data.name); };
-                                                    document.getElementById('btn-perm-' + data.id).onclick = function() { managePermissions(data.id, data.name); };
-                                                })();
-                                                </script>
                                             </div>
                                         ` : '-'}
                                     </td>
