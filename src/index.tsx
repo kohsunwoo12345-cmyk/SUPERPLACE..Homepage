@@ -6819,6 +6819,13 @@ app.get('/tools/landing-builder', (c) => {
             const file = event.target.files[0];
             if (!file) return;
 
+            // 파일 타입 체크
+            if (!file.type.startsWith('image/')) {
+                alert('이미지 파일만 업로드 가능합니다.');
+                event.target.value = '';
+                return;
+            }
+
             // 파일 크기 체크 (5MB 제한)
             if (file.size > 5 * 1024 * 1024) {
                 alert('파일 크기는 5MB 이하여야 합니다.');
@@ -6826,14 +6833,50 @@ app.get('/tools/landing-builder', (c) => {
                 return;
             }
 
-            // 미리보기 표시
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                document.getElementById('thumbnailUrl').value = e.target.result;
-                document.getElementById('thumbnailPreviewImg').src = e.target.result;
-                document.getElementById('thumbnailPreview').classList.remove('hidden');
-            };
-            reader.readAsDataURL(file);
+            // 로딩 표시
+            const uploadBtn = event.target;
+            const originalText = uploadBtn.nextElementSibling?.textContent || '';
+            if (uploadBtn.nextElementSibling) {
+                uploadBtn.nextElementSibling.textContent = '업로드 중...';
+            }
+
+            try {
+                // imgbb API를 사용하여 이미지 업로드
+                const formData = new FormData();
+                formData.append('image', file);
+                
+                // imgbb 무료 API 키 (공개 키)
+                const apiKey = '0a23ef6b644bb80dfde639cbd5e4a5b7';
+                
+                const response = await fetch(\`https://api.imgbb.com/1/upload?key=\${apiKey}\`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    const imageUrl = result.data.url;
+                    
+                    // UI 업데이트
+                    document.getElementById('thumbnailUrl').value = imageUrl;
+                    document.getElementById('thumbnailPreviewImg').src = imageUrl;
+                    document.getElementById('thumbnailPreview').classList.remove('hidden');
+                    
+                    alert('✅ 이미지가 성공적으로 업로드되었습니다!');
+                } else {
+                    throw new Error('이미지 업로드 실패');
+                }
+            } catch (error) {
+                console.error('업로드 오류:', error);
+                alert('❌ 이미지 업로드에 실패했습니다. 이미지 URL을 직접 입력해주세요.');
+                event.target.value = '';
+            } finally {
+                // 로딩 해제
+                if (uploadBtn.nextElementSibling) {
+                    uploadBtn.nextElementSibling.textContent = originalText;
+                }
+            }
         }
 
         // OG 제목/설명 실시간 미리보기
