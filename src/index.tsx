@@ -6987,7 +6987,7 @@ app.get('/tools/landing-builder', (c) => {
                         
                         try {
                             // imgbb 무료 API 키
-                            const apiKey = '0a23ef6b644bb80dfde639cbd5e4a5b7';
+                            const apiKey = 'a6acb7467153b3cf20cff3f57aa812a8';
                             
                             const response = await fetch(\`https://api.imgbb.com/1/upload?key=\${apiKey}\`, {
                                 method: 'POST',
