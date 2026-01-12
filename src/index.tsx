@@ -6612,6 +6612,7 @@ app.get('/tools/landing-manager', (c) => {
                             'student-report': '📊 학생 리포트'
                         };
                         const url = window.location.origin + '/landing/' + p.slug;
+                        const safeUrl = url.replace(/'/g, "\\'");
                         return '<div class="bg-white rounded-xl p-6 border border-gray-200 hover:shadow-lg transition">' +
                                 '<div class="flex items-start justify-between">' +
                                     '<div class="flex-1">' +
@@ -6624,7 +6625,7 @@ app.get('/tools/landing-manager', (c) => {
                                         '<h3 class="text-xl font-bold text-gray-900 mb-3">' + p.title + '</h3>' +
                                         '<div class="flex items-center gap-2 mb-3">' +
                                             '<input type="text" value="' + url + '" readonly class="flex-1 px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg text-sm">' +
-                                            '<button onclick="copyUrl(\'' + url + '\')" class="px-4 py-2 bg-gray-600 text-white rounded-lg text-sm hover:bg-gray-700">복사</button>' +
+                                            '<button onclick="copyUrl(' + "'" + safeUrl + "'" + ')" class="px-4 py-2 bg-gray-600 text-white rounded-lg text-sm hover:bg-gray-700">복사</button>' +
                                         '</div>' +
                                         '<p class="text-sm text-gray-500">생성일: ' + new Date(p.created_at).toLocaleString('ko-KR') + '</p>' +
                                     '</div>' +
