@@ -6826,14 +6826,6 @@ app.get('/tools/landing-builder', (c) => {
                 return;
             }
 
-            // 파일 크기 체크 (5MB 제한)
-            if (file.size > 5 * 1024 * 1024) {
-                const sizeMB = (file.size / 1024 / 1024).toFixed(2);
-                alert(\`파일 크기(\${sizeMB}MB)가 너무 큽니다.\\n\\n5MB 이하의 이미지를 사용하시거나,\\n이미지 URL을 직접 입력해주세요.\\n\\n💡 TinyPNG(https://tinypng.com)에서 이미지를 압축할 수 있습니다.\`);
-                event.target.value = '';
-                return;
-            }
-
             // 로딩 표시
             alert('이미지 업로드 중입니다. 잠시만 기다려주세요...');
 
@@ -6890,31 +6882,24 @@ app.get('/tools/landing-builder', (c) => {
                             } else {
                                 // imgbb 실패 시 Base64로 폴백
                                 const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
-                                const sizeKB = Math.round((dataUrl.length * 3) / 4 / 1024);
                                 
-                                if (sizeKB > 500) {
-                                    alert(\`⚠️ 이미지가 너무 큽니다 (\${sizeKB}KB).\\n\\n작은 이미지를 사용하시거나,\\n이미지 URL을 직접 입력해주세요.\`);
-                                    event.target.value = '';
-                                } else {
-                                    document.getElementById('thumbnailUrl').value = dataUrl;
-                                    document.getElementById('thumbnailPreviewImg').src = dataUrl;
-                                    document.getElementById('thumbnailPreview').classList.remove('hidden');
-                                    
-                                    alert(\`✅ 이미지가 로컬에 저장되었습니다!\\n\\n참고: 카카오톡 썸네일은 외부 URL이 더 안정적입니다.\\n가능하면 이미지 URL을 직접 입력해주세요.\`);
-                                }
+                                document.getElementById('thumbnailUrl').value = dataUrl;
+                                document.getElementById('thumbnailPreviewImg').src = dataUrl;
+                                document.getElementById('thumbnailPreview').classList.remove('hidden');
+                                
+                                alert(\`✅ 이미지가 업로드되었습니다!\\n\\n참고: 카카오톡 공유 시 썸네일이 표시되지 않을 수 있습니다.\\n더 안정적인 공유를 위해 이미지 URL을 직접 입력하는 것을 권장합니다.\`);
                             }
                         } catch (error) {
                             console.error('imgbb 업로드 오류:', error);
                             
                             // API 실패 시 Base64로 폴백
                             const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
-                            const sizeKB = Math.round((dataUrl.length * 3) / 4 / 1024);
                             
                             document.getElementById('thumbnailUrl').value = dataUrl;
                             document.getElementById('thumbnailPreviewImg').src = dataUrl;
                             document.getElementById('thumbnailPreview').classList.remove('hidden');
                             
-                            alert(\`⚠️ 외부 업로드에 실패했습니다.\\n이미지를 로컬에 저장했습니다 (\${sizeKB}KB).\\n\\n더 안정적인 카카오톡 공유를 위해\\n이미지 URL을 직접 입력하는 것을 권장합니다.\`);
+                            alert(\`✅ 이미지가 업로드되었습니다!\\n\\n참고: 외부 업로드에 실패하여 로컬에 저장했습니다.\\n카카오톡 공유 시 썸네일이 표시되지 않을 수 있습니다.\`);
                         }
                     }, 'image/jpeg', 0.85);
                 };
