@@ -12428,16 +12428,10 @@ app.get('/admin/users', async (c) => {
                     const hasPermission = currentPermissions.some(p => 
                         p.permission_type === 'program' && p.permission_name === prog.id
                     );
-                    return \`
-                        <label class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
-                            <input type="checkbox" 
-                                   class="w-5 h-5 text-blue-600 rounded mr-3" 
-                                   data-type="program" 
-                                   data-name="\${prog.id}" 
-                                   \${hasPermission ? 'checked' : ''}>
-                            <span class="text-sm font-medium text-gray-900">\${prog.name}</span>
-                        </label>
-                    \`;
+                    return '<label class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">' +
+                        '<input type="checkbox" class="w-5 h-5 text-blue-600 rounded mr-3" data-type="program" data-name="' + prog.id + '" ' + (hasPermission ? 'checked' : '') + '>' +
+                        '<span class="text-sm font-medium text-gray-900">' + prog.name + '</span>' +
+                        '</label>';
                 }).join('');
 
                 // 툴 권한 렌더링
@@ -12446,16 +12440,10 @@ app.get('/admin/users', async (c) => {
                     const hasPermission = currentPermissions.some(p => 
                         p.permission_type === 'tool' && p.permission_name === tool.id
                     );
-                    return \`
-                        <label class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
-                            <input type="checkbox" 
-                                   class="w-5 h-5 text-blue-600 rounded mr-3" 
-                                   data-type="tool" 
-                                   data-name="\${tool.id}" 
-                                   \${hasPermission ? 'checked' : ''}>
-                            <span class="text-sm font-medium text-gray-900">\${tool.name}</span>
-                        </label>
-                    \`;
+                    return '<label class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">' +
+                        '<input type="checkbox" class="w-5 h-5 text-blue-600 rounded mr-3" data-type="tool" data-name="' + tool.id + '" ' + (hasPermission ? 'checked' : '') + '>' +
+                        '<span class="text-sm font-medium text-gray-900">' + tool.name + '</span>' +
+                        '</label>';
                 }).join('');
 
                 // 모달 표시
