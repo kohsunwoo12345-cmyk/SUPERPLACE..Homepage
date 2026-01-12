@@ -786,7 +786,7 @@ app.put('/api/admin/contacts/:id/status', async (c) => {
 // 랜딩페이지 생성
 app.post('/api/landing/create', async (c) => {
   try {
-    const { title, template_type, input_data, thumbnail_url } = await c.req.json()
+    const { title, template_type, input_data, thumbnail_url, og_title, og_description } = await c.req.json()
     
     // Base64 인코딩된 사용자 데이터 디코딩
     const userHeaderBase64 = c.req.header('X-User-Data-Base64')
@@ -812,11 +812,11 @@ app.post('/api/landing/create', async (c) => {
     
     // DB 저장
     const query = `
-      INSERT INTO landing_pages (user_id, slug, title, template_type, content_json, html_content, qr_code_url, thumbnail_url, status)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'active')
+      INSERT INTO landing_pages (user_id, slug, title, template_type, content_json, html_content, qr_code_url, thumbnail_url, og_title, og_description, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active')
     `
     const result = await c.env.DB.prepare(query)
-      .bind(user.id, slug, title, template_type, JSON.stringify(input_data), htmlContent, qrCodeUrl, thumbnail_url || null)
+      .bind(user.id, slug, title, template_type, JSON.stringify(input_data), htmlContent, qrCodeUrl, thumbnail_url || null, og_title || null, og_description || null)
       .run()
     
     return c.json({ 
@@ -6504,6 +6504,31 @@ app.get('/tools/landing-builder', (c) => {
                         </div>
                     </div>
 
+                    <!-- 공유 시 표시될 제목/설명 설정 -->
+                    <div class="bg-white rounded-xl p-8 border border-gray-200 mb-6">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-3">4️⃣ 공유 시 표시 내용 (선택사항)</h2>
+                        <p class="text-sm text-gray-600 mb-6">카카오톡, 페이스북 등에서 링크 공유 시 보여질 제목과 설명을 설정하세요</p>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-900 mb-2">큰 글자 (제목)</label>
+                                <input type="text" id="ogTitle" placeholder="예: 꾸메땅학원 겨울방학 특강 모집" class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                                <p class="text-xs text-gray-500 mt-1">💡 비워두면 랜딩페이지 제목이 자동으로 사용됩니다</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-900 mb-2">작은 글자 (설명)</label>
+                                <textarea id="ogDescription" rows="2" placeholder="예: 중등 영어/수학 집중 케어! 선착순 20명 한정 할인 중" class="w-full px-4 py-3 border border-gray-300 rounded-xl"></textarea>
+                                <p class="text-xs text-gray-500 mt-1">💡 비워두면 기본 설명이 사용됩니다</p>
+                            </div>
+                            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                <p class="text-sm text-blue-800">
+                                    <strong>📱 카카오톡 미리보기</strong><br>
+                                    <span class="text-base font-bold text-gray-900" id="previewOgTitle">꾸메땅학원 겨울방학 특강 모집</span><br>
+                                    <span class="text-sm text-gray-600" id="previewOgDescription">중등 영어/수학 집중 케어! 선착순 20명 한정 할인 중</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
                     <button onclick="generateLanding()" class="w-full gradient-purple text-white py-4 rounded-xl text-lg font-bold hover:shadow-xl transition">
                         🚀 랜딩페이지 생성하기
                     </button>
@@ -6811,6 +6836,26 @@ app.get('/tools/landing-builder', (c) => {
             reader.readAsDataURL(file);
         }
 
+        // OG 제목/설명 실시간 미리보기
+        document.addEventListener('DOMContentLoaded', function() {
+            const ogTitleInput = document.getElementById('ogTitle');
+            const ogDescInput = document.getElementById('ogDescription');
+            const previewTitle = document.getElementById('previewOgTitle');
+            const previewDesc = document.getElementById('previewOgDescription');
+
+            if (ogTitleInput && previewTitle) {
+                ogTitleInput.addEventListener('input', function() {
+                    previewTitle.textContent = this.value || '꾸메땅학원 겨울방학 특강 모집';
+                });
+            }
+
+            if (ogDescInput && previewDesc) {
+                ogDescInput.addEventListener('input', function() {
+                    previewDesc.textContent = this.value || '중등 영어/수학 집중 케어! 선착순 20명 한정 할인 중';
+                });
+            }
+        });
+
         async function generateLanding() {
             if (!selectedTemplate) {
                 alert('템플릿을 선택해주세요.');
@@ -6822,6 +6867,10 @@ app.get('/tools/landing-builder', (c) => {
 
             // 썸네일 URL 가져오기
             const thumbnailUrl = document.getElementById('thumbnailUrl').value || '';
+            
+            // OG 제목/설명 가져오기
+            const ogTitle = document.getElementById('ogTitle').value || '';
+            const ogDescription = document.getElementById('ogDescription').value || '';
 
             // 배열로 변환이 필요한 필드들
             if (data.specialties) data.specialties = data.specialties.split('\\n').filter(s => s.trim());
@@ -6860,7 +6909,9 @@ app.get('/tools/landing-builder', (c) => {
                         title,
                         template_type: selectedTemplate,
                         input_data: data,
-                        thumbnail_url: thumbnailUrl
+                        thumbnail_url: thumbnailUrl,
+                        og_title: ogTitle,
+                        og_description: ogDescription
                     })
                 });
 
@@ -7550,23 +7601,25 @@ app.get('/landing/:slug', async (c) => {
     let htmlContent = page.html_content as string
     const fullUrl = `${c.req.header('origin') || 'https://superplace-academy.pages.dev'}/landing/${slug}`
     const thumbnailUrl = (page.thumbnail_url as string) || 'https://via.placeholder.com/1200x630.png?text=Super+Place+Academy'
-    const title = (page.title as string) || '우리는 슈퍼플레이스다'
-    const description = '꾸메땅학원의 전문적인 교육 서비스를 만나보세요'
+    
+    // 커스텀 OG 제목/설명 또는 기본값 사용
+    const ogTitle = (page.og_title as string) || (page.title as string) || '우리는 슈퍼플레이스다'
+    const ogDescription = (page.og_description as string) || '꾸메땅학원의 전문적인 교육 서비스를 만나보세요'
     
     // <head> 태그에 OG 메타 태그 주입
     const ogTags = `
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="${fullUrl}">
-    <meta property="og:title" content="${title}">
-    <meta property="og:description" content="${description}">
+    <meta property="og:title" content="${ogTitle}">
+    <meta property="og:description" content="${ogDescription}">
     <meta property="og:image" content="${thumbnailUrl}">
     
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="${fullUrl}">
-    <meta property="twitter:title" content="${title}">
-    <meta property="twitter:description" content="${description}">
+    <meta property="twitter:title" content="${ogTitle}">
+    <meta property="twitter:description" content="${ogDescription}">
     <meta property="twitter:image" content="${thumbnailUrl}">
     `
     
