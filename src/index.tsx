@@ -6871,9 +6871,6 @@ app.get('/tools/landing-builder', (c) => {
                 event.target.value = '';
             }
         }
-                }
-            }
-        }
 
         // OG 제목/설명 실시간 미리보기
         document.addEventListener('DOMContentLoaded', function() {
