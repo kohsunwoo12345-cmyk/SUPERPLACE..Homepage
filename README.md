@@ -33,6 +33,32 @@
 - 경쟁사 대표 키워드 추출
 - API 엔드포인트: `/api/search-analysis`
 - 프로그램 접근: `/programs/data` → `/tools/search-volume`
+- **대시보드 바로가기** 추가 🆕
+
+✅ **랜딩페이지 생성 시스템 (완료)** 🆕
+- AI 기반 랜딩페이지 자동 생성 (`/tools/landing-builder`)
+  - 학원 소개 템플릿
+  - 프로그램 홍보 템플릿
+  - 학생 리포트 템플릿
+- **사용자별 랜딩페이지 저장** ✅
+  - landing_pages 테이블에 자동 저장
+  - 고유 slug로 URL 생성
+  - QR 코드 자동 생성
+- **폴더 관리 시스템** ✅
+  - 랜딩페이지를 폴더로 정리
+  - 폴더 생성/삭제
+  - 페이지 이동
+- **대시보드 통합** ✅
+  - 최근 랜딩페이지 3개 표시
+  - 조회수 실시간 표시
+  - URL 복사 기능
+  - "전체 관리" 페이지 (`/tools/landing-manager`)
+- API 엔드포인트:
+  - `POST /api/landing/create` - 랜딩페이지 생성
+  - `GET /api/landing/my-pages` - 내 랜딩페이지 목록
+  - `DELETE /api/landing/:id` - 랜딩페이지 삭제
+  - `POST /api/landing/folder/create` - 폴더 생성
+  - `GET /api/landing/folders` - 폴더 목록
 
 ✅ **SMS 발송 시스템 (완료)**
 - 알리고 SMS API 연동 완료
