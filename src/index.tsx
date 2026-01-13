@@ -3427,6 +3427,9 @@ app.get('/register', (c) => {
 
 // 로그인 페이지
 app.get('/login', (c) => {
+  const googleClientId = c.env.GOOGLE_CLIENT_ID || 'YOUR_GOOGLE_CLIENT_ID'
+  const kakaoJsKey = c.env.KAKAO_JS_KEY || 'YOUR_KAKAO_JS_KEY'
+  
   return c.html(`
     <!DOCTYPE html>
     <html lang="ko">
@@ -3519,10 +3522,14 @@ app.get('/login', (c) => {
         <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.0/kakao.min.js" integrity="sha384-l+xbElFSnPZ2rOaPrU//2FF5B4LB8FiX5q4fXYTlfcG4PGpMkE1vcL7kNXI6Cci0" crossorigin="anonymous"></script>
 
         <script>
+            // API 키 설정 (서버에서 주입)
+            const GOOGLE_CLIENT_ID = '${googleClientId}';
+            const KAKAO_JS_KEY = '${kakaoJsKey}';
+            
             // 구글 로그인 초기화
             function initGoogleSignIn() {
                 google.accounts.id.initialize({
-                    client_id: '${process.env.GOOGLE_CLIENT_ID || "YOUR_GOOGLE_CLIENT_ID"}',
+                    client_id: GOOGLE_CLIENT_ID,
                     callback: handleGoogleCallback
                 })
             }
@@ -3573,7 +3580,7 @@ app.get('/login', (c) => {
             // 카카오 로그인 초기화
             function initKakaoLogin() {
                 if (!Kakao.isInitialized()) {
-                    Kakao.init('${process.env.KAKAO_JS_KEY || "YOUR_KAKAO_JS_KEY"}')
+                    Kakao.init(KAKAO_JS_KEY)
                 }
             }
 
