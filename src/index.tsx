@@ -16009,5 +16009,698 @@ app.get('/admin/programs', async (c) => {
   `)
 })
 
+// ========================================
+// SMS 페이지 라우트
+// ========================================
+
+// 발신번호 관리 페이지
+app.get('/sms/senders', (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>발신번호 관리 - SMS 발송</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <style>
+          @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
+          * {
+            font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+          }
+        </style>
+    </head>
+    <body class="bg-gray-50">
+        <!-- Navigation -->
+        <nav class="fixed w-full top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
+            <div class="max-w-7xl mx-auto px-6">
+                <div class="flex justify-between items-center h-16">
+                    <div class="flex items-center space-x-8">
+                        <a href="/dashboard" class="text-xl font-bold text-purple-600">SMS 발송 시스템</a>
+                        <div class="flex space-x-4">
+                            <a href="/sms/senders" class="text-purple-600 border-b-2 border-purple-600 px-3 py-2 font-medium">발신번호</a>
+                            <a href="/sms/compose" class="text-gray-600 hover:text-purple-600 px-3 py-2">문자 작성</a>
+                            <a href="/sms/logs" class="text-gray-600 hover:text-purple-600 px-3 py-2">발송 내역</a>
+                            <a href="/sms/points" class="text-gray-600 hover:text-purple-600 px-3 py-2">포인트 관리</a>
+                        </div>
+                    </div>
+                    <a href="/dashboard" class="text-gray-600 hover:text-purple-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </nav>
+
+        <div class="pt-24 pb-12 px-6">
+            <div class="max-w-6xl mx-auto">
+                <!-- Header -->
+                <div class="mb-8">
+                    <h1 class="text-3xl font-bold text-gray-900 mb-2">📱 발신번호 관리</h1>
+                    <p class="text-gray-600">문자 발송에 사용할 발신번호를 관리합니다</p>
+                </div>
+
+                <!-- 알리고 안내 -->
+                <div class="bg-orange-50 border border-orange-200 rounded-lg p-6 mb-6">
+                    <div class="flex items-start space-x-3">
+                        <svg class="w-6 h-6 text-orange-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                        </svg>
+                        <div>
+                            <h3 class="font-semibold text-orange-900 mb-2">⚠️ 발신번호 등록 안내</h3>
+                            <ol class="text-sm text-orange-800 space-y-1">
+                                <li>1. <a href="https://smartsms.aligo.in/" target="_blank" class="underline hover:text-orange-900">알리고 웹사이트</a>에서 발신번호 인증 완료</li>
+                                <li>2. 아래 "발신번호 추가" 버튼으로 인증된 번호를 시스템에 등록</li>
+                                <li>3. 등록된 발신번호로 문자 발송 가능</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 발신번호 추가 -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+                    <h2 class="text-xl font-semibold text-gray-900 mb-4">발신번호 추가</h2>
+                    <div class="flex gap-4">
+                        <input type="text" id="phoneNumber" placeholder="010-1234-5678" 
+                            class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        <button onclick="registerSender()" 
+                            class="bg-purple-600 text-white px-8 py-3 rounded-lg hover:bg-purple-700 transition font-medium shadow-sm">
+                            등록하기
+                        </button>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-2">* 알리고 웹사이트에서 인증 완료한 번호만 등록하세요</p>
+                </div>
+
+                <!-- 발신번호 목록 -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                    <div class="p-6 border-b border-gray-200">
+                        <h2 class="text-xl font-semibold text-gray-900">등록된 발신번호</h2>
+                    </div>
+                    <div id="sendersContainer" class="divide-y divide-gray-200">
+                        <!-- 로딩 상태 -->
+                        <div class="p-8 text-center text-gray-500">
+                            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto mb-4"></div>
+                            불러오는 중...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            let currentUserId = null;
+
+            // 사용자 정보 가져오기
+            async function checkAuth() {
+                const user = localStorage.getItem('user');
+                if (!user) {
+                    alert('로그인이 필요합니다.');
+                    window.location.href = '/login';
+                    return null;
+                }
+                const userData = JSON.parse(user);
+                currentUserId = userData.id;
+                return userData;
+            }
+
+            // 발신번호 목록 로드
+            async function loadSenders() {
+                try {
+                    const response = await fetch(\`/api/sms/senders?userId=\${currentUserId}\`);
+                    const data = await response.json();
+
+                    const container = document.getElementById('sendersContainer');
+                    
+                    if (data.success && data.senders.length > 0) {
+                        container.innerHTML = data.senders.map(sender => \`
+                            <div class="p-6 hover:bg-gray-50 transition">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center space-x-4">
+                                        <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                                            <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <div class="font-semibold text-gray-900 text-lg">\${formatPhoneNumber(sender.phone_number)}</div>
+                                            <div class="text-sm text-gray-500">인증: \${sender.verification_date || '알 수 없음'}</div>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center space-x-3">
+                                        <span class="px-3 py-1 bg-green-100 text-green-800 text-sm font-medium rounded-full">
+                                            ✓ 인증완료
+                                        </span>
+                                        <button onclick="deleteSender(\${sender.id})" 
+                                            class="text-red-600 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        \`).join('');
+                    } else {
+                        container.innerHTML = \`
+                            <div class="p-12 text-center">
+                                <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                                </svg>
+                                <p class="text-gray-500 mb-2">등록된 발신번호가 없습니다</p>
+                                <p class="text-sm text-gray-400">알리고 웹사이트에서 인증 후 등록해주세요</p>
+                            </div>
+                        \`;
+                    }
+                } catch (error) {
+                    console.error('Failed to load senders:', error);
+                    alert('발신번호 목록을 불러오는 데 실패했습니다.');
+                }
+            }
+
+            // 전화번호 포맷팅
+            function formatPhoneNumber(phone) {
+                if (phone.length === 10) {
+                    return phone.replace(/(\\d{3})(\\d{3})(\\d{4})/, '$1-$2-$3');
+                } else if (phone.length === 11) {
+                    return phone.replace(/(\\d{3})(\\d{4})(\\d{4})/, '$1-$2-$3');
+                }
+                return phone;
+            }
+
+            // 발신번호 등록
+            async function registerSender() {
+                const phoneNumber = document.getElementById('phoneNumber').value.trim();
+                
+                if (!phoneNumber) {
+                    alert('전화번호를 입력해주세요.');
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/api/sms/sender/register', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            userId: currentUserId,
+                            phoneNumber: phoneNumber,
+                            verificationMethod: 'aligo_web'
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        alert('✅ 발신번호가 등록되었습니다!');
+                        document.getElementById('phoneNumber').value = '';
+                        loadSenders();
+                    } else {
+                        alert('❌ ' + data.error);
+                    }
+                } catch (error) {
+                    console.error('Failed to register sender:', error);
+                    alert('발신번호 등록 중 오류가 발생했습니다.');
+                }
+            }
+
+            // 발신번호 삭제
+            async function deleteSender(senderId) {
+                if (!confirm('이 발신번호를 삭제하시겠습니까?')) {
+                    return;
+                }
+
+                try {
+                    const response = await fetch(\`/api/sms/sender/\${senderId}?userId=\${currentUserId}\`, {
+                        method: 'DELETE'
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        alert('✅ 발신번호가 삭제되었습니다.');
+                        loadSenders();
+                    } else {
+                        alert('❌ ' + data.error);
+                    }
+                } catch (error) {
+                    console.error('Failed to delete sender:', error);
+                    alert('발신번호 삭제 중 오류가 발생했습니다.');
+                }
+            }
+
+            // 페이지 로드 시 실행
+            (async () => {
+                await checkAuth();
+                if (currentUserId) {
+                    loadSenders();
+                }
+            })();
+        </script>
+    </body>
+    </html>
+  `)
+})
+
+// 문자 작성 페이지
+app.get('/sms/compose', (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>문자 작성 - SMS 발송</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+        <style>
+          @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
+          * {
+            font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+          }
+        </style>
+    </head>
+    <body class="bg-gray-50">
+        <!-- Navigation -->
+        <nav class="fixed w-full top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
+            <div class="max-w-7xl mx-auto px-6">
+                <div class="flex justify-between items-center h-16">
+                    <div class="flex items-center space-x-8">
+                        <a href="/dashboard" class="text-xl font-bold text-purple-600">SMS 발송 시스템</a>
+                        <div class="flex space-x-4">
+                            <a href="/sms/senders" class="text-gray-600 hover:text-purple-600 px-3 py-2">발신번호</a>
+                            <a href="/sms/compose" class="text-purple-600 border-b-2 border-purple-600 px-3 py-2 font-medium">문자 작성</a>
+                            <a href="/sms/logs" class="text-gray-600 hover:text-purple-600 px-3 py-2">발송 내역</a>
+                            <a href="/sms/points" class="text-gray-600 hover:text-purple-600 px-3 py-2">포인트 관리</a>
+                        </div>
+                    </div>
+                    <a href="/dashboard" class="text-gray-600 hover:text-purple-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </nav>
+
+        <div class="pt-24 pb-12 px-6">
+            <div class="max-w-6xl mx-auto">
+                <!-- Header -->
+                <div class="mb-8">
+                    <h1 class="text-3xl font-bold text-gray-900 mb-2">✉️ 문자 작성</h1>
+                    <p class="text-gray-600">문자 메시지를 작성하고 발송합니다</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- 왼쪽: 문자 작성 -->
+                    <div class="lg:col-span-2 space-y-6">
+                        <!-- 발신번호 선택 -->
+                        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                            <label class="block text-sm font-semibold text-gray-900 mb-3">발신번호</label>
+                            <select id="senderId" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                                <option value="">발신번호를 선택하세요</option>
+                            </select>
+                        </div>
+
+                        <!-- 메시지 작성 -->
+                        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                            <div class="flex items-center justify-between mb-3">
+                                <label class="block text-sm font-semibold text-gray-900">메시지 내용</label>
+                                <div class="flex items-center space-x-2">
+                                    <span id="byteCount" class="text-sm font-medium text-gray-600">0</span>
+                                    <span class="text-sm text-gray-400">/ 2000 바이트</span>
+                                </div>
+                            </div>
+                            <textarea id="message" rows="10" 
+                                placeholder="메시지를 입력하세요&#10;&#10;치환 변수 사용 예시:&#10;안녕하세요 #{이름} 원장님!&#10;꾸메땅학원입니다."
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 resize-none"></textarea>
+                            <div class="flex items-center justify-between mt-3">
+                                <span id="messageType" class="text-sm font-medium px-3 py-1 bg-blue-100 text-blue-800 rounded-full">SMS (단문)</span>
+                                <p class="text-xs text-gray-500">90바이트 초과 시 LMS(장문)로 자동 전환</p>
+                            </div>
+                        </div>
+
+                        <!-- 예약 발송 -->
+                        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                            <label class="flex items-center space-x-3 mb-4">
+                                <input type="checkbox" id="reserveEnabled" class="w-5 h-5 text-purple-600 rounded focus:ring-2 focus:ring-purple-500">
+                                <span class="text-sm font-semibold text-gray-900">예약 발송</span>
+                            </label>
+                            <input type="datetime-local" id="reserveTime" 
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 disabled:bg-gray-100 disabled:text-gray-400" 
+                                disabled>
+                        </div>
+                    </div>
+
+                    <!-- 오른쪽: 수신자 관리 -->
+                    <div class="space-y-6">
+                        <!-- 수신자 추가 -->
+                        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                            <h3 class="text-sm font-semibold text-gray-900 mb-4">수신자 추가</h3>
+                            <div class="space-y-3 mb-4">
+                                <input type="text" id="receiverName" placeholder="이름" 
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                                <input type="text" id="receiverPhone" placeholder="010-1234-5678" 
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                            </div>
+                            <button onclick="addReceiver()" 
+                                class="w-full bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition font-medium">
+                                + 수신자 추가
+                            </button>
+                        </div>
+
+                        <!-- 엑셀 업로드 -->
+                        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                            <h3 class="text-sm font-semibold text-gray-900 mb-4">엑셀 업로드</h3>
+                            <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-purple-500 transition cursor-pointer" 
+                                onclick="document.getElementById('excelFile').click()">
+                                <svg class="w-12 h-12 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                                </svg>
+                                <p class="text-sm text-gray-600">클릭 또는 드래그하여 업로드</p>
+                                <p class="text-xs text-gray-400 mt-1">이름, 전화번호 컬럼 필수</p>
+                            </div>
+                            <input type="file" id="excelFile" accept=".xlsx,.xls" class="hidden" onchange="uploadExcel(event)">
+                        </div>
+
+                        <!-- 수신자 목록 -->
+                        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-sm font-semibold text-gray-900">수신자 목록</h3>
+                                <span id="receiverCount" class="text-sm font-medium text-purple-600">0명</span>
+                            </div>
+                            <div id="receiversContainer" class="space-y-2 max-h-64 overflow-y-auto">
+                                <p class="text-sm text-gray-400 text-center py-4">수신자를 추가해주세요</p>
+                            </div>
+                            <button onclick="clearReceivers()" 
+                                class="w-full mt-4 border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition text-sm">
+                                전체 삭제
+                            </button>
+                        </div>
+
+                        <!-- 발송 비용 -->
+                        <div class="bg-purple-50 rounded-lg p-6">
+                            <div class="space-y-2">
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-600">수신자 수</span>
+                                    <span id="costReceivers" class="font-medium">0명</span>
+                                </div>
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-600">건당 요금</span>
+                                    <span id="costPerMessage" class="font-medium">20P</span>
+                                </div>
+                                <div class="border-t border-purple-200 pt-2 mt-2">
+                                    <div class="flex justify-between">
+                                        <span class="font-semibold text-gray-900">총 비용</span>
+                                        <span id="totalCost" class="font-bold text-purple-600 text-lg">0P</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 발송 버튼 -->
+                        <button onclick="sendSMS()" 
+                            class="w-full bg-gradient-to-r from-purple-600 to-purple-700 text-white px-6 py-4 rounded-lg hover:from-purple-700 hover:to-purple-800 transition font-semibold text-lg shadow-lg">
+                            📤 문자 발송하기
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            let currentUserId = null;
+            let receivers = [];
+            let sendersList = [];
+
+            // 사용자 인증
+            async function checkAuth() {
+                const user = localStorage.getItem('user');
+                if (!user) {
+                    alert('로그인이 필요합니다.');
+                    window.location.href = '/login';
+                    return null;
+                }
+                const userData = JSON.parse(user);
+                currentUserId = userData.id;
+                return userData;
+            }
+
+            // 발신번호 목록 로드
+            async function loadSenders() {
+                try {
+                    const response = await fetch(\`/api/sms/senders?userId=\${currentUserId}\`);
+                    const data = await response.json();
+
+                    const select = document.getElementById('senderId');
+                    
+                    if (data.success && data.senders.length > 0) {
+                        sendersList = data.senders;
+                        select.innerHTML = '<option value="">발신번호를 선택하세요</option>' + 
+                            data.senders.map(s => \`<option value="\${s.id}">\${formatPhoneNumber(s.phone_number)}</option>\`).join('');
+                    } else {
+                        select.innerHTML = '<option value="">등록된 발신번호가 없습니다</option>';
+                        alert('발신번호를 먼저 등록해주세요.');
+                        window.location.href = '/sms/senders';
+                    }
+                } catch (error) {
+                    console.error('Failed to load senders:', error);
+                }
+            }
+
+            // 전화번호 포맷팅
+            function formatPhoneNumber(phone) {
+                phone = phone.replace(/[^0-9]/g, '');
+                if (phone.length === 10) {
+                    return phone.replace(/(\\d{3})(\\d{3})(\\d{4})/, '$1-$2-$3');
+                } else if (phone.length === 11) {
+                    return phone.replace(/(\\d{3})(\\d{4})(\\d{4})/, '$1-$2-$3');
+                }
+                return phone;
+            }
+
+            // 바이트 수 계산
+            function calculateBytes(str) {
+                return new Blob([str]).size;
+            }
+
+            // 메시지 입력 이벤트
+            document.getElementById('message').addEventListener('input', (e) => {
+                const message = e.target.value;
+                const byteSize = calculateBytes(message);
+                
+                document.getElementById('byteCount').textContent = byteSize;
+                
+                const messageTypeEl = document.getElementById('messageType');
+                const costPerMessageEl = document.getElementById('costPerMessage');
+                
+                if (byteSize > 90) {
+                    messageTypeEl.textContent = 'LMS (장문)';
+                    messageTypeEl.className = 'text-sm font-medium px-3 py-1 bg-orange-100 text-orange-800 rounded-full';
+                    costPerMessageEl.textContent = '50P';
+                } else {
+                    messageTypeEl.textContent = 'SMS (단문)';
+                    messageTypeEl.className = 'text-sm font-medium px-3 py-1 bg-blue-100 text-blue-800 rounded-full';
+                    costPerMessageEl.textContent = '20P';
+                }
+                
+                updateCost();
+            });
+
+            // 예약 발송 체크박스
+            document.getElementById('reserveEnabled').addEventListener('change', (e) => {
+                document.getElementById('reserveTime').disabled = !e.target.checked;
+            });
+
+            // 수신자 추가
+            function addReceiver() {
+                const name = document.getElementById('receiverName').value.trim();
+                const phone = document.getElementById('receiverPhone').value.trim().replace(/[^0-9]/g, '');
+                
+                if (!name || !phone) {
+                    alert('이름과 전화번호를 입력해주세요.');
+                    return;
+                }
+                
+                if (phone.length < 10) {
+                    alert('올바른 전화번호를 입력해주세요.');
+                    return;
+                }
+                
+                receivers.push({ name, phone });
+                
+                document.getElementById('receiverName').value = '';
+                document.getElementById('receiverPhone').value = '';
+                
+                renderReceivers();
+            }
+
+            // 수신자 목록 렌더링
+            function renderReceivers() {
+                const container = document.getElementById('receiversContainer');
+                
+                if (receivers.length === 0) {
+                    container.innerHTML = '<p class="text-sm text-gray-400 text-center py-4">수신자를 추가해주세요</p>';
+                } else {
+                    container.innerHTML = receivers.map((r, i) => \`
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div>
+                                <div class="font-medium text-sm">\${r.name}</div>
+                                <div class="text-xs text-gray-500">\${formatPhoneNumber(r.phone)}</div>
+                            </div>
+                            <button onclick="removeReceiver(\${i})" class="text-red-600 hover:text-red-700">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                            </button>
+                        </div>
+                    \`).join('');
+                }
+                
+                document.getElementById('receiverCount').textContent = receivers.length + '명';
+                updateCost();
+            }
+
+            // 수신자 제거
+            function removeReceiver(index) {
+                receivers.splice(index, 1);
+                renderReceivers();
+            }
+
+            // 전체 삭제
+            function clearReceivers() {
+                if (receivers.length === 0) return;
+                if (confirm('모든 수신자를 삭제하시겠습니까?')) {
+                    receivers = [];
+                    renderReceivers();
+                }
+            }
+
+            // 엑셀 업로드
+            async function uploadExcel(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                try {
+                    const data = await file.arrayBuffer();
+                    const workbook = XLSX.read(data);
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const rows = XLSX.utils.sheet_to_json(firstSheet);
+
+                    let addedCount = 0;
+                    rows.forEach(row => {
+                        const name = row['이름'] || row['name'] || row['Name'];
+                        const phone = String(row['전화번호'] || row['phone'] || row['Phone'] || '').replace(/[^0-9]/g, '');
+                        
+                        if (name && phone && phone.length >= 10) {
+                            receivers.push({ name, phone });
+                            addedCount++;
+                        }
+                    });
+
+                    alert(\`✅ \${addedCount}명의 수신자가 추가되었습니다.\`);
+                    renderReceivers();
+                } catch (error) {
+                    console.error('Excel upload error:', error);
+                    alert('엑셀 파일 업로드 중 오류가 발생했습니다.');
+                }
+                
+                event.target.value = '';
+            }
+
+            // 비용 계산
+            function updateCost() {
+                const byteSize = calculateBytes(document.getElementById('message').value);
+                const costPerMessage = byteSize > 90 ? 50 : 20;
+                const totalCost = costPerMessage * receivers.length;
+                
+                document.getElementById('costReceivers').textContent = receivers.length + '명';
+                document.getElementById('totalCost').textContent = totalCost + 'P';
+            }
+
+            // SMS 발송
+            async function sendSMS() {
+                const senderId = document.getElementById('senderId').value;
+                const message = document.getElementById('message').value.trim();
+                const reserveEnabled = document.getElementById('reserveEnabled').checked;
+                const reserveTime = document.getElementById('reserveTime').value;
+
+                if (!senderId) {
+                    alert('발신번호를 선택해주세요.');
+                    return;
+                }
+
+                if (!message) {
+                    alert('메시지를 입력해주세요.');
+                    return;
+                }
+
+                if (receivers.length === 0) {
+                    alert('수신자를 추가해주세요.');
+                    return;
+                }
+
+                if (reserveEnabled && !reserveTime) {
+                    alert('예약 발송 시간을 선택해주세요.');
+                    return;
+                }
+
+                if (!confirm(\`\${receivers.length}명에게 문자를 발송하시겠습니까?\`)) {
+                    return;
+                }
+
+                try {
+                    const payload = {
+                        userId: currentUserId,
+                        senderId: parseInt(senderId),
+                        receivers: receivers,
+                        message: message
+                    };
+
+                    if (reserveEnabled && reserveTime) {
+                        payload.reserveTime = reserveTime;
+                    }
+
+                    const response = await fetch('/api/sms/send', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        alert(\`✅ 문자 발송이 완료되었습니다!\\n\\n발송 건수: \${data.sentCount}건\\n차감 포인트: \${data.totalCost}P\\n남은 포인트: \${data.remainingBalance}P\`);
+                        
+                        // 초기화
+                        document.getElementById('message').value = '';
+                        receivers = [];
+                        renderReceivers();
+                        
+                        // 발송 내역으로 이동
+                        if (confirm('발송 내역을 확인하시겠습니까?')) {
+                            window.location.href = '/sms/logs';
+                        }
+                    } else {
+                        alert('❌ ' + data.error);
+                    }
+                } catch (error) {
+                    console.error('Send SMS error:', error);
+                    alert('문자 발송 중 오류가 발생했습니다.');
+                }
+            }
+
+            // 페이지 로드
+            (async () => {
+                await checkAuth();
+                if (currentUserId) {
+                    await loadSenders();
+                }
+            })();
+        </script>
+    </body>
+    </html>
+  `)
+})
+
 export default app
 // Force rebuild Tue Jan 13 09:59:11 UTC 2026
