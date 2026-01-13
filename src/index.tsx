@@ -4030,11 +4030,11 @@ app.get('/programs', (c) => {
             },
             {
               id: 'data',
-              name: '데이터 분석',
-              description: '마케팅 성과 분석 및 최적화',
-              details: 'GA4, 네이버 애널리틱스, 데이터 기반 의사결정',
-              icon: '📊',
-              features: ['데이터 수집', '성과 분석', '대시보드 구축', '의사결정 지원']
+              name: '검색량 조회',
+              description: '네이버 검색량 및 순위 분석',
+              details: '키워드 검색량, 플레이스 순위 조회, 경쟁사 분석',
+              icon: '🔍',
+              features: ['검색량 조회', '순위 확인', '경쟁사 분석', '키워드 추출']
             },
             {
               id: 'carrot',
@@ -4135,6 +4135,20 @@ app.get('/programs', (c) => {
             if (!user.id) {
               alert('로그인이 필요합니다.');
               window.location.href = '/login';
+              return;
+            }
+            
+            // 특정 프로그램은 직접 페이지로 이동
+            const programUrls = {
+              'data': '/tools/search-volume',
+              'sms': '/tools/sms-sender',
+              'blog': '/tools/blog-writer',
+              'landing': '/tools/landing-builder',
+              'student': '/tools/student-management'
+            };
+            
+            if (programUrls[programId]) {
+              window.location.href = programUrls[programId];
               return;
             }
             
@@ -8838,6 +8852,231 @@ app.get('/tools/ai-learning-report', (c) => {
   `)
 })
 
+// 검색량 조회 페이지
+app.get('/tools/search-volume', (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>검색량 조회 - 슈퍼플레이스</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <style>
+          @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
+          * {
+            font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+          }
+        </style>
+    </head>
+    <body class="bg-gray-50">
+        <div class="max-w-7xl mx-auto p-8">
+            <div class="flex justify-between items-center mb-8">
+                <h1 class="text-4xl font-bold text-gray-900">🔍 검색량 조회</h1>
+                <a href="/dashboard" class="px-6 py-3 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition">
+                    대시보드로 돌아가기
+                </a>
+            </div>
+
+            <!-- 검색 입력 섹션 -->
+            <div class="bg-white rounded-2xl p-8 shadow-lg mb-8">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">키워드 분석</h2>
+                
+                <div class="space-y-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">분석 키워드</label>
+                        <input type="text" id="keyword" placeholder="예: 인천 영어학원" 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">네이버 플레이스 URL</label>
+                        <input type="text" id="placeUrl" placeholder="https://m.place.naver.com/..." 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        <p class="text-sm text-gray-500 mt-2">※ 본인 학원의 네이버 플레이스 URL을 입력하세요</p>
+                    </div>
+
+                    <button onclick="analyzeKeyword()" 
+                            class="w-full bg-gradient-to-r from-purple-600 to-purple-700 text-white px-8 py-4 rounded-xl hover:from-purple-700 hover:to-purple-800 transition-all shadow-lg hover:shadow-xl font-bold text-lg">
+                        🔍 분석 시작
+                    </button>
+                </div>
+            </div>
+
+            <!-- 로딩 상태 -->
+            <div id="loading" class="hidden bg-white rounded-2xl p-12 shadow-lg text-center">
+                <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-purple-600 mx-auto mb-4"></div>
+                <p class="text-gray-600 text-lg">분석 중입니다... 잠시만 기다려주세요</p>
+                <p class="text-gray-500 text-sm mt-2">네이버 데이터를 수집하고 있습니다</p>
+            </div>
+
+            <!-- 검색량 결과 -->
+            <div id="searchVolumeResult" class="hidden bg-white rounded-2xl p-8 shadow-lg mb-8">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">📊 검색량 분석 결과</h2>
+                <div class="grid md:grid-cols-3 gap-6">
+                    <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 border border-blue-200">
+                        <div class="text-sm text-blue-700 mb-2">월 평균 검색량</div>
+                        <div class="text-4xl font-bold text-blue-900" id="monthlyVolume">-</div>
+                    </div>
+                    <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-6 border border-green-200">
+                        <div class="text-sm text-green-700 mb-2">경쟁 강도</div>
+                        <div class="text-4xl font-bold text-green-900" id="competition">-</div>
+                    </div>
+                    <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-6 border border-purple-200">
+                        <div class="text-sm text-purple-700 mb-2">추천도</div>
+                        <div class="text-4xl font-bold text-purple-900" id="recommendation">-</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 순위 결과 -->
+            <div id="rankingResult" class="hidden bg-white rounded-2xl p-8 shadow-lg mb-8">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">🏆 플레이스 순위</h2>
+                <div class="bg-gradient-to-r from-purple-600 to-purple-700 rounded-xl p-6 text-white mb-6">
+                    <div class="text-lg mb-2">내 순위 (광고 제외)</div>
+                    <div class="text-5xl font-bold" id="myRanking">-</div>
+                </div>
+                
+                <h3 class="text-xl font-bold text-gray-900 mb-4">경쟁사 순위</h3>
+                <div id="competitorList" class="space-y-3">
+                    <!-- 경쟁사 목록이 여기에 표시됩니다 -->
+                </div>
+            </div>
+
+            <!-- 키워드 분석 결과 -->
+            <div id="keywordResult" class="hidden bg-white rounded-2xl p-8 shadow-lg">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">🏷️ 경쟁사 키워드 분석</h2>
+                <div id="competitorKeywords" class="grid md:grid-cols-2 gap-6">
+                    <!-- 키워드 분석 결과가 여기에 표시됩니다 -->
+                </div>
+            </div>
+
+            <!-- 안내 메시지 -->
+            <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-6 mt-8">
+                <h3 class="text-lg font-bold text-yellow-900 mb-3">⚠️ 사용 안내</h3>
+                <ul class="space-y-2 text-yellow-800 text-sm">
+                    <li>• 검색량 데이터는 네이버 광고 API를 통해 제공됩니다</li>
+                    <li>• 순위 조회는 실시간 크롤링으로 진행되며, 2-3분 소요될 수 있습니다</li>
+                    <li>• 정확한 분석을 위해 정확한 플레이스 URL을 입력해주세요</li>
+                    <li>• 일일 조회 한도: 100회 (포인트 차감 없음)</li>
+                </ul>
+            </div>
+        </div>
+
+        <script>
+            async function analyzeKeyword() {
+                const keyword = document.getElementById('keyword').value.trim();
+                const placeUrl = document.getElementById('placeUrl').value.trim();
+
+                if (!keyword) {
+                    alert('분석할 키워드를 입력해주세요.');
+                    return;
+                }
+
+                if (!placeUrl) {
+                    alert('네이버 플레이스 URL을 입력해주세요.');
+                    return;
+                }
+
+                // 로딩 표시
+                document.getElementById('loading').classList.remove('hidden');
+                document.getElementById('searchVolumeResult').classList.add('hidden');
+                document.getElementById('rankingResult').classList.add('hidden');
+                document.getElementById('keywordResult').classList.add('hidden');
+
+                try {
+                    const user = JSON.parse(localStorage.getItem('user'));
+                    
+                    const response = await fetch('/api/search-analysis', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            userId: user?.id,
+                            keyword: keyword,
+                            placeUrl: placeUrl
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        // 검색량 결과 표시
+                        document.getElementById('monthlyVolume').textContent = 
+                            data.searchVolume?.monthlyAvg?.toLocaleString() || '집계중';
+                        document.getElementById('competition').textContent = 
+                            data.searchVolume?.competition || '보통';
+                        document.getElementById('recommendation').textContent = 
+                            data.searchVolume?.recommendation || '분석중';
+                        document.getElementById('searchVolumeResult').classList.remove('hidden');
+
+                        // 순위 결과 표시
+                        if (data.ranking) {
+                            document.getElementById('myRanking').textContent = 
+                                data.ranking.myRank ? data.ranking.myRank + '위' : '순위권 밖';
+                            
+                            // 경쟁사 목록 표시
+                            const competitorHtml = data.ranking.competitors.map((comp, idx) => \`
+                                <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200">
+                                    <div class="flex items-center gap-4">
+                                        <div class="text-2xl font-bold text-gray-400">\${idx + 1}</div>
+                                        <div>
+                                            <div class="font-bold text-gray-900">\${comp.name}</div>
+                                            <div class="text-sm text-gray-600">\${comp.category || '업종 정보 없음'}</div>
+                                        </div>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="text-sm text-gray-600">리뷰</div>
+                                        <div class="font-bold text-gray-900">\${comp.reviewCount || 0}개</div>
+                                    </div>
+                                </div>
+                            \`).join('');
+                            document.getElementById('competitorList').innerHTML = competitorHtml;
+                            document.getElementById('rankingResult').classList.remove('hidden');
+                        }
+
+                        // 키워드 분석 결과 표시
+                        if (data.keywords && data.keywords.length > 0) {
+                            const keywordHtml = data.keywords.map(item => \`
+                                <div class="bg-gray-50 rounded-xl p-6 border border-gray-200">
+                                    <div class="font-bold text-gray-900 mb-3">\${item.businessName}</div>
+                                    <div class="flex flex-wrap gap-2">
+                                        \${item.keywords.map(kw => \`
+                                            <span class="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm">
+                                                \${kw}
+                                            </span>
+                                        \`).join('')}
+                                    </div>
+                                </div>
+                            \`).join('');
+                            document.getElementById('competitorKeywords').innerHTML = keywordHtml;
+                            document.getElementById('keywordResult').classList.remove('hidden');
+                        }
+                    } else {
+                        alert('분석 중 오류가 발생했습니다: ' + (data.error || '알 수 없는 오류'));
+                    }
+                } catch (error) {
+                    console.error('분석 오류:', error);
+                    alert('분석 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+                } finally {
+                    document.getElementById('loading').classList.add('hidden');
+                }
+            }
+
+            // 엔터 키로 검색
+            document.getElementById('keyword').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') analyzeKeyword();
+            });
+            document.getElementById('placeUrl').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') analyzeKeyword();
+            });
+        </script>
+    </body>
+    </html>
+  `)
+})
+
 // 통합 분석 대시보드 페이지
 app.get('/tools/dashboard-analytics', (c) => {
   return c.html(`
@@ -10329,7 +10568,10 @@ app.get('/programs/community', (c) => c.html(`<!DOCTYPE html><html lang="ko"><he
 app.get('/programs/branding', (c) => c.html(`<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>브랜딩 - 슈퍼플레이스</title><script src="https://cdn.tailwindcss.com"></script><link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet"></head><body class="bg-gray-50"><nav class="bg-white shadow-sm border-b sticky top-0 z-50"><div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center"><a href="/" class="text-2xl font-bold text-pink-600">슈퍼플레이스</a><div class="flex gap-4"><button onclick="history.back()" class="px-6 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"><i class="fas fa-arrow-left mr-2"></i>뒤로 가기</button><a href="/programs" class="px-6 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700">프로그램 목록</a></div></div></nav><main class="max-w-5xl mx-auto px-6 py-16"><div class="text-center mb-12"><div class="text-6xl mb-4">🎨</div><h1 class="text-4xl font-bold text-gray-900 mb-4">브랜딩</h1><p class="text-xl text-gray-600">학원 브랜드 아이덴티티 구축</p></div><div class="bg-white rounded-2xl p-8 shadow-sm mb-8"><h2 class="text-2xl font-bold mb-6">🎯 프로그램 진행중</h2><p class="text-gray-600 text-center py-8">이 프로그램은 현재 활성화되어 있습니다.<br>자세한 내용은 교육 신청 후 확인하실 수 있습니다.</p></div><div class="bg-gradient-to-r from-pink-600 to-pink-700 rounded-2xl p-12 text-center text-white"><h2 class="text-3xl font-bold mb-4">프로그램 시작하기</h2><p class="text-xl mb-8">브랜딩으로 학원을 성장시키세요</p><a href="/contact" class="inline-block px-8 py-4 bg-white text-pink-600 rounded-lg font-semibold hover:shadow-lg">교육 신청하기 →</a></div></main></body></html>`))
 
 // 데이터 분석
-app.get('/programs/data', (c) => c.html(`<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>데이터 분석 - 슈퍼플레이스</title><script src="https://cdn.tailwindcss.com"></script><link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet"></head><body class="bg-gray-50"><nav class="bg-white shadow-sm border-b sticky top-0 z-50"><div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center"><a href="/" class="text-2xl font-bold text-indigo-600">슈퍼플레이스</a><div class="flex gap-4"><button onclick="history.back()" class="px-6 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"><i class="fas fa-arrow-left mr-2"></i>뒤로 가기</button><a href="/programs" class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">프로그램 목록</a></div></div></nav><main class="max-w-5xl mx-auto px-6 py-16"><div class="text-center mb-12"><div class="text-6xl mb-4">📊</div><h1 class="text-4xl font-bold text-gray-900 mb-4">데이터 분석</h1><p class="text-xl text-gray-600">마케팅 성과 분석 및 최적화</p></div><div class="bg-white rounded-2xl p-8 shadow-sm mb-8"><h2 class="text-2xl font-bold mb-6">🎯 프로그램 진행중</h2><p class="text-gray-600 text-center py-8">이 프로그램은 현재 활성화되어 있습니다.<br>자세한 내용은 교육 신청 후 확인하실 수 있습니다.</p></div><div class="bg-gradient-to-r from-indigo-600 to-indigo-700 rounded-2xl p-12 text-center text-white"><h2 class="text-3xl font-bold mb-4">프로그램 시작하기</h2><p class="text-xl mb-8">데이터 분석으로 학원을 성장시키세요</p><a href="/contact" class="inline-block px-8 py-4 bg-white text-indigo-600 rounded-lg font-semibold hover:shadow-lg">교육 신청하기 →</a></div></main></body></html>`))
+// 검색량 조회 프로그램 리다이렉트
+app.get('/programs/data', (c) => {
+  return c.redirect('/tools/search-volume')
+})
 
 // 당근 비즈니스 마케팅
 app.get('/programs/carrot', (c) => c.html(`<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>당근 비즈니스 마케팅 - 슈퍼플레이스</title><script src="https://cdn.tailwindcss.com"></script><link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet"></head><body class="bg-gray-50"><nav class="bg-white shadow-sm border-b sticky top-0 z-50"><div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center"><a href="/" class="text-2xl font-bold text-orange-600">슈퍼플레이스</a><div class="flex gap-4"><button onclick="history.back()" class="px-6 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"><i class="fas fa-arrow-left mr-2"></i>뒤로 가기</button><a href="/programs" class="px-6 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700">프로그램 목록</a></div></div></nav><main class="max-w-5xl mx-auto px-6 py-16"><div class="text-center mb-12"><div class="text-6xl mb-4">🥕</div><h1 class="text-4xl font-bold text-gray-900 mb-4">당근 비즈니스 마케팅</h1><p class="text-xl text-gray-600">지역 기반 당근마켓 활용 전략</p></div><div class="bg-white rounded-2xl p-8 shadow-sm mb-8"><h2 class="text-2xl font-bold mb-6">🎯 프로그램 진행중</h2><p class="text-gray-600 text-center py-8">이 프로그램은 현재 활성화되어 있습니다.<br>자세한 내용은 교육 신청 후 확인하실 수 있습니다.</p></div><div class="bg-gradient-to-r from-orange-600 to-orange-700 rounded-2xl p-12 text-center text-white"><h2 class="text-3xl font-bold mb-4">프로그램 시작하기</h2><p class="text-xl mb-8">당근 비즈니스 마케팅으로 학원을 성장시키세요</p><a href="/contact" class="inline-block px-8 py-4 bg-white text-orange-600 rounded-lg font-semibold hover:shadow-lg">교육 신청하기 →</a></div></main></body></html>`))
@@ -11926,6 +12168,53 @@ app.get('/tools', (c) => {
     </body>
     </html>
   `)
+})
+
+// 검색량 조회 및 순위 분석 API
+app.post('/api/search-analysis', async (c) => {
+  try {
+    const { userId, keyword, placeUrl } = await c.req.json()
+
+    if (!keyword || !placeUrl) {
+      return c.json({ success: false, error: '필수 정보가 누락되었습니다' }, 400)
+    }
+
+    // 임시 응답 (실제로는 Python 크롤링 서버와 통신해야 합니다)
+    // TODO: Python Selenium 크롤링 서버 연동
+    const mockResponse = {
+      success: true,
+      searchVolume: {
+        monthlyAvg: 8500,
+        competition: '높음',
+        recommendation: '★★★★☆'
+      },
+      ranking: {
+        myRank: 5,
+        competitors: [
+          { name: 'A영어학원', category: '영어학원', reviewCount: 245 },
+          { name: 'B어학원', category: '영어학원', reviewCount: 189 },
+          { name: 'C영어교실', category: '영어학원', reviewCount: 156 },
+          { name: 'D외국어학원', category: '영어학원', reviewCount: 134 }
+        ]
+      },
+      keywords: [
+        { businessName: 'A영어학원', keywords: ['원어민', '초등영어', '영어회화', '토익'] },
+        { businessName: 'B어학원', keywords: ['수능영어', '내신관리', '영문법', '텝스'] }
+      ]
+    }
+
+    // 분석 기록 저장
+    const { env } = c
+    await env.DB.prepare(`
+      INSERT INTO search_analysis_logs (user_id, keyword, place_url, result_data, created_at)
+      VALUES (?, ?, ?, ?, datetime('now'))
+    `).bind(userId, keyword, placeUrl, JSON.stringify(mockResponse)).run()
+
+    return c.json(mockResponse)
+  } catch (error) {
+    console.error('Search analysis error:', error)
+    return c.json({ success: false, error: '분석 중 오류가 발생했습니다' }, 500)
+  }
 })
 
 // 대행 문의 API
