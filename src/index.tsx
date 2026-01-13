@@ -16702,5 +16702,745 @@ app.get('/sms/compose', (c) => {
   `)
 })
 
+// 발송 내역 페이지
+app.get('/sms/logs', (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>발송 내역 - SMS 발송</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <style>
+          @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
+          * {
+            font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+          }
+        </style>
+    </head>
+    <body class="bg-gray-50">
+        <!-- Navigation -->
+        <nav class="fixed w-full top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
+            <div class="max-w-7xl mx-auto px-6">
+                <div class="flex justify-between items-center h-16">
+                    <div class="flex items-center space-x-8">
+                        <a href="/dashboard" class="text-xl font-bold text-purple-600">SMS 발송 시스템</a>
+                        <div class="flex space-x-4">
+                            <a href="/sms/senders" class="text-gray-600 hover:text-purple-600 px-3 py-2">발신번호</a>
+                            <a href="/sms/compose" class="text-gray-600 hover:text-purple-600 px-3 py-2">문자 작성</a>
+                            <a href="/sms/logs" class="text-purple-600 border-b-2 border-purple-600 px-3 py-2 font-medium">발송 내역</a>
+                            <a href="/sms/points" class="text-gray-600 hover:text-purple-600 px-3 py-2">포인트 관리</a>
+                        </div>
+                    </div>
+                    <a href="/dashboard" class="text-gray-600 hover:text-purple-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </nav>
+
+        <div class="pt-24 pb-12 px-6">
+            <div class="max-w-7xl mx-auto">
+                <!-- Header -->
+                <div class="mb-8">
+                    <h1 class="text-3xl font-bold text-gray-900 mb-2">📊 발송 내역</h1>
+                    <p class="text-gray-600">문자 발송 내역을 확인합니다</p>
+                </div>
+
+                <!-- 필터 -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">상태</label>
+                            <select id="statusFilter" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                                <option value="">전체</option>
+                                <option value="success">성공</option>
+                                <option value="failed">실패</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">메시지 타입</label>
+                            <select id="typeFilter" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                                <option value="">전체</option>
+                                <option value="SMS">SMS (단문)</option>
+                                <option value="LMS">LMS (장문)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">페이지당 개수</label>
+                            <select id="limitFilter" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                                <option value="20">20개</option>
+                                <option value="50">50개</option>
+                                <option value="100">100개</option>
+                            </select>
+                        </div>
+                        <div class="flex items-end">
+                            <button onclick="applyFilters()" class="w-full bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition font-medium">
+                                검색
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 통계 카드 -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-600 mb-1">총 발송</p>
+                                <p id="totalSent" class="text-2xl font-bold text-gray-900">0</p>
+                            </div>
+                            <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-600 mb-1">성공</p>
+                                <p id="totalSuccess" class="text-2xl font-bold text-green-600">0</p>
+                            </div>
+                            <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                                <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-600 mb-1">실패</p>
+                                <p id="totalFailed" class="text-2xl font-bold text-red-600">0</p>
+                            </div>
+                            <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                                <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-600 mb-1">총 비용</p>
+                                <p id="totalCost" class="text-2xl font-bold text-purple-600">0P</p>
+                            </div>
+                            <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                                <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 발송 내역 테이블 -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                    <div class="p-6 border-b border-gray-200">
+                        <h2 class="text-xl font-semibold text-gray-900">발송 내역</h2>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-gray-50 border-b border-gray-200">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">발송 일시</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">발신번호</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">수신자</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">타입</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">상태</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">비용</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">상세</th>
+                                </tr>
+                            </thead>
+                            <tbody id="logsContainer" class="divide-y divide-gray-200">
+                                <tr>
+                                    <td colspan="7" class="px-6 py-12 text-center">
+                                        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto mb-4"></div>
+                                        <p class="text-gray-500">불러오는 중...</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- 페이지네이션 -->
+                    <div class="p-6 border-t border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <p id="paginationInfo" class="text-sm text-gray-600">총 0건</p>
+                            <div class="flex space-x-2" id="paginationButtons">
+                                <!-- 동적 생성 -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 상세 모달 -->
+        <div id="detailModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-6">
+            <div class="bg-white rounded-lg max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+                <div class="p-6 border-b border-gray-200">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-xl font-semibold text-gray-900">발송 상세</h3>
+                        <button onclick="closeDetailModal()" class="text-gray-400 hover:text-gray-600">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <div id="detailContent" class="p-6">
+                    <!-- 동적 생성 -->
+                </div>
+            </div>
+        </div>
+
+        <script>
+            let currentUserId = null;
+            let currentPage = 1;
+            let currentLimit = 20;
+
+            async function checkAuth() {
+                const user = localStorage.getItem('user');
+                if (!user) {
+                    alert('로그인이 필요합니다.');
+                    window.location.href = '/login';
+                    return null;
+                }
+                const userData = JSON.parse(user);
+                currentUserId = userData.id;
+                return userData;
+            }
+
+            function formatPhoneNumber(phone) {
+                phone = phone.replace(/[^0-9]/g, '');
+                if (phone.length === 10) {
+                    return phone.replace(/(\\d{3})(\\d{3})(\\d{4})/, '$1-$2-$3');
+                } else if (phone.length === 11) {
+                    return phone.replace(/(\\d{3})(\\d{4})(\\d{4})/, '$1-$2-$3');
+                }
+                return phone;
+            }
+
+            function formatDateTime(dateStr) {
+                if (!dateStr) return '-';
+                const date = new Date(dateStr);
+                return date.toLocaleString('ko-KR', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            }
+
+            async function loadLogs(page = 1) {
+                currentPage = page;
+                const limit = parseInt(document.getElementById('limitFilter').value);
+                currentLimit = limit;
+
+                try {
+                    const response = await fetch(\`/api/sms/logs?userId=\${currentUserId}&page=\${page}&limit=\${limit}\`);
+                    const data = await response.json();
+
+                    if (data.success) {
+                        renderLogs(data.logs);
+                        renderPagination(data.pagination);
+                        updateStats(data.logs);
+                    }
+                } catch (error) {
+                    console.error('Failed to load logs:', error);
+                }
+            }
+
+            function renderLogs(logs) {
+                const container = document.getElementById('logsContainer');
+
+                if (logs.length === 0) {
+                    container.innerHTML = \`
+                        <tr>
+                            <td colspan="7" class="px-6 py-12 text-center">
+                                <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
+                                </svg>
+                                <p class="text-gray-500">발송 내역이 없습니다</p>
+                            </td>
+                        </tr>
+                    \`;
+                    return;
+                }
+
+                container.innerHTML = logs.map(log => \`
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 text-sm text-gray-900">\${formatDateTime(log.sent_at || log.created_at)}</td>
+                        <td class="px-6 py-4 text-sm text-gray-600">\${formatPhoneNumber(log.sender_number)}</td>
+                        <td class="px-6 py-4 text-sm text-gray-600">\${log.receiver_number.split(',').length}명</td>
+                        <td class="px-6 py-4">
+                            <span class="px-2 py-1 text-xs font-medium rounded-full \${log.message_type === 'SMS' ? 'bg-blue-100 text-blue-800' : 'bg-orange-100 text-orange-800'}">
+                                \${log.message_type}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="px-2 py-1 text-xs font-medium rounded-full \${log.status === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                                \${log.status === 'success' ? '✓ 성공' : '✗ 실패'}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-sm font-medium text-gray-900">\${log.point_cost}P</td>
+                        <td class="px-6 py-4">
+                            <button onclick='showDetail(\${JSON.stringify(log).replace(/'/g, "\\\\'")})'
+                                class="text-purple-600 hover:text-purple-700 text-sm font-medium">
+                                보기
+                            </button>
+                        </td>
+                    </tr>
+                \`).join('');
+            }
+
+            function renderPagination(pagination) {
+                const info = document.getElementById('paginationInfo');
+                const buttons = document.getElementById('paginationButtons');
+
+                info.textContent = \`총 \${pagination.total}건 (페이지 \${pagination.page}/\${pagination.totalPages})\`;
+
+                let html = '';
+                
+                if (pagination.page > 1) {
+                    html += \`<button onclick="loadLogs(\${pagination.page - 1})" class="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50">이전</button>\`;
+                }
+
+                for (let i = 1; i <= Math.min(pagination.totalPages, 5); i++) {
+                    const active = i === pagination.page ? 'bg-purple-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50';
+                    html += \`<button onclick="loadLogs(\${i})" class="px-3 py-1 border border-gray-300 rounded \${active}">\${i}</button>\`;
+                }
+
+                if (pagination.page < pagination.totalPages) {
+                    html += \`<button onclick="loadLogs(\${pagination.page + 1})" class="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50">다음</button>\`;
+                }
+
+                buttons.innerHTML = html;
+            }
+
+            function updateStats(logs) {
+                const totalSent = logs.length;
+                const totalSuccess = logs.filter(l => l.status === 'success').length;
+                const totalFailed = logs.filter(l => l.status === 'failed').length;
+                const totalCost = logs.reduce((sum, l) => sum + (l.point_cost || 0), 0);
+
+                document.getElementById('totalSent').textContent = totalSent;
+                document.getElementById('totalSuccess').textContent = totalSuccess;
+                document.getElementById('totalFailed').textContent = totalFailed;
+                document.getElementById('totalCost').textContent = totalCost + 'P';
+            }
+
+            function showDetail(log) {
+                const modal = document.getElementById('detailModal');
+                const content = document.getElementById('detailContent');
+
+                content.innerHTML = \`
+                    <div class="space-y-6">
+                        <div>
+                            <h4 class="text-sm font-semibold text-gray-700 mb-2">발송 정보</h4>
+                            <div class="bg-gray-50 rounded-lg p-4 space-y-2">
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-600">발신번호</span>
+                                    <span class="font-medium">\${formatPhoneNumber(log.sender_number)}</span>
+                                </div>
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-600">수신자</span>
+                                    <span class="font-medium">\${log.receiver_number.split(',').length}명</span>
+                                </div>
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-600">발송 일시</span>
+                                    <span class="font-medium">\${formatDateTime(log.sent_at || log.created_at)}</span>
+                                </div>
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-600">메시지 타입</span>
+                                    <span class="font-medium">\${log.message_type}</span>
+                                </div>
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-600">상태</span>
+                                    <span class="font-medium">\${log.status === 'success' ? '✓ 성공' : '✗ 실패'}</span>
+                                </div>
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-600">비용</span>
+                                    <span class="font-medium">\${log.point_cost}P</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h4 class="text-sm font-semibold text-gray-700 mb-2">메시지 내용</h4>
+                            <div class="bg-gray-50 rounded-lg p-4">
+                                <p class="text-sm text-gray-900 whitespace-pre-wrap">\${log.message_content}</p>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h4 class="text-sm font-semibold text-gray-700 mb-2">수신자 목록</h4>
+                            <div class="bg-gray-50 rounded-lg p-4">
+                                <div class="space-y-1 text-sm text-gray-900">
+                                    \${log.receiver_number.split(',').map(phone => \`
+                                        <div>\${formatPhoneNumber(phone)}</div>
+                                    \`).join('')}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                \`;
+
+                modal.classList.remove('hidden');
+            }
+
+            function closeDetailModal() {
+                document.getElementById('detailModal').classList.add('hidden');
+            }
+
+            function applyFilters() {
+                loadLogs(1);
+            }
+
+            (async () => {
+                await checkAuth();
+                if (currentUserId) {
+                    loadLogs(1);
+                }
+            })();
+        </script>
+    </body>
+    </html>
+  `)
+})
+
+// 포인트 관리 페이지
+app.get('/sms/points', (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>포인트 관리 - SMS 발송</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <style>
+          @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
+          * {
+            font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+          }
+        </style>
+    </head>
+    <body class="bg-gray-50">
+        <!-- Navigation -->
+        <nav class="fixed w-full top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
+            <div class="max-w-7xl mx-auto px-6">
+                <div class="flex justify-between items-center h-16">
+                    <div class="flex items-center space-x-8">
+                        <a href="/dashboard" class="text-xl font-bold text-purple-600">SMS 발송 시스템</a>
+                        <div class="flex space-x-4">
+                            <a href="/sms/senders" class="text-gray-600 hover:text-purple-600 px-3 py-2">발신번호</a>
+                            <a href="/sms/compose" class="text-gray-600 hover:text-purple-600 px-3 py-2">문자 작성</a>
+                            <a href="/sms/logs" class="text-gray-600 hover:text-purple-600 px-3 py-2">발송 내역</a>
+                            <a href="/sms/points" class="text-purple-600 border-b-2 border-purple-600 px-3 py-2 font-medium">포인트 관리</a>
+                        </div>
+                    </div>
+                    <a href="/dashboard" class="text-gray-600 hover:text-purple-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </nav>
+
+        <div class="pt-24 pb-12 px-6">
+            <div class="max-w-6xl mx-auto">
+                <!-- Header -->
+                <div class="mb-8">
+                    <h1 class="text-3xl font-bold text-gray-900 mb-2">💰 포인트 관리</h1>
+                    <p class="text-gray-600">SMS 발송 포인트를 관리합니다</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- 왼쪽: 포인트 정보 -->
+                    <div class="lg:col-span-2 space-y-6">
+                        <!-- 현재 잔액 -->
+                        <div class="bg-gradient-to-br from-purple-600 to-purple-800 rounded-lg shadow-lg p-8 text-white">
+                            <div class="flex items-center justify-between mb-6">
+                                <h2 class="text-lg font-medium opacity-90">보유 포인트</h2>
+                                <svg class="w-8 h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                            </div>
+                            <div class="mb-4">
+                                <p id="currentBalance" class="text-5xl font-bold mb-2">0</p>
+                                <p class="text-lg opacity-90">포인트</p>
+                            </div>
+                            <div class="grid grid-cols-3 gap-4 pt-4 border-t border-white/20">
+                                <div>
+                                    <p class="text-xs opacity-75 mb-1">SMS</p>
+                                    <p id="smsCount" class="text-lg font-semibold">0건</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs opacity-75 mb-1">LMS</p>
+                                    <p id="lmsCount" class="text-lg font-semibold">0건</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs opacity-75 mb-1">MMS</p>
+                                    <p id="mmsCount" class="text-lg font-semibold">0건</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 입금 신청 -->
+                        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">입금 신청</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">충전 금액</label>
+                                    <div class="relative">
+                                        <input type="number" id="depositAmount" placeholder="10000" 
+                                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 pr-12">
+                                        <span class="absolute right-4 top-3 text-gray-500">원</span>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-3 gap-2">
+                                    <button onclick="setAmount(10000)" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm">+1만</button>
+                                    <button onclick="setAmount(50000)" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm">+5만</button>
+                                    <button onclick="setAmount(100000)" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm">+10만</button>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">은행명 (선택)</label>
+                                    <input type="text" id="bankName" placeholder="신한은행" 
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">계좌번호 (선택)</label>
+                                    <input type="text" id="accountNumber" placeholder="110-123-456789" 
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">입금자명 (선택)</label>
+                                    <input type="text" id="depositorName" placeholder="홍길동" 
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">메모 (선택)</label>
+                                    <textarea id="depositMessage" rows="3" placeholder="입금 관련 메모를 입력하세요" 
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"></textarea>
+                                </div>
+                                <button onclick="requestDeposit()" 
+                                    class="w-full bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition font-semibold">
+                                    입금 신청하기
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 오른쪽: 요금표 & 입금 신청 내역 -->
+                    <div class="space-y-6">
+                        <!-- SMS 요금표 -->
+                        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">SMS 요금표</h3>
+                            <div class="space-y-3" id="pricingContainer">
+                                <div class="animate-pulse">
+                                    <div class="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                                    <div class="h-4 bg-gray-200 rounded w-1/2"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 입금 신청 내역 -->
+                        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">입금 신청 내역</h3>
+                            <div class="space-y-3" id="depositsContainer">
+                                <p class="text-sm text-gray-400 text-center py-4">불러오는 중...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            let currentUserId = null;
+            let currentUserName = '';
+            let currentUserEmail = '';
+            let currentBalance = 0;
+
+            async function checkAuth() {
+                const user = localStorage.getItem('user');
+                if (!user) {
+                    alert('로그인이 필요합니다.');
+                    window.location.href = '/login';
+                    return null;
+                }
+                const userData = JSON.parse(user);
+                currentUserId = userData.id;
+                currentUserName = userData.name || '';
+                currentUserEmail = userData.email || '';
+                currentBalance = userData.points || 0;
+                return userData;
+            }
+
+            async function loadBalance() {
+                try {
+                    const response = await fetch(\`/api/users/\${currentUserId}/points\`);
+                    const data = await response.json();
+
+                    if (data.success) {
+                        currentBalance = data.points || 0;
+                        document.getElementById('currentBalance').textContent = currentBalance.toLocaleString();
+                        
+                        // 발송 가능 건수 계산
+                        document.getElementById('smsCount').textContent = Math.floor(currentBalance / 20) + '건';
+                        document.getElementById('lmsCount').textContent = Math.floor(currentBalance / 50) + '건';
+                        document.getElementById('mmsCount').textContent = Math.floor(currentBalance / 150) + '건';
+                    }
+                } catch (error) {
+                    console.error('Failed to load balance:', error);
+                }
+            }
+
+            async function loadPricing() {
+                try {
+                    const response = await fetch('/api/sms/pricing');
+                    const data = await response.json();
+
+                    if (data.success) {
+                        const container = document.getElementById('pricingContainer');
+                        container.innerHTML = data.pricing.map(p => \`
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                <div>
+                                    <div class="font-medium text-sm">\${p.message_type}</div>
+                                    <div class="text-xs text-gray-500">\${p.description}</div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="font-bold text-purple-600">\${p.retail_price}P</div>
+                                </div>
+                            </div>
+                        \`).join('');
+                    }
+                } catch (error) {
+                    console.error('Failed to load pricing:', error);
+                }
+            }
+
+            async function loadDepositRequests() {
+                try {
+                    const response = await fetch(\`/api/deposit/my-requests/\${currentUserId}\`);
+                    const data = await response.json();
+
+                    if (data.success && data.requests.length > 0) {
+                        const container = document.getElementById('depositsContainer');
+                        container.innerHTML = data.requests.slice(0, 5).map(req => \`
+                            <div class="p-3 bg-gray-50 rounded-lg">
+                                <div class="flex items-center justify-between mb-1">
+                                    <span class="font-semibold text-sm">\${req.amount.toLocaleString()}원</span>
+                                    <span class="text-xs px-2 py-1 rounded-full \${
+                                        req.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                                        req.status === 'approved' ? 'bg-green-100 text-green-800' :
+                                        'bg-red-100 text-red-800'
+                                    }">
+                                        \${req.status === 'pending' ? '대기중' : req.status === 'approved' ? '승인' : '거절'}
+                                    </span>
+                                </div>
+                                <div class="text-xs text-gray-500">\${new Date(req.created_at).toLocaleDateString('ko-KR')}</div>
+                            </div>
+                        \`).join('');
+                    } else {
+                        document.getElementById('depositsContainer').innerHTML = 
+                            '<p class="text-sm text-gray-400 text-center py-4">입금 신청 내역이 없습니다</p>';
+                    }
+                } catch (error) {
+                    console.error('Failed to load deposit requests:', error);
+                }
+            }
+
+            function setAmount(amount) {
+                const input = document.getElementById('depositAmount');
+                const current = parseInt(input.value) || 0;
+                input.value = current + amount;
+            }
+
+            async function requestDeposit() {
+                const amount = parseInt(document.getElementById('depositAmount').value);
+                const bankName = document.getElementById('bankName').value.trim();
+                const accountNumber = document.getElementById('accountNumber').value.trim();
+                const depositorName = document.getElementById('depositorName').value.trim();
+                const message = document.getElementById('depositMessage').value.trim();
+
+                if (!amount || amount <= 0) {
+                    alert('충전 금액을 입력해주세요.');
+                    return;
+                }
+
+                if (amount < 10000) {
+                    alert('최소 충전 금액은 10,000원입니다.');
+                    return;
+                }
+
+                if (!confirm(\`\${amount.toLocaleString()}원을 충전 신청하시겠습니까?\`)) {
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/api/deposit/request', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            userId: currentUserId,
+                            userName: currentUserName,
+                            userEmail: currentUserEmail,
+                            amount: amount,
+                            bankName: bankName,
+                            accountNumber: accountNumber,
+                            depositorName: depositorName,
+                            message: message
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        alert('✅ 입금 신청이 완료되었습니다!\\n관리자 승인 후 포인트가 충전됩니다.');
+                        
+                        // 폼 초기화
+                        document.getElementById('depositAmount').value = '';
+                        document.getElementById('bankName').value = '';
+                        document.getElementById('accountNumber').value = '';
+                        document.getElementById('depositorName').value = '';
+                        document.getElementById('depositMessage').value = '';
+                        
+                        // 내역 새로고침
+                        loadDepositRequests();
+                    } else {
+                        alert('❌ ' + data.error);
+                    }
+                } catch (error) {
+                    console.error('Deposit request error:', error);
+                    alert('입금 신청 중 오류가 발생했습니다.');
+                }
+            }
+
+            (async () => {
+                await checkAuth();
+                if (currentUserId) {
+                    loadBalance();
+                    loadPricing();
+                    loadDepositRequests();
+                }
+            })();
+        </script>
+    </body>
+    </html>
+  `)
+})
+
 export default app
 // Force rebuild Tue Jan 13 09:59:11 UTC 2026
