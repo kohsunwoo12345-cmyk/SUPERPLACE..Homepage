@@ -5623,6 +5623,28 @@ app.get('/dashboard', (c) => {
                             </svg>
                             <span>🏠 홈으로</span>
                         </a>
+                        <div class="relative group">
+                            <button class="flex items-center space-x-1 text-gray-700 hover:text-purple-600 transition font-medium">
+                                <span>📱 SMS</span>
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                </svg>
+                            </button>
+                            <div class="hidden group-hover:block absolute top-full right-0 mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-100 py-2 z-50">
+                                <a href="/sms/compose" class="block px-4 py-2 text-gray-700 hover:bg-purple-50 hover:text-purple-600 transition">
+                                    ✍️ 문자 작성
+                                </a>
+                                <a href="/sms/senders" class="block px-4 py-2 text-gray-700 hover:bg-purple-50 hover:text-purple-600 transition">
+                                    📞 발신번호 관리
+                                </a>
+                                <a href="/sms/logs" class="block px-4 py-2 text-gray-700 hover:bg-purple-50 hover:text-purple-600 transition">
+                                    📋 발송 내역
+                                </a>
+                                <a href="/sms/points" class="block px-4 py-2 text-gray-700 hover:bg-purple-50 hover:text-purple-600 transition">
+                                    💰 포인트 관리
+                                </a>
+                            </div>
+                        </div>
                         <span id="userName" class="text-gray-700 font-medium"></span>
                         <a href="/profile" class="text-gray-600 hover:text-purple-600 transition">프로필</a>
                         <a id="adminDashboardBtn" href="/admin/dashboard" class="hidden bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition font-medium">
@@ -5699,6 +5721,88 @@ app.get('/dashboard', (c) => {
                             </svg>
                         </div>
                         <div class="text-3xl font-bold text-gray-900">2회</div>
+                    </div>
+                </div>
+
+                <!-- SMS Quick Access -->
+                <div class="mb-12">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-2xl font-bold text-gray-900">📱 SMS 문자 발송</h2>
+                        <a href="/sms/compose" class="bg-gradient-to-r from-green-600 to-green-700 text-white px-6 py-3 rounded-lg hover:from-green-700 hover:to-green-800 transition-all shadow-md hover:shadow-lg font-medium flex items-center space-x-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                            </svg>
+                            <span>문자 작성하기</span>
+                        </a>
+                    </div>
+                    <div class="grid md:grid-cols-4 gap-6">
+                        <a href="/sms/compose" class="block bg-white rounded-xl p-6 border-2 border-gray-200 hover:border-green-500 hover:shadow-lg transition-all">
+                            <div class="flex items-center gap-3 mb-3">
+                                <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-lg flex items-center justify-center">
+                                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-gray-900">문자 작성</h3>
+                                    <p class="text-sm text-gray-500">SMS/LMS 발송</p>
+                                </div>
+                            </div>
+                            <p class="text-sm text-gray-600 leading-relaxed">
+                                학부모님께 공지사항, 상담 안내, 수업 알림을 간편하게 발송하세요
+                            </p>
+                        </a>
+
+                        <a href="/sms/senders" class="block bg-white rounded-xl p-6 border-2 border-gray-200 hover:border-blue-500 hover:shadow-lg transition-all">
+                            <div class="flex items-center gap-3 mb-3">
+                                <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+                                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-gray-900">발신번호</h3>
+                                    <p class="text-sm text-gray-500">번호 관리</p>
+                                </div>
+                            </div>
+                            <p class="text-sm text-gray-600 leading-relaxed">
+                                발신번호를 등록하고 관리하세요. 인증된 번호만 사용 가능합니다
+                            </p>
+                        </a>
+
+                        <a href="/sms/logs" class="block bg-white rounded-xl p-6 border-2 border-gray-200 hover:border-purple-500 hover:shadow-lg transition-all">
+                            <div class="flex items-center gap-3 mb-3">
+                                <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center">
+                                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-gray-900">발송 내역</h3>
+                                    <p class="text-sm text-gray-500">전송 기록</p>
+                                </div>
+                            </div>
+                            <p class="text-sm text-gray-600 leading-relaxed">
+                                문자 발송 내역과 통계를 확인하고 성공/실패 내역을 관리하세요
+                            </p>
+                        </a>
+
+                        <a href="/sms/points" class="block bg-white rounded-xl p-6 border-2 border-gray-200 hover:border-orange-500 hover:shadow-lg transition-all">
+                            <div class="flex items-center gap-3 mb-3">
+                                <div class="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center">
+                                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-gray-900">포인트</h3>
+                                    <p class="text-sm text-gray-500"><span id="dashboardPoints">0</span>P</p>
+                                </div>
+                            </div>
+                            <p class="text-sm text-gray-600 leading-relaxed">
+                                포인트 잔액 확인, 충전, 사용 내역을 관리하세요
+                            </p>
+                        </a>
                     </div>
                 </div>
 
@@ -6115,6 +6219,11 @@ app.get('/dashboard', (c) => {
                         if (data.success) {
                             const points = data.points || 0
                             document.getElementById('userPoints').textContent = points.toLocaleString()
+                            // SMS 섹션의 포인트도 업데이트
+                            const dashboardPointsEl = document.getElementById('dashboardPoints')
+                            if (dashboardPointsEl) {
+                                dashboardPointsEl.textContent = points.toLocaleString()
+                            }
                             
                             // localStorage도 업데이트
                             user.points = points
