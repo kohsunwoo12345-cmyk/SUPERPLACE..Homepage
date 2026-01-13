@@ -847,6 +847,92 @@ app.post('/api/deposit/request', async (c) => {
   }
 })
 
+// 사용자별 입금 신청 내역 조회 API
+app.get('/api/deposit/my-requests/:userId', async (c) => {
+  try {
+    const userId = c.req.param('userId')
+    
+    if (!userId) {
+      return c.json({ success: false, error: '사용자 ID가 필요합니다.' }, 400)
+    }
+
+    const { results } = await c.env.DB.prepare(`
+      SELECT 
+        id,
+        amount,
+        bank_name,
+        account_number,
+        depositor_name,
+        message,
+        status,
+        created_at,
+        processed_at
+      FROM deposit_requests
+      WHERE user_id = ?
+      ORDER BY created_at DESC
+    `).bind(userId).all()
+
+    return c.json({ 
+      success: true, 
+      requests: results || []
+    })
+  } catch (error) {
+    console.error('Failed to load deposit requests:', error)
+    return c.json({ success: false, error: '입금 신청 내역을 불러오는 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
+// 포인트 거래 내역 조회 API
+app.get('/api/point-transactions/:userId', async (c) => {
+  try {
+    const userId = c.req.param('userId')
+    const limit = parseInt(c.req.query('limit') || '50')
+    const offset = parseInt(c.req.query('offset') || '0')
+    
+    if (!userId) {
+      return c.json({ success: false, error: '사용자 ID가 필요합니다.' }, 400)
+    }
+
+    const { results } = await c.env.DB.prepare(`
+      SELECT 
+        id,
+        transaction_type,
+        amount,
+        balance_before,
+        balance_after,
+        description,
+        created_at
+      FROM point_transactions
+      WHERE user_id = ?
+      ORDER BY created_at DESC
+      LIMIT ? OFFSET ?
+    `).bind(userId, limit, offset).all()
+
+    // 통계 정보
+    const stats = await c.env.DB.prepare(`
+      SELECT 
+        SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END) as total_charged,
+        SUM(CASE WHEN amount < 0 THEN ABS(amount) ELSE 0 END) as total_used,
+        COUNT(*) as total_transactions
+      FROM point_transactions
+      WHERE user_id = ?
+    `).bind(userId).first()
+
+    return c.json({ 
+      success: true, 
+      transactions: results || [],
+      stats: {
+        totalCharged: stats?.total_charged || 0,
+        totalUsed: stats?.total_used || 0,
+        totalTransactions: stats?.total_transactions || 0
+      }
+    })
+  } catch (error) {
+    console.error('Failed to load point transactions:', error)
+    return c.json({ success: false, error: '거래 내역을 불러오는 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
 // 발신번호 인증 신청 API (사업자 등록증 포함)
 app.post('/api/sms/sender/verification-request', async (c) => {
   try {
@@ -1068,9 +1154,20 @@ app.get('/api/admin/deposit/requests', async (c) => {
 app.put('/api/admin/deposit/requests/:id/process', async (c) => {
   try {
     const requestId = c.req.param('id')
-    const { status, points } = await c.req.json()
+    const { status, adminId } = await c.req.json()
 
-    console.log('Processing deposit:', { requestId, status, points })
+    console.log('Processing deposit:', { requestId, status, adminId })
+
+    // 관리자 권한 확인
+    if (adminId) {
+      const admin = await c.env.DB.prepare(`
+        SELECT role FROM users WHERE id = ?
+      `).bind(adminId).first()
+
+      if (!admin || admin.role !== 'admin') {
+        return c.json({ success: false, error: '관리자 권한이 필요합니다.' }, 403)
+      }
+    }
 
     // 입금 신청 정보 조회
     const request = await c.env.DB.prepare(`
@@ -1083,35 +1180,134 @@ app.put('/api/admin/deposit/requests/:id/process', async (c) => {
       return c.json({ success: false, error: '입금 신청을 찾을 수 없습니다.' }, 404)
     }
 
-    // 승인인 경우 포인트 지급
-    if (status === 'approved' && points > 0) {
-      console.log('Updating points for user:', request.user_id, 'adding:', points)
-      
-      const updateResult = await c.env.DB.prepare(`
-        UPDATE users SET points = points + ? WHERE id = ?
-      `).bind(points, request.user_id).run()
-      
-      console.log('Points update result:', updateResult)
+    if (request.status !== 'pending') {
+      return c.json({ success: false, error: '이미 처리된 신청입니다.' }, 400)
+    }
 
-      // 업데이트 확인
-      const user = await c.env.DB.prepare(`
-        SELECT id, email, name, points FROM users WHERE id = ?
-      `).bind(request.user_id).first()
+    let balanceAfter = 0
+
+    // 승인인 경우 포인트 지급
+    if (status === 'approved') {
+      const points = request.amount
+      console.log('Approving deposit for user:', request.user_id, 'adding:', points)
       
-      console.log('User after update:', user)
+      // 현재 잔액 조회
+      const user = await c.env.DB.prepare(`
+        SELECT balance FROM users WHERE id = ?
+      `).bind(request.user_id).first()
+
+      const balanceBefore = user?.balance || 0
+      balanceAfter = balanceBefore + points
+
+      // 포인트 충전 (balance 컬럼 사용)
+      await c.env.DB.prepare(`
+        UPDATE users SET balance = ? WHERE id = ?
+      `).bind(balanceAfter, request.user_id).run()
+      
+      console.log('Balance updated:', balanceBefore, '->', balanceAfter)
+
+      // 포인트 거래 내역 기록
+      await c.env.DB.prepare(`
+        INSERT INTO point_transactions (user_id, transaction_type, amount, balance_before, balance_after, description, admin_id)
+        VALUES (?, 'deposit_approval', ?, ?, ?, ?, ?)
+      `).bind(
+        request.user_id, 
+        points, 
+        balanceBefore, 
+        balanceAfter, 
+        `입금 신청 승인 (신청 ID: ${requestId})`,
+        adminId || null
+      ).run()
+
+      // 이메일 알림 발송 (Resend API)
+      if (request.user_email) {
+        try {
+          const resendApiKey = c.env.RESEND_API_KEY
+          
+          if (resendApiKey) {
+            const emailResponse = await fetch('https://api.resend.com/emails', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${resendApiKey}`
+              },
+              body: JSON.stringify({
+                from: '슈퍼플레이스 <noreply@superplace.co.kr>',
+                to: request.user_email,
+                subject: '✅ 포인트 충전이 완료되었습니다',
+                html: `
+                  <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                    <div style="background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
+                      <h1 style="color: white; margin: 0; font-size: 24px;">💰 포인트 충전 완료</h1>
+                    </div>
+                    
+                    <div style="background: white; padding: 30px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 10px 10px;">
+                      <p style="font-size: 16px; color: #374151; margin-bottom: 20px;">
+                        안녕하세요, <strong>${request.user_name || '회원'}</strong>님!
+                      </p>
+                      
+                      <p style="font-size: 16px; color: #374151; margin-bottom: 30px;">
+                        입금 신청하신 포인트가 성공적으로 충전되었습니다. 🎉
+                      </p>
+                      
+                      <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                          <span style="color: #6b7280;">충전 금액</span>
+                          <strong style="color: #9333ea; font-size: 20px;">${points.toLocaleString()}P</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding-top: 10px; border-top: 1px solid #e5e7eb;">
+                          <span style="color: #6b7280;">현재 잔액</span>
+                          <strong style="color: #1f2937; font-size: 18px;">${balanceAfter.toLocaleString()}P</strong>
+                        </div>
+                      </div>
+                      
+                      <div style="background: #eff6ff; padding: 15px; border-radius: 8px; border-left: 4px solid #3b82f6; margin-bottom: 30px;">
+                        <p style="margin: 0; color: #1e40af; font-size: 14px;">
+                          💡 <strong>SMS 발송 가능 건수</strong><br>
+                          • SMS (90자): 약 ${Math.floor(balanceAfter / 20).toLocaleString()}건<br>
+                          • LMS (2000자): 약 ${Math.floor(balanceAfter / 50).toLocaleString()}건<br>
+                          • MMS (사진 포함): 약 ${Math.floor(balanceAfter / 150).toLocaleString()}건
+                        </p>
+                      </div>
+                      
+                      <div style="text-align: center;">
+                        <a href="https://superplace-academy.pages.dev/sms/compose" 
+                           style="display: inline-block; background: #9333ea; color: white; padding: 14px 30px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
+                          지금 문자 보내기 📤
+                        </a>
+                      </div>
+                      
+                      <p style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb; color: #6b7280; font-size: 14px; text-align: center;">
+                        문의사항이 있으시면 언제든지 연락주세요.<br>
+                        감사합니다!
+                      </p>
+                    </div>
+                  </div>
+                `
+              })
+            })
+
+            if (emailResponse.ok) {
+              console.log('Email notification sent successfully')
+            } else {
+              console.error('Failed to send email notification:', await emailResponse.text())
+            }
+          }
+        } catch (emailError) {
+          console.error('Email sending error:', emailError)
+          // 이메일 발송 실패해도 승인 처리는 계속 진행
+        }
+      }
     }
 
     // 입금 신청 상태 업데이트
-    const statusUpdateResult = await c.env.DB.prepare(`
+    await c.env.DB.prepare(`
       UPDATE deposit_requests SET status = ?, processed_at = CURRENT_TIMESTAMP WHERE id = ?
     `).bind(status, requestId).run()
-    
-    console.log('Status update result:', statusUpdateResult)
 
     return c.json({ 
       success: true, 
-      message: '입금 신청이 처리되었습니다.',
-      debug: { requestId, status, points, userId: request.user_id }
+      message: status === 'approved' ? '입금이 승인되고 포인트가 충전되었습니다.' : '입금 신청이 거절되었습니다.'
     })
   } catch (error) {
     console.error('Process deposit request error:', error)
@@ -15698,6 +15894,7 @@ app.get('/admin/deposits', async (c) => {
             }
 
             async function processDeposit(depositId, status, points, userName) {
+                const user = JSON.parse(localStorage.getItem('user'))
                 const action = status === 'approved' ? '승인' : '거절';
                 const message = status === 'approved' 
                     ? userName + '님의 입금 신청을 승인하고 ' + points.toLocaleString() + 'P를 지급하시겠습니까?' 
@@ -15709,7 +15906,10 @@ app.get('/admin/deposits', async (c) => {
                     const response = await fetch('/api/admin/deposit/requests/' + depositId + '/process', {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ status, points })
+                        body: JSON.stringify({ 
+                            status, 
+                            adminId: user.id 
+                        })
                     });
 
                     const data = await response.json();
@@ -17818,6 +18018,11 @@ app.get('/sms/points', (c) => {
           * {
             font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
           }
+          .tab-active {
+            border-bottom: 2px solid #9333ea;
+            color: #9333ea;
+            font-weight: 600;
+          }
         </style>
     </head>
     <body class="bg-gray-50">
@@ -17844,107 +18049,152 @@ app.get('/sms/points', (c) => {
         </nav>
 
         <div class="pt-24 pb-12 px-6">
-            <div class="max-w-6xl mx-auto">
+            <div class="max-w-7xl mx-auto">
                 <!-- Header -->
                 <div class="mb-8">
                     <h1 class="text-3xl font-bold text-gray-900 mb-2">💰 포인트 관리</h1>
-                    <p class="text-gray-600">SMS 발송 포인트를 관리합니다</p>
+                    <p class="text-gray-600">SMS 발송 포인트를 관리하고 거래 내역을 확인합니다</p>
                 </div>
 
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <!-- 왼쪽: 포인트 정보 -->
-                    <div class="lg:col-span-2 space-y-6">
-                        <!-- 현재 잔액 -->
-                        <div class="bg-gradient-to-br from-purple-600 to-purple-800 rounded-lg shadow-lg p-8 text-white">
-                            <div class="flex items-center justify-between mb-6">
-                                <h2 class="text-lg font-medium opacity-90">보유 포인트</h2>
-                                <svg class="w-8 h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                </svg>
-                            </div>
-                            <div class="mb-4">
-                                <p id="currentBalance" class="text-5xl font-bold mb-2">0</p>
-                                <p class="text-lg opacity-90">포인트</p>
-                            </div>
-                            <div class="grid grid-cols-3 gap-4 pt-4 border-t border-white/20">
-                                <div>
-                                    <p class="text-xs opacity-75 mb-1">SMS</p>
-                                    <p id="smsCount" class="text-lg font-semibold">0건</p>
-                                </div>
-                                <div>
-                                    <p class="text-xs opacity-75 mb-1">LMS</p>
-                                    <p id="lmsCount" class="text-lg font-semibold">0건</p>
-                                </div>
-                                <div>
-                                    <p class="text-xs opacity-75 mb-1">MMS</p>
-                                    <p id="mmsCount" class="text-lg font-semibold">0건</p>
-                                </div>
-                            </div>
+                <!-- 현재 잔액 카드 -->
+                <div class="bg-gradient-to-br from-purple-600 to-purple-800 rounded-lg shadow-lg p-8 text-white mb-8">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-lg font-medium opacity-90">보유 포인트</h2>
+                        <svg class="w-8 h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                    <div class="flex items-end justify-between">
+                        <div>
+                            <p id="currentBalance" class="text-5xl font-bold mb-2">0</p>
+                            <p class="text-lg opacity-90">포인트</p>
                         </div>
-
-                        <!-- 입금 신청 -->
-                        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                            <h3 class="text-lg font-semibold text-gray-900 mb-4">입금 신청</h3>
-                            <div class="space-y-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">충전 금액</label>
-                                    <div class="relative">
-                                        <input type="number" id="depositAmount" placeholder="10000" 
-                                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 pr-12">
-                                        <span class="absolute right-4 top-3 text-gray-500">원</span>
-                                    </div>
-                                </div>
-                                <div class="grid grid-cols-3 gap-2">
-                                    <button onclick="setAmount(10000)" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm">+1만</button>
-                                    <button onclick="setAmount(50000)" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm">+5만</button>
-                                    <button onclick="setAmount(100000)" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm">+10만</button>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">은행명 (선택)</label>
-                                    <input type="text" id="bankName" placeholder="신한은행" 
-                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">계좌번호 (선택)</label>
-                                    <input type="text" id="accountNumber" placeholder="110-123-456789" 
-                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">입금자명 (선택)</label>
-                                    <input type="text" id="depositorName" placeholder="홍길동" 
-                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">메모 (선택)</label>
-                                    <textarea id="depositMessage" rows="3" placeholder="입금 관련 메모를 입력하세요" 
-                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"></textarea>
-                                </div>
-                                <button onclick="requestDeposit()" 
-                                    class="w-full bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition font-semibold">
-                                    입금 신청하기
-                                </button>
+                        <div class="text-right space-y-2">
+                            <div class="flex items-center gap-3">
+                                <span class="text-sm opacity-75">SMS</span>
+                                <span id="smsCount" class="text-xl font-bold">0건</span>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <span class="text-sm opacity-75">LMS</span>
+                                <span id="lmsCount" class="text-xl font-bold">0건</span>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <span class="text-sm opacity-75">MMS</span>
+                                <span id="mmsCount" class="text-xl font-bold">0건</span>
                             </div>
                         </div>
                     </div>
+                    
+                    <!-- 통계 -->
+                    <div class="grid grid-cols-3 gap-4 pt-6 mt-6 border-t border-white/20">
+                        <div>
+                            <p class="text-xs opacity-75 mb-1">총 충전</p>
+                            <p id="totalCharged" class="text-lg font-semibold">0P</p>
+                        </div>
+                        <div>
+                            <p class="text-xs opacity-75 mb-1">총 사용</p>
+                            <p id="totalUsed" class="text-lg font-semibold">0P</p>
+                        </div>
+                        <div>
+                            <p class="text-xs opacity-75 mb-1">거래 건수</p>
+                            <p id="totalTransactions" class="text-lg font-semibold">0건</p>
+                        </div>
+                    </div>
+                </div>
 
-                    <!-- 오른쪽: 요금표 & 입금 신청 내역 -->
-                    <div class="space-y-6">
-                        <!-- SMS 요금표 -->
-                        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                            <h3 class="text-lg font-semibold text-gray-900 mb-4">SMS 요금표</h3>
-                            <div class="space-y-3" id="pricingContainer">
-                                <div class="animate-pulse">
-                                    <div class="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                                    <div class="h-4 bg-gray-200 rounded w-1/2"></div>
+                <!-- 탭 네비게이션 -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
+                    <div class="flex border-b border-gray-200">
+                        <button onclick="switchTab('charge')" id="tab-charge" class="tab-active flex-1 px-6 py-4 text-center transition">
+                            💳 충전하기
+                        </button>
+                        <button onclick="switchTab('deposit')" id="tab-deposit" class="flex-1 px-6 py-4 text-center text-gray-600 hover:text-purple-600 transition">
+                            📋 충전 내역
+                        </button>
+                        <button onclick="switchTab('transactions')" id="tab-transactions" class="flex-1 px-6 py-4 text-center text-gray-600 hover:text-purple-600 transition">
+                            📊 사용 내역
+                        </button>
+                        <button onclick="switchTab('pricing')" id="tab-pricing" class="flex-1 px-6 py-4 text-center text-gray-600 hover:text-purple-600 transition">
+                            💵 요금표
+                        </button>
+                    </div>
+
+                    <!-- 충전하기 탭 -->
+                    <div id="content-charge" class="p-6">
+                        <div class="max-w-2xl mx-auto space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">충전 금액</label>
+                                <div class="relative">
+                                    <input type="number" id="depositAmount" placeholder="10000" 
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 pr-12">
+                                    <span class="absolute right-4 top-3 text-gray-500">원</span>
                                 </div>
                             </div>
+                            <div class="grid grid-cols-4 gap-2">
+                                <button onclick="setAmount(10000)" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-purple-50 hover:border-purple-500 text-sm transition">+1만</button>
+                                <button onclick="setAmount(50000)" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-purple-50 hover:border-purple-500 text-sm transition">+5만</button>
+                                <button onclick="setAmount(100000)" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-purple-50 hover:border-purple-500 text-sm transition">+10만</button>
+                                <button onclick="setAmount(500000)" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-purple-50 hover:border-purple-500 text-sm transition">+50만</button>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">은행명 (선택)</label>
+                                <input type="text" id="bankName" placeholder="신한은행" 
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">계좌번호 (선택)</label>
+                                <input type="text" id="accountNumber" placeholder="110-123-456789" 
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">입금자명 (선택)</label>
+                                <input type="text" id="depositorName" placeholder="홍길동" 
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">메모 (선택)</label>
+                                <textarea id="depositMessage" rows="3" placeholder="입금 관련 메모를 입력하세요" 
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"></textarea>
+                            </div>
+                            
+                            <!-- 입금 안내 -->
+                            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                <h4 class="font-semibold text-blue-900 mb-2">💡 입금 안내</h4>
+                                <p class="text-sm text-blue-800 mb-2">아래 계좌로 입금 후 신청해주세요:</p>
+                                <div class="bg-white rounded p-3 font-mono text-sm">
+                                    <p class="font-bold text-gray-900">국민은행 746-910023-17004</p>
+                                    <p class="text-gray-600">예금주: 슈퍼플레이스</p>
+                                </div>
+                                <p class="text-xs text-blue-600 mt-2">• 최소 충전 금액: 10,000원<br>• 관리자 승인 후 포인트가 자동 충전됩니다</p>
+                            </div>
+                            
+                            <button onclick="requestDeposit()" 
+                                class="w-full bg-purple-600 text-white px-6 py-4 rounded-lg hover:bg-purple-700 transition font-semibold text-lg">
+                                입금 신청하기
+                            </button>
                         </div>
+                    </div>
 
-                        <!-- 입금 신청 내역 -->
-                        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                            <h3 class="text-lg font-semibold text-gray-900 mb-4">입금 신청 내역</h3>
-                            <div class="space-y-3" id="depositsContainer">
-                                <p class="text-sm text-gray-400 text-center py-4">불러오는 중...</p>
+                    <!-- 충전 내역 탭 -->
+                    <div id="content-deposit" class="p-6 hidden">
+                        <div id="depositsContainer" class="space-y-3">
+                            <p class="text-sm text-gray-400 text-center py-8">불러오는 중...</p>
+                        </div>
+                    </div>
+
+                    <!-- 사용 내역 탭 -->
+                    <div id="content-transactions" class="p-6 hidden">
+                        <div id="transactionsContainer" class="space-y-3">
+                            <p class="text-sm text-gray-400 text-center py-8">불러오는 중...</p>
+                        </div>
+                    </div>
+
+                    <!-- 요금표 탭 -->
+                    <div id="content-pricing" class="p-6 hidden">
+                        <div id="pricingContainer" class="max-w-2xl mx-auto space-y-3">
+                            <div class="animate-pulse">
+                                <div class="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                                <div class="h-4 bg-gray-200 rounded w-1/2"></div>
                             </div>
                         </div>
                     </div>
@@ -17957,6 +18207,7 @@ app.get('/sms/points', (c) => {
             let currentUserName = '';
             let currentUserEmail = '';
             let currentBalance = 0;
+            let currentTab = 'charge';
 
             async function checkAuth() {
                 const user = localStorage.getItem('user');
@@ -17971,6 +18222,35 @@ app.get('/sms/points', (c) => {
                 currentUserEmail = userData.email || '';
                 currentBalance = userData.points || 0;
                 return userData;
+            }
+
+            function switchTab(tab) {
+                // 모든 탭 버튼의 active 클래스 제거
+                document.querySelectorAll('[id^="tab-"]').forEach(btn => {
+                    btn.classList.remove('tab-active');
+                    btn.classList.add('text-gray-600');
+                });
+                
+                // 모든 탭 컨텐츠 숨기기
+                document.querySelectorAll('[id^="content-"]').forEach(content => {
+                    content.classList.add('hidden');
+                });
+                
+                // 선택된 탭 활성화
+                document.getElementById('tab-' + tab).classList.add('tab-active');
+                document.getElementById('tab-' + tab).classList.remove('text-gray-600');
+                document.getElementById('content-' + tab).classList.remove('hidden');
+                
+                currentTab = tab;
+                
+                // 데이터 로드
+                if (tab === 'deposit' && currentUserId) {
+                    loadDepositRequests();
+                } else if (tab === 'transactions' && currentUserId) {
+                    loadTransactions();
+                } else if (tab === 'pricing') {
+                    loadPricing();
+                }
             }
 
             async function loadBalance() {
@@ -17992,6 +18272,21 @@ app.get('/sms/points', (c) => {
                 }
             }
 
+            async function loadStats() {
+                try {
+                    const response = await fetch(\`/api/point-transactions/\${currentUserId}?limit=1000\`);
+                    const data = await response.json();
+
+                    if (data.success && data.stats) {
+                        document.getElementById('totalCharged').textContent = data.stats.totalCharged.toLocaleString() + 'P';
+                        document.getElementById('totalUsed').textContent = data.stats.totalUsed.toLocaleString() + 'P';
+                        document.getElementById('totalTransactions').textContent = data.stats.totalTransactions.toLocaleString() + '건';
+                    }
+                } catch (error) {
+                    console.error('Failed to load stats:', error);
+                }
+            }
+
             async function loadPricing() {
                 try {
                     const response = await fetch('/api/sms/pricing');
@@ -18000,13 +18295,14 @@ app.get('/sms/points', (c) => {
                     if (data.success) {
                         const container = document.getElementById('pricingContainer');
                         container.innerHTML = data.pricing.map(p => \`
-                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
                                 <div>
-                                    <div class="font-medium text-sm">\${p.message_type}</div>
-                                    <div class="text-xs text-gray-500">\${p.description}</div>
+                                    <div class="font-semibold text-gray-900">\${p.message_type}</div>
+                                    <div class="text-sm text-gray-500 mt-1">\${p.description}</div>
                                 </div>
                                 <div class="text-right">
-                                    <div class="font-bold text-purple-600">\${p.retail_price}P</div>
+                                    <div class="text-2xl font-bold text-purple-600">\${p.retail_price}P</div>
+                                    <div class="text-xs text-gray-400">건당</div>
                                 </div>
                             </div>
                         \`).join('');
@@ -18021,29 +18317,85 @@ app.get('/sms/points', (c) => {
                     const response = await fetch(\`/api/deposit/my-requests/\${currentUserId}\`);
                     const data = await response.json();
 
-                    if (data.success && data.requests.length > 0) {
-                        const container = document.getElementById('depositsContainer');
-                        container.innerHTML = data.requests.slice(0, 5).map(req => \`
-                            <div class="p-3 bg-gray-50 rounded-lg">
-                                <div class="flex items-center justify-between mb-1">
-                                    <span class="font-semibold text-sm">\${req.amount.toLocaleString()}원</span>
-                                    <span class="text-xs px-2 py-1 rounded-full \${
+                    const container = document.getElementById('depositsContainer');
+                    
+                    if (data.success && data.requests && data.requests.length > 0) {
+                        container.innerHTML = data.requests.map(req => \`
+                            <div class="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-xl font-bold text-gray-900">\${req.amount.toLocaleString()}원</span>
+                                    <span class="text-xs px-3 py-1 rounded-full font-semibold \${
                                         req.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
                                         req.status === 'approved' ? 'bg-green-100 text-green-800' :
                                         'bg-red-100 text-red-800'
                                     }">
-                                        \${req.status === 'pending' ? '대기중' : req.status === 'approved' ? '승인' : '거절'}
+                                        \${req.status === 'pending' ? '대기중' : req.status === 'approved' ? '승인완료' : '거절됨'}
                                     </span>
                                 </div>
-                                <div class="text-xs text-gray-500">\${new Date(req.created_at).toLocaleDateString('ko-KR')}</div>
+                                <div class="grid grid-cols-2 gap-2 text-sm text-gray-600">
+                                    \${req.bank_name ? \`<div>• 은행: \${req.bank_name}</div>\` : ''}
+                                    \${req.depositor_name ? \`<div>• 입금자: \${req.depositor_name}</div>\` : ''}
+                                </div>
+                                <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-200">
+                                    <span class="text-xs text-gray-500">신청일: \${new Date(req.created_at).toLocaleString('ko-KR')}</span>
+                                    \${req.processed_at ? \`<span class="text-xs text-gray-500">처리일: \${new Date(req.processed_at).toLocaleString('ko-KR')}</span>\` : ''}
+                                </div>
+                                \${req.message ? \`<div class="mt-2 text-sm text-gray-600 italic">\${req.message}</div>\` : ''}
                             </div>
                         \`).join('');
                     } else {
-                        document.getElementById('depositsContainer').innerHTML = 
-                            '<p class="text-sm text-gray-400 text-center py-4">입금 신청 내역이 없습니다</p>';
+                        container.innerHTML = '<div class="text-center py-12"><p class="text-gray-400">입금 신청 내역이 없습니다</p><p class="text-sm text-gray-400 mt-2">충전하기 탭에서 입금을 신청해보세요</p></div>';
                     }
                 } catch (error) {
                     console.error('Failed to load deposit requests:', error);
+                    document.getElementById('depositsContainer').innerHTML = '<p class="text-sm text-red-500 text-center py-8">불러오기 실패</p>';
+                }
+            }
+
+            async function loadTransactions() {
+                try {
+                    const response = await fetch(\`/api/point-transactions/\${currentUserId}?limit=50\`);
+                    const data = await response.json();
+
+                    const container = document.getElementById('transactionsContainer');
+                    
+                    if (data.success && data.transactions && data.transactions.length > 0) {
+                        container.innerHTML = data.transactions.map(tx => {
+                            const isPositive = tx.amount > 0;
+                            const typeLabels = {
+                                'deposit': '입금 승인',
+                                'charge': '관리자 충전',
+                                'sms_cost': 'SMS 발송',
+                                'refund': '환불'
+                            };
+                            const typeLabel = typeLabels[tx.transaction_type] || tx.transaction_type;
+                            
+                            return \`
+                            <div class="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-2xl">\${isPositive ? '📥' : '📤'}</span>
+                                        <div>
+                                            <div class="font-semibold text-gray-900">\${typeLabel}</div>
+                                            <div class="text-xs text-gray-500">\${new Date(tx.created_at).toLocaleString('ko-KR')}</div>
+                                        </div>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="text-xl font-bold \${isPositive ? 'text-green-600' : 'text-red-600'}">
+                                            \${isPositive ? '+' : ''}\${tx.amount.toLocaleString()}P
+                                        </div>
+                                        <div class="text-xs text-gray-500">잔액: \${tx.balance_after.toLocaleString()}P</div>
+                                    </div>
+                                </div>
+                                \${tx.description ? \`<div class="text-sm text-gray-600 mt-2">\${tx.description}</div>\` : ''}
+                            </div>
+                        \`}).join('');
+                    } else {
+                        container.innerHTML = '<div class="text-center py-12"><p class="text-gray-400">거래 내역이 없습니다</p><p class="text-sm text-gray-400 mt-2">충전 또는 SMS 발송 후 내역이 표시됩니다</p></div>';
+                    }
+                } catch (error) {
+                    console.error('Failed to load transactions:', error);
+                    document.getElementById('transactionsContainer').innerHTML = '<p class="text-sm text-red-500 text-center py-8">불러오기 실패</p>';
                 }
             }
 
@@ -18102,8 +18454,8 @@ app.get('/sms/points', (c) => {
                         document.getElementById('depositorName').value = '';
                         document.getElementById('depositMessage').value = '';
                         
-                        // 내역 새로고침
-                        loadDepositRequests();
+                        // 충전 내역 탭으로 전환
+                        switchTab('deposit');
                     } else {
                         alert('❌ ' + data.error);
                     }
@@ -18117,8 +18469,7 @@ app.get('/sms/points', (c) => {
                 await checkAuth();
                 if (currentUserId) {
                     loadBalance();
-                    loadPricing();
-                    loadDepositRequests();
+                    loadStats();
                 }
             })();
         </script>
