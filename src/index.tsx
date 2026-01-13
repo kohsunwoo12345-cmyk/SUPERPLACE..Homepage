@@ -8885,8 +8885,9 @@ app.get('/tools/search-volume', (c) => {
                 <div class="space-y-6">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">분석 키워드</label>
-                        <input type="text" id="keyword" placeholder="예: 인천 영어학원" 
+                        <input type="text" id="keyword" placeholder="예: 인천영어학원" 
                                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        <p class="text-sm text-red-600 font-bold mt-2">⚠️ 중요: 띄어쓰기 없이 입력해주세요! (예: 검단영어학원 ⭕ / 검단 영어학원 ❌)</p>
                     </div>
 
                     <div>
