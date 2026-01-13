@@ -114,6 +114,136 @@ app.post('/api/login', async (c) => {
   }
 })
 
+// 구글 소셜 로그인 API
+app.post('/api/auth/google', async (c) => {
+  try {
+    const { idToken, email, name, picture } = await c.req.json()
+    
+    if (!idToken || !email) {
+      return c.json({ success: false, error: '구글 인증 정보가 누락되었습니다.' }, 400)
+    }
+
+    // 구글 ID로 사용자 조회
+    let user = await c.env.DB.prepare(`
+      SELECT id, email, name, role, points, google_id FROM users WHERE google_id = ?
+    `).bind(idToken).first()
+
+    // 이메일로 기존 사용자 조회 (구글 ID가 없는 경우)
+    if (!user) {
+      user = await c.env.DB.prepare(`
+        SELECT id, email, name, role, points, google_id FROM users WHERE email = ?
+      `).bind(email).first()
+
+      // 기존 사용자에게 구글 ID 연동
+      if (user && !user.google_id) {
+        await c.env.DB.prepare(`
+          UPDATE users SET google_id = ?, profile_image = ?, social_provider = 'google', updated_at = CURRENT_TIMESTAMP WHERE id = ?
+        `).bind(idToken, picture || null, user.id).run()
+        
+        user.google_id = idToken
+      }
+    }
+
+    // 신규 사용자인 경우
+    if (!user) {
+      return c.json({ 
+        success: false, 
+        needsRegistration: true,
+        socialData: {
+          provider: 'google',
+          email: email,
+          name: name,
+          picture: picture,
+          google_id: idToken
+        },
+        message: '회원가입이 필요합니다.'
+      }, 200)
+    }
+
+    return c.json({ 
+      success: true, 
+      message: '구글 로그인 성공',
+      user: { 
+        id: user.id, 
+        email: user.email, 
+        name: user.name, 
+        role: user.role, 
+        points: user.points || 0,
+        profile_image: user.profile_image
+      }
+    })
+  } catch (error) {
+    console.error('Google login error:', error)
+    return c.json({ success: false, error: '구글 로그인 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
+// 카카오 소셜 로그인 API
+app.post('/api/auth/kakao', async (c) => {
+  try {
+    const { accessToken, id, email, nickname, profile_image } = await c.req.json()
+    
+    if (!accessToken || !id) {
+      return c.json({ success: false, error: '카카오 인증 정보가 누락되었습니다.' }, 400)
+    }
+
+    const kakaoId = String(id)
+
+    // 카카오 ID로 사용자 조회
+    let user = await c.env.DB.prepare(`
+      SELECT id, email, name, role, points, kakao_id FROM users WHERE kakao_id = ?
+    `).bind(kakaoId).first()
+
+    // 이메일로 기존 사용자 조회 (카카오 ID가 없는 경우)
+    if (!user && email) {
+      user = await c.env.DB.prepare(`
+        SELECT id, email, name, role, points, kakao_id FROM users WHERE email = ?
+      `).bind(email).first()
+
+      // 기존 사용자에게 카카오 ID 연동
+      if (user && !user.kakao_id) {
+        await c.env.DB.prepare(`
+          UPDATE users SET kakao_id = ?, profile_image = ?, social_provider = 'kakao', updated_at = CURRENT_TIMESTAMP WHERE id = ?
+        `).bind(kakaoId, profile_image || null, user.id).run()
+        
+        user.kakao_id = kakaoId
+      }
+    }
+
+    // 신규 사용자인 경우
+    if (!user) {
+      return c.json({ 
+        success: false, 
+        needsRegistration: true,
+        socialData: {
+          provider: 'kakao',
+          email: email || '',
+          name: nickname || '',
+          picture: profile_image || '',
+          kakao_id: kakaoId
+        },
+        message: '회원가입이 필요합니다.'
+      }, 200)
+    }
+
+    return c.json({ 
+      success: true, 
+      message: '카카오 로그인 성공',
+      user: { 
+        id: user.id, 
+        email: user.email, 
+        name: user.name, 
+        role: user.role, 
+        points: user.points || 0,
+        profile_image: user.profile_image
+      }
+    })
+  } catch (error) {
+    console.error('Kakao login error:', error)
+    return c.json({ success: false, error: '카카오 로그인 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
 // 실시간 포인트 조회 API
 app.get('/api/users/:id/points', async (c) => {
   try {
@@ -257,11 +387,16 @@ app.post('/api/admin/login-as/:id', async (c) => {
 // 회원가입 API
 app.post('/api/register', async (c) => {
   try {
-    const { email, password, name, phone, academy_name } = await c.req.json()
+    const { email, password, name, phone, academy_name, academy_location, google_id, kakao_id, profile_image, social_provider } = await c.req.json()
 
-    // 필수 필드 확인
-    if (!email || !password || !name) {
+    // 필수 필드 확인 (소셜 로그인의 경우 비밀번호 불필요)
+    if (!email || !name) {
       return c.json({ success: false, error: '필수 정보를 모두 입력해주세요.' }, 400)
+    }
+
+    // 소셜 로그인이 아닌 경우 비밀번호 필수
+    if (!social_provider && !password) {
+      return c.json({ success: false, error: '비밀번호를 입력해주세요.' }, 400)
     }
 
     // 이메일 중복 확인
@@ -275,9 +410,19 @@ app.post('/api/register', async (c) => {
 
     // 사용자 생성
     const result = await c.env.DB.prepare(`
-      INSERT INTO users (email, password, name, phone, academy_name, role)
-      VALUES (?, ?, ?, ?, ?, 'user')
-    `).bind(email, password, name, phone || null, academy_name || null).run()
+      INSERT INTO users (email, password, name, phone, academy_name, role, google_id, kakao_id, profile_image, social_provider)
+      VALUES (?, ?, ?, ?, ?, 'user', ?, ?, ?, ?)
+    `).bind(
+      email, 
+      password || 'social_login_' + Date.now(), 
+      name, 
+      phone || null, 
+      academy_name || null,
+      google_id || null,
+      kakao_id || null,
+      profile_image || null,
+      social_provider || null
+    ).run()
 
     return c.json({ 
       success: true, 
@@ -3132,8 +3277,13 @@ app.get('/register', (c) => {
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-900 mb-2">학원명</label>
-                            <input type="text" name="academy_name" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition">
+                            <label class="block text-sm font-medium text-gray-900 mb-2">학원명 <span class="text-red-500">*</span></label>
+                            <input type="text" name="academy_name" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition" placeholder="꾸메땅학원">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 mb-2">학원 위치 <span class="text-red-500">*</span></label>
+                            <input type="text" name="academy_location" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition" placeholder="인천 서구 검단동">
                         </div>
 
                         <div>
@@ -3159,6 +3309,52 @@ app.get('/register', (c) => {
         </div>
 
         <script>
+            // URL 파라미터에서 소셜 로그인 출처 확인
+            const urlParams = new URLSearchParams(window.location.search)
+            const fromSocial = urlParams.get('from')
+            
+            // 소셜 로그인 데이터 자동 입력
+            window.addEventListener('load', () => {
+                if (fromSocial && (fromSocial === 'google' || fromSocial === 'kakao')) {
+                    const socialDataStr = sessionStorage.getItem('socialData')
+                    if (socialDataStr) {
+                        try {
+                            const socialData = JSON.parse(socialDataStr)
+                            
+                            // 소셜 로그인 정보 자동 입력
+                            if (socialData.email) {
+                                document.querySelector('input[name="email"]').value = socialData.email
+                                document.querySelector('input[name="email"]').readOnly = true
+                                document.querySelector('input[name="email"]').style.backgroundColor = '#f3f4f6'
+                            }
+                            if (socialData.name) {
+                                document.querySelector('input[name="name"]').value = socialData.name
+                            }
+                            
+                            // 비밀번호 필드 숨기기 (소셜 로그인은 비밀번호 불필요)
+                            const passwordDiv = document.querySelector('input[name="password"]').closest('div')
+                            passwordDiv.style.display = 'none'
+                            
+                            // 안내 메시지 표시
+                            const form = document.getElementById('registerForm')
+                            const infoDiv = document.createElement('div')
+                            infoDiv.className = 'bg-blue-50 text-blue-700 px-4 py-3 rounded-xl text-sm mb-4'
+                            infoDiv.innerHTML = \`
+                                <div class="flex items-center gap-2">
+                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    <span><strong>\${fromSocial === 'google' ? '구글' : '카카오'}</strong> 계정으로 가입 중입니다. 학원 이름과 위치만 입력하시면 바로 이용하실 수 있습니다.</span>
+                                </div>
+                            \`
+                            form.insertBefore(infoDiv, form.firstChild)
+                        } catch (error) {
+                            console.error('Failed to parse social data:', error)
+                        }
+                    }
+                }
+            })
+
             document.getElementById('registerForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 
@@ -3168,8 +3364,30 @@ app.get('/register', (c) => {
                     email: formData.get('email'),
                     password: formData.get('password'),
                     academy_name: formData.get('academy_name'),
+                    academy_location: formData.get('academy_location'),
                     phone: formData.get('phone')
                 };
+
+                // 소셜 로그인 데이터 추가
+                if (fromSocial && (fromSocial === 'google' || fromSocial === 'kakao')) {
+                    const socialDataStr = sessionStorage.getItem('socialData')
+                    if (socialDataStr) {
+                        try {
+                            const socialData = JSON.parse(socialDataStr)
+                            data.social_provider = socialData.provider
+                            data.google_id = socialData.google_id || null
+                            data.kakao_id = socialData.kakao_id || null
+                            data.profile_image = socialData.picture || null
+                            data.email = socialData.email
+                            // 소셜 로그인은 비밀번호 불필요
+                            if (!data.password) {
+                                data.password = 'social_login_' + Date.now()
+                            }
+                        } catch (error) {
+                            console.error('Failed to parse social data:', error)
+                        }
+                    }
+                }
 
                 const errorDiv = document.getElementById('errorMessage');
                 errorDiv.classList.add('hidden');
@@ -3186,6 +3404,9 @@ app.get('/register', (c) => {
                     const result = await response.json();
 
                     if (result.success) {
+                        // 세션 스토리지 클리어
+                        sessionStorage.removeItem('socialData')
+                        
                         alert('회원가입이 완료되었습니다! 로그인 페이지로 이동합니다.');
                         window.location.href = '/login';
                     } else {
@@ -3292,16 +3513,141 @@ app.get('/login', (c) => {
             </div>
         </div>
 
+        <!-- Google Sign-In SDK -->
+        <script src="https://accounts.google.com/gsi/client" async defer></script>
+        <!-- Kakao SDK -->
+        <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.0/kakao.min.js" integrity="sha384-l+xbElFSnPZ2rOaPrU//2FF5B4LB8FiX5q4fXYTlfcG4PGpMkE1vcL7kNXI6Cci0" crossorigin="anonymous"></script>
+
         <script>
-            // 구글 로그인
+            // 구글 로그인 초기화
+            function initGoogleSignIn() {
+                google.accounts.id.initialize({
+                    client_id: '${process.env.GOOGLE_CLIENT_ID || "YOUR_GOOGLE_CLIENT_ID"}',
+                    callback: handleGoogleCallback
+                })
+            }
+
+            // 구글 로그인 콜백
+            async function handleGoogleCallback(response) {
+                try {
+                    // JWT 토큰 디코딩
+                    const payload = JSON.parse(atob(response.credential.split('.')[1]))
+                    
+                    const result = await fetch('/api/auth/google', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            idToken: response.credential,
+                            email: payload.email,
+                            name: payload.name,
+                            picture: payload.picture
+                        })
+                    })
+
+                    const data = await result.json()
+                    
+                    if (data.success) {
+                        localStorage.setItem('user', JSON.stringify(data.user))
+                        showMessage('success', data.message)
+                        setTimeout(() => {
+                            window.location.href = data.user.role === 'admin' ? '/admin/dashboard' : '/dashboard'
+                        }, 1000)
+                    } else if (data.needsRegistration) {
+                        // 회원가입 필요
+                        sessionStorage.setItem('socialData', JSON.stringify(data.socialData))
+                        window.location.href = '/register?from=google'
+                    } else {
+                        showMessage('error', data.error || '구글 로그인에 실패했습니다.')
+                    }
+                } catch (error) {
+                    console.error('Google login error:', error)
+                    showMessage('error', '구글 로그인 중 오류가 발생했습니다.')
+                }
+            }
+
+            // 구글 로그인 버튼 클릭
             function loginWithGoogle() {
-                alert('구글 로그인은 Google OAuth 2.0 설정이 필요합니다.\\n\\n설정 방법:\\n1. Google Cloud Console에서 프로젝트 생성\\n2. OAuth 2.0 클라이언트 ID 생성\\n3. 승인된 리디렉션 URI 추가\\n4. 클라이언트 ID를 환경변수에 설정\\n\\n현재는 일반 로그인을 사용해주세요.')
+                google.accounts.id.prompt()
+            }
+
+            // 카카오 로그인 초기화
+            function initKakaoLogin() {
+                if (!Kakao.isInitialized()) {
+                    Kakao.init('${process.env.KAKAO_JS_KEY || "YOUR_KAKAO_JS_KEY"}')
+                }
             }
 
             // 카카오 로그인
             function loginWithKakao() {
-                alert('카카오 로그인은 Kakao Developers 설정이 필요합니다.\\n\\n설정 방법:\\n1. Kakao Developers에서 앱 생성\\n2. JavaScript 키 발급\\n3. 플랫폼 설정에서 Web 플랫폼 추가\\n4. Redirect URI 등록\\n\\n현재는 일반 로그인을 사용해주세요.')
+                Kakao.Auth.login({
+                    success: async function(authObj) {
+                        try {
+                            // 사용자 정보 가져오기
+                            Kakao.API.request({
+                                url: '/v2/user/me',
+                                success: async function(response) {
+                                    const result = await fetch('/api/auth/kakao', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({
+                                            accessToken: authObj.access_token,
+                                            id: response.id,
+                                            email: response.kakao_account?.email || '',
+                                            nickname: response.properties?.nickname || '',
+                                            profile_image: response.properties?.profile_image || ''
+                                        })
+                                    })
+
+                                    const data = await result.json()
+                                    
+                                    if (data.success) {
+                                        localStorage.setItem('user', JSON.stringify(data.user))
+                                        showMessage('success', data.message)
+                                        setTimeout(() => {
+                                            window.location.href = data.user.role === 'admin' ? '/admin/dashboard' : '/dashboard'
+                                        }, 1000)
+                                    } else if (data.needsRegistration) {
+                                        // 회원가입 필요
+                                        sessionStorage.setItem('socialData', JSON.stringify(data.socialData))
+                                        window.location.href = '/register?from=kakao'
+                                    } else {
+                                        showMessage('error', data.error || '카카오 로그인에 실패했습니다.')
+                                    }
+                                },
+                                fail: function(error) {
+                                    console.error('Kakao API error:', error)
+                                    showMessage('error', '카카오 사용자 정보를 가져오지 못했습니다.')
+                                }
+                            })
+                        } catch (error) {
+                            console.error('Kakao login error:', error)
+                            showMessage('error', '카카오 로그인 중 오류가 발생했습니다.')
+                        }
+                    },
+                    fail: function(err) {
+                        console.error('Kakao login failed:', err)
+                        showMessage('error', '카카오 로그인에 실패했습니다.')
+                    }
+                })
             }
+
+            // 메시지 표시 함수
+            function showMessage(type, text) {
+                const messageEl = document.getElementById('message')
+                messageEl.classList.remove('hidden')
+                if (type === 'success') {
+                    messageEl.className = 'mt-4 p-4 rounded-xl bg-green-50 text-green-800 border border-green-200'
+                } else {
+                    messageEl.className = 'mt-4 p-4 rounded-xl bg-red-50 text-red-800 border border-red-200'
+                }
+                messageEl.textContent = text
+            }
+
+            // 페이지 로드 시 초기화
+            window.addEventListener('load', () => {
+                initGoogleSignIn()
+                initKakaoLogin()
+            })
 
             document.getElementById('loginForm').addEventListener('submit', async (e) => {
                 e.preventDefault()
