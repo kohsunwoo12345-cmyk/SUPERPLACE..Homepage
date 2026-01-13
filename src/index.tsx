@@ -480,12 +480,12 @@ app.get('/api/sms/senders', async (c) => {
   }
 })
 
-// 발신번호 인증 요청 API (알리고 API 연동)
-app.post('/api/sms/sender/verify', async (c) => {
+// 발신번호 등록 API (알리고 사이트에서 인증 완료 후 DB에 저장)
+app.post('/api/sms/sender/register', async (c) => {
   try {
-    const { userId, phoneNumber, method } = await c.req.json()
+    const { userId, phoneNumber, verificationMethod } = await c.req.json()
     
-    if (!userId || !phoneNumber || !method) {
+    if (!userId || !phoneNumber) {
       return c.json({ success: false, error: '필수 정보를 입력해주세요.' }, 400)
     }
 
@@ -495,45 +495,63 @@ app.post('/api/sms/sender/verify', async (c) => {
       return c.json({ success: false, error: '올바른 휴대폰 번호를 입력해주세요.' }, 400)
     }
 
-    // 알리고 API 호출 (발신번호 인증)
-    const aligoApiKey = c.env.ALIGO_API_KEY || 'YOUR_ALIGO_API_KEY'
-    const aligoUserId = c.env.ALIGO_USER_ID || 'YOUR_ALIGO_USER_ID'
+    // 이미 등록된 번호인지 확인
+    const existing = await c.env.DB.prepare(`
+      SELECT id FROM sender_ids WHERE user_id = ? AND phone_number = ?
+    `).bind(userId, cleanNumber).first()
     
-    const formData = new FormData()
-    formData.append('key', aligoApiKey)
-    formData.append('user_id', aligoUserId)
-    formData.append('sender', cleanNumber)
-    formData.append('type', method) // 'mobile' or 'ars'
-    
-    const aligoResponse = await fetch('https://apis.aligo.in/sender/', {
-      method: 'POST',
-      body: formData
-    })
-    
-    const aligoResult = await aligoResponse.json()
-    
-    // DB에 발신번호 등록
-    const result = await c.env.DB.prepare(`
-      INSERT INTO sender_ids (user_id, phone_number, verification_method, status, alligo_response)
-      VALUES (?, ?, ?, 'pending', ?)
-    `).bind(userId, cleanNumber, method, JSON.stringify(aligoResult)).run()
-    
-    if (aligoResult.result_code === '1') {
-      return c.json({ 
-        success: true, 
-        message: '인증 요청이 완료되었습니다. 휴대폰 또는 ARS로 인증을 진행해주세요.',
-        senderId: result.meta.last_row_id
-      })
-    } else {
-      return c.json({ 
-        success: false, 
-        error: aligoResult.message || '인증 요청에 실패했습니다.',
-        aligoError: aligoResult
-      }, 400)
+    if (existing) {
+      return c.json({ success: false, error: '이미 등록된 발신번호입니다.' }, 400)
     }
+
+    // DB에 발신번호 등록 (알리고 사이트에서 인증 완료된 번호)
+    const result = await c.env.DB.prepare(`
+      INSERT INTO sender_ids (user_id, phone_number, verification_method, status, verification_date)
+      VALUES (?, ?, ?, 'verified', CURRENT_TIMESTAMP)
+    `).bind(userId, cleanNumber, verificationMethod || 'manual').run()
+    
+    return c.json({ 
+      success: true, 
+      message: '발신번호가 등록되었습니다.',
+      senderId: result.meta.last_row_id
+    })
   } catch (error) {
-    console.error('Sender verification error:', error)
-    return c.json({ success: false, error: '발신번호 인증 요청 중 오류가 발생했습니다.' }, 500)
+    console.error('Sender registration error:', error)
+    return c.json({ success: false, error: '발신번호 등록 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
+// 발신번호 삭제 API
+app.delete('/api/sms/sender/:senderId', async (c) => {
+  try {
+    const senderId = c.req.param('senderId')
+    const userId = c.req.query('userId')
+    
+    if (!userId || !senderId) {
+      return c.json({ success: false, error: '필수 정보를 입력해주세요.' }, 400)
+    }
+
+    // 해당 사용자의 발신번호인지 확인
+    const sender = await c.env.DB.prepare(`
+      SELECT id FROM sender_ids WHERE id = ? AND user_id = ?
+    `).bind(senderId, userId).first()
+    
+    if (!sender) {
+      return c.json({ success: false, error: '발신번호를 찾을 수 없습니다.' }, 404)
+    }
+
+    // 발신번호 삭제
+    await c.env.DB.prepare(`
+      DELETE FROM sender_ids WHERE id = ? AND user_id = ?
+    `).bind(senderId, userId).run()
+    
+    return c.json({ 
+      success: true, 
+      message: '발신번호가 삭제되었습니다.'
+    })
+  } catch (error) {
+    console.error('Sender delete error:', error)
+    return c.json({ success: false, error: '발신번호 삭제 중 오류가 발생했습니다.' }, 500)
   }
 })
 
