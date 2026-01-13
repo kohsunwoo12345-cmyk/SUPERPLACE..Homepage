@@ -9059,11 +9059,11 @@ app.get('/tools/search-volume', (c) => {
                             document.getElementById('searchDetails').textContent = 
                                 'PC: ' + pcSearch + ' / 모바일: ' + mobileSearch;
                             document.getElementById('averageCtr').textContent = 
-                                (ext.averageCtr || 0) + '%';
+                                ((ext.averageCtr || 0) * 100).toFixed(2) + '%';
                             document.getElementById('pcCtr').textContent = 
-                                (ext.pcCtr || 0) + '%';
+                                ((ext.pcCtr || 0) * 100).toFixed(2) + '%';
                             document.getElementById('mobileCtr').textContent = 
-                                (ext.mobileCtr || 0) + '%';
+                                ((ext.mobileCtr || 0) * 100).toFixed(2) + '%';
                         }
                         
                         document.getElementById('searchVolumeResult').classList.remove('hidden');
@@ -9079,7 +9079,7 @@ app.get('/tools/search-volume', (c) => {
                                     '<td class="p-3 text-gray-600 font-bold">' + (idx + 1) + '</td>' +
                                     '<td class="p-3 text-gray-900 font-medium">' + kw.keyword + '</td>' +
                                     '<td class="p-3 text-right text-blue-600 font-bold">' + (kw.monthlySearchVolume?.toLocaleString() || 0) + '</td>' +
-                                    '<td class="p-3 text-right text-green-600 font-bold">' + (kw.averageCtr || 0) + '%</td>' +
+                                    '<td class="p-3 text-right text-green-600 font-bold">' + ((kw.averageCtr || 0) * 100).toFixed(2) + '%</td>' +
                                     '<td class="p-3 text-center">' +
                                     '<span class="px-3 py-1 rounded-full text-xs font-bold ' + compClass + '">' + kw.competition + '</span>' +
                                     '</td>' +
