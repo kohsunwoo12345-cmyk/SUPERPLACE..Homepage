@@ -847,6 +847,193 @@ app.post('/api/deposit/request', async (c) => {
   }
 })
 
+// 발신번호 인증 신청 API (사업자 등록증 포함)
+app.post('/api/sms/sender/verification-request', async (c) => {
+  try {
+    const { userId, phoneNumber, businessName, businessRegistrationNumber, businessRegistrationImage } = await c.req.json()
+    
+    if (!userId || !phoneNumber || !businessName || !businessRegistrationNumber || !businessRegistrationImage) {
+      return c.json({ success: false, error: '모든 필수 정보를 입력해주세요.' }, 400)
+    }
+
+    // 전화번호 형식 검증 (하이픈 제거)
+    const cleanNumber = phoneNumber.replace(/-/g, '')
+    if (!/^01[0-9]{8,9}$/.test(cleanNumber)) {
+      return c.json({ success: false, error: '올바른 휴대폰 번호를 입력해주세요.' }, 400)
+    }
+
+    // 이미 신청 중이거나 승인된 번호인지 확인
+    const existingRequest = await c.env.DB.prepare(`
+      SELECT id, status FROM sender_verification_requests
+      WHERE phone_number = ? AND user_id = ? AND status IN ('pending', 'approved')
+      ORDER BY request_date DESC
+      LIMIT 1
+    `).bind(cleanNumber, userId).first()
+
+    if (existingRequest) {
+      if (existingRequest.status === 'pending') {
+        return c.json({ success: false, error: '이미 신청 중인 번호입니다.' }, 400)
+      }
+      if (existingRequest.status === 'approved') {
+        return c.json({ success: false, error: '이미 승인된 번호입니다.' }, 400)
+      }
+    }
+
+    // 신청 저장
+    const result = await c.env.DB.prepare(`
+      INSERT INTO sender_verification_requests 
+      (user_id, phone_number, business_name, business_registration_number, business_registration_image, status)
+      VALUES (?, ?, ?, ?, ?, 'pending')
+    `).bind(userId, cleanNumber, businessName, businessRegistrationNumber, businessRegistrationImage).run()
+
+    return c.json({ 
+      success: true, 
+      message: '발신번호 인증 신청이 완료되었습니다. 관리자 승인을 기다려주세요.',
+      requestId: result.meta.last_row_id
+    })
+  } catch (error) {
+    console.error('Sender verification request error:', error)
+    return c.json({ success: false, error: '발신번호 인증 신청 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
+// 발신번호 인증 신청 목록 조회 API (사용자)
+app.get('/api/sms/sender/verification-requests', async (c) => {
+  try {
+    const userId = c.req.query('userId')
+    
+    if (!userId) {
+      return c.json({ success: false, error: '사용자 ID가 필요합니다.' }, 400)
+    }
+
+    const requests = await c.env.DB.prepare(`
+      SELECT 
+        id, phone_number, business_name, business_registration_number, 
+        business_registration_image, request_date, status, admin_note, processed_date
+      FROM sender_verification_requests
+      WHERE user_id = ?
+      ORDER BY request_date DESC
+    `).bind(userId).all()
+
+    return c.json({ success: true, requests: requests.results })
+  } catch (error) {
+    console.error('Get verification requests error:', error)
+    return c.json({ success: false, error: '신청 목록 조회 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
+// 발신번호 인증 신청 승인/거절 API (관리자)
+app.post('/api/sms/sender/verification-process', async (c) => {
+  try {
+    const { requestId, action, adminNote, adminId } = await c.req.json()
+    
+    if (!requestId || !action || !adminId) {
+      return c.json({ success: false, error: '필수 정보를 입력해주세요.' }, 400)
+    }
+
+    if (!['approve', 'reject'].includes(action)) {
+      return c.json({ success: false, error: '올바른 액션을 선택해주세요.' }, 400)
+    }
+
+    // 관리자 권한 확인
+    const admin = await c.env.DB.prepare(`
+      SELECT role FROM users WHERE id = ?
+    `).bind(adminId).first()
+
+    if (!admin || admin.role !== 'admin') {
+      return c.json({ success: false, error: '관리자 권한이 필요합니다.' }, 403)
+    }
+
+    // 신청 정보 조회
+    const request = await c.env.DB.prepare(`
+      SELECT * FROM sender_verification_requests WHERE id = ?
+    `).bind(requestId).first()
+
+    if (!request) {
+      return c.json({ success: false, error: '신청 정보를 찾을 수 없습니다.' }, 404)
+    }
+
+    if (request.status !== 'pending') {
+      return c.json({ success: false, error: '이미 처리된 신청입니다.' }, 400)
+    }
+
+    const newStatus = action === 'approve' ? 'approved' : 'rejected'
+    const processedDate = new Date().toISOString()
+
+    // 신청 상태 업데이트
+    await c.env.DB.prepare(`
+      UPDATE sender_verification_requests
+      SET status = ?, admin_note = ?, processed_by = ?, processed_date = ?
+      WHERE id = ?
+    `).bind(newStatus, adminNote || null, adminId, processedDate, requestId).run()
+
+    // 승인된 경우 sender_ids 테이블에 추가
+    if (action === 'approve') {
+      await c.env.DB.prepare(`
+        INSERT INTO sender_ids 
+        (user_id, phone_number, verification_method, status, verification_request_id, business_name, business_registration_number)
+        VALUES (?, ?, 'business_registration', 'verified', ?, ?, ?)
+      `).bind(
+        request.user_id, 
+        request.phone_number, 
+        requestId, 
+        request.business_name, 
+        request.business_registration_number
+      ).run()
+    }
+
+    return c.json({ 
+      success: true, 
+      message: action === 'approve' ? '발신번호가 승인되었습니다.' : '발신번호 신청이 거절되었습니다.'
+    })
+  } catch (error) {
+    console.error('Process verification error:', error)
+    return c.json({ success: false, error: '처리 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
+// 관리자용 발신번호 인증 신청 전체 목록 조회 API
+app.get('/api/admin/sender/verification-requests', async (c) => {
+  try {
+    const adminId = c.req.query('adminId')
+    
+    if (!adminId) {
+      return c.json({ success: false, error: '관리자 ID가 필요합니다.' }, 400)
+    }
+
+    // 관리자 권한 확인
+    const admin = await c.env.DB.prepare(`
+      SELECT role FROM users WHERE id = ?
+    `).bind(adminId).first()
+
+    if (!admin || admin.role !== 'admin') {
+      return c.json({ success: false, error: '관리자 권한이 필요합니다.' }, 403)
+    }
+
+    const requests = await c.env.DB.prepare(`
+      SELECT 
+        svr.id, svr.user_id, svr.phone_number, svr.business_name, 
+        svr.business_registration_number, svr.business_registration_image,
+        svr.request_date, svr.status, svr.admin_note, svr.processed_date,
+        u.name as user_name, u.email as user_email
+      FROM sender_verification_requests svr
+      LEFT JOIN users u ON svr.user_id = u.id
+      ORDER BY 
+        CASE svr.status 
+          WHEN 'pending' THEN 1 
+          WHEN 'approved' THEN 2 
+          WHEN 'rejected' THEN 3 
+        END,
+        svr.request_date DESC
+    `).all()
+
+    return c.json({ success: true, requests: requests.results })
+  } catch (error) {
+    console.error('Get admin verification requests error:', error)
+    return c.json({ success: false, error: '신청 목록 조회 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
 // 내 입금 신청 내역 조회 API
 app.get('/api/deposit/my-requests/:userId', async (c) => {
   try {
@@ -15807,6 +15994,7 @@ app.get('/admin/dashboard', async (c) => {
                             <a href="/admin/dashboard" class="text-purple-600 font-semibold">대시보드</a>
                             <a href="/admin/users" class="text-gray-600 hover:text-purple-600">사용자</a>
                             <a href="/admin/contacts" class="text-gray-600 hover:text-purple-600">문의</a>
+                            <a href="/admin/sender/verification" class="text-gray-600 hover:text-purple-600">발신번호 승인</a>
                         </div>
                     </div>
                     <button onclick="logout()" class="text-gray-600 hover:text-red-600">
@@ -16165,9 +16353,18 @@ app.get('/sms/senders', (c) => {
         <div class="pt-24 pb-12 px-6">
             <div class="max-w-6xl mx-auto">
                 <!-- Header -->
-                <div class="mb-8">
-                    <h1 class="text-3xl font-bold text-gray-900 mb-2">📱 발신번호 관리</h1>
-                    <p class="text-gray-600">문자 발송에 사용할 발신번호를 관리합니다</p>
+                <div class="mb-8 flex justify-between items-start">
+                    <div>
+                        <h1 class="text-3xl font-bold text-gray-900 mb-2">📱 발신번호 관리</h1>
+                        <p class="text-gray-600">문자 발송에 사용할 발신번호를 관리합니다</p>
+                    </div>
+                    <a href="/sms/sender/request" 
+                       class="px-6 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg font-bold hover:from-green-700 hover:to-green-800 transition shadow-md hover:shadow-lg flex items-center space-x-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                        </svg>
+                        <span>인증 신청</span>
+                    </a>
                 </div>
 
                 <!-- 알리고 안내 -->
@@ -16364,6 +16561,362 @@ app.get('/sms/senders', (c) => {
                     loadSenders();
                 }
             })();
+        </script>
+    </body>
+    </html>
+  `)
+})
+
+// 발신번호 인증 신청 페이지
+app.get('/sms/sender/request', (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>발신번호 인증 신청 - SMS 시스템</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <style>
+          @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
+          * { font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
+        </style>
+    </head>
+    <body class="bg-gray-50">
+        <!-- Navigation -->
+        <nav class="fixed w-full top-0 z-50 bg-white border-b border-gray-100">
+            <div class="max-w-5xl mx-auto px-6 lg:px-8">
+                <div class="flex justify-between items-center h-16">
+                    <div class="flex items-center space-x-3">
+                        <a href="/dashboard" class="text-lg font-bold text-gray-900">← 대시보드</a>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <a href="/sms/senders" class="text-gray-600 hover:text-purple-600 transition">발신번호 관리</a>
+                        <span id="userName" class="text-gray-700 font-medium"></span>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <div class="pt-24 pb-12 px-6">
+            <div class="max-w-3xl mx-auto">
+                <div class="mb-8">
+                    <h1 class="text-3xl font-bold text-gray-900 mb-2">📱 발신번호 인증 신청</h1>
+                    <p class="text-gray-600">사업자 등록증을 업로드하고 발신번호를 등록하세요</p>
+                </div>
+
+                <!-- 안내 사항 -->
+                <div class="bg-blue-50 border border-blue-200 rounded-xl p-6 mb-8">
+                    <div class="flex items-start">
+                        <svg class="w-6 h-6 text-blue-600 mr-3 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <div class="text-sm text-blue-800">
+                            <p class="font-bold mb-2">📋 필요 서류 및 절차</p>
+                            <ul class="space-y-1 list-disc list-inside ml-2">
+                                <li>사업자 등록증 이미지 파일 (JPG, PNG)</li>
+                                <li>등록하실 휴대폰 번호 (본인 명의 또는 법인 명의)</li>
+                                <li>관리자 승인 후 사용 가능 (평일 기준 1~2일 소요)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 신청 폼 -->
+                <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-8">
+                    <form id="verificationForm" class="space-y-6">
+                        <!-- 사업자 정보 -->
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">사업체명 *</label>
+                            <input type="text" id="businessName" required
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                   placeholder="예: 꾸메땅학원">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">사업자 등록번호 *</label>
+                            <input type="text" id="businessRegistrationNumber" required
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                   placeholder="123-45-67890"
+                                   maxlength="12">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">발신번호 (휴대폰) *</label>
+                            <input type="text" id="phoneNumber" required
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                   placeholder="010-1234-5678"
+                                   maxlength="13">
+                            <p class="text-xs text-gray-500 mt-1">하이픈(-)을 포함하여 입력해주세요</p>
+                        </div>
+
+                        <!-- 사업자 등록증 업로드 -->
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">사업자 등록증 *</label>
+                            <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-purple-500 transition cursor-pointer"
+                                 id="uploadArea">
+                                <input type="file" id="businessRegistrationImage" accept="image/*" class="hidden" required>
+                                <div id="uploadPlaceholder">
+                                    <svg class="w-12 h-12 text-gray-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                                    </svg>
+                                    <p class="text-gray-600 font-medium mb-1">클릭하거나 파일을 드래그하세요</p>
+                                    <p class="text-sm text-gray-500">JPG, PNG (최대 5MB)</p>
+                                </div>
+                                <div id="uploadPreview" class="hidden">
+                                    <img id="previewImage" class="max-w-full max-h-64 mx-auto rounded-lg mb-3">
+                                    <p id="fileName" class="text-sm text-gray-600 font-medium"></p>
+                                    <button type="button" onclick="resetUpload()" class="text-sm text-red-600 hover:text-red-700 mt-2">
+                                        다시 선택
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 제출 버튼 -->
+                        <div class="flex gap-4 pt-4">
+                            <button type="button" onclick="history.back()"
+                                    class="flex-1 px-6 py-3 border border-gray-300 rounded-lg text-gray-700 font-bold hover:bg-gray-50 transition">
+                                취소
+                            </button>
+                            <button type="submit" id="submitButton"
+                                    class="flex-1 px-6 py-3 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-lg font-bold hover:from-purple-700 hover:to-purple-800 transition shadow-md hover:shadow-lg">
+                                신청하기
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- 신청 내역 -->
+                <div class="mt-8 bg-white rounded-xl shadow-lg border border-gray-200 p-8">
+                    <h2 class="text-xl font-bold text-gray-900 mb-6">📋 신청 내역</h2>
+                    <div id="requestsList" class="space-y-4">
+                        <div class="text-center text-gray-500 py-8">
+                            <svg class="w-12 h-12 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            <p>신청 내역이 없습니다</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            const user = JSON.parse(localStorage.getItem('user'))
+            if (!user) {
+                alert('로그인이 필요합니다.')
+                window.location.href = '/login'
+            }
+            document.getElementById('userName').textContent = user.name
+
+            // 사업자 등록번호 자동 하이픈 추가
+            document.getElementById('businessRegistrationNumber').addEventListener('input', function(e) {
+                let value = e.target.value.replace(/[^0-9]/g, '')
+                if (value.length > 3 && value.length <= 5) {
+                    value = value.slice(0, 3) + '-' + value.slice(3)
+                } else if (value.length > 5) {
+                    value = value.slice(0, 3) + '-' + value.slice(3, 5) + '-' + value.slice(5, 10)
+                }
+                e.target.value = value
+            })
+
+            // 전화번호 자동 하이픈 추가
+            document.getElementById('phoneNumber').addEventListener('input', function(e) {
+                let value = e.target.value.replace(/[^0-9]/g, '')
+                if (value.length > 3 && value.length <= 7) {
+                    value = value.slice(0, 3) + '-' + value.slice(3)
+                } else if (value.length > 7) {
+                    value = value.slice(0, 3) + '-' + value.slice(3, 7) + '-' + value.slice(7, 11)
+                }
+                e.target.value = value
+            })
+
+            // 파일 업로드 처리
+            const uploadArea = document.getElementById('uploadArea')
+            const fileInput = document.getElementById('businessRegistrationImage')
+            const uploadPlaceholder = document.getElementById('uploadPlaceholder')
+            const uploadPreview = document.getElementById('uploadPreview')
+            const previewImage = document.getElementById('previewImage')
+            const fileName = document.getElementById('fileName')
+
+            uploadArea.addEventListener('click', () => fileInput.click())
+            
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault()
+                uploadArea.classList.add('border-purple-500', 'bg-purple-50')
+            })
+
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.classList.remove('border-purple-500', 'bg-purple-50')
+            })
+
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault()
+                uploadArea.classList.remove('border-purple-500', 'bg-purple-50')
+                const file = e.dataTransfer.files[0]
+                if (file && file.type.startsWith('image/')) {
+                    handleFileUpload(file)
+                }
+            })
+
+            fileInput.addEventListener('change', (e) => {
+                const file = e.target.files[0]
+                if (file) {
+                    handleFileUpload(file)
+                }
+            })
+
+            function handleFileUpload(file) {
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('파일 크기는 5MB 이하여야 합니다.')
+                    return
+                }
+
+                const reader = new FileReader()
+                reader.onload = (e) => {
+                    previewImage.src = e.target.result
+                    fileName.textContent = file.name
+                    uploadPlaceholder.classList.add('hidden')
+                    uploadPreview.classList.remove('hidden')
+                }
+                reader.readAsDataURL(file)
+            }
+
+            function resetUpload() {
+                fileInput.value = ''
+                uploadPlaceholder.classList.remove('hidden')
+                uploadPreview.classList.add('hidden')
+                previewImage.src = ''
+                fileName.textContent = ''
+            }
+
+            // imgbb 업로드 함수
+            async function uploadToImgbb(file) {
+                const formData = new FormData()
+                formData.append('image', file)
+                
+                const response = await fetch('https://api.imgbb.com/1/upload?key=2159af2941fad10d5c2b024de8ffb0b9', {
+                    method: 'POST',
+                    body: formData
+                })
+                
+                const data = await response.json()
+                if (data.success) {
+                    return data.data.url
+                } else {
+                    throw new Error('이미지 업로드 실패')
+                }
+            }
+
+            // 폼 제출
+            document.getElementById('verificationForm').addEventListener('submit', async function(e) {
+                e.preventDefault()
+                
+                const submitButton = document.getElementById('submitButton')
+                submitButton.disabled = true
+                submitButton.textContent = '처리 중...'
+
+                try {
+                    const businessName = document.getElementById('businessName').value
+                    const businessRegistrationNumber = document.getElementById('businessRegistrationNumber').value
+                    const phoneNumber = document.getElementById('phoneNumber').value
+                    const imageFile = fileInput.files[0]
+
+                    if (!imageFile) {
+                        alert('사업자 등록증을 업로드해주세요.')
+                        submitButton.disabled = false
+                        submitButton.textContent = '신청하기'
+                        return
+                    }
+
+                    // 이미지 업로드
+                    const imageUrl = await uploadToImgbb(imageFile)
+
+                    // 신청 API 호출
+                    const response = await fetch('/api/sms/sender/verification-request', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            userId: user.id,
+                            phoneNumber,
+                            businessName,
+                            businessRegistrationNumber,
+                            businessRegistrationImage: imageUrl
+                        })
+                    })
+
+                    const data = await response.json()
+
+                    if (data.success) {
+                        alert('발신번호 인증 신청이 완료되었습니다!\\n관리자 승인 후 사용 가능합니다.')
+                        document.getElementById('verificationForm').reset()
+                        resetUpload()
+                        loadRequests()
+                    } else {
+                        alert(data.error || '신청 중 오류가 발생했습니다.')
+                    }
+                } catch (error) {
+                    console.error('Submission error:', error)
+                    alert('신청 중 오류가 발생했습니다.')
+                } finally {
+                    submitButton.disabled = false
+                    submitButton.textContent = '신청하기'
+                }
+            })
+
+            // 신청 내역 로드
+            async function loadRequests() {
+                try {
+                    const response = await fetch('/api/sms/sender/verification-requests?userId=' + user.id)
+                    const data = await response.json()
+
+                    const container = document.getElementById('requestsList')
+                    
+                    if (data.success && data.requests.length > 0) {
+                        container.innerHTML = data.requests.map(req => {
+                            const statusColor = req.status === 'pending' ? 'yellow' : req.status === 'approved' ? 'green' : 'red'
+                            const statusText = req.status === 'pending' ? '승인 대기' : req.status === 'approved' ? '승인 완료' : '거절됨'
+                            
+                            return \`
+                                <div class="border border-gray-200 rounded-lg p-4">
+                                    <div class="flex justify-between items-start mb-3">
+                                        <div>
+                                            <p class="font-bold text-gray-900">\${req.business_name}</p>
+                                            <p class="text-sm text-gray-600">\${req.phone_number}</p>
+                                        </div>
+                                        <span class="px-3 py-1 bg-\${statusColor}-100 text-\${statusColor}-700 text-sm font-medium rounded-full">
+                                            \${statusText}
+                                        </span>
+                                    </div>
+                                    <div class="text-sm text-gray-600 space-y-1">
+                                        <p>사업자번호: \${req.business_registration_number}</p>
+                                        <p>신청일: \${new Date(req.request_date).toLocaleString('ko-KR')}</p>
+                                        \${req.admin_note ? '<p class="text-red-600">관리자 메모: ' + req.admin_note + '</p>' : ''}
+                                    </div>
+                                    <a href="\${req.business_registration_image}" target="_blank" 
+                                       class="inline-block mt-3 text-sm text-purple-600 hover:text-purple-700 font-medium">
+                                        사업자 등록증 보기 →
+                                    </a>
+                                </div>
+                            \`
+                        }).join('')
+                    } else {
+                        container.innerHTML = \`
+                            <div class="text-center text-gray-500 py-8">
+                                <svg class="w-12 h-12 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                                <p>신청 내역이 없습니다</p>
+                            </div>
+                        \`
+                    }
+                } catch (error) {
+                    console.error('Load requests error:', error)
+                }
+            }
+
+            loadRequests()
         </script>
     </body>
     </html>
@@ -17545,6 +18098,365 @@ app.get('/sms/points', (c) => {
                     loadDepositRequests();
                 }
             })();
+        </script>
+    </body>
+    </html>
+  `)
+})
+
+// 관리자 - 발신번호 승인 페이지
+app.get('/admin/sender/verification', (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>발신번호 승인 관리 - 관리자</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <style>
+          @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
+          * { font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
+        </style>
+    </head>
+    <body class="bg-gray-50">
+        <!-- Navigation -->
+        <nav class="fixed w-full top-0 z-50 bg-white border-b border-gray-100">
+            <div class="max-w-7xl mx-auto px-6 lg:px-8">
+                <div class="flex justify-between items-center h-16">
+                    <div class="flex items-center space-x-3">
+                        <a href="/admin/dashboard" class="text-lg font-bold text-gray-900">← 관리자 대시보드</a>
+                    </div>
+                    <span id="userName" class="text-gray-700 font-medium"></span>
+                </div>
+            </div>
+        </nav>
+
+        <div class="pt-24 pb-12 px-6">
+            <div class="max-w-7xl mx-auto">
+                <div class="mb-8">
+                    <h1 class="text-3xl font-bold text-gray-900 mb-2">📱 발신번호 승인 관리</h1>
+                    <p class="text-gray-600">사용자의 발신번호 인증 신청을 검토하고 승인/거절합니다</p>
+                </div>
+
+                <!-- 통계 -->
+                <div class="grid md:grid-cols-3 gap-6 mb-8">
+                    <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-yellow-700 font-medium">승인 대기</p>
+                                <p class="text-3xl font-bold text-yellow-900 mt-1"><span id="pendingCount">0</span>건</p>
+                            </div>
+                            <svg class="w-12 h-12 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <div class="bg-green-50 border border-green-200 rounded-xl p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-green-700 font-medium">승인 완료</p>
+                                <p class="text-3xl font-bold text-green-900 mt-1"><span id="approvedCount">0</span>건</p>
+                            </div>
+                            <svg class="w-12 h-12 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <div class="bg-red-50 border border-red-200 rounded-xl p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-red-700 font-medium">거절됨</p>
+                                <p class="text-3xl font-bold text-red-900 mt-1"><span id="rejectedCount">0</span>건</p>
+                            </div>
+                            <svg class="w-12 h-12 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 신청 목록 -->
+                <div class="bg-white rounded-xl shadow-lg border border-gray-200">
+                    <div class="p-6 border-b border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <h2 class="text-xl font-bold text-gray-900">신청 목록</h2>
+                            <button onclick="loadRequests()" class="text-purple-600 hover:text-purple-700 font-medium">
+                                🔄 새로고침
+                            </button>
+                        </div>
+                    </div>
+                    <div id="requestsList" class="divide-y divide-gray-200">
+                        <div class="text-center text-gray-500 py-12">
+                            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+                            <p>로딩 중...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 상세 모달 -->
+        <div id="detailModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                <div class="p-6 border-b border-gray-200">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-2xl font-bold text-gray-900">발신번호 승인 검토</h2>
+                        <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <div id="modalContent" class="p-6">
+                    <!-- 동적으로 채워짐 -->
+                </div>
+            </div>
+        </div>
+
+        <script>
+            const user = JSON.parse(localStorage.getItem('user'))
+            if (!user || user.role !== 'admin') {
+                alert('관리자 권한이 필요합니다.')
+                window.location.href = '/dashboard'
+            }
+            document.getElementById('userName').textContent = user.name
+
+            let currentRequest = null
+
+            async function loadRequests() {
+                try {
+                    const response = await fetch('/api/admin/sender/verification-requests?adminId=' + user.id)
+                    const data = await response.json()
+
+                    if (data.success) {
+                        updateStats(data.requests)
+                        renderRequests(data.requests)
+                    }
+                } catch (error) {
+                    console.error('Load requests error:', error)
+                }
+            }
+
+            function updateStats(requests) {
+                const pending = requests.filter(r => r.status === 'pending').length
+                const approved = requests.filter(r => r.status === 'approved').length
+                const rejected = requests.filter(r => r.status === 'rejected').length
+
+                document.getElementById('pendingCount').textContent = pending
+                document.getElementById('approvedCount').textContent = approved
+                document.getElementById('rejectedCount').textContent = rejected
+            }
+
+            function renderRequests(requests) {
+                const container = document.getElementById('requestsList')
+
+                if (requests.length === 0) {
+                    container.innerHTML = \`
+                        <div class="text-center text-gray-500 py-12">
+                            <svg class="w-12 h-12 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            <p>신청 내역이 없습니다</p>
+                        </div>
+                    \`
+                    return
+                }
+
+                container.innerHTML = requests.map(req => {
+                    const statusColor = req.status === 'pending' ? 'yellow' : req.status === 'approved' ? 'green' : 'red'
+                    const statusText = req.status === 'pending' ? '승인 대기' : req.status === 'approved' ? '승인 완료' : '거절됨'
+                    
+                    return \`
+                        <div class="p-6 hover:bg-gray-50 transition">
+                            <div class="flex justify-between items-start">
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-3 mb-3">
+                                        <span class="px-3 py-1 bg-\${statusColor}-100 text-\${statusColor}-700 text-sm font-medium rounded-full">
+                                            \${statusText}
+                                        </span>
+                                        <span class="text-sm text-gray-500">
+                                            \${new Date(req.request_date).toLocaleString('ko-KR')}
+                                        </span>
+                                    </div>
+                                    <div class="grid md:grid-cols-2 gap-4 mb-3">
+                                        <div>
+                                            <p class="text-sm text-gray-600">신청자</p>
+                                            <p class="font-bold text-gray-900">\${req.user_name} (\${req.user_email})</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-600">사업체명</p>
+                                            <p class="font-bold text-gray-900">\${req.business_name}</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-600">발신번호</p>
+                                            <p class="font-bold text-gray-900">\${req.phone_number}</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-600">사업자번호</p>
+                                            <p class="font-bold text-gray-900">\${req.business_registration_number}</p>
+                                        </div>
+                                    </div>
+                                    \${req.admin_note ? '<p class="text-sm text-gray-600 bg-gray-100 p-3 rounded">관리자 메모: ' + req.admin_note + '</p>' : ''}
+                                </div>
+                                <div class="ml-6">
+                                    <button onclick='openModal(\${JSON.stringify(req)})' 
+                                            class="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition font-medium">
+                                        상세보기
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    \`
+                }).join('')
+            }
+
+            function openModal(request) {
+                currentRequest = request
+                const modal = document.getElementById('detailModal')
+                const content = document.getElementById('modalContent')
+
+                const statusColor = request.status === 'pending' ? 'yellow' : request.status === 'approved' ? 'green' : 'red'
+                const statusText = request.status === 'pending' ? '승인 대기' : request.status === 'approved' ? '승인 완료' : '거절됨'
+
+                content.innerHTML = \`
+                    <div class="space-y-6">
+                        <!-- 상태 -->
+                        <div class="flex items-center justify-between p-4 bg-\${statusColor}-50 border border-\${statusColor}-200 rounded-lg">
+                            <span class="text-\${statusColor}-700 font-bold">상태: \${statusText}</span>
+                            \${request.processed_date ? '<span class="text-sm text-' + statusColor + '-600">처리일: ' + new Date(request.processed_date).toLocaleString('ko-KR') + '</span>' : ''}
+                        </div>
+
+                        <!-- 신청자 정보 -->
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <h3 class="font-bold text-gray-900 mb-3">신청자 정보</h3>
+                            <div class="grid md:grid-cols-2 gap-4 text-sm">
+                                <div>
+                                    <p class="text-gray-600">이름</p>
+                                    <p class="font-medium">\${request.user_name}</p>
+                                </div>
+                                <div>
+                                    <p class="text-gray-600">이메일</p>
+                                    <p class="font-medium">\${request.user_email}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 사업자 정보 -->
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <h3 class="font-bold text-gray-900 mb-3">사업자 정보</h3>
+                            <div class="grid md:grid-cols-2 gap-4 text-sm">
+                                <div>
+                                    <p class="text-gray-600">사업체명</p>
+                                    <p class="font-medium">\${request.business_name}</p>
+                                </div>
+                                <div>
+                                    <p class="text-gray-600">사업자등록번호</p>
+                                    <p class="font-medium">\${request.business_registration_number}</p>
+                                </div>
+                                <div class="md:col-span-2">
+                                    <p class="text-gray-600">발신번호</p>
+                                    <p class="font-medium">\${request.phone_number}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 사업자 등록증 이미지 -->
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <h3 class="font-bold text-gray-900 mb-3">사업자 등록증</h3>
+                            <a href="\${request.business_registration_image}" target="_blank" class="block">
+                                <img src="\${request.business_registration_image}" 
+                                     class="w-full rounded-lg border border-gray-300 hover:border-purple-500 transition cursor-pointer">
+                            </a>
+                            <p class="text-xs text-gray-500 mt-2 text-center">이미지를 클릭하면 새 탭에서 열립니다</p>
+                        </div>
+
+                        <!-- 관리자 메모 입력 -->
+                        \${request.status === 'pending' ? \`
+                            <div class="border border-gray-200 rounded-lg p-4">
+                                <label class="block text-sm font-bold text-gray-700 mb-2">관리자 메모 (선택)</label>
+                                <textarea id="adminNote" rows="3" 
+                                          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                          placeholder="승인/거절 사유를 입력하세요"></textarea>
+                            </div>
+                        \` : request.admin_note ? \`
+                            <div class="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                                <p class="text-sm font-bold text-gray-700 mb-2">관리자 메모</p>
+                                <p class="text-gray-900">\${request.admin_note}</p>
+                            </div>
+                        \` : ''}
+
+                        <!-- 액션 버튼 -->
+                        \${request.status === 'pending' ? \`
+                            <div class="flex gap-4 pt-4">
+                                <button onclick="processRequest('reject')" 
+                                        class="flex-1 px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-bold">
+                                    ❌ 거절
+                                </button>
+                                <button onclick="processRequest('approve')" 
+                                        class="flex-1 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-bold">
+                                    ✅ 승인
+                                </button>
+                            </div>
+                        \` : ''}
+                    </div>
+                \`
+
+                modal.classList.remove('hidden')
+            }
+
+            function closeModal() {
+                document.getElementById('detailModal').classList.add('hidden')
+                currentRequest = null
+            }
+
+            async function processRequest(action) {
+                if (!currentRequest) return
+
+                const adminNote = document.getElementById('adminNote')?.value || ''
+
+                if (!confirm(\`정말로 이 신청을 \${action === 'approve' ? '승인' : '거절'}하시겠습니까?\`)) {
+                    return
+                }
+
+                try {
+                    const response = await fetch('/api/sms/sender/verification-process', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            requestId: currentRequest.id,
+                            action,
+                            adminNote,
+                            adminId: user.id
+                        })
+                    })
+
+                    const data = await response.json()
+
+                    if (data.success) {
+                        alert(data.message)
+                        closeModal()
+                        loadRequests()
+                    } else {
+                        alert(data.error || '처리 중 오류가 발생했습니다.')
+                    }
+                } catch (error) {
+                    console.error('Process error:', error)
+                    alert('처리 중 오류가 발생했습니다.')
+                }
+            }
+
+            // 모달 외부 클릭 시 닫기
+            document.getElementById('detailModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeModal()
+                }
+            })
+
+            loadRequests()
         </script>
     </body>
     </html>
