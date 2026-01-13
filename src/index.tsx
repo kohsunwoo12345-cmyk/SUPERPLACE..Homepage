@@ -12180,8 +12180,7 @@ app.post('/api/search-analysis', async (c) => {
     }
 
     // Python 크롤링 서버와 통신
-    // TODO: Railway 배포 후 URL을 실제 배포 URL로 변경해야 합니다
-    const CRAWLER_API_URL = 'https://naver-crawler-api.railway.app/analyze'
+    const CRAWLER_API_URL = 'https://web-production-14c4.up.railway.app/analyze'
     
     try {
       const crawlerResponse = await fetch(CRAWLER_API_URL, {
@@ -12192,7 +12191,8 @@ app.post('/api/search-analysis', async (c) => {
         body: JSON.stringify({
           keyword: keyword,
           placeUrl: placeUrl || null
-        })
+        }),
+        signal: AbortSignal.timeout(60000) // 60초 타임아웃
       })
 
       if (!crawlerResponse.ok) {
@@ -12203,10 +12203,12 @@ app.post('/api/search-analysis', async (c) => {
 
       // 분석 기록 저장
       const { env } = c
-      await env.DB.prepare(`
-        INSERT INTO search_analysis_logs (user_id, keyword, place_url, result_data, created_at)
-        VALUES (?, ?, ?, ?, datetime('now'))
-      `).bind(userId, keyword, placeUrl || '', JSON.stringify(analysisResult)).run()
+      if (userId) {
+        await env.DB.prepare(`
+          INSERT INTO search_analysis_logs (user_id, keyword, place_url, result_data, created_at)
+          VALUES (?, ?, ?, ?, datetime('now'))
+        `).bind(userId, keyword, placeUrl || '', JSON.stringify(analysisResult)).run()
+      }
 
       return c.json(analysisResult)
       
@@ -12215,18 +12217,19 @@ app.post('/api/search-analysis', async (c) => {
       
       // 크롤러 서버 오류 시 임시 응답 반환
       const fallbackResponse = {
-        success: true,
+        success: false,
+        error: '크롤링 서버 연결 실패',
+        message: '잠시 후 다시 시도해주세요.',
         searchVolume: {
           monthlyAvg: 0,
-          competition: '분석중',
-          recommendation: '크롤링 서버 연결 필요'
+          competition: '분석 불가',
+          recommendation: '서버 오류'
         },
         ranking: {
           myRank: null,
           competitors: []
         },
-        keywords: [],
-        note: '크롤링 서버가 배포되지 않았거나 응답하지 않습니다. Railway에 배포 후 URL을 업데이트해주세요.'
+        keywords: []
       }
 
       return c.json(fallbackResponse)
