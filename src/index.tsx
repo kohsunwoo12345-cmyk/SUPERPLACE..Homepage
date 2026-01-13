@@ -12175,42 +12175,62 @@ app.post('/api/search-analysis', async (c) => {
   try {
     const { userId, keyword, placeUrl } = await c.req.json()
 
-    if (!keyword || !placeUrl) {
-      return c.json({ success: false, error: '필수 정보가 누락되었습니다' }, 400)
+    if (!keyword) {
+      return c.json({ success: false, error: '키워드를 입력해주세요' }, 400)
     }
 
-    // 임시 응답 (실제로는 Python 크롤링 서버와 통신해야 합니다)
-    // TODO: Python Selenium 크롤링 서버 연동
-    const mockResponse = {
-      success: true,
-      searchVolume: {
-        monthlyAvg: 8500,
-        competition: '높음',
-        recommendation: '★★★★☆'
-      },
-      ranking: {
-        myRank: 5,
-        competitors: [
-          { name: 'A영어학원', category: '영어학원', reviewCount: 245 },
-          { name: 'B어학원', category: '영어학원', reviewCount: 189 },
-          { name: 'C영어교실', category: '영어학원', reviewCount: 156 },
-          { name: 'D외국어학원', category: '영어학원', reviewCount: 134 }
-        ]
-      },
-      keywords: [
-        { businessName: 'A영어학원', keywords: ['원어민', '초등영어', '영어회화', '토익'] },
-        { businessName: 'B어학원', keywords: ['수능영어', '내신관리', '영문법', '텝스'] }
-      ]
+    // Python 크롤링 서버와 통신
+    // TODO: Railway 배포 후 URL을 실제 배포 URL로 변경해야 합니다
+    const CRAWLER_API_URL = 'https://naver-crawler-api.railway.app/analyze'
+    
+    try {
+      const crawlerResponse = await fetch(CRAWLER_API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          keyword: keyword,
+          placeUrl: placeUrl || null
+        })
+      })
+
+      if (!crawlerResponse.ok) {
+        throw new Error(`Crawler API error: ${crawlerResponse.status}`)
+      }
+
+      const analysisResult = await crawlerResponse.json()
+
+      // 분석 기록 저장
+      const { env } = c
+      await env.DB.prepare(`
+        INSERT INTO search_analysis_logs (user_id, keyword, place_url, result_data, created_at)
+        VALUES (?, ?, ?, ?, datetime('now'))
+      `).bind(userId, keyword, placeUrl || '', JSON.stringify(analysisResult)).run()
+
+      return c.json(analysisResult)
+      
+    } catch (crawlerError) {
+      console.error('Crawler API error:', crawlerError)
+      
+      // 크롤러 서버 오류 시 임시 응답 반환
+      const fallbackResponse = {
+        success: true,
+        searchVolume: {
+          monthlyAvg: 0,
+          competition: '분석중',
+          recommendation: '크롤링 서버 연결 필요'
+        },
+        ranking: {
+          myRank: null,
+          competitors: []
+        },
+        keywords: [],
+        note: '크롤링 서버가 배포되지 않았거나 응답하지 않습니다. Railway에 배포 후 URL을 업데이트해주세요.'
+      }
+
+      return c.json(fallbackResponse)
     }
-
-    // 분석 기록 저장
-    const { env } = c
-    await env.DB.prepare(`
-      INSERT INTO search_analysis_logs (user_id, keyword, place_url, result_data, created_at)
-      VALUES (?, ?, ?, ?, datetime('now'))
-    `).bind(userId, keyword, placeUrl, JSON.stringify(mockResponse)).run()
-
-    return c.json(mockResponse)
   } catch (error) {
     console.error('Search analysis error:', error)
     return c.json({ success: false, error: '분석 중 오류가 발생했습니다' }, 500)
