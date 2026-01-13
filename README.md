@@ -34,6 +34,18 @@
 - API 엔드포인트: `/api/search-analysis`
 - 프로그램 접근: `/programs/data` → `/tools/search-volume`
 
+✅ **SMS 발송 시스템 (백엔드 완료, UI 개발 예정)**
+- 알리고 SMS API 연동 완료
+- 발신번호 인증 API (`/api/sms/sender/verify`)
+- SMS 발송 API - 선차감 후발송 로직 (`/api/sms/send`)
+- SMS 요금표 조회 (`/api/sms/pricing`)
+- 발송 내역 조회 (`/api/sms/logs`)
+- 포인트 충전 API (`/api/sms/charge`)
+- 메시지 치환 기능 (`#{이름}`)
+- 예약 발송 기능
+- 포인트 거래 내역 추적
+- 자동 메시지 타입 결정 (SMS/LMS)
+
 ## 현재 기능 진입 경로 (URI)
 
 ### 메인 페이지
@@ -50,6 +62,21 @@
   - 경쟁사 대표 키워드 추출
 - **API**: `POST /api/search-analysis`
 
+### SMS 발송 시스템 (백엔드 완료, UI 개발 예정)
+- **SMS 요금표**: `GET /api/sms/pricing`
+- **발신번호 목록**: `GET /api/sms/senders?userId=1`
+- **발신번호 인증**: `POST /api/sms/sender/verify`
+- **SMS 발송**: `POST /api/sms/send`
+- **발송 내역**: `GET /api/sms/logs?userId=1&page=1&limit=20`
+- **포인트 충전**: `POST /api/sms/charge` (관리자 전용)
+- **기능**:
+  - 알리고 SMS API 연동
+  - 선차감 후발송 로직 (실패 시 자동 환불)
+  - 메시지 치환 기능 (`#{이름}`)
+  - 예약 발송 기능
+  - 자동 메시지 타입 결정 (SMS/LMS)
+  - 포인트 거래 내역 추적
+
 ### 네비게이션 링크
 - `/programs` - 교육 프로그램 목록
 - `/programs/data` - 검색량 조회 도구 (redirect to /tools/search-volume)
@@ -59,32 +86,72 @@
 - `/dashboard` - 학원장 대시보드
 
 ## 아직 구현되지 않은 기능
+
+### 검색량 조회 도구
 ❌ Python Selenium 크롤러 연동 (백엔드 크롤링 로직)
 - 네이버 검색량 실시간 크롤링
 - 네이버 플레이스 순위 크롤링
 - 경쟁사 정보 크롤링
 - 경쟁사 키워드 추출
 
+### SMS 발송 시스템
+❌ **발신번호 관리 UI** (최우선)
+- 발신번호 목록 표시
+- 발신번호 추가 (인증 요청)
+- 발신번호 삭제
+
+❌ **문자 작성 UI** (최우선)
+- 메시지 입력창 (바이트 수 실시간 표시)
+- SMS/LMS 자동 구분
+- 엑셀 업로드 기능
+- 치환 메시지 미리보기
+- 예약 발송 시간 설정
+- 발송 버튼
+
+❌ **발송 내역 UI**
+- 발송 내역 테이블
+- 상태별 필터 (성공/실패)
+- 날짜별 검색
+- 수신자별 상세 내역
+
+❌ **포인트 관리 UI**
+- 현재 포인트 잔액 표시
+- 입금 신청
+- 포인트 거래 내역
+
+❌ **법적 준비 사항**
+- 080 수신거부 서비스 신청
+- 부가통신사업자 신고
+- 이용약관 및 개인정보처리방침
+
+### 기타
 ❌ 회원 인증 시스템 강화
 ❌ 관리자 페이지 고도화
 
 ## 추천 다음 개발 단계
 
-### 1단계: Python Selenium 크롤러 구현 (최우선)
-1. **네이버 검색량 크롤러** - 실제 검색량 데이터 수집
-2. **네이버 플레이스 순위 크롤러** - 실시간 순위 추적 (광고 제외)
-3. **경쟁사 분석 크롤러** - 경쟁사 정보 및 키워드 추출
-4. **크롤링 결과 DB 저장** - search_analysis_logs 테이블 활용
+### 1단계: SMS 시스템 UI 개발 (최우선)
+1. **발신번호 관리 페이지** - 발신번호 인증 및 관리 UI
+2. **문자 작성 페이지** - 메시지 입력, 엑셀 업로드, 예약 발송
+3. **발송 내역 페이지** - 발송 내역 조회 및 상세 내역
+4. **포인트 관리 페이지** - 포인트 잔액 확인 및 입금 신청
+5. **알리고 API 키 발급** - SMS_API_SETUP.md 참고
 
-### 2단계: 검색량 조회 고도화 (우선순위 높음)
-5. **히스토리 기능** - 과거 조회 결과 확인
-6. **리포트 생성** - PDF/Excel 다운로드
-7. **알림 기능** - 순위 변동 시 알림
+### 2단계: Python Selenium 크롤러 구현 (우선순위 높음)
+6. **네이버 검색량 크롤러** - 실제 검색량 데이터 수집
+7. **네이버 플레이스 순위 크롤러** - 실시간 순위 추적 (광고 제외)
+8. **경쟁사 분석 크롤러** - 경쟁사 정보 및 키워드 추출
+9. **크롤링 결과 DB 저장** - search_analysis_logs 테이블 활용
 
-### 3단계: 고급 기능 (우선순위 중간)
-8. **키워드 추천** - AI 기반 키워드 추천
-9. **경쟁사 모니터링** - 자동 순위 추적
-10. **대시보드 차트** - 검색량/순위 변화 그래프
+### 3단계: 검색량 조회 고도화 (우선순위 중간)
+10. **히스토리 기능** - 과거 조회 결과 확인
+11. **리포트 생성** - PDF/Excel 다운로드
+12. **알림 기능** - 순위 변동 시 알림
+
+### 4단계: 고급 기능 (우선순위 낮음)
+13. **키워드 추천** - AI 기반 키워드 추천
+14. **경쟁사 모니터링** - 자동 순위 추적
+15. **대시보드 차트** - 검색량/순위 변화 그래프
 
 ## 현재 URL
 - **Production**: https://superplace-academy.pages.dev
@@ -93,15 +160,21 @@
 
 ## 데이터 아키텍처
 - **데이터베이스**: Cloudflare D1 (SQLite)
-  - `users` - 사용자 정보
+  - `users` - 사용자 정보 (balance 컬럼 추가)
   - `contacts` - 문의 내역
   - `landing_pages` - 랜딩페이지 빌더
-  - `search_analysis_logs` - 검색량 조회 히스토리 (신규)
+  - `search_analysis_logs` - 검색량 조회 히스토리
+  - **SMS 시스템 테이블**:
+    - `sms_pricing` - SMS/LMS/MMS 요금표
+    - `sender_ids` - 발신번호 목록
+    - `sms_logs` - 발송 내역 로그
+    - `sms_recipients` - 수신자별 상세 내역
+    - `point_transactions` - 포인트 거래 내역
 - **스토리지**: 
   - Cloudflare KV - 세션 관리
   - imgbb API - 썸네일 이미지 업로드
 - **외부 서비스**:
-  - 알리고 SMS API - 문자 발송
+  - **알리고 SMS API** - 문자 발송 (✅ 연동 완료)
   - 네이버 검색 API (예정) - 검색량 데이터
   - Python Selenium (예정) - 실시간 크롤링
 
@@ -164,11 +237,34 @@ npm run build
 - **상태**: ✅ Production 배포 완료
 - **Production URL**: https://superplace-academy.pages.dev
 - **마지막 업데이트**: 2026-01-13
-- **최근 변경사항**: 검색량 조회 도구 활성화
+- **최근 변경사항**: 
+  - SMS API 시스템 백엔드 구현 완료 (알리고 연동)
+  - 검색량 조회 도구 활성화
+
+## 중요 문서
+- **SMS_API_SETUP.md** - SMS 시스템 설정 가이드 (알리고 API, 요금표, 법적 준비사항)
+- **SOCIAL_LOGIN_SETUP.md** - 소셜 로그인 설정 가이드 (Google/Kakao)
+- **CLOUDFLARE_ENV_SETUP.md** - Cloudflare 환경 변수 설정 가이드
 
 ## 다음 작업
 다음 개발 우선순위:
-1. **Python Selenium 크롤러 구현** (최우선) - 실제 검색량 및 순위 데이터 수집
-2. **크롤링 API 연동** - /api/search-analysis 백엔드 로직 구현
-3. **검색량 조회 히스토리** - 과거 조회 결과 확인 기능
-4. **리포트 생성** - PDF/Excel 다운로드 기능
+1. **알리고 SMS API 키 발급** (최우선) - SMS_API_SETUP.md 참고
+2. **SMS UI 개발** (최우선) - 발신번호 관리, 문자 작성, 발송 내역, 포인트 관리
+3. **Python Selenium 크롤러 구현** - 실제 검색량 및 순위 데이터 수집
+4. **크롤링 API 연동** - /api/search-analysis 백엔드 로직 구현
+5. **검색량 조회 히스토리** - 과거 조회 결과 확인 기능
+6. **리포트 생성** - PDF/Excel 다운로드 기능
+
+## 알리고 SMS API 설정 필요
+SMS 시스템을 사용하려면 다음 환경 변수를 설정해야 합니다:
+```bash
+# 로컬 개발 (.dev.vars)
+ALIGO_API_KEY=your_aligo_api_key_here
+ALIGO_USER_ID=your_aligo_user_id_here
+
+# 프로덕션 (Cloudflare Pages Secrets)
+npx wrangler pages secret put ALIGO_API_KEY --project-name superplace
+npx wrangler pages secret put ALIGO_USER_ID --project-name superplace
+```
+
+자세한 설정 방법은 **SMS_API_SETUP.md** 문서를 참고하세요.
