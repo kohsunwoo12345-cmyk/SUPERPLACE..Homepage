@@ -4857,7 +4857,13 @@ app.get('/dashboard', (c) => {
                         <span class="text-xl font-bold text-gray-900">학원장 대시보드</span>
                     </div>
                     <div class="flex items-center space-x-6">
-                        <span id="userName" class="text-gray-700"></span>
+                        <a href="/" class="flex items-center space-x-2 bg-gradient-to-r from-purple-600 to-purple-700 text-white px-5 py-2.5 rounded-lg hover:from-purple-700 hover:to-purple-800 transition-all shadow-md hover:shadow-lg font-medium">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                            </svg>
+                            <span>🏠 홈으로</span>
+                        </a>
+                        <span id="userName" class="text-gray-700 font-medium"></span>
                         <a href="/profile" class="text-gray-600 hover:text-purple-600 transition">프로필</a>
                         <a id="adminDashboardBtn" href="/admin/dashboard" class="hidden bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition font-medium">
                             🔐 관리자 전용 대시보드
