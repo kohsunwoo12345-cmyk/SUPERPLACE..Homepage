@@ -2846,14 +2846,20 @@ app.get('/', (c) => {
                     <div>
                         <h4 class="font-bold text-gray-900 mb-4">연락처</h4>
                         <ul class="space-y-3 text-sm">
-                            <li>인천광역시 서구</li>
-                            <li>contact@superplace.kr</li>
-                            <li>문의 양식 이용 가능</li>
+                            <li>인천광역시 서구 청라커낼로 270, 2층 2196호</li>
+                            <li>wangholy1@naver.com</li>
+                            <li>010-8739-9697</li>
                         </ul>
                     </div>
                 </div>
-                <div class="border-t border-gray-200 pt-8 text-center text-gray-500 text-sm">
-                    <p>&copy; 2024 우리는 슈퍼플레이스다. All rights reserved.</p>
+                <div class="border-t border-gray-200 pt-8 mt-8">
+                    <div class="text-center text-gray-600 text-sm space-y-2">
+                        <p class="font-medium text-gray-900">주식회사 우리는 슈퍼플레이스다</p>
+                        <p>사업자등록번호: 142-88-02445</p>
+                        <p>주소: 인천광역시 서구 청라커낼로 270, 2층 2196호</p>
+                        <p>이메일: wangholy1@naver.com | 전화: 010-8739-9697</p>
+                        <p class="text-gray-500 mt-4">&copy; 2024 우리는 슈퍼플레이스다. All rights reserved.</p>
+                    </div>
                 </div>
             </div>
         </footer>
