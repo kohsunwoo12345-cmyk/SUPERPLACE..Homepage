@@ -8890,10 +8890,10 @@ app.get('/tools/search-volume', (c) => {
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">네이버 플레이스 URL</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">네이버 플레이스 URL (선택)</label>
                         <input type="text" id="placeUrl" placeholder="https://m.place.naver.com/..." 
                                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                        <p class="text-sm text-gray-500 mt-2">※ 본인 학원의 네이버 플레이스 URL을 입력하세요</p>
+                        <p class="text-sm text-gray-500 mt-2">※ 본인 학원의 네이버 플레이스 URL을 입력하면 순위를 확인할 수 있습니다</p>
                     </div>
 
                     <button onclick="analyzeKeyword()" 
@@ -8973,10 +8973,7 @@ app.get('/tools/search-volume', (c) => {
                     return;
                 }
 
-                if (!placeUrl) {
-                    alert('네이버 플레이스 URL을 입력해주세요.');
-                    return;
-                }
+                // placeUrl은 선택사항으로 변경
 
                 // 로딩 표시
                 document.getElementById('loading').classList.remove('hidden');
