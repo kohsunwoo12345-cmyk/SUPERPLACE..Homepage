@@ -12322,8 +12322,8 @@ app.post('/api/sms/send', async (c) => {
     
     // 알리고 API 설정
     const ALIGO_API_KEY = '4bbi3l27pb5qh11tkujl578bttz6vb5j'
-    const ALIGO_USER_ID = 'your_aligo_user_id' // 원장님의 알리고 아이디 필요
-    const SENDER_PHONE = '010-0000-0000' // 발신번호 (알리고에 등록된 번호)
+    const ALIGO_USER_ID = 'wangholy'
+    const SENDER_PHONE = '010-8739-9697'
     
     // 수신자 번호 포맷팅 (하이픈 제거)
     const formattedReceivers = receivers.map((phone: string) => phone.replace(/-/g, ''))
