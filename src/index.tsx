@@ -12299,6 +12299,177 @@ app.post('/api/login', async (c) => {
       role: user.role
     }
     
+    return c.json({ success: true, message: '로그인 성공', user: userInfo })
+  } catch (error) {
+    console.error('Login error:', error)
+    return c.json({ success: false, error: '로그인 처리 중 오류가 발생했습니다' }, 500)
+  }
+})
+
+// SMS 발송 API (알리고)
+app.post('/api/sms/send', async (c) => {
+  try {
+    const { userId, receivers, message, subject } = await c.req.json()
+    
+    // 필수 파라미터 체크
+    if (!receivers || receivers.length === 0) {
+      return c.json({ success: false, error: '수신자 번호를 입력해주세요' }, 400)
+    }
+    
+    if (!message) {
+      return c.json({ success: false, error: '메시지 내용을 입력해주세요' }, 400)
+    }
+    
+    // 알리고 API 설정
+    const ALIGO_API_KEY = '4bbi3l27pb5qh11tkujl578bttz6vb5j'
+    const ALIGO_USER_ID = 'your_aligo_user_id' // 원장님의 알리고 아이디 필요
+    const SENDER_PHONE = '010-0000-0000' // 발신번호 (알리고에 등록된 번호)
+    
+    // 수신자 번호 포맷팅 (하이픈 제거)
+    const formattedReceivers = receivers.map((phone: string) => phone.replace(/-/g, ''))
+    
+    // 알리고 API 호출
+    const aligoUrl = 'https://apis.aligo.in/send/'
+    const formData = new URLSearchParams()
+    formData.append('key', ALIGO_API_KEY)
+    formData.append('user_id', ALIGO_USER_ID)
+    formData.append('sender', SENDER_PHONE.replace(/-/g, ''))
+    formData.append('receiver', formattedReceivers.join(','))
+    formData.append('msg', message)
+    
+    if (subject) {
+      formData.append('title', subject) // LMS/MMS의 경우 제목
+    }
+    
+    // 메시지 타입 자동 결정 (90자 이하: SMS, 이상: LMS)
+    const msgType = message.length <= 90 ? 'SMS' : 'LMS'
+    formData.append('msg_type', msgType)
+    
+    console.log('알리고 SMS 발송 시도:', {
+      receivers: formattedReceivers,
+      messageLength: message.length,
+      msgType: msgType
+    })
+    
+    const response = await fetch(aligoUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: formData.toString()
+    })
+    
+    const result = await response.json()
+    
+    console.log('알리고 API 응답:', result)
+    
+    // 결과 확인
+    if (result.result_code === '1') {
+      // 발송 성공 - DB에 기록
+      const { env } = c
+      
+      for (const receiver of formattedReceivers) {
+        try {
+          await env.DB.prepare(`
+            INSERT INTO sms_history (
+              recipient_phone, message_content, status, sent_at, 
+              result_code, result_message, cost, created_by, created_at
+            )
+            VALUES (?, ?, ?, datetime('now'), ?, ?, ?, ?, datetime('now'))
+          `).bind(
+            receiver,
+            message,
+            'sent',
+            result.result_code,
+            result.message || '발송 성공',
+            20, // SMS 1건당 20원 (예상 비용)
+            userId || null
+          ).run()
+        } catch (dbError) {
+          console.error('SMS 로그 저장 오류:', dbError)
+        }
+      }
+      
+      return c.json({
+        success: true,
+        message: '문자 발송 성공',
+        data: {
+          sentCount: result.success_cnt || formattedReceivers.length,
+          failCount: result.error_cnt || 0,
+          msgType: msgType,
+          details: result
+        }
+      })
+    } else {
+      // 발송 실패
+      const { env } = c
+      
+      for (const receiver of formattedReceivers) {
+        try {
+          await env.DB.prepare(`
+            INSERT INTO sms_logs (user_id, receiver, message, subject, status, result_code, result_message, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))
+          `).bind(
+            userId || null,
+            receiver,
+            message,
+            subject || '',
+            'failed',
+            result.result_code || '-1',
+            result.message || '발송 실패'
+          ).run()
+        } catch (dbError) {
+          console.error('SMS 로그 저장 오류:', dbError)
+        }
+      }
+      
+      return c.json({
+        success: false,
+        error: '문자 발송 실패',
+        message: result.message || '알 수 없는 오류',
+        resultCode: result.result_code
+      }, 400)
+    }
+    
+  } catch (error) {
+    console.error('SMS 발송 오류:', error)
+    return c.json({ 
+      success: false, 
+      error: '문자 발송 중 오류가 발생했습니다',
+      details: error instanceof Error ? error.message : '알 수 없는 오류'
+    }, 500)
+  }
+})
+
+// SMS 발송 내역 조회 API
+app.get('/api/sms/logs', async (c) => {
+  try {
+    const userId = c.req.query('userId')
+    const { env } = c
+    
+    let query = 'SELECT * FROM sms_history'
+    let params: any[] = []
+    
+    if (userId) {
+      query += ' WHERE created_by = ?'
+      params.push(userId)
+    }
+    
+    query += ' ORDER BY created_at DESC LIMIT 100'
+    
+    const { results } = await env.DB.prepare(query).bind(...params).all()
+    
+    return c.json({
+      success: true,
+      logs: results || []
+    })
+  } catch (error) {
+    console.error('SMS 로그 조회 오류:', error)
+    return c.json({ success: false, error: 'SMS 로그 조회 실패' }, 500)
+  }
+})
+    }
+    
     return c.json({ 
       success: true, 
       message: '로그인 성공',
