@@ -5403,7 +5403,7 @@ app.get('/dashboard', (c) => {
                                         '<a href="' + pageUrl + '" target="_blank" class="flex-1 px-3 py-2 bg-purple-600 text-white text-sm rounded-lg hover:bg-purple-700 transition text-center">' +
                                             '미리보기' +
                                         '</a>' +
-                                        '<button onclick="copyUrl(\'' + pageUrl + '\')" class="px-3 py-2 bg-gray-100 text-gray-700 text-sm rounded-lg hover:bg-gray-200 transition">' +
+                                        '<button onclick="copyUrl(' + "'" + pageUrl + "'" + ')" class="px-3 py-2 bg-gray-100 text-gray-700 text-sm rounded-lg hover:bg-gray-200 transition">' +
                                             '🔗' +
                                         '</button>' +
                                     '</div>' +
