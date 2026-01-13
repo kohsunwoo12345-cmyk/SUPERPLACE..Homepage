@@ -8913,10 +8913,11 @@ app.get('/tools/search-volume', (c) => {
             <!-- 검색량 결과 -->
             <div id="searchVolumeResult" class="hidden bg-white rounded-2xl p-8 shadow-lg mb-8">
                 <h2 class="text-2xl font-bold text-gray-900 mb-6">📊 검색량 분석 결과</h2>
-                <div class="grid md:grid-cols-3 gap-6">
+                <div class="grid md:grid-cols-3 gap-6 mb-6">
                     <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 border border-blue-200">
                         <div class="text-sm text-blue-700 mb-2">월 평균 검색량</div>
                         <div class="text-4xl font-bold text-blue-900" id="monthlyVolume">-</div>
+                        <div class="text-xs text-blue-600 mt-2" id="searchDetails">PC: - / 모바일: -</div>
                     </div>
                     <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-6 border border-green-200">
                         <div class="text-sm text-green-700 mb-2">경쟁 강도</div>
@@ -8927,6 +8928,48 @@ app.get('/tools/search-volume', (c) => {
                         <div class="text-4xl font-bold text-purple-900" id="recommendation">-</div>
                     </div>
                 </div>
+                
+                <!-- 클릭률 정보 -->
+                <div class="bg-yellow-50 rounded-xl p-6 border border-yellow-200">
+                    <h3 class="text-lg font-bold text-yellow-900 mb-4">🖱️ 평균 클릭률 (CTR)</h3>
+                    <div class="grid md:grid-cols-3 gap-4">
+                        <div>
+                            <div class="text-sm text-yellow-700 mb-1">전체 평균</div>
+                            <div class="text-2xl font-bold text-yellow-900" id="averageCtr">-</div>
+                        </div>
+                        <div>
+                            <div class="text-sm text-yellow-700 mb-1">PC 클릭률</div>
+                            <div class="text-2xl font-bold text-yellow-900" id="pcCtr">-</div>
+                        </div>
+                        <div>
+                            <div class="text-sm text-yellow-700 mb-1">모바일 클릭률</div>
+                            <div class="text-2xl font-bold text-yellow-900" id="mobileCtr">-</div>
+                        </div>
+                    </div>
+                    <p class="text-xs text-yellow-700 mt-3">💡 클릭률이 높을수록 광고 효과가 좋습니다</p>
+                </div>
+            </div>
+
+            <!-- 관련 키워드 결과 -->
+            <div id="relatedKeywordsResult" class="hidden bg-white rounded-2xl p-8 shadow-lg mb-8">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">🔑 관련 키워드 TOP 10</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b-2 border-gray-200">
+                                <th class="text-left p-3 text-gray-700 font-bold">순위</th>
+                                <th class="text-left p-3 text-gray-700 font-bold">키워드</th>
+                                <th class="text-right p-3 text-gray-700 font-bold">월 검색량</th>
+                                <th class="text-right p-3 text-gray-700 font-bold">평균 CTR</th>
+                                <th class="text-center p-3 text-gray-700 font-bold">경쟁도</th>
+                            </tr>
+                        </thead>
+                        <tbody id="relatedKeywordsList">
+                            <!-- 관련 키워드 목록이 여기에 표시됩니다 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
             </div>
 
             <!-- 순위 결과 -->
@@ -8978,6 +9021,7 @@ app.get('/tools/search-volume', (c) => {
                 // 로딩 표시
                 document.getElementById('loading').classList.remove('hidden');
                 document.getElementById('searchVolumeResult').classList.add('hidden');
+                document.getElementById('relatedKeywordsResult').classList.add('hidden');
                 document.getElementById('rankingResult').classList.add('hidden');
                 document.getElementById('keywordResult').classList.add('hidden');
 
@@ -8999,14 +9043,51 @@ app.get('/tools/search-volume', (c) => {
                     const data = await response.json();
 
                     if (data.success) {
-                        // 검색량 결과 표시
+                        // 검색량 결과 표시 (기본)
                         document.getElementById('monthlyVolume').textContent = 
                             data.searchVolume?.monthlyAvg?.toLocaleString() || '집계중';
                         document.getElementById('competition').textContent = 
                             data.searchVolume?.competition || '보통';
                         document.getElementById('recommendation').textContent = 
                             data.searchVolume?.recommendation || '분석중';
+                        
+                        // 확장 데이터 표시 (CTR 포함)
+                        if (data.searchVolumeExtended) {
+                            const ext = data.searchVolumeExtended;
+                            const pcSearch = ext.monthlyPcSearch?.toLocaleString() || 0;
+                            const mobileSearch = ext.monthlyMobileSearch?.toLocaleString() || 0;
+                            document.getElementById('searchDetails').textContent = 
+                                'PC: ' + pcSearch + ' / 모바일: ' + mobileSearch;
+                            document.getElementById('averageCtr').textContent = 
+                                (ext.averageCtr || 0) + '%';
+                            document.getElementById('pcCtr').textContent = 
+                                (ext.pcCtr || 0) + '%';
+                            document.getElementById('mobileCtr').textContent = 
+                                (ext.mobileCtr || 0) + '%';
+                        }
+                        
                         document.getElementById('searchVolumeResult').classList.remove('hidden');
+                        
+                        // 관련 키워드 표시
+                        if (data.relatedKeywords && data.relatedKeywords.length > 0) {
+                            const keywordsHtml = data.relatedKeywords.map((kw, idx) => {
+                                const compClass = kw.competition === '낮음' ? 'bg-green-100 text-green-700' :
+                                                 kw.competition === '보통' ? 'bg-yellow-100 text-yellow-700' :
+                                                 kw.competition === '높음' ? 'bg-orange-100 text-orange-700' :
+                                                 'bg-red-100 text-red-700';
+                                return '<tr class="border-b border-gray-100 hover:bg-gray-50">' +
+                                    '<td class="p-3 text-gray-600 font-bold">' + (idx + 1) + '</td>' +
+                                    '<td class="p-3 text-gray-900 font-medium">' + kw.keyword + '</td>' +
+                                    '<td class="p-3 text-right text-blue-600 font-bold">' + (kw.monthlySearchVolume?.toLocaleString() || 0) + '</td>' +
+                                    '<td class="p-3 text-right text-green-600 font-bold">' + (kw.averageCtr || 0) + '%</td>' +
+                                    '<td class="p-3 text-center">' +
+                                    '<span class="px-3 py-1 rounded-full text-xs font-bold ' + compClass + '">' + kw.competition + '</span>' +
+                                    '</td>' +
+                                    '</tr>';
+                            }).join('');
+                            document.getElementById('relatedKeywordsList').innerHTML = keywordsHtml;
+                            document.getElementById('relatedKeywordsResult').classList.remove('hidden');
+                        }
 
                         // 순위 결과 표시
                         if (data.ranking) {
