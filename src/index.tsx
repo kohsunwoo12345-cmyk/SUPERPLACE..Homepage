@@ -5456,7 +5456,7 @@ app.get('/dashboard', (c) => {
             function copyAccountNumber() {
                 const accountNumber = '746-910023-17004'
                 navigator.clipboard.writeText(accountNumber).then(() => {
-                    alert('계좌번호가 복사되었습니다!\\n' + accountNumber)
+                    alert('계좌번호가 복사되었습니다! ' + accountNumber)
                 }).catch(err => {
                     alert('복사 실패: ' + err)
                 })
@@ -5494,7 +5494,7 @@ app.get('/dashboard', (c) => {
 
                     const data = await response.json()
                     if (data.success) {
-                        alert('입금 신청이 완료되었습니다!\\n관리자 확인 후 포인트가 지급됩니다.')
+                        alert('입금 신청이 완료되었습니다! 관리자 확인 후 포인트가 지급됩니다.')
                         closeDepositModal()
                         // 폼 초기화
                         document.getElementById('depositAmount').value = ''
