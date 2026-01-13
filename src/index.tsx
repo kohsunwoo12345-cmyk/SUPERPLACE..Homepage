@@ -12183,7 +12183,9 @@ app.post('/api/search-analysis', async (c) => {
     const CRAWLER_API_URL = 'https://web-production-14c4.up.railway.app/analyze'
     
     try {
-      const crawlerResponse = await fetch(CRAWLER_API_URL, {
+      // Cloudflare Workers에서는 fetch에 직접 타임아웃을 설정할 수 없으므로
+      // Promise.race를 사용하여 타임아웃 구현
+      const fetchPromise = fetch(CRAWLER_API_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -12191,9 +12193,14 @@ app.post('/api/search-analysis', async (c) => {
         body: JSON.stringify({
           keyword: keyword,
           placeUrl: placeUrl || null
-        }),
-        signal: AbortSignal.timeout(60000) // 60초 타임아웃
+        })
       })
+
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Request timeout')), 50000)
+      )
+
+      const crawlerResponse = await Promise.race([fetchPromise, timeoutPromise]) as Response
 
       if (!crawlerResponse.ok) {
         throw new Error(`Crawler API error: ${crawlerResponse.status}`)
@@ -12204,10 +12211,15 @@ app.post('/api/search-analysis', async (c) => {
       // 분석 기록 저장
       const { env } = c
       if (userId) {
-        await env.DB.prepare(`
-          INSERT INTO search_analysis_logs (user_id, keyword, place_url, result_data, created_at)
-          VALUES (?, ?, ?, ?, datetime('now'))
-        `).bind(userId, keyword, placeUrl || '', JSON.stringify(analysisResult)).run()
+        try {
+          await env.DB.prepare(`
+            INSERT INTO search_analysis_logs (user_id, keyword, place_url, result_data, created_at)
+            VALUES (?, ?, ?, ?, datetime('now'))
+          `).bind(userId, keyword, placeUrl || '', JSON.stringify(analysisResult)).run()
+        } catch (dbError) {
+          console.error('DB save error:', dbError)
+          // DB 저장 실패해도 결과는 반환
+        }
       }
 
       return c.json(analysisResult)
@@ -12219,7 +12231,7 @@ app.post('/api/search-analysis', async (c) => {
       const fallbackResponse = {
         success: false,
         error: '크롤링 서버 연결 실패',
-        message: '잠시 후 다시 시도해주세요.',
+        message: `오류: ${crawlerError instanceof Error ? crawlerError.message : '알 수 없는 오류'}`,
         searchVolume: {
           monthlyAvg: 0,
           competition: '분석 불가',
