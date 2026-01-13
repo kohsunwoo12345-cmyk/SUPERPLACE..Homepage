@@ -31,7 +31,25 @@ ALTER TABLE users ADD COLUMN balance INTEGER DEFAULT 0;
 4. **API Key** 발급
 5. **사용자 ID** 확인
 
-### 2. 환경 변수 설정
+### 2. 발신번호 등록 (필수)
+**⚠️ 중요: 알리고 웹사이트에서 발신번호를 먼저 등록해야 합니다!**
+
+1. https://smartsms.aligo.in/ 로그인
+2. **발신번호 관리** 메뉴로 이동
+3. **발신번호 추가** 클릭
+4. 휴대폰 인증 또는 ARS 인증 진행
+5. 인증 완료 후 발신번호 사용 가능
+
+### 3. 발송 허용 IP 등록 (필수)
+**⚠️ 중요: API 호출 서버의 IP를 등록해야 합니다!**
+
+1. https://smartsms.aligo.in/ 로그인
+2. **API 설정** > **발송 허용 IP 관리**
+3. **IP 추가** 또는 **모든 IP 허용** 설정
+   - 개발 중: 모든 IP 허용 권장
+   - 프로덕션: Cloudflare Pages IP 등록
+
+### 4. 환경 변수 설정
 
 #### 로컬 개발 (.dev.vars)
 ```bash
@@ -107,15 +125,17 @@ GET /api/sms/senders?userId=1
 
 ---
 
-### 3. 발신번호 인증 요청 (알리고 API 연동)
+### 3. 발신번호 등록 API (시스템에 저장)
+**⚠️ 알리고 웹사이트에서 인증 완료 후 우리 시스템에 등록하는 API**
+
 ```http
-POST /api/sms/sender/verify
+POST /api/sms/sender/register
 Content-Type: application/json
 
 {
   "userId": 1,
   "phoneNumber": "010-1234-5678",
-  "method": "mobile"
+  "verificationMethod": "aligo_web"
 }
 ```
 
@@ -123,18 +143,34 @@ Content-Type: application/json
 ```json
 {
   "success": true,
-  "message": "인증 요청이 완료되었습니다. 휴대폰 또는 ARS로 인증을 진행해주세요.",
+  "message": "발신번호가 등록되었습니다.",
   "senderId": 1
 }
 ```
 
-**인증 방법:**
-- `"mobile"`: 휴대폰 인증 (문자로 인증번호 수신)
-- `"ars"`: ARS 인증 (전화로 인증)
+**절차:**
+1. 알리고 웹사이트에서 발신번호 인증 완료
+2. 이 API로 인증된 번호를 시스템에 등록
+3. 등록된 발신번호로 SMS 발송 가능
 
 ---
 
-### 4. SMS 발송 API (핵심 로직 - 선차감 후발송)
+### 4. 발신번호 삭제 API
+```http
+DELETE /api/sms/sender/:senderId?userId=1
+```
+
+**응답:**
+```json
+{
+  "success": true,
+  "message": "발신번호가 삭제되었습니다."
+}
+```
+
+---
+
+### 5. SMS 발송 API (핵심 로직 - 선차감 후발송)
 ```http
 POST /api/sms/send
 Content-Type: application/json
@@ -189,7 +225,62 @@ Content-Type: application/json
 
 ---
 
-### 5. SMS 발송 내역 조회
+### 5. SMS 발송 API (핵심 로직 - 선차감 후발송)
+```http
+POST /api/sms/send
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "senderId": 1,
+  "receivers": [
+    {
+      "name": "홍길동",
+      "phone": "01012345678"
+    },
+    {
+      "name": "김철수",
+      "phone": "01087654321"
+    }
+  ],
+  "message": "안녕하세요 #{이름} 원장님! 꾸메땅학원입니다.",
+  "reserveTime": "2024-01-20T14:30:00"
+}
+```
+
+**발송 흐름:**
+1. **사용자 잔액 확인**
+2. **메시지 타입 자동 결정** (바이트 수 계산)
+   - 90바이트 이하: SMS
+   - 91~2000바이트: LMS
+3. **총 비용 계산** (수신자 수 × 건당 요금)
+4. **포인트 선차감**
+5. **알리고 API 호출** (실제 발송)
+6. **발송 성공**: SMS 로그 기록
+7. **발송 실패**: 포인트 환불
+
+**성공 응답:**
+```json
+{
+  "success": true,
+  "message": "문자 발송이 완료되었습니다.",
+  "sentCount": 2,
+  "totalCost": 40,
+  "remainingBalance": 960
+}
+```
+
+**실패 응답:**
+```json
+{
+  "success": false,
+  "error": "포인트가 부족합니다. (필요: 100P, 보유: 50P)"
+}
+```
+
+---
+
+### 6. SMS 발송 내역 조회
 ```http
 GET /api/sms/logs?userId=1&page=1&limit=20
 ```
@@ -224,7 +315,42 @@ GET /api/sms/logs?userId=1&page=1&limit=20
 
 ---
 
-### 6. 포인트 충전 API (관리자 전용)
+### 6. SMS 발송 내역 조회
+```http
+GET /api/sms/logs?userId=1&page=1&limit=20
+```
+
+**응답:**
+```json
+{
+  "success": true,
+  "logs": [
+    {
+      "id": 1,
+      "user_id": 1,
+      "sender_phone": "01012345678",
+      "receiver_number": "01087654321,01011112222",
+      "message_type": "SMS",
+      "message_content": "안녕하세요 원장님! 꾸메땅학원입니다.",
+      "byte_size": 45,
+      "point_cost": 40,
+      "status": "success",
+      "sent_at": "2024-01-15 14:30:00",
+      "created_at": "2024-01-15 14:30:00"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 20,
+    "total": 1,
+    "totalPages": 1
+  }
+}
+```
+
+---
+
+### 7. 포인트 충전 API (관리자 전용)
 ```http
 POST /api/sms/charge
 Content-Type: application/json
