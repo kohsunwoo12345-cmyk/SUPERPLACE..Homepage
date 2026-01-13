@@ -5433,7 +5433,7 @@ app.get('/dashboard', (c) => {
             // URL 복사
             function copyUrl(url) {
                 navigator.clipboard.writeText(url).then(() => {
-                    alert('URL이 복사되었습니다!\\n' + url)
+                    alert('URL이 복사되었습니다! ' + url)
                 }).catch(err => {
                     alert('복사 실패: ' + err)
                 })
