@@ -1,9 +1,9 @@
-name = "superplacehomepage"
-compatibility_date = "2025-12-18"
-pages_build_output_dir = "./dist"
-compatibility_flags = ["nodejs_compat"]
+name = "superplace-academy"
+compatibility_date = "2024-01-01"
+pages_build_output_dir = "dist"
 
-[[d1_databases]]
-binding = "DB"
-database_name = "webapp-production"
-database_id = "8c106540-21b4-4fa9-8879-c4956e459ca1"
+[build]
+command = "npm run build"
+
+[build.upload]
+format = "service-worker"
