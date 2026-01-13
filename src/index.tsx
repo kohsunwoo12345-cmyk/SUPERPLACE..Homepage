@@ -12468,18 +12468,6 @@ app.get('/api/sms/logs', async (c) => {
     return c.json({ success: false, error: 'SMS 로그 조회 실패' }, 500)
   }
 })
-    }
-    
-    return c.json({ 
-      success: true, 
-      message: '로그인 성공',
-      user: userInfo
-    })
-  } catch (error) {
-    console.error('Login error:', error)
-    return c.json({ success: false, error: '로그인 처리 중 오류가 발생했습니다' }, 500)
-  }
-})
 
 // 회원가입 API
 app.post('/api/signup', async (c) => {
