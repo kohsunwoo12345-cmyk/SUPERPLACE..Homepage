@@ -6,6 +6,10 @@ type Bindings = {
   DB: D1Database
   OPENAI_API_KEY?: string
   OPENAI_BASE_URL?: string
+  ALIGO_API_KEY?: string
+  ALIGO_USER_ID?: string
+  GOOGLE_CLIENT_ID?: string
+  KAKAO_JS_KEY?: string
 }
 
 const app = new Hono<{ Bindings: Bindings }>()
@@ -432,6 +436,371 @@ app.post('/api/register', async (c) => {
   } catch (error) {
     console.error('Register error:', error)
     return c.json({ success: false, error: '회원가입 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
+// ========================================
+// SMS API Routes
+// ========================================
+
+// SMS 요금표 조회 API
+app.get('/api/sms/pricing', async (c) => {
+  try {
+    const pricing = await c.env.DB.prepare(`
+      SELECT * FROM sms_pricing ORDER BY wholesale_price ASC
+    `).all()
+
+    return c.json({ success: true, pricing: pricing.results })
+  } catch (error) {
+    console.error('Get SMS pricing error:', error)
+    return c.json({ success: false, error: 'SMS 요금표 조회 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
+// 발신번호 목록 조회 API
+app.get('/api/sms/senders', async (c) => {
+  try {
+    const userId = c.req.query('userId')
+    
+    if (!userId) {
+      return c.json({ success: false, error: '사용자 ID가 필요합니다.' }, 400)
+    }
+
+    const senders = await c.env.DB.prepare(`
+      SELECT id, phone_number, verification_method, verification_date, status
+      FROM sender_ids
+      WHERE user_id = ?
+      ORDER BY created_at DESC
+    `).bind(userId).all()
+
+    return c.json({ success: true, senders: senders.results })
+  } catch (error) {
+    console.error('Get senders error:', error)
+    return c.json({ success: false, error: '발신번호 목록 조회 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
+// 발신번호 인증 요청 API (알리고 API 연동)
+app.post('/api/sms/sender/verify', async (c) => {
+  try {
+    const { userId, phoneNumber, method } = await c.req.json()
+    
+    if (!userId || !phoneNumber || !method) {
+      return c.json({ success: false, error: '필수 정보를 입력해주세요.' }, 400)
+    }
+
+    // 전화번호 형식 검증 (하이픈 제거)
+    const cleanNumber = phoneNumber.replace(/-/g, '')
+    if (!/^01[0-9]{8,9}$/.test(cleanNumber)) {
+      return c.json({ success: false, error: '올바른 휴대폰 번호를 입력해주세요.' }, 400)
+    }
+
+    // 알리고 API 호출 (발신번호 인증)
+    const aligoApiKey = c.env.ALIGO_API_KEY || 'YOUR_ALIGO_API_KEY'
+    const aligoUserId = c.env.ALIGO_USER_ID || 'YOUR_ALIGO_USER_ID'
+    
+    const formData = new FormData()
+    formData.append('key', aligoApiKey)
+    formData.append('user_id', aligoUserId)
+    formData.append('sender', cleanNumber)
+    formData.append('type', method) // 'mobile' or 'ars'
+    
+    const aligoResponse = await fetch('https://apis.aligo.in/sender/', {
+      method: 'POST',
+      body: formData
+    })
+    
+    const aligoResult = await aligoResponse.json()
+    
+    // DB에 발신번호 등록
+    const result = await c.env.DB.prepare(`
+      INSERT INTO sender_ids (user_id, phone_number, verification_method, status, alligo_response)
+      VALUES (?, ?, ?, 'pending', ?)
+    `).bind(userId, cleanNumber, method, JSON.stringify(aligoResult)).run()
+    
+    if (aligoResult.result_code === '1') {
+      return c.json({ 
+        success: true, 
+        message: '인증 요청이 완료되었습니다. 휴대폰 또는 ARS로 인증을 진행해주세요.',
+        senderId: result.meta.last_row_id
+      })
+    } else {
+      return c.json({ 
+        success: false, 
+        error: aligoResult.message || '인증 요청에 실패했습니다.',
+        aligoError: aligoResult
+      }, 400)
+    }
+  } catch (error) {
+    console.error('Sender verification error:', error)
+    return c.json({ success: false, error: '발신번호 인증 요청 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
+// SMS 발송 API (핵심 로직 - 선차감 후발송)
+app.post('/api/sms/send', async (c) => {
+  try {
+    const { userId, senderId, receivers, message, reserveTime } = await c.req.json()
+    
+    if (!userId || !senderId || !receivers || !message) {
+      return c.json({ success: false, error: '필수 정보를 입력해주세요.' }, 400)
+    }
+
+    // 1. 사용자 잔액 조회
+    const user = await c.env.DB.prepare(`
+      SELECT balance FROM users WHERE id = ?
+    `).bind(userId).first()
+    
+    if (!user) {
+      return c.json({ success: false, error: '사용자를 찾을 수 없습니다.' }, 404)
+    }
+
+    // 2. 메시지 타입 결정 (바이트 수 계산)
+    const byteSize = new Blob([message]).size
+    let messageType = 'SMS'
+    if (byteSize > 90) {
+      messageType = 'LMS'
+    }
+    
+    // 3. 요금 조회
+    const pricing = await c.env.DB.prepare(`
+      SELECT retail_price FROM sms_pricing WHERE message_type = ?
+    `).bind(messageType).first()
+    
+    if (!pricing) {
+      return c.json({ success: false, error: 'SMS 요금 정보를 찾을 수 없습니다.' }, 500)
+    }
+    
+    const costPerMessage = pricing.retail_price
+    const totalCost = costPerMessage * receivers.length
+    
+    // 4. 잔액 확인
+    if (user.balance < totalCost) {
+      return c.json({ 
+        success: false, 
+        error: `포인트가 부족합니다. (필요: ${totalCost}P, 보유: ${user.balance}P)` 
+      }, 400)
+    }
+
+    // 5. 포인트 선차감 (트랜잭션 시작)
+    const balanceBefor = user.balance
+    const balanceAfter = user.balance - totalCost
+    
+    await c.env.DB.prepare(`
+      UPDATE users SET balance = ? WHERE id = ?
+    `).bind(balanceAfter, userId).run()
+    
+    // 6. 포인트 거래 내역 기록
+    await c.env.DB.prepare(`
+      INSERT INTO point_transactions (user_id, transaction_type, amount, balance_before, balance_after, description)
+      VALUES (?, 'sms_cost', ?, ?, ?, ?)
+    `).bind(userId, -totalCost, balanceBefor, balanceAfter, `SMS ${receivers.length}건 발송`).run()
+    
+    // 7. 발신번호 조회
+    const sender = await c.env.DB.prepare(`
+      SELECT phone_number FROM sender_ids WHERE id = ? AND user_id = ? AND status = 'verified'
+    `).bind(senderId, userId).first()
+    
+    if (!sender) {
+      // 실패 시 포인트 환불
+      await c.env.DB.prepare(`
+        UPDATE users SET balance = ? WHERE id = ?
+      `).bind(balanceBefor, userId).run()
+      
+      return c.json({ success: false, error: '인증된 발신번호를 찾을 수 없습니다.' }, 404)
+    }
+
+    // 8. 알리고 API 호출 (실제 발송)
+    const aligoApiKey = c.env.ALIGO_API_KEY || 'YOUR_ALIGO_API_KEY'
+    const aligoUserId = c.env.ALIGO_USER_ID || 'YOUR_ALIGO_USER_ID'
+    
+    const formData = new FormData()
+    formData.append('key', aligoApiKey)
+    formData.append('user_id', aligoUserId)
+    formData.append('sender', sender.phone_number)
+    formData.append('receiver', receivers.map((r: any) => r.phone).join(','))
+    formData.append('msg', message)
+    formData.append('msg_type', messageType)
+    
+    if (reserveTime) {
+      formData.append('rdate', reserveTime.split('T')[0].replace(/-/g, ''))
+      formData.append('rtime', reserveTime.split('T')[1].substring(0, 5).replace(':', ''))
+    }
+    
+    const aligoResponse = await fetch('https://apis.aligo.in/send/', {
+      method: 'POST',
+      body: formData
+    })
+    
+    const aligoResult = await aligoResponse.json()
+    
+    // 9. 발송 결과 처리
+    if (aligoResult.result_code === '1') {
+      // 성공: SMS 로그 기록
+      const logResult = await c.env.DB.prepare(`
+        INSERT INTO sms_logs (user_id, sender_id, sender_number, receiver_number, message_type, message_content, byte_size, point_cost, status, alligo_response, alligo_msg_id, reserve_time, sent_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'success', ?, ?, ?, CURRENT_TIMESTAMP)
+      `).bind(
+        userId, 
+        senderId, 
+        sender.phone_number, 
+        receivers.map((r: any) => r.phone).join(','),
+        messageType,
+        message,
+        byteSize,
+        totalCost,
+        JSON.stringify(aligoResult),
+        aligoResult.msg_id || null,
+        reserveTime || null
+      ).run()
+      
+      // 수신자별 상세 기록
+      for (const receiver of receivers) {
+        const personalizedMessage = message.replace(/#{이름}/g, receiver.name || '')
+        await c.env.DB.prepare(`
+          INSERT INTO sms_recipients (sms_log_id, receiver_number, receiver_name, message_content, status, sent_at)
+          VALUES (?, ?, ?, ?, 'success', CURRENT_TIMESTAMP)
+        `).bind(logResult.meta.last_row_id, receiver.phone, receiver.name || null, personalizedMessage).run()
+      }
+      
+      return c.json({ 
+        success: true, 
+        message: '문자 발송이 완료되었습니다.',
+        sentCount: receivers.length,
+        totalCost: totalCost,
+        remainingBalance: balanceAfter
+      })
+    } else {
+      // 실패: 포인트 환불
+      await c.env.DB.prepare(`
+        UPDATE users SET balance = ? WHERE id = ?
+      `).bind(balanceBefor, userId).run()
+      
+      await c.env.DB.prepare(`
+        INSERT INTO point_transactions (user_id, transaction_type, amount, balance_before, balance_after, description)
+        VALUES (?, 'refund', ?, ?, ?, ?)
+      `).bind(userId, totalCost, balanceAfter, balanceBefor, `SMS 발송 실패로 인한 환불`).run()
+      
+      // 실패 로그 기록
+      await c.env.DB.prepare(`
+        INSERT INTO sms_logs (user_id, sender_id, sender_number, receiver_number, message_type, message_content, byte_size, point_cost, status, alligo_response)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'failed', ?)
+      `).bind(
+        userId, 
+        senderId, 
+        sender.phone_number, 
+        receivers.map((r: any) => r.phone).join(','),
+        messageType,
+        message,
+        byteSize,
+        totalCost,
+        JSON.stringify(aligoResult)
+      ).run()
+      
+      return c.json({ 
+        success: false, 
+        error: aligoResult.message || '문자 발송에 실패했습니다.',
+        aligoError: aligoResult
+      }, 400)
+    }
+  } catch (error) {
+    console.error('SMS send error:', error)
+    return c.json({ success: false, error: '문자 발송 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
+// SMS 발송 내역 조회 API
+app.get('/api/sms/logs', async (c) => {
+  try {
+    const userId = c.req.query('userId')
+    const page = parseInt(c.req.query('page') || '1')
+    const limit = parseInt(c.req.query('limit') || '20')
+    const offset = (page - 1) * limit
+    
+    if (!userId) {
+      return c.json({ success: false, error: '사용자 ID가 필요합니다.' }, 400)
+    }
+
+    const logs = await c.env.DB.prepare(`
+      SELECT 
+        sms_logs.*,
+        sender_ids.phone_number as sender_phone
+      FROM sms_logs
+      LEFT JOIN sender_ids ON sms_logs.sender_id = sender_ids.id
+      WHERE sms_logs.user_id = ?
+      ORDER BY sms_logs.created_at DESC
+      LIMIT ? OFFSET ?
+    `).bind(userId, limit, offset).all()
+
+    const total = await c.env.DB.prepare(`
+      SELECT COUNT(*) as count FROM sms_logs WHERE user_id = ?
+    `).bind(userId).first()
+
+    return c.json({ 
+      success: true, 
+      logs: logs.results,
+      pagination: {
+        page,
+        limit,
+        total: total?.count || 0,
+        totalPages: Math.ceil((total?.count || 0) / limit)
+      }
+    })
+  } catch (error) {
+    console.error('Get SMS logs error:', error)
+    return c.json({ success: false, error: 'SMS 발송 내역 조회 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
+// 포인트 충전 API (관리자 전용)
+app.post('/api/sms/charge', async (c) => {
+  try {
+    const { userId, amount, adminId, description } = await c.req.json()
+    
+    if (!userId || !amount || !adminId) {
+      return c.json({ success: false, error: '필수 정보를 입력해주세요.' }, 400)
+    }
+
+    // 관리자 권한 확인
+    const admin = await c.env.DB.prepare(`
+      SELECT role FROM users WHERE id = ?
+    `).bind(adminId).first()
+    
+    if (!admin || admin.role !== 'admin') {
+      return c.json({ success: false, error: '관리자 권한이 필요합니다.' }, 403)
+    }
+
+    // 사용자 잔액 조회
+    const user = await c.env.DB.prepare(`
+      SELECT balance FROM users WHERE id = ?
+    `).bind(userId).first()
+    
+    if (!user) {
+      return c.json({ success: false, error: '사용자를 찾을 수 없습니다.' }, 404)
+    }
+
+    const balanceBefore = user.balance
+    const balanceAfter = user.balance + amount
+    
+    // 포인트 충전
+    await c.env.DB.prepare(`
+      UPDATE users SET balance = ? WHERE id = ?
+    `).bind(balanceAfter, userId).run()
+    
+    // 거래 내역 기록
+    await c.env.DB.prepare(`
+      INSERT INTO point_transactions (user_id, transaction_type, amount, balance_before, balance_after, description, admin_id)
+      VALUES (?, 'charge', ?, ?, ?, ?, ?)
+    `).bind(userId, amount, balanceBefore, balanceAfter, description || '관리자 포인트 충전', adminId).run()
+    
+    return c.json({ 
+      success: true, 
+      message: '포인트 충전이 완료되었습니다.',
+      balance: balanceAfter
+    })
+  } catch (error) {
+    console.error('Point charge error:', error)
+    return c.json({ success: false, error: '포인트 충전 중 오류가 발생했습니다.' }, 500)
   }
 })
 
