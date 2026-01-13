@@ -5997,6 +5997,29 @@ app.get('/dashboard', (c) => {
                 <div class="mb-12">
                     <h2 class="text-2xl font-bold text-gray-900 mb-6">🎯 마케팅 도구</h2>
                     <div class="grid md:grid-cols-2 gap-6">
+                        <a href="/tools/search-volume" class="block bg-gradient-to-br from-cyan-500 to-cyan-700 rounded-2xl p-8 hover:shadow-2xl transition-all hover:-translate-y-1">
+                            <div class="flex items-center gap-4 mb-4">
+                                <div class="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="text-2xl font-bold text-white">네이버 검색량 조회</h3>
+                                    <p class="text-cyan-100 text-sm">실시간 검색량 분석</p>
+                                </div>
+                            </div>
+                            <p class="text-white/90 leading-relaxed mb-4">
+                                키워드 검색량과 네이버 플레이스 순위를 실시간으로 확인하세요. 경쟁사 분석과 최적 키워드 발굴이 가능합니다.
+                            </p>
+                            <div class="flex items-center text-white font-medium">
+                                <span>바로 사용하기</span>
+                                <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                </svg>
+                            </div>
+                        </a>
+
                         <a href="/tools/parent-message" class="block bg-gradient-to-br from-purple-500 to-purple-700 rounded-2xl p-8 hover:shadow-2xl transition-all hover:-translate-y-1">
                             <div class="flex items-center gap-4 mb-4">
                                 <div class="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
