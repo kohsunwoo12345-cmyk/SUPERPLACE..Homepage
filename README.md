@@ -254,7 +254,8 @@
 ## 현재 URL
 - **Production (New)**: https://superplace.pages.dev ✅ **최신 배포**
 - **Production (Legacy)**: https://superplace-academy.pages.dev
-- **Latest Deployment**: https://40a348cf.superplace.pages.dev
+- **Latest Deployment**: https://1b6acb45.superplace.pages.dev
+- **Sandbox**: https://3000-iozj30l08naj729nalnbi-0e616f0a.sandbox.novita.ai
 - **GitHub Repository**: https://github.com/kohsunwoo12345-cmyk/SUPERPLACE..Homepage.git
 
 ## 데이터 아키텍처
