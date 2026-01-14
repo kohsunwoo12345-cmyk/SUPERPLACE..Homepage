@@ -1486,8 +1486,8 @@ app.post('/api/upload/document', async (c) => {
       }
     })
 
-    // Public URL 반환 (나중에 R2 Public Access 설정 필요)
-    const publicUrl = `https://superplace-documents.r2.dev/${key}`
+    // Public URL 반환 (자체 도메인 사용)
+    const publicUrl = `https://superplace-academy.pages.dev/api/document/${key}`
 
     return c.json({ 
       success: true, 
@@ -1497,6 +1497,33 @@ app.post('/api/upload/document', async (c) => {
   } catch (err) {
     console.error('R2 upload error:', err)
     return c.json({ success: false, error: '이미지 업로드 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
+// R2 이미지 조회 API (Public Access)
+app.get('/api/document/:path{.+}', async (c) => {
+  try {
+    const path = c.req.param('path')
+    
+    if (!path) {
+      return c.text('File not found', 404)
+    }
+
+    const object = await c.env.R2.get(path)
+    
+    if (!object) {
+      return c.text('File not found', 404)
+    }
+
+    return new Response(object.body, {
+      headers: {
+        'Content-Type': object.httpMetadata?.contentType || 'application/octet-stream',
+        'Cache-Control': 'public, max-age=31536000'
+      }
+    })
+  } catch (err) {
+    console.error('R2 get error:', err)
+    return c.text('Error retrieving file', 500)
   }
 })
 
