@@ -17099,6 +17099,38 @@ app.get('/admin/dashboard', async (c) => {
     </body>
     </html>
   `)
+  } catch (error) {
+    console.error('Admin dashboard error:', error)
+    return c.html(`
+      <!DOCTYPE html>
+      <html lang="ko">
+      <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>관리자 대시보드 오류</title>
+          <script src="https://cdn.tailwindcss.com"></script>
+      </head>
+      <body class="bg-gray-50 flex items-center justify-center min-h-screen">
+          <div class="max-w-md w-full bg-white rounded-xl shadow-lg p-8 text-center">
+              <div class="text-red-500 text-6xl mb-4">⚠️</div>
+              <h1 class="text-2xl font-bold text-gray-900 mb-2">대시보드 로딩 오류</h1>
+              <p class="text-gray-600 mb-6">데이터베이스 연결에 문제가 발생했습니다.</p>
+              <div class="space-y-3">
+                  <a href="/admin/users" class="block w-full bg-purple-600 text-white py-3 px-6 rounded-lg hover:bg-purple-700">
+                      사용자 관리로 이동
+                  </a>
+                  <a href="/" class="block w-full bg-gray-200 text-gray-700 py-3 px-6 rounded-lg hover:bg-gray-300">
+                      홈으로 이동
+                  </a>
+              </div>
+              <p class="text-sm text-gray-500 mt-6">
+                  문제가 계속되면 데이터베이스 마이그레이션을 확인하세요.
+              </p>
+          </div>
+      </body>
+      </html>
+    `, 500)
+  }
 })
 
 // .html 확장자 접근 시 리다이렉트
