@@ -7226,8 +7226,7 @@ app.get('/dashboard', (c) => {
                         // search_volume 권한 체크 - 네이버 검색량 조회
                         const searchVolumeCard = document.querySelector('a[href="/tools/search-volume"]')
                         if (searchVolumeCard) {
-                            const hasPermission = permissions.some(p => p.program_key === 'search_volume' && p.is_active === 1)
-                            if (!hasPermission) {
+                            if (!permissions.search_volume) {
                                 searchVolumeCard.style.display = 'none'
                             }
                         }
@@ -7235,8 +7234,7 @@ app.get('/dashboard', (c) => {
                         // sms 권한 체크 - SMS 문자 발송
                         const smsSection = document.getElementById('smsSection')
                         if (smsSection) {
-                            const hasPermission = permissions.some(p => p.program_key === 'sms' && p.is_active === 1)
-                            if (!hasPermission) {
+                            if (!permissions.sms) {
                                 smsSection.style.display = 'none'
                             }
                         }
@@ -7244,8 +7242,7 @@ app.get('/dashboard', (c) => {
                         // landing_builder 권한 체크 - 랜딩페이지
                         const landingSection = document.getElementById('landingSection')
                         if (landingSection) {
-                            const hasPermission = permissions.some(p => p.program_key === 'landing_builder' && p.is_active === 1)
-                            if (!hasPermission) {
+                            if (!permissions.landing_builder) {
                                 landingSection.style.display = 'none'
                             }
                         }
@@ -7253,8 +7250,7 @@ app.get('/dashboard', (c) => {
                         // landing_builder 도구 카드도 숨김
                         const landingBuilderCard = document.querySelector('a[href="/tools/landing-builder"]')
                         if (landingBuilderCard) {
-                            const hasPermission = permissions.some(p => p.program_key === 'landing_builder' && p.is_active === 1)
-                            if (!hasPermission) {
+                            if (!permissions.landing_builder) {
                                 landingBuilderCard.style.display = 'none'
                             }
                         }
