@@ -822,6 +822,415 @@ app.post('/api/sms/charge', async (c) => {
   }
 })
 
+// ============================================
+// 카카오톡 알림톡 API Routes
+// ============================================
+
+// 카카오톡 알림톡 요금표 조회
+app.get('/api/kakao/pricing', async (c) => {
+  try {
+    const { results } = await c.env.DB.prepare(`
+      SELECT * FROM kakao_pricing ORDER BY wholesale_price ASC
+    `).all()
+
+    return c.json({ success: true, pricing: results })
+  } catch (error) {
+    console.error('Failed to load kakao pricing:', error)
+    return c.json({ success: false, error: '요금표 조회 실패' }, 500)
+  }
+})
+
+// 카카오톡 발신 프로필 목록 조회
+app.get('/api/kakao/profiles', async (c) => {
+  try {
+    const userId = c.req.query('userId')
+    
+    if (!userId) {
+      return c.json({ success: false, error: '사용자 ID가 필요합니다.' }, 400)
+    }
+
+    const { results } = await c.env.DB.prepare(`
+      SELECT id, sender_key, profile_name, category_code, status, verification_date, created_at
+      FROM kakao_sender_profiles
+      WHERE user_id = ?
+      ORDER BY created_at DESC
+    `).bind(userId).all()
+
+    return c.json({ success: true, profiles: results || [] })
+  } catch (error) {
+    console.error('Failed to load kakao profiles:', error)
+    return c.json({ success: false, error: '발신 프로필 조회 실패' }, 500)
+  }
+})
+
+// 카카오톡 발신 프로필 등록
+app.post('/api/kakao/profile/register', async (c) => {
+  try {
+    const { userId, senderKey, profileName, categoryCode } = await c.req.json()
+    
+    if (!userId || !senderKey || !profileName) {
+      return c.json({ success: false, error: '필수 정보를 입력해주세요.' }, 400)
+    }
+
+    // 중복 확인
+    const existing = await c.env.DB.prepare(`
+      SELECT id FROM kakao_sender_profiles WHERE sender_key = ? AND user_id = ?
+    `).bind(senderKey, userId).first()
+
+    if (existing) {
+      return c.json({ success: false, error: '이미 등록된 발신 프로필입니다.' }, 400)
+    }
+
+    const result = await c.env.DB.prepare(`
+      INSERT INTO kakao_sender_profiles (user_id, sender_key, profile_name, category_code, status)
+      VALUES (?, ?, ?, ?, 'active')
+    `).bind(userId, senderKey, profileName, categoryCode || null).run()
+
+    return c.json({ 
+      success: true, 
+      message: '발신 프로필이 등록되었습니다.',
+      profileId: result.meta.last_row_id
+    })
+  } catch (error) {
+    console.error('Failed to register kakao profile:', error)
+    return c.json({ success: false, error: '발신 프로필 등록 실패' }, 500)
+  }
+})
+
+// 카카오톡 템플릿 목록 조회
+app.get('/api/kakao/templates', async (c) => {
+  try {
+    const userId = c.req.query('userId')
+    
+    if (!userId) {
+      return c.json({ success: false, error: '사용자 ID가 필요합니다.' }, 400)
+    }
+
+    const { results } = await c.env.DB.prepare(`
+      SELECT * FROM kakao_templates
+      WHERE user_id = ?
+      ORDER BY created_at DESC
+    `).bind(userId).all()
+
+    return c.json({ success: true, templates: results || [] })
+  } catch (error) {
+    console.error('Failed to load kakao templates:', error)
+    return c.json({ success: false, error: '템플릿 조회 실패' }, 500)
+  }
+})
+
+// 카카오톡 템플릿 등록
+app.post('/api/kakao/template/register', async (c) => {
+  try {
+    const { 
+      userId, 
+      templateCode, 
+      templateName, 
+      templateContent, 
+      buttonsJson 
+    } = await c.req.json()
+    
+    if (!userId || !templateCode || !templateName || !templateContent) {
+      return c.json({ success: false, error: '필수 정보를 입력해주세요.' }, 400)
+    }
+
+    const result = await c.env.DB.prepare(`
+      INSERT INTO kakao_templates (
+        user_id, template_code, template_name, template_content, 
+        buttons_json, status
+      ) VALUES (?, ?, ?, ?, ?, 'approved')
+    `).bind(userId, templateCode, templateName, templateContent, buttonsJson || null).run()
+
+    return c.json({ 
+      success: true, 
+      message: '템플릿이 등록되었습니다.',
+      templateId: result.meta.last_row_id
+    })
+  } catch (error) {
+    console.error('Failed to register kakao template:', error)
+    return c.json({ success: false, error: '템플릿 등록 실패' }, 500)
+  }
+})
+
+// 카카오톡 알림톡 발송 API (알리고 연동)
+app.post('/api/kakao/send', async (c) => {
+  try {
+    const { 
+      userId, 
+      senderKey, 
+      templateCode, 
+      receivers,      // [{name: '홍길동', phone: '01012345678', variables: {...}}]
+      failover,       // Y/N (SMS 대체발송)
+      failoverSms,    // 대체발송 SMS 내용
+      reserveTime     // 예약발송 시간 (선택)
+    } = await c.req.json()
+
+    console.log('Kakao send request:', { userId, senderKey, templateCode, receiversCount: receivers?.length })
+
+    // 1. 필수 입력값 검증
+    if (!userId || !senderKey || !templateCode || !receivers || receivers.length === 0) {
+      return c.json({ success: false, error: '필수 정보를 입력해주세요.' }, 400)
+    }
+
+    // 2. 템플릿 조회
+    const template = await c.env.DB.prepare(`
+      SELECT * FROM kakao_templates WHERE template_code = ? AND user_id = ?
+    `).bind(templateCode, userId).first()
+
+    if (!template) {
+      return c.json({ success: false, error: '템플릿을 찾을 수 없습니다.' }, 404)
+    }
+
+    // 3. 요금 조회
+    const pricing = await c.env.DB.prepare(`
+      SELECT retail_price FROM kakao_pricing WHERE message_type = 'ALIMTALK'
+    `).first()
+
+    const unitPrice = pricing?.retail_price || 15
+    const totalCost = unitPrice * receivers.length
+
+    // 4. 사용자 잔액 확인 및 포인트 선차감
+    const user = await c.env.DB.prepare(`
+      SELECT balance FROM users WHERE id = ?
+    `).bind(userId).first()
+
+    if (!user || user.balance < totalCost) {
+      return c.json({ 
+        success: false, 
+        error: `포인트가 부족합니다. (필요: ${totalCost}P, 보유: ${user?.balance || 0}P)`
+      }, 400)
+    }
+
+    const balanceBefore = user.balance
+    const balanceAfter = balanceBefore - totalCost
+
+    // 포인트 차감
+    await c.env.DB.prepare(`
+      UPDATE users SET balance = ? WHERE id = ?
+    `).bind(balanceAfter, userId).run()
+
+    // 포인트 거래 내역 기록
+    await c.env.DB.prepare(`
+      INSERT INTO point_transactions (user_id, transaction_type, amount, balance_before, balance_after, description)
+      VALUES (?, 'kakao_cost', ?, ?, ?, ?)
+    `).bind(
+      userId, 
+      -totalCost, 
+      balanceBefore, 
+      balanceAfter, 
+      `카카오 알림톡 ${receivers.length}건 발송`
+    ).run()
+
+    console.log('Points deducted:', balanceBefore, '->', balanceAfter)
+
+    // 5. 알리고 API 호출 (카카오톡 알림톡 발송)
+    try {
+      const aligoApiKey = c.env.ALIGO_API_KEY
+      const aligoUserId = c.env.ALIGO_USER_ID
+
+      if (!aligoApiKey || !aligoUserId) {
+        throw new Error('알리고 API 키가 설정되지 않았습니다.')
+      }
+
+      // 수신자 목록을 알리고 형식으로 변환
+      const receiverList = receivers.map(r => ({
+        rcv: r.phone.replace(/-/g, ''),
+        rcv_name: r.name || '',
+        emtitle_1: r.variables?.title || '',  // 템플릿 변수
+        message: template.template_content    // 기본 메시지
+      }))
+
+      const aligoRequest = {
+        apikey: aligoApiKey,
+        userid: aligoUserId,
+        senderkey: senderKey,
+        tpl_code: templateCode,
+        sender: senderKey,
+        receiver_1: receiverList[0].rcv,
+        recvname_1: receiverList[0].rcv_name,
+        subject_1: receiverList[0].emtitle_1,
+        message_1: receiverList[0].message,
+        failover: failover || 'Y',
+        fsubject_1: failoverSms || '카카오톡 알림',
+        fmessage_1: failoverSms || template.template_content
+      }
+
+      // 예약 발송 설정
+      if (reserveTime) {
+        const reserveDate = new Date(reserveTime)
+        aligoRequest.rdate = reserveDate.toISOString().split('T')[0].replace(/-/g, '')
+        aligoRequest.rtime = reserveDate.toTimeString().split(' ')[0].replace(/:/g, '').substring(0, 4)
+      }
+
+      const aligoResponse = await fetch('https://kakaoapi.aligo.in/akv10/alimtalk/send/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams(aligoRequest)
+      })
+
+      const aligoData = await aligoResponse.json()
+      console.log('Aligo kakao response:', aligoData)
+
+      // 6. 발송 로그 저장
+      const logResult = await c.env.DB.prepare(`
+        INSERT INTO kakao_logs (
+          user_id, sender_key, template_code, receiver_phone, receiver_name, 
+          message, buttons_json, fail_over, fail_over_sms, 
+          status, result_code, result_message, msg_id, cost, reserved_date, sent_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+      `).bind(
+        userId, senderKey, templateCode, 
+        receivers[0].phone, receivers[0].name,
+        template.template_content, template.buttons_json, 
+        failover || 'Y', failoverSms,
+        aligoData.result_code === 1 ? 'success' : 'failed',
+        aligoData.result_code || 0,
+        aligoData.message || '',
+        aligoData.msg_id || '',
+        totalCost,
+        reserveTime || null
+      ).run()
+
+      const kakaoLogId = logResult.meta.last_row_id
+
+      // 수신자별 상세 내역 저장
+      for (const receiver of receivers) {
+        await c.env.DB.prepare(`
+          INSERT INTO kakao_recipients (
+            kakao_log_id, receiver_phone, receiver_name, status, sent_at
+          ) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
+        `).bind(
+          kakaoLogId, 
+          receiver.phone, 
+          receiver.name,
+          aligoData.result_code === 1 ? 'success' : 'pending'
+        ).run()
+      }
+
+      if (aligoData.result_code === 1) {
+        return c.json({ 
+          success: true, 
+          message: `카카오 알림톡 ${receivers.length}건이 발송되었습니다.`,
+          balance: balanceAfter,
+          cost: totalCost,
+          msgId: aligoData.msg_id
+        })
+      } else {
+        // 발송 실패 시 포인트 환불
+        await c.env.DB.prepare(`
+          UPDATE users SET balance = ? WHERE id = ?
+        `).bind(balanceBefore, userId).run()
+
+        await c.env.DB.prepare(`
+          INSERT INTO point_transactions (user_id, transaction_type, amount, balance_before, balance_after, description)
+          VALUES (?, 'refund', ?, ?, ?, ?)
+        `).bind(
+          userId, 
+          totalCost, 
+          balanceAfter, 
+          balanceBefore, 
+          '카카오 알림톡 발송 실패로 인한 환불'
+        ).run()
+
+        return c.json({ 
+          success: false, 
+          error: aligoData.message || '알림톡 발송 실패',
+          aligoError: aligoData
+        }, 500)
+      }
+
+    } catch (aligoError) {
+      console.error('Aligo kakao API error:', aligoError)
+      
+      // API 오류 시 포인트 환불
+      await c.env.DB.prepare(`
+        UPDATE users SET balance = ? WHERE id = ?
+      `).bind(balanceBefore, userId).run()
+
+      await c.env.DB.prepare(`
+        INSERT INTO point_transactions (user_id, transaction_type, amount, balance_before, balance_after, description)
+        VALUES (?, 'refund', ?, ?, ?, ?)
+      `).bind(
+        userId, 
+        totalCost, 
+        balanceAfter, 
+        balanceBefore, 
+        '카카오 알림톡 API 오류로 인한 환불'
+      ).run()
+
+      return c.json({ 
+        success: false, 
+        error: '알리고 API 호출 실패',
+        details: aligoError.message
+      }, 500)
+    }
+
+  } catch (error) {
+    console.error('Kakao send error:', error)
+    return c.json({ success: false, error: '알림톡 발송 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
+// 카카오톡 알림톡 발송 내역 조회
+app.get('/api/kakao/logs', async (c) => {
+  try {
+    const userId = c.req.query('userId')
+    const page = parseInt(c.req.query('page') || '1')
+    const limit = parseInt(c.req.query('limit') || '20')
+    const offset = (page - 1) * limit
+
+    if (!userId) {
+      return c.json({ success: false, error: '사용자 ID가 필요합니다.' }, 400)
+    }
+
+    const { results } = await c.env.DB.prepare(`
+      SELECT * FROM kakao_logs
+      WHERE user_id = ?
+      ORDER BY created_at DESC
+      LIMIT ? OFFSET ?
+    `).bind(userId, limit, offset).all()
+
+    const total = await c.env.DB.prepare(`
+      SELECT COUNT(*) as count FROM kakao_logs WHERE user_id = ?
+    `).bind(userId).first()
+
+    // 통계 조회
+    const stats = await c.env.DB.prepare(`
+      SELECT 
+        COUNT(*) as total_sent,
+        SUM(CASE WHEN status = 'success' THEN 1 ELSE 0 END) as success_count,
+        SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) as failed_count,
+        SUM(cost) as total_cost
+      FROM kakao_logs
+      WHERE user_id = ?
+    `).bind(userId).first()
+
+    return c.json({ 
+      success: true, 
+      logs: results || [],
+      pagination: {
+        page,
+        limit,
+        total: total?.count || 0,
+        totalPages: Math.ceil((total?.count || 0) / limit)
+      },
+      stats: {
+        totalSent: stats?.total_sent || 0,
+        successCount: stats?.success_count || 0,
+        failedCount: stats?.failed_count || 0,
+        totalCost: stats?.total_cost || 0
+      }
+    })
+  } catch (error) {
+    console.error('Failed to load kakao logs:', error)
+    return c.json({ success: false, error: '발송 내역 조회 실패' }, 500)
+  }
+})
+
+// ============================================
+// End of 카카오톡 알림톡 API Routes
+// ============================================
+
 // 입금 신청 API
 app.post('/api/deposit/request', async (c) => {
   try {
