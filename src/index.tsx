@@ -17338,7 +17338,7 @@ app.get('/sms/senders', (c) => {
     </html>
   `)
   } catch (err) {
-    console.error('Admin dashboard error:', error)
+    console.error('Admin dashboard error:', err)
     return c.html(`
       <!DOCTYPE html>
       <html><body>
