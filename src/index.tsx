@@ -16825,6 +16825,21 @@ app.patch('/api/admin/contacts/:id', async (c) => {
 })
 
 // 관리자 대시보드
+// DB 연결 테스트 엔드포인트
+app.get('/api/test/db', async (c) => {
+  const { env } = c
+  try {
+    if (!env.DB) {
+      return c.json({ success: false, error: 'DB binding not found', env_keys: Object.keys(env) })
+    }
+    
+    const result = await env.DB.prepare('SELECT 1 as test').first()
+    return c.json({ success: true, message: 'DB connection OK', result })
+  } catch (error: any) {
+    return c.json({ success: false, error: error.message, stack: error.stack }, 500)
+  }
+})
+
 app.get('/admin/dashboard', async (c) => {
   const { env } = c
   
