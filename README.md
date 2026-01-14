@@ -252,8 +252,9 @@
 15. **대시보드 차트** - 검색량/순위 변화 그래프
 
 ## 현재 URL
-- **Production**: https://superplace-academy.pages.dev
-- **Latest Deployment**: https://4948abd8.superplace-academy.pages.dev
+- **Production (New)**: https://superplace.pages.dev ✅ **최신 배포**
+- **Production (Legacy)**: https://superplace-academy.pages.dev
+- **Latest Deployment**: https://40a348cf.superplace.pages.dev
 - **GitHub Repository**: https://github.com/kohsunwoo12345-cmyk/SUPERPLACE..Homepage.git
 
 ## 데이터 아키텍처
@@ -333,9 +334,12 @@ npm run build
 ## 배포 상태
 - **플랫폼**: Cloudflare Pages
 - **상태**: ✅ Production 배포 완료
-- **Production URL**: https://superplace-academy.pages.dev
-- **마지막 업데이트**: 2026-01-13
+- **Production URL**: https://superplace.pages.dev ⭐ **최신**
+- **마지막 업데이트**: 2026-01-14
 - **최근 변경사항**: 
+  - ✅ **포인트 관리 시스템 완전 개편** (탭 UI, 충전/사용 내역, 통계)
+  - ✅ **이메일 알림 시스템 추가** (Resend API 연동)
+  - ✅ **Cloudflare Pages 배포 완료** (환경 변수 설정)
   - SMS API 시스템 백엔드 구현 완료 (알리고 연동)
   - 검색량 조회 도구 활성화
 
@@ -353,16 +357,26 @@ npm run build
 5. **검색량 조회 히스토리** - 과거 조회 결과 확인 기능
 6. **리포트 생성** - PDF/Excel 다운로드 기능
 
-## 알리고 SMS API 설정 필요
-SMS 시스템을 사용하려면 다음 환경 변수를 설정해야 합니다:
-```bash
-# 로컬 개발 (.dev.vars)
-ALIGO_API_KEY=your_aligo_api_key_here
-ALIGO_USER_ID=your_aligo_user_id_here
+## 알리고 SMS API 설정 (✅ 완료)
+SMS 시스템에 필요한 환경 변수가 설정되었습니다:
 
-# 프로덕션 (Cloudflare Pages Secrets)
-npx wrangler pages secret put ALIGO_API_KEY --project-name superplace
-npx wrangler pages secret put ALIGO_USER_ID --project-name superplace
+**로컬 개발 환경 (.dev.vars)**
+```bash
+ALIGO_API_KEY=4bbi3l27pb5qh11tkujl578bttz6vb5j
+ALIGO_USER_ID=wangholy
+```
+
+**프로덕션 환경 (Cloudflare Pages Secrets)** ✅ **설정 완료**
+```bash
+# 이미 설정됨
+✅ ALIGO_API_KEY - Cloudflare Secret으로 저장됨
+✅ ALIGO_USER_ID - Cloudflare Secret으로 저장됨
+```
+
+**선택 사항: Resend 이메일 API (이메일 알림용)**
+```bash
+# 입금 승인 시 이메일 알림을 보내려면 설정하세요
+npx wrangler pages secret put RESEND_API_KEY --project-name superplace
 ```
 
 자세한 설정 방법은 **SMS_API_SETUP.md** 문서를 참고하세요.
