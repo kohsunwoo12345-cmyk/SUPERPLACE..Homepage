@@ -16845,7 +16845,7 @@ app.get('/admin/dashboard', async (c) => {
   
   // DB 바인딩 확인
   if (!env.DB) {
-    console.erroror('DB binding not found')
+    console.error('DB binding not found')
     return c.html(`
       <!DOCTYPE html>
       <html lang="ko">
