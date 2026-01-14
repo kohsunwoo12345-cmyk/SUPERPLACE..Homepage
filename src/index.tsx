@@ -16828,6 +16828,43 @@ app.patch('/api/admin/contacts/:id', async (c) => {
 app.get('/admin/dashboard', async (c) => {
   const { env } = c
   
+  // DB 바인딩 확인
+  if (!env.DB) {
+    console.error('DB binding not found')
+    return c.html(`
+      <!DOCTYPE html>
+      <html lang="ko">
+      <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>데이터베이스 설정 필요</title>
+          <script src="https://cdn.tailwindcss.com"></script>
+      </head>
+      <body class="bg-gray-50 flex items-center justify-center min-h-screen">
+          <div class="max-w-md w-full bg-white rounded-xl shadow-lg p-8 text-center">
+              <div class="text-yellow-500 text-6xl mb-4">⚙️</div>
+              <h1 class="text-2xl font-bold text-gray-900 mb-2">데이터베이스 바인딩 필요</h1>
+              <p class="text-gray-600 mb-6">Cloudflare Pages 프로젝트에 D1 데이터베이스 바인딩이 설정되지 않았습니다.</p>
+              <div class="bg-gray-100 rounded-lg p-4 text-left text-sm mb-6">
+                  <p class="font-mono text-gray-700 mb-2">설정 방법:</p>
+                  <ol class="list-decimal list-inside space-y-1 text-gray-600">
+                      <li>Cloudflare 대시보드 접속</li>
+                      <li>Pages → superplace-academy</li>
+                      <li>Settings → Functions</li>
+                      <li>D1 database bindings 추가</li>
+                      <li>Variable name: DB</li>
+                      <li>D1 database: webapp-production</li>
+                  </ol>
+              </div>
+              <a href="/" class="block w-full bg-purple-600 text-white py-3 px-6 rounded-lg hover:bg-purple-700">
+                  홈으로 이동
+              </a>
+          </div>
+      </body>
+      </html>
+    `, 500)
+  }
+  
   try {
     // 통계 데이터 조회
     let usersCount = { results: [{ count: 0 }] }
@@ -17099,8 +17136,8 @@ app.get('/admin/dashboard', async (c) => {
     </body>
     </html>
   `)
-  } catch (error) {
-    console.error('Admin dashboard error:', error)
+  } catch (err) {
+    console.error('Admin dashboard error:', err)
     return c.html(`
       <!DOCTYPE html>
       <html lang="ko">
