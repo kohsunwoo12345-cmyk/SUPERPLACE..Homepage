@@ -1535,6 +1535,8 @@ app.post('/api/sms/sender/verification-request', async (c) => {
       businessRegistrationImage, certificateImage, employmentCertImage, contractImage 
     } = await c.req.json()
     
+    console.log('Verification request received:', { userId, phoneNumber, businessName })
+    
     if (!userId || !phoneNumber || !businessName || !businessRegistrationNumber || 
         !businessRegistrationImage || !certificateImage || !employmentCertImage || !contractImage) {
       return c.json({ success: false, error: '모든 필수 서류를 업로드해주세요.' }, 400)
@@ -1546,6 +1548,8 @@ app.post('/api/sms/sender/verification-request', async (c) => {
       return c.json({ success: false, error: '올바른 휴대폰 번호를 입력해주세요.' }, 400)
     }
 
+    console.log('Checking existing request...')
+    
     // 이미 신청 중이거나 승인된 번호인지 확인
     const existingRequest = await c.env.DB.prepare(`
       SELECT id, status FROM sender_verification_requests
@@ -1563,6 +1567,8 @@ app.post('/api/sms/sender/verification-request', async (c) => {
       }
     }
 
+    console.log('Inserting new request...')
+    
     // 신청 저장 (4개 서류 포함)
     const result = await c.env.DB.prepare(`
       INSERT INTO sender_verification_requests 
@@ -1572,6 +1578,8 @@ app.post('/api/sms/sender/verification-request', async (c) => {
     `).bind(userId, cleanNumber, businessName, businessRegistrationNumber, 
             businessRegistrationImage, certificateImage, employmentCertImage, contractImage).run()
 
+    console.log('Insert successful, ID:', result.meta.last_row_id)
+
     return c.json({ 
       success: true, 
       message: '발신번호 인증 신청이 완료되었습니다. 관리자 승인을 기다려주세요. (평일 기준 2~3일 소요)',
@@ -1579,7 +1587,9 @@ app.post('/api/sms/sender/verification-request', async (c) => {
     })
   } catch (err) {
     console.error('Sender verification request error:', err)
-    return c.json({ success: false, error: '발신번호 인증 신청 중 오류가 발생했습니다.' }, 500)
+    console.error('Error stack:', err.stack)
+    console.error('Error message:', err.message)
+    return c.json({ success: false, error: '발신번호 인증 신청 중 오류가 발생했습니다.', details: err.message }, 500)
   }
 })
 
