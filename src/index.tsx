@@ -16602,9 +16602,44 @@ app.get('/admin/dashboard', async (c) => {
   const contactsCount = await env.DB.prepare('SELECT COUNT(*) as count FROM contacts').all()
   const pendingContacts = await env.DB.prepare('SELECT COUNT(*) as count FROM contacts WHERE status = "pending"').all()
   
+  // SMS 통계 조회
+  const smsStats = await env.DB.prepare(`
+    SELECT 
+      COUNT(*) as total_sent,
+      SUM(CASE WHEN status = 'success' THEN 1 ELSE 0 END) as success_count,
+      SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) as failed_count
+    FROM sms_logs
+  `).all()
+  
+  // 카카오 통계 조회
+  const kakaoStats = await env.DB.prepare(`
+    SELECT 
+      COUNT(*) as total_sent,
+      SUM(CASE WHEN status = 'success' THEN 1 ELSE 0 END) as success_count,
+      SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) as failed_count
+    FROM kakao_logs
+  `).all()
+  
+  // 입금 신청 대기 건수
+  const pendingDeposits = await env.DB.prepare('SELECT COUNT(*) as count FROM deposit_requests WHERE status = "pending"').all()
+  
+  // 발신번호 인증 대기 건수
+  const pendingSenders = await env.DB.prepare('SELECT COUNT(*) as count FROM sender_verification_requests WHERE status = "pending"').all()
+  
   const totalUsers = usersCount.results[0]?.count || 0
   const totalContacts = contactsCount.results[0]?.count || 0
   const pendingCount = pendingContacts.results[0]?.count || 0
+  
+  const totalSmsSent = smsStats.results[0]?.total_sent || 0
+  const smsSuccess = smsStats.results[0]?.success_count || 0
+  const smsFailed = smsStats.results[0]?.failed_count || 0
+  
+  const totalKakaoSent = kakaoStats.results[0]?.total_sent || 0
+  const kakaoSuccess = kakaoStats.results[0]?.success_count || 0
+  const kakaoFailed = kakaoStats.results[0]?.failed_count || 0
+  
+  const pendingDepositsCount = pendingDeposits.results[0]?.count || 0
+  const pendingSendersCount = pendingSenders.results[0]?.count || 0
   
   return c.html(`
     <!DOCTYPE html>
@@ -16626,6 +16661,7 @@ app.get('/admin/dashboard', async (c) => {
                             <a href="/admin/dashboard" class="text-purple-600 font-semibold">대시보드</a>
                             <a href="/admin/users" class="text-gray-600 hover:text-purple-600">사용자</a>
                             <a href="/admin/contacts" class="text-gray-600 hover:text-purple-600">문의</a>
+                            <a href="/admin/sms" class="text-gray-600 hover:text-purple-600">문자 관리</a>
                             <a href="/admin/sender/verification" class="text-gray-600 hover:text-purple-600">발신번호 승인</a>
                         </div>
                     </div>
@@ -16665,6 +16701,48 @@ app.get('/admin/dashboard', async (c) => {
                 </div>
             </div>
             
+            <!-- SMS/카카오 통계 섹션 -->
+            <div class="mb-8">
+                <h2 class="text-xl font-bold text-gray-900 mb-4">메시지 발송 현황</h2>
+                <div class="grid md:grid-cols-4 gap-6">
+                    <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-sm p-6 text-white">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-blue-100">SMS 발송</span>
+                            <i class="fas fa-sms text-2xl"></i>
+                        </div>
+                        <p class="text-3xl font-bold mb-1">${totalSmsSent}</p>
+                        <p class="text-sm text-blue-100">성공 ${smsSuccess} / 실패 ${smsFailed}</p>
+                    </div>
+                    
+                    <div class="bg-gradient-to-br from-yellow-400 to-yellow-500 rounded-xl shadow-sm p-6 text-white">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-yellow-100">카카오톡</span>
+                            <i class="fas fa-comment-dots text-2xl"></i>
+                        </div>
+                        <p class="text-3xl font-bold mb-1">${totalKakaoSent}</p>
+                        <p class="text-sm text-yellow-100">성공 ${kakaoSuccess} / 실패 ${kakaoFailed}</p>
+                    </div>
+                    
+                    <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-sm p-6 text-white">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-green-100">입금 대기</span>
+                            <i class="fas fa-money-bill-wave text-2xl"></i>
+                        </div>
+                        <p class="text-3xl font-bold mb-1">${pendingDepositsCount}</p>
+                        <p class="text-sm text-green-100">승인 대기중</p>
+                    </div>
+                    
+                    <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-sm p-6 text-white">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-purple-100">발신번호 대기</span>
+                            <i class="fas fa-phone text-2xl"></i>
+                        </div>
+                        <p class="text-3xl font-bold mb-1">${pendingSendersCount}</p>
+                        <p class="text-sm text-purple-100">승인 대기중</p>
+                    </div>
+                </div>
+            </div>
+            
             <div class="grid md:grid-cols-3 gap-6">
                 <a href="/admin/users" class="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition border border-gray-200">
                     <div class="flex items-center gap-4">
@@ -16686,6 +16764,42 @@ app.get('/admin/dashboard', async (c) => {
                         <div>
                             <h3 class="text-lg font-bold text-gray-900">문의 관리</h3>
                             <p class="text-gray-600">대행 문의 처리 및 관리</p>
+                        </div>
+                    </div>
+                </a>
+                
+                <a href="/admin/sms" class="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition border border-gray-200">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-sms text-blue-600 text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900">문자 관리</h3>
+                            <p class="text-gray-600">SMS/카카오 발송 및 통계</p>
+                        </div>
+                    </div>
+                </a>
+                
+                <a href="/admin/sender/verification" class="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition border border-gray-200">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-phone text-purple-600 text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900">발신번호 승인</h3>
+                            <p class="text-gray-600">발신번호 인증 요청 관리</p>
+                        </div>
+                    </div>
+                </a>
+                
+                <a href="/admin/deposits" class="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition border border-gray-200">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-money-bill-wave text-green-600 text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900">입금 관리</h3>
+                            <p class="text-gray-600">포인트 입금 신청 승인</p>
                         </div>
                     </div>
                 </a>
@@ -18888,6 +19002,382 @@ app.get('/sms/points', (c) => {
 })
 
 // 관리자 - 발신번호 승인 페이지
+// 관리자 문자 관리 페이지
+app.get('/admin/sms', async (c) => {
+  const { env } = c
+  
+  // SMS 통계 조회
+  const smsStats = await env.DB.prepare(`
+    SELECT 
+      COUNT(*) as total,
+      SUM(CASE WHEN status = 'success' THEN 1 ELSE 0 END) as success,
+      SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) as failed
+    FROM sms_logs
+  `).all()
+  
+  // 카카오 통계 조회
+  const kakaoStats = await env.DB.prepare(`
+    SELECT 
+      COUNT(*) as total,
+      SUM(CASE WHEN status = 'success' THEN 1 ELSE 0 END) as success,
+      SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) as failed
+    FROM kakao_logs
+  `).all()
+  
+  // 최근 발송 내역 (SMS + 카카오 통합)
+  const recentSMS = await env.DB.prepare(`
+    SELECT 
+      id, user_id, sender_id, message_type, 
+      status, created_at
+    FROM sms_logs 
+    ORDER BY created_at DESC 
+    LIMIT 10
+  `).all()
+  
+  const recentKakao = await env.DB.prepare(`
+    SELECT 
+      id, user_id, sender_key, template_code, 
+      status, created_at
+    FROM kakao_logs 
+    ORDER BY created_at DESC 
+    LIMIT 10
+  `).all()
+  
+  const sms = smsStats.results[0] || { total: 0, success: 0, failed: 0 }
+  const kakao = kakaoStats.results[0] || { total: 0, success: 0, failed: 0 }
+  
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>문자 관리 - 슈퍼플레이스 관리자</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    </head>
+    <body class="bg-gray-50">
+        <nav class="bg-white border-b border-gray-200">
+            <div class="max-w-7xl mx-auto px-6 py-4">
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center gap-8">
+                        <a href="/admin/dashboard" class="text-2xl font-bold text-purple-600">슈퍼플레이스 관리자</a>
+                        <div class="flex gap-4">
+                            <a href="/admin/dashboard" class="text-gray-600 hover:text-purple-600">대시보드</a>
+                            <a href="/admin/users" class="text-gray-600 hover:text-purple-600">사용자</a>
+                            <a href="/admin/contacts" class="text-gray-600 hover:text-purple-600">문의</a>
+                            <a href="/admin/sms" class="text-purple-600 font-semibold">문자 관리</a>
+                            <a href="/admin/sender/verification" class="text-gray-600 hover:text-purple-600">발신번호 승인</a>
+                        </div>
+                    </div>
+                    <button onclick="logout()" class="text-gray-600 hover:text-red-600">
+                        <i class="fas fa-sign-out-alt mr-2"></i>로그아웃
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <div class="max-w-7xl mx-auto px-6 py-8">
+            <h1 class="text-3xl font-bold text-gray-900 mb-8">문자 발송 관리</h1>
+            
+            <!-- 통계 카드 -->
+            <div class="grid md:grid-cols-4 gap-6 mb-8">
+                <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-sm p-6 text-white">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-blue-100">SMS 발송</span>
+                        <i class="fas fa-sms text-2xl"></i>
+                    </div>
+                    <p class="text-3xl font-bold mb-1">${sms.total}</p>
+                    <p class="text-sm text-blue-100">성공 ${sms.success} / 실패 ${sms.failed}</p>
+                </div>
+                
+                <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-sm p-6 text-white">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-green-100">SMS 성공</span>
+                        <i class="fas fa-check-circle text-2xl"></i>
+                    </div>
+                    <p class="text-3xl font-bold mb-1">${sms.success || 0}</p>
+                    <p class="text-sm text-green-100">성공률 ${sms.total > 0 ? Math.round((sms.success / sms.total) * 100) : 0}%</p>
+                </div>
+                
+                <div class="bg-gradient-to-br from-yellow-400 to-yellow-500 rounded-xl shadow-sm p-6 text-white">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-yellow-100">카카오톡</span>
+                        <i class="fas fa-comment-dots text-2xl"></i>
+                    </div>
+                    <p class="text-3xl font-bold mb-1">${kakao.total}</p>
+                    <p class="text-sm text-yellow-100">성공 ${kakao.success} / 실패 ${kakao.failed}</p>
+                </div>
+                
+                <div class="bg-gradient-to-br from-green-400 to-green-500 rounded-xl shadow-sm p-6 text-white">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-green-100">카카오 성공</span>
+                        <i class="fas fa-check-circle text-2xl"></i>
+                    </div>
+                    <p class="text-3xl font-bold mb-1">${kakao.success || 0}</p>
+                    <p class="text-sm text-green-100">성공률 ${kakao.total > 0 ? Math.round((kakao.success / kakao.total) * 100) : 0}%</p>
+                </div>
+            </div>
+            
+            <!-- 최근 발송 내역 -->
+            <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200 mb-8">
+                <h2 class="text-xl font-bold text-gray-900 mb-4">최근 SMS 발송 내역</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b border-gray-200">
+                                <th class="text-left py-3 px-4 text-gray-600 font-semibold">ID</th>
+                                <th class="text-left py-3 px-4 text-gray-600 font-semibold">사용자</th>
+                                <th class="text-left py-3 px-4 text-gray-600 font-semibold">타입</th>
+                                <th class="text-left py-3 px-4 text-gray-600 font-semibold">성공/실패</th>
+                                <th class="text-left py-3 px-4 text-gray-600 font-semibold">상태</th>
+                                <th class="text-left py-3 px-4 text-gray-600 font-semibold">발송일시</th>
+                            </tr>
+                        </thead>
+                        <tbody id="smsTableBody">
+                            ${recentSMS.results.map(log => `
+                                <tr class="border-b border-gray-100 hover:bg-gray-50">
+                                    <td class="py-3 px-4">#${log.id}</td>
+                                    <td class="py-3 px-4">User ${log.user_id}</td>
+                                    <td class="py-3 px-4">
+                                        <span class="px-2 py-1 rounded text-xs font-semibold ${
+                                          log.message_type === 'SMS' ? 'bg-blue-100 text-blue-800' : 
+                                          log.message_type === 'LMS' ? 'bg-purple-100 text-purple-800' : 
+                                          'bg-pink-100 text-pink-800'
+                                        }">
+                                            ${log.message_type}
+                                        </span>
+                                    </td>
+                                    <td class="py-3 px-4">-</td>
+                                    <td class="py-3 px-4">
+                                        <span class="px-2 py-1 rounded text-xs font-semibold ${
+                                          log.status === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                                        }">
+                                            ${log.status === 'success' ? '성공' : '실패'}
+                                        </span>
+                                    </td>
+                                    <td class="py-3 px-4 text-sm text-gray-600">${new Date(log.created_at).toLocaleString('ko-KR')}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- 최근 카카오톡 발송 내역 -->
+            <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                <h2 class="text-xl font-bold text-gray-900 mb-4">최근 카카오톡 발송 내역</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b border-gray-200">
+                                <th class="text-left py-3 px-4 text-gray-600 font-semibold">ID</th>
+                                <th class="text-left py-3 px-4 text-gray-600 font-semibold">사용자</th>
+                                <th class="text-left py-3 px-4 text-gray-600 font-semibold">템플릿</th>
+                                <th class="text-left py-3 px-4 text-gray-600 font-semibold">성공/실패</th>
+                                <th class="text-left py-3 px-4 text-gray-600 font-semibold">상태</th>
+                                <th class="text-left py-3 px-4 text-gray-600 font-semibold">발송일시</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${recentKakao.results.map(log => `
+                                <tr class="border-b border-gray-100 hover:bg-gray-50">
+                                    <td class="py-3 px-4">#${log.id}</td>
+                                    <td class="py-3 px-4">User ${log.user_id}</td>
+                                    <td class="py-3 px-4">
+                                        <span class="px-2 py-1 rounded text-xs font-semibold bg-yellow-100 text-yellow-800">
+                                            ${log.template_code || 'N/A'}
+                                        </span>
+                                    </td>
+                                    <td class="py-3 px-4">-</td>
+                                    <td class="py-3 px-4">
+                                        <span class="px-2 py-1 rounded text-xs font-semibold ${
+                                          log.status === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                                        }">
+                                            ${log.status === 'success' ? '성공' : '실패'}
+                                        </span>
+                                    </td>
+                                    <td class="py-3 px-4 text-sm text-gray-600">${new Date(log.created_at).toLocaleString('ko-KR')}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            function logout() {
+                if(confirm('로그아웃 하시겠습니까?')) {
+                    localStorage.removeItem('user');
+                    window.location.href = '/';
+                }
+            }
+        </script>
+    </body>
+    </html>
+  `)
+})
+
+// 관리자 입금 관리 페이지
+app.get('/admin/deposits', async (c) => {
+  const { env } = c
+  
+  // 입금 신청 목록 조회
+  const deposits = await env.DB.prepare(`
+    SELECT 
+      dr.*,
+      u.name as user_name,
+      u.email as user_email
+    FROM deposit_requests dr
+    LEFT JOIN users u ON dr.user_id = u.id
+    ORDER BY 
+      CASE 
+        WHEN dr.status = 'pending' THEN 1
+        WHEN dr.status = 'approved' THEN 2
+        ELSE 3
+      END,
+      dr.created_at DESC
+    LIMIT 50
+  `).all()
+  
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>입금 관리 - 슈퍼플레이스 관리자</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    </head>
+    <body class="bg-gray-50">
+        <nav class="bg-white border-b border-gray-200">
+            <div class="max-w-7xl mx-auto px-6 py-4">
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center gap-8">
+                        <a href="/admin/dashboard" class="text-2xl font-bold text-purple-600">슈퍼플레이스 관리자</a>
+                        <div class="flex gap-4">
+                            <a href="/admin/dashboard" class="text-gray-600 hover:text-purple-600">대시보드</a>
+                            <a href="/admin/users" class="text-gray-600 hover:text-purple-600">사용자</a>
+                            <a href="/admin/contacts" class="text-gray-600 hover:text-purple-600">문의</a>
+                            <a href="/admin/sms" class="text-gray-600 hover:text-purple-600">문자 관리</a>
+                            <a href="/admin/deposits" class="text-purple-600 font-semibold">입금 관리</a>
+                        </div>
+                    </div>
+                    <button onclick="logout()" class="text-gray-600 hover:text-red-600">
+                        <i class="fas fa-sign-out-alt mr-2"></i>로그아웃
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <div class="max-w-7xl mx-auto px-6 py-8">
+            <h1 class="text-3xl font-bold text-gray-900 mb-8">포인트 입금 관리</h1>
+            
+            <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b border-gray-200">
+                                <th class="text-left py-3 px-4 text-gray-600 font-semibold">ID</th>
+                                <th class="text-left py-3 px-4 text-gray-600 font-semibold">사용자</th>
+                                <th class="text-left py-3 px-4 text-gray-600 font-semibold">금액</th>
+                                <th class="text-left py-3 px-4 text-gray-600 font-semibold">은행/입금자</th>
+                                <th class="text-left py-3 px-4 text-gray-600 font-semibold">신청일</th>
+                                <th class="text-left py-3 px-4 text-gray-600 font-semibold">상태</th>
+                                <th class="text-left py-3 px-4 text-gray-600 font-semibold">관리</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${deposits.results.map(deposit => `
+                                <tr class="border-b border-gray-100 hover:bg-gray-50">
+                                    <td class="py-3 px-4">#${deposit.id}</td>
+                                    <td class="py-3 px-4">
+                                        <div class="font-semibold">${deposit.user_name}</div>
+                                        <div class="text-sm text-gray-600">${deposit.user_email}</div>
+                                    </td>
+                                    <td class="py-3 px-4 font-bold text-lg">${deposit.amount.toLocaleString()}P</td>
+                                    <td class="py-3 px-4">
+                                        <div class="text-sm">${deposit.bank_name || 'N/A'}</div>
+                                        <div class="text-sm text-gray-600">${deposit.depositor_name || 'N/A'}</div>
+                                    </td>
+                                    <td class="py-3 px-4 text-sm text-gray-600">${new Date(deposit.created_at).toLocaleString('ko-KR')}</td>
+                                    <td class="py-3 px-4">
+                                        <span class="px-2 py-1 rounded text-xs font-semibold ${
+                                          deposit.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                                          deposit.status === 'approved' ? 'bg-green-100 text-green-800' :
+                                          'bg-red-100 text-red-800'
+                                        }">
+                                            ${
+                                              deposit.status === 'pending' ? '대기중' :
+                                              deposit.status === 'approved' ? '승인완료' :
+                                              '거절됨'
+                                            }
+                                        </span>
+                                    </td>
+                                    <td class="py-3 px-4">
+                                        ${deposit.status === 'pending' ? `
+                                            <button onclick="processDeposit(${deposit.id}, 'approved')" 
+                                                class="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-sm mr-2">
+                                                승인
+                                            </button>
+                                            <button onclick="processDeposit(${deposit.id}, 'rejected')" 
+                                                class="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-sm">
+                                                거절
+                                            </button>
+                                        ` : '-'}
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            
+            async function processDeposit(requestId, status) {
+                const action = status === 'approved' ? '승인' : '거절';
+                if(!confirm(\`정말 이 입금 신청을 \${action}하시겠습니까?\`)) return;
+                
+                try {
+                    const response = await fetch(\`/api/admin/deposit/requests/\${requestId}/process\`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            status: status,
+                            adminId: user.id
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if(data.success) {
+                        alert(\`입금 신청이 \${action}되었습니다.\`);
+                        location.reload();
+                    } else {
+                        alert(\`오류: \${data.error}\`);
+                    }
+                } catch(error) {
+                    alert('처리 중 오류가 발생했습니다.');
+                }
+            }
+            
+            function logout() {
+                if(confirm('로그아웃 하시겠습니까?')) {
+                    localStorage.removeItem('user');
+                    window.location.href = '/';
+                }
+            }
+        </script>
+    </body>
+    </html>
+  `)
+})
+
 app.get('/admin/sender/verification', (c) => {
   return c.html(`
     <!DOCTYPE html>
