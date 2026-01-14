@@ -495,7 +495,9 @@ app.get('/api/user/permissions', async (c) => {
 // 관리자: 사용자에게 권한 부여 API
 app.post('/api/admin/grant-permission', async (c) => {
   try {
-    const { userId, programKey, adminId, expiresAt } = await c.req.json()
+    const body = await c.req.json()
+    const { userId, programKey, expiresAt } = body
+    const adminId = body.adminId || body.grantedBy // adminId 또는 grantedBy 모두 허용
     
     if (!userId || !programKey || !adminId) {
       return c.json({ success: false, error: '필수 정보를 입력해주세요.' }, 400)
@@ -15929,17 +15931,15 @@ app.get('/admin/users', async (c) => {
                 </div>
                 
                 <div class="p-6">
-                    <!-- 프로그램 권한 섹션 -->
-                    <h3 class="text-lg font-bold text-gray-900 mb-4">교육 프로그램</h3>
-                    <div id="programPermissions" class="grid md:grid-cols-2 gap-4 mb-6">
-                        <!-- 프로그램 권한 체크박스 -->
+                    <!-- 시스템 기능 권한 섹션 -->
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">📱 시스템 기능 권한</h3>
+                    <div id="systemPermissions" class="grid md:grid-cols-2 gap-4 mb-6">
+                        <!-- 시스템 권한 체크박스가 여기에 렌더링됩니다 -->
                     </div>
 
                     <!-- 툴 권한 섹션 -->
-                    <h3 class="text-lg font-bold text-gray-900 mb-4">마케팅 툴</h3>
-                    <div id="toolPermissions" class="grid md:grid-cols-2 gap-4">
-                        <!-- 툴 권한 체크박스 -->
-                    </div>
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">🎯 마케팅 툴 권한 (예정)</h3>
+                    <p class="text-sm text-gray-500 mb-4">추가 마케팅 툴 권한은 향후 추가될 예정입니다.</p>
                 </div>
 
                 <div class="p-6 border-t border-gray-200 flex justify-end gap-3">
@@ -15956,62 +15956,60 @@ app.get('/admin/users', async (c) => {
         <script>
             let currentUserId = null;
 
-            const programs = [
-                { id: 'naver-place', name: '네이버 플레이스 상위노출' },
-                { id: 'blog', name: '블로그 상위노출' },
-                { id: 'funnel', name: '퍼널 마케팅' },
-                { id: 'sns', name: 'SNS 마케팅' },
-                { id: 'video', name: '영상 마케팅' },
-                { id: 'ad', name: '온라인 광고' },
-                { id: 'community', name: '커뮤니티 마케팅' },
-                { id: 'branding', name: '브랜딩' },
-                { id: 'data', name: '데이터 분석' }
-            ];
-
-            const tools = [
-                { id: 'place-keyword-analyzer', name: '키워드 분석기' },
-                { id: 'blog-title-generator', name: '블로그 제목 생성기' },
-                { id: 'consultation-calendar', name: '상담 예약 캘린더' },
-                { id: 'promo-generator', name: '홍보 문구 생성기' },
-                { id: 'review-template', name: '리뷰 답변 템플릿' },
-                { id: 'parent-sms-template', name: '학부모 문자 템플릿' },
-                { id: 'poster-generator', name: '포스터 문구 생성기' },
-                { id: 'competitor-analysis', name: '경쟁사 분석' },
-                { id: 'operation-checklist', name: '운영 체크리스트' },
-                { id: 'campaign-planner', name: '캠페인 플래너' }
+            // 시스템 기능 권한 (DB의 program_key와 일치)
+            const systemFeatures = [
+                { 
+                    key: 'search_volume', 
+                    name: '네이버 검색량 조회',
+                    icon: '📊',
+                    description: '키워드 검색량, 플레이스 순위, 경쟁사 분석'
+                },
+                { 
+                    key: 'sms', 
+                    name: 'SMS 문자 발송',
+                    icon: '📱',
+                    description: '문자 작성, 발신번호 관리, 발송 내역'
+                },
+                { 
+                    key: 'landing_builder', 
+                    name: '랜딩페이지 생성기',
+                    icon: '🚀',
+                    description: 'AI 기반 랜딩페이지 자동 생성'
+                },
+                { 
+                    key: 'analytics', 
+                    name: '분석 도구',
+                    icon: '📈',
+                    description: '데이터 분석 및 리포트 생성 (예정)'
+                }
             ];
 
             async function managePermissions(userId, userName) {
                 currentUserId = userId;
-                document.getElementById('modalUserName').textContent = userName + '님의 권한 설정';
+                document.getElementById('modalUserName').textContent = userName + '님의 프로그램 권한 설정';
                 
-                // 현재 권한 조회
-                const response = await fetch('/api/user/' + userId + '/permissions');
+                // 현재 권한 조회 (새로운 API)
+                const response = await fetch('/api/user/permissions?userId=' + userId);
                 const data = await response.json();
-                const currentPermissions = data.permissions || [];
                 
-                // 프로그램 권한 렌더링
-                const programPerms = document.getElementById('programPermissions');
-                programPerms.innerHTML = programs.map(prog => {
-                    const hasPermission = currentPermissions.some(p => 
-                        p.permission_type === 'program' && p.permission_name === prog.id
-                    );
-                    return '<label class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">' +
-                        '<input type="checkbox" class="w-5 h-5 text-blue-600 rounded mr-3" data-type="program" data-name="' + prog.id + '" ' + (hasPermission ? 'checked' : '') + '>' +
-                        '<span class="text-sm font-medium text-gray-900">' + prog.name + '</span>' +
-                        '</label>';
-                }).join('');
-
-                // 툴 권한 렌더링
-                const toolPerms = document.getElementById('toolPermissions');
-                toolPerms.innerHTML = tools.map(tool => {
-                    const hasPermission = currentPermissions.some(p => 
-                        p.permission_type === 'tool' && p.permission_name === tool.id
-                    );
-                    return '<label class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">' +
-                        '<input type="checkbox" class="w-5 h-5 text-blue-600 rounded mr-3" data-type="tool" data-name="' + tool.id + '" ' + (hasPermission ? 'checked' : '') + '>' +
-                        '<span class="text-sm font-medium text-gray-900">' + tool.name + '</span>' +
-                        '</label>';
+                // 시스템 기능 권한 렌더링
+                const systemPerms = document.getElementById('systemPermissions');
+                systemPerms.innerHTML = systemFeatures.map(feature => {
+                    const hasPermission = data.success && data.permissions && data.permissions[feature.key];
+                    const borderClass = hasPermission ? 'border-blue-500 bg-blue-50' : 'border-gray-200';
+                    return '<label class="flex items-start p-4 border-2 ' + borderClass + ' rounded-lg hover:border-blue-300 cursor-pointer transition">' +
+                        '<input type="checkbox" ' +
+                               'class="w-5 h-5 text-blue-600 rounded mr-3 mt-1" ' +
+                               'data-program-key="' + feature.key + '" ' +
+                               (hasPermission ? 'checked' : '') + '>' +
+                        '<div class="flex-1">' +
+                            '<div class="flex items-center gap-2 mb-1">' +
+                                '<span class="text-xl">' + feature.icon + '</span>' +
+                                '<span class="text-sm font-bold text-gray-900">' + feature.name + '</span>' +
+                            '</div>' +
+                            '<p class="text-xs text-gray-600">' + feature.description + '</p>' +
+                        '</div>' +
+                    '</label>';
                 }).join('');
 
                 // 모달 표시
@@ -16019,40 +16017,64 @@ app.get('/admin/users', async (c) => {
             }
 
             async function savePermissions() {
-                const checkboxes = document.querySelectorAll('#permissionModal input[type="checkbox"]');
+                const checkboxes = document.querySelectorAll('#systemPermissions input[type="checkbox"]');
+                const adminUser = JSON.parse(localStorage.getItem('user') || '{}');
+                
+                let successCount = 0;
+                let errorCount = 0;
                 
                 for (const checkbox of checkboxes) {
-                    const type = checkbox.dataset.type;
-                    const name = checkbox.dataset.name;
+                    const programKey = checkbox.dataset.programKey;
                     
-                    if (checkbox.checked) {
-                        // 권한 부여
-                        await fetch('/api/admin/permissions/grant', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                userId: currentUserId,
-                                permissionType: type,
-                                permissionName: name,
-                                expiresAt: null
-                            })
-                        });
-                    } else {
-                        // 권한 회수
-                        await fetch('/api/admin/permissions/revoke', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                userId: currentUserId,
-                                permissionType: type,
-                                permissionName: name
-                            })
-                        });
+                    try {
+                        if (checkbox.checked) {
+                            // 권한 부여
+                            const response = await fetch('/api/admin/grant-permission', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    userId: currentUserId,
+                                    programKey: programKey,
+                                    grantedBy: adminUser.id || 1
+                                })
+                            });
+                            const result = await response.json();
+                            if (result.success) {
+                                successCount++;
+                            } else {
+                                errorCount++;
+                            }
+                        } else {
+                            // 권한 회수
+                            const response = await fetch('/api/admin/revoke-permission', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    userId: currentUserId,
+                                    programKey: programKey,
+                                    adminId: adminUser.id || 1
+                                })
+                            });
+                            const result = await response.json();
+                            if (result.success) {
+                                successCount++;
+                            } else {
+                                errorCount++;
+                            }
+                        }
+                    } catch (error) {
+                        console.error('권한 처리 오류:', error);
+                        errorCount++;
                     }
                 }
 
-                alert('권한이 업데이트되었습니다.');
+                if (errorCount === 0) {
+                    alert('✅ 권한이 성공적으로 업데이트되었습니다!');
+                } else {
+                    alert('⚠️ 권한 업데이트 완료\n성공: ' + successCount + '개\n실패: ' + errorCount + '개');
+                }
                 closeModal();
+                location.reload(); // 페이지 새로고침으로 변경사항 반영
             }
 
             function closeModal() {
