@@ -440,6 +440,115 @@ app.post('/api/register', async (c) => {
 })
 
 // ========================================
+// User Permissions API Routes
+// 사용자 권한 확인 API
+app.get('/api/user/permissions', async (c) => {
+  try {
+    const userId = c.req.query('userId')
+    
+    if (!userId) {
+      return c.json({ success: false, error: '사용자 ID가 필요합니다.' }, 400)
+    }
+
+    // 관리자는 모든 권한 보유
+    const user = await c.env.DB.prepare('SELECT role FROM users WHERE id = ?').bind(userId).first()
+    if (user && user.role === 'admin') {
+      return c.json({ 
+        success: true, 
+        permissions: {
+          search_volume: true,
+          sms: true,
+          landing_builder: true,
+          analytics: true,
+          all: true
+        }
+      })
+    }
+
+    // 일반 사용자 권한 조회
+    const permissions = await c.env.DB.prepare(`
+      SELECT program_key 
+      FROM user_permissions 
+      WHERE user_id = ? AND is_active = 1 
+      AND (expires_at IS NULL OR expires_at > datetime('now'))
+    `).bind(userId).all()
+
+    const permissionMap = {
+      search_volume: false,
+      sms: false,
+      landing_builder: false,
+      analytics: false,
+      all: false
+    }
+
+    permissions.results.forEach(p => {
+      permissionMap[p.program_key] = true
+    })
+
+    return c.json({ success: true, permissions: permissionMap })
+  } catch (error) {
+    console.error('Get user permissions error:', error)
+    return c.json({ success: false, error: '권한 조회 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
+// 관리자: 사용자에게 권한 부여 API
+app.post('/api/admin/grant-permission', async (c) => {
+  try {
+    const { userId, programKey, adminId, expiresAt } = await c.req.json()
+    
+    if (!userId || !programKey || !adminId) {
+      return c.json({ success: false, error: '필수 정보를 입력해주세요.' }, 400)
+    }
+
+    // 관리자 권한 확인
+    const admin = await c.env.DB.prepare('SELECT role FROM users WHERE id = ?').bind(adminId).first()
+    if (!admin || admin.role !== 'admin') {
+      return c.json({ success: false, error: '관리자 권한이 필요합니다.' }, 403)
+    }
+
+    // 권한 부여
+    await c.env.DB.prepare(`
+      INSERT OR REPLACE INTO user_permissions (user_id, program_key, granted_by, is_active, expires_at)
+      VALUES (?, ?, ?, 1, ?)
+    `).bind(userId, programKey, adminId, expiresAt || null).run()
+
+    return c.json({ success: true, message: '권한이 부여되었습니다.' })
+  } catch (error) {
+    console.error('Grant permission error:', error)
+    return c.json({ success: false, error: '권한 부여 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
+// 관리자: 사용자 권한 회수 API
+app.post('/api/admin/revoke-permission', async (c) => {
+  try {
+    const { userId, programKey, adminId } = await c.req.json()
+    
+    if (!userId || !programKey || !adminId) {
+      return c.json({ success: false, error: '필수 정보를 입력해주세요.' }, 400)
+    }
+
+    // 관리자 권한 확인
+    const admin = await c.env.DB.prepare('SELECT role FROM users WHERE id = ?').bind(adminId).first()
+    if (!admin || admin.role !== 'admin') {
+      return c.json({ success: false, error: '관리자 권한이 필요합니다.' }, 403)
+    }
+
+    // 권한 회수
+    await c.env.DB.prepare(`
+      UPDATE user_permissions 
+      SET is_active = 0 
+      WHERE user_id = ? AND program_key = ?
+    `).bind(userId, programKey).run()
+
+    return c.json({ success: true, message: '권한이 회수되었습니다.' })
+  } catch (error) {
+    console.error('Revoke permission error:', error)
+    return c.json({ success: false, error: '권한 회수 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
 // SMS API Routes
 // ========================================
 
@@ -1345,10 +1454,14 @@ app.get('/api/point-transactions/:userId', async (c) => {
 // 발신번호 인증 신청 API (사업자 등록증 포함)
 app.post('/api/sms/sender/verification-request', async (c) => {
   try {
-    const { userId, phoneNumber, businessName, businessRegistrationNumber, businessRegistrationImage } = await c.req.json()
+    const { 
+      userId, phoneNumber, businessName, businessRegistrationNumber, 
+      businessRegistrationImage, certificateImage, employmentCertImage, contractImage 
+    } = await c.req.json()
     
-    if (!userId || !phoneNumber || !businessName || !businessRegistrationNumber || !businessRegistrationImage) {
-      return c.json({ success: false, error: '모든 필수 정보를 입력해주세요.' }, 400)
+    if (!userId || !phoneNumber || !businessName || !businessRegistrationNumber || 
+        !businessRegistrationImage || !certificateImage || !employmentCertImage || !contractImage) {
+      return c.json({ success: false, error: '모든 필수 서류를 업로드해주세요.' }, 400)
     }
 
     // 전화번호 형식 검증 (하이픈 제거)
@@ -1374,16 +1487,18 @@ app.post('/api/sms/sender/verification-request', async (c) => {
       }
     }
 
-    // 신청 저장
+    // 신청 저장 (4개 서류 포함)
     const result = await c.env.DB.prepare(`
       INSERT INTO sender_verification_requests 
-      (user_id, phone_number, business_name, business_registration_number, business_registration_image, status)
-      VALUES (?, ?, ?, ?, ?, 'pending')
-    `).bind(userId, cleanNumber, businessName, businessRegistrationNumber, businessRegistrationImage).run()
+      (user_id, phone_number, business_name, business_registration_number, 
+       business_registration_image, certificate_image, employment_cert_image, contract_image, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending')
+    `).bind(userId, cleanNumber, businessName, businessRegistrationNumber, 
+            businessRegistrationImage, certificateImage, employmentCertImage, contractImage).run()
 
     return c.json({ 
       success: true, 
-      message: '발신번호 인증 신청이 완료되었습니다. 관리자 승인을 기다려주세요.',
+      message: '발신번호 인증 신청이 완료되었습니다. 관리자 승인을 기다려주세요. (평일 기준 2~3일 소요)',
       requestId: result.meta.last_row_id
     })
   } catch (error) {
@@ -1404,7 +1519,8 @@ app.get('/api/sms/sender/verification-requests', async (c) => {
     const requests = await c.env.DB.prepare(`
       SELECT 
         id, phone_number, business_name, business_registration_number, 
-        business_registration_image, request_date, status, admin_note, processed_date
+        business_registration_image, certificate_image, employment_cert_image, contract_image,
+        request_date, status, admin_note, rejection_reason, processed_date
       FROM sender_verification_requests
       WHERE user_id = ?
       ORDER BY request_date DESC
@@ -17360,10 +17476,38 @@ app.get('/sms/sender/request', (c) => {
                         <div class="text-sm text-blue-800">
                             <p class="font-bold mb-2">📋 필요 서류 및 절차</p>
                             <ul class="space-y-1 list-disc list-inside ml-2">
-                                <li>사업자 등록증 이미지 파일 (JPG, PNG)</li>
-                                <li>등록하실 휴대폰 번호 (본인 명의 또는 법인 명의)</li>
-                                <li>관리자 승인 후 사용 가능 (평일 기준 1~2일 소요)</li>
+                                <li><strong>사업자 등록증</strong> (필수)</li>
+                                <li><strong>통신사 가입증명원</strong> (필수, 발신번호 명확히 표시: 010-1234-5678 형식)</li>
+                                <li><strong>재직증명서</strong> (필수, 도장 날인 필수)</li>
+                                <li><strong>문자메시지 이용계약서</strong> (필수, 도장 날인 필수)</li>
+                                <li>파일 형식: JPG, PNG (각 파일 최대 5MB)</li>
+                                <li>승인까지 평일 기준 2~3일 소요</li>
+                                <li>모든 서류는 접수일 기준 최근 1개월 이내만 인정</li>
                             </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 서류 양식 다운로드 -->
+                <div class="bg-green-50 border border-green-200 rounded-xl p-6 mb-8">
+                    <div class="flex items-start">
+                        <svg class="w-6 h-6 text-green-600 mr-3 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                        </svg>
+                        <div class="text-sm text-green-800">
+                            <p class="font-bold mb-3">📥 서류 양식 다운로드</p>
+                            <div class="flex flex-wrap gap-3">
+                                <a href="/api/downloads/consent-form" download class="px-4 py-2 bg-white border border-green-300 rounded-lg hover:bg-green-100 transition font-medium">
+                                    📄 발신번호 사용 동의 위임장
+                                </a>
+                                <a href="/api/downloads/contract" download class="px-4 py-2 bg-white border border-green-300 rounded-lg hover:bg-green-100 transition font-medium">
+                                    📄 문자메시지 이용계약서
+                                </a>
+                                <a href="/api/downloads/employment-cert" download class="px-4 py-2 bg-white border border-green-300 rounded-lg hover:bg-green-100 transition font-medium">
+                                    📄 재직증명서 양식
+                                </a>
+                            </div>
+                            <p class="mt-3 text-xs text-green-700">💡 도장(직인)은 싸인이 안되며 반드시 도장으로만 가능합니다</p>
                         </div>
                     </div>
                 </div>
@@ -17396,23 +17540,95 @@ app.get('/sms/sender/request', (c) => {
                             <p class="text-xs text-gray-500 mt-1">하이픈(-)을 포함하여 입력해주세요</p>
                         </div>
 
-                        <!-- 사업자 등록증 업로드 -->
+                        <!-- 1. 사업자 등록증 업로드 -->
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-2">사업자 등록증 *</label>
-                            <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-purple-500 transition cursor-pointer"
-                                 id="uploadArea">
+                            <label class="block text-sm font-bold text-gray-700 mb-2">1. 사업자 등록증 * <span class="text-red-600">(필수)</span></label>
+                            <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-purple-500 transition cursor-pointer upload-area"
+                                 data-target="businessRegistrationImage">
                                 <input type="file" id="businessRegistrationImage" accept="image/*" class="hidden" required>
-                                <div id="uploadPlaceholder">
+                                <div class="upload-placeholder">
                                     <svg class="w-12 h-12 text-gray-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
                                     </svg>
                                     <p class="text-gray-600 font-medium mb-1">클릭하거나 파일을 드래그하세요</p>
                                     <p class="text-sm text-gray-500">JPG, PNG (최대 5MB)</p>
                                 </div>
-                                <div id="uploadPreview" class="hidden">
-                                    <img id="previewImage" class="max-w-full max-h-64 mx-auto rounded-lg mb-3">
-                                    <p id="fileName" class="text-sm text-gray-600 font-medium"></p>
-                                    <button type="button" onclick="resetUpload()" class="text-sm text-red-600 hover:text-red-700 mt-2">
+                                <div class="upload-preview hidden">
+                                    <img class="preview-image max-w-full max-h-64 mx-auto rounded-lg mb-3">
+                                    <p class="file-name text-sm text-gray-600 font-medium"></p>
+                                    <button type="button" class="reset-upload text-sm text-red-600 hover:text-red-700 mt-2">
+                                        다시 선택
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 2. 통신사 가입증명원 업로드 -->
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">2. 통신사 가입증명원 * <span class="text-red-600">(필수)</span></label>
+                            <p class="text-xs text-gray-500 mb-2">발신번호가 명확히 표시되어야 합니다 (010-1234-5678 형식, 가림 없이)</p>
+                            <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-purple-500 transition cursor-pointer upload-area"
+                                 data-target="certificateImage">
+                                <input type="file" id="certificateImage" accept="image/*" class="hidden" required>
+                                <div class="upload-placeholder">
+                                    <svg class="w-12 h-12 text-gray-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                                    </svg>
+                                    <p class="text-gray-600 font-medium mb-1">클릭하거나 파일을 드래그하세요</p>
+                                    <p class="text-sm text-gray-500">JPG, PNG (최대 5MB)</p>
+                                </div>
+                                <div class="upload-preview hidden">
+                                    <img class="preview-image max-w-full max-h-64 mx-auto rounded-lg mb-3">
+                                    <p class="file-name text-sm text-gray-600 font-medium"></p>
+                                    <button type="button" class="reset-upload text-sm text-red-600 hover:text-red-700 mt-2">
+                                        다시 선택
+                                    </button>
+                                </div>
+                            </div>
+                            <p class="text-xs text-blue-600 mt-2">💡 통신사 114 문의 시: "고객 응대용 문자 발신등록용"이라고 답변하세요</p>
+                        </div>
+                        
+                        <!-- 3. 재직증명서 업로드 -->
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">3. 재직증명서 * <span class="text-red-600">(필수, 도장 날인 필수)</span></label>
+                            <p class="text-xs text-gray-500 mb-2">사업자 대표도 본인의 재직증명서 제출 필요</p>
+                            <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-purple-500 transition cursor-pointer upload-area"
+                                 data-target="employmentCertImage">
+                                <input type="file" id="employmentCertImage" accept="image/*" class="hidden" required>
+                                <div class="upload-placeholder">
+                                    <svg class="w-12 h-12 text-gray-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                                    </svg>
+                                    <p class="text-gray-600 font-medium mb-1">클릭하거나 파일을 드래그하세요</p>
+                                    <p class="text-sm text-gray-500">JPG, PNG (최대 5MB)</p>
+                                </div>
+                                <div class="upload-preview hidden">
+                                    <img class="preview-image max-w-full max-h-64 mx-auto rounded-lg mb-3">
+                                    <p class="file-name text-sm text-gray-600 font-medium"></p>
+                                    <button type="button" class="reset-upload text-sm text-red-600 hover:text-red-700 mt-2">
+                                        다시 선택
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 4. 문자메시지 이용계약서 업로드 -->
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">4. 문자메시지 이용계약서 * <span class="text-red-600">(필수, 도장 날인 필수)</span></label>
+                            <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-purple-500 transition cursor-pointer upload-area"
+                                 data-target="contractImage">
+                                <input type="file" id="contractImage" accept="image/*" class="hidden" required>
+                                <div class="upload-placeholder">
+                                    <svg class="w-12 h-12 text-gray-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                                    </svg>
+                                    <p class="text-gray-600 font-medium mb-1">클릭하거나 파일을 드래그하세요</p>
+                                    <p class="text-sm text-gray-500">JPG, PNG (최대 5MB)</p>
+                                </div>
+                                <div class="upload-preview hidden">
+                                    <img class="preview-image max-w-full max-h-64 mx-auto rounded-lg mb-3">
+                                    <p class="file-name text-sm text-gray-600 font-medium"></p>
+                                    <button type="button" class="reset-upload text-sm text-red-600 hover:text-red-700 mt-2">
                                         다시 선택
                                     </button>
                                 </div>
@@ -17478,42 +17694,58 @@ app.get('/sms/sender/request', (c) => {
                 e.target.value = value
             })
 
-            // 파일 업로드 처리
-            const uploadArea = document.getElementById('uploadArea')
-            const fileInput = document.getElementById('businessRegistrationImage')
-            const uploadPlaceholder = document.getElementById('uploadPlaceholder')
-            const uploadPreview = document.getElementById('uploadPreview')
-            const previewImage = document.getElementById('previewImage')
-            const fileName = document.getElementById('fileName')
+            // 파일 업로드 처리 (4개 파일)
+            document.querySelectorAll('.upload-area').forEach(uploadArea => {
+                const inputId = uploadArea.dataset.target
+                const fileInput = document.getElementById(inputId)
+                const placeholder = uploadArea.querySelector('.upload-placeholder')
+                const preview = uploadArea.querySelector('.upload-preview')
+                const previewImage = preview.querySelector('.preview-image')
+                const fileNameEl = preview.querySelector('.file-name')
+                const resetBtn = preview.querySelector('.reset-upload')
 
-            uploadArea.addEventListener('click', () => fileInput.click())
-            
-            uploadArea.addEventListener('dragover', (e) => {
-                e.preventDefault()
-                uploadArea.classList.add('border-purple-500', 'bg-purple-50')
+                uploadArea.addEventListener('click', (e) => {
+                    if (!e.target.classList.contains('reset-upload')) {
+                        fileInput.click()
+                    }
+                })
+                
+                uploadArea.addEventListener('dragover', (e) => {
+                    e.preventDefault()
+                    uploadArea.classList.add('border-purple-500', 'bg-purple-50')
+                })
+
+                uploadArea.addEventListener('dragleave', () => {
+                    uploadArea.classList.remove('border-purple-500', 'bg-purple-50')
+                })
+
+                uploadArea.addEventListener('drop', (e) => {
+                    e.preventDefault()
+                    uploadArea.classList.remove('border-purple-500', 'bg-purple-50')
+                    const file = e.dataTransfer.files[0]
+                    if (file && file.type.startsWith('image/')) {
+                        handleFileUpload(file, fileInput, placeholder, preview, previewImage, fileNameEl)
+                    }
+                })
+
+                fileInput.addEventListener('change', (e) => {
+                    const file = e.target.files[0]
+                    if (file) {
+                        handleFileUpload(file, fileInput, placeholder, preview, previewImage, fileNameEl)
+                    }
+                })
+
+                resetBtn.addEventListener('click', (e) => {
+                    e.stopPropagation()
+                    fileInput.value = ''
+                    placeholder.classList.remove('hidden')
+                    preview.classList.add('hidden')
+                    previewImage.src = ''
+                    fileNameEl.textContent = ''
+                })
             })
 
-            uploadArea.addEventListener('dragleave', () => {
-                uploadArea.classList.remove('border-purple-500', 'bg-purple-50')
-            })
-
-            uploadArea.addEventListener('drop', (e) => {
-                e.preventDefault()
-                uploadArea.classList.remove('border-purple-500', 'bg-purple-50')
-                const file = e.dataTransfer.files[0]
-                if (file && file.type.startsWith('image/')) {
-                    handleFileUpload(file)
-                }
-            })
-
-            fileInput.addEventListener('change', (e) => {
-                const file = e.target.files[0]
-                if (file) {
-                    handleFileUpload(file)
-                }
-            })
-
-            function handleFileUpload(file) {
+            function handleFileUpload(file, fileInput, placeholder, preview, previewImage, fileNameEl) {
                 if (file.size > 5 * 1024 * 1024) {
                     alert('파일 크기는 5MB 이하여야 합니다.')
                     return
@@ -17522,19 +17754,11 @@ app.get('/sms/sender/request', (c) => {
                 const reader = new FileReader()
                 reader.onload = (e) => {
                     previewImage.src = e.target.result
-                    fileName.textContent = file.name
-                    uploadPlaceholder.classList.add('hidden')
-                    uploadPreview.classList.remove('hidden')
+                    fileNameEl.textContent = file.name
+                    placeholder.classList.add('hidden')
+                    preview.classList.remove('hidden')
                 }
                 reader.readAsDataURL(file)
-            }
-
-            function resetUpload() {
-                fileInput.value = ''
-                uploadPlaceholder.classList.remove('hidden')
-                uploadPreview.classList.add('hidden')
-                previewImage.src = ''
-                fileName.textContent = ''
             }
 
             // imgbb 업로드 함수
@@ -17561,23 +17785,40 @@ app.get('/sms/sender/request', (c) => {
                 
                 const submitButton = document.getElementById('submitButton')
                 submitButton.disabled = true
-                submitButton.textContent = '처리 중...'
+                submitButton.textContent = '업로드 중... (최대 4분 소요)'
 
                 try {
                     const businessName = document.getElementById('businessName').value
                     const businessRegistrationNumber = document.getElementById('businessRegistrationNumber').value
                     const phoneNumber = document.getElementById('phoneNumber').value
-                    const imageFile = fileInput.files[0]
+                    
+                    // 4개 파일 가져오기
+                    const businessRegFile = document.getElementById('businessRegistrationImage').files[0]
+                    const certificateFile = document.getElementById('certificateImage').files[0]
+                    const employmentFile = document.getElementById('employmentCertImage').files[0]
+                    const contractFile = document.getElementById('contractImage').files[0]
 
-                    if (!imageFile) {
-                        alert('사업자 등록증을 업로드해주세요.')
+                    if (!businessRegFile || !certificateFile || !employmentFile || !contractFile) {
+                        alert('모든 서류를 업로드해주세요.')
                         submitButton.disabled = false
                         submitButton.textContent = '신청하기'
                         return
                     }
 
-                    // 이미지 업로드
-                    const imageUrl = await uploadToImgbb(imageFile)
+                    // 순차적으로 이미지 업로드 (병렬 처리 시 imgbb API 제한에 걸릴 수 있음)
+                    submitButton.textContent = '업로드 중... (1/4)'
+                    const businessRegUrl = await uploadToImgbb(businessRegFile)
+                    
+                    submitButton.textContent = '업로드 중... (2/4)'
+                    const certificateUrl = await uploadToImgbb(certificateFile)
+                    
+                    submitButton.textContent = '업로드 중... (3/4)'
+                    const employmentUrl = await uploadToImgbb(employmentFile)
+                    
+                    submitButton.textContent = '업로드 중... (4/4)'
+                    const contractUrl = await uploadToImgbb(contractFile)
+
+                    submitButton.textContent = '신청 중...'
 
                     // 신청 API 호출
                     const response = await fetch('/api/sms/sender/verification-request', {
@@ -17588,23 +17829,28 @@ app.get('/sms/sender/request', (c) => {
                             phoneNumber,
                             businessName,
                             businessRegistrationNumber,
-                            businessRegistrationImage: imageUrl
+                            businessRegistrationImage: businessRegUrl,
+                            certificateImage: certificateUrl,
+                            employmentCertImage: employmentUrl,
+                            contractImage: contractUrl
                         })
                     })
 
                     const data = await response.json()
 
                     if (data.success) {
-                        alert('발신번호 인증 신청이 완료되었습니다!\\n관리자 승인 후 사용 가능합니다.')
+                        alert('발신번호 인증 신청이 완료되었습니다!\\n관리자 승인 후 사용 가능합니다. (평일 기준 2~3일 소요)')
                         document.getElementById('verificationForm').reset()
-                        resetUpload()
+                        // 모든 프리뷰 초기화
+                        document.querySelectorAll('.upload-preview').forEach(p => p.classList.add('hidden'))
+                        document.querySelectorAll('.upload-placeholder').forEach(p => p.classList.remove('hidden'))
                         loadRequests()
                     } else {
                         alert(data.error || '신청 중 오류가 발생했습니다.')
                     }
                 } catch (error) {
                     console.error('Submission error:', error)
-                    alert('신청 중 오류가 발생했습니다.')
+                    alert('신청 중 오류가 발생했습니다: ' + error.message)
                 } finally {
                     submitButton.disabled = false
                     submitButton.textContent = '신청하기'
