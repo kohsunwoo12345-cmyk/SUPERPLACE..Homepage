@@ -16828,51 +16828,72 @@ app.patch('/api/admin/contacts/:id', async (c) => {
 app.get('/admin/dashboard', async (c) => {
   const { env } = c
   
-  // 통계 데이터 조회
-  const usersCount = await env.DB.prepare('SELECT COUNT(*) as count FROM users').all()
-  const contactsCount = await env.DB.prepare('SELECT COUNT(*) as count FROM contacts').all()
-  const pendingContacts = await env.DB.prepare('SELECT COUNT(*) as count FROM contacts WHERE status = "pending"').all()
+  try {
+    // 통계 데이터 조회
+    const usersCount = await env.DB.prepare('SELECT COUNT(*) as count FROM users').all()
+    const contactsCount = await env.DB.prepare('SELECT COUNT(*) as count FROM contacts').all()
+    const pendingContacts = await env.DB.prepare('SELECT COUNT(*) as count FROM contacts WHERE status = "pending"').all()
+    
+    // SMS 통계 조회
+    let smsStats = { results: [{ total_sent: 0, success_count: 0, failed_count: 0 }] }
+    try {
+      smsStats = await env.DB.prepare(`
+        SELECT 
+          COUNT(*) as total_sent,
+          SUM(CASE WHEN status = 'success' THEN 1 ELSE 0 END) as success_count,
+          SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) as failed_count
+        FROM sms_logs
+      `).all()
+    } catch (e) {
+      console.error('SMS stats error:', e)
+    }
+    
+    // 카카오 통계 조회 (테이블이 없을 수 있음)
+    let kakaoStats = { results: [{ total_sent: 0, success_count: 0, failed_count: 0 }] }
+    try {
+      kakaoStats = await env.DB.prepare(`
+        SELECT 
+          COUNT(*) as total_sent,
+          SUM(CASE WHEN status = 'success' THEN 1 ELSE 0 END) as success_count,
+          SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) as failed_count
+        FROM kakao_logs
+      `).all()
+    } catch (e) {
+      console.error('Kakao stats error (table may not exist):', e)
+    }
+    
+    // 입금 신청 대기 건수
+    let pendingDeposits = { results: [{ count: 0 }] }
+    try {
+      pendingDeposits = await env.DB.prepare('SELECT COUNT(*) as count FROM deposit_requests WHERE status = "pending"').all()
+    } catch (e) {
+      console.error('Deposit stats error:', e)
+    }
+    
+    // 발신번호 인증 대기 건수
+    let pendingSenders = { results: [{ count: 0 }] }
+    try {
+      pendingSenders = await env.DB.prepare('SELECT COUNT(*) as count FROM sender_verification_requests WHERE status = "pending"').all()
+    } catch (e) {
+      console.error('Sender stats error:', e)
+    }
+    
+    const totalUsers = usersCount.results[0]?.count || 0
+    const totalContacts = contactsCount.results[0]?.count || 0
+    const pendingCount = pendingContacts.results[0]?.count || 0
+    
+    const totalSmsSent = smsStats.results[0]?.total_sent || 0
+    const smsSuccess = smsStats.results[0]?.success_count || 0
+    const smsFailed = smsStats.results[0]?.failed_count || 0
+    
+    const totalKakaoSent = kakaoStats.results[0]?.total_sent || 0
+    const kakaoSuccess = kakaoStats.results[0]?.success_count || 0
+    const kakaoFailed = kakaoStats.results[0]?.failed_count || 0
+    
+    const pendingDepositsCount = pendingDeposits.results[0]?.count || 0
+    const pendingSendersCount = pendingSenders.results[0]?.count || 0
   
-  // SMS 통계 조회
-  const smsStats = await env.DB.prepare(`
-    SELECT 
-      COUNT(*) as total_sent,
-      SUM(CASE WHEN status = 'success' THEN 1 ELSE 0 END) as success_count,
-      SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) as failed_count
-    FROM sms_logs
-  `).all()
-  
-  // 카카오 통계 조회
-  const kakaoStats = await env.DB.prepare(`
-    SELECT 
-      COUNT(*) as total_sent,
-      SUM(CASE WHEN status = 'success' THEN 1 ELSE 0 END) as success_count,
-      SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) as failed_count
-    FROM kakao_logs
-  `).all()
-  
-  // 입금 신청 대기 건수
-  const pendingDeposits = await env.DB.prepare('SELECT COUNT(*) as count FROM deposit_requests WHERE status = "pending"').all()
-  
-  // 발신번호 인증 대기 건수
-  const pendingSenders = await env.DB.prepare('SELECT COUNT(*) as count FROM sender_verification_requests WHERE status = "pending"').all()
-  
-  const totalUsers = usersCount.results[0]?.count || 0
-  const totalContacts = contactsCount.results[0]?.count || 0
-  const pendingCount = pendingContacts.results[0]?.count || 0
-  
-  const totalSmsSent = smsStats.results[0]?.total_sent || 0
-  const smsSuccess = smsStats.results[0]?.success_count || 0
-  const smsFailed = smsStats.results[0]?.failed_count || 0
-  
-  const totalKakaoSent = kakaoStats.results[0]?.total_sent || 0
-  const kakaoSuccess = kakaoStats.results[0]?.success_count || 0
-  const kakaoFailed = kakaoStats.results[0]?.failed_count || 0
-  
-  const pendingDepositsCount = pendingDeposits.results[0]?.count || 0
-  const pendingSendersCount = pendingSenders.results[0]?.count || 0
-  
-  return c.html(`
+    return c.html(`
     <!DOCTYPE html>
     <html lang="ko">
     <head>
@@ -17542,6 +17563,18 @@ app.get('/sms/senders', (c) => {
     </body>
     </html>
   `)
+  } catch (error) {
+    console.error('Admin dashboard error:', error)
+    return c.html(`
+      <!DOCTYPE html>
+      <html><body>
+        <h1>관리자 대시보드 오류</h1>
+        <p>일시적인 오류가 발생했습니다. 잠시 후 다시 시도해주세요.</p>
+        <p style="color:red;">Error: ${error.message}</p>
+        <a href="/admin">돌아가기</a>
+      </body></html>
+    `, 500)
+  }
 })
 
 // 발신번호 인증 신청 페이지
