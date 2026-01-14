@@ -17464,7 +17464,7 @@ app.get('/sms/sender/request', (c) => {
                                 <li><strong>통신사 가입증명원</strong> (필수, 발신번호 명확히 표시: 010-1234-5678 형식)</li>
                                 <li><strong>재직증명서</strong> (필수, 도장 날인 필수)</li>
                                 <li><strong>문자메시지 이용계약서</strong> (필수, 도장 날인 필수)</li>
-                                <li>파일 형식: JPG, PNG (각 파일 최대 5MB)</li>
+                                <li>파일 형식: JPG, PNG, PDF (각 파일 최대 5MB)</li>
                                 <li>승인까지 평일 기준 2~3일 소요</li>
                                 <li>모든 서류는 접수일 기준 최근 1개월 이내만 인정</li>
                             </ul>
@@ -17529,13 +17529,13 @@ app.get('/sms/sender/request', (c) => {
                             <label class="block text-sm font-bold text-gray-700 mb-2">1. 사업자 등록증 * <span class="text-red-600">(필수)</span></label>
                             <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-purple-500 transition cursor-pointer upload-area"
                                  data-target="businessRegistrationImage">
-                                <input type="file" id="businessRegistrationImage" accept="image/*" class="hidden" required>
+                                <input type="file" id="businessRegistrationImage" accept="image/*,application/pdf" class="hidden" required>
                                 <div class="upload-placeholder">
                                     <svg class="w-12 h-12 text-gray-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
                                     </svg>
                                     <p class="text-gray-600 font-medium mb-1">클릭하거나 파일을 드래그하세요</p>
-                                    <p class="text-sm text-gray-500">JPG, PNG (최대 5MB)</p>
+                                    <p class="text-sm text-gray-500">JPG, PNG, PDF (최대 5MB)</p>
                                 </div>
                                 <div class="upload-preview hidden">
                                     <img class="preview-image max-w-full max-h-64 mx-auto rounded-lg mb-3">
@@ -17553,13 +17553,13 @@ app.get('/sms/sender/request', (c) => {
                             <p class="text-xs text-gray-500 mb-2">발신번호가 명확히 표시되어야 합니다 (010-1234-5678 형식, 가림 없이)</p>
                             <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-purple-500 transition cursor-pointer upload-area"
                                  data-target="certificateImage">
-                                <input type="file" id="certificateImage" accept="image/*" class="hidden" required>
+                                <input type="file" id="certificateImage" accept="image/*,application/pdf" class="hidden" required>
                                 <div class="upload-placeholder">
                                     <svg class="w-12 h-12 text-gray-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
                                     </svg>
                                     <p class="text-gray-600 font-medium mb-1">클릭하거나 파일을 드래그하세요</p>
-                                    <p class="text-sm text-gray-500">JPG, PNG (최대 5MB)</p>
+                                    <p class="text-sm text-gray-500">JPG, PNG, PDF (최대 5MB)</p>
                                 </div>
                                 <div class="upload-preview hidden">
                                     <img class="preview-image max-w-full max-h-64 mx-auto rounded-lg mb-3">
@@ -17578,13 +17578,13 @@ app.get('/sms/sender/request', (c) => {
                             <p class="text-xs text-gray-500 mb-2">사업자 대표도 본인의 재직증명서 제출 필요</p>
                             <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-purple-500 transition cursor-pointer upload-area"
                                  data-target="employmentCertImage">
-                                <input type="file" id="employmentCertImage" accept="image/*" class="hidden" required>
+                                <input type="file" id="employmentCertImage" accept="image/*,application/pdf" class="hidden" required>
                                 <div class="upload-placeholder">
                                     <svg class="w-12 h-12 text-gray-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
                                     </svg>
                                     <p class="text-gray-600 font-medium mb-1">클릭하거나 파일을 드래그하세요</p>
-                                    <p class="text-sm text-gray-500">JPG, PNG (최대 5MB)</p>
+                                    <p class="text-sm text-gray-500">JPG, PNG, PDF (최대 5MB)</p>
                                 </div>
                                 <div class="upload-preview hidden">
                                     <img class="preview-image max-w-full max-h-64 mx-auto rounded-lg mb-3">
@@ -17601,13 +17601,13 @@ app.get('/sms/sender/request', (c) => {
                             <label class="block text-sm font-bold text-gray-700 mb-2">4. 문자메시지 이용계약서 * <span class="text-red-600">(필수, 도장 날인 필수)</span></label>
                             <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-purple-500 transition cursor-pointer upload-area"
                                  data-target="contractImage">
-                                <input type="file" id="contractImage" accept="image/*" class="hidden" required>
+                                <input type="file" id="contractImage" accept="image/*,application/pdf" class="hidden" required>
                                 <div class="upload-placeholder">
                                     <svg class="w-12 h-12 text-gray-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
                                     </svg>
                                     <p class="text-gray-600 font-medium mb-1">클릭하거나 파일을 드래그하세요</p>
-                                    <p class="text-sm text-gray-500">JPG, PNG (최대 5MB)</p>
+                                    <p class="text-sm text-gray-500">JPG, PNG, PDF (최대 5MB)</p>
                                 </div>
                                 <div class="upload-preview hidden">
                                     <img class="preview-image max-w-full max-h-64 mx-auto rounded-lg mb-3">
@@ -17707,7 +17707,7 @@ app.get('/sms/sender/request', (c) => {
                     e.preventDefault()
                     uploadArea.classList.remove('border-purple-500', 'bg-purple-50')
                     const file = e.dataTransfer.files[0]
-                    if (file && file.type.startsWith('image/')) {
+                    if (file && (file.type.startsWith('image/') || file.type === 'application/pdf')) {
                         handleFileUpload(file, fileInput, placeholder, preview, previewImage, fileNameEl)
                     }
                 })
@@ -17735,9 +17735,23 @@ app.get('/sms/sender/request', (c) => {
                     return
                 }
 
+                // 파일 타입 검증
+                const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf']
+                if (!allowedTypes.includes(file.type)) {
+                    alert('JPG, PNG, PDF 파일만 업로드 가능합니다.')
+                    return
+                }
+
                 const reader = new FileReader()
                 reader.onload = (e) => {
-                    previewImage.src = e.target.result
+                    // PDF는 이미지 미리보기 대신 파일명만 표시
+                    if (file.type === 'application/pdf') {
+                        previewImage.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2YzZjRmNiIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LXNpemU9IjQwIiBmaWxsPSIjZWY0NDQ0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+UERGPC90ZXh0Pjwvc3ZnPg=='
+                        previewImage.classList.add('max-h-32')
+                    } else {
+                        previewImage.src = e.target.result
+                        previewImage.classList.remove('max-h-32')
+                    }
                     fileNameEl.textContent = file.name
                     placeholder.classList.add('hidden')
                     preview.classList.remove('hidden')
@@ -19831,6 +19845,44 @@ app.get('/admin/sender/verification', (c) => {
                 }).join('')
             }
 
+            // 파일 렌더링 헬퍼 함수 (이미지 또는 PDF)
+            function renderFilePreview(url, title) {
+                if (!url) {
+                    return '<p class="text-gray-500 text-sm">파일이 없습니다</p>'
+                }
+                
+                // URL에서 파일 확장자 확인
+                const isPdf = url.toLowerCase().endsWith('.pdf') || url.includes('application/pdf')
+                
+                if (isPdf) {
+                    return \`
+                        <div class="border border-gray-300 rounded-lg p-4 bg-gray-50">
+                            <div class="flex items-center justify-center mb-3">
+                                <svg class="w-16 h-16 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"/>
+                                    <path d="M8 10a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"/>
+                                </svg>
+                            </div>
+                            <p class="text-center text-sm font-medium text-gray-700 mb-3">PDF 문서</p>
+                            <a href="\${url}" target="_blank" 
+                               class="block w-full px-4 py-2 bg-red-600 text-white text-center rounded-lg hover:bg-red-700 transition">
+                                📄 PDF 열기
+                            </a>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2 text-center">클릭하면 새 탭에서 열립니다</p>
+                    \`
+                } else {
+                    return \`
+                        <a href="\${url}" target="_blank" class="block">
+                            <img src="\${url}" 
+                                 class="w-full rounded-lg border border-gray-300 hover:border-purple-500 transition cursor-pointer"
+                                 onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2YzZjRmNiIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LXNpemU9IjE2IiBmaWxsPSIjOTc5N2E3IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+7J2066+47KeAIOuhnOuTnCDsi6Ttjqg8L3RleHQ+PC9zdmc+'">
+                        </a>
+                        <p class="text-xs text-gray-500 mt-2 text-center">클릭하면 새 탭에서 열립니다</p>
+                    \`
+                }
+            }
+
             function openModal(request) {
                 currentRequest = request
                 const modal = document.getElementById('detailModal')
@@ -19886,49 +19938,25 @@ app.get('/admin/sender/verification', (c) => {
                             <!-- 1. 사업자 등록증 -->
                             <div class="border border-gray-200 rounded-lg p-4">
                                 <h3 class="font-bold text-gray-900 mb-3">📄 1. 사업자 등록증</h3>
-                                \${request.business_registration_image ? \`
-                                    <a href="\${request.business_registration_image}" target="_blank" class="block">
-                                        <img src="\${request.business_registration_image}" 
-                                             class="w-full rounded-lg border border-gray-300 hover:border-purple-500 transition cursor-pointer">
-                                    </a>
-                                    <p class="text-xs text-gray-500 mt-2 text-center">클릭하면 새 탭에서 열립니다</p>
-                                \` : '<p class="text-gray-500 text-sm">이미지가 없습니다</p>'}
+                                \${renderFilePreview(request.business_registration_image, '사업자 등록증')}
                             </div>
 
                             <!-- 2. 통신사 가입증명원 -->
                             <div class="border border-gray-200 rounded-lg p-4">
                                 <h3 class="font-bold text-gray-900 mb-3">📄 2. 통신사 가입증명원</h3>
-                                \${request.certificate_image ? \`
-                                    <a href="\${request.certificate_image}" target="_blank" class="block">
-                                        <img src="\${request.certificate_image}" 
-                                             class="w-full rounded-lg border border-gray-300 hover:border-purple-500 transition cursor-pointer">
-                                    </a>
-                                    <p class="text-xs text-gray-500 mt-2 text-center">클릭하면 새 탭에서 열립니다</p>
-                                \` : '<p class="text-gray-500 text-sm">이미지가 없습니다</p>'}
+                                \${renderFilePreview(request.certificate_image, '통신사 가입증명원')}
                             </div>
 
                             <!-- 3. 재직증명서 -->
                             <div class="border border-gray-200 rounded-lg p-4">
                                 <h3 class="font-bold text-gray-900 mb-3">📄 3. 재직증명서 (도장 날인)</h3>
-                                \${request.employment_cert_image ? \`
-                                    <a href="\${request.employment_cert_image}" target="_blank" class="block">
-                                        <img src="\${request.employment_cert_image}" 
-                                             class="w-full rounded-lg border border-gray-300 hover:border-purple-500 transition cursor-pointer">
-                                    </a>
-                                    <p class="text-xs text-gray-500 mt-2 text-center">클릭하면 새 탭에서 열립니다</p>
-                                \` : '<p class="text-gray-500 text-sm">이미지가 없습니다</p>'}
+                                \${renderFilePreview(request.employment_cert_image, '재직증명서')}
                             </div>
 
                             <!-- 4. 문자메시지 이용계약서 -->
                             <div class="border border-gray-200 rounded-lg p-4">
                                 <h3 class="font-bold text-gray-900 mb-3">📄 4. 문자메시지 이용계약서 (도장 날인)</h3>
-                                \${request.contract_image ? \`
-                                    <a href="\${request.contract_image}" target="_blank" class="block">
-                                        <img src="\${request.contract_image}" 
-                                             class="w-full rounded-lg border border-gray-300 hover:border-purple-500 transition cursor-pointer">
-                                    </a>
-                                    <p class="text-xs text-gray-500 mt-2 text-center">클릭하면 새 탭에서 열립니다</p>
-                                \` : '<p class="text-gray-500 text-sm">이미지가 없습니다</p>'}
+                                \${renderFilePreview(request.contract_image, '문자메시지 이용계약서')}
                             </div>
                         </div>
 
