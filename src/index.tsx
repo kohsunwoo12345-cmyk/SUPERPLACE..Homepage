@@ -744,7 +744,7 @@ app.post('/api/sms/send', async (c) => {
     const aligoApiKey = c.env.ALIGO_API_KEY || 'YOUR_ALIGO_API_KEY'
     const aligoUserId = c.env.ALIGO_USER_ID || 'YOUR_ALIGO_USER_ID'
     
-    const formData = new FormData()
+    const formData = new URLSearchParams()
     formData.append('key', aligoApiKey)
     formData.append('user_id', aligoUserId)
     formData.append('sender', sender.phone_number)
@@ -759,6 +759,7 @@ app.post('/api/sms/send', async (c) => {
     
     const aligoResponse = await fetch('https://apis.aligo.in/send/', {
       method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: formData
     })
     
