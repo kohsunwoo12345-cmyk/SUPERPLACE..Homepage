@@ -744,6 +744,13 @@ app.post('/api/sms/send', async (c) => {
     const aligoApiKey = c.env.ALIGO_API_KEY || 'YOUR_ALIGO_API_KEY'
     const aligoUserId = c.env.ALIGO_USER_ID || 'YOUR_ALIGO_USER_ID'
     
+    console.log('Aligo ENV Check:', { 
+      hasApiKey: !!c.env.ALIGO_API_KEY, 
+      hasUserId: !!c.env.ALIGO_USER_ID,
+      apiKeyLength: c.env.ALIGO_API_KEY?.length,
+      userId: c.env.ALIGO_USER_ID
+    })
+    
     const formData = new URLSearchParams()
     formData.append('key', aligoApiKey)
     formData.append('user_id', aligoUserId)

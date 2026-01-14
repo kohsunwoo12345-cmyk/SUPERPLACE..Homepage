@@ -18,5 +18,9 @@
       "binding": "R2",
       "bucket_name": "superplace-documents"
     }
-  ]
+  ],
+  "vars": {
+    "ALIGO_USER_ID": "wangholy",
+    "ALIGO_API_KEY": "4bbi3l27pb5qh11tkujl578bttz6vb5j"
+  }
 }
