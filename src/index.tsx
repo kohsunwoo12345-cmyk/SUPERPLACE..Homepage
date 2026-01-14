@@ -16841,127 +16841,52 @@ app.get('/api/test/db', async (c) => {
 })
 
 app.get('/admin/dashboard', async (c) => {
-  const { env } = c
-  
-  // DB 바인딩 확인
-  if (!env.DB) {
-    console.error('DB binding not found')
-    return c.html(`
-      <!DOCTYPE html>
-      <html lang="ko">
-      <head>
-          <meta charset="UTF-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>데이터베이스 설정 필요</title>
-          <script src="https://cdn.tailwindcss.com"></script>
-      </head>
-      <body class="bg-gray-50 flex items-center justify-center min-h-screen">
-          <div class="max-w-md w-full bg-white rounded-xl shadow-lg p-8 text-center">
-              <div class="text-yellow-500 text-6xl mb-4">⚙️</div>
-              <h1 class="text-2xl font-bold text-gray-900 mb-2">데이터베이스 바인딩 필요</h1>
-              <p class="text-gray-600 mb-6">Cloudflare Pages 프로젝트에 D1 데이터베이스 바인딩이 설정되지 않았습니다.</p>
-              <div class="bg-gray-100 rounded-lg p-4 text-left text-sm mb-6">
-                  <p class="font-mono text-gray-700 mb-2">설정 방법:</p>
-                  <ol class="list-decimal list-inside space-y-1 text-gray-600">
-                      <li>Cloudflare 대시보드 접속</li>
-                      <li>Pages → superplace-academy</li>
-                      <li>Settings → Functions</li>
-                      <li>D1 database bindings 추가</li>
-                      <li>Variable name: DB</li>
-                      <li>D1 database: webapp-production</li>
-                  </ol>
-              </div>
-              <a href="/" class="block w-full bg-purple-600 text-white py-3 px-6 rounded-lg hover:bg-purple-700">
-                  홈으로 이동
-              </a>
-          </div>
-      </body>
-      </html>
-    `, 500)
-  }
-  
   try {
-    // 통계 데이터 조회
-    let usersCount = { results: [{ count: 0 }] }
-    let contactsCount = { results: [{ count: 0 }] }
-    let pendingContacts = { results: [{ count: 0 }] }
+    const { env } = c
     
-    try {
-      usersCount = await env.DB.prepare('SELECT COUNT(*) as count FROM users').all()
-    } catch (e) {
-      console.error('Users count error:', e)
+    // DB 바인딩 확인
+    if (!env.DB) {
+      return c.html('<h1>DB not configured</h1>', 500)
+    }
+    // 통계 데이터 조회 (간소화)
+    const stats = {
+      users: 0,
+      contacts: 0,
+      pendingContacts: 0,
+      smsSent: 0,
+      smsSuccess: 0,
+      smsFailed: 0,
+      kakaoSent: 0,
+      kakaoSuccess: 0,
+      kakaoFailed: 0,
+      pendingDeposits: 0,
+      pendingSenders: 0
     }
     
     try {
-      contactsCount = await env.DB.prepare('SELECT COUNT(*) as count FROM contacts').all()
-    } catch (e) {
-      console.error('Contacts count error:', e)
-    }
+      const usersResult = await env.DB.prepare('SELECT COUNT(*) as count FROM users').first()
+      stats.users = usersResult?.count || 0
+    } catch (e) { }
     
     try {
-      pendingContacts = await env.DB.prepare('SELECT COUNT(*) as count FROM contacts WHERE status = "pending"').all()
-    } catch (e) {
-      console.error('Pending contacts error:', e)
-    }
+      const contactsResult = await env.DB.prepare('SELECT COUNT(*) as count FROM contacts').first()
+      stats.contacts = contactsResult?.count || 0
+    } catch (e) { }
     
-    // SMS 통계 조회
-    let smsStats = { results: [{ total_sent: 0, success_count: 0, failed_count: 0 }] }
     try {
-      smsStats = await env.DB.prepare(`
-        SELECT 
-          COUNT(*) as total_sent,
-          SUM(CASE WHEN status = 'success' THEN 1 ELSE 0 END) as success_count,
-          SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) as failed_count
-        FROM sms_logs
-      `).all()
-    } catch (e) {
-      console.error('SMS stats error:', e)
-    }
+      const pendingResult = await env.DB.prepare('SELECT COUNT(*) as count FROM contacts WHERE status = ?').bind('pending').first()
+      stats.pendingContacts = pendingResult?.count || 0
+    } catch (e) { }
     
-    // 카카오 통계 조회 (테이블이 없을 수 있음)
-    let kakaoStats = { results: [{ total_sent: 0, success_count: 0, failed_count: 0 }] }
     try {
-      kakaoStats = await env.DB.prepare(`
-        SELECT 
-          COUNT(*) as total_sent,
-          SUM(CASE WHEN status = 'success' THEN 1 ELSE 0 END) as success_count,
-          SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) as failed_count
-        FROM kakao_logs
-      `).all()
-    } catch (e) {
-      console.error('Kakao stats error (table may not exist):', e)
-    }
+      const depositResult = await env.DB.prepare('SELECT COUNT(*) as count FROM deposit_requests WHERE status = ?').bind('pending').first()
+      stats.pendingDeposits = depositResult?.count || 0
+    } catch (e) { }
     
-    // 입금 신청 대기 건수
-    let pendingDeposits = { results: [{ count: 0 }] }
     try {
-      pendingDeposits = await env.DB.prepare('SELECT COUNT(*) as count FROM deposit_requests WHERE status = "pending"').all()
-    } catch (e) {
-      console.error('Deposit stats error:', e)
-    }
-    
-    // 발신번호 인증 대기 건수
-    let pendingSenders = { results: [{ count: 0 }] }
-    try {
-      pendingSenders = await env.DB.prepare('SELECT COUNT(*) as count FROM sender_verification_requests WHERE status = "pending"').all()
-    } catch (e) {
-      console.error('Sender stats error:', e)
-    }
-    
-    const totalUsers = usersCount.results[0]?.count || 0
-    const totalContacts = contactsCount.results[0]?.count || 0
-    const pendingCount = pendingContacts.results[0]?.count || 0
-    
-    const totalSmsSent = smsStats.results[0]?.total_sent || 0
-    const smsSuccess = smsStats.results[0]?.success_count || 0
-    const smsFailed = smsStats.results[0]?.failed_count || 0
-    
-    const totalKakaoSent = kakaoStats.results[0]?.total_sent || 0
-    const kakaoSuccess = kakaoStats.results[0]?.success_count || 0
-    const kakaoFailed = kakaoStats.results[0]?.failed_count || 0
-    
-    const pendingDepositsCount = pendingDeposits.results[0]?.count || 0
-    const pendingSendersCount = pendingSenders.results[0]?.count || 0
+      const senderResult = await env.DB.prepare('SELECT COUNT(*) as count FROM sender_verification_requests WHERE status = ?').bind('pending').first()
+      stats.pendingSenders = senderResult?.count || 0
+    } catch (e) { }
   
     return c.html(`
     <!DOCTYPE html>
@@ -17003,7 +16928,7 @@ app.get('/admin/dashboard', async (c) => {
                         <span class="text-gray-600">전체 사용자</span>
                         <i class="fas fa-users text-blue-600 text-2xl"></i>
                     </div>
-                    <p class="text-3xl font-bold text-gray-900">${totalUsers}</p>
+                    <p class="text-3xl font-bold text-gray-900">${stats.users}</p>
                 </div>
                 
                 <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
@@ -17011,7 +16936,7 @@ app.get('/admin/dashboard', async (c) => {
                         <span class="text-gray-600">전체 문의</span>
                         <i class="fas fa-envelope text-green-600 text-2xl"></i>
                     </div>
-                    <p class="text-3xl font-bold text-gray-900">${totalContacts}</p>
+                    <p class="text-3xl font-bold text-gray-900">${stats.contacts}</p>
                 </div>
                 
                 <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
@@ -17019,7 +16944,7 @@ app.get('/admin/dashboard', async (c) => {
                         <span class="text-gray-600">대기중 문의</span>
                         <i class="fas fa-clock text-orange-600 text-2xl"></i>
                     </div>
-                    <p class="text-3xl font-bold text-gray-900">${pendingCount}</p>
+                    <p class="text-3xl font-bold text-gray-900">${stats.pendingContacts}</p>
                 </div>
             </div>
             
@@ -17032,8 +16957,8 @@ app.get('/admin/dashboard', async (c) => {
                             <span class="text-blue-100">SMS 발송</span>
                             <i class="fas fa-sms text-2xl"></i>
                         </div>
-                        <p class="text-3xl font-bold mb-1">${totalSmsSent}</p>
-                        <p class="text-sm text-blue-100">성공 ${smsSuccess} / 실패 ${smsFailed}</p>
+                        <p class="text-3xl font-bold mb-1">${stats.smsSent}</p>
+                        <p class="text-sm text-blue-100">성공 ${stats.smsSuccess} / 실패 ${stats.smsFailed}</p>
                     </div>
                     
                     <div class="bg-gradient-to-br from-yellow-400 to-yellow-500 rounded-xl shadow-sm p-6 text-white">
@@ -17041,8 +16966,8 @@ app.get('/admin/dashboard', async (c) => {
                             <span class="text-yellow-100">카카오톡</span>
                             <i class="fas fa-comment-dots text-2xl"></i>
                         </div>
-                        <p class="text-3xl font-bold mb-1">${totalKakaoSent}</p>
-                        <p class="text-sm text-yellow-100">성공 ${kakaoSuccess} / 실패 ${kakaoFailed}</p>
+                        <p class="text-3xl font-bold mb-1">${stats.kakaoSent}</p>
+                        <p class="text-sm text-yellow-100">성공 ${stats.kakaoSuccess} / 실패 ${stats.kakaoFailed}</p>
                     </div>
                     
                     <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-sm p-6 text-white">
@@ -17050,7 +16975,7 @@ app.get('/admin/dashboard', async (c) => {
                             <span class="text-green-100">입금 대기</span>
                             <i class="fas fa-money-bill-wave text-2xl"></i>
                         </div>
-                        <p class="text-3xl font-bold mb-1">${pendingDepositsCount}</p>
+                        <p class="text-3xl font-bold mb-1">${stats.pendingDeposits}</p>
                         <p class="text-sm text-green-100">승인 대기중</p>
                     </div>
                     
@@ -17059,7 +16984,7 @@ app.get('/admin/dashboard', async (c) => {
                             <span class="text-purple-100">발신번호 대기</span>
                             <i class="fas fa-phone text-2xl"></i>
                         </div>
-                        <p class="text-3xl font-bold mb-1">${pendingSendersCount}</p>
+                        <p class="text-3xl font-bold mb-1">${stats.pendingSenders}</p>
                         <p class="text-sm text-purple-100">승인 대기중</p>
                     </div>
                 </div>
@@ -17152,36 +17077,7 @@ app.get('/admin/dashboard', async (c) => {
     </html>
   `)
   } catch (err) {
-    console.error('Admin dashboard error:', err)
-    return c.html(`
-      <!DOCTYPE html>
-      <html lang="ko">
-      <head>
-          <meta charset="UTF-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>관리자 대시보드 오류</title>
-          <script src="https://cdn.tailwindcss.com"></script>
-      </head>
-      <body class="bg-gray-50 flex items-center justify-center min-h-screen">
-          <div class="max-w-md w-full bg-white rounded-xl shadow-lg p-8 text-center">
-              <div class="text-red-500 text-6xl mb-4">⚠️</div>
-              <h1 class="text-2xl font-bold text-gray-900 mb-2">대시보드 로딩 오류</h1>
-              <p class="text-gray-600 mb-6">데이터베이스 연결에 문제가 발생했습니다.</p>
-              <div class="space-y-3">
-                  <a href="/admin/users" class="block w-full bg-purple-600 text-white py-3 px-6 rounded-lg hover:bg-purple-700">
-                      사용자 관리로 이동
-                  </a>
-                  <a href="/" class="block w-full bg-gray-200 text-gray-700 py-3 px-6 rounded-lg hover:bg-gray-300">
-                      홈으로 이동
-                  </a>
-              </div>
-              <p class="text-sm text-gray-500 mt-6">
-                  문제가 계속되면 데이터베이스 마이그레이션을 확인하세요.
-              </p>
-          </div>
-      </body>
-      </html>
-    `, 500)
+    return c.html('<h1>Error loading dashboard</h1><a href="/admin/users">Go to Users</a>', 500)
   }
 })
 
