@@ -19997,14 +19997,55 @@ app.get('/admin/sender/verification', (c) => {
                             </div>
                         </div>
 
-                        <!-- 사업자 등록증 이미지 -->
-                        <div class="border border-gray-200 rounded-lg p-4">
-                            <h3 class="font-bold text-gray-900 mb-3">사업자 등록증</h3>
-                            <a href="\${request.business_registration_image}" target="_blank" class="block">
-                                <img src="\${request.business_registration_image}" 
-                                     class="w-full rounded-lg border border-gray-300 hover:border-purple-500 transition cursor-pointer">
-                            </a>
-                            <p class="text-xs text-gray-500 mt-2 text-center">이미지를 클릭하면 새 탭에서 열립니다</p>
+                        <!-- 제출 서류 이미지 -->
+                        <div class="space-y-4">
+                            <!-- 1. 사업자 등록증 -->
+                            <div class="border border-gray-200 rounded-lg p-4">
+                                <h3 class="font-bold text-gray-900 mb-3">📄 1. 사업자 등록증</h3>
+                                \${request.business_registration_image ? \`
+                                    <a href="\${request.business_registration_image}" target="_blank" class="block">
+                                        <img src="\${request.business_registration_image}" 
+                                             class="w-full rounded-lg border border-gray-300 hover:border-purple-500 transition cursor-pointer">
+                                    </a>
+                                    <p class="text-xs text-gray-500 mt-2 text-center">클릭하면 새 탭에서 열립니다</p>
+                                \` : '<p class="text-gray-500 text-sm">이미지가 없습니다</p>'}
+                            </div>
+
+                            <!-- 2. 통신사 가입증명원 -->
+                            <div class="border border-gray-200 rounded-lg p-4">
+                                <h3 class="font-bold text-gray-900 mb-3">📄 2. 통신사 가입증명원</h3>
+                                \${request.certificate_image ? \`
+                                    <a href="\${request.certificate_image}" target="_blank" class="block">
+                                        <img src="\${request.certificate_image}" 
+                                             class="w-full rounded-lg border border-gray-300 hover:border-purple-500 transition cursor-pointer">
+                                    </a>
+                                    <p class="text-xs text-gray-500 mt-2 text-center">클릭하면 새 탭에서 열립니다</p>
+                                \` : '<p class="text-gray-500 text-sm">이미지가 없습니다</p>'}
+                            </div>
+
+                            <!-- 3. 재직증명서 -->
+                            <div class="border border-gray-200 rounded-lg p-4">
+                                <h3 class="font-bold text-gray-900 mb-3">📄 3. 재직증명서 (도장 날인)</h3>
+                                \${request.employment_cert_image ? \`
+                                    <a href="\${request.employment_cert_image}" target="_blank" class="block">
+                                        <img src="\${request.employment_cert_image}" 
+                                             class="w-full rounded-lg border border-gray-300 hover:border-purple-500 transition cursor-pointer">
+                                    </a>
+                                    <p class="text-xs text-gray-500 mt-2 text-center">클릭하면 새 탭에서 열립니다</p>
+                                \` : '<p class="text-gray-500 text-sm">이미지가 없습니다</p>'}
+                            </div>
+
+                            <!-- 4. 문자메시지 이용계약서 -->
+                            <div class="border border-gray-200 rounded-lg p-4">
+                                <h3 class="font-bold text-gray-900 mb-3">📄 4. 문자메시지 이용계약서 (도장 날인)</h3>
+                                \${request.contract_image ? \`
+                                    <a href="\${request.contract_image}" target="_blank" class="block">
+                                        <img src="\${request.contract_image}" 
+                                             class="w-full rounded-lg border border-gray-300 hover:border-purple-500 transition cursor-pointer">
+                                    </a>
+                                    <p class="text-xs text-gray-500 mt-2 text-center">클릭하면 새 탭에서 열립니다</p>
+                                \` : '<p class="text-gray-500 text-sm">이미지가 없습니다</p>'}
+                            </div>
                         </div>
 
                         <!-- 관리자 메모 입력 -->
