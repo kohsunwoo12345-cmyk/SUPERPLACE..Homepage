@@ -4,6 +4,7 @@ import { serveStatic } from 'hono/cloudflare-workers'
 
 type Bindings = {
   DB: D1Database
+  R2: R2Bucket
   OPENAI_API_KEY?: string
   OPENAI_BASE_URL?: string
   ALIGO_API_KEY?: string
@@ -1450,6 +1451,52 @@ app.get('/api/point-transactions/:userId', async (c) => {
   } catch (err) {
     console.error('Failed to load point transactions:', err)
     return c.json({ success: false, error: '거래 내역을 불러오는 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
+// R2 이미지 업로드 API (발신번호 인증 서류용)
+app.post('/api/upload/document', async (c) => {
+  try {
+    const { userId, fileName, fileData, fileType } = await c.req.json()
+    
+    if (!userId || !fileName || !fileData || !fileType) {
+      return c.json({ success: false, error: '필수 정보가 누락되었습니다.' }, 400)
+    }
+
+    // Base64 데이터를 ArrayBuffer로 변환
+    const base64Data = fileData.split(',')[1] // "data:image/png;base64," 제거
+    const binaryString = atob(base64Data)
+    const bytes = new Uint8Array(binaryString.length)
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i)
+    }
+
+    // 파일 크기 제한 (5MB)
+    if (bytes.length > 5 * 1024 * 1024) {
+      return c.json({ success: false, error: '파일 크기는 5MB 이하여야 합니다.' }, 400)
+    }
+
+    // R2에 업로드 (경로: documents/{userId}/{timestamp}-{fileName})
+    const timestamp = Date.now()
+    const key = `documents/${userId}/${timestamp}-${fileName}`
+    
+    await c.env.R2.put(key, bytes, {
+      httpMetadata: {
+        contentType: fileType
+      }
+    })
+
+    // Public URL 반환 (나중에 R2 Public Access 설정 필요)
+    const publicUrl = `https://superplace-documents.r2.dev/${key}`
+
+    return c.json({ 
+      success: true, 
+      url: publicUrl,
+      key: key
+    })
+  } catch (err) {
+    console.error('R2 upload error:', err)
+    return c.json({ success: false, error: '이미지 업로드 중 오류가 발생했습니다.' }, 500)
   }
 })
 
@@ -17671,22 +17718,36 @@ app.get('/sms/sender/request', (c) => {
                 reader.readAsDataURL(file)
             }
 
-            // imgbb 업로드 함수
-            async function uploadToImgbb(file) {
-                const formData = new FormData()
-                formData.append('image', file)
-                
-                const response = await fetch('https://api.imgbb.com/1/upload?key=2159af2941fad10d5c2b024de8ffb0b9', {
-                    method: 'POST',
-                    body: formData
+            // R2 업로드 함수 (imgbb 대체)
+            async function uploadToR2(file) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader()
+                    reader.onload = async (e) => {
+                        try {
+                            const response = await fetch('/api/upload/document', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    userId: user.id,
+                                    fileName: file.name,
+                                    fileData: e.target.result,
+                                    fileType: file.type
+                                })
+                            })
+                            
+                            const data = await response.json()
+                            if (data.success) {
+                                resolve(data.url)
+                            } else {
+                                reject(new Error(data.error || '이미지 업로드 실패'))
+                            }
+                        } catch (err) {
+                            reject(err)
+                        }
+                    }
+                    reader.onerror = () => reject(new Error('파일 읽기 실패'))
+                    reader.readAsDataURL(file)
                 })
-                
-                const data = await response.json()
-                if (data.success) {
-                    return data.data.url
-                } else {
-                    throw new Error('이미지 업로드 실패')
-                }
             }
 
             // 폼 제출
@@ -17715,18 +17776,18 @@ app.get('/sms/sender/request', (c) => {
                         return
                     }
 
-                    // 순차적으로 이미지 업로드 (병렬 처리 시 imgbb API 제한에 걸릴 수 있음)
+                    // 순차적으로 이미지 업로드 (R2 사용)
                     submitButton.textContent = '업로드 중... (1/4)'
-                    const businessRegUrl = await uploadToImgbb(businessRegFile)
+                    const businessRegUrl = await uploadToR2(businessRegFile)
                     
                     submitButton.textContent = '업로드 중... (2/4)'
-                    const certificateUrl = await uploadToImgbb(certificateFile)
+                    const certificateUrl = await uploadToR2(certificateFile)
                     
                     submitButton.textContent = '업로드 중... (3/4)'
-                    const employmentUrl = await uploadToImgbb(employmentFile)
+                    const employmentUrl = await uploadToR2(employmentFile)
                     
                     submitButton.textContent = '업로드 중... (4/4)'
-                    const contractUrl = await uploadToImgbb(contractFile)
+                    const contractUrl = await uploadToR2(contractFile)
 
                     submitButton.textContent = '신청 중...'
 
