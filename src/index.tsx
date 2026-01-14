@@ -1627,7 +1627,8 @@ app.get('/api/admin/sender/verification-requests', async (c) => {
       SELECT 
         svr.id, svr.user_id, svr.phone_number, svr.business_name, 
         svr.business_registration_number, svr.business_registration_image,
-        svr.request_date, svr.status, svr.admin_note, svr.processed_date,
+        svr.certificate_image, svr.employment_cert_image, svr.contract_image,
+        svr.request_date, svr.status, svr.admin_note, svr.rejection_reason, svr.processed_date,
         u.name as user_name, u.email as user_email
       FROM sender_verification_requests svr
       LEFT JOIN users u ON svr.user_id = u.id
