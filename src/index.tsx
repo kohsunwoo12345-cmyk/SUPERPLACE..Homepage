@@ -46,7 +46,7 @@ app.post('/api/contact', async (c) => {
       id: result.meta.last_row_id 
     })
   } catch (err) {
-    console.erroror('Contact submission error:', error)
+    console.error('Contact submission error:', error)
     return c.json({ success: false, error: '문의 접수 중 오류가 발생했습니다.' }, 500)
   }
 })
@@ -84,7 +84,7 @@ app.post('/api/signup', async (c) => {
       id: result.meta.last_row_id 
     })
   } catch (err) {
-    console.erroror('Signup error:', error)
+    console.error('Signup error:', error)
     return c.json({ success: false, error: '회원가입 중 오류가 발생했습니다.' }, 500)
   }
 })
@@ -113,7 +113,7 @@ app.post('/api/login', async (c) => {
       user: { id: user.id, email: user.email, name: user.name, role: user.role, points: user.points || 0 }
     })
   } catch (err) {
-    console.erroror('Login error:', error)
+    console.error('Login error:', error)
     return c.json({ success: false, error: '로그인 중 오류가 발생했습니다.' }, 500)
   }
 })
@@ -177,7 +177,7 @@ app.post('/api/auth/google', async (c) => {
       }
     })
   } catch (err) {
-    console.erroror('Google login error:', error)
+    console.error('Google login error:', error)
     return c.json({ success: false, error: '구글 로그인 중 오류가 발생했습니다.' }, 500)
   }
 })
@@ -243,7 +243,7 @@ app.post('/api/auth/kakao', async (c) => {
       }
     })
   } catch (err) {
-    console.erroror('Kakao login error:', error)
+    console.error('Kakao login error:', error)
     return c.json({ success: false, error: '카카오 로그인 중 오류가 발생했습니다.' }, 500)
   }
 })
@@ -267,7 +267,7 @@ app.get('/api/users/:id/points', async (c) => {
       user: { id: user.id, email: user.email, name: user.name, points: user.points || 0 }
     })
   } catch (err) {
-    console.erroror('Get points error:', error)
+    console.error('Get points error:', error)
     return c.json({ success: false, error: '포인트 조회 중 오류가 발생했습니다.' }, 500)
   }
 })
@@ -288,7 +288,7 @@ app.post('/api/admin/users/:id/password', async (c) => {
 
     return c.json({ success: true, message: '비밀번호가 변경되었습니다.' })
   } catch (err) {
-    console.erroror('Password change error:', error)
+    console.error('Password change error:', error)
     return c.json({ success: false, error: '비밀번호 변경 중 오류가 발생했습니다.' }, 500)
   }
 })
@@ -317,7 +317,7 @@ app.put('/api/admin/users/:id/points', async (c) => {
 
     return c.json({ success: true, message: '포인트가 지급되었습니다.', newPoints })
   } catch (err) {
-    console.erroror('Points update error:', error)
+    console.error('Points update error:', error)
     return c.json({ success: false, error: '포인트 지급 중 오류가 발생했습니다.' }, 500)
   }
 })
@@ -358,7 +358,7 @@ app.put('/api/admin/users/:id/points/deduct', async (c) => {
       newPoints: newPoints 
     })
   } catch (err) {
-    console.erroror('Points deduct error:', error)
+    console.error('Points deduct error:', error)
     return c.json({ success: false, error: '포인트 차감 중 오류가 발생했습니다.' }, 500)
   }
 })
@@ -383,7 +383,7 @@ app.post('/api/admin/login-as/:id', async (c) => {
       user: { id: user.id, email: user.email, name: user.name, role: user.role }
     })
   } catch (err) {
-    console.erroror('Login as error:', error)
+    console.error('Login as error:', error)
     return c.json({ success: false, error: '로그인 중 오류가 발생했습니다.' }, 500)
   }
 })
@@ -434,7 +434,7 @@ app.post('/api/register', async (c) => {
       user: { id: result.meta.last_row_id, email, name }
     })
   } catch (err) {
-    console.erroror('Register error:', error)
+    console.error('Register error:', error)
     return c.json({ success: false, error: '회원가입 중 오류가 발생했습니다.' }, 500)
   }
 })
@@ -487,7 +487,7 @@ app.get('/api/user/permissions', async (c) => {
 
     return c.json({ success: true, permissions: permissionMap })
   } catch (err) {
-    console.erroror('Get user permissions error:', error)
+    console.error('Get user permissions error:', error)
     return c.json({ success: false, error: '권한 조회 중 오류가 발생했습니다.' }, 500)
   }
 })
@@ -517,7 +517,7 @@ app.post('/api/admin/grant-permission', async (c) => {
 
     return c.json({ success: true, message: '권한이 부여되었습니다.' })
   } catch (err) {
-    console.erroror('Grant permission error:', error)
+    console.error('Grant permission error:', error)
     return c.json({ success: false, error: '권한 부여 중 오류가 발생했습니다.' }, 500)
   }
 })
@@ -546,7 +546,7 @@ app.post('/api/admin/revoke-permission', async (c) => {
 
     return c.json({ success: true, message: '권한이 회수되었습니다.' })
   } catch (err) {
-    console.erroror('Revoke permission error:', error)
+    console.error('Revoke permission error:', error)
     return c.json({ success: false, error: '권한 회수 중 오류가 발생했습니다.' }, 500)
   }
 })
@@ -563,7 +563,7 @@ app.get('/api/sms/pricing', async (c) => {
 
     return c.json({ success: true, pricing: pricing.results })
   } catch (err) {
-    console.erroror('Get SMS pricing error:', error)
+    console.error('Get SMS pricing error:', error)
     return c.json({ success: false, error: 'SMS 요금표 조회 중 오류가 발생했습니다.' }, 500)
   }
 })
@@ -586,7 +586,7 @@ app.get('/api/sms/senders', async (c) => {
 
     return c.json({ success: true, senders: senders.results })
   } catch (err) {
-    console.erroror('Get senders error:', error)
+    console.error('Get senders error:', error)
     return c.json({ success: false, error: '발신번호 목록 조회 중 오류가 발생했습니다.' }, 500)
   }
 })
@@ -627,7 +627,7 @@ app.post('/api/sms/sender/register', async (c) => {
       senderId: result.meta.last_row_id
     })
   } catch (err) {
-    console.erroror('Sender registration error:', error)
+    console.error('Sender registration error:', error)
     return c.json({ success: false, error: '발신번호 등록 중 오류가 발생했습니다.' }, 500)
   }
 })
@@ -661,7 +661,7 @@ app.delete('/api/sms/sender/:senderId', async (c) => {
       message: '발신번호가 삭제되었습니다.'
     })
   } catch (err) {
-    console.erroror('Sender delete error:', error)
+    console.error('Sender delete error:', error)
     return c.json({ success: false, error: '발신번호 삭제 중 오류가 발생했습니다.' }, 500)
   }
 })
@@ -833,7 +833,7 @@ app.post('/api/sms/send', async (c) => {
       }, 400)
     }
   } catch (err) {
-    console.erroror('SMS send error:', error)
+    console.error('SMS send error:', error)
     return c.json({ success: false, error: '문자 발송 중 오류가 발생했습니다.' }, 500)
   }
 })
@@ -876,7 +876,7 @@ app.get('/api/sms/logs', async (c) => {
       }
     })
   } catch (err) {
-    console.erroror('Get SMS logs error:', error)
+    console.error('Get SMS logs error:', error)
     return c.json({ success: false, error: 'SMS 발송 내역 조회 중 오류가 발생했습니다.' }, 500)
   }
 })
@@ -928,7 +928,7 @@ app.post('/api/sms/charge', async (c) => {
       balance: balanceAfter
     })
   } catch (err) {
-    console.erroror('Point charge error:', error)
+    console.error('Point charge error:', error)
     return c.json({ success: false, error: '포인트 충전 중 오류가 발생했습니다.' }, 500)
   }
 })
@@ -946,7 +946,7 @@ app.get('/api/kakao/pricing', async (c) => {
 
     return c.json({ success: true, pricing: results })
   } catch (err) {
-    console.erroror('Failed to load kakao pricing:', error)
+    console.error('Failed to load kakao pricing:', error)
     return c.json({ success: false, error: '요금표 조회 실패' }, 500)
   }
 })
@@ -969,7 +969,7 @@ app.get('/api/kakao/profiles', async (c) => {
 
     return c.json({ success: true, profiles: results || [] })
   } catch (err) {
-    console.erroror('Failed to load kakao profiles:', error)
+    console.error('Failed to load kakao profiles:', error)
     return c.json({ success: false, error: '발신 프로필 조회 실패' }, 500)
   }
 })
@@ -1003,7 +1003,7 @@ app.post('/api/kakao/profile/register', async (c) => {
       profileId: result.meta.last_row_id
     })
   } catch (err) {
-    console.erroror('Failed to register kakao profile:', error)
+    console.error('Failed to register kakao profile:', error)
     return c.json({ success: false, error: '발신 프로필 등록 실패' }, 500)
   }
 })
@@ -1025,7 +1025,7 @@ app.get('/api/kakao/templates', async (c) => {
 
     return c.json({ success: true, templates: results || [] })
   } catch (err) {
-    console.erroror('Failed to load kakao templates:', error)
+    console.error('Failed to load kakao templates:', error)
     return c.json({ success: false, error: '템플릿 조회 실패' }, 500)
   }
 })
@@ -1058,7 +1058,7 @@ app.post('/api/kakao/template/register', async (c) => {
       templateId: result.meta.last_row_id
     })
   } catch (err) {
-    console.erroror('Failed to register kakao template:', error)
+    console.error('Failed to register kakao template:', error)
     return c.json({ success: false, error: '템플릿 등록 실패' }, 500)
   }
 })
@@ -1251,7 +1251,7 @@ app.post('/api/kakao/send', async (c) => {
       }
 
     } catch (aligoError) {
-      console.erroror('Aligo kakao API error:', aligoError)
+      console.error('Aligo kakao API error:', aligoError)
       
       // API 오류 시 포인트 환불
       await c.env.DB.prepare(`
@@ -1277,7 +1277,7 @@ app.post('/api/kakao/send', async (c) => {
     }
 
   } catch (err) {
-    console.erroror('Kakao send error:', error)
+    console.error('Kakao send error:', error)
     return c.json({ success: false, error: '알림톡 발송 중 오류가 발생했습니다.' }, 500)
   }
 })
@@ -1333,7 +1333,7 @@ app.get('/api/kakao/logs', async (c) => {
       }
     })
   } catch (err) {
-    console.erroror('Failed to load kakao logs:', error)
+    console.error('Failed to load kakao logs:', error)
     return c.json({ success: false, error: '발송 내역 조회 실패' }, 500)
   }
 })
@@ -1362,7 +1362,7 @@ app.post('/api/deposit/request', async (c) => {
       requestId: result.meta.last_row_id
     })
   } catch (err) {
-    console.erroror('Deposit request error:', error)
+    console.error('Deposit request error:', error)
     return c.json({ success: false, error: '입금 신청 중 오류가 발생했습니다.' }, 500)
   }
 })
@@ -1397,7 +1397,7 @@ app.get('/api/deposit/my-requests/:userId', async (c) => {
       requests: results || []
     })
   } catch (err) {
-    console.erroror('Failed to load deposit requests:', error)
+    console.error('Failed to load deposit requests:', error)
     return c.json({ success: false, error: '입금 신청 내역을 불러오는 중 오류가 발생했습니다.' }, 500)
   }
 })
@@ -1448,7 +1448,7 @@ app.get('/api/point-transactions/:userId', async (c) => {
       }
     })
   } catch (err) {
-    console.erroror('Failed to load point transactions:', error)
+    console.error('Failed to load point transactions:', error)
     return c.json({ success: false, error: '거래 내역을 불러오는 중 오류가 발생했습니다.' }, 500)
   }
 })
@@ -1504,7 +1504,7 @@ app.post('/api/sms/sender/verification-request', async (c) => {
       requestId: result.meta.last_row_id
     })
   } catch (err) {
-    console.erroror('Sender verification request error:', error)
+    console.error('Sender verification request error:', error)
     return c.json({ success: false, error: '발신번호 인증 신청 중 오류가 발생했습니다.' }, 500)
   }
 })
@@ -1530,7 +1530,7 @@ app.get('/api/sms/sender/verification-requests', async (c) => {
 
     return c.json({ success: true, requests: requests.results })
   } catch (err) {
-    console.erroror('Get verification requests error:', error)
+    console.error('Get verification requests error:', error)
     return c.json({ success: false, error: '신청 목록 조회 중 오류가 발생했습니다.' }, 500)
   }
 })
@@ -1600,7 +1600,7 @@ app.post('/api/sms/sender/verification-process', async (c) => {
       message: action === 'approve' ? '발신번호가 승인되었습니다.' : '발신번호 신청이 거절되었습니다.'
     })
   } catch (err) {
-    console.erroror('Process verification error:', error)
+    console.error('Process verification error:', error)
     return c.json({ success: false, error: '처리 중 오류가 발생했습니다.' }, 500)
   }
 })
@@ -1643,7 +1643,7 @@ app.get('/api/admin/sender/verification-requests', async (c) => {
 
     return c.json({ success: true, requests: requests.results })
   } catch (err) {
-    console.erroror('Get admin verification requests error:', error)
+    console.error('Get admin verification requests error:', error)
     return c.json({ success: false, error: '신청 목록 조회 중 오류가 발생했습니다.' }, 500)
   }
 })
@@ -1659,7 +1659,7 @@ app.get('/api/deposit/my-requests/:userId', async (c) => {
 
     return c.json({ success: true, requests: requests.results })
   } catch (err) {
-    console.erroror('Get deposit requests error:', error)
+    console.error('Get deposit requests error:', error)
     return c.json({ success: false, error: '입금 신청 내역 조회 중 오류가 발생했습니다.' }, 500)
   }
 })
@@ -1673,7 +1673,7 @@ app.get('/api/admin/deposit/requests', async (c) => {
 
     return c.json({ success: true, requests: requests.results })
   } catch (err) {
-    console.erroror('Get all deposit requests error:', error)
+    console.error('Get all deposit requests error:', error)
     return c.json({ success: false, error: '입금 신청 목록 조회 중 오류가 발생했습니다.' }, 500)
   }
 })
@@ -1818,11 +1818,11 @@ app.put('/api/admin/deposit/requests/:id/process', async (c) => {
             if (emailResponse.ok) {
               console.log('Email notification sent successfully')
             } else {
-              console.erroror('Failed to send email notification:', await emailResponse.text())
+              console.error('Failed to send email notification:', await emailResponse.text())
             }
           }
         } catch (emailError) {
-          console.erroror('Email sending error:', emailError)
+          console.error('Email sending error:', emailError)
           // 이메일 발송 실패해도 승인 처리는 계속 진행
         }
       }
@@ -1838,7 +1838,7 @@ app.put('/api/admin/deposit/requests/:id/process', async (c) => {
       message: status === 'approved' ? '입금이 승인되고 포인트가 충전되었습니다.' : '입금 신청이 거절되었습니다.'
     })
   } catch (err) {
-    console.erroror('Process deposit request error:', error)
+    console.error('Process deposit request error:', error)
     return c.json({ success: false, error: '입금 신청 처리 중 오류가 발생했습니다.', details: error.message }, 500)
   }
 })
@@ -1859,7 +1859,7 @@ app.put('/api/admin/users/:id/password', async (c) => {
 
     return c.json({ success: true, message: '비밀번호가 변경되었습니다.' })
   } catch (err) {
-    console.erroror('Change password error:', error)
+    console.error('Change password error:', error)
     return c.json({ success: false, error: '비밀번호 변경 중 오류가 발생했습니다.' }, 500)
   }
 })
@@ -1896,7 +1896,7 @@ app.put('/api/admin/users/:id/points', async (c) => {
 
     return c.json({ success: true, message: '포인트가 업데이트되었습니다.', newPoints })
   } catch (err) {
-    console.erroror('Update points error:', error)
+    console.error('Update points error:', error)
     return c.json({ success: false, error: '포인트 업데이트 중 오류가 발생했습니다.' }, 500)
   }
 })
@@ -1920,7 +1920,7 @@ app.post('/api/admin/login-as/:id', async (c) => {
       user: { id: user.id, email: user.email, name: user.name, role: user.role, points: user.points }
     })
   } catch (err) {
-    console.erroror('Login as user error:', error)
+    console.error('Login as user error:', error)
     return c.json({ success: false, error: '로그인 중 오류가 발생했습니다.' }, 500)
   }
 })
@@ -1934,7 +1934,7 @@ app.get('/api/contacts', async (c) => {
 
     return c.json({ success: true, contacts: results })
   } catch (err) {
-    console.erroror('Fetch contacts error:', error)
+    console.error('Fetch contacts error:', error)
     return c.json({ success: false, error: '문의 목록 조회 중 오류가 발생했습니다.' }, 500)
   }
 })
@@ -1969,7 +1969,7 @@ app.put('/api/admin/contacts/:id', async (c) => {
     
     return c.json({ success: true, message: '문의가 업데이트되었습니다.' })
   } catch (err) {
-    console.erroror('Update contact error:', error)
+    console.error('Update contact error:', error)
     return c.json({ success: false, error: '문의 업데이트 실패' }, 500)
   }
 })
@@ -1992,7 +1992,7 @@ app.get('/api/admin/programs', async (c) => {
     const { results } = await c.env.DB.prepare('SELECT * FROM programs ORDER BY created_at DESC').all()
     return c.json({ success: true, programs: results })
   } catch (err) {
-    console.erroror('Programs error:', error)
+    console.error('Programs error:', error)
     return c.json({ success: false, error: '프로그램 목록 조회 실패' }, 500)
   }
 })
@@ -2009,7 +2009,7 @@ app.post('/api/admin/programs', async (c) => {
     
     return c.json({ success: true, message: '프로그램이 추가되었습니다.', id: result.meta.last_row_id })
   } catch (err) {
-    console.erroror('Add program error:', error)
+    console.error('Add program error:', error)
     return c.json({ success: false, error: '프로그램 추가 실패' }, 500)
   }
 })
@@ -2028,7 +2028,7 @@ app.put('/api/admin/programs/:id', async (c) => {
     
     return c.json({ success: true, message: '프로그램이 수정되었습니다.' })
   } catch (err) {
-    console.erroror('Update program error:', error)
+    console.error('Update program error:', error)
     return c.json({ success: false, error: '프로그램 수정 실패' }, 500)
   }
 })
@@ -2042,7 +2042,7 @@ app.delete('/api/admin/programs/:id', async (c) => {
     
     return c.json({ success: true, message: '프로그램이 삭제되었습니다.' })
   } catch (err) {
-    console.erroror('Delete program error:', error)
+    console.error('Delete program error:', error)
     return c.json({ success: false, error: '프로그램 삭제 실패' }, 500)
   }
 })
@@ -2074,7 +2074,7 @@ app.get('/api/admin/stats/monthly-users', async (c) => {
     const { results } = await c.env.DB.prepare(query).all()
     return c.json({ success: true, data: results })
   } catch (err) {
-    console.erroror('Monthly users stats error:', error)
+    console.error('Monthly users stats error:', error)
     return c.json({ success: false, error: '통계 조회 실패' }, 500)
   }
 })
@@ -2097,7 +2097,7 @@ app.get('/api/admin/stats/program-enrollments', async (c) => {
     const { results } = await c.env.DB.prepare(query).all()
     return c.json({ success: true, data: results })
   } catch (err) {
-    console.erroror('Program enrollments stats error:', error)
+    console.error('Program enrollments stats error:', error)
     return c.json({ success: false, error: '통계 조회 실패' }, 500)
   }
 })
@@ -2144,7 +2144,7 @@ app.get('/api/admin/stats/dashboard-summary', async (c) => {
       }
     })
   } catch (err) {
-    console.erroror('Dashboard summary error:', error)
+    console.error('Dashboard summary error:', error)
     return c.json({ success: false, error: '통계 조회 실패' }, 500)
   }
 })
@@ -2281,7 +2281,7 @@ app.post('/api/landing/create', async (c) => {
       id: result.meta.last_row_id
     })
   } catch (err) {
-    console.erroror('Landing page creation error:', error)
+    console.error('Landing page creation error:', error)
     return c.json({ success: false, error: '랜딩페이지 생성 실패: ' + (error as Error).message }, 500)
   }
 })
@@ -2308,7 +2308,7 @@ app.get('/api/landing/my-pages', async (c) => {
     const { results } = await c.env.DB.prepare(query).bind(...params).all()
     return c.json({ success: true, pages: results })
   } catch (err) {
-    console.erroror('목록 조회 실패:', error)
+    console.error('목록 조회 실패:', error)
     return c.json({ success: false, error: '목록 조회 실패' }, 500)
   }
 })
@@ -2339,7 +2339,7 @@ app.get('/api/landing/folders', async (c) => {
       totalPages: total.count || 0
     })
   } catch (err) {
-    console.erroror('폴더 목록 조회 실패:', error)
+    console.error('폴더 목록 조회 실패:', error)
     return c.json({ success: false, error: '폴더 목록 조회 실패' }, 500)
   }
 })
@@ -2362,7 +2362,7 @@ app.post('/api/landing/folders', async (c) => {
       message: '폴더가 생성되었습니다.' 
     })
   } catch (err) {
-    console.erroror('폴더 생성 실패:', error)
+    console.error('폴더 생성 실패:', error)
     return c.json({ success: false, error: '폴더 생성 실패' }, 500)
   }
 })
@@ -2380,7 +2380,7 @@ app.put('/api/landing/move-to-folder', async (c) => {
       message: '폴더로 이동되었습니다.' 
     })
   } catch (err) {
-    console.erroror('폴더 이동 실패:', error)
+    console.error('폴더 이동 실패:', error)
     return c.json({ success: false, error: '폴더 이동 실패' }, 500)
   }
 })
@@ -3416,7 +3416,7 @@ app.post('/api/generate-parent-message', async (c) => {
       const data = await response.json()
       
       if (!response.ok) {
-        console.erroror('OpenAI API error:', data)
+        console.error('OpenAI API error:', data)
         // API 오류 시 템플릿 메시지로 폴백
         const templateMessage = generateTemplateMessage(studentName, grade, subject, shortMessage)
         return c.json({ 
@@ -3446,7 +3446,7 @@ app.post('/api/generate-parent-message', async (c) => {
         }
       })
     } catch (apiError) {
-      console.erroror('API call error:', apiError)
+      console.error('API call error:', apiError)
       // API 호출 실패 시 템플릿 메시지로 폴백
       const templateMessage = generateTemplateMessage(studentName, grade, subject, shortMessage)
       return c.json({ 
@@ -3462,7 +3462,7 @@ app.post('/api/generate-parent-message', async (c) => {
       })
     }
   } catch (err) {
-    console.erroror('Generate message error:', error)
+    console.error('Generate message error:', error)
     return c.json({ success: false, error: '메시지 생성 중 오류가 발생했습니다.' }, 500)
   }
 })
@@ -3572,7 +3572,7 @@ ${keywords ? `포함할 키워드: ${keywords}` : ''}
       const data = await response.json()
       
       if (!response.ok) {
-        console.erroror('OpenAI API error:', data)
+        console.error('OpenAI API error:', data)
         // API 오류 시 템플릿으로 폴백
         const templateBlog = generateTemplateBlog(topic, keywords, tone)
         return c.json({ 
@@ -3602,7 +3602,7 @@ ${keywords ? `포함할 키워드: ${keywords}` : ''}
         }
       })
     } catch (apiError) {
-      console.erroror('API call error:', apiError)
+      console.error('API call error:', apiError)
       // API 호출 실패 시 템플릿으로 폴백
       const templateBlog = generateTemplateBlog(topic, keywords, tone)
       return c.json({ 
@@ -3618,7 +3618,7 @@ ${keywords ? `포함할 키워드: ${keywords}` : ''}
       })
     }
   } catch (err) {
-    console.erroror('Generate blog post error:', error)
+    console.error('Generate blog post error:', error)
     return c.json({ success: false, error: '블로그 글 생성 중 오류가 발생했습니다.' }, 500)
   }
 })
@@ -4647,7 +4647,7 @@ app.get('/register', (c) => {
                             \`
                             form.insertBefore(infoDiv, form.firstChild)
                         } catch (err) {
-                            console.erroror('Failed to parse social data:', error)
+                            console.error('Failed to parse social data:', error)
                         }
                     }
                 }
@@ -4682,7 +4682,7 @@ app.get('/register', (c) => {
                                 data.password = 'social_login_' + Date.now()
                             }
                         } catch (err) {
-                            console.erroror('Failed to parse social data:', error)
+                            console.error('Failed to parse social data:', error)
                         }
                     }
                 }
@@ -4712,7 +4712,7 @@ app.get('/register', (c) => {
                         errorDiv.classList.remove('hidden');
                     }
                 } catch (err) {
-                    console.erroror('Register error:', error);
+                    console.error('Register error:', error);
                     errorDiv.textContent = '회원가입 중 오류가 발생했습니다.';
                     errorDiv.classList.remove('hidden');
                 }
@@ -4865,7 +4865,7 @@ app.get('/login', (c) => {
                         showMessage('error', data.error || '구글 로그인에 실패했습니다.')
                     }
                 } catch (err) {
-                    console.erroror('Google login error:', error)
+                    console.error('Google login error:', error)
                     showMessage('error', '구글 로그인 중 오류가 발생했습니다.')
                 }
             }
@@ -4920,17 +4920,17 @@ app.get('/login', (c) => {
                                     }
                                 },
                                 fail: function(error) {
-                                    console.erroror('Kakao API error:', error)
+                                    console.error('Kakao API error:', error)
                                     showMessage('error', '카카오 사용자 정보를 가져오지 못했습니다.')
                                 }
                             })
                         } catch (err) {
-                            console.erroror('Kakao login error:', error)
+                            console.error('Kakao login error:', error)
                             showMessage('error', '카카오 로그인 중 오류가 발생했습니다.')
                         }
                     },
                     fail: function(err) {
-                        console.erroror('Kakao login failed:', err)
+                        console.error('Kakao login failed:', err)
                         showMessage('error', '카카오 로그인에 실패했습니다.')
                     }
                 })
@@ -5732,7 +5732,7 @@ app.get('/programs', (c) => {
                 const data = await response.json();
                 userPermissions = data.permissions || [];
               } catch (err) {
-                console.erroror('권한 조회 실패:', error);
+                console.error('권한 조회 실패:', error);
               }
             }
 
@@ -7150,7 +7150,7 @@ app.get('/dashboard', (c) => {
                         }
                     }
                 } catch (err) {
-                    console.erroror('권한 조회 실패:', error)
+                    console.error('권한 조회 실패:', error)
                     // 에러 시 기본적으로 모두 숨김 (관리자는 제외)
                     if (user.role !== 'admin') {
                         document.getElementById('smsNavDropdown')?.classList.add('hidden')
@@ -7207,7 +7207,7 @@ app.get('/dashboard', (c) => {
                             localStorage.setItem('user', JSON.stringify(user))
                         }
                     } catch (err) {
-                        console.erroror('포인트 로드 실패:', error)
+                        console.error('포인트 로드 실패:', error)
                     }
                 }
             }
@@ -7257,7 +7257,7 @@ app.get('/dashboard', (c) => {
                         }
                     }
                 } catch (err) {
-                    console.erroror('권한 확인 실패:', error)
+                    console.error('권한 확인 실패:', error)
                 }
             }
 
@@ -7318,7 +7318,7 @@ app.get('/dashboard', (c) => {
                             '</div>'
                         }
                     } catch (err) {
-                        console.erroror('랜딩페이지 로드 실패:', error)
+                        console.error('랜딩페이지 로드 실패:', error)
                         document.getElementById('landingPagesContainer').innerHTML = 
                             '<div class="col-span-3 text-center py-12 text-gray-500">로딩 실패</div>'
                     }
@@ -7643,7 +7643,7 @@ app.get('/tools/sms-sender', (c) => {
                     });
                 }
             } catch (err) {
-                console.erroror('템플릿 로드 오류:', error);
+                console.error('템플릿 로드 오류:', error);
             }
         }
 
@@ -7678,7 +7678,7 @@ app.get('/tools/sms-sender', (c) => {
                     document.getElementById('statPending').textContent = pending?.count || 0;
                 }
             } catch (err) {
-                console.erroror('통계 로드 오류:', error);
+                console.error('통계 로드 오류:', error);
             }
         }
 
@@ -7702,7 +7702,7 @@ app.get('/tools/sms-sender', (c) => {
                     \`).join('');
                 }
             } catch (err) {
-                console.erroror('기록 로드 오류:', error);
+                console.error('기록 로드 오류:', error);
             }
         }
 
@@ -7753,7 +7753,7 @@ app.get('/tools/sms-sender', (c) => {
                     alert('발송 실패: ' + data.error);
                 }
             } catch (err) {
-                console.erroror('발송 오류:', error);
+                console.error('발송 오류:', error);
                 alert('발송 중 오류가 발생했습니다');
             }
         }
@@ -8018,7 +8018,7 @@ app.get('/tools/parent-message', (c) => {
                         alert('오류: ' + data.error);
                     }
                 } catch (err) {
-                    console.erroror('Error:', error);
+                    console.error('Error:', error);
                     alert('메시지 생성 중 오류가 발생했습니다.');
                 } finally {
                     btn.disabled = false;
@@ -8280,7 +8280,7 @@ app.get('/tools/blog-writer', (c) => {
                         alert('오류: ' + data.error);
                     }
                 } catch (err) {
-                    console.erroror('Error:', error);
+                    console.error('Error:', error);
                     alert('블로그 글 생성 중 오류가 발생했습니다.');
                 } finally {
                     btn.disabled = false;
@@ -8528,7 +8528,7 @@ app.get('/tools/landing-builder', (c) => {
                     updateFolderSelect();
                 }
             } catch (err) {
-                console.erroror('폴더 로드 실패:', error);
+                console.error('폴더 로드 실패:', error);
             }
         }
 
@@ -8598,7 +8598,7 @@ app.get('/tools/landing-builder', (c) => {
                     alert('폴더 생성 실패: ' + result.error);
                 }
             } catch (err) {
-                console.erroror('폴더 생성 오류:', error);
+                console.error('폴더 생성 오류:', error);
                 alert('폴더 생성 중 오류가 발생했습니다.');
             }
         }
@@ -8917,7 +8917,7 @@ app.get('/tools/landing-builder', (c) => {
                                 alert('✅ 이미지가 업로드되었습니다!');
                             }
                         } catch (err) {
-                            console.erroror('imgbb 업로드 오류:', error);
+                            console.error('imgbb 업로드 오류:', error);
                             
                             // API 실패 시 Base64로 폴백
                             const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
@@ -8943,7 +8943,7 @@ app.get('/tools/landing-builder', (c) => {
                 reader.readAsDataURL(file);
                 
             } catch (err) {
-                console.erroror('업로드 오류:', error);
+                console.error('업로드 오류:', error);
                 alert('❌ 이미지 업로드에 실패했습니다.\\n\\n이미지 URL을 직접 입력해주세요.');
                 event.target.value = '';
             }
@@ -9060,7 +9060,7 @@ app.get('/tools/landing-builder', (c) => {
                     alert('오류: ' + result.error);
                 }
             } catch (err) {
-                console.erroror('랜딩페이지 생성 에러:', error);
+                console.error('랜딩페이지 생성 에러:', error);
                 alert('랜딩페이지 생성 중 오류가 발생했습니다. 콘솔을 확인하세요: ' + error.message);
             }
         }
@@ -9205,7 +9205,7 @@ app.get('/tools/landing-manager', (c) => {
                         '</button>' + foldersHtml;
                 }
             } catch (err) {
-                console.erroror('폴더 로드 실패:', error);
+                console.error('폴더 로드 실패:', error);
             }
         }
 
@@ -9791,7 +9791,7 @@ async function sendSMSAligo(phone: string, message: string, apiKey: string, user
     })
     return await response.json()
   } catch (err) {
-    console.erroror('Aligo SMS error:', error)
+    console.error('Aligo SMS error:', error)
     return { result_code: -1, message: 'SMS 발송 실패' }
   }
 }
@@ -9815,7 +9815,7 @@ async function sendSMSSolapi(phone: string, message: string, apiKey: string, api
     })
     return await response.json()
   } catch (err) {
-    console.erroror('Solapi SMS error:', error)
+    console.error('Solapi SMS error:', error)
     return { statusCode: 500, message: 'SMS 발송 실패' }
   }
 }
@@ -9831,7 +9831,7 @@ app.get('/api/sms/templates', async (c) => {
     
     return c.json({ success: true, templates: results })
   } catch (err) {
-    console.erroror('Get templates error:', error)
+    console.error('Get templates error:', error)
     return c.json({ success: false, error: '템플릿 조회 실패' }, 500)
   }
 })
@@ -9849,7 +9849,7 @@ app.post('/api/sms/templates', async (c) => {
     
     return c.json({ success: true, message: '템플릿이 추가되었습니다.', id: result.meta.last_row_id })
   } catch (err) {
-    console.erroror('Add template error:', error)
+    console.error('Add template error:', error)
     return c.json({ success: false, error: '템플릿 추가 실패' }, 500)
   }
 })
@@ -9897,7 +9897,7 @@ app.post('/api/sms/send', async (c) => {
       smsResult: smsResult
     })
   } catch (err) {
-    console.erroror('Send SMS error:', error)
+    console.error('Send SMS error:', error)
     return c.json({ success: false, error: 'SMS 발송 실패' }, 500)
   }
 })
@@ -9919,7 +9919,7 @@ app.post('/api/sms/schedule', async (c) => {
       id: result.meta.last_row_id
     })
   } catch (err) {
-    console.erroror('Schedule SMS error:', error)
+    console.error('Schedule SMS error:', error)
     return c.json({ success: false, error: 'SMS 예약 실패' }, 500)
   }
 })
@@ -9939,7 +9939,7 @@ app.get('/api/sms/history', async (c) => {
     
     return c.json({ success: true, history: results })
   } catch (err) {
-    console.erroror('Get SMS history error:', error)
+    console.error('Get SMS history error:', error)
     return c.json({ success: false, error: '발송 기록 조회 실패' }, 500)
   }
 })
@@ -9974,7 +9974,7 @@ app.get('/api/sms/stats', async (c) => {
       }
     })
   } catch (err) {
-    console.erroror('Get SMS stats error:', error)
+    console.error('Get SMS stats error:', error)
     return c.json({ success: false, error: '통계 조회 실패' }, 500)
   }
 })
@@ -9990,7 +9990,7 @@ app.get('/api/students', async (c) => {
     
     return c.json({ success: true, students: results })
   } catch (err) {
-    console.erroror('Get students error:', error)
+    console.error('Get students error:', error)
     return c.json({ success: false, error: '학생 목록 조회 실패' }, 500)
   }
 })
@@ -10013,7 +10013,7 @@ app.post('/api/students', async (c) => {
     
     return c.json({ success: true, message: '학생이 추가되었습니다.', id: result.meta.last_row_id })
   } catch (err) {
-    console.erroror('Add student error:', error)
+    console.error('Add student error:', error)
     return c.json({ success: false, error: '학생 추가 실패' }, 500)
   }
 })
@@ -10216,7 +10216,7 @@ app.get('/tools/student-management', (c) => {
                         resultDiv.innerHTML = '<div class="p-4 bg-red-50 text-red-600 rounded-xl">' + result.error + '</div>';
                     }
                 } catch (err) {
-                    console.erroror('학생 추가 실패:', error);
+                    console.error('학생 추가 실패:', error);
                     resultDiv.innerHTML = '<div class="p-4 bg-red-50 text-red-600 rounded-xl">학생 추가 중 오류가 발생했습니다.</div>';
                 }
             }
@@ -10295,7 +10295,7 @@ app.get('/tools/student-management', (c) => {
                         }
                     }
                 } catch (err) {
-                    console.erroror('학생 목록 로드 실패:', error);
+                    console.error('학생 목록 로드 실패:', error);
                 }
             }
         </script>
@@ -10539,7 +10539,7 @@ app.get('/tools/ai-learning-report', (c) => {
                         });
                     }
                 } catch (err) {
-                    console.erroror('학생 목록 로드 실패:', error);
+                    console.error('학생 목록 로드 실패:', error);
                 }
             }
 
@@ -10603,7 +10603,7 @@ app.get('/tools/ai-learning-report', (c) => {
                         resultDiv.innerHTML = \`<div class="p-4 bg-red-50 text-red-600 rounded-xl">\${data.error}</div>\`;
                     }
                 } catch (err) {
-                    console.erroror('리포트 생성 실패:', error);
+                    console.error('리포트 생성 실패:', error);
                     resultDiv.innerHTML = '<div class="p-4 bg-red-50 text-red-600 rounded-xl">리포트 생성 중 오류가 발생했습니다.</div>';
                 }
             }
@@ -10634,7 +10634,7 @@ app.get('/tools/ai-learning-report', (c) => {
                         \`).join('');
                     }
                 } catch (err) {
-                    console.erroror('리포트 목록 로드 실패:', error);
+                    console.error('리포트 목록 로드 실패:', error);
                 }
             }
 
@@ -10699,7 +10699,7 @@ app.get('/tools/ai-learning-report', (c) => {
                         document.getElementById('reportModal').classList.remove('hidden');
                     }
                 } catch (err) {
-                    console.erroror('리포트 상세 조회 실패:', error);
+                    console.error('리포트 상세 조회 실패:', error);
                     alert('리포트를 불러오는 중 오류가 발생했습니다.');
                 }
             }
@@ -10717,7 +10717,7 @@ app.get('/tools/ai-learning-report', (c) => {
                     navigator.clipboard.writeText(message).then(() => {
                         alert('메시지가 클립보드에 복사되었습니다!');
                     }).catch(err => {
-                        console.erroror('복사 실패:', err);
+                        console.error('복사 실패:', err);
                     });
                 }
             }
@@ -11011,7 +11011,7 @@ app.get('/tools/search-volume', (c) => {
                         alert('분석 중 오류가 발생했습니다: ' + (data.error || '알 수 없는 오류'));
                     }
                 } catch (err) {
-                    console.erroror('분석 오류:', error);
+                    console.error('분석 오류:', error);
                     alert('분석 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
                 } finally {
                     document.getElementById('loading').classList.add('hidden');
@@ -11152,7 +11152,7 @@ app.get('/api/learning-reports/:student_id', async (c) => {
     
     return c.json({ success: true, reports: results })
   } catch (err) {
-    console.erroror('Get learning reports error:', error)
+    console.error('Get learning reports error:', error)
     return c.json({ success: false, error: '리포트 조회 실패' }, 500)
   }
 })
@@ -11302,7 +11302,7 @@ app.post('/api/learning-reports/generate', async (c) => {
       }
     })
   } catch (err) {
-    console.erroror('Generate learning report error:', error)
+    console.error('Generate learning report error:', error)
     return c.json({ success: false, error: 'AI 리포트 생성 실패' }, 500)
   }
 })
@@ -11325,7 +11325,7 @@ app.get('/api/learning-reports/detail/:report_id', async (c) => {
     
     return c.json({ success: true, report })
   } catch (err) {
-    console.erroror('Get report detail error:', error)
+    console.error('Get report detail error:', error)
     return c.json({ success: false, error: '리포트 조회 실패' }, 500)
   }
 })
@@ -11475,7 +11475,7 @@ app.get('/profile', (c) => {
                     document.getElementById('role').textContent = data.user.role === 'admin' ? '관리자' : '일반 회원'
                 }
             } catch (err) {
-                console.erroror('프로필 로드 실패:', error)
+                console.error('프로필 로드 실패:', error)
             }
         }
 
@@ -11594,7 +11594,7 @@ app.get('/api/user/profile', async (c) => {
 
     return c.json({ success: true, user })
   } catch (err) {
-    console.erroror('Get profile error:', error)
+    console.error('Get profile error:', error)
     return c.json({ success: false, error: '프로필 조회 실패' }, 500)
   }
 })
@@ -11621,7 +11621,7 @@ app.put('/api/user/profile', async (c) => {
 
     return c.json({ success: true, message: '프로필이 수정되었습니다.' })
   } catch (err) {
-    console.erroror('Update profile error:', error)
+    console.error('Update profile error:', error)
     return c.json({ success: false, error: '프로필 수정 실패' }, 500)
   }
 })
@@ -11660,7 +11660,7 @@ app.put('/api/user/change-password', async (c) => {
 
     return c.json({ success: true, message: '비밀번호가 변경되었습니다.' })
   } catch (err) {
-    console.erroror('Change password error:', error)
+    console.error('Change password error:', error)
     return c.json({ success: false, error: '비밀번호 변경 실패' }, 500)
   }
 })
@@ -11701,7 +11701,7 @@ app.post('/api/admin/impersonate', async (c) => {
       original_admin_id: adminId
     })
   } catch (err) {
-    console.erroror('Impersonate error:', error)
+    console.error('Impersonate error:', error)
     return c.json({ success: false, error: '사용자 로그인 실패' }, 500)
   }
 })
@@ -14171,7 +14171,7 @@ app.post('/api/search-analysis', async (c) => {
             VALUES (?, ?, ?, ?, datetime('now'))
           `).bind(userId, keyword, placeUrl || '', JSON.stringify(analysisResult)).run()
         } catch (dbError) {
-          console.erroror('DB save error:', dbError)
+          console.error('DB save error:', dbError)
           // DB 저장 실패해도 결과는 반환
         }
       }
@@ -14179,7 +14179,7 @@ app.post('/api/search-analysis', async (c) => {
       return c.json(analysisResult)
       
     } catch (crawlerError) {
-      console.erroror('Crawler API error:', crawlerError)
+      console.error('Crawler API error:', crawlerError)
       
       // 크롤러 서버 오류 시 임시 응답 반환
       const fallbackResponse = {
@@ -14201,7 +14201,7 @@ app.post('/api/search-analysis', async (c) => {
       return c.json(fallbackResponse)
     }
   } catch (err) {
-    console.erroror('Search analysis error:', error)
+    console.error('Search analysis error:', error)
     return c.json({ success: false, error: '분석 중 오류가 발생했습니다' }, 500)
   }
 })
@@ -14220,7 +14220,7 @@ app.post('/api/contact', async (c) => {
 
     return c.json({ success: true, message: '문의가 접수되었습니다' })
   } catch (err) {
-    console.erroror('Contact error:', error)
+    console.error('Contact error:', error)
     return c.json({ success: false, error: '문의 접수 실패' }, 500)
   }
 })
@@ -14255,7 +14255,7 @@ app.post('/api/login', async (c) => {
     
     return c.json({ success: true, message: '로그인 성공', user: userInfo })
   } catch (err) {
-    console.erroror('Login error:', error)
+    console.error('Login error:', error)
     return c.json({ success: false, error: '로그인 처리 중 오류가 발생했습니다' }, 500)
   }
 })
@@ -14340,7 +14340,7 @@ app.post('/api/sms/send', async (c) => {
             userId || null
           ).run()
         } catch (dbError) {
-          console.erroror('SMS 로그 저장 오류:', dbError)
+          console.error('SMS 로그 저장 오류:', dbError)
         }
       }
       
@@ -14373,7 +14373,7 @@ app.post('/api/sms/send', async (c) => {
             result.message || '발송 실패'
           ).run()
         } catch (dbError) {
-          console.erroror('SMS 로그 저장 오류:', dbError)
+          console.error('SMS 로그 저장 오류:', dbError)
         }
       }
       
@@ -14386,7 +14386,7 @@ app.post('/api/sms/send', async (c) => {
     }
     
   } catch (err) {
-    console.erroror('SMS 발송 오류:', error)
+    console.error('SMS 발송 오류:', error)
     return c.json({ 
       success: false, 
       error: '문자 발송 중 오류가 발생했습니다',
@@ -14418,7 +14418,7 @@ app.get('/api/sms/logs', async (c) => {
       logs: results || []
     })
   } catch (err) {
-    console.erroror('SMS 로그 조회 오류:', error)
+    console.error('SMS 로그 조회 오류:', error)
     return c.json({ success: false, error: 'SMS 로그 조회 실패' }, 500)
   }
 })
@@ -14447,7 +14447,7 @@ app.post('/api/signup', async (c) => {
       message: '회원가입이 완료되었습니다. 로그인해주세요.'
     })
   } catch (err) {
-    console.erroror('Signup error:', error)
+    console.error('Signup error:', error)
     return c.json({ success: false, error: '회원가입 처리 중 오류가 발생했습니다' }, 500)
   }
 })
@@ -16060,7 +16060,7 @@ app.get('/admin/users', async (c) => {
                             }
                         }
                     } catch (err) {
-                        console.erroror('권한 처리 오류:', error);
+                        console.error('권한 처리 오류:', error);
                         errorCount++;
                     }
                 }
@@ -16750,7 +16750,7 @@ app.get('/api/user/:id/permissions', async (c) => {
     
     return c.json({ permissions: permissions.results });
   } catch (err) {
-    console.erroror('Get permissions error:', error);
+    console.error('Get permissions error:', error);
     return c.json({ success: false, error: '권한 조회 실패' }, 500);
   }
 });
@@ -16768,7 +16768,7 @@ app.post('/api/admin/permissions/grant', async (c) => {
     
     return c.json({ success: true, message: '권한이 부여되었습니다' });
   } catch (err) {
-    console.erroror('Grant permission error:', error);
+    console.error('Grant permission error:', error);
     return c.json({ success: false, error: '권한 부여 실패' }, 500);
   }
 });
@@ -16787,7 +16787,7 @@ app.post('/api/admin/permissions/revoke', async (c) => {
     
     return c.json({ success: true, message: '권한이 회수되었습니다' });
   } catch (err) {
-    console.erroror('Revoke permission error:', error);
+    console.error('Revoke permission error:', error);
     return c.json({ success: false, error: '권한 회수 실패' }, 500);
   }
 });
@@ -16803,7 +16803,7 @@ app.patch('/api/admin/contacts/:id', async (c) => {
     
     return c.json({ success: true })
   } catch (err) {
-    console.erroror('Update contact status error:', error)
+    console.error('Update contact status error:', error)
     return c.json({ success: false }, 500)
   }
 })
@@ -16819,7 +16819,7 @@ app.patch('/api/admin/contacts/:id', async (c) => {
     
     return c.json({ success: true })
   } catch (err) {
-    console.erroror('Update contact status error:', error)
+    console.error('Update contact status error:', error)
     return c.json({ success: false }, 500)
   }
 })
@@ -16889,19 +16889,19 @@ app.get('/admin/dashboard', async (c) => {
     try {
       usersCount = await env.DB.prepare('SELECT COUNT(*) as count FROM users').all()
     } catch (e) {
-      console.erroror('Users count error:', e)
+      console.error('Users count error:', e)
     }
     
     try {
       contactsCount = await env.DB.prepare('SELECT COUNT(*) as count FROM contacts').all()
     } catch (e) {
-      console.erroror('Contacts count error:', e)
+      console.error('Contacts count error:', e)
     }
     
     try {
       pendingContacts = await env.DB.prepare('SELECT COUNT(*) as count FROM contacts WHERE status = "pending"').all()
     } catch (e) {
-      console.erroror('Pending contacts error:', e)
+      console.error('Pending contacts error:', e)
     }
     
     // SMS 통계 조회
@@ -16915,7 +16915,7 @@ app.get('/admin/dashboard', async (c) => {
         FROM sms_logs
       `).all()
     } catch (e) {
-      console.erroror('SMS stats error:', e)
+      console.error('SMS stats error:', e)
     }
     
     // 카카오 통계 조회 (테이블이 없을 수 있음)
@@ -16929,7 +16929,7 @@ app.get('/admin/dashboard', async (c) => {
         FROM kakao_logs
       `).all()
     } catch (e) {
-      console.erroror('Kakao stats error (table may not exist):', e)
+      console.error('Kakao stats error (table may not exist):', e)
     }
     
     // 입금 신청 대기 건수
@@ -16937,7 +16937,7 @@ app.get('/admin/dashboard', async (c) => {
     try {
       pendingDeposits = await env.DB.prepare('SELECT COUNT(*) as count FROM deposit_requests WHERE status = "pending"').all()
     } catch (e) {
-      console.erroror('Deposit stats error:', e)
+      console.error('Deposit stats error:', e)
     }
     
     // 발신번호 인증 대기 건수
@@ -16945,7 +16945,7 @@ app.get('/admin/dashboard', async (c) => {
     try {
       pendingSenders = await env.DB.prepare('SELECT COUNT(*) as count FROM sender_verification_requests WHERE status = "pending"').all()
     } catch (e) {
-      console.erroror('Sender stats error:', e)
+      console.error('Sender stats error:', e)
     }
     
     const totalUsers = usersCount.results[0]?.count || 0
@@ -17152,7 +17152,7 @@ app.get('/admin/dashboard', async (c) => {
     </html>
   `)
   } catch (err) {
-    console.erroror('Admin dashboard error:', err)
+    console.error('Admin dashboard error:', err)
     return c.html(`
       <!DOCTYPE html>
       <html lang="ko">
@@ -17579,7 +17579,7 @@ app.get('/sms/senders', (c) => {
                         \`;
                     }
                 } catch (err) {
-                    console.erroror('Failed to load senders:', error);
+                    console.error('Failed to load senders:', error);
                     alert('발신번호 목록을 불러오는 데 실패했습니다.');
                 }
             }
@@ -17624,7 +17624,7 @@ app.get('/sms/senders', (c) => {
                         alert('❌ ' + data.error);
                     }
                 } catch (err) {
-                    console.erroror('Failed to register sender:', error);
+                    console.error('Failed to register sender:', error);
                     alert('발신번호 등록 중 오류가 발생했습니다.');
                 }
             }
@@ -17649,7 +17649,7 @@ app.get('/sms/senders', (c) => {
                         alert('❌ ' + data.error);
                     }
                 } catch (err) {
-                    console.erroror('Failed to delete sender:', error);
+                    console.error('Failed to delete sender:', error);
                     alert('발신번호 삭제 중 오류가 발생했습니다.');
                 }
             }
@@ -17666,7 +17666,7 @@ app.get('/sms/senders', (c) => {
     </html>
   `)
   } catch (err) {
-    console.erroror('Admin dashboard error:', error)
+    console.error('Admin dashboard error:', error)
     return c.html(`
       <!DOCTYPE html>
       <html><body>
@@ -18099,7 +18099,7 @@ app.get('/sms/sender/request', (c) => {
                         alert(data.error || '신청 중 오류가 발생했습니다.')
                     }
                 } catch (err) {
-                    console.erroror('Submission error:', error)
+                    console.error('Submission error:', error)
                     alert('신청 중 오류가 발생했습니다: ' + error.message)
                 } finally {
                     submitButton.disabled = false
@@ -18154,7 +18154,7 @@ app.get('/sms/sender/request', (c) => {
                         \`
                     }
                 } catch (err) {
-                    console.erroror('Load requests error:', error)
+                    console.error('Load requests error:', error)
                 }
             }
 
@@ -18367,7 +18367,7 @@ app.get('/sms/compose', (c) => {
                         window.location.href = '/sms/senders';
                     }
                 } catch (err) {
-                    console.erroror('Failed to load senders:', error);
+                    console.error('Failed to load senders:', error);
                 }
             }
 
@@ -18504,7 +18504,7 @@ app.get('/sms/compose', (c) => {
                     alert(\`✅ \${addedCount}명의 수신자가 추가되었습니다.\`);
                     renderReceivers();
                 } catch (err) {
-                    console.erroror('Excel upload error:', error);
+                    console.error('Excel upload error:', error);
                     alert('엑셀 파일 업로드 중 오류가 발생했습니다.');
                 }
                 
@@ -18588,7 +18588,7 @@ app.get('/sms/compose', (c) => {
                         alert('❌ ' + data.error);
                     }
                 } catch (err) {
-                    console.erroror('Send SMS error:', error);
+                    console.error('Send SMS error:', error);
                     alert('문자 발송 중 오류가 발생했습니다.');
                 }
             }
@@ -18860,7 +18860,7 @@ app.get('/sms/logs', (c) => {
                         updateStats(data.logs);
                     }
                 } catch (err) {
-                    console.erroror('Failed to load logs:', error);
+                    console.error('Failed to load logs:', error);
                 }
             }
 
@@ -19287,7 +19287,7 @@ app.get('/sms/points', (c) => {
                         document.getElementById('mmsCount').textContent = Math.floor(currentBalance / 150) + '건';
                     }
                 } catch (err) {
-                    console.erroror('Failed to load balance:', error);
+                    console.error('Failed to load balance:', error);
                 }
             }
 
@@ -19302,7 +19302,7 @@ app.get('/sms/points', (c) => {
                         document.getElementById('totalTransactions').textContent = data.stats.totalTransactions.toLocaleString() + '건';
                     }
                 } catch (err) {
-                    console.erroror('Failed to load stats:', error);
+                    console.error('Failed to load stats:', error);
                 }
             }
 
@@ -19327,7 +19327,7 @@ app.get('/sms/points', (c) => {
                         \`).join('');
                     }
                 } catch (err) {
-                    console.erroror('Failed to load pricing:', error);
+                    console.error('Failed to load pricing:', error);
                 }
             }
 
@@ -19366,7 +19366,7 @@ app.get('/sms/points', (c) => {
                         container.innerHTML = '<div class="text-center py-12"><p class="text-gray-400">입금 신청 내역이 없습니다</p><p class="text-sm text-gray-400 mt-2">충전하기 탭에서 입금을 신청해보세요</p></div>';
                     }
                 } catch (err) {
-                    console.erroror('Failed to load deposit requests:', error);
+                    console.error('Failed to load deposit requests:', error);
                     document.getElementById('depositsContainer').innerHTML = '<p class="text-sm text-red-500 text-center py-8">불러오기 실패</p>';
                 }
             }
@@ -19413,7 +19413,7 @@ app.get('/sms/points', (c) => {
                         container.innerHTML = '<div class="text-center py-12"><p class="text-gray-400">거래 내역이 없습니다</p><p class="text-sm text-gray-400 mt-2">충전 또는 SMS 발송 후 내역이 표시됩니다</p></div>';
                     }
                 } catch (err) {
-                    console.erroror('Failed to load transactions:', error);
+                    console.error('Failed to load transactions:', error);
                     document.getElementById('transactionsContainer').innerHTML = '<p class="text-sm text-red-500 text-center py-8">불러오기 실패</p>';
                 }
             }
@@ -19479,7 +19479,7 @@ app.get('/sms/points', (c) => {
                         alert('❌ ' + data.error);
                     }
                 } catch (err) {
-                    console.erroror('Deposit request error:', error);
+                    console.error('Deposit request error:', error);
                     alert('입금 신청 중 오류가 발생했습니다.');
                 }
             }
@@ -20006,7 +20006,7 @@ app.get('/admin/sender/verification', (c) => {
                         renderRequests(data.requests)
                     }
                 } catch (err) {
-                    console.erroror('Load requests error:', error)
+                    console.error('Load requests error:', error)
                 }
             }
 
@@ -20254,7 +20254,7 @@ app.get('/admin/sender/verification', (c) => {
                         alert(data.error || '처리 중 오류가 발생했습니다.')
                     }
                 } catch (err) {
-                    console.erroror('Process error:', error)
+                    console.error('Process error:', error)
                     alert('처리 중 오류가 발생했습니다.')
                 }
             }
