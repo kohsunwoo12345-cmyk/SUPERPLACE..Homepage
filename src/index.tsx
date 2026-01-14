@@ -6531,7 +6531,7 @@ app.get('/dashboard', (c) => {
                             </svg>
                             <span>🏠 홈으로</span>
                         </a>
-                        <div class="relative group">
+                        <div id="smsNavDropdown" class="relative group hidden">
                             <button class="flex items-center space-x-1 text-gray-700 hover:text-purple-600 transition font-medium">
                                 <span>📱 SMS</span>
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -6633,7 +6633,7 @@ app.get('/dashboard', (c) => {
                 </div>
 
                 <!-- SMS Quick Access -->
-                <div class="mb-12">
+                <div id="smsSection" class="mb-12">
                     <div class="flex items-center justify-between mb-6">
                         <h2 class="text-2xl font-bold text-gray-900">📱 SMS 문자 발송</h2>
                         <a href="/sms/compose" class="bg-gradient-to-r from-green-600 to-green-700 text-white px-6 py-3 rounded-lg hover:from-green-700 hover:to-green-800 transition-all shadow-md hover:shadow-lg font-medium flex items-center space-x-2">
@@ -6951,7 +6951,7 @@ app.get('/dashboard', (c) => {
                 </div>
 
                 <!-- My Landing Pages Section -->
-                <div class="mb-12">
+                <div id="landingSection" class="mb-12">
                     <div class="flex justify-between items-center mb-6">
                         <h2 class="text-2xl font-bold text-gray-900">🚀 내 랜딩페이지</h2>
                         <div class="flex gap-3">
@@ -7116,9 +7116,52 @@ app.get('/dashboard', (c) => {
                         nav.insertBefore(returnBtn, nav.firstChild)
                     }
                 }
+                
+                // 권한 체크 및 UI 표시/숨김
+                checkPermissions()
+            }
+            
+            // 권한 체크 함수
+            async function checkPermissions() {
+                try {
+                    const response = await fetch('/api/user/permissions?userId=' + user.id)
+                    const data = await response.json()
+                    
+                    if (data.success) {
+                        const permissions = data.permissions
+                        
+                        // SMS 권한 체크
+                        if (permissions.sms || user.role === 'admin') {
+                            document.getElementById('smsNavDropdown')?.classList.remove('hidden')
+                            document.getElementById('smsQuickAccess')?.classList.remove('hidden')
+                        }
+                        
+                        // 검색량 조회 권한 체크
+                        if (permissions.search_volume || user.role === 'admin') {
+                            // 검색량 조회 섹션 표시 (향후 추가)
+                        }
+                        
+                        // 랜딩페이지 빌더 권한 체크
+                        if (permissions.landing_builder || user.role === 'admin') {
+                            // 랜딩페이지 섹션 표시 (기본 표시 중)
+                        }
+                    }
+                } catch (error) {
+                    console.error('권한 조회 실패:', error)
+                    // 에러 시 기본적으로 모두 숨김 (관리자는 제외)
+                    if (user.role !== 'admin') {
+                        document.getElementById('smsNavDropdown')?.classList.add('hidden')
+                        document.getElementById('smsQuickAccess')?.classList.add('hidden')
+                    } else {
+                        // 관리자는 모든 메뉴 표시
+                        document.getElementById('smsNavDropdown')?.classList.remove('hidden')
+                        document.getElementById('smsQuickAccess')?.classList.remove('hidden')
+                    }
+                }
             }
             
             // 페이지 로드 시 실행
+            checkUserPermissions()
             loadUserPoints()
             loadMyLandingPages()
 
@@ -7163,6 +7206,59 @@ app.get('/dashboard', (c) => {
                     } catch (error) {
                         console.error('포인트 로드 실패:', error)
                     }
+                }
+            }
+
+            // 사용자 권한 확인 및 메뉴 표시/숨김
+            async function checkUserPermissions() {
+                const user = JSON.parse(localStorage.getItem('user'))
+                if (!user || !user.id) return
+                
+                try {
+                    const response = await fetch('/api/user/permissions?userId=' + user.id)
+                    const data = await response.json()
+                    
+                    if (data.success && data.permissions) {
+                        const permissions = data.permissions
+                        
+                        // search_volume 권한 체크 - 네이버 검색량 조회
+                        const searchVolumeCard = document.querySelector('a[href="/tools/search-volume"]')
+                        if (searchVolumeCard) {
+                            const hasPermission = permissions.some(p => p.program_key === 'search_volume' && p.is_active === 1)
+                            if (!hasPermission) {
+                                searchVolumeCard.style.display = 'none'
+                            }
+                        }
+                        
+                        // sms 권한 체크 - SMS 문자 발송
+                        const smsSection = document.getElementById('smsSection')
+                        if (smsSection) {
+                            const hasPermission = permissions.some(p => p.program_key === 'sms' && p.is_active === 1)
+                            if (!hasPermission) {
+                                smsSection.style.display = 'none'
+                            }
+                        }
+                        
+                        // landing_builder 권한 체크 - 랜딩페이지
+                        const landingSection = document.getElementById('landingSection')
+                        if (landingSection) {
+                            const hasPermission = permissions.some(p => p.program_key === 'landing_builder' && p.is_active === 1)
+                            if (!hasPermission) {
+                                landingSection.style.display = 'none'
+                            }
+                        }
+                        
+                        // landing_builder 도구 카드도 숨김
+                        const landingBuilderCard = document.querySelector('a[href="/tools/landing-builder"]')
+                        if (landingBuilderCard) {
+                            const hasPermission = permissions.some(p => p.program_key === 'landing_builder' && p.is_active === 1)
+                            if (!hasPermission) {
+                                landingBuilderCard.style.display = 'none'
+                            }
+                        }
+                    }
+                } catch (error) {
+                    console.error('권한 확인 실패:', error)
                 }
             }
 
