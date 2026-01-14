@@ -1654,8 +1654,9 @@ app.post('/api/sms/sender/verification-process', async (c) => {
       WHERE id = ?
     `).bind(newStatus, adminNote || null, adminId, processedDate, requestId).run()
 
-    // 승인된 경우 sender_ids 테이블에 추가
+    // 승인된 경우 sender_ids 테이블에 추가 & Aligo API 등록
     if (action === 'approve') {
+      // 1. DB에 발신번호 저장
       await c.env.DB.prepare(`
         INSERT INTO sender_ids 
         (user_id, phone_number, verification_method, status, verification_request_id, business_name, business_registration_number)
@@ -1667,6 +1668,38 @@ app.post('/api/sms/sender/verification-process', async (c) => {
         request.business_name, 
         request.business_registration_number
       ).run()
+
+      // 2. Aligo API로 발신번호 등록
+      try {
+        const aligoUserId = c.env.ALIGO_USER_ID || ''
+        const aligoApiKey = c.env.ALIGO_API_KEY || ''
+        
+        if (!aligoUserId || !aligoApiKey) {
+          console.warn('Aligo API credentials not configured')
+        } else {
+          const aligoResponse = await fetch('https://apis.aligo.in/sender/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({
+              user_id: aligoUserId,
+              key: aligoApiKey,
+              sender: request.phone_number.replace(/-/g, ''),
+              comment: `${request.business_name} - 승인일: ${new Date().toLocaleDateString('ko-KR')}`
+            })
+          })
+
+          const aligoData = await aligoResponse.json()
+          console.log('Aligo API response:', aligoData)
+
+          if (aligoData.result_code !== '1') {
+            console.error('Aligo sender registration failed:', aligoData)
+            // 실패해도 신청은 승인 상태 유지 (수동으로 처리 가능)
+          }
+        }
+      } catch (aligoErr) {
+        console.error('Aligo API error:', aligoErr)
+        // 에러가 발생해도 신청은 승인 상태 유지
+      }
     }
 
     return c.json({ 
@@ -17850,19 +17883,22 @@ app.get('/sms/sender/request', (c) => {
 
                     const data = await response.json()
 
+                    console.log('API Response:', data) // 디버깅용
+
                     if (data.success) {
-                        alert('발신번호 인증 신청이 완료되었습니다!\\n관리자 승인 후 사용 가능합니다. (평일 기준 2~3일 소요)')
+                        alert('✅ 발신번호 인증 신청이 완료되었습니다!\\n관리자 승인 후 사용 가능합니다. (평일 기준 2~3일 소요)')
                         document.getElementById('verificationForm').reset()
                         // 모든 프리뷰 초기화
                         document.querySelectorAll('.upload-preview').forEach(p => p.classList.add('hidden'))
                         document.querySelectorAll('.upload-placeholder').forEach(p => p.classList.remove('hidden'))
                         loadRequests()
                     } else {
-                        alert(data.error || '신청 중 오류가 발생했습니다.')
+                        console.error('API Error:', data.error)
+                        alert('❌ 신청 실패: ' + (data.error || '알 수 없는 오류가 발생했습니다.'))
                     }
                 } catch (err) {
                     console.error('Submission error:', err)
-                    alert('신청 중 오류가 발생했습니다: ' + err.message)
+                    alert('❌ 신청 중 오류가 발생했습니다: ' + err.message)
                 } finally {
                     submitButton.disabled = false
                     submitButton.textContent = '신청하기'
