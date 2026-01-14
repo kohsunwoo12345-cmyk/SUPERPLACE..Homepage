@@ -16851,6 +16851,88 @@ app.get('/admin/contacts', async (c) => {
   `)
 })
 
+// 🔧 임시 DB 초기화 API (관리자 전용 - 한 번만 실행)
+app.post('/api/admin/init-sender-table', async (c) => {
+  try {
+    const { adminSecret } = await c.req.json()
+    
+    // 간단한 보안 체크 (실제로는 더 강력한 인증 필요)
+    if (adminSecret !== 'superplace-init-2026') {
+      return c.json({ success: false, error: '권한이 없습니다.' }, 403)
+    }
+
+    console.log('Creating sender_verification_requests table...')
+
+    // 테이블 생성
+    await c.env.DB.prepare(`
+      CREATE TABLE IF NOT EXISTS sender_verification_requests (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        phone_number TEXT NOT NULL,
+        business_name TEXT NOT NULL,
+        business_registration_number TEXT NOT NULL,
+        business_registration_image TEXT NOT NULL,
+        certificate_image TEXT,
+        employment_cert_image TEXT,
+        contract_image TEXT,
+        request_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+        status TEXT DEFAULT 'pending',
+        admin_note TEXT,
+        rejection_reason TEXT,
+        processed_by INTEGER,
+        processed_date DATETIME,
+        FOREIGN KEY (user_id) REFERENCES users(id),
+        FOREIGN KEY (processed_by) REFERENCES users(id)
+      )
+    `).run()
+
+    // 인덱스 생성
+    await c.env.DB.prepare(`
+      CREATE INDEX IF NOT EXISTS idx_sender_verification_user_id ON sender_verification_requests(user_id)
+    `).run()
+
+    await c.env.DB.prepare(`
+      CREATE INDEX IF NOT EXISTS idx_sender_verification_status ON sender_verification_requests(status)
+    `).run()
+
+    await c.env.DB.prepare(`
+      CREATE INDEX IF NOT EXISTS idx_sender_verification_phone ON sender_verification_requests(phone_number)
+    `).run()
+
+    // sender_ids 테이블에 컬럼 추가 (이미 있으면 무시됨)
+    try {
+      await c.env.DB.prepare(`ALTER TABLE sender_ids ADD COLUMN verification_request_id INTEGER`).run()
+    } catch (e) {
+      console.log('verification_request_id column already exists or error:', e.message)
+    }
+
+    try {
+      await c.env.DB.prepare(`ALTER TABLE sender_ids ADD COLUMN business_name TEXT`).run()
+    } catch (e) {
+      console.log('business_name column already exists or error:', e.message)
+    }
+
+    try {
+      await c.env.DB.prepare(`ALTER TABLE sender_ids ADD COLUMN business_registration_number TEXT`).run()
+    } catch (e) {
+      console.log('business_registration_number column already exists or error:', e.message)
+    }
+
+    console.log('Table creation complete!')
+
+    return c.json({ 
+      success: true, 
+      message: '✅ sender_verification_requests 테이블이 생성되었습니다!' 
+    })
+  } catch (err) {
+    console.error('Init table error:', err)
+    return c.json({ 
+      success: false, 
+      error: '테이블 생성 실패: ' + err.message 
+    }, 500)
+  }
+})
+
 // 권한 관리 API
 // 사용자 권한 조회 API
 app.get('/api/user/:id/permissions', async (c) => {
