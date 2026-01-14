@@ -16830,9 +16830,27 @@ app.get('/admin/dashboard', async (c) => {
   
   try {
     // 통계 데이터 조회
-    const usersCount = await env.DB.prepare('SELECT COUNT(*) as count FROM users').all()
-    const contactsCount = await env.DB.prepare('SELECT COUNT(*) as count FROM contacts').all()
-    const pendingContacts = await env.DB.prepare('SELECT COUNT(*) as count FROM contacts WHERE status = "pending"').all()
+    let usersCount = { results: [{ count: 0 }] }
+    let contactsCount = { results: [{ count: 0 }] }
+    let pendingContacts = { results: [{ count: 0 }] }
+    
+    try {
+      usersCount = await env.DB.prepare('SELECT COUNT(*) as count FROM users').all()
+    } catch (e) {
+      console.error('Users count error:', e)
+    }
+    
+    try {
+      contactsCount = await env.DB.prepare('SELECT COUNT(*) as count FROM contacts').all()
+    } catch (e) {
+      console.error('Contacts count error:', e)
+    }
+    
+    try {
+      pendingContacts = await env.DB.prepare('SELECT COUNT(*) as count FROM contacts WHERE status = "pending"').all()
+    } catch (e) {
+      console.error('Pending contacts error:', e)
+    }
     
     // SMS 통계 조회
     let smsStats = { results: [{ total_sent: 0, success_count: 0, failed_count: 0 }] }
