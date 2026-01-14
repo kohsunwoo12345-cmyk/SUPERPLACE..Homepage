@@ -17760,7 +17760,7 @@ app.get('/sms/sender/request', (c) => {
                     }
                 } catch (err) {
                     console.error('Submission error:', err)
-                    alert('신청 중 오류가 발생했습니다: ' + error.message)
+                    alert('신청 중 오류가 발생했습니다: ' + err.message)
                 } finally {
                     submitButton.disabled = false
                     submitButton.textContent = '신청하기'
