@@ -9054,12 +9054,32 @@ app.get('/tools/landing-builder', (c) => {
                             </div>
                         </div>
                         <div>
+                            <label class="block text-sm font-medium text-gray-900 mb-2">사용 교재 (1개당 한 줄)</label>
+                            <textarea name="textbooks" rows="2" placeholder="중등 수학 2-1&#10;문법이 쓰기다&#10;영단어 암기장 LEVEL 3" class="w-full px-4 py-3 border border-gray-300 rounded-xl"></textarea>
+                            <p class="text-xs text-gray-500 mt-1">💡 비워두면 표시되지 않습니다</p>
+                        </div>
+                        <div class="grid grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-900 mb-2">출석률 (%)</label>
+                                <input type="number" name="attendanceRate" placeholder="95" min="0" max="100" class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-900 mb-2">출석 일수</label>
+                                <input type="number" name="attendanceDays" placeholder="19" min="0" class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-900 mb-2">총 일수</label>
+                                <input type="number" name="totalDays" placeholder="20" min="0" class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                            </div>
+                        </div>
+                        <div>
                             <label class="block text-sm font-medium text-gray-900 mb-2">이달의 성과 (1개당 한 줄) *</label>
                             <textarea name="achievements" rows="3" placeholder="중간고사 영어 90점 달성&#10;단어 암기 500개 완료&#10;모의고사 3등급에서 2등급 향상" required class="w-full px-4 py-3 border border-gray-300 rounded-xl"></textarea>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-900 mb-2">개선이 필요한 부분 (1개당 한 줄) *</label>
-                            <textarea name="improvements" rows="2" placeholder="독해 속도 향상 필요&#10;문법 심화 학습 권장" required class="w-full px-4 py-3 border border-gray-300 rounded-xl"></textarea>
+                            <label class="block text-sm font-medium text-gray-900 mb-2">개선이 필요한 부분 (1개당 한 줄)</label>
+                            <textarea name="improvements" rows="2" placeholder="독해 속도 향상 필요&#10;문법 심화 학습 권장" class="w-full px-4 py-3 border border-gray-300 rounded-xl"></textarea>
+                            <p class="text-xs text-gray-500 mt-1">💡 비워두면 표시되지 않습니다</p>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-900 mb-2">다음 달 목표 (1개당 한 줄) *</label>
@@ -9345,6 +9365,7 @@ app.get('/tools/landing-builder', (c) => {
             if (data.achievements) data.achievements = data.achievements.split('\\n').filter(s => s.trim());
             if (data.improvements) data.improvements = data.improvements.split('\\n').filter(s => s.trim());
             if (data.nextGoals) data.nextGoals = data.nextGoals.split('\\n').filter(s => s.trim());
+            if (data.textbooks) data.textbooks = data.textbooks.split('\\n').filter(s => s.trim());
 
             // 제목 생성
             let title = '';
