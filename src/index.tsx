@@ -20609,5 +20609,98 @@ app.get('/students/detail/:studentId', (c) => {
   return c.html(studentPages.studentDetailPage)
 })
 
+// DB 초기화 API (프로덕션 환경에서 학생 관리 테이블 생성용)
+app.get('/api/init-student-tables', async (c) => {
+  try {
+    const { DB } = c.env
+    
+    // 학생 정보 테이블 생성 (먼저 생성)
+    await DB.prepare(`
+      CREATE TABLE IF NOT EXISTS students (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        academy_id INTEGER DEFAULT 1,
+        name TEXT NOT NULL,
+        phone TEXT,
+        parent_name TEXT NOT NULL,
+        parent_phone TEXT NOT NULL,
+        parent_email TEXT,
+        grade TEXT NOT NULL,
+        subjects TEXT NOT NULL,
+        enrollment_date DATE NOT NULL,
+        status TEXT DEFAULT 'active',
+        notes TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `).run()
+    
+    // 반(Class) 테이블 생성
+    await DB.prepare(`
+      CREATE TABLE IF NOT EXISTS classes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        academy_id INTEGER DEFAULT 1,
+        class_name TEXT NOT NULL,
+        grade TEXT,
+        description TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `).run()
+    
+    // 과목(Course) 테이블 생성
+    await DB.prepare(`
+      CREATE TABLE IF NOT EXISTS courses (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        academy_id INTEGER DEFAULT 1,
+        course_name TEXT NOT NULL,
+        description TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `).run()
+    
+    // 학생 테이블에 class_id 컬럼 추가 (이미 있으면 무시)
+    try {
+      await DB.prepare(`ALTER TABLE students ADD COLUMN class_id INTEGER`).run()
+    } catch (e) {
+      // 컬럼이 이미 존재하면 무시
+      console.log('class_id column already exists')
+    }
+    
+    // 일일 성과 기록 테이블 생성
+    await DB.prepare(`
+      CREATE TABLE IF NOT EXISTS daily_records (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        student_id INTEGER NOT NULL,
+        course_id INTEGER,
+        record_date DATE NOT NULL,
+        attendance TEXT CHECK(attendance IN ('출석', '지각', '결석', '조퇴')),
+        homework_status TEXT CHECK(homework_status IN ('완료', '미완료', '부분완료')),
+        understanding_level INTEGER CHECK(understanding_level >= 1 AND understanding_level <= 5),
+        participation_level INTEGER CHECK(participation_level >= 1 AND participation_level <= 5),
+        achievement TEXT,
+        memo TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `).run()
+    
+    // 인덱스 생성
+    await DB.prepare(`CREATE INDEX IF NOT EXISTS idx_students_academy_id ON students(academy_id)`).run()
+    await DB.prepare(`CREATE INDEX IF NOT EXISTS idx_classes_academy_id ON classes(academy_id)`).run()
+    await DB.prepare(`CREATE INDEX IF NOT EXISTS idx_courses_academy_id ON courses(academy_id)`).run()
+    await DB.prepare(`CREATE INDEX IF NOT EXISTS idx_students_class_id ON students(class_id)`).run()
+    await DB.prepare(`CREATE INDEX IF NOT EXISTS idx_daily_records_student_id ON daily_records(student_id)`).run()
+    await DB.prepare(`CREATE INDEX IF NOT EXISTS idx_daily_records_date ON daily_records(record_date)`).run()
+    
+    return c.json({
+      success: true,
+      message: '학생 관리 테이블이 성공적으로 생성되었습니다! (students, classes, courses, daily_records)'
+    })
+  } catch (error: any) {
+    return c.json({
+      success: false,
+      error: error.message
+    }, 500)
+  }
+})
+
 export default app
 // Force rebuild Tue Jan 13 09:59:11 UTC 2026
