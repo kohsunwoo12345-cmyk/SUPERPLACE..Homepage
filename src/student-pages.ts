@@ -48,7 +48,12 @@ export const classesPage = `
                         <label class="block text-sm font-medium text-gray-700 mb-2">학년</label>
                         <select id="grade" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
                             <option value="">선택하세요</option>
-                            <option value="초등">초등</option>
+                            <option value="초1">초1</option>
+                            <option value="초2">초2</option>
+                            <option value="초3">초3</option>
+                            <option value="초4">초4</option>
+                            <option value="초5">초5</option>
+                            <option value="초6">초6</option>
                             <option value="중1">중1</option>
                             <option value="중2">중2</option>
                             <option value="중3">중3</option>
@@ -248,7 +253,12 @@ export const studentsListPage = `
                     <label class="block text-sm font-medium text-gray-700 mb-2">학년 필터</label>
                     <select id="gradeFilter" onchange="filterStudents()" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
                         <option value="">전체 학년</option>
-                        <option value="초등">초등</option>
+                        <option value="초1">초1</option>
+                        <option value="초2">초2</option>
+                        <option value="초3">초3</option>
+                        <option value="초4">초4</option>
+                        <option value="초5">초5</option>
+                        <option value="초6">초6</option>
                         <option value="중1">중1</option>
                         <option value="중2">중2</option>
                         <option value="중3">중3</option>
@@ -304,7 +314,12 @@ export const studentsListPage = `
                         <label class="block text-sm font-medium text-gray-700 mb-2">학년 *</label>
                         <select id="studentGrade" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
                             <option value="">선택하세요</option>
-                            <option value="초등">초등</option>
+                            <option value="초1">초1</option>
+                            <option value="초2">초2</option>
+                            <option value="초3">초3</option>
+                            <option value="초4">초4</option>
+                            <option value="초5">초5</option>
+                            <option value="초6">초6</option>
                             <option value="중1">중1</option>
                             <option value="중2">중2</option>
                             <option value="중3">중3</option>
@@ -316,7 +331,45 @@ export const studentsListPage = `
                     
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">수강 과목 *</label>
-                        <input type="text" id="studentSubjects" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="영어, 수학">
+                        <div id="subjectsCheckboxes" class="grid grid-cols-2 gap-2 p-3 border border-gray-300 rounded-lg">
+                            <label class="flex items-center space-x-2">
+                                <input type="checkbox" name="subject" value="영어" class="w-4 h-4 text-blue-600">
+                                <span class="text-sm">영어</span>
+                            </label>
+                            <label class="flex items-center space-x-2">
+                                <input type="checkbox" name="subject" value="수학" class="w-4 h-4 text-blue-600">
+                                <span class="text-sm">수학</span>
+                            </label>
+                            <label class="flex items-center space-x-2">
+                                <input type="checkbox" name="subject" value="과학" class="w-4 h-4 text-blue-600">
+                                <span class="text-sm">과학</span>
+                            </label>
+                            <label class="flex items-center space-x-2">
+                                <input type="checkbox" name="subject" value="국어" class="w-4 h-4 text-blue-600">
+                                <span class="text-sm">국어</span>
+                            </label>
+                            <label class="flex items-center space-x-2">
+                                <input type="checkbox" name="subject" value="프로그램1" class="w-4 h-4 text-blue-600">
+                                <span class="text-sm">프로그램1</span>
+                            </label>
+                            <label class="flex items-center space-x-2">
+                                <input type="checkbox" name="subject" value="프로그램2" class="w-4 h-4 text-blue-600">
+                                <span class="text-sm">프로그램2</span>
+                            </label>
+                            <label class="flex items-center space-x-2">
+                                <input type="checkbox" name="subject" value="프로그램3" class="w-4 h-4 text-blue-600">
+                                <span class="text-sm">프로그램3</span>
+                            </label>
+                            <label class="flex items-center space-x-2">
+                                <input type="checkbox" name="subject" value="프로그램4" class="w-4 h-4 text-blue-600">
+                                <span class="text-sm">프로그램4</span>
+                            </label>
+                            <label class="flex items-center space-x-2">
+                                <input type="checkbox" name="subject" value="프로그램5" class="w-4 h-4 text-blue-600">
+                                <span class="text-sm">프로그램5</span>
+                            </label>
+                        </div>
+                        <input type="hidden" id="studentSubjects" required>
                     </div>
                     
                     <div>
@@ -495,11 +548,19 @@ export const studentsListPage = `
             document.getElementById('studentPhone').value = student.phone || '';
             document.getElementById('studentClass').value = student.class_id || '';
             document.getElementById('studentGrade').value = student.grade;
-            document.getElementById('studentSubjects').value = student.subjects;
             document.getElementById('enrollmentDate').value = student.enrollment_date;
             document.getElementById('parentName').value = student.parent_name;
             document.getElementById('parentPhone').value = student.parent_phone;
             document.getElementById('studentMemo').value = student.notes || '';
+            
+            // 체크박스 초기화 후 선택된 과목 체크
+            document.querySelectorAll('input[name="subject"]').forEach(cb => cb.checked = false);
+            const subjects = student.subjects.split(',').map(s => s.trim());
+            subjects.forEach(subject => {
+                const checkbox = document.querySelector(\`input[name="subject"][value="\${subject}"]\`);
+                if (checkbox) checkbox.checked = true;
+            });
+            
             document.getElementById('studentModal').classList.remove('hidden');
         }
 
@@ -523,6 +584,15 @@ export const studentsListPage = `
         document.getElementById('studentForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
+            // 체크박스에서 선택된 과목 수집
+            const selectedSubjects = Array.from(document.querySelectorAll('input[name="subject"]:checked'))
+                .map(cb => cb.value);
+            
+            if (selectedSubjects.length === 0) {
+                alert('수강 과목을 최소 1개 이상 선택해주세요.');
+                return;
+            }
+            
             const studentId = document.getElementById('studentId').value;
             const payload = {
                 academyId,
@@ -532,7 +602,7 @@ export const studentsListPage = `
                 parentName: document.getElementById('parentName').value,
                 parentPhone: document.getElementById('parentPhone').value,
                 grade: document.getElementById('studentGrade').value,
-                subjects: document.getElementById('studentSubjects').value,
+                subjects: selectedSubjects.join(', '),
                 enrollmentDate: document.getElementById('enrollmentDate').value,
                 memo: document.getElementById('studentMemo').value
             };
