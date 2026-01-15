@@ -863,6 +863,133 @@ app.delete('/api/sms/templates/:templateId', async (c) => {
   }
 })
 
+// DB 초기화 API (테스트용)
+app.post('/api/init-db', async (c) => {
+  try {
+    // users 테이블 생성
+    await c.env.DB.prepare(`
+      CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        email TEXT UNIQUE NOT NULL,
+        name TEXT NOT NULL,
+        password TEXT NOT NULL,
+        academy_id INTEGER NOT NULL DEFAULT 1,
+        role TEXT DEFAULT 'teacher',
+        balance INTEGER DEFAULT 0,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `).run()
+
+    // point_transactions 테이블 생성
+    await c.env.DB.prepare(`
+      CREATE TABLE IF NOT EXISTS point_transactions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        amount INTEGER NOT NULL,
+        balance_before INTEGER DEFAULT 0,
+        balance_after INTEGER NOT NULL,
+        transaction_type TEXT NOT NULL,
+        description TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id)
+      )
+    `).run()
+
+    // sender_ids 테이블 생성
+    await c.env.DB.prepare(`
+      CREATE TABLE IF NOT EXISTS sender_ids (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        phone_number TEXT NOT NULL,
+        verification_method TEXT NOT NULL,
+        verification_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+        status TEXT DEFAULT 'verified',
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id)
+      )
+    `).run()
+
+    // sms_pricing 테이블 생성
+    await c.env.DB.prepare(`
+      CREATE TABLE IF NOT EXISTS sms_pricing (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        message_type TEXT NOT NULL,
+        price INTEGER NOT NULL,
+        description TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `).run()
+
+    // 기본 사용자 추가 (없으면)
+    const existingUser = await c.env.DB.prepare('SELECT id FROM users WHERE id = 1').first()
+    if (!existingUser) {
+      await c.env.DB.prepare(`
+        INSERT INTO users (id, email, name, password, academy_id, role, balance)
+        VALUES (1, 'test@test.com', '테스트 사용자', 'password', 1, 'teacher', 0)
+      `).run()
+    }
+
+    // 기본 요금 추가 (없으면)
+    const existingPricing = await c.env.DB.prepare('SELECT id FROM sms_pricing WHERE message_type = ?').bind('SMS').first()
+    if (!existingPricing) {
+      await c.env.DB.prepare(`
+        INSERT INTO sms_pricing (message_type, price, description)
+        VALUES ('SMS', 20, '단문 SMS (90바이트 이하)'),
+               ('LMS', 50, '장문 SMS (90바이트 초과)')
+      `).run()
+    }
+
+    return c.json({ 
+      success: true, 
+      message: 'DB 초기화 완료',
+      tables: ['users', 'point_transactions', 'sender_ids', 'sms_pricing']
+    })
+  } catch (err) {
+    console.error('DB Init error:', err)
+    return c.json({ success: false, error: 'DB 초기화 실패: ' + err.message }, 500)
+  }
+})
+
+// 포인트 충전 API (테스트용)
+app.post('/api/points/charge', async (c) => {
+  try {
+    const { userId, amount } = await c.req.json()
+    
+    if (!userId || !amount) {
+      return c.json({ success: false, error: '사용자 ID와 충전 금액이 필요합니다.' }, 400)
+    }
+
+    // 사용자 조회
+    const user = await c.env.DB.prepare('SELECT * FROM users WHERE id = ?').bind(userId).first()
+    if (!user) {
+      return c.json({ success: false, error: '사용자를 찾을 수 없습니다.' }, 404)
+    }
+
+    const balanceBefore = user.balance || 0
+
+    // 포인트 충전
+    await c.env.DB.prepare('UPDATE users SET balance = balance + ? WHERE id = ?').bind(amount, userId).run()
+
+    // 거래 내역 기록
+    await c.env.DB.prepare(`
+      INSERT INTO point_transactions (user_id, amount, balance_before, balance_after, transaction_type, description, created_at)
+      VALUES (?, ?, ?, ?, 'charge', '테스트 충전', CURRENT_TIMESTAMP)
+    `).bind(userId, amount, balanceBefore, balanceBefore + amount).run()
+
+    const updatedUser = await c.env.DB.prepare('SELECT balance FROM users WHERE id = ?').bind(userId).first()
+
+    return c.json({ 
+      success: true, 
+      message: '포인트가 충전되었습니다.',
+      balance: updatedUser.balance
+    })
+  } catch (err: any) {
+    console.error('Charge points error:', err)
+    return c.json({ success: false, error: '포인트 충전 실패: ' + err.message }, 500)
+  }
+})
+
 // SMS 발송 API (핵심 로직 - 선차감 후발송)
 app.post('/api/sms/send', async (c) => {
   try {
