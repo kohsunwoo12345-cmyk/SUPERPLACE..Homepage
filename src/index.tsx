@@ -3272,14 +3272,13 @@ function generateStudentReportHTML(data: any): string {
       * { font-family: 'Pretendard Variable', sans-serif; }
       @keyframes slideInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
       .animate-slide { animation: slideInUp 0.6s ease-out; }
-      .pattern-dots { background-image: radial-gradient(circle at 2px 2px, rgba(255,255,255,0.15) 2px, transparent 0); background-size: 30px 30px; }
     </style>
 </head>
 <body class="bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 min-h-screen py-4 sm:py-8 px-3 sm:px-6">
     <div class="max-w-4xl mx-auto">
         <!-- Header Card -->
         <div class="bg-white rounded-2xl sm:rounded-3xl shadow-xl sm:shadow-2xl overflow-hidden mb-4 sm:mb-8 animate-slide">
-            <div class="bg-gradient-to-r from-green-400 via-blue-500 to-purple-600 pattern-dots text-white p-6 sm:p-10 text-center relative">
+            <div class="bg-gradient-to-r from-green-400 via-blue-500 to-purple-600 text-white p-6 sm:p-10 text-center relative">
                 <div class="absolute top-2 right-2 sm:top-4 sm:right-4 bg-white/20 backdrop-blur-sm px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-bold">
                     <i class="fas fa-calendar-alt mr-1 sm:mr-2"></i>${month}
                 </div>
