@@ -16110,17 +16110,23 @@ app.get('/admin/users', async (c) => {
             window.closeModal = closeModal;
             window.logout = logout;
 
-            // 이벤트 위임으로 버튼 클릭 처리 (더 안전한 방식)
-            document.addEventListener('DOMContentLoaded', function() {
-                // 모든 admin-action-btn 클래스 버튼에 이벤트 리스너 추가
+            // 이벤트 위임으로 버튼 클릭 처리 (즉시 실행)
+            (function() {
+                console.log('🔥 Admin buttons event listener initialized');
+                
                 document.body.addEventListener('click', function(e) {
                     const button = e.target.closest('button[data-action]');
                     if (!button) return;
+
+                    console.log('🎯 Button clicked:', button.dataset.action);
 
                     const action = button.dataset.action;
                     const userId = button.dataset.userId;
                     const userName = button.dataset.userName;
                     const userPoints = button.dataset.userPoints;
+
+                    e.preventDefault();
+                    e.stopPropagation();
 
                     switch(action) {
                         case 'changePassword':
@@ -16140,7 +16146,7 @@ app.get('/admin/users', async (c) => {
                             break;
                     }
                 });
-            });
+            })();
         </script>
     </body>
     </html>
