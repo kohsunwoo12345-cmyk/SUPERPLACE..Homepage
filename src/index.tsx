@@ -16005,6 +16005,8 @@ app.get('/admin/users', async (c) => {
 
             // 포인트 지급
             async function givePoints(userId, userName, currentPoints) {
+                // data 속성에서 전달된 문자열을 숫자로 변환
+                currentPoints = parseInt(currentPoints) || 0;
                 const pointsStr = prompt(userName + '님에게 지급할 포인트를 입력하세요 (현재: ' + currentPoints + 'P):');
                 if (!pointsStr) return;
                 
@@ -16035,6 +16037,8 @@ app.get('/admin/users', async (c) => {
 
             // 포인트 차감 (환수)
             async function deductPoints(userId, userName, currentPoints) {
+                // data 속성에서 전달된 문자열을 숫자로 변환
+                currentPoints = parseInt(currentPoints) || 0;
                 const pointsStr = prompt(userName + '님의 포인트를 차감합니다 (현재: ' + currentPoints.toLocaleString() + 'P) - 차감할 포인트를 입력하세요:');
                 if (!pointsStr) return;
                 
@@ -16095,6 +16099,16 @@ app.get('/admin/users', async (c) => {
                     alert('로그인 중 오류가 발생했습니다.');
                 }
             }
+
+            // 함수들을 전역 window 객체에 명시적으로 할당
+            window.changePassword = changePassword;
+            window.givePoints = givePoints;
+            window.deductPoints = deductPoints;
+            window.loginAs = loginAs;
+            window.managePermissions = managePermissions;
+            window.savePermissions = savePermissions;
+            window.closeModal = closeModal;
+            window.logout = logout;
         </script>
     </body>
     </html>
