@@ -8674,7 +8674,9 @@ app.get('/tools/parent-message', (c) => {
             }
 
             // 페이지 로드 시 초기화
-            initPage();
+            window.addEventListener('DOMContentLoaded', function() {
+                initPage();
+            });
             }
         </script>
     </body>
