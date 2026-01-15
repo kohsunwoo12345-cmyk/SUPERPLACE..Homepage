@@ -1773,6 +1773,106 @@ app.get('/api/admin/sender/verification-requests', async (c) => {
   }
 })
 
+// 서류 양식 다운로드 API
+app.get('/api/downloads/consent-form', async (c) => {
+  // 발신번호 사용 동의 위임장 (업로드된 PDF)
+  const pdfUrl = 'https://www.genspark.ai/api/files/s/00mIWEyz'
+  const response = await fetch(pdfUrl)
+  const blob = await response.arrayBuffer()
+  
+  return new Response(blob, {
+    headers: {
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': 'attachment; filename="발신번호_사용_동의_위임장.pdf"'
+    }
+  })
+})
+
+app.get('/api/downloads/contract', async (c) => {
+  // 문자메시지 이용계약서 (업로드된 PDF)
+  const pdfUrl = 'https://www.genspark.ai/api/files/s/ngXcQTuf'
+  const response = await fetch(pdfUrl)
+  const blob = await response.arrayBuffer()
+  
+  return new Response(blob, {
+    headers: {
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': 'attachment; filename="문자메시지_이용계약서.pdf"'
+    }
+  })
+})
+
+app.get('/api/downloads/employment-cert', async (c) => {
+  // 재직증명서 양식 (간단한 HTML 템플릿)
+  return c.html(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <title>재직증명서</title>
+      <style>
+        body { font-family: 'Malgun Gothic', sans-serif; padding: 60px; }
+        h1 { text-align: center; font-size: 32px; margin-bottom: 40px; }
+        table { width: 100%; border-collapse: collapse; margin: 30px 0; }
+        th, td { border: 1px solid #000; padding: 12px; text-align: left; }
+        th { background-color: #f0f0f0; font-weight: bold; }
+        .info { margin: 30px 0; line-height: 2; }
+        .signature { text-align: right; margin-top: 60px; }
+      </style>
+    </head>
+    <body>
+      <h1>재 직 증 명 서</h1>
+      
+      <div class="info">
+        <table>
+          <tr>
+            <th width="30%">성명 (한글)</th>
+            <td></td>
+            <th width="30%">주민등록번호</th>
+            <td></td>
+          </tr>
+          <tr>
+            <th>주소</th>
+            <td colspan="3"></td>
+          </tr>
+        </table>
+        
+        <table>
+          <tr>
+            <th width="30%">근무부서</th>
+            <td></td>
+            <th width="30%">직위</th>
+            <td></td>
+          </tr>
+          <tr>
+            <th>재직기간</th>
+            <td colspan="3">20   년   월   일 부터 20   년   월   일 현재까지</td>
+          </tr>
+          <tr>
+            <th>제출용도</th>
+            <td colspan="3"></td>
+          </tr>
+        </table>
+      </div>
+      
+      <p style="text-align: center; margin: 40px 0;">
+        위의 기재사항이 사실과 다름없음을 증명합니다.
+      </p>
+      
+      <div class="signature">
+        <p>년 &nbsp;&nbsp;&nbsp; 월 &nbsp;&nbsp;&nbsp; 일</p>
+        <br><br>
+        <p>회 사 명: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (인)</p>
+        <p>대 표 자: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (인)</p>
+        <p>사업자등록번호:</p>
+        <p>주 소:</p>
+        <p>전 화:</p>
+      </div>
+    </body>
+    </html>
+  `)
+})
+
 // 내 입금 신청 내역 조회 API
 app.get('/api/deposit/my-requests/:userId', async (c) => {
   try {
@@ -17591,15 +17691,27 @@ app.get('/sms/sender/request', (c) => {
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
                         <div class="text-sm text-blue-800">
-                            <p class="font-bold mb-2">📋 필요 서류 및 절차</p>
-                            <ul class="space-y-1 list-disc list-inside ml-2">
+                            <p class="font-bold mb-3">📋 필요 서류 및 절차</p>
+                            <ul class="space-y-2 list-disc list-inside ml-2">
                                 <li><strong>사업자 등록증</strong> (필수)</li>
-                                <li><strong>통신사 가입증명원</strong> (필수, 발신번호 명확히 표시: 010-1234-5678 형식)</li>
-                                <li><strong>재직증명서</strong> (필수, 도장 날인 필수)</li>
+                                <li><strong>통신사 가입증명원</strong> (필수)
+                                    <ul class="ml-6 mt-1 text-xs space-y-1">
+                                        <li>✓ 발급일자: 최근 1개월 이내</li>
+                                        <li>✓ 가입자 정보(가입번호, 가입자명, 개통일자, 발급일자) 모두 기재</li>
+                                        <li>✓ 발신번호가 010-1234-5678 형식으로 명확히 표시</li>
+                                        <li>✓ 가려진 정보 없이, 잘린 부분 없이 첨부</li>
+                                    </ul>
+                                </li>
+                                <li><strong>대표자 신분증</strong> 또는 <strong>재직자 신분증 + 재직증명서</strong> (필수)
+                                    <ul class="ml-6 mt-1 text-xs space-y-1">
+                                        <li>✓ 주민번호 뒷자리, 민감정보 마스킹 필수</li>
+                                        <li>✓ 재직증명서: 도장 날인 필수</li>
+                                    </ul>
+                                </li>
                                 <li><strong>문자메시지 이용계약서</strong> (필수, 도장 날인 필수)</li>
                                 <li>파일 형식: JPG, PNG, PDF (각 파일 최대 5MB)</li>
-                                <li>승인까지 평일 기준 2~3일 소요</li>
-                                <li>모든 서류는 접수일 기준 최근 1개월 이내만 인정</li>
+                                <li>승인 소요: 평일 업무시간(10시~17시) 내 평균 1~3시간 소요</li>
+                                <li class="text-red-700 font-bold">⚠️ 모든 서류는 접수일 기준 최근 1개월 이내만 인정</li>
                             </ul>
                         </div>
                     </div>
