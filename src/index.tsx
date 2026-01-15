@@ -777,16 +777,16 @@ app.get('/api/sms/templates', async (c) => {
 // 템플릿 생성
 app.post('/api/sms/templates', async (c) => {
   try {
-    const { userId, folderId, title, message } = await c.req.json()
+    const { userId, folderId, title, message, receivers } = await c.req.json()
     
     if (!userId || !title || !message) {
       return c.json({ success: false, error: '필수 정보가 누락되었습니다.' }, 400)
     }
 
     const result = await c.env.DB.prepare(`
-      INSERT INTO sms_templates (user_id, folder_id, title, message)
-      VALUES (?, ?, ?, ?)
-    `).bind(userId, folderId || null, title, message).run()
+      INSERT INTO sms_templates (user_id, folder_id, title, message, receivers)
+      VALUES (?, ?, ?, ?, ?)
+    `).bind(userId, folderId || null, title, message, receivers || null).run()
 
     return c.json({ success: true, templateId: result.meta.last_row_id })
   } catch (err) {
@@ -18737,10 +18737,22 @@ app.get('/sms/compose', (c) => {
                     const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
                     const rows = XLSX.utils.sheet_to_json(firstSheet);
 
+                    console.log('Excel rows:', rows); // 디버깅용
+                    console.log('First row keys:', rows.length > 0 ? Object.keys(rows[0]) : 'No rows');
+
                     let addedCount = 0;
                     rows.forEach(row => {
-                        const name = row['이름'] || row['name'] || row['Name'];
-                        const phone = String(row['전화번호'] || row['phone'] || row['Phone'] || '').replace(/[^0-9]/g, '');
+                        // 다양한 컬럼명 지원
+                        const name = row['이름'] || row['성명'] || row['name'] || row['Name'] || row['NAME'] || 
+                                    row['학생명'] || row['학생이름'] || row['고객명'] || '';
+                        
+                        const phoneRaw = row['전화번호'] || row['휴대폰'] || row['연락처'] || row['핸드폰'] ||
+                                        row['phone'] || row['Phone'] || row['PHONE'] || row['mobile'] || 
+                                        row['Mobile'] || row['tel'] || row['TEL'] || '';
+                        
+                        const phone = String(phoneRaw).replace(/[^0-9]/g, '');
+                        
+                        console.log('Parsed:', { name, phone, phoneLength: phone.length }); // 디버깅용
                         
                         if (name && phone && phone.length >= 10) {
                             receivers.push({ name, phone });
@@ -18748,11 +18760,17 @@ app.get('/sms/compose', (c) => {
                         }
                     });
 
-                    alert(\`✅ \${addedCount}명의 수신자가 추가되었습니다.\`);
+                    if (addedCount === 0 && rows.length > 0) {
+                        alert('❌ 엑셀 파일에서 데이터를 읽을 수 없습니다.\\n\\n컬럼명을 확인해주세요:\\n- 이름: "이름", "성명", "name" 등\\n- 전화번호: "전화번호", "휴대폰", "phone" 등\\n\\n브라우저 콘솔(F12)에서 자세한 정보를 확인하세요.');
+                    } else {
+                        alert(\`✅ \${addedCount}명의 수신자가 추가되었습니다.\`);
+                    }
+                    
                     renderReceivers();
+                    updateCost();
                 } catch (err) {
                     console.error('Excel upload error:', err);
-                    alert('엑셀 파일 업로드 중 오류가 발생했습니다.');
+                    alert('엑셀 파일 업로드 중 오류가 발생했습니다.\\n' + err.message);
                 }
                 
                 event.target.value = '';
@@ -18939,8 +18957,22 @@ app.get('/sms/compose', (c) => {
             function loadTemplateMessage(templateId) {
                 const template = templates.find(t => t.id === templateId);
                 if (template) {
+                    // 메시지 불러오기
                     document.getElementById('message').value = template.message;
                     updateByteCount();
+                    
+                    // 수신자 불러오기
+                    if (template.receivers) {
+                        try {
+                            const savedReceivers = JSON.parse(template.receivers);
+                            receivers = savedReceivers;
+                            renderReceivers();
+                            updateCost();
+                            alert(\`✅ 템플릿 불러오기 완료!\\n메시지 + 수신자 \${receivers.length}명\`);
+                        } catch (err) {
+                            console.error('Failed to parse receivers:', err);
+                        }
+                    }
                 }
             }
 
@@ -18963,13 +18995,14 @@ app.get('/sms/compose', (c) => {
                             userId: currentUserId,
                             folderId: currentFolderId,
                             title,
-                            message
+                            message,
+                            receivers: JSON.stringify(receivers) // 수신자 정보도 저장
                         })
                     });
                     
                     const data = await response.json();
                     if (data.success) {
-                        alert('✅ 템플릿이 저장되었습니다!');
+                        alert(\`✅ 템플릿이 저장되었습니다!\\n수신자: \${receivers.length}명\`);
                         await loadTemplates();
                     } else {
                         alert('❌ ' + data.error);
