@@ -3814,6 +3814,230 @@ app.post('/api/generate-parent-message', async (c) => {
   }
 })
 
+// 학생 기록 기반 학부모 메시지 생성 API (신규)
+app.post('/api/generate-parent-message-from-records', async (c) => {
+  try {
+    const { studentId, studentName, grade, subjects, parentName, records, additionalMessage } = await c.req.json()
+    
+    if (!studentId || !studentName) {
+      return c.json({ success: false, error: '학생 정보가 필요합니다.' }, 400)
+    }
+
+    // 기록 분석
+    const recordsSummary = analyzeRecords(records)
+    
+    // AI 프롬프트 생성
+    const aiPrompt = generateAIPrompt(studentName, grade, subjects, parentName, recordsSummary, additionalMessage)
+    
+    // OpenAI API 호출 (환경 변수에 API 키가 있으면)
+    const apiKey = c.env.OPENAI_API_KEY
+    const baseURL = c.env.OPENAI_BASE_URL || 'https://api.openai.com/v1'
+
+    if (apiKey) {
+      try {
+        const response = await fetch(`${baseURL}/chat/completions`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`
+          },
+          body: JSON.stringify({
+            model: 'gpt-4o-mini',
+            messages: [
+              {
+                role: 'system',
+                content: `당신은 학원 원장님입니다. 학부모님께 학생의 학습 현황을 따뜻하고 격려하는 말투로 전달하는 메시지를 작성합니다.
+
+규칙:
+1. 존댓말 사용 (학부모님께)
+2. 따뜻하고 긍정적인 톤
+3. 구체적인 데이터 기반 칭찬 (출석률, 과제 완성률, 이해도 등)
+4. 개선이 필요한 부분도 격려와 함께 전달
+5. 앞으로의 학습 방향 제시
+6. 250-350자 정도의 적절한 길이
+7. 이모지 2-3개 자연스럽게 사용
+8. 학부모님이 안심하고 신뢰할 수 있는 내용
+9. 최근 7일간의 구체적인 학습 기록을 바탕으로 작성`
+              },
+              {
+                role: 'user',
+                content: aiPrompt
+              }
+            ],
+            temperature: 0.8,
+            max_tokens: 600
+          })
+        })
+
+        const data = await response.json()
+        
+        if (response.ok && data.choices && data.choices[0]) {
+          return c.json({ 
+            success: true, 
+            message: data.choices[0].message.content,
+            metadata: {
+              studentName,
+              grade,
+              subjects,
+              mode: 'ai',
+              recordsCount: records.length
+            }
+          })
+        }
+      } catch (apiError) {
+        console.error('OpenAI API error:', apiError)
+        // API 실패 시 템플릿으로 폴백
+      }
+    }
+
+    // 템플릿 기반 메시지 생성 (폴백)
+    const templateMessage = generateTemplateMessageFromRecords(
+      studentName, 
+      grade, 
+      subjects, 
+      parentName, 
+      recordsSummary, 
+      additionalMessage
+    )
+    
+    return c.json({ 
+      success: true, 
+      message: templateMessage,
+      metadata: {
+        studentName,
+        grade,
+        subjects,
+        mode: 'template',
+        recordsCount: records.length
+      }
+    })
+  } catch (err) {
+    console.error('Generate message from records error:', err)
+    return c.json({ success: false, error: '메시지 생성 실패: ' + (err as Error).message }, 500)
+  }
+})
+
+// 기록 분석 함수
+function analyzeRecords(records: any[]) {
+  if (!records || records.length === 0) {
+    return {
+      totalDays: 0,
+      attendanceRate: 0,
+      homeworkRate: 0,
+      avgUnderstanding: 0,
+      avgParticipation: 0,
+      achievements: [],
+      memos: [],
+      latestRecords: []
+    }
+  }
+
+  const totalDays = records.length
+  const attendanceCount = records.filter(r => r.attendance === '출석').length
+  const homeworkCompleted = records.filter(r => r.homework_status === '완료').length
+  
+  const understandingScores = records.filter(r => r.understanding_level).map(r => r.understanding_level)
+  const participationScores = records.filter(r => r.participation_level).map(r => r.participation_level)
+  
+  const avgUnderstanding = understandingScores.length > 0 
+    ? (understandingScores.reduce((a, b) => a + b, 0) / understandingScores.length).toFixed(1)
+    : '0'
+  
+  const avgParticipation = participationScores.length > 0
+    ? (participationScores.reduce((a, b) => a + b, 0) / participationScores.length).toFixed(1)
+    : '0'
+
+  const achievements = records.filter(r => r.achievement).map(r => r.achievement)
+  const memos = records.filter(r => r.memo).map(r => r.memo)
+
+  return {
+    totalDays,
+    attendanceRate: ((attendanceCount / totalDays) * 100).toFixed(0),
+    homeworkRate: totalDays > 0 ? ((homeworkCompleted / totalDays) * 100).toFixed(0) : '0',
+    avgUnderstanding,
+    avgParticipation,
+    achievements,
+    memos,
+    latestRecords: records.slice(0, 3)
+  }
+}
+
+// AI 프롬프트 생성
+function generateAIPrompt(studentName: string, grade: string, subjects: string, parentName: string, summary: any, additionalMessage: string) {
+  const achievementsList = summary.achievements.length > 0 
+    ? `주요 성과:\n${summary.achievements.slice(0, 3).map((a: string) => `- ${a}`).join('\n')}` 
+    : ''
+  
+  const memosList = summary.memos.length > 0 
+    ? `선생님 메모:\n${summary.memos.slice(0, 3).map((m: string) => `- ${m}`).join('\n')}` 
+    : ''
+  
+  const additionalPart = additionalMessage ? `추가 전달 사항: ${additionalMessage}` : ''
+  
+  return `학생 이름: ${studentName}
+학년: ${grade}
+과목: ${subjects}
+학부모: ${parentName || '학부모'} 님
+
+최근 7일간 학습 기록 분석:
+- 총 수업 일수: ${summary.totalDays}일
+- 출석률: ${summary.attendanceRate}%
+- 과제 완성률: ${summary.homeworkRate}%
+- 평균 이해도: ${summary.avgUnderstanding}/5점
+- 평균 참여도: ${summary.avgParticipation}/5점
+
+${achievementsList}
+
+${memosList}
+
+${additionalPart}
+
+위 정보를 바탕으로 ${parentName || '학부모'} 님께 보낼 따뜻하고 구체적인 메시지를 작성해주세요. 
+학생의 강점을 구체적인 수치와 함께 칭찬하고, 개선이 필요한 부분은 격려와 함께 제시해주세요.`
+}
+
+// 템플릿 기반 메시지 생성 (기록 기반)
+function generateTemplateMessageFromRecords(studentName: string, grade: string, subjects: string, parentName: string, summary: any, additionalMessage: string) {
+  const parentTitle = parentName ? `${parentName} 학부모님` : '학부모님'
+  
+  let message = `안녕하세요, ${parentTitle}! 😊\n\n`
+  message += `${studentName} 학생의 최근 일주일 학습 현황을 전달드립니다.\n\n`
+  
+  // 긍정적인 부분 강조
+  if (parseInt(summary.attendanceRate) >= 80) {
+    message += `✅ 출석률 ${summary.attendanceRate}%로 성실하게 수업에 참여하고 있습니다. `
+  }
+  
+  if (parseInt(summary.homeworkRate) >= 70) {
+    message += `과제 완성률도 ${summary.homeworkRate}%로 꾸준히 과제를 완수하고 있어요. `
+  }
+  
+  if (parseFloat(summary.avgUnderstanding) >= 4.0) {
+    message += `\n\n특히 이해도가 ${summary.avgUnderstanding}/5점으로 수업 내용을 잘 소화하고 있습니다! 👍 `
+  } else if (parseFloat(summary.avgUnderstanding) >= 3.0) {
+    message += `\n\n이해도는 ${summary.avgUnderstanding}/5점으로 꾸준히 발전하고 있습니다. `
+  }
+  
+  if (parseFloat(summary.avgParticipation) >= 4.0) {
+    message += `수업 참여도도 ${summary.avgParticipation}/5점으로 매우 적극적이에요! `
+  }
+  
+  // 성과 추가
+  if (summary.achievements.length > 0) {
+    message += `\n\n🎯 최근 성과:\n${summary.achievements.slice(0, 2).map((a: string) => `- ${a}`).join('\n')}\n`
+  }
+  
+  // 추가 메시지
+  if (additionalMessage) {
+    message += `\n${additionalMessage}\n`
+  }
+  
+  // 마무리 격려
+  message += `\n앞으로도 ${studentName} 학생이 더욱 성장할 수 있도록 최선을 다해 지도하겠습니다. 💪`
+  
+  return message
+}
+
 // 템플릿 기반 메시지 생성 함수
 function generateTemplateMessage(studentName: string, grade: string, subject: string, shortMessage: string): string {
   const templates = [
@@ -8012,58 +8236,37 @@ app.get('/tools/parent-message', (c) => {
                         
                         <form id="messageForm" class="space-y-6">
                             <div>
-                                <label class="block text-sm font-medium text-gray-900 mb-2">학생 이름 *</label>
-                                <input type="text" id="studentName" required 
-                                       class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none"
-                                       placeholder="예: 김민수">
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-gray-900 mb-2">학년 *</label>
-                                <select id="grade" required
-                                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none">
-                                    <option value="">학년 선택</option>
-                                    <option value="초등 1학년">초등 1학년</option>
-                                    <option value="초등 2학년">초등 2학년</option>
-                                    <option value="초등 3학년">초등 3학년</option>
-                                    <option value="초등 4학년">초등 4학년</option>
-                                    <option value="초등 5학년">초등 5학년</option>
-                                    <option value="초등 6학년">초등 6학년</option>
-                                    <option value="중등 1학년">중등 1학년</option>
-                                    <option value="중등 2학년">중등 2학년</option>
-                                    <option value="중등 3학년">중등 3학년</option>
-                                    <option value="고등 1학년">고등 1학년</option>
-                                    <option value="고등 2학년">고등 2학년</option>
-                                    <option value="고등 3학년">고등 3학년</option>
+                                <label class="block text-sm font-medium text-gray-900 mb-2">학생 선택 *</label>
+                                <select id="studentSelect" required
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none"
+                                        onchange="loadStudentRecords()">
+                                    <option value="">학생을 선택하세요</option>
                                 </select>
+                                <p class="text-sm text-gray-500 mt-2">💡 학생을 선택하면 최근 기록을 기반으로 AI가 메시지를 자동 생성합니다</p>
+                            </div>
+
+                            <div id="studentInfoDisplay" class="hidden bg-blue-50 border-l-4 border-blue-500 rounded-lg p-4">
+                                <div class="text-sm font-medium text-blue-900 mb-2">📊 학생 정보</div>
+                                <div id="studentDetails" class="text-sm text-blue-800"></div>
+                            </div>
+
+                            <div id="recentRecordsDisplay" class="hidden">
+                                <label class="block text-sm font-medium text-gray-900 mb-2">최근 학습 기록 (최근 7일)</label>
+                                <div id="recordsList" class="space-y-2 max-h-60 overflow-y-auto bg-gray-50 rounded-lg p-4"></div>
                             </div>
 
                             <div>
-                                <label class="block text-sm font-medium text-gray-900 mb-2">과목 *</label>
-                                <select id="subject" required
-                                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none">
-                                    <option value="">과목 선택</option>
-                                    <option value="영어">영어</option>
-                                    <option value="수학">수학</option>
-                                    <option value="국어">국어</option>
-                                    <option value="과학">과학</option>
-                                    <option value="사회">사회</option>
-                                    <option value="논술">논술</option>
-                                    <option value="코딩">코딩</option>
-                                </select>
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-gray-900 mb-2">간단한 메모 (2줄 정도) *</label>
-                                <textarea id="shortMessage" required rows="4"
+                                <label class="block text-sm font-medium text-gray-900 mb-2">추가 메모 (선택사항)</label>
+                                <textarea id="shortMessage" rows="3"
                                           class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none resize-none"
-                                          placeholder="예: 오늘 수업에서 적극적으로 발표했음. 영어 단어 암기력이 좋아지고 있음."></textarea>
-                                <p class="text-sm text-gray-500 mt-2">💡 간단하게 작성하시면 AI가 학부모님께 전달할 따뜻한 메시지로 변환합니다</p>
+                                          placeholder="예: 오늘 특별히 칭찬하고 싶은 점이나 학부모님께 전달할 내용을 추가로 작성하세요"></textarea>
+                                <p class="text-sm text-gray-500 mt-2">💡 학생의 최근 기록을 바탕으로 메시지가 생성됩니다. 추가로 전달할 내용이 있으면 입력하세요.</p>
                             </div>
 
                             <button type="submit" 
                                     class="w-full gradient-purple text-white py-4 rounded-xl text-lg font-medium hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                                    id="generateBtn">
+                                    id="generateBtn"
+                                    disabled>
                                 <span id="btnText">✨ AI 메시지 생성하기</span>
                                 <span id="btnLoading" class="hidden items-center justify-center">
                                     <span class="loading mr-2"></span>
@@ -8143,14 +8346,117 @@ app.get('/tools/parent-message', (c) => {
 
         <script>
             let generatedMessageText = '';
+            let currentStudent = null;
+            let recentRecords = [];
+
+            // 페이지 로드 시 학생 목록 불러오기
+            async function loadStudents() {
+                try {
+                    const response = await fetch('/api/students?academyId=1');
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        const select = document.getElementById('studentSelect');
+                        select.innerHTML = '<option value="">학생을 선택하세요</option>';
+                        
+                        data.students.forEach(student => {
+                            const option = document.createElement('option');
+                            option.value = student.id;
+                            option.textContent = \`\${student.name} (\${student.grade}, \${student.class_name || '미배정'})\`;
+                            option.dataset.student = JSON.stringify(student);
+                            select.appendChild(option);
+                        });
+                    }
+                } catch (err) {
+                    console.error('Error loading students:', err);
+                }
+            }
+
+            // 학생 선택 시 최근 기록 불러오기
+            async function loadStudentRecords() {
+                const select = document.getElementById('studentSelect');
+                const selectedOption = select.options[select.selectedIndex];
+                
+                if (!selectedOption.value) {
+                    document.getElementById('studentInfoDisplay').classList.add('hidden');
+                    document.getElementById('recentRecordsDisplay').classList.add('hidden');
+                    document.getElementById('generateBtn').disabled = true;
+                    return;
+                }
+
+                currentStudent = JSON.parse(selectedOption.dataset.student);
+                
+                // 학생 정보 표시
+                document.getElementById('studentDetails').innerHTML = \`
+                    <div><strong>이름:</strong> \${currentStudent.name}</div>
+                    <div><strong>학년:</strong> \${currentStudent.grade}</div>
+                    <div><strong>과목:</strong> \${currentStudent.subjects}</div>
+                    <div><strong>학부모:</strong> \${currentStudent.parent_name} (\${currentStudent.parent_phone})</div>
+                \`;
+                document.getElementById('studentInfoDisplay').classList.remove('hidden');
+
+                // 최근 7일 기록 불러오기
+                try {
+                    const endDate = new Date().toISOString().split('T')[0];
+                    const startDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+                    
+                    const response = await fetch(\`/api/daily-records?studentId=\${currentStudent.id}&startDate=\${startDate}&endDate=\${endDate}\`);
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        recentRecords = data.records || [];
+                        displayRecords();
+                        document.getElementById('generateBtn').disabled = false;
+                    }
+                } catch (err) {
+                    console.error('Error loading records:', err);
+                    document.getElementById('generateBtn').disabled = false;
+                }
+            }
+
+            // 기록 표시
+            function displayRecords() {
+                const recordsList = document.getElementById('recordsList');
+                
+                if (recentRecords.length === 0) {
+                    recordsList.innerHTML = '<p class="text-gray-500 text-sm">최근 7일간 기록이 없습니다.</p>';
+                    document.getElementById('recentRecordsDisplay').classList.remove('hidden');
+                    return;
+                }
+
+                recordsList.innerHTML = recentRecords.map(record => \`
+                    <div class="bg-white border border-gray-200 rounded-lg p-3 text-sm">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="font-medium text-gray-900">\${record.record_date}</span>
+                            <span class="text-xs px-2 py-1 rounded-full \${
+                                record.attendance === '출석' ? 'bg-green-100 text-green-800' :
+                                record.attendance === '지각' ? 'bg-yellow-100 text-yellow-800' :
+                                record.attendance === '결석' ? 'bg-red-100 text-red-800' :
+                                'bg-gray-100 text-gray-800'
+                            }">\${record.attendance || '-'}</span>
+                        </div>
+                        <div class="space-y-1 text-gray-600">
+                            \${record.homework_status ? \`<div>📝 과제: \${record.homework_status}</div>\` : ''}
+                            \${record.understanding_level ? \`<div>💡 이해도: \${record.understanding_level}/5</div>\` : ''}
+                            \${record.participation_level ? \`<div>🙋 참여도: \${record.participation_level}/5</div>\` : ''}
+                            \${record.achievement ? \`<div>🎯 성과: \${record.achievement}</div>\` : ''}
+                            \${record.memo ? \`<div class="text-gray-500">📌 \${record.memo}</div>\` : ''}
+                        </div>
+                    </div>
+                \`).join('');
+
+                document.getElementById('recentRecordsDisplay').classList.remove('hidden');
+            }
 
             document.getElementById('messageForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 
-                const studentName = document.getElementById('studentName').value;
-                const grade = document.getElementById('grade').value;
-                const subject = document.getElementById('subject').value;
-                const shortMessage = document.getElementById('shortMessage').value;
+                if (!currentStudent) {
+                    alert('학생을 선택해주세요.');
+                    return;
+                }
+
+                const additionalMessage = document.getElementById('shortMessage').value;
 
                 // 버튼 로딩 상태
                 const btn = document.getElementById('generateBtn');
@@ -8163,16 +8469,19 @@ app.get('/tools/parent-message', (c) => {
                 btnLoading.classList.add('flex');
 
                 try {
-                    const response = await fetch('/api/generate-parent-message', {
+                    const response = await fetch('/api/generate-parent-message-from-records', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
                         },
                         body: JSON.stringify({
-                            studentName,
-                            grade,
-                            subject,
-                            shortMessage
+                            studentId: currentStudent.id,
+                            studentName: currentStudent.name,
+                            grade: currentStudent.grade,
+                            subjects: currentStudent.subjects,
+                            parentName: currentStudent.parent_name,
+                            records: recentRecords,
+                            additionalMessage
                         })
                     });
 
@@ -8182,8 +8491,8 @@ app.get('/tools/parent-message', (c) => {
                         generatedMessageText = data.message;
                         
                         // 결과 표시
-                        document.getElementById('studentInfo').textContent = studentName + ' 학생';
-                        document.getElementById('subjectInfo').textContent = grade + ' · ' + subject;
+                        document.getElementById('studentInfo').textContent = currentStudent.name + ' 학생';
+                        document.getElementById('subjectInfo').textContent = currentStudent.grade + ' · ' + currentStudent.subjects;
                         document.getElementById('generatedMessage').textContent = data.message;
                         
                         document.getElementById('emptyState').classList.add('hidden');
@@ -8209,9 +8518,18 @@ app.get('/tools/parent-message', (c) => {
 
             function resetForm() {
                 document.getElementById('messageForm').reset();
+                document.getElementById('studentInfoDisplay').classList.add('hidden');
+                document.getElementById('recentRecordsDisplay').classList.add('hidden');
                 document.getElementById('emptyState').classList.remove('hidden');
                 document.getElementById('resultArea').classList.add('hidden');
+                document.getElementById('generateBtn').disabled = true;
+                currentStudent = null;
+                recentRecords = [];
                 generatedMessageText = '';
+            }
+
+            // 페이지 로드 시 학생 목록 불러오기
+            loadStudents();
             }
         </script>
     </body>
