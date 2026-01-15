@@ -18735,33 +18735,35 @@ app.get('/sms/compose', (c) => {
                     const data = await file.arrayBuffer();
                     const workbook = XLSX.read(data);
                     const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                    const rows = XLSX.utils.sheet_to_json(firstSheet);
-
-                    console.log('Excel rows:', rows); // 디버깅용
-                    console.log('First row keys:', rows.length > 0 ? Object.keys(rows[0]) : 'No rows');
-
+                    
+                    // A열과 B열만 읽기 (헤더 무시)
+                    const range = XLSX.utils.decode_range(firstSheet['!ref']);
+                    console.log('Excel range:', firstSheet['!ref']);
+                    
                     let addedCount = 0;
-                    rows.forEach(row => {
-                        // 다양한 컬럼명 지원
-                        const name = row['이름'] || row['성명'] || row['name'] || row['Name'] || row['NAME'] || 
-                                    row['학생명'] || row['학생이름'] || row['고객명'] || '';
+                    
+                    // 2행부터 읽기 (1행은 헤더)
+                    for (let rowNum = range.s.r + 1; rowNum <= range.e.r; rowNum++) {
+                        // A열: 이름
+                        const nameCell = firstSheet[XLSX.utils.encode_cell({ r: rowNum, c: 0 })];
+                        const name = nameCell ? String(nameCell.v).trim() : '';
                         
-                        const phoneRaw = row['전화번호'] || row['휴대폰'] || row['연락처'] || row['핸드폰'] ||
-                                        row['phone'] || row['Phone'] || row['PHONE'] || row['mobile'] || 
-                                        row['Mobile'] || row['tel'] || row['TEL'] || '';
+                        // B열: 연락처
+                        const phoneCell = firstSheet[XLSX.utils.encode_cell({ r: rowNum, c: 1 })];
+                        const phoneRaw = phoneCell ? String(phoneCell.v) : '';
+                        const phone = phoneRaw.replace(/[^0-9]/g, '');
                         
-                        const phone = String(phoneRaw).replace(/[^0-9]/g, '');
+                        console.log(\`Row \${rowNum + 1}:\`, { name, phone, phoneLength: phone.length });
                         
-                        console.log('Parsed:', { name, phone, phoneLength: phone.length }); // 디버깅용
-                        
+                        // 이름과 전화번호 모두 있고, 전화번호가 10자리 이상
                         if (name && phone && phone.length >= 10) {
                             receivers.push({ name, phone });
                             addedCount++;
                         }
-                    });
+                    }
 
-                    if (addedCount === 0 && rows.length > 0) {
-                        alert('❌ 엑셀 파일에서 데이터를 읽을 수 없습니다.\\n\\n컬럼명을 확인해주세요:\\n- 이름: "이름", "성명", "name" 등\\n- 전화번호: "전화번호", "휴대폰", "phone" 등\\n\\n브라우저 콘솔(F12)에서 자세한 정보를 확인하세요.');
+                    if (addedCount === 0) {
+                        alert('❌ 엑셀 파일에서 데이터를 읽을 수 없습니다.\\n\\n형식을 확인해주세요:\\n- A열: 이름\\n- B열: 연락처 (01012345678 형식)\\n- 1행: 헤더 (자동 건너뜀)\\n\\n브라우저 콘솔(F12)에서 자세한 정보를 확인하세요.');
                     } else {
                         alert(\`✅ \${addedCount}명의 수신자가 추가되었습니다.\`);
                     }
