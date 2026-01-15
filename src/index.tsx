@@ -62,8 +62,8 @@ app.post('/api/signup', async (c) => {
   try {
     const { email, password, name, phone, academy_name, academy_location } = await c.req.json()
     
-    if (!email || !password || !name || !phone || !academy_name || !academy_location) {
-      return c.json({ success: false, error: '모든 필수 항목을 입력해주세요.' }, 400)
+    if (!email || !password || !name || !phone || !academy_name) {
+      return c.json({ success: false, error: '필수 항목을 입력해주세요.' }, 400)
     }
 
     // 이메일 중복 확인
@@ -78,11 +78,11 @@ app.post('/api/signup', async (c) => {
     // 비밀번호 해싱 (실제로는 bcrypt 등 사용 권장)
     const hashedPassword = password // TODO: 실제 프로젝트에서는 해싱 필요
 
-    // DB 저장
+    // DB 저장 (academy_location은 선택사항으로 변경)
     const result = await c.env.DB.prepare(`
-      INSERT INTO users (email, password, name, phone, academy_name, academy_location, role)
-      VALUES (?, ?, ?, ?, ?, ?, 'member')
-    `).bind(email, hashedPassword, name, phone, academy_name, academy_location).run()
+      INSERT INTO users (email, password, name, phone, academy_name, role)
+      VALUES (?, ?, ?, ?, ?, 'member')
+    `).bind(email, hashedPassword, name, phone, academy_name).run()
 
     return c.json({ 
       success: true, 
@@ -4947,8 +4947,8 @@ app.get('/register', (c) => {
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-900 mb-2">학원 위치 <span class="text-red-500">*</span></label>
-                            <input type="text" name="academy_location" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition" placeholder="인천 서구 검단동">
+                            <label class="block text-sm font-medium text-gray-900 mb-2">학원 위치</label>
+                            <input type="text" name="academy_location" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition" placeholder="인천 서구 검단동 (선택사항)">
                         </div>
 
                         <div>
@@ -5431,8 +5431,8 @@ app.get('/signup', (c) => {
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-900 mb-2">학원 위치 <span class="text-red-500">*</span></label>
-                            <input type="text" name="academy_location" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition" placeholder="인천 서구 검단동">
+                            <label class="block text-sm font-medium text-gray-900 mb-2">학원 위치</label>
+                            <input type="text" name="academy_location" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition" placeholder="인천 서구 검단동 (선택사항)">
                         </div>
 
                         <button type="submit" class="w-full gradient-purple text-white py-3 rounded-xl font-medium hover:shadow-xl transition-all">
