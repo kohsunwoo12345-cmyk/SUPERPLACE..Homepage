@@ -1184,4 +1184,409 @@ export const dailyRecordPage = `
 </html>
 `
 
-export default { classesPage, studentsListPage, dailyRecordPage }
+export const studentDetailPage = `
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>학생 상세 - 꾸메땅학원</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-50">
+    <nav class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-4">
+                    <a href="/students/list" class="text-gray-600 hover:text-gray-900">
+                        <i class="fas fa-arrow-left mr-2"></i>학생 목록
+                    </a>
+                    <h1 id="pageTitle" class="text-2xl font-bold text-gray-900">학생 상세</h1>
+                </div>
+                <div class="flex space-x-3">
+                    <a href="/students/daily-record" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                        <i class="fas fa-calendar-check mr-2"></i>성과 기록
+                    </a>
+                    <button onclick="sendSMS()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                        <i class="fas fa-sms mr-2"></i>학부모 문자
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <div id="loadingMessage" class="text-center text-gray-500 py-12">로딩 중...</div>
+        
+        <div id="studentContent" class="hidden">
+            <!-- 학생 프로필 -->
+            <div class="bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl shadow-xl p-8 mb-6 text-white">
+                <div class="flex items-center space-x-6">
+                    <div class="bg-white text-blue-600 rounded-full w-24 h-24 flex items-center justify-center text-4xl font-bold">
+                        <span id="studentInitial"></span>
+                    </div>
+                    <div class="flex-1">
+                        <h2 id="studentName" class="text-3xl font-bold mb-2"></h2>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                            <div>
+                                <span class="opacity-80">학년</span>
+                                <p id="studentGrade" class="font-semibold text-lg"></p>
+                            </div>
+                            <div>
+                                <span class="opacity-80">반</span>
+                                <p id="studentClass" class="font-semibold text-lg"></p>
+                            </div>
+                            <div>
+                                <span class="opacity-80">수강 과목</span>
+                                <p id="studentSubjects" class="font-semibold text-lg"></p>
+                            </div>
+                            <div>
+                                <span class="opacity-80">등록일</span>
+                                <p id="enrollmentDate" class="font-semibold text-lg"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 학부모 정보 & 연락처 -->
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+                <h3 class="text-xl font-bold text-gray-900 mb-4">👨‍👩‍👧 학부모 정보</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <span class="text-sm text-gray-500">학부모 이름</span>
+                        <p id="parentName" class="text-lg font-semibold text-gray-900"></p>
+                    </div>
+                    <div>
+                        <span class="text-sm text-gray-500">학부모 연락처</span>
+                        <p id="parentPhone" class="text-lg font-semibold text-gray-900"></p>
+                    </div>
+                    <div>
+                        <span class="text-sm text-gray-500">학생 연락처</span>
+                        <p id="studentPhone" class="text-lg font-semibold text-gray-900"></p>
+                    </div>
+                </div>
+                <div id="studentNotes" class="mt-4 p-4 bg-yellow-50 rounded-lg hidden">
+                    <span class="text-sm text-gray-500">메모</span>
+                    <p id="notesContent" class="text-gray-900 mt-1"></p>
+                </div>
+            </div>
+
+            <!-- 통계 카드 -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-gray-600">출석률</span>
+                        <i class="fas fa-calendar-check text-green-500 text-2xl"></i>
+                    </div>
+                    <p id="attendanceRate" class="text-3xl font-bold text-green-600">-%</p>
+                    <p class="text-sm text-gray-500 mt-1">총 <span id="attendanceDays">0</span>일</p>
+                </div>
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-gray-600">과제 완성률</span>
+                        <i class="fas fa-tasks text-blue-500 text-2xl"></i>
+                    </div>
+                    <p id="homeworkRate" class="text-3xl font-bold text-blue-600">-%</p>
+                    <p class="text-sm text-gray-500 mt-1">완료 <span id="homeworkCompleted">0</span>건</p>
+                </div>
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-gray-600">평균 이해도</span>
+                        <i class="fas fa-brain text-purple-500 text-2xl"></i>
+                    </div>
+                    <p id="avgUnderstanding" class="text-3xl font-bold text-purple-600">-</p>
+                    <p class="text-sm text-gray-500 mt-1">5점 만점</p>
+                </div>
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-gray-600">평균 참여도</span>
+                        <i class="fas fa-hand-paper text-orange-500 text-2xl"></i>
+                    </div>
+                    <p id="avgParticipation" class="text-3xl font-bold text-orange-600">-</p>
+                    <p class="text-sm text-gray-500 mt-1">5점 만점</p>
+                </div>
+            </div>
+
+            <!-- 기간 선택 -->
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+                <div class="flex items-center space-x-4">
+                    <label class="text-sm font-medium text-gray-700">기간 선택:</label>
+                    <select id="periodSelect" onchange="loadStats()" class="px-4 py-2 border border-gray-300 rounded-lg">
+                        <option value="7">최근 7일</option>
+                        <option value="30" selected>최근 30일</option>
+                        <option value="90">최근 90일</option>
+                        <option value="all">전체 기간</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- 성과 그래프 -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">📈 이해도 & 참여도 추이</h3>
+                    <canvas id="levelChart"></canvas>
+                </div>
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">📊 출석 & 과제 현황</h3>
+                    <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+
+            <!-- 최근 성과 기록 타임라인 -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h3 class="text-xl font-bold text-gray-900 mb-6">📝 최근 성과 기록</h3>
+                <div id="recentRecords" class="space-y-4"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const studentId = window.location.pathname.split('/').pop();
+        const academyId = 1;
+        let student = null;
+        let stats = null;
+        let records = [];
+        let levelChart = null;
+        let statusChart = null;
+
+        async function loadStudent() {
+            try {
+                const res = await fetch('/api/students/' + studentId);
+                const data = await res.json();
+                if (data.success) {
+                    student = data.student;
+                    renderStudent();
+                } else {
+                    document.getElementById('loadingMessage').innerHTML = '<div class="text-center text-red-500 py-12">학생 정보를 찾을 수 없습니다.</div>';
+                }
+            } catch (error) {
+                console.error('학생 정보 로딩 실패:', error);
+                document.getElementById('loadingMessage').innerHTML = '<div class="text-center text-red-500 py-12">오류가 발생했습니다.</div>';
+            }
+        }
+
+        function renderStudent() {
+            document.getElementById('pageTitle').textContent = student.name + ' 학생';
+            document.getElementById('studentInitial').textContent = student.name.charAt(0);
+            document.getElementById('studentName').textContent = student.name;
+            document.getElementById('studentGrade').textContent = student.grade;
+            document.getElementById('studentClass').textContent = student.class_name || '미배정';
+            document.getElementById('studentSubjects').textContent = student.subjects;
+            document.getElementById('enrollmentDate').textContent = student.enrollment_date;
+            document.getElementById('parentName').textContent = student.parent_name;
+            document.getElementById('parentPhone').textContent = student.parent_phone;
+            document.getElementById('studentPhone').textContent = student.phone || '미등록';
+            
+            if (student.notes) {
+                document.getElementById('studentNotes').classList.remove('hidden');
+                document.getElementById('notesContent').textContent = student.notes;
+            }
+
+            document.getElementById('loadingMessage').classList.add('hidden');
+            document.getElementById('studentContent').classList.remove('hidden');
+        }
+
+        async function loadStats() {
+            try {
+                const period = document.getElementById('periodSelect').value;
+                let startDate, endDate = new Date().toISOString().split('T')[0];
+                
+                if (period === 'all') {
+                    startDate = student.enrollment_date;
+                } else {
+                    const date = new Date();
+                    date.setDate(date.getDate() - parseInt(period));
+                    startDate = date.toISOString().split('T')[0];
+                }
+
+                const res = await fetch(\`/api/students/\${studentId}/stats?startDate=\${startDate}&endDate=\${endDate}\`);
+                const data = await res.json();
+                if (data.success) {
+                    stats = data.stats;
+                    renderStats();
+                }
+
+                // 전체 기록도 로드
+                const recordsRes = await fetch(\`/api/daily-records?studentId=\${studentId}&startDate=\${startDate}&endDate=\${endDate}\`);
+                const recordsData = await recordsRes.json();
+                if (recordsData.success) {
+                    records = recordsData.records;
+                    renderRecords();
+                    renderCharts();
+                }
+            } catch (error) {
+                console.error('통계 로딩 실패:', error);
+            }
+        }
+
+        function renderStats() {
+            const totalRecords = parseInt(stats.total_records) || 0;
+            const attendanceCount = parseInt(stats.attendance_count) || 0;
+            const homeworkCompleted = parseInt(stats.homework_completed) || 0;
+            const avgUnderstanding = parseFloat(stats.avg_understanding) || 0;
+            const avgParticipation = parseFloat(stats.avg_participation) || 0;
+
+            const attendanceRate = totalRecords > 0 ? Math.round((attendanceCount / totalRecords) * 100) : 0;
+            const homeworkRate = totalRecords > 0 ? Math.round((homeworkCompleted / totalRecords) * 100) : 0;
+
+            document.getElementById('attendanceRate').textContent = attendanceRate + '%';
+            document.getElementById('attendanceDays').textContent = attendanceCount;
+            document.getElementById('homeworkRate').textContent = homeworkRate + '%';
+            document.getElementById('homeworkCompleted').textContent = homeworkCompleted;
+            document.getElementById('avgUnderstanding').textContent = avgUnderstanding > 0 ? avgUnderstanding.toFixed(1) : '-';
+            document.getElementById('avgParticipation').textContent = avgParticipation > 0 ? avgParticipation.toFixed(1) : '-';
+        }
+
+        function renderRecords() {
+            const container = document.getElementById('recentRecords');
+            if (records.length === 0) {
+                container.innerHTML = '<div class="text-center text-gray-500 py-8">기록이 없습니다.</div>';
+                return;
+            }
+
+            const sortedRecords = [...records].sort((a, b) => new Date(b.record_date) - new Date(a.record_date)).slice(0, 10);
+
+            container.innerHTML = sortedRecords.map(record => {
+                const date = new Date(record.record_date);
+                const dateStr = \`\${date.getMonth() + 1}월 \${date.getDate()}일\`;
+
+                const attendanceColor = {
+                    '출석': 'bg-green-100 text-green-800',
+                    '지각': 'bg-yellow-100 text-yellow-800',
+                    '결석': 'bg-red-100 text-red-800',
+                    '조퇴': 'bg-orange-100 text-orange-800'
+                }[record.attendance] || 'bg-gray-100 text-gray-800';
+
+                return \`
+                    <div class="flex items-start space-x-4 p-4 border border-gray-200 rounded-lg hover:shadow-md transition">
+                        <div class="flex-shrink-0 text-center">
+                            <div class="text-sm text-gray-500">\${dateStr}</div>
+                            <div class="text-2xl font-bold text-gray-900">\${date.getDate()}</div>
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex items-center space-x-2 mb-2">
+                                <span class="font-semibold text-gray-900">\${record.course_name || '과목 미지정'}</span>
+                                \${record.attendance ? \`<span class="px-2 py-1 rounded-full text-xs font-medium \${attendanceColor}">\${record.attendance}</span>\` : ''}
+                            </div>
+                            <div class="flex items-center space-x-3 text-sm text-gray-600 mb-2">
+                                \${record.homework_status ? \`<span>📝 과제: \${record.homework_status}</span>\` : ''}
+                                \${record.understanding_level ? \`<span>💡 이해도: \${record.understanding_level}/5</span>\` : ''}
+                                \${record.participation_level ? \`<span>✋ 참여도: \${record.participation_level}/5</span>\` : ''}
+                            </div>
+                            \${record.achievement ? \`<p class="text-sm text-gray-700">\${record.achievement}</p>\` : ''}
+                        </div>
+                    </div>
+                \`;
+            }).join('');
+        }
+
+        function renderCharts() {
+            // 이해도 & 참여도 추이
+            const dates = records.map(r => {
+                const d = new Date(r.record_date);
+                return \`\${d.getMonth() + 1}/\${d.getDate()}\`;
+            }).reverse();
+            const understanding = records.map(r => r.understanding_level || 0).reverse();
+            const participation = records.map(r => r.participation_level || 0).reverse();
+
+            if (levelChart) levelChart.destroy();
+            const levelCtx = document.getElementById('levelChart').getContext('2d');
+            levelChart = new Chart(levelCtx, {
+                type: 'line',
+                data: {
+                    labels: dates,
+                    datasets: [
+                        {
+                            label: '이해도',
+                            data: understanding,
+                            borderColor: 'rgb(147, 51, 234)',
+                            backgroundColor: 'rgba(147, 51, 234, 0.1)',
+                            tension: 0.4
+                        },
+                        {
+                            label: '참여도',
+                            data: participation,
+                            borderColor: 'rgb(249, 115, 22)',
+                            backgroundColor: 'rgba(249, 115, 22, 0.1)',
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: { beginAtZero: true, max: 5 }
+                    }
+                }
+            });
+
+            // 출석 & 과제 현황
+            const attendanceData = {
+                '출석': records.filter(r => r.attendance === '출석').length,
+                '지각': records.filter(r => r.attendance === '지각').length,
+                '결석': records.filter(r => r.attendance === '결석').length,
+                '조퇴': records.filter(r => r.attendance === '조퇴').length
+            };
+
+            const homeworkData = {
+                '완료': records.filter(r => r.homework_status === '완료').length,
+                '부분완료': records.filter(r => r.homework_status === '부분완료').length,
+                '미완료': records.filter(r => r.homework_status === '미완료').length
+            };
+
+            if (statusChart) statusChart.destroy();
+            const statusCtx = document.getElementById('statusChart').getContext('2d');
+            statusChart = new Chart(statusCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['출석', '지각', '결석', '조퇴', '과제완료', '과제부분', '과제미완'],
+                    datasets: [{
+                        label: '횟수',
+                        data: [
+                            attendanceData['출석'],
+                            attendanceData['지각'],
+                            attendanceData['결석'],
+                            attendanceData['조퇴'],
+                            homeworkData['완료'],
+                            homeworkData['부분완료'],
+                            homeworkData['미완료']
+                        ],
+                        backgroundColor: [
+                            'rgba(34, 197, 94, 0.8)',
+                            'rgba(234, 179, 8, 0.8)',
+                            'rgba(239, 68, 68, 0.8)',
+                            'rgba(249, 115, 22, 0.8)',
+                            'rgba(59, 130, 246, 0.8)',
+                            'rgba(168, 85, 247, 0.8)',
+                            'rgba(156, 163, 175, 0.8)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        }
+
+        function sendSMS() {
+            if (!student) return;
+            window.location.href = \`/sms/compose?phone=\${student.parent_phone}&name=\${student.parent_name}\`;
+        }
+
+        // 초기 로드
+        (async () => {
+            await loadStudent();
+            await loadStats();
+        })();
+    </script>
+</body>
+</html>
+`
+
+export default { classesPage, studentsListPage, dailyRecordPage, studentDetailPage }
