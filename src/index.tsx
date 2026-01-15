@@ -15758,9 +15758,8 @@ app.get('/admin/users', async (c) => {
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
                             ${users?.results?.map(user => {
-                                // JSON.stringify로 안전하게 인코딩 (따옴표 문제 해결)
-                                const safeName = JSON.stringify(user.name || '')
-                                const safeEmail = JSON.stringify(user.email || '')
+                                // data 속성으로 전달 (HTML 안전)
+                                const userName = (user.name || '').replace(/"/g, '&quot;')
                                 return `
                                 <tr class="hover:bg-gray-50">
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${user.id}</td>
@@ -15778,19 +15777,19 @@ app.get('/admin/users', async (c) => {
                                     <td class="px-6 py-4 whitespace-nowrap text-sm">
                                         ${user.role !== 'admin' ? `
                                             <div class="flex gap-2 flex-wrap">
-                                                <button onclick="changePassword(${user.id}, '${safeName}')" class="px-3 py-1.5 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition text-xs font-medium" title="비밀번호 변경">
+                                                <button data-user-id="${user.id}" data-user-name="${userName}" data-user-points="${user.points || 0}" onclick="changePassword(this.dataset.userId, this.dataset.userName)" class="px-3 py-1.5 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition text-xs font-medium" title="비밀번호 변경">
                                                     🔑 비밀번호
                                                 </button>
-                                                <button onclick="givePoints(${user.id}, '${safeName}', ${user.points || 0})" class="px-3 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-xs font-medium" title="포인트 지급">
+                                                <button data-user-id="${user.id}" data-user-name="${userName}" data-user-points="${user.points || 0}" onclick="givePoints(this.dataset.userId, this.dataset.userName, this.dataset.userPoints)" class="px-3 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-xs font-medium" title="포인트 지급">
                                                     💰 지급
                                                 </button>
-                                                <button onclick="deductPoints(${user.id}, '${safeName}', ${user.points || 0})" class="px-3 py-1.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition text-xs font-medium" title="포인트 차감">
+                                                <button data-user-id="${user.id}" data-user-name="${userName}" data-user-points="${user.points || 0}" onclick="deductPoints(this.dataset.userId, this.dataset.userName, this.dataset.userPoints)" class="px-3 py-1.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition text-xs font-medium" title="포인트 차감">
                                                     ❌ 차감
                                                 </button>
-                                                <button onclick="loginAs(${user.id}, '${safeName}')" class="px-3 py-1.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition text-xs font-medium" title="이 사용자로 로그인">
+                                                <button data-user-id="${user.id}" data-user-name="${userName}" onclick="loginAs(this.dataset.userId, this.dataset.userName)" class="px-3 py-1.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition text-xs font-medium" title="이 사용자로 로그인">
                                                     👤 로그인
                                                 </button>
-                                                <button onclick="managePermissions(${user.id}, '${safeName}')" class="px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-xs font-medium" title="권한 관리">
+                                                <button data-user-id="${user.id}" data-user-name="${userName}" onclick="managePermissions(this.dataset.userId, this.dataset.userName)" class="px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-xs font-medium" title="권한 관리">
                                                     ⚙️ 권한
                                                 </button>
                                             </div>
