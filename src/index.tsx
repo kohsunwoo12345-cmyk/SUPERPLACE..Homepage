@@ -18536,6 +18536,23 @@ app.get('/sms/compose', (c) => {
                                 <h3 class="text-sm font-semibold text-gray-900">수신자 목록</h3>
                                 <span id="receiverCount" class="text-sm font-medium text-purple-600">0명</span>
                             </div>
+                            
+                            <!-- 검색 입력 -->
+                            <div class="mb-3">
+                                <div class="relative">
+                                    <input 
+                                        type="text" 
+                                        id="receiverSearch" 
+                                        placeholder="이름 또는 전화번호로 검색..." 
+                                        oninput="filterReceivers()"
+                                        class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
+                                    >
+                                    <svg class="w-5 h-5 absolute left-3 top-2.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                                    </svg>
+                                </div>
+                            </div>
+                            
                             <div id="receiversContainer" class="space-y-2 max-h-64 overflow-y-auto">
                                 <p class="text-sm text-gray-400 text-center py-4">수신자를 추가해주세요</p>
                             </div>
@@ -18686,29 +18703,56 @@ app.get('/sms/compose', (c) => {
             }
 
             // 수신자 목록 렌더링
-            function renderReceivers() {
+            function renderReceivers(filteredList = null) {
                 const container = document.getElementById('receiversContainer');
+                const list = filteredList !== null ? filteredList : receivers;
                 
-                if (receivers.length === 0) {
-                    container.innerHTML = '<p class="text-sm text-gray-400 text-center py-4">수신자를 추가해주세요</p>';
+                if (list.length === 0) {
+                    if (filteredList !== null && receivers.length > 0) {
+                        container.innerHTML = '<p class="text-sm text-gray-400 text-center py-4">검색 결과가 없습니다</p>';
+                    } else {
+                        container.innerHTML = '<p class="text-sm text-gray-400 text-center py-4">수신자를 추가해주세요</p>';
+                    }
                 } else {
-                    container.innerHTML = receivers.map((r, i) => \`
+                    container.innerHTML = list.map((r, i) => {
+                        // 실제 인덱스 찾기 (검색 시)
+                        const actualIndex = filteredList !== null ? receivers.indexOf(r) : i;
+                        return \`
                         <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                             <div>
                                 <div class="font-medium text-sm">\${r.name}</div>
                                 <div class="text-xs text-gray-500">\${formatPhoneNumber(r.phone)}</div>
                             </div>
-                            <button onclick="removeReceiver(\${i})" class="text-red-600 hover:text-red-700">
+                            <button onclick="removeReceiver(\${actualIndex})" class="text-red-600 hover:text-red-700">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                                 </svg>
                             </button>
                         </div>
-                    \`).join('');
+                    \`;
+                    }).join('');
                 }
                 
                 document.getElementById('receiverCount').textContent = receivers.length + '명';
                 updateCost();
+            }
+
+            // 수신자 검색 필터링
+            function filterReceivers() {
+                const searchTerm = document.getElementById('receiverSearch').value.toLowerCase().trim();
+                
+                if (!searchTerm) {
+                    renderReceivers();
+                    return;
+                }
+                
+                const filtered = receivers.filter(r => {
+                    const name = r.name.toLowerCase();
+                    const phone = r.phone;
+                    return name.includes(searchTerm) || phone.includes(searchTerm);
+                });
+                
+                renderReceivers(filtered);
             }
 
             // 수신자 제거
