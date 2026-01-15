@@ -8812,6 +8812,10 @@ app.get('/tools/landing-builder', (c) => {
                     <button onclick="generateLanding()" class="w-full gradient-purple text-white py-4 rounded-xl text-lg font-bold hover:shadow-xl transition">
                         🚀 랜딩페이지 생성하기
                     </button>
+                    
+                    <a href="https://developers.kakao.com/tool/debugger/sharing" target="_blank" class="block w-full text-center bg-yellow-500 hover:bg-yellow-600 text-white py-4 rounded-xl text-lg font-bold hover:shadow-xl transition mt-4">
+                        🔄 카카오톡 캐시 초기화하기
+                    </a>
                 </div>
 
                 <!-- 결과 영역 -->
