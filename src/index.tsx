@@ -21020,5 +21020,10 @@ app.get('/students/classes', (c) => {
   return c.html(studentPages.classesPage)
 })
 
+// 학생 목록 페이지
+app.get('/students/list', (c) => {
+  return c.html(studentPages.studentsListPage)
+})
+
 export default app
 // Force rebuild Tue Jan 13 09:59:11 UTC 2026
