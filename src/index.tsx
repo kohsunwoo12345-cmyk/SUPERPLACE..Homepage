@@ -577,7 +577,8 @@ app.get('/api/sms/pricing', async (c) => {
 // 발신번호 목록 조회 API
 app.get('/api/sms/senders', async (c) => {
   try {
-    const userId = c.req.query('userId')
+    // 헤더 또는 쿼리 파라미터에서 userId 가져오기
+    const userId = c.req.header('X-User-Id') || c.req.query('userId')
     
     if (!userId) {
       return c.json({ success: false, error: '사용자 ID가 필요합니다.' }, 400)
