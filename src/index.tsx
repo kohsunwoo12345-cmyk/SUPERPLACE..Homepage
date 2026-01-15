@@ -17645,7 +17645,7 @@ app.get('/sms/senders', (c) => {
                         <div>
                             <h3 class="font-semibold text-orange-900 mb-2">⚠️ 발신번호 등록 안내</h3>
                             <ol class="text-sm text-orange-800 space-y-1">
-                                <li>1. <a href="https://smartsms.aligo.in/" target="_blank" class="underline hover:text-orange-900">알리고 웹사이트</a>에서 발신번호 인증 완료</li>
+                                <li>1. 발신번호 인증 신청을 완료</li>
                                 <li>2. 아래 "발신번호 추가" 버튼으로 인증된 번호를 시스템에 등록</li>
                                 <li>3. 등록된 발신번호로 문자 발송 가능</li>
                             </ol>
@@ -17664,7 +17664,7 @@ app.get('/sms/senders', (c) => {
                             등록하기
                         </button>
                     </div>
-                    <p class="text-xs text-gray-500 mt-2">* 알리고 웹사이트에서 인증 완료한 번호만 등록하세요</p>
+
                 </div>
 
                 <!-- 발신번호 목록 -->
