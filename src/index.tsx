@@ -14535,34 +14535,6 @@ app.get('/api/sms/logs', async (c) => {
 })
 
 // 회원가입 API
-app.post('/api/signup', async (c) => {
-  try {
-    const { email, password, name, phone, academy_name } = await c.req.json()
-    const { env } = c
-    
-    // 이메일 중복 확인
-    const existing = await env.DB.prepare('SELECT * FROM users WHERE email = ?').bind(email).first()
-    
-    if (existing) {
-      return c.json({ success: false, error: '이미 가입된 이메일입니다' }, 400)
-    }
-    
-    // 사용자 생성
-    await env.DB.prepare(`
-      INSERT INTO users (email, password, name, phone, academy_name, role, created_at)
-      VALUES (?, ?, ?, ?, ?, 'member', datetime('now'))
-    `).bind(email, password, name, phone || '', academy_name || '').run()
-    
-    return c.json({ 
-      success: true, 
-      message: '회원가입이 완료되었습니다. 로그인해주세요.'
-    })
-  } catch (err) {
-    console.error('Signup error:', err)
-    return c.json({ success: false, error: '회원가입 처리 중 오류가 발생했습니다' }, 500)
-  }
-})
-
 // ============================================
 // 마케팅 툴 10개
 // ============================================
