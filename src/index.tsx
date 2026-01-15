@@ -15758,9 +15758,9 @@ app.get('/admin/users', async (c) => {
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
                             ${users?.results?.map(user => {
-                                // 작은따옴표 이스케이프 (JavaScript 함수에 안전하게 전달)
-                                const safeName = (user.name || '').replace(/'/g, "\\'")
-                                const safeEmail = (user.email || '').replace(/'/g, "\\'")
+                                // HTML 속성용 이스케이프 (작은따옴표를 HTML 엔티티로 변환)
+                                const safeName = (user.name || '').replace(/'/g, "&#39;").replace(/"/g, "&quot;")
+                                const safeEmail = (user.email || '').replace(/'/g, "&#39;").replace(/"/g, "&quot;")
                                 return `
                                 <tr class="hover:bg-gray-50">
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${user.id}</td>
