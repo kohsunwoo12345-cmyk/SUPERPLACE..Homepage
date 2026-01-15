@@ -667,6 +667,196 @@ app.delete('/api/sms/sender/:senderId', async (c) => {
   }
 })
 
+// === SMS 템플릿 & 폴더 관리 API ===
+
+// 폴더 목록 조회
+app.get('/api/sms/folders', async (c) => {
+  try {
+    const userId = c.req.query('userId')
+    if (!userId) {
+      return c.json({ success: false, error: '사용자 ID가 필요합니다.' }, 400)
+    }
+
+    const folders = await c.env.DB.prepare(`
+      SELECT * FROM sms_folders WHERE user_id = ? ORDER BY created_at DESC
+    `).bind(userId).all()
+
+    return c.json({ success: true, folders: folders.results })
+  } catch (err) {
+    console.error('Get folders error:', err)
+    return c.json({ success: false, error: '폴더 목록 조회 실패' }, 500)
+  }
+})
+
+// 폴더 생성
+app.post('/api/sms/folders', async (c) => {
+  try {
+    const { userId, name } = await c.req.json()
+    if (!userId || !name) {
+      return c.json({ success: false, error: '필수 정보가 누락되었습니다.' }, 400)
+    }
+
+    const result = await c.env.DB.prepare(`
+      INSERT INTO sms_folders (user_id, name) VALUES (?, ?)
+    `).bind(userId, name).run()
+
+    return c.json({ success: true, folderId: result.meta.last_row_id })
+  } catch (err) {
+    console.error('Create folder error:', err)
+    return c.json({ success: false, error: '폴더 생성 실패' }, 500)
+  }
+})
+
+// 폴더 삭제
+app.delete('/api/sms/folders/:folderId', async (c) => {
+  try {
+    const folderId = c.req.param('folderId')
+    const userId = c.req.query('userId')
+
+    if (!userId) {
+      return c.json({ success: false, error: '사용자 ID가 필요합니다.' }, 400)
+    }
+
+    // 폴더 소유권 확인
+    const folder = await c.env.DB.prepare(`
+      SELECT * FROM sms_folders WHERE id = ? AND user_id = ?
+    `).bind(folderId, userId).first()
+
+    if (!folder) {
+      return c.json({ success: false, error: '폴더를 찾을 수 없습니다.' }, 404)
+    }
+
+    // 폴더 내 템플릿들의 folder_id를 NULL로 변경
+    await c.env.DB.prepare(`
+      UPDATE sms_templates SET folder_id = NULL WHERE folder_id = ?
+    `).bind(folderId).run()
+
+    // 폴더 삭제
+    await c.env.DB.prepare(`
+      DELETE FROM sms_folders WHERE id = ?
+    `).bind(folderId).run()
+
+    return c.json({ success: true })
+  } catch (err) {
+    console.error('Delete folder error:', err)
+    return c.json({ success: false, error: '폴더 삭제 실패' }, 500)
+  }
+})
+
+// 템플릿 목록 조회
+app.get('/api/sms/templates', async (c) => {
+  try {
+    const userId = c.req.query('userId')
+    const folderId = c.req.query('folderId')
+    
+    if (!userId) {
+      return c.json({ success: false, error: '사용자 ID가 필요합니다.' }, 400)
+    }
+
+    let query = 'SELECT * FROM sms_templates WHERE user_id = ?'
+    let params = [userId]
+
+    if (folderId) {
+      query += ' AND folder_id = ?'
+      params.push(folderId)
+    } else {
+      query += ' AND folder_id IS NULL'
+    }
+
+    query += ' ORDER BY updated_at DESC'
+
+    const templates = await c.env.DB.prepare(query).bind(...params).all()
+
+    return c.json({ success: true, templates: templates.results })
+  } catch (err) {
+    console.error('Get templates error:', err)
+    return c.json({ success: false, error: '템플릿 목록 조회 실패' }, 500)
+  }
+})
+
+// 템플릿 생성
+app.post('/api/sms/templates', async (c) => {
+  try {
+    const { userId, folderId, title, message } = await c.req.json()
+    
+    if (!userId || !title || !message) {
+      return c.json({ success: false, error: '필수 정보가 누락되었습니다.' }, 400)
+    }
+
+    const result = await c.env.DB.prepare(`
+      INSERT INTO sms_templates (user_id, folder_id, title, message)
+      VALUES (?, ?, ?, ?)
+    `).bind(userId, folderId || null, title, message).run()
+
+    return c.json({ success: true, templateId: result.meta.last_row_id })
+  } catch (err) {
+    console.error('Create template error:', err)
+    return c.json({ success: false, error: '템플릿 저장 실패' }, 500)
+  }
+})
+
+// 템플릿 수정
+app.put('/api/sms/templates/:templateId', async (c) => {
+  try {
+    const templateId = c.req.param('templateId')
+    const { userId, title, message, folderId } = await c.req.json()
+
+    if (!userId) {
+      return c.json({ success: false, error: '사용자 ID가 필요합니다.' }, 400)
+    }
+
+    // 템플릿 소유권 확인
+    const template = await c.env.DB.prepare(`
+      SELECT * FROM sms_templates WHERE id = ? AND user_id = ?
+    `).bind(templateId, userId).first()
+
+    if (!template) {
+      return c.json({ success: false, error: '템플릿을 찾을 수 없습니다.' }, 404)
+    }
+
+    await c.env.DB.prepare(`
+      UPDATE sms_templates 
+      SET title = ?, message = ?, folder_id = ?, updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `).bind(title, message, folderId || null, templateId).run()
+
+    return c.json({ success: true })
+  } catch (err) {
+    console.error('Update template error:', err)
+    return c.json({ success: false, error: '템플릿 수정 실패' }, 500)
+  }
+})
+
+// 템플릿 삭제
+app.delete('/api/sms/templates/:templateId', async (c) => {
+  try {
+    const templateId = c.req.param('templateId')
+    const userId = c.req.query('userId')
+
+    if (!userId) {
+      return c.json({ success: false, error: '사용자 ID가 필요합니다.' }, 400)
+    }
+
+    // 템플릿 소유권 확인
+    const template = await c.env.DB.prepare(`
+      SELECT * FROM sms_templates WHERE id = ? AND user_id = ?
+    `).bind(templateId, userId).first()
+
+    if (!template) {
+      return c.json({ success: false, error: '템플릿을 찾을 수 없습니다.' }, 404)
+    }
+
+    await c.env.DB.prepare(`
+      DELETE FROM sms_templates WHERE id = ?
+    `).bind(templateId).run()
+
+    return c.json({ success: true })
+  } catch (err) {
+    console.error('Delete template error:', err)
+    return c.json({ success: false, error: '템플릿 삭제 실패' }, 500)
+  }
+})
+
 // SMS 발송 API (핵심 로직 - 선차감 후발송)
 app.post('/api/sms/send', async (c) => {
   try {
