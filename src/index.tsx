@@ -4397,7 +4397,7 @@ app.get('/', (c) => {
                     </p>
                 </div>
                 
-                <div class="grid md:grid-cols-3 gap-6 mb-12">
+                <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
                     <!-- 네이버 플레이스 버튼 -->
                     <a href="/programs/naver-place" class="group bg-white rounded-2xl p-8 border-2 border-purple-200 hover:border-purple-600 hover:shadow-xl transition-all duration-300 hover:-translate-y-2">
                         <div class="w-16 h-16 gradient-purple rounded-2xl flex items-center justify-center mb-6 mx-auto group-hover:scale-110 transition-transform">
@@ -4455,6 +4455,26 @@ app.get('/', (c) => {
                         <div class="text-center">
                             <span class="text-purple-600 font-bold group-hover:text-purple-700">
                                 자세히 보기 →
+                            </span>
+                        </div>
+                    </a>
+                    
+                    <!-- 학생 관리 버튼 -->
+                    <a href="/students" class="group bg-white rounded-2xl p-8 border-2 border-blue-200 hover:border-blue-600 hover:shadow-xl transition-all duration-300 hover:-translate-y-2">
+                        <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl flex items-center justify-center mb-6 mx-auto group-hover:scale-110 transition-transform">
+                            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-900 text-center mb-3">
+                            학생<br>관리
+                        </h3>
+                        <p class="text-gray-600 text-center mb-4">
+                            학생/반/성과 통합 관리
+                        </p>
+                        <div class="text-center">
+                            <span class="text-blue-600 font-bold group-hover:text-blue-700">
+                                바로가기 →
                             </span>
                         </div>
                     </a>
