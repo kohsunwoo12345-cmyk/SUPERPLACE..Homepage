@@ -526,11 +526,18 @@ export const studentsListPage = `
             \`).join('');
         }
 
-        function showAddModal() {
+        async function showAddModal() {
             document.getElementById('modalTitle').textContent = '새 학생 등록';
             document.getElementById('studentForm').reset();
             document.getElementById('studentId').value = '';
             document.getElementById('enrollmentDate').valueAsDate = new Date();
+            
+            // 체크박스 초기화
+            document.querySelectorAll('input[name="subject"]').forEach(cb => cb.checked = false);
+            
+            // 최신 반 목록 로드
+            await loadClasses();
+            
             document.getElementById('studentModal').classList.remove('hidden');
         }
 
@@ -538,7 +545,7 @@ export const studentsListPage = `
             document.getElementById('studentModal').classList.add('hidden');
         }
 
-        function editStudent(studentId) {
+        async function editStudent(studentId) {
             const student = allStudents.find(s => s.id === studentId);
             if (!student) return;
 
@@ -546,12 +553,17 @@ export const studentsListPage = `
             document.getElementById('studentId').value = student.id;
             document.getElementById('studentName').value = student.name;
             document.getElementById('studentPhone').value = student.phone || '';
-            document.getElementById('studentClass').value = student.class_id || '';
             document.getElementById('studentGrade').value = student.grade;
             document.getElementById('enrollmentDate').value = student.enrollment_date;
             document.getElementById('parentName').value = student.parent_name;
             document.getElementById('parentPhone').value = student.parent_phone;
             document.getElementById('studentMemo').value = student.notes || '';
+            
+            // 최신 반 목록 로드
+            await loadClasses();
+            
+            // 반 선택 복원
+            document.getElementById('studentClass').value = student.class_id || '';
             
             // 체크박스 초기화 후 선택된 과목 체크
             document.querySelectorAll('input[name="subject"]').forEach(cb => cb.checked = false);
