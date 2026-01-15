@@ -21025,5 +21025,10 @@ app.get('/students/list', (c) => {
   return c.html(studentPages.studentsListPage)
 })
 
+// 일일 성과 기록 페이지
+app.get('/students/daily-record', (c) => {
+  return c.html(studentPages.dailyRecordPage)
+})
+
 export default app
 // Force rebuild Tue Jan 13 09:59:11 UTC 2026

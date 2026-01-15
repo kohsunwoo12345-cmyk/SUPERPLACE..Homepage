@@ -653,4 +653,535 @@ export const studentsListPage = `
 </html>
 `
 
-export default { classesPage, studentsListPage }
+export const dailyRecordPage = `
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>일일 성과 기록 - 꾸메땅학원</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .calendar-day { cursor: pointer; transition: all 0.2s; }
+        .calendar-day:hover { background-color: #e0e7ff; }
+        .calendar-day.selected { background-color: #818cf8; color: white; }
+        .calendar-day.today { border: 2px solid #6366f1; }
+        .calendar-day.has-record { background-color: #dbeafe; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <nav class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-4">
+                    <a href="/students" class="text-gray-600 hover:text-gray-900">
+                        <i class="fas fa-arrow-left mr-2"></i>돌아가기
+                    </a>
+                    <h1 class="text-2xl font-bold text-gray-900">📅 일일 성과 기록</h1>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <span id="selectedDateDisplay" class="text-lg font-semibold text-gray-700"></span>
+                    <button onclick="showRecordModal()" class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700">
+                        <i class="fas fa-plus mr-2"></i>성과 기록 추가
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- 달력 -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <button onclick="previousMonth()" class="p-2 hover:bg-gray-100 rounded">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <h2 id="calendarTitle" class="text-xl font-bold text-gray-900"></h2>
+                        <button onclick="nextMonth()" class="p-2 hover:bg-gray-100 rounded">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-7 gap-1 text-center text-sm">
+                        <div class="font-semibold text-red-500">일</div>
+                        <div class="font-semibold">월</div>
+                        <div class="font-semibold">화</div>
+                        <div class="font-semibold">수</div>
+                        <div class="font-semibold">목</div>
+                        <div class="font-semibold">금</div>
+                        <div class="font-semibold text-blue-500">토</div>
+                    </div>
+                    <div id="calendarDays" class="grid grid-cols-7 gap-1 mt-2"></div>
+                </div>
+
+                <!-- 빠른 통계 -->
+                <div class="bg-white rounded-xl shadow-lg p-6 mt-6">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">📊 이번 달 통계</h3>
+                    <div class="space-y-3">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">총 기록 수</span>
+                            <span id="monthlyTotal" class="font-bold text-blue-600">0건</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">평균 출석률</span>
+                            <span id="monthlyAttendance" class="font-bold text-green-600">0%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 선택된 날짜의 기록 목록 -->
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h2 class="text-xl font-bold text-gray-900 mb-6">
+                        <i class="fas fa-list mr-2"></i><span id="recordDateTitle">오늘의 기록</span>
+                    </h2>
+                    <div id="recordsList" class="space-y-4">
+                        <div class="text-center text-gray-500 py-12">날짜를 선택하면 기록이 표시됩니다.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 성과 기록 추가/수정 모달 -->
+    <div id="recordModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-y-auto">
+        <div class="bg-white rounded-xl p-8 max-w-2xl w-full mx-4 my-8">
+            <h2 id="recordModalTitle" class="text-2xl font-bold mb-6">성과 기록 추가</h2>
+            <form id="recordForm">
+                <input type="hidden" id="recordId">
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">학생 선택 *</label>
+                        <select id="recordStudent" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                            <option value="">선택하세요</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">과목</label>
+                        <select id="recordCourse" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                            <option value="">선택하세요</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">출석</label>
+                        <div class="grid grid-cols-4 gap-2">
+                            <label class="flex items-center justify-center px-4 py-3 border-2 border-gray-300 rounded-lg cursor-pointer hover:bg-green-50 has-[:checked]:border-green-500 has-[:checked]:bg-green-50">
+                                <input type="radio" name="attendance" value="출석" class="mr-2">
+                                <span class="text-sm font-medium">✅ 출석</span>
+                            </label>
+                            <label class="flex items-center justify-center px-4 py-3 border-2 border-gray-300 rounded-lg cursor-pointer hover:bg-yellow-50 has-[:checked]:border-yellow-500 has-[:checked]:bg-yellow-50">
+                                <input type="radio" name="attendance" value="지각" class="mr-2">
+                                <span class="text-sm font-medium">⏰ 지각</span>
+                            </label>
+                            <label class="flex items-center justify-center px-4 py-3 border-2 border-gray-300 rounded-lg cursor-pointer hover:bg-red-50 has-[:checked]:border-red-500 has-[:checked]:bg-red-50">
+                                <input type="radio" name="attendance" value="결석" class="mr-2">
+                                <span class="text-sm font-medium">❌ 결석</span>
+                            </label>
+                            <label class="flex items-center justify-center px-4 py-3 border-2 border-gray-300 rounded-lg cursor-pointer hover:bg-orange-50 has-[:checked]:border-orange-500 has-[:checked]:bg-orange-50">
+                                <input type="radio" name="attendance" value="조퇴" class="mr-2">
+                                <span class="text-sm font-medium">🏃 조퇴</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">과제 완성도</label>
+                        <div class="grid grid-cols-3 gap-2">
+                            <label class="flex items-center justify-center px-4 py-3 border-2 border-gray-300 rounded-lg cursor-pointer hover:bg-green-50 has-[:checked]:border-green-500 has-[:checked]:bg-green-50">
+                                <input type="radio" name="homework" value="완료" class="mr-2">
+                                <span class="text-sm font-medium">✅ 완료</span>
+                            </label>
+                            <label class="flex items-center justify-center px-4 py-3 border-2 border-gray-300 rounded-lg cursor-pointer hover:bg-yellow-50 has-[:checked]:border-yellow-500 has-[:checked]:bg-yellow-50">
+                                <input type="radio" name="homework" value="부분완료" class="mr-2">
+                                <span class="text-sm font-medium">⚠️ 부분</span>
+                            </label>
+                            <label class="flex items-center justify-center px-4 py-3 border-2 border-gray-300 rounded-lg cursor-pointer hover:bg-red-50 has-[:checked]:border-red-500 has-[:checked]:bg-red-50">
+                                <input type="radio" name="homework" value="미완료" class="mr-2">
+                                <span class="text-sm font-medium">❌ 미완료</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">이해도 (1~5)</label>
+                            <div class="flex items-center space-x-2">
+                                <input type="range" id="understanding" min="1" max="5" value="3" class="flex-1">
+                                <span id="understandingValue" class="text-xl font-bold text-blue-600 w-8 text-center">3</span>
+                            </div>
+                            <div class="flex justify-between text-xs text-gray-500 mt-1">
+                                <span>낮음</span>
+                                <span>높음</span>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">참여도 (1~5)</label>
+                            <div class="flex items-center space-x-2">
+                                <input type="range" id="participation" min="1" max="5" value="3" class="flex-1">
+                                <span id="participationValue" class="text-xl font-bold text-purple-600 w-8 text-center">3</span>
+                            </div>
+                            <div class="flex justify-between text-xs text-gray-500 mt-1">
+                                <span>낮음</span>
+                                <span>높음</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">성과/특이사항</label>
+                        <textarea id="achievement" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500" placeholder="오늘의 학습 성과나 특이사항을 기록하세요"></textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">메모</label>
+                        <textarea id="recordMemo" rows="2" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500" placeholder="추가 메모"></textarea>
+                    </div>
+                </div>
+                
+                <div class="flex space-x-3 mt-6">
+                    <button type="submit" class="flex-1 bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700">
+                        저장
+                    </button>
+                    <button type="button" onclick="hideRecordModal()" class="flex-1 bg-gray-300 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-400">
+                        취소
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const academyId = 1;
+        let currentDate = new Date();
+        let selectedDate = new Date();
+        let students = [];
+        let courses = [];
+        let records = [];
+        let monthlyRecords = [];
+
+        // 슬라이더 값 표시
+        document.getElementById('understanding').addEventListener('input', (e) => {
+            document.getElementById('understandingValue').textContent = e.target.value;
+        });
+        document.getElementById('participation').addEventListener('input', (e) => {
+            document.getElementById('participationValue').textContent = e.target.value;
+        });
+
+        function formatDate(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return \`\${year}-\${month}-\${day}\`;
+        }
+
+        function formatDateKorean(date) {
+            return \`\${date.getFullYear()}년 \${date.getMonth() + 1}월 \${date.getDate()}일\`;
+        }
+
+        async function loadStudents() {
+            try {
+                const res = await fetch('/api/students?academyId=' + academyId);
+                const data = await res.json();
+                if (data.success) {
+                    students = data.students;
+                    const select = document.getElementById('recordStudent');
+                    select.innerHTML = '<option value="">선택하세요</option>' +
+                        students.map(s => \`<option value="\${s.id}">\${s.name} (\${s.grade})</option>\`).join('');
+                }
+            } catch (error) {
+                console.error('학생 목록 로딩 실패:', error);
+            }
+        }
+
+        async function loadCourses() {
+            try {
+                const res = await fetch('/api/courses?academyId=' + academyId);
+                const data = await res.json();
+                if (data.success) {
+                    courses = data.courses;
+                    const select = document.getElementById('recordCourse');
+                    select.innerHTML = '<option value="">선택하세요</option>' +
+                        courses.map(c => \`<option value="\${c.id}">\${c.course_name}</option>\`).join('');
+                }
+            } catch (error) {
+                console.error('과목 목록 로딩 실패:', error);
+            }
+        }
+
+        function renderCalendar() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            
+            document.getElementById('calendarTitle').textContent = \`\${year}년 \${month + 1}월\`;
+            
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            
+            const container = document.getElementById('calendarDays');
+            container.innerHTML = '';
+            
+            // 빈 칸
+            for (let i = 0; i < firstDay; i++) {
+                container.innerHTML += '<div></div>';
+            }
+            
+            // 날짜
+            const today = new Date();
+            for (let day = 1; day <= daysInMonth; day++) {
+                const date = new Date(year, month, day);
+                const dateStr = formatDate(date);
+                const isToday = date.toDateString() === today.toDateString();
+                const isSelected = date.toDateString() === selectedDate.toDateString();
+                const hasRecord = monthlyRecords.some(r => r.record_date === dateStr);
+                
+                let classes = 'calendar-day p-2 rounded text-center';
+                if (isToday) classes += ' today';
+                if (isSelected) classes += ' selected';
+                if (hasRecord) classes += ' has-record';
+                
+                container.innerHTML += \`<div class="\${classes}" onclick="selectDate(new Date(\${year}, \${month}, \${day}))">\${day}</div>\`;
+            }
+        }
+
+        function previousMonth() {
+            currentDate.setMonth(currentDate.getMonth() - 1);
+            loadMonthlyRecords();
+        }
+
+        function nextMonth() {
+            currentDate.setMonth(currentDate.getMonth() + 1);
+            loadMonthlyRecords();
+        }
+
+        function selectDate(date) {
+            selectedDate = date;
+            document.getElementById('selectedDateDisplay').textContent = formatDateKorean(date);
+            document.getElementById('recordDateTitle').textContent = formatDateKorean(date) + '의 기록';
+            renderCalendar();
+            loadRecords();
+        }
+
+        async function loadRecords() {
+            try {
+                const dateStr = formatDate(selectedDate);
+                const res = await fetch('/api/daily-records?date=' + dateStr);
+                const data = await res.json();
+                if (data.success) {
+                    records = data.records;
+                    renderRecords();
+                }
+            } catch (error) {
+                console.error('기록 로딩 실패:', error);
+            }
+        }
+
+        async function loadMonthlyRecords() {
+            try {
+                const year = currentDate.getFullYear();
+                const month = currentDate.getMonth();
+                const startDate = \`\${year}-\${String(month + 1).padStart(2, '0')}-01\`;
+                const endDate = \`\${year}-\${String(month + 1).padStart(2, '0')}-31\`;
+                
+                const res = await fetch(\`/api/daily-records?startDate=\${startDate}&endDate=\${endDate}\`);
+                const data = await res.json();
+                if (data.success) {
+                    monthlyRecords = data.records;
+                    
+                    // 통계 계산
+                    document.getElementById('monthlyTotal').textContent = monthlyRecords.length + '건';
+                    const attendanceCount = monthlyRecords.filter(r => r.attendance === '출석').length;
+                    const attendanceRate = monthlyRecords.length > 0 
+                        ? Math.round((attendanceCount / monthlyRecords.length) * 100) 
+                        : 0;
+                    document.getElementById('monthlyAttendance').textContent = attendanceRate + '%';
+                    
+                    renderCalendar();
+                }
+            } catch (error) {
+                console.error('월간 기록 로딩 실패:', error);
+            }
+        }
+
+        function renderRecords() {
+            const container = document.getElementById('recordsList');
+            if (records.length === 0) {
+                container.innerHTML = '<div class="text-center text-gray-500 py-12">이 날짜에 기록된 성과가 없습니다.</div>';
+                return;
+            }
+
+            container.innerHTML = records.map(record => {
+                const attendanceColor = {
+                    '출석': 'bg-green-100 text-green-800',
+                    '지각': 'bg-yellow-100 text-yellow-800',
+                    '결석': 'bg-red-100 text-red-800',
+                    '조퇴': 'bg-orange-100 text-orange-800'
+                }[record.attendance] || 'bg-gray-100 text-gray-800';
+
+                const homeworkColor = {
+                    '완료': 'bg-green-100 text-green-800',
+                    '부분완료': 'bg-yellow-100 text-yellow-800',
+                    '미완료': 'bg-red-100 text-red-800'
+                }[record.homework_status] || 'bg-gray-100 text-gray-800';
+
+                return \`
+                    <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
+                        <div class="flex justify-between items-start mb-3">
+                            <div>
+                                <h3 class="text-lg font-bold text-gray-900">\${record.student_name}</h3>
+                                <p class="text-sm text-gray-500">\${record.course_name || '과목 미지정'}</p>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button onclick="editRecord(\${record.id})" class="text-blue-600 hover:text-blue-800">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button onclick="deleteRecord(\${record.id}, '\${record.student_name}')" class="text-red-600 hover:text-red-800">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
+                            \${record.attendance ? \`<span class="px-3 py-1 rounded-full text-sm font-medium \${attendanceColor}">\${record.attendance}</span>\` : ''}
+                            \${record.homework_status ? \`<span class="px-3 py-1 rounded-full text-sm font-medium \${homeworkColor}">과제 \${record.homework_status}</span>\` : ''}
+                            \${record.understanding_level ? \`<span class="px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">이해도 \${record.understanding_level}/5</span>\` : ''}
+                            \${record.participation_level ? \`<span class="px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800">참여도 \${record.participation_level}/5</span>\` : ''}
+                        </div>
+                        \${record.achievement ? \`<p class="text-sm text-gray-700 mb-2"><strong>성과:</strong> \${record.achievement}</p>\` : ''}
+                        \${record.memo ? \`<p class="text-sm text-gray-600"><strong>메모:</strong> \${record.memo}</p>\` : ''}
+                    </div>
+                \`;
+            }).join('');
+        }
+
+        async function showRecordModal() {
+            document.getElementById('recordModalTitle').textContent = formatDateKorean(selectedDate) + ' 성과 기록 추가';
+            document.getElementById('recordForm').reset();
+            document.getElementById('recordId').value = '';
+            document.getElementById('understanding').value = 3;
+            document.getElementById('participation').value = 3;
+            document.getElementById('understandingValue').textContent = '3';
+            document.getElementById('participationValue').textContent = '3';
+            
+            await loadStudents();
+            await loadCourses();
+            
+            document.getElementById('recordModal').classList.remove('hidden');
+        }
+
+        function hideRecordModal() {
+            document.getElementById('recordModal').classList.add('hidden');
+        }
+
+        async function editRecord(recordId) {
+            const record = records.find(r => r.id === recordId);
+            if (!record) return;
+
+            await loadStudents();
+            await loadCourses();
+
+            document.getElementById('recordModalTitle').textContent = '성과 기록 수정';
+            document.getElementById('recordId').value = record.id;
+            document.getElementById('recordStudent').value = record.student_id;
+            document.getElementById('recordCourse').value = record.course_id || '';
+            
+            if (record.attendance) {
+                document.querySelector(\`input[name="attendance"][value="\${record.attendance}"]\`).checked = true;
+            }
+            if (record.homework_status) {
+                document.querySelector(\`input[name="homework"][value="\${record.homework_status}"]\`).checked = true;
+            }
+            
+            if (record.understanding_level) {
+                document.getElementById('understanding').value = record.understanding_level;
+                document.getElementById('understandingValue').textContent = record.understanding_level;
+            }
+            if (record.participation_level) {
+                document.getElementById('participation').value = record.participation_level;
+                document.getElementById('participationValue').textContent = record.participation_level;
+            }
+            
+            document.getElementById('achievement').value = record.achievement || '';
+            document.getElementById('recordMemo').value = record.memo || '';
+            document.getElementById('recordModal').classList.remove('hidden');
+        }
+
+        async function deleteRecord(recordId, studentName) {
+            if (!confirm(\`\${studentName} 학생의 성과 기록을 삭제하시겠습니까?\`)) return;
+
+            try {
+                const res = await fetch('/api/daily-records/' + recordId, { method: 'DELETE' });
+                const data = await res.json();
+                if (data.success) {
+                    alert('기록이 삭제되었습니다.');
+                    loadRecords();
+                    loadMonthlyRecords();
+                } else {
+                    alert('삭제 실패: ' + data.error);
+                }
+            } catch (error) {
+                alert('삭제 중 오류가 발생했습니다.');
+            }
+        }
+
+        document.getElementById('recordForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const recordId = document.getElementById('recordId').value;
+            const attendance = document.querySelector('input[name="attendance"]:checked');
+            const homework = document.querySelector('input[name="homework"]:checked');
+            
+            const payload = {
+                studentId: document.getElementById('recordStudent').value,
+                courseId: document.getElementById('recordCourse').value || null,
+                recordDate: formatDate(selectedDate),
+                attendance: attendance ? attendance.value : null,
+                homeworkStatus: homework ? homework.value : null,
+                understandingLevel: parseInt(document.getElementById('understanding').value),
+                participationLevel: parseInt(document.getElementById('participation').value),
+                achievement: document.getElementById('achievement').value,
+                memo: document.getElementById('recordMemo').value
+            };
+
+            try {
+                const url = recordId ? '/api/daily-records/' + recordId : '/api/daily-records';
+                const method = recordId ? 'PUT' : 'POST';
+                
+                const res = await fetch(url, {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await res.json();
+                if (data.success) {
+                    alert(recordId ? '기록이 수정되었습니다.' : '기록이 추가되었습니다.');
+                    hideRecordModal();
+                    loadRecords();
+                    loadMonthlyRecords();
+                } else {
+                    alert('저장 실패: ' + data.error);
+                }
+            } catch (error) {
+                alert('저장 중 오류가 발생했습니다.');
+                console.error(error);
+            }
+        });
+
+        // 초기 로드
+        (async () => {
+            selectDate(new Date());
+            await loadMonthlyRecords();
+            await loadStudents();
+            await loadCourses();
+        })();
+    </script>
+</body>
+</html>
+`
+
+export default { classesPage, studentsListPage, dailyRecordPage }
