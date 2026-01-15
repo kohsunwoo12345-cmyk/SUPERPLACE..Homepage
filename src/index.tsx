@@ -3251,187 +3251,167 @@ function generateEventPromoHTML(data: any): string {
 }
 
 // 학생 성과 리포트 페이지 템플릿 (전문적이고 상세한 버전)
+// 학생 성과 리포트 페이지 템플릿 (모바일 최적화 + 교재/출석 추가)
 function generateStudentReportHTML(data: any): string {
-  const { studentName, month, achievements, improvements, nextGoals, teacherName } = data
+  const { 
+    studentName, month, achievements, improvements, nextGoals, teacherName,
+    textbooks, attendanceRate, attendanceDays, totalDays
+  } = data
+  
   return `
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>${studentName} 학생 ${month} 학습 리포트</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
     <style>
       @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
       * { font-family: 'Pretendard Variable', sans-serif; }
-      @keyframes slideInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+      @keyframes slideInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
       .animate-slide { animation: slideInUp 0.6s ease-out; }
       .pattern-dots { background-image: radial-gradient(circle at 2px 2px, rgba(255,255,255,0.15) 2px, transparent 0); background-size: 30px 30px; }
     </style>
 </head>
-<body class="bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 min-h-screen py-12 px-6">
-    <div class="max-w-5xl mx-auto">
+<body class="bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 min-h-screen py-4 sm:py-8 px-3 sm:px-6">
+    <div class="max-w-4xl mx-auto">
         <!-- Header Card -->
-        <div class="bg-white rounded-3xl shadow-2xl overflow-hidden mb-8 animate-slide">
-            <div class="bg-gradient-to-r from-green-400 via-blue-500 to-purple-600 pattern-dots text-white p-12 text-center relative">
-                <div class="absolute top-4 right-4 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full text-sm font-bold">
-                    <i class="fas fa-calendar-alt mr-2"></i>${month}
+        <div class="bg-white rounded-2xl sm:rounded-3xl shadow-xl sm:shadow-2xl overflow-hidden mb-4 sm:mb-8 animate-slide">
+            <div class="bg-gradient-to-r from-green-400 via-blue-500 to-purple-600 pattern-dots text-white p-6 sm:p-10 text-center relative">
+                <div class="absolute top-2 right-2 sm:top-4 sm:right-4 bg-white/20 backdrop-blur-sm px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-bold">
+                    <i class="fas fa-calendar-alt mr-1 sm:mr-2"></i>${month}
                 </div>
-                <div class="mb-6">
-                    <div class="inline-block bg-white/20 backdrop-blur-sm px-6 py-2 rounded-full text-sm font-bold mb-4">
+                <div class="mb-4 sm:mb-6">
+                    <div class="inline-block bg-white/20 backdrop-blur-sm px-4 py-1.5 sm:px-6 sm:py-2 rounded-full text-xs sm:text-sm font-bold mb-2 sm:mb-4">
                         📊 Monthly Learning Report
                     </div>
                 </div>
-                <h1 class="text-5xl font-bold mb-4">${month} 학습 리포트</h1>
-                <div class="flex items-center justify-center gap-3 text-3xl font-bold">
+                <h1 class="text-3xl sm:text-4xl md:text-5xl font-bold mb-3 sm:mb-4">${month} 학습 리포트</h1>
+                <div class="flex items-center justify-center gap-2 sm:gap-3 text-2xl sm:text-3xl font-bold">
                     <i class="fas fa-user-graduate"></i>
                     <span>${studentName} 학생</span>
                 </div>
-                <p class="text-lg mt-4 opacity-90">열심히 노력한 한 달의 기록입니다</p>
+                <p class="text-sm sm:text-lg mt-3 sm:mt-4 opacity-90">열심히 노력한 한 달의 기록입니다</p>
             </div>
             
             <!-- Quick Stats -->
             <div class="grid grid-cols-3 divide-x divide-gray-200 bg-gray-50">
-                <div class="p-6 text-center">
-                    <div class="text-3xl font-bold text-green-600 mb-1">${(achievements || []).length}</div>
-                    <div class="text-sm text-gray-600">이달의 성과</div>
+                <div class="p-3 sm:p-6 text-center">
+                    <div class="text-2xl sm:text-3xl font-bold text-green-600 mb-0.5 sm:mb-1">${(achievements || []).length}</div>
+                    <div class="text-xs sm:text-sm text-gray-600">이달의 성과</div>
                 </div>
-                <div class="p-6 text-center">
-                    <div class="text-3xl font-bold text-blue-600 mb-1">${(improvements || []).length}</div>
-                    <div class="text-sm text-gray-600">개선 포인트</div>
+                <div class="p-3 sm:p-6 text-center">
+                    <div class="text-2xl sm:text-3xl font-bold text-blue-600 mb-0.5 sm:mb-1">${attendanceRate || 95}%</div>
+                    <div class="text-xs sm:text-sm text-gray-600">출석률</div>
                 </div>
-                <div class="p-6 text-center">
-                    <div class="text-3xl font-bold text-purple-600 mb-1">${(nextGoals || []).length}</div>
-                    <div class="text-sm text-gray-600">다음 목표</div>
+                <div class="p-3 sm:p-6 text-center">
+                    <div class="text-2xl sm:text-3xl font-bold text-purple-600 mb-0.5 sm:mb-1">${(nextGoals || []).length}</div>
+                    <div class="text-xs sm:text-sm text-gray-600">다음 목표</div>
                 </div>
             </div>
         </div>
         
         <!-- Main Content -->
-        <div class="bg-white rounded-3xl shadow-xl p-10 mb-8">
-            <!-- 종합 평가 -->
-            <div class="mb-12 p-8 bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl border-2 border-blue-100">
-                <h2 class="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-3">
-                    <i class="fas fa-award text-blue-600 text-3xl"></i>
-                    종합 평가
+        <div class="bg-white rounded-2xl sm:rounded-3xl shadow-lg sm:shadow-xl p-4 sm:p-6 md:p-10 mb-4 sm:mb-8 space-y-6 sm:space-y-10">
+            
+            <!-- 교재 정보 -->
+            ${(textbooks && textbooks.length > 0) ? `
+            <div class="p-4 sm:p-6 bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl sm:rounded-2xl border-2 border-amber-100">
+                <h2 class="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4 flex items-center gap-2 sm:gap-3">
+                    <i class="fas fa-book text-amber-600 text-2xl sm:text-3xl"></i>
+                    사용 교재
                 </h2>
-                <p class="text-gray-700 text-lg leading-relaxed">
-                    ${studentName} 학생은 ${month}에 매우 우수한 학습 태도를 보여주었습니다. 
-                    특히 꾸준한 출석과 적극적인 수업 참여가 돋보였으며, 
-                    이러한 노력이 실제 성적 향상으로 이어지고 있습니다. 
-                    앞으로도 지금의 열정을 유지한다면 더욱 훌륭한 결과를 얻을 수 있을 것입니다.
-                </p>
+                <div class="space-y-2 sm:space-y-3">
+                    ${(textbooks || []).map((book: string) => `
+                        <div class="flex items-center gap-2 sm:gap-3 p-3 sm:p-4 bg-white rounded-lg sm:rounded-xl shadow-sm">
+                            <i class="fas fa-check-circle text-amber-600 text-lg sm:text-xl flex-shrink-0"></i>
+                            <span class="text-sm sm:text-base text-gray-800 font-medium">${book}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+            ` : ''}
+            
+            <!-- 출석 현황 -->
+            <div class="p-4 sm:p-6 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl sm:rounded-2xl border-2 border-blue-100">
+                <h2 class="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4 flex items-center gap-2 sm:gap-3">
+                    <i class="fas fa-calendar-check text-blue-600 text-2xl sm:text-3xl"></i>
+                    출석 현황
+                </h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                    <div class="bg-white rounded-lg sm:rounded-xl p-4 sm:p-5 shadow-sm">
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-sm sm:text-base text-gray-700 font-medium">출석률</span>
+                            <span class="text-2xl sm:text-3xl font-bold text-blue-600">${attendanceRate || 95}%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2.5 sm:h-3">
+                            <div class="bg-gradient-to-r from-blue-500 to-blue-600 h-2.5 sm:h-3 rounded-full" style="width: ${attendanceRate || 95}%"></div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg sm:rounded-xl p-4 sm:p-5 shadow-sm">
+                        <div class="text-center">
+                            <div class="text-sm sm:text-base text-gray-600 mb-2">출석 일수</div>
+                            <div class="text-2xl sm:text-3xl font-bold text-blue-600">${attendanceDays || 19}일 / ${totalDays || 20}일</div>
+                        </div>
+                    </div>
+                </div>
             </div>
             
             <!-- 이달의 성과 -->
-            <div class="mb-12">
-                <h2 class="text-3xl font-bold text-gray-900 mb-8 flex items-center gap-3">
-                    <div class="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center text-white">
-                        <i class="fas fa-trophy"></i>
+            <div>
+                <h2 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-4 sm:mb-6 flex flex-wrap items-center gap-2 sm:gap-3">
+                    <div class="w-10 h-10 sm:w-12 sm:h-12 bg-green-600 rounded-full flex items-center justify-center text-white flex-shrink-0">
+                        <i class="fas fa-trophy text-base sm:text-lg"></i>
                     </div>
-                    <span>이달의 성과</span>
-                    <span class="ml-auto text-lg text-gray-500 font-normal">Outstanding Achievements</span>
+                    <span class="text-xl sm:text-2xl md:text-3xl">이달의 성과</span>
+                    <span class="hidden sm:inline text-base sm:text-lg text-gray-500 font-normal">Outstanding Achievements</span>
                 </h2>
-                <div class="space-y-6">
+                <div class="space-y-3 sm:space-y-4">
                     ${(achievements || []).map((a: string, idx: number) => `
-                        <div class="group hover:transform hover:scale-102 transition-all duration-300">
-                            <div class="bg-gradient-to-r from-green-50 to-emerald-50 border-l-4 border-green-500 p-6 rounded-r-2xl shadow-md hover:shadow-xl">
-                                <div class="flex items-start gap-4">
-                                    <div class="flex-shrink-0 w-10 h-10 bg-green-600 rounded-full flex items-center justify-center text-white font-bold">
-                                        ${idx + 1}
-                                    </div>
-                                    <div class="flex-1">
-                                        <p class="text-gray-800 text-xl leading-relaxed font-medium">${a}</p>
-                                        <div class="mt-3 flex items-center gap-2">
-                                            <span class="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full font-medium">
-                                                <i class="fas fa-check-circle mr-1"></i>달성 완료
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <div class="text-4xl opacity-20 group-hover:opacity-40 transition-opacity">
-                                        🎯
+                        <div class="bg-gradient-to-r from-green-50 to-emerald-50 border-l-4 border-green-500 p-4 sm:p-6 rounded-r-xl sm:rounded-r-2xl shadow-sm hover:shadow-md transition-shadow">
+                            <div class="flex items-start gap-3 sm:gap-4">
+                                <div class="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 bg-green-600 rounded-full flex items-center justify-center text-white font-bold text-sm sm:text-base">
+                                    ${idx + 1}
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-gray-800 text-base sm:text-lg md:text-xl leading-relaxed font-medium break-words">${a}</p>
+                                    <div class="mt-2 sm:mt-3">
+                                        <span class="inline-block text-xs bg-green-100 text-green-700 px-2 sm:px-3 py-1 rounded-full font-medium">
+                                            <i class="fas fa-check-circle mr-1"></i>달성 완료
+                                        </span>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     `).join('')}
-                </div>
-            </div>
-            
-            <!-- 학습 데이터 분석 -->
-            <div class="mb-12 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl p-8">
-                <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
-                    <i class="fas fa-chart-line text-blue-600 text-2xl"></i>
-                    학습 데이터 분석
-                </h2>
-                <div class="grid md:grid-cols-2 gap-6">
-                    <div class="bg-white rounded-xl p-6 shadow-md">
-                        <div class="flex items-center justify-between mb-4">
-                            <span class="text-gray-700 font-medium">출석률</span>
-                            <span class="text-2xl font-bold text-blue-600">95%</span>
-                        </div>
-                        <div class="w-full bg-gray-200 rounded-full h-3">
-                            <div class="bg-gradient-to-r from-blue-500 to-blue-600 h-3 rounded-full" style="width: 95%"></div>
-                        </div>
-                    </div>
-                    <div class="bg-white rounded-xl p-6 shadow-md">
-                        <div class="flex items-center justify-between mb-4">
-                            <span class="text-gray-700 font-medium">과제 완성도</span>
-                            <span class="text-2xl font-bold text-green-600">92%</span>
-                        </div>
-                        <div class="w-full bg-gray-200 rounded-full h-3">
-                            <div class="bg-gradient-to-r from-green-500 to-green-600 h-3 rounded-full" style="width: 92%"></div>
-                        </div>
-                    </div>
-                    <div class="bg-white rounded-xl p-6 shadow-md">
-                        <div class="flex items-center justify-between mb-4">
-                            <span class="text-gray-700 font-medium">수업 참여도</span>
-                            <span class="text-2xl font-bold text-purple-600">98%</span>
-                        </div>
-                        <div class="w-full bg-gray-200 rounded-full h-3">
-                            <div class="bg-gradient-to-r from-purple-500 to-purple-600 h-3 rounded-full" style="width: 98%"></div>
-                        </div>
-                    </div>
-                    <div class="bg-white rounded-xl p-6 shadow-md">
-                        <div class="flex items-center justify-between mb-4">
-                            <span class="text-gray-700 font-medium">이해도</span>
-                            <span class="text-2xl font-bold text-orange-600">90%</span>
-                        </div>
-                        <div class="w-full bg-gray-200 rounded-full h-3">
-                            <div class="bg-gradient-to-r from-orange-500 to-orange-600 h-3 rounded-full" style="width: 90%"></div>
-                        </div>
-                    </div>
                 </div>
             </div>
             
             <!-- 개선이 필요한 부분 -->
-            <div class="mb-12">
-                <h2 class="text-3xl font-bold text-gray-900 mb-8 flex items-center gap-3">
-                    <div class="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white">
-                        <i class="fas fa-chart-line"></i>
+            ${(improvements && improvements.length > 0) ? `
+            <div>
+                <h2 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-4 sm:mb-6 flex flex-wrap items-center gap-2 sm:gap-3">
+                    <div class="w-10 h-10 sm:w-12 sm:h-12 bg-blue-600 rounded-full flex items-center justify-center text-white flex-shrink-0">
+                        <i class="fas fa-chart-line text-base sm:text-lg"></i>
                     </div>
-                    <span>개선이 필요한 부분</span>
-                    <span class="ml-auto text-lg text-gray-500 font-normal">Areas for Improvement</span>
+                    <span class="text-xl sm:text-2xl md:text-3xl">개선이 필요한 부분</span>
+                    <span class="hidden sm:inline text-base sm:text-lg text-gray-500 font-normal">Areas for Improvement</span>
                 </h2>
-                <div class="space-y-6">
+                <div class="space-y-3 sm:space-y-4">
                     ${(improvements || []).map((i: string, idx: number) => `
-                        <div class="group hover:transform hover:scale-102 transition-all duration-300">
-                            <div class="bg-gradient-to-r from-blue-50 to-cyan-50 border-l-4 border-blue-500 p-6 rounded-r-2xl shadow-md hover:shadow-xl">
-                                <div class="flex items-start gap-4">
-                                    <div class="flex-shrink-0 w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold">
-                                        ${idx + 1}
-                                    </div>
-                                    <div class="flex-1">
-                                        <p class="text-gray-800 text-xl leading-relaxed font-medium">${i}</p>
-                                        <div class="mt-3 flex items-center gap-2">
-                                            <span class="text-xs bg-blue-100 text-blue-700 px-3 py-1 rounded-full font-medium">
-                                                <i class="fas fa-lightbulb mr-1"></i>개선 방향 제시
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <div class="text-4xl opacity-20 group-hover:opacity-40 transition-opacity">
-                                        💡
+                        <div class="bg-gradient-to-r from-blue-50 to-cyan-50 border-l-4 border-blue-500 p-4 sm:p-6 rounded-r-xl sm:rounded-r-2xl shadow-sm hover:shadow-md transition-shadow">
+                            <div class="flex items-start gap-3 sm:gap-4">
+                                <div class="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-sm sm:text-base">
+                                    ${idx + 1}
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-gray-800 text-base sm:text-lg md:text-xl leading-relaxed font-medium break-words">${i}</p>
+                                    <div class="mt-2 sm:mt-3">
+                                        <span class="inline-block text-xs bg-blue-100 text-blue-700 px-2 sm:px-3 py-1 rounded-full font-medium">
+                                            <i class="fas fa-lightbulb mr-1"></i>개선 방향
+                                        </span>
                                     </div>
                                 </div>
                             </div>
@@ -3439,96 +3419,44 @@ function generateStudentReportHTML(data: any): string {
                     `).join('')}
                 </div>
             </div>
+            ` : ''}
             
             <!-- 다음 달 목표 -->
-            <div class="mb-12">
-                <h2 class="text-3xl font-bold text-gray-900 mb-8 flex items-center gap-3">
-                    <div class="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center text-white">
-                        <i class="fas fa-bullseye"></i>
+            <div>
+                <h2 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-4 sm:mb-6 flex flex-wrap items-center gap-2 sm:gap-3">
+                    <div class="w-10 h-10 sm:w-12 sm:h-12 bg-purple-600 rounded-full flex items-center justify-center text-white flex-shrink-0">
+                        <i class="fas fa-bullseye text-base sm:text-lg"></i>
                     </div>
-                    <span>다음 달 학습 목표</span>
-                    <span class="ml-auto text-lg text-gray-500 font-normal">Next Month Goals</span>
+                    <span class="text-xl sm:text-2xl md:text-3xl">다음 달 학습 목표</span>
+                    <span class="hidden sm:inline text-base sm:text-lg text-gray-500 font-normal">Next Month Goals</span>
                 </h2>
-                <div class="space-y-6">
+                <div class="space-y-3 sm:space-y-4">
                     ${(nextGoals || []).map((g: string, idx: number) => `
-                        <div class="group hover:transform hover:scale-102 transition-all duration-300">
-                            <div class="bg-gradient-to-r from-purple-50 to-pink-50 border-l-4 border-purple-500 p-6 rounded-r-2xl shadow-md hover:shadow-xl">
-                                <div class="flex items-start gap-4">
-                                    <div class="flex-shrink-0 w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold">
-                                        ${idx + 1}
-                                    </div>
-                                    <div class="flex-1">
-                                        <p class="text-gray-800 text-xl leading-relaxed font-medium">${g}</p>
-                                        <div class="mt-3 flex items-center gap-2">
-                                            <span class="text-xs bg-purple-100 text-purple-700 px-3 py-1 rounded-full font-medium">
-                                                <i class="fas fa-flag mr-1"></i>목표 설정
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <div class="text-4xl opacity-20 group-hover:opacity-40 transition-opacity">
-                                        🎯
+                        <div class="bg-gradient-to-r from-purple-50 to-pink-50 border-l-4 border-purple-500 p-4 sm:p-6 rounded-r-xl sm:rounded-r-2xl shadow-sm hover:shadow-md transition-shadow">
+                            <div class="flex items-start gap-3 sm:gap-4">
+                                <div class="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold text-sm sm:text-base">
+                                    ${idx + 1}
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-gray-800 text-base sm:text-lg md:text-xl leading-relaxed font-medium break-words">${g}</p>
+                                    <div class="mt-2 sm:mt-3">
+                                        <span class="inline-block text-xs bg-purple-100 text-purple-700 px-2 sm:px-3 py-1 rounded-full font-medium">
+                                            <i class="fas fa-star mr-1"></i>목표 설정
+                                        </span>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     `).join('')}
-                </div>
-            </div>
-            
-            <!-- 담당 선생님 메시지 -->
-            <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-10 border-2 border-gray-200">
-                <div class="flex items-start gap-6">
-                    <div class="flex-shrink-0">
-                        <div class="w-20 h-20 bg-gradient-to-br from-purple-600 to-purple-800 rounded-full flex items-center justify-center text-white text-3xl shadow-lg">
-                            <i class="fas fa-user-tie"></i>
-                        </div>
-                    </div>
-                    <div class="flex-1">
-                        <div class="mb-4">
-                            <p class="text-gray-600 text-sm mb-2">담당 선생님의 한마디</p>
-                            <p class="text-2xl font-bold text-gray-900">${teacherName || '선생님'}</p>
-                        </div>
-                        <div class="bg-white rounded-xl p-6 shadow-md">
-                            <p class="text-gray-700 text-lg leading-relaxed mb-4">
-                                "${studentName} 학생, 이번 달도 정말 수고 많았어요! 
-                                꾸준한 노력과 성실한 태도가 정말 인상적이었습니다. 
-                                특히 어려운 문제도 끝까지 포기하지 않고 해결하려는 모습이 
-                                선생님에게 큰 감동을 주었어요."
-                            </p>
-                            <p class="text-gray-700 text-lg leading-relaxed">
-                                "다음 달에는 설정한 목표들을 하나씩 달성하면서 
-                                더욱 성장하는 모습을 기대하겠습니다. 
-                                항상 응원하고 있으니 자신감을 가지고 앞으로 나아가세요! 💪"
-                            </p>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
         
-        <!-- 학부모님께 -->
-        <div class="bg-white rounded-3xl shadow-xl p-10 text-center">
-            <div class="inline-block bg-purple-100 rounded-full p-4 mb-6">
-                <i class="fas fa-heart text-purple-600 text-4xl"></i>
-            </div>
-            <h2 class="text-3xl font-bold text-gray-900 mb-4">학부모님께</h2>
-            <p class="text-gray-600 text-lg leading-relaxed max-w-3xl mx-auto mb-8">
-                ${studentName} 학생의 성장을 위해 항상 관심과 지원을 아끼지 않으시는 
-                학부모님께 진심으로 감사드립니다. 가정에서의 격려와 학원에서의 체계적인 관리가 
-                만나 학생이 더욱 발전할 수 있었습니다. 앞으로도 지속적인 소통을 통해 
-                최선의 교육 서비스를 제공하겠습니다.
-            </p>
-            <div class="inline-flex items-center gap-3 text-purple-600 font-medium">
-                <i class="fas fa-phone-alt"></i>
-                <span>추가 상담이 필요하신 경우 언제든 연락 주세요</span>
-            </div>
+        <!-- Footer -->
+        <div class="bg-white rounded-2xl sm:rounded-3xl shadow-lg p-4 sm:p-6 md:p-8 text-center">
+            <p class="text-base sm:text-lg text-gray-700 mb-2 sm:mb-3">담당 선생님: <span class="font-bold text-purple-600">${teacherName || '담당 교사'}</span></p>
+            <p class="text-xs sm:text-sm text-gray-500">이 리포트는 학생의 학습 성장을 위한 기록입니다</p>
         </div>
-    </div>
-    
-    <!-- Footer -->
-    <div class="max-w-5xl mx-auto mt-12 text-center text-gray-500 text-sm">
-        <p>이 리포트는 ${month}의 학습 활동을 기반으로 작성되었습니다.</p>
-        <p class="mt-2">© 2026 Learning Report. Generated with care.</p>
     </div>
 </body>
 </html>
