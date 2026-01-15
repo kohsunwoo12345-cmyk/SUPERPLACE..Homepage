@@ -4894,200 +4894,7 @@ app.get('/contact', (c) => {
 
 // 회원가입 페이지
 app.get('/register', (c) => {
-  return c.html(`
-    <!DOCTYPE html>
-    <html lang="ko">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>회원가입 - 우리는 슈퍼플레이스다</title>
-        <script src="https://cdn.tailwindcss.com"></script>
-        <style>
-          @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
-          * {
-            font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-          }
-          .gradient-purple {
-            background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
-          }
-        </style>
-    </head>
-    <body class="bg-gray-50">
-        <div class="min-h-screen flex items-center justify-center px-6 py-12">
-            <div class="max-w-md w-full">
-                <div class="text-center mb-10">
-                    <a href="/" class="inline-block mb-6">
-                        <span class="text-2xl font-bold text-gray-900">우리는 슈퍼플레이스다</span>
-                    </a>
-                    <h1 class="text-3xl font-bold text-gray-900 mb-2">회원가입</h1>
-                    <p class="text-gray-600">학원 마케팅 교육 플랫폼에 가입하세요</p>
-                </div>
-
-                <div class="bg-white rounded-2xl border border-gray-200 p-8">
-                    <form id="registerForm" class="space-y-5">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-900 mb-2">이름 <span class="text-red-500">*</span></label>
-                            <input type="text" name="name" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition">
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-900 mb-2">이메일 <span class="text-red-500">*</span></label>
-                            <input type="email" name="email" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition">
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-900 mb-2">비밀번호 <span class="text-red-500">*</span></label>
-                            <input type="password" name="password" required minlength="6" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition">
-                            <p class="text-xs text-gray-500 mt-1">최소 6자 이상</p>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-900 mb-2">학원명 <span class="text-red-500">*</span></label>
-                            <input type="text" name="academy_name" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition" placeholder="꾸메땅학원">
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-900 mb-2">학원 위치</label>
-                            <input type="text" name="academy_location" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition" placeholder="인천 서구 검단동 (선택사항)">
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-900 mb-2">전화번호</label>
-                            <input type="tel" name="phone" placeholder="010-0000-0000" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition">
-                        </div>
-
-                        <div id="errorMessage" class="hidden bg-red-50 text-red-600 px-4 py-3 rounded-xl text-sm"></div>
-
-                        <button type="submit" class="w-full gradient-purple text-white px-6 py-3 rounded-xl font-medium hover:opacity-90 transition">
-                            회원가입
-                        </button>
-                    </form>
-
-                    <div class="mt-6 text-center">
-                        <p class="text-sm text-gray-600">
-                            이미 계정이 있으신가요? 
-                            <a href="/login" class="text-purple-600 hover:text-purple-700 font-medium">로그인</a>
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <script>
-            // URL 파라미터에서 소셜 로그인 출처 확인
-            const urlParams = new URLSearchParams(window.location.search)
-            const fromSocial = urlParams.get('from')
-            
-            // 소셜 로그인 데이터 자동 입력
-            window.addEventListener('load', () => {
-                if (fromSocial && (fromSocial === 'google' || fromSocial === 'kakao')) {
-                    const socialDataStr = sessionStorage.getItem('socialData')
-                    if (socialDataStr) {
-                        try {
-                            const socialData = JSON.parse(socialDataStr)
-                            
-                            // 소셜 로그인 정보 자동 입력
-                            if (socialData.email) {
-                                document.querySelector('input[name="email"]').value = socialData.email
-                                document.querySelector('input[name="email"]').readOnly = true
-                                document.querySelector('input[name="email"]').style.backgroundColor = '#f3f4f6'
-                            }
-                            if (socialData.name) {
-                                document.querySelector('input[name="name"]').value = socialData.name
-                            }
-                            
-                            // 비밀번호 필드 숨기기 (소셜 로그인은 비밀번호 불필요)
-                            const passwordDiv = document.querySelector('input[name="password"]').closest('div')
-                            passwordDiv.style.display = 'none'
-                            
-                            // 안내 메시지 표시
-                            const form = document.getElementById('registerForm')
-                            const infoDiv = document.createElement('div')
-                            infoDiv.className = 'bg-blue-50 text-blue-700 px-4 py-3 rounded-xl text-sm mb-4'
-                            infoDiv.innerHTML = \`
-                                <div class="flex items-center gap-2">
-                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
-                                    </svg>
-                                    <span><strong>\${fromSocial === 'google' ? '구글' : '카카오'}</strong> 계정으로 가입 중입니다. 학원 이름과 위치만 입력하시면 바로 이용하실 수 있습니다.</span>
-                                </div>
-                            \`
-                            form.insertBefore(infoDiv, form.firstChild)
-                        } catch (err) {
-                            console.error('Failed to parse social data:', err)
-                        }
-                    }
-                }
-            })
-
-            document.getElementById('registerForm').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                
-                const formData = new FormData(e.target);
-                const data = {
-                    name: formData.get('name'),
-                    email: formData.get('email'),
-                    password: formData.get('password'),
-                    academy_name: formData.get('academy_name'),
-                    academy_location: formData.get('academy_location'),
-                    phone: formData.get('phone')
-                };
-
-                // 소셜 로그인 데이터 추가
-                if (fromSocial && (fromSocial === 'google' || fromSocial === 'kakao')) {
-                    const socialDataStr = sessionStorage.getItem('socialData')
-                    if (socialDataStr) {
-                        try {
-                            const socialData = JSON.parse(socialDataStr)
-                            data.social_provider = socialData.provider
-                            data.google_id = socialData.google_id || null
-                            data.kakao_id = socialData.kakao_id || null
-                            data.profile_image = socialData.picture || null
-                            data.email = socialData.email
-                            // 소셜 로그인은 비밀번호 불필요
-                            if (!data.password) {
-                                data.password = 'social_login_' + Date.now()
-                            }
-                        } catch (err) {
-                            console.error('Failed to parse social data:', err)
-                        }
-                    }
-                }
-
-                const errorDiv = document.getElementById('errorMessage');
-                errorDiv.classList.add('hidden');
-
-                try {
-                    const response = await fetch('/api/register', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify(data)
-                    });
-
-                    const result = await response.json();
-
-                    if (result.success) {
-                        // 세션 스토리지 클리어
-                        sessionStorage.removeItem('socialData')
-                        
-                        alert('회원가입이 완료되었습니다! 로그인 페이지로 이동합니다.');
-                        window.location.href = '/login';
-                    } else {
-                        errorDiv.textContent = result.error || '회원가입에 실패했습니다.';
-                        errorDiv.classList.remove('hidden');
-                    }
-                } catch (err) {
-                    console.error('Register error:', err);
-                    errorDiv.textContent = '회원가입 중 오류가 발생했습니다.';
-                    errorDiv.classList.remove('hidden');
-                }
-            });
-        </script>
-    </body>
-    </html>
-  `)
+  return c.redirect('/signup')
 })
 
 // 로그인 페이지
@@ -5175,7 +4982,7 @@ app.get('/login', (c) => {
                     </div>
 
                     <div class="mt-6 text-center text-sm text-gray-600">
-                        계정이 없으신가요? <a href="/register" class="text-purple-600 hover:text-purple-700 font-medium">회원가입</a>
+                        계정이 없으신가요? <a href="/signup" class="text-purple-600 hover:text-purple-700 font-medium">회원가입</a>
                     </div>
                 </div>
             </div>
@@ -5227,7 +5034,7 @@ app.get('/login', (c) => {
                     } else if (data.needsRegistration) {
                         // 회원가입 필요
                         sessionStorage.setItem('socialData', JSON.stringify(data.socialData))
-                        window.location.href = '/register?from=google'
+                        window.location.href = '/signup?from=google'
                     } else {
                         showMessage('error', data.error || '구글 로그인에 실패했습니다.')
                     }
@@ -5281,7 +5088,7 @@ app.get('/login', (c) => {
                                     } else if (data.needsRegistration) {
                                         // 회원가입 필요
                                         sessionStorage.setItem('socialData', JSON.stringify(data.socialData))
-                                        window.location.href = '/register?from=kakao'
+                                        window.location.href = '/signup?from=kakao'
                                     } else {
                                         showMessage('error', data.error || '카카오 로그인에 실패했습니다.')
                                     }
