@@ -8396,14 +8396,33 @@ app.get('/tools/parent-message', (c) => {
                 loadStudents();
             }
 
-            // 기간 설정 함수
+            // 기간 설정 함수 (한국 시간대 KST 기준)
             function setDateRange(days) {
-                const endDate = new Date();
-                const startDate = new Date();
-                startDate.setDate(startDate.getDate() - days);
+                // 한국 시간대(KST, UTC+9) 현재 날짜
+                const now = new Date();
+                const kstOffset = 9 * 60; // 9시간을 분으로 변환
+                const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+                const kstTime = new Date(utc + (kstOffset * 60000));
                 
-                document.getElementById('endDate').valueAsDate = endDate;
-                document.getElementById('startDate').valueAsDate = startDate;
+                // 종료일: 오늘 (한국 시간 기준)
+                const endDate = new Date(kstTime.getFullYear(), kstTime.getMonth(), kstTime.getDate());
+                
+                // 시작일: 오늘로부터 N일 전 (한국 시간 기준)
+                const startDate = new Date(kstTime.getFullYear(), kstTime.getMonth(), kstTime.getDate());
+                startDate.setDate(startDate.getDate() - (days - 1)); // N일간 = 오늘 포함 N일
+                
+                // YYYY-MM-DD 형식으로 변환
+                const formatDate = (date) => {
+                    const year = date.getFullYear();
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const day = String(date.getDate()).padStart(2, '0');
+                    return year + '-' + month + '-' + day;
+                };
+                
+                document.getElementById('startDate').value = formatDate(startDate);
+                document.getElementById('endDate').value = formatDate(endDate);
+                
+                console.log('기간 설정: ' + formatDate(startDate) + ' ~ ' + formatDate(endDate) + ' (최근 ' + days + '일, 한국 시간 기준)');
                 
                 // 학생이 이미 선택되어 있으면 기록 다시 불러오기
                 if (currentStudent) {
