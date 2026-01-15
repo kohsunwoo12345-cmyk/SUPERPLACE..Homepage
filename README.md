@@ -77,6 +77,63 @@
   - `POST /api/landing/folder/create` - 폴더 생성
   - `GET /api/landing/folders` - 폴더 목록
 
+✅ **학생 관리 시스템 (완료)** 🆕 ⭐
+- 학생/반/성과 통합 관리 시스템
+- **메인 페이지** (`/students`)
+  - 학생 관리 대시보드
+  - 반 관리, 학생 목록, 일일 성과, 학생 상세 4개 카드
+- **반 관리** (`/students/classes`)
+  - 반 생성/수정/삭제
+  - 학생 수 자동 표시
+  - 반별 학생 목록 링크
+- **학생 목록** (`/students/list`)
+  - 학생 등록 (학부모 정보 포함)
+  - 학년/반/과목 선택
+  - 실시간 반 배정
+  - 검색/필터 기능
+  - 수정/삭제
+- **일일 성과 기록** (`/students/daily-record`)
+  - 달력 UI (월별/주별 보기)
+  - 날짜별 성과 기록
+  - 출석/지각/결석/조퇴
+  - 과제 상태 (완료/미완료/부분완료)
+  - 이해도/참여도 (1-5점)
+  - 성과 메모
+  - 월간 통계 (출석률, 과제완성률, 평균 이해도/참여도)
+- **학생 상세 페이지** (`/students/detail/:studentId`)
+  - 프로필 카드 (학부모 연락처 포함)
+  - 4개 통계 카드 (출석률, 과제완성률, 평균 이해도, 평균 참여도)
+  - 기간 선택 (7일/30일/90일/전체)
+  - 이해도/참여도 라인 그래프
+  - 출석/과제 바 그래프
+  - 최근 성과 타임라인 (10건)
+  - 학부모 문자 발송 연동 버튼
+- **대시보드 통합** ✅
+  - 메인 페이지 "학생 관리" 카드 추가
+  - 4가지 기능 빠른 접근
+- API 엔드포인트:
+  - `GET /api/classes` - 반 목록
+  - `POST /api/classes` - 반 생성
+  - `PUT /api/classes/:classId` - 반 수정
+  - `DELETE /api/classes/:classId` - 반 삭제
+  - `GET /api/students` - 학생 목록
+  - `GET /api/students/:studentId` - 학생 상세
+  - `POST /api/students` - 학생 등록
+  - `PUT /api/students/:studentId` - 학생 수정
+  - `DELETE /api/students/:studentId` - 학생 삭제
+  - `GET /api/courses` - 과목 목록
+  - `POST /api/courses` - 과목 생성
+  - `GET /api/daily-records` - 일일 성과 목록
+  - `POST /api/daily-records` - 성과 기록 생성
+  - `PUT /api/daily-records/:recordId` - 성과 기록 수정
+  - `DELETE /api/daily-records/:recordId` - 성과 기록 삭제
+  - `GET /api/students/:studentId/stats` - 학생 통계
+- DB 테이블:
+  - `classes` - 반 정보
+  - `students` - 학생 정보
+  - `courses` - 과목 정보
+  - `daily_records` - 일일 성과 기록
+
 ✅ **SMS 발송 시스템 (완료)**
 - 알리고 SMS API 연동 완료
 - 발신번호 관리 UI (`/sms/senders`)
@@ -203,6 +260,54 @@
   - `POST /api/sms/charge` - 포인트 충전 (관리자)
   - `GET /api/sms/pricing` - 요금표
 
+### 학생 관리 시스템 (완료) 🆕 ⭐
+- **메인 페이지**: `/students`
+  - 학생 관리 대시보드
+  - 4개 카드 (반 관리, 학생 목록, 일일 성과, 학생 상세)
+- **반 관리**: `/students/classes`
+  - 반 생성/수정/삭제
+  - 학생 수 자동 표시
+  - 반별 학생 목록 링크
+- **학생 목록**: `/students/list`
+  - 학생 등록 (학부모 정보 포함)
+  - 학년/반/과목 선택
+  - 실시간 반 배정
+  - 검색/필터 기능
+  - 수정/삭제
+- **일일 성과 기록**: `/students/daily-record`
+  - 달력 UI (월별/주별 보기)
+  - 날짜별 성과 기록
+  - 출석/지각/결석/조퇴
+  - 과제 상태 (완료/미완료/부분완료)
+  - 이해도/참여도 (1-5점)
+  - 성과 메모
+  - 월간 통계
+- **학생 상세 페이지**: `/students/detail/:studentId`
+  - 프로필 카드 (학부모 연락처 포함)
+  - 4개 통계 카드
+  - 기간 선택 (7일/30일/90일/전체)
+  - 이해도/참여도 라인 그래프
+  - 출석/과제 바 그래프
+  - 최근 성과 타임라인
+  - 학부모 문자 발송 연동
+- **API 엔드포인트**:
+  - `GET /api/classes` - 반 목록
+  - `POST /api/classes` - 반 생성
+  - `PUT /api/classes/:classId` - 반 수정
+  - `DELETE /api/classes/:classId` - 반 삭제
+  - `GET /api/students` - 학생 목록
+  - `GET /api/students/:studentId` - 학생 상세
+  - `POST /api/students` - 학생 등록
+  - `PUT /api/students/:studentId` - 학생 수정
+  - `DELETE /api/students/:studentId` - 학생 삭제
+  - `GET /api/courses` - 과목 목록
+  - `POST /api/courses` - 과목 생성
+  - `GET /api/daily-records` - 일일 성과 목록
+  - `POST /api/daily-records` - 성과 기록 생성
+  - `PUT /api/daily-records/:recordId` - 성과 기록 수정
+  - `DELETE /api/daily-records/:recordId` - 성과 기록 삭제
+  - `GET /api/students/:studentId/stats` - 학생 통계
+
 ### 네비게이션 링크
 - `/programs` - 교육 프로그램 목록
 - `/programs/data` - 검색량 조회 도구 (redirect to /tools/search-volume)
@@ -212,11 +317,17 @@
 - `/dashboard` - 학원장 대시보드
   - SMS 빠른 접근 섹션
   - 네비게이션 SMS 드롭다운 메뉴
+  - **학생 관리 카드** 🆕
 - `/sms/compose` - SMS 문자 작성
 - `/sms/senders` - 발신번호 관리
 - `/sms/sender/request` - 발신번호 인증 신청 🆕
 - `/sms/logs` - 발송 내역
 - `/sms/points` - 포인트 관리
+- `/students` - 학생 관리 메인 🆕 ⭐
+- `/students/classes` - 반 관리 🆕
+- `/students/list` - 학생 목록 🆕
+- `/students/daily-record` - 일일 성과 기록 🆕
+- `/students/detail/:studentId` - 학생 상세 페이지 🆕
 - `/admin/dashboard` - 관리자 대시보드
 - `/admin/sender/verification` - 발신번호 승인 관리 🆕
 
@@ -290,6 +401,11 @@
     - `sms_recipients` - 수신자별 상세 내역
     - `point_transactions` - 포인트 거래 내역
     - `deposit_requests` - 입금 신청 내역 🆕
+  - **학생 관리 시스템 테이블** 🆕 ⭐:
+    - `classes` - 반 정보 (반 이름, 학년, 설명 등)
+    - `students` - 학생 정보 (이름, 학부모 연락처, 학년, 과목, 반 배정 등)
+    - `courses` - 과목 정보 (과목명, 설명 등)
+    - `daily_records` - 일일 성과 기록 (출석, 과제, 이해도, 참여도, 메모 등)
 - **스토리지**: 
   - Cloudflare KV - 세션 관리
   - imgbb API - 썸네일 이미지 업로드
@@ -356,8 +472,9 @@ npm run build
 - **플랫폼**: Cloudflare Pages
 - **상태**: ✅ Production 배포 완료
 - **Production URL**: https://8c6f3ad6.superplace.pages.dev ⭐ **최신 (권한 시스템)**
-- **마지막 업데이트**: 2026-01-14 14:59 KST
+- **마지막 업데이트**: 2026-01-15 14:20 KST
 - **최근 변경사항**: 
+  - ✅ **학생 관리 시스템 추가** (반/학생/성과 통합 관리, 대시보드 메인 페이지 연동) 🆕 ⭐
   - ✅ **권한 관리 시스템 구축** (user_permissions 테이블, 권한 API, 대시보드 접근 제어) 🆕
   - ✅ **발신번호 4개 서류 업로드** (사업자등록증, 통신사가입증명원, 재직증명서, 계약서) 🆕
   - ✅ **대시보드 권한 기반 메뉴 표시** (권한 없으면 숨김 처리) 🆕
