@@ -18960,9 +18960,18 @@ app.get('/sms/compose', (c) => {
                         전체
                     </button>
                     \${folders.map(folder => \`
-                        <button onclick="selectFolder(\${folder.id})" class="folder-tab \${currentFolderId === folder.id ? 'active' : ''} px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap \${currentFolderId === folder.id ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}">
-                            📁 \${folder.name}
-                        </button>
+                        <div class="relative inline-block group">
+                            <button onclick="selectFolder(\${folder.id})" class="folder-tab \${currentFolderId === folder.id ? 'active' : ''} px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap \${currentFolderId === folder.id ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}">
+                                📁 \${folder.name}
+                            </button>
+                            <button 
+                                onclick="event.stopPropagation(); deleteFolder(\${folder.id}, '\${folder.name}')" 
+                                class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-xs hover:bg-red-600"
+                                title="폴더 삭제"
+                            >
+                                ×
+                            </button>
+                        </div>
                     \`).join('')}
                 \`;
                 container.innerHTML = tabs;
@@ -19130,6 +19139,37 @@ app.get('/sms/compose', (c) => {
                 } catch (err) {
                     console.error('Create folder error:', err);
                     alert('폴더 생성 중 오류가 발생했습니다.');
+                }
+            }
+
+            // 폴더 삭제
+            async function deleteFolder(folderId, folderName) {
+                if (!confirm(\`"\${folderName}" 폴더를 삭제하시겠습니까?\n\n⚠️ 폴더 안의 모든 템플릿도 함께 삭제됩니다.\`)) {
+                    return;
+                }
+                
+                try {
+                    const response = await fetch(\`/api/sms/folders/\${folderId}?userId=\${currentUserId}\`, {
+                        method: 'DELETE'
+                    });
+                    
+                    const data = await response.json();
+                    if (data.success) {
+                        alert('✅ 폴더가 삭제되었습니다!');
+                        
+                        // 삭제된 폴더가 현재 선택된 폴더였다면 전체로 이동
+                        if (currentFolderId === folderId) {
+                            currentFolderId = null;
+                        }
+                        
+                        await loadFolders();
+                        await loadTemplates();
+                    } else {
+                        alert('❌ ' + data.error);
+                    }
+                } catch (err) {
+                    console.error('Delete folder error:', err);
+                    alert('폴더 삭제 중 오류가 발생했습니다.');
                 }
             }
 
