@@ -20769,6 +20769,11 @@ app.get('/students/daily-record', (c) => {
   return c.html(studentPages.dailyRecordPage)
 })
 
+// 과목 관리 페이지
+app.get('/students/courses', (c) => {
+  return c.html(studentPages.coursesPage)
+})
+
 // 학생 상세 페이지
 app.get('/students/detail/:studentId', (c) => {
   return c.html(studentPages.studentDetailPage)

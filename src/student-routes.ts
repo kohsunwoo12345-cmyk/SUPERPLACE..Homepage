@@ -216,15 +216,52 @@ studentRoutes.get('/api/courses', async (c) => {
 // 과목 생성
 studentRoutes.post('/api/courses', async (c) => {
   const { DB } = c.env
-  const { academyId, courseName, description } = await c.req.json()
+  const { academy_id, course_name, description } = await c.req.json()
   
   try {
     const result = await DB.prepare(`
       INSERT INTO courses (academy_id, course_name, description)
       VALUES (?, ?, ?)
-    `).bind(academyId || 1, courseName, description || '').run()
+    `).bind(academy_id || 1, course_name, description || '').run()
     
     return c.json({ success: true, courseId: result.meta.last_row_id })
+  } catch (error) {
+    return c.json({ success: false, error: error.message }, 500)
+  }
+})
+
+// 과목 수정
+studentRoutes.put('/api/courses/:courseId', async (c) => {
+  const { DB } = c.env
+  const courseId = c.req.param('courseId')
+  const { academy_id, course_name, description } = await c.req.json()
+  
+  try {
+    await DB.prepare(`
+      UPDATE courses 
+      SET course_name = ?, description = ?
+      WHERE id = ? AND academy_id = ?
+    `).bind(course_name, description || '', courseId, academy_id).run()
+    
+    return c.json({ success: true })
+  } catch (error) {
+    return c.json({ success: false, error: error.message }, 500)
+  }
+})
+
+// 과목 삭제
+studentRoutes.delete('/api/courses/:courseId', async (c) => {
+  const { DB } = c.env
+  const courseId = c.req.param('courseId')
+  const academyId = c.req.query('academyId')
+  
+  try {
+    await DB.prepare(`
+      DELETE FROM courses 
+      WHERE id = ? AND academy_id = ?
+    `).bind(courseId, academyId).run()
+    
+    return c.json({ success: true })
   } catch (error) {
     return c.json({ success: false, error: error.message }, 500)
   }

@@ -1589,4 +1589,305 @@ export const studentDetailPage = `
 </html>
 `
 
-export default { classesPage, studentsListPage, dailyRecordPage, studentDetailPage }
+export const coursesPage = `
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>과목 관리 - 꾸메땅학원</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .gradient-green {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="max-w-7xl mx-auto p-6">
+        <!-- 헤더 -->
+        <div class="flex justify-between items-center mb-8">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">📚 과목 관리</h1>
+                <p class="text-gray-600">학원에서 운영하는 과목을 관리하세요</p>
+            </div>
+            <div class="flex gap-3">
+                <a href="/students" class="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+                    <i class="fas fa-arrow-left mr-2"></i>돌아가기
+                </a>
+                <button onclick="showAddModal()" class="px-4 py-2 gradient-green text-white rounded-lg hover:shadow-lg transition">
+                    <i class="fas fa-plus mr-2"></i>과목 추가
+                </button>
+            </div>
+        </div>
+
+        <!-- 통계 카드 -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white rounded-xl shadow p-6">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-gray-600">전체 과목</span>
+                    <i class="fas fa-book text-green-500 text-2xl"></i>
+                </div>
+                <div id="totalCourses" class="text-3xl font-bold text-gray-900">0개</div>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow p-6">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-gray-600">수강 학생</span>
+                    <i class="fas fa-users text-blue-500 text-2xl"></i>
+                </div>
+                <div id="totalStudents" class="text-3xl font-bold text-gray-900">0명</div>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow p-6">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-gray-600">진행중인 수업</span>
+                    <i class="fas fa-chalkboard-teacher text-purple-500 text-2xl"></i>
+                </div>
+                <div id="activeClasses" class="text-3xl font-bold text-gray-900">0개</div>
+            </div>
+        </div>
+
+        <!-- 과목 목록 -->
+        <div class="bg-white rounded-xl shadow">
+            <div class="p-6 border-b border-gray-200">
+                <h2 class="text-xl font-bold text-gray-900">과목 목록</h2>
+            </div>
+            <div id="coursesList" class="p-6">
+                <div class="text-center py-12 text-gray-500">
+                    <i class="fas fa-book text-4xl mb-4 text-gray-300"></i>
+                    <p>등록된 과목이 없습니다. 과목을 추가해주세요.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 과목 추가/수정 모달 -->
+    <div id="courseModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="p-6 border-b border-gray-200">
+                <h2 id="modalTitle" class="text-2xl font-bold text-gray-900">과목 추가</h2>
+            </div>
+            <form id="courseForm" class="p-6 space-y-6">
+                <input type="hidden" id="courseId">
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        과목명 <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" id="courseName" required 
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        placeholder="예: 영어, 수학, 프로그램1">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        과목 설명
+                    </label>
+                    <textarea id="courseDescription" rows="4"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        placeholder="과목에 대한 설명을 입력하세요"></textarea>
+                </div>
+
+                <div class="flex gap-3 pt-4">
+                    <button type="submit" class="flex-1 px-6 py-3 gradient-green text-white rounded-lg font-bold hover:shadow-lg transition">
+                        <i class="fas fa-check mr-2"></i>저장
+                    </button>
+                    <button type="button" onclick="closeModal()" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-bold hover:bg-gray-300 transition">
+                        취소
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+        let allCourses = [];
+
+        // 로그인 체크
+        window.addEventListener('DOMContentLoaded', async () => {
+            const userData = localStorage.getItem('user');
+            if (!userData) {
+                alert('로그인이 필요합니다.');
+                window.location.href = '/login';
+                return;
+            }
+            currentUser = JSON.parse(userData);
+            await loadCourses();
+        });
+
+        // 과목 목록 로드
+        async function loadCourses() {
+            try {
+                const response = await fetch(\`/api/courses?academyId=\${currentUser.id}\`);
+                const data = await response.json();
+
+                if (data.success) {
+                    allCourses = data.courses || [];
+                    renderCourses();
+                    updateStats();
+                }
+            } catch (error) {
+                console.error('과목 로드 실패:', error);
+            }
+        }
+
+        // 과목 렌더링
+        function renderCourses() {
+            const container = document.getElementById('coursesList');
+            
+            if (allCourses.length === 0) {
+                container.innerHTML = \`
+                    <div class="text-center py-12 text-gray-500">
+                        <i class="fas fa-book text-4xl mb-4 text-gray-300"></i>
+                        <p>등록된 과목이 없습니다. 과목을 추가해주세요.</p>
+                    </div>
+                \`;
+                return;
+            }
+
+            container.innerHTML = \`
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    \${allCourses.map(course => \`
+                        <div class="border-2 border-gray-200 rounded-xl p-4 hover:border-green-400 transition">
+                            <div class="flex justify-between items-start mb-3">
+                                <div class="flex items-center gap-2">
+                                    <i class="fas fa-book text-green-500 text-xl"></i>
+                                    <h3 class="font-bold text-lg text-gray-900">\${course.course_name}</h3>
+                                </div>
+                                <div class="flex gap-1">
+                                    <button onclick="editCourse(\${course.id})" class="p-2 text-blue-600 hover:bg-blue-50 rounded">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button onclick="deleteCourse(\${course.id}, '\${course.course_name}')" class="p-2 text-red-600 hover:bg-red-50 rounded">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            \${course.description ? \`
+                                <p class="text-sm text-gray-600 mb-3">\${course.description}</p>
+                            \` : ''}
+                            <div class="flex items-center justify-between text-sm text-gray-500">
+                                <span><i class="fas fa-users mr-1"></i>수강생 0명</span>
+                                <span class="text-xs text-gray-400">\${new Date(course.created_at).toLocaleDateString('ko-KR')}</span>
+                            </div>
+                        </div>
+                    \`).join('')}
+                </div>
+            \`;
+        }
+
+        // 통계 업데이트
+        function updateStats() {
+            document.getElementById('totalCourses').textContent = allCourses.length + '개';
+            // 수강 학생과 진행중인 수업은 추후 구현
+            document.getElementById('totalStudents').textContent = '0명';
+            document.getElementById('activeClasses').textContent = '0개';
+        }
+
+        // 모달 열기
+        function showAddModal() {
+            document.getElementById('modalTitle').textContent = '과목 추가';
+            document.getElementById('courseForm').reset();
+            document.getElementById('courseId').value = '';
+            document.getElementById('courseModal').classList.remove('hidden');
+        }
+
+        // 모달 닫기
+        function closeModal() {
+            document.getElementById('courseModal').classList.add('hidden');
+        }
+
+        // 과목 수정
+        function editCourse(courseId) {
+            const course = allCourses.find(c => c.id === courseId);
+            if (!course) return;
+
+            document.getElementById('modalTitle').textContent = '과목 수정';
+            document.getElementById('courseId').value = course.id;
+            document.getElementById('courseName').value = course.course_name;
+            document.getElementById('courseDescription').value = course.description || '';
+            document.getElementById('courseModal').classList.remove('hidden');
+        }
+
+        // 과목 삭제
+        async function deleteCourse(courseId, courseName) {
+            if (!confirm(\`'\${courseName}' 과목을 삭제하시겠습니까?\`)) return;
+
+            try {
+                const response = await fetch(\`/api/courses/\${courseId}?academyId=\${currentUser.id}\`, {
+                    method: 'DELETE'
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    alert('과목이 삭제되었습니다.');
+                    await loadCourses();
+                } else {
+                    alert(data.error || '삭제 실패');
+                }
+            } catch (error) {
+                console.error('삭제 실패:', error);
+                alert('삭제 중 오류가 발생했습니다.');
+            }
+        }
+
+        // 폼 제출
+        document.getElementById('courseForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const courseId = document.getElementById('courseId').value;
+            const data = {
+                academy_id: currentUser.id,
+                course_name: document.getElementById('courseName').value,
+                description: document.getElementById('courseDescription').value
+            };
+
+            try {
+                let response;
+                if (courseId) {
+                    // 수정
+                    response = await fetch(\`/api/courses/\${courseId}\`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+                } else {
+                    // 추가
+                    response = await fetch('/api/courses', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+                }
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert(courseId ? '과목이 수정되었습니다.' : '과목이 추가되었습니다.');
+                    closeModal();
+                    await loadCourses();
+                } else {
+                    alert(result.error || '저장 실패');
+                }
+            } catch (error) {
+                console.error('저장 실패:', error);
+                alert('저장 중 오류가 발생했습니다.');
+            }
+        });
+
+        // 모달 외부 클릭 시 닫기
+        document.getElementById('courseModal').addEventListener('click', (e) => {
+            if (e.target.id === 'courseModal') {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>
+`
+
+export default { classesPage, studentsListPage, dailyRecordPage, studentDetailPage, coursesPage }
