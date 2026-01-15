@@ -18425,6 +18425,33 @@ app.get('/sms/compose', (c) => {
                             </select>
                         </div>
 
+                        <!-- 템플릿 관리 -->
+                        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-sm font-semibold text-gray-900">📁 템플릿 관리</h3>
+                                <div class="flex gap-2">
+                                    <button onclick="openFolderModal()" class="text-xs px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg transition">
+                                        + 폴더
+                                    </button>
+                                    <button onclick="saveTemplate()" class="text-xs px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition">
+                                        💾 저장
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- 폴더 탭 -->
+                            <div class="flex gap-2 mb-3 overflow-x-auto pb-2" id="folderTabs">
+                                <button onclick="selectFolder(null)" class="folder-tab active px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap bg-purple-100 text-purple-700">
+                                    전체
+                                </button>
+                            </div>
+                            
+                            <!-- 템플릿 목록 -->
+                            <div id="templateList" class="space-y-2 max-h-40 overflow-y-auto">
+                                <p class="text-xs text-gray-400 text-center py-3">템플릿이 없습니다</p>
+                            </div>
+                        </div>
+
                         <!-- 메시지 작성 -->
                         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                             <div class="flex items-center justify-between mb-3">
@@ -18434,8 +18461,25 @@ app.get('/sms/compose', (c) => {
                                     <span class="text-sm text-gray-400">/ 2000 바이트</span>
                                 </div>
                             </div>
+                            
+                            <!-- 치환 변수 버튼들 -->
+                            <div class="flex flex-wrap gap-2 mb-3">
+                                <button onclick="insertVariable('#{이름}')" class="text-xs px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg transition">
+                                    + #{이름}
+                                </button>
+                                <button onclick="insertVariable('#{전화번호}')" class="text-xs px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg transition">
+                                    + #{전화번호}
+                                </button>
+                                <button onclick="insertVariable('#{학년}')" class="text-xs px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg transition">
+                                    + #{학년}
+                                </button>
+                                <button onclick="insertVariable('#{반}')" class="text-xs px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg transition">
+                                    + #{반}
+                                </button>
+                            </div>
+                            
                             <textarea id="message" rows="10" 
-                                placeholder="메시지를 입력하세요&#10;&#10;치환 변수 사용 예시:&#10;안녕하세요 #{이름} 원장님!&#10;꾸메땅학원입니다."
+                                placeholder="메시지를 입력하세요&#10;&#10;치환 변수 사용 예시:&#10;안녕하세요 #{이름} 학부모님!&#10;꾸메땅학원입니다."
                                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 resize-none"></textarea>
                             <div class="flex items-center justify-between mt-3">
                                 <span id="messageType" class="text-sm font-medium px-3 py-1 bg-blue-100 text-blue-800 rounded-full">SMS (단문)</span>
@@ -18535,6 +18579,9 @@ app.get('/sms/compose', (c) => {
             let currentUserId = null;
             let receivers = [];
             let sendersList = [];
+            let folders = [];
+            let templates = [];
+            let currentFolderId = null;
 
             // 사용자 인증
             async function checkAuth() {
@@ -18793,11 +18840,208 @@ app.get('/sms/compose', (c) => {
                 }
             }
 
+            // === 템플릿 & 폴더 관리 함수 ===
+            
+            // 치환 변수 삽입
+            function insertVariable(variable) {
+                const messageBox = document.getElementById('message');
+                const start = messageBox.selectionStart;
+                const end = messageBox.selectionEnd;
+                const text = messageBox.value;
+                messageBox.value = text.substring(0, start) + variable + text.substring(end);
+                messageBox.focus();
+                messageBox.setSelectionRange(start + variable.length, start + variable.length);
+                updateByteCount();
+            }
+
+            // 폴더 목록 로드
+            async function loadFolders() {
+                try {
+                    const response = await fetch(\`/api/sms/folders?userId=\${currentUserId}\`);
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        folders = data.folders;
+                        renderFolderTabs();
+                    }
+                } catch (err) {
+                    console.error('Failed to load folders:', err);
+                }
+            }
+
+            // 폴더 탭 렌더링
+            function renderFolderTabs() {
+                const container = document.getElementById('folderTabs');
+                const tabs = \`
+                    <button onclick="selectFolder(null)" class="folder-tab \${!currentFolderId ? 'active' : ''} px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap \${!currentFolderId ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}">
+                        전체
+                    </button>
+                    \${folders.map(folder => \`
+                        <button onclick="selectFolder(\${folder.id})" class="folder-tab \${currentFolderId === folder.id ? 'active' : ''} px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap \${currentFolderId === folder.id ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}">
+                            📁 \${folder.name}
+                        </button>
+                    \`).join('')}
+                \`;
+                container.innerHTML = tabs;
+            }
+
+            // 폴더 선택
+            async function selectFolder(folderId) {
+                currentFolderId = folderId;
+                await loadTemplates();
+                renderFolderTabs();
+            }
+
+            // 템플릿 목록 로드
+            async function loadTemplates() {
+                try {
+                    let url = \`/api/sms/templates?userId=\${currentUserId}\`;
+                    if (currentFolderId) {
+                        url += \`&folderId=\${currentFolderId}\`;
+                    }
+                    
+                    const response = await fetch(url);
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        templates = data.templates;
+                        renderTemplates();
+                    }
+                } catch (err) {
+                    console.error('Failed to load templates:', err);
+                }
+            }
+
+            // 템플릿 목록 렌더링
+            function renderTemplates() {
+                const container = document.getElementById('templateList');
+                
+                if (templates.length === 0) {
+                    container.innerHTML = '<p class="text-xs text-gray-400 text-center py-3">템플릿이 없습니다</p>';
+                    return;
+                }
+                
+                container.innerHTML = templates.map(template => \`
+                    <div class="flex items-center justify-between p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
+                        <button onclick="loadTemplateMessage(\${template.id})" class="flex-1 text-left text-xs font-medium text-gray-700 truncate">
+                            \${template.title}
+                        </button>
+                        <button onclick="deleteTemplate(\${template.id})" class="ml-2 text-red-500 hover:text-red-700">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                            </svg>
+                        </button>
+                    </div>
+                \`).join('');
+            }
+
+            // 템플릿 메시지 불러오기
+            function loadTemplateMessage(templateId) {
+                const template = templates.find(t => t.id === templateId);
+                if (template) {
+                    document.getElementById('message').value = template.message;
+                    updateByteCount();
+                }
+            }
+
+            // 템플릿 저장
+            async function saveTemplate() {
+                const message = document.getElementById('message').value.trim();
+                if (!message) {
+                    alert('메시지를 입력해주세요.');
+                    return;
+                }
+                
+                const title = prompt('템플릿 제목을 입력하세요:', message.substring(0, 20) + '...');
+                if (!title) return;
+                
+                try {
+                    const response = await fetch('/api/sms/templates', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            userId: currentUserId,
+                            folderId: currentFolderId,
+                            title,
+                            message
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    if (data.success) {
+                        alert('✅ 템플릿이 저장되었습니다!');
+                        await loadTemplates();
+                    } else {
+                        alert('❌ ' + data.error);
+                    }
+                } catch (err) {
+                    console.error('Save template error:', err);
+                    alert('템플릿 저장 중 오류가 발생했습니다.');
+                }
+            }
+
+            // 템플릿 삭제
+            async function deleteTemplate(templateId) {
+                if (!confirm('이 템플릿을 삭제하시겠습니까?')) return;
+                
+                try {
+                    const response = await fetch(\`/api/sms/templates/\${templateId}?userId=\${currentUserId}\`, {
+                        method: 'DELETE'
+                    });
+                    
+                    const data = await response.json();
+                    if (data.success) {
+                        alert('✅ 템플릿이 삭제되었습니다!');
+                        await loadTemplates();
+                    } else {
+                        alert('❌ ' + data.error);
+                    }
+                } catch (err) {
+                    console.error('Delete template error:', err);
+                    alert('템플릿 삭제 중 오류가 발생했습니다.');
+                }
+            }
+
+            // 폴더 생성 모달
+            function openFolderModal() {
+                const name = prompt('폴더 이름을 입력하세요:', '중등 학부모');
+                if (!name) return;
+                createFolder(name);
+            }
+
+            // 폴더 생성
+            async function createFolder(name) {
+                try {
+                    const response = await fetch('/api/sms/folders', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            userId: currentUserId,
+                            name
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    if (data.success) {
+                        alert('✅ 폴더가 생성되었습니다!');
+                        await loadFolders();
+                        await loadTemplates();
+                    } else {
+                        alert('❌ ' + data.error);
+                    }
+                } catch (err) {
+                    console.error('Create folder error:', err);
+                    alert('폴더 생성 중 오류가 발생했습니다.');
+                }
+            }
+
             // 페이지 로드
             (async () => {
                 await checkAuth();
                 if (currentUserId) {
                     await loadSenders();
+                    await loadFolders();
+                    await loadTemplates();
                 }
             })();
         </script>
