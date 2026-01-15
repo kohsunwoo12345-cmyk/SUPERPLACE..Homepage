@@ -1,6 +1,8 @@
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { serveStatic } from 'hono/cloudflare-workers'
+import studentRoutes from './student-routes'
+import studentPages from './student-pages'
 
 type Bindings = {
   DB: D1Database
@@ -20,6 +22,9 @@ app.use('/api/*', cors())
 
 // Serve static files
 app.use('/static/*', serveStatic({ root: './public' }))
+
+// Mount student management routes
+app.route('/', studentRoutes)
 
 // ========================================
 // API Routes
@@ -20819,6 +20824,200 @@ app.get('/admin/sender/verification', (c) => {
     </body>
     </html>
   `)
+})
+
+// ========================================
+// 학생 관리 시스템 페이지
+// ========================================
+
+// 학생 관리 메인 페이지
+app.get('/students', (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>학생 관리 - 꾸메땅학원</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+        <style>
+            .gradient-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+            .gradient-blue { background: linear-gradient(135deg, #667eea 0%, #4facfe 100%); }
+            .gradient-green { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); }
+            .gradient-orange { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+        </style>
+    </head>
+    <body class="bg-gray-50">
+        <!-- 네비게이션 -->
+        <nav class="bg-white shadow-sm border-b">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between h-16">
+                    <div class="flex items-center">
+                        <h1 class="text-xl font-bold text-gray-900">👨‍🎓 학생 관리 시스템</h1>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <a href="/" class="text-gray-600 hover:text-gray-900">
+                            <i class="fas fa-home mr-2"></i>홈
+                        </a>
+                        <a href="/sms/compose" class="text-gray-600 hover:text-gray-900">
+                            <i class="fas fa-sms mr-2"></i>문자
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- 메인 컨텐츠 -->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <!-- 대시보드 카드 그리드 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <!-- 반 관리 -->
+                <a href="/students/classes" class="block bg-white rounded-xl shadow-lg hover:shadow-xl transition transform hover:-translate-y-1">
+                    <div class="gradient-purple text-white p-6 rounded-t-xl">
+                        <i class="fas fa-chalkboard text-4xl mb-3"></i>
+                        <h3 class="text-xl font-bold">반 관리</h3>
+                    </div>
+                    <div class="p-6">
+                        <p class="text-gray-600 mb-4">반 생성, 학생 배정, 반별 관리</p>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-gray-500">전체 <span id="totalClasses" class="font-bold text-purple-600">0</span>개 반</span>
+                            <i class="fas fa-arrow-right text-purple-600"></i>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- 학생 목록 -->
+                <a href="/students/list" class="block bg-white rounded-xl shadow-lg hover:shadow-xl transition transform hover:-translate-y-1">
+                    <div class="gradient-blue text-white p-6 rounded-t-xl">
+                        <i class="fas fa-users text-4xl mb-3"></i>
+                        <h3 class="text-xl font-bold">학생 목록</h3>
+                    </div>
+                    <div class="p-6">
+                        <p class="text-gray-600 mb-4">학생 등록, 정보 수정, 학부모 연락처</p>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-gray-500">전체 <span id="totalStudents" class="font-bold text-blue-600">0</span>명</span>
+                            <i class="fas fa-arrow-right text-blue-600"></i>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- 과목 관리 -->
+                <a href="/students/courses" class="block bg-white rounded-xl shadow-lg hover:shadow-xl transition transform hover:-translate-y-1">
+                    <div class="gradient-green text-white p-6 rounded-t-xl">
+                        <i class="fas fa-book text-4xl mb-3"></i>
+                        <h3 class="text-xl font-bold">과목 관리</h3>
+                    </div>
+                    <div class="p-6">
+                        <p class="text-gray-600 mb-4">과목 등록, 수강 관리</p>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-gray-500">전체 <span id="totalCourses" class="font-bold text-green-600">0</span>개 과목</span>
+                            <i class="fas fa-arrow-right text-green-600"></i>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- 일일 성과 기록 -->
+                <a href="/students/daily-record" class="block bg-white rounded-xl shadow-lg hover:shadow-xl transition transform hover:-translate-y-1">
+                    <div class="gradient-orange text-white p-6 rounded-t-xl">
+                        <i class="fas fa-calendar-check text-4xl mb-3"></i>
+                        <h3 class="text-xl font-bold">일일 성과</h3>
+                    </div>
+                    <div class="p-6">
+                        <p class="text-gray-600 mb-4">출석, 과제, 수업 이해도 기록</p>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-gray-500">오늘 <span id="todayRecords" class="font-bold text-pink-600">0</span>건</span>
+                            <i class="fas fa-arrow-right text-pink-600"></i>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <!-- 최근 활동 -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">📊 최근 활동</h2>
+                <div id="recentActivity" class="space-y-4">
+                    <div class="text-center text-gray-500 py-8">데이터 로딩 중...</div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            const academyId = 1; // 현재 학원 ID
+
+            async function loadDashboard() {
+                try {
+                    // 반 개수
+                    const classesRes = await fetch('/api/classes?academyId=' + academyId);
+                    const classesData = await classesRes.json();
+                    if (classesData.success) {
+                        document.getElementById('totalClasses').textContent = classesData.classes.length;
+                    }
+
+                    // 학생 수
+                    const studentsRes = await fetch('/api/students?academyId=' + academyId);
+                    const studentsData = await studentsRes.json();
+                    if (studentsData.success) {
+                        document.getElementById('totalStudents').textContent = studentsData.students.length;
+                    }
+
+                    // 과목 수
+                    const coursesRes = await fetch('/api/courses?academyId=' + academyId);
+                    const coursesData = await coursesRes.json();
+                    if (coursesData.success) {
+                        document.getElementById('totalCourses').textContent = coursesData.courses.length;
+                    }
+
+                    // 오늘 기록 수
+                    const today = new Date().toISOString().split('T')[0];
+                    const recordsRes = await fetch('/api/daily-records?date=' + today);
+                    const recordsData = await recordsRes.json();
+                    if (recordsData.success) {
+                        document.getElementById('todayRecords').textContent = recordsData.records.length;
+                    }
+
+                    // 최근 활동 표시
+                    showRecentActivity(studentsData.students.slice(0, 5));
+                } catch (error) {
+                    console.error('대시보드 로딩 실패:', error);
+                }
+            }
+
+            function showRecentActivity(students) {
+                const container = document.getElementById('recentActivity');
+                if (students.length === 0) {
+                    container.innerHTML = '<div class="text-center text-gray-500 py-8">최근 활동이 없습니다.</div>';
+                    return;
+                }
+
+                container.innerHTML = students.map(student => \`
+                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100">
+                        <div class="flex items-center space-x-4">
+                            <div class="bg-purple-100 text-purple-600 rounded-full w-10 h-10 flex items-center justify-center font-bold">
+                                \${student.name.charAt(0)}
+                            </div>
+                            <div>
+                                <p class="font-semibold text-gray-900">\${student.name}</p>
+                                <p class="text-sm text-gray-500">\${student.class_name || '반 미배정'} · \${student.grade}</p>
+                            </div>
+                        </div>
+                        <a href="/students/detail/\${student.id}" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
+                            상세보기
+                        </a>
+                    </div>
+                \`).join('');
+            }
+
+            loadDashboard();
+        </script>
+    </body>
+    </html>
+  `)
+})
+
+// 반 관리 페이지
+app.get('/students/classes', (c) => {
+  return c.html(studentPages.classesPage)
 })
 
 export default app
