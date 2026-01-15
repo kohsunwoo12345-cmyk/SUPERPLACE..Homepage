@@ -8675,7 +8675,6 @@ app.get('/tools/parent-message', (c) => {
             window.addEventListener('DOMContentLoaded', function() {
                 initPage();
             });
-            }
         </script>
     </body>
     </html>
