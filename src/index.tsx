@@ -18785,6 +18785,8 @@ app.get('/sms/compose', (c) => {
                     console.log('Excel range:', firstSheet['!ref']);
                     
                     let addedCount = 0;
+                    let duplicateCount = 0;
+                    const tempReceivers = [];
                     
                     // 2행부터 읽기 (1행은 헤더)
                     for (let rowNum = range.s.r + 1; rowNum <= range.e.r; rowNum++) {
@@ -18801,15 +18803,32 @@ app.get('/sms/compose', (c) => {
                         
                         // 이름과 전화번호 모두 있고, 전화번호가 10자리 이상
                         if (name && phone && phone.length >= 10) {
-                            receivers.push({ name, phone });
-                            addedCount++;
+                            // 기존 수신자 목록에 이미 있는지 확인
+                            const existsInCurrent = receivers.some(r => r.phone === phone);
+                            // 임시 목록에 이미 있는지 확인 (엑셀 내 중복)
+                            const existsInTemp = tempReceivers.some(r => r.phone === phone);
+                            
+                            if (!existsInCurrent && !existsInTemp) {
+                                tempReceivers.push({ name, phone });
+                                addedCount++;
+                            } else {
+                                duplicateCount++;
+                                console.log('중복 제외:', { name, phone });
+                            }
                         }
                     }
+                    
+                    // 중복 제거된 수신자들 추가
+                    receivers.push(...tempReceivers);
 
-                    if (addedCount === 0) {
+                    if (addedCount === 0 && duplicateCount === 0) {
                         alert('❌ 엑셀 파일에서 데이터를 읽을 수 없습니다.\\n\\n형식을 확인해주세요:\\n- A열: 이름\\n- B열: 연락처 (01012345678 형식)\\n- 1행: 헤더 (자동 건너뜀)\\n\\n브라우저 콘솔(F12)에서 자세한 정보를 확인하세요.');
                     } else {
-                        alert(\`✅ \${addedCount}명의 수신자가 추가되었습니다.\`);
+                        let message = \`✅ \${addedCount}명의 수신자가 추가되었습니다.\`;
+                        if (duplicateCount > 0) {
+                            message += \`\\n\\n⚠️ 중복된 \${duplicateCount}명은 제외되었습니다.\`;
+                        }
+                        alert(message);
                     }
                     
                     renderReceivers();
