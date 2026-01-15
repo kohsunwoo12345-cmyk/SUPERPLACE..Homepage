@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>학생 목록 테스트</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .test-section {
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        pre {
+            background: #f4f4f4;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 학생 목록 API 테스트</h1>
+    
+    <div class="test-section info">
+        <h2>📋 테스트 정보</h2>
+        <p><strong>테스트 URL:</strong> https://superplace-academy.pages.dev</p>
+        <p><strong>학생 관리 페이지:</strong> <a href="https://superplace-academy.pages.dev/students/list" target="_blank">학생 목록</a></p>
+        <p><strong>학부모 소통 페이지:</strong> <a href="https://superplace-academy.pages.dev/tools/parent-message" target="_blank">학부모 소통</a></p>
+    </div>
+
+    <div class="test-section">
+        <h2>1️⃣ 학생 API 테스트</h2>
+        <button onclick="testStudentAPI()">학생 목록 가져오기</button>
+        <div id="student-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2️⃣ localStorage 확인</h2>
+        <button onclick="checkLocalStorage()">사용자 정보 확인</button>
+        <button onclick="setTestUser()">테스트 사용자 설정</button>
+        <button onclick="clearUser()">사용자 정보 삭제</button>
+        <div id="localstorage-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3️⃣ 학부모 소통 페이지 테스트</h2>
+        <button onclick="openParentMessagePage()">페이지 열기</button>
+        <div id="page-result">
+            <p>위 버튼을 클릭하면 새 탭에서 학부모 소통 페이지가 열립니다.</p>
+            <p>개발자 도구(F12)를 열고 Console 탭에서 에러를 확인하세요.</p>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>4️⃣ 배포 버전 확인</h2>
+        <button onclick="checkDeployVersion()">최신 배포 확인</button>
+        <div id="version-result"></div>
+    </div>
+
+    <script>
+        // 1. 학생 API 테스트
+        async function testStudentAPI() {
+            const resultDiv = document.getElementById('student-result');
+            resultDiv.innerHTML = '<p>⏳ 로딩 중...</p>';
+            
+            try {
+                const response = await fetch('https://superplace-academy.pages.dev/api/students?academyId=1');
+                const data = await response.json();
+                
+                if (data.success && data.students) {
+                    resultDiv.className = 'success';
+                    resultDiv.innerHTML = `
+                        <h3>✅ 성공! 학생 ${data.students.length}명 조회</h3>
+                        <pre>${JSON.stringify(data.students, null, 2)}</pre>
+                    `;
+                } else {
+                    resultDiv.className = 'error';
+                    resultDiv.innerHTML = `<h3>❌ 실패</h3><pre>${JSON.stringify(data, null, 2)}</pre>`;
+                }
+            } catch (err) {
+                resultDiv.className = 'error';
+                resultDiv.innerHTML = `<h3>❌ 에러 발생</h3><p>${err.message}</p>`;
+            }
+        }
+
+        // 2. localStorage 확인
+        function checkLocalStorage() {
+            const resultDiv = document.getElementById('localstorage-result');
+            const userData = localStorage.getItem('user');
+            
+            if (userData) {
+                try {
+                    const user = JSON.parse(userData);
+                    resultDiv.className = 'success';
+                    resultDiv.innerHTML = `
+                        <h3>✅ 사용자 정보 있음</h3>
+                        <pre>${JSON.stringify(user, null, 2)}</pre>
+                    `;
+                } catch (err) {
+                    resultDiv.className = 'error';
+                    resultDiv.innerHTML = `<h3>❌ 파싱 에러</h3><p>${err.message}</p>`;
+                }
+            } else {
+                resultDiv.className = 'error';
+                resultDiv.innerHTML = `<h3>⚠️ 사용자 정보 없음</h3><p>localStorage에 'user' 키가 없습니다.</p>`;
+            }
+        }
+
+        function setTestUser() {
+            const testUser = {
+                id: 1,
+                name: '테스트 사용자',
+                academy_id: 1,
+                role: 'user'
+            };
+            localStorage.setItem('user', JSON.stringify(testUser));
+            checkLocalStorage();
+            alert('✅ 테스트 사용자 설정 완료!\n학부모 소통 페이지를 새로고침하세요.');
+        }
+
+        function clearUser() {
+            localStorage.removeItem('user');
+            checkLocalStorage();
+            alert('🗑️ 사용자 정보 삭제 완료!');
+        }
+
+        // 3. 학부모 소통 페이지 열기
+        function openParentMessagePage() {
+            window.open('https://superplace-academy.pages.dev/tools/parent-message', '_blank');
+        }
+
+        // 4. 배포 버전 확인
+        async function checkDeployVersion() {
+            const resultDiv = document.getElementById('version-result');
+            resultDiv.innerHTML = '<p>⏳ 확인 중...</p>';
+            
+            try {
+                const response = await fetch('https://superplace-academy.pages.dev/tools/parent-message');
+                const html = await response.text();
+                
+                const hasDOMContentLoaded = html.includes('DOMContentLoaded');
+                const hasKoreanTimezone = html.includes('한국 시간대');
+                
+                if (hasDOMContentLoaded && hasKoreanTimezone) {
+                    resultDiv.className = 'success';
+                    resultDiv.innerHTML = `
+                        <h3>✅ 최신 버전 배포됨!</h3>
+                        <p>DOMContentLoaded: ✅</p>
+                        <p>한국 시간대 코드: ✅</p>
+                    `;
+                } else if (hasDOMContentLoaded) {
+                    resultDiv.className = 'info';
+                    resultDiv.innerHTML = `
+                        <h3>⚠️ 부분 배포됨</h3>
+                        <p>DOMContentLoaded: ✅</p>
+                        <p>한국 시간대 코드: ❌</p>
+                        <p>일부 코드만 반영되었습니다. 재배포가 필요합니다.</p>
+                    `;
+                } else {
+                    resultDiv.className = 'error';
+                    resultDiv.innerHTML = `
+                        <h3>❌ 이전 버전</h3>
+                        <p>DOMContentLoaded: ❌</p>
+                        <p>한국 시간대 코드: ❌</p>
+                        <p><strong>Cloudflare Dashboard에서 재배포가 필요합니다!</strong></p>
+                        <p>MANUAL_DEPLOY_GUIDE.md 참고</p>
+                    `;
+                }
+            } catch (err) {
+                resultDiv.className = 'error';
+                resultDiv.innerHTML = `<h3>❌ 확인 실패</h3><p>${err.message}</p>`;
+            }
+        }
+
+        // 페이지 로드 시 자동 테스트
+        window.addEventListener('DOMContentLoaded', function() {
+            console.log('🧪 테스트 페이지 로드 완료');
+        });
+    </script>
+
+    <hr style="margin: 40px 0;">
+    
+    <div class="test-section info">
+        <h2>📖 문제 해결 가이드</h2>
+        <ol>
+            <li><strong>학생 API 테스트</strong>에서 학생이 조회되는지 확인</li>
+            <li><strong>localStorage 확인</strong>에서 사용자 정보가 있는지 확인
+                <ul>
+                    <li>없으면: "테스트 사용자 설정" 버튼 클릭</li>
+                </ul>
+            </li>
+            <li><strong>배포 버전 확인</strong>에서 최신 버전인지 확인
+                <ul>
+                    <li>이전 버전이면: Cloudflare Dashboard에서 재배포 필요</li>
+                    <li>방법: <code>MANUAL_DEPLOY_GUIDE.md</code> 참고</li>
+                </ul>
+            </li>
+            <li><strong>학부모 소통 페이지</strong> 열기 → F12 → Console 탭에서 에러 확인</li>
+        </ol>
+    </div>
+</body>
+</html>
