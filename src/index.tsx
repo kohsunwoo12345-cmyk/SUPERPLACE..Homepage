@@ -8235,6 +8235,28 @@ app.get('/tools/parent-message', (c) => {
                         <h2 class="text-2xl font-bold text-gray-900 mb-6">학생 정보 입력</h2>
                         
                         <form id="messageForm" class="space-y-6">
+                            <!-- 기간 선택 -->
+                            <div class="bg-blue-50 border-l-4 border-blue-500 rounded-lg p-4 mb-4">
+                                <div class="text-sm font-medium text-blue-900 mb-3">📅 조회 기간 설정</div>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="block text-xs font-medium text-blue-800 mb-1">시작일</label>
+                                        <input type="date" id="startDate" required
+                                               class="w-full px-3 py-2 border border-blue-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-blue-800 mb-1">종료일</label>
+                                        <input type="date" id="endDate" required
+                                               class="w-full px-3 py-2 border border-blue-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none">
+                                    </div>
+                                </div>
+                                <div class="mt-3 flex gap-2">
+                                    <button type="button" onclick="setDateRange(7)" class="flex-1 px-3 py-1 text-xs bg-white border border-blue-300 text-blue-700 rounded-lg hover:bg-blue-50">최근 7일</button>
+                                    <button type="button" onclick="setDateRange(30)" class="flex-1 px-3 py-1 text-xs bg-white border border-blue-300 text-blue-700 rounded-lg hover:bg-blue-50">최근 30일</button>
+                                    <button type="button" onclick="setDateRange(90)" class="flex-1 px-3 py-1 text-xs bg-white border border-blue-300 text-blue-700 rounded-lg hover:bg-blue-50">최근 90일</button>
+                                </div>
+                            </div>
+
                             <div>
                                 <label class="block text-sm font-medium text-gray-900 mb-2">학생 선택 *</label>
                                 <select id="studentSelect" required
@@ -8242,7 +8264,7 @@ app.get('/tools/parent-message', (c) => {
                                         onchange="loadStudentRecords()">
                                     <option value="">학생을 선택하세요</option>
                                 </select>
-                                <p class="text-sm text-gray-500 mt-2">💡 학생을 선택하면 최근 기록을 기반으로 AI가 메시지를 자동 생성합니다</p>
+                                <p class="text-sm text-gray-500 mt-2">💡 학생을 선택하면 설정한 기간의 학습 기록을 자동으로 불러옵니다</p>
                             </div>
 
                             <div id="studentInfoDisplay" class="hidden bg-blue-50 border-l-4 border-blue-500 rounded-lg p-4">
@@ -8250,8 +8272,15 @@ app.get('/tools/parent-message', (c) => {
                                 <div id="studentDetails" class="text-sm text-blue-800"></div>
                             </div>
 
+                            <div id="periodSummaryDisplay" class="hidden bg-purple-50 border-l-4 border-purple-500 rounded-lg p-4">
+                                <div class="text-sm font-medium text-purple-900 mb-2">📈 선택 기간 통계</div>
+                                <div id="periodSummary" class="text-sm text-purple-800"></div>
+                            </div>
+
                             <div id="recentRecordsDisplay" class="hidden">
-                                <label class="block text-sm font-medium text-gray-900 mb-2">최근 학습 기록 (최근 7일)</label>
+                                <label class="block text-sm font-medium text-gray-900 mb-2">
+                                    선택 기간 학습 기록 (<span id="recordCount">0</span>건)
+                                </label>
                                 <div id="recordsList" class="space-y-2 max-h-60 overflow-y-auto bg-gray-50 rounded-lg p-4"></div>
                             </div>
 
@@ -8259,8 +8288,8 @@ app.get('/tools/parent-message', (c) => {
                                 <label class="block text-sm font-medium text-gray-900 mb-2">추가 메모 (선택사항)</label>
                                 <textarea id="shortMessage" rows="3"
                                           class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none resize-none"
-                                          placeholder="예: 오늘 특별히 칭찬하고 싶은 점이나 학부모님께 전달할 내용을 추가로 작성하세요"></textarea>
-                                <p class="text-sm text-gray-500 mt-2">💡 학생의 최근 기록을 바탕으로 메시지가 생성됩니다. 추가로 전달할 내용이 있으면 입력하세요.</p>
+                                          placeholder="예: 이번 달 특별히 칭찬하고 싶은 점이나 학부모님께 추가로 전달할 내용을 작성하세요"></textarea>
+                                <p class="text-sm text-gray-500 mt-2">💡 학생의 선택 기간 기록을 바탕으로 메시지가 생성됩니다. 추가로 전달할 내용이 있으면 입력하세요.</p>
                             </div>
 
                             <button type="submit" 
@@ -8326,13 +8355,13 @@ app.get('/tools/parent-message', (c) => {
                     <div class="grid md:grid-cols-3 gap-6">
                         <div class="bg-white rounded-xl p-6">
                             <div class="text-3xl mb-3">1️⃣</div>
-                            <h4 class="font-bold text-gray-900 mb-2">학생 정보 입력</h4>
-                            <p class="text-sm text-gray-600">이름, 학년, 과목을 선택하고 간단한 메모를 2줄 정도 작성하세요</p>
+                            <h4 class="font-bold text-gray-900 mb-2">기간 및 학생 선택</h4>
+                            <p class="text-sm text-gray-600">조회할 기간을 설정하고 (최근 7일/30일/90일 또는 직접 선택) 학생을 선택하세요</p>
                         </div>
                         <div class="bg-white rounded-xl p-6">
                             <div class="text-3xl mb-3">2️⃣</div>
-                            <h4 class="font-bold text-gray-900 mb-2">AI가 자동 변환</h4>
-                            <p class="text-sm text-gray-600">AI가 학부모님께 전달할 따뜻하고 격려하는 메시지로 변환합니다</p>
+                            <h4 class="font-bold text-gray-900 mb-2">AI가 자동 분석</h4>
+                            <p class="text-sm text-gray-600">선택한 기간의 출석률, 과제 완성률, 이해도, 참여도 등을 자동으로 분석하고 AI가 따뜻한 메시지로 변환합니다</p>
                         </div>
                         <div class="bg-white rounded-xl p-6">
                             <div class="text-3xl mb-3">3️⃣</div>
@@ -8348,11 +8377,45 @@ app.get('/tools/parent-message', (c) => {
             let generatedMessageText = '';
             let currentStudent = null;
             let recentRecords = [];
+            let currentUser = null;
 
-            // 페이지 로드 시 학생 목록 불러오기
+            // 페이지 로드 시 사용자 확인 및 초기화
+            function initPage() {
+                const userData = localStorage.getItem('user');
+                if (userData) {
+                    currentUser = JSON.parse(userData);
+                } else {
+                    // 게스트 모드 (테스트용)
+                    currentUser = { id: 1, name: '게스트', academy_id: 1 };
+                }
+                
+                // 기본 기간 설정 (최근 30일)
+                setDateRange(30);
+                
+                // 학생 목록 불러오기
+                loadStudents();
+            }
+
+            // 기간 설정 함수
+            function setDateRange(days) {
+                const endDate = new Date();
+                const startDate = new Date();
+                startDate.setDate(startDate.getDate() - days);
+                
+                document.getElementById('endDate').valueAsDate = endDate;
+                document.getElementById('startDate').valueAsDate = startDate;
+                
+                // 학생이 이미 선택되어 있으면 기록 다시 불러오기
+                if (currentStudent) {
+                    loadStudentRecords();
+                }
+            }
+
+            // 사용자의 학생 목록 불러오기
             async function loadStudents() {
                 try {
-                    const response = await fetch('/api/students?academyId=1');
+                    const academyId = currentUser.academy_id || 1;
+                    const response = await fetch(\`/api/students?academyId=\${academyId}\`);
                     const data = await response.json();
                     
                     if (data.success) {
@@ -8369,22 +8432,33 @@ app.get('/tools/parent-message', (c) => {
                     }
                 } catch (err) {
                     console.error('Error loading students:', err);
+                    alert('학생 목록을 불러오는데 실패했습니다.');
                 }
             }
 
-            // 학생 선택 시 최근 기록 불러오기
+            // 학생 선택 시 기록 불러오기
             async function loadStudentRecords() {
                 const select = document.getElementById('studentSelect');
                 const selectedOption = select.options[select.selectedIndex];
                 
                 if (!selectedOption.value) {
                     document.getElementById('studentInfoDisplay').classList.add('hidden');
+                    document.getElementById('periodSummaryDisplay').classList.add('hidden');
                     document.getElementById('recentRecordsDisplay').classList.add('hidden');
                     document.getElementById('generateBtn').disabled = true;
                     return;
                 }
 
                 currentStudent = JSON.parse(selectedOption.dataset.student);
+                
+                // 기간 확인
+                const startDate = document.getElementById('startDate').value;
+                const endDate = document.getElementById('endDate').value;
+                
+                if (!startDate || !endDate) {
+                    alert('조회 기간을 선택해주세요.');
+                    return;
+                }
                 
                 // 학생 정보 표시
                 document.getElementById('studentDetails').innerHTML = \`
@@ -8395,31 +8469,74 @@ app.get('/tools/parent-message', (c) => {
                 \`;
                 document.getElementById('studentInfoDisplay').classList.remove('hidden');
 
-                // 최근 7일 기록 불러오기
+                // 선택 기간 기록 불러오기
                 try {
-                    const endDate = new Date().toISOString().split('T')[0];
-                    const startDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-                    
                     const response = await fetch(\`/api/daily-records?studentId=\${currentStudent.id}&startDate=\${startDate}&endDate=\${endDate}\`);
                     const data = await response.json();
                     
                     if (data.success) {
                         recentRecords = data.records || [];
                         displayRecords();
+                        displayPeriodSummary();
                         document.getElementById('generateBtn').disabled = false;
                     }
                 } catch (err) {
                     console.error('Error loading records:', err);
+                    alert('학습 기록을 불러오는데 실패했습니다.');
                     document.getElementById('generateBtn').disabled = false;
                 }
+            }
+
+            // 기간 통계 표시
+            function displayPeriodSummary() {
+                if (recentRecords.length === 0) {
+                    document.getElementById('periodSummaryDisplay').classList.add('hidden');
+                    return;
+                }
+
+                const totalDays = recentRecords.length;
+                const attendanceCount = recentRecords.filter(r => r.attendance === '출석').length;
+                const homeworkCompleted = recentRecords.filter(r => r.homework_status === '완료').length;
+                
+                const understandingScores = recentRecords.filter(r => r.understanding_level).map(r => r.understanding_level);
+                const participationScores = recentRecords.filter(r => r.participation_level).map(r => r.participation_level);
+                
+                const avgUnderstanding = understandingScores.length > 0 
+                    ? (understandingScores.reduce((a, b) => a + b, 0) / understandingScores.length).toFixed(1)
+                    : 0;
+                
+                const avgParticipation = participationScores.length > 0
+                    ? (participationScores.reduce((a, b) => a + b, 0) / participationScores.length).toFixed(1)
+                    : 0;
+
+                const attendanceRate = ((attendanceCount / totalDays) * 100).toFixed(0);
+                const homeworkRate = totalDays > 0 ? ((homeworkCompleted / totalDays) * 100).toFixed(0) : 0;
+
+                const startDate = document.getElementById('startDate').value;
+                const endDate = document.getElementById('endDate').value;
+                const daysDiff = Math.ceil((new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24)) + 1;
+
+                document.getElementById('periodSummary').innerHTML = \`
+                    <div class="grid grid-cols-2 gap-2">
+                        <div><strong>조회 기간:</strong> \${daysDiff}일</div>
+                        <div><strong>수업 일수:</strong> \${totalDays}일</div>
+                        <div><strong>출석률:</strong> \${attendanceRate}%</div>
+                        <div><strong>과제 완성률:</strong> \${homeworkRate}%</div>
+                        <div><strong>평균 이해도:</strong> \${avgUnderstanding}/5점</div>
+                        <div><strong>평균 참여도:</strong> \${avgParticipation}/5점</div>
+                    </div>
+                \`;
+
+                document.getElementById('periodSummaryDisplay').classList.remove('hidden');
             }
 
             // 기록 표시
             function displayRecords() {
                 const recordsList = document.getElementById('recordsList');
+                document.getElementById('recordCount').textContent = recentRecords.length;
                 
                 if (recentRecords.length === 0) {
-                    recordsList.innerHTML = '<p class="text-gray-500 text-sm">최근 7일간 기록이 없습니다.</p>';
+                    recordsList.innerHTML = '<p class="text-gray-500 text-sm">선택한 기간에 기록이 없습니다.</p>';
                     document.getElementById('recentRecordsDisplay').classList.remove('hidden');
                     return;
                 }
@@ -8456,6 +8573,8 @@ app.get('/tools/parent-message', (c) => {
                     return;
                 }
 
+                const startDate = document.getElementById('startDate').value;
+                const endDate = document.getElementById('endDate').value;
                 const additionalMessage = document.getElementById('shortMessage').value;
 
                 // 버튼 로딩 상태
@@ -8481,7 +8600,9 @@ app.get('/tools/parent-message', (c) => {
                             subjects: currentStudent.subjects,
                             parentName: currentStudent.parent_name,
                             records: recentRecords,
-                            additionalMessage
+                            additionalMessage,
+                            startDate,
+                            endDate
                         })
                     });
 
@@ -8491,8 +8612,9 @@ app.get('/tools/parent-message', (c) => {
                         generatedMessageText = data.message;
                         
                         // 결과 표시
+                        const daysDiff = Math.ceil((new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24)) + 1;
                         document.getElementById('studentInfo').textContent = currentStudent.name + ' 학생';
-                        document.getElementById('subjectInfo').textContent = currentStudent.grade + ' · ' + currentStudent.subjects;
+                        document.getElementById('subjectInfo').textContent = \`\${currentStudent.grade} · \${currentStudent.subjects} · \${daysDiff}일간 (\${recentRecords.length}개 기록)\`;
                         document.getElementById('generatedMessage').textContent = data.message;
                         
                         document.getElementById('emptyState').classList.add('hidden');
@@ -8519,6 +8641,7 @@ app.get('/tools/parent-message', (c) => {
             function resetForm() {
                 document.getElementById('messageForm').reset();
                 document.getElementById('studentInfoDisplay').classList.add('hidden');
+                document.getElementById('periodSummaryDisplay').classList.add('hidden');
                 document.getElementById('recentRecordsDisplay').classList.add('hidden');
                 document.getElementById('emptyState').classList.remove('hidden');
                 document.getElementById('resultArea').classList.add('hidden');
@@ -8526,10 +8649,12 @@ app.get('/tools/parent-message', (c) => {
                 currentStudent = null;
                 recentRecords = [];
                 generatedMessageText = '';
+                // 기본 기간 재설정
+                setDateRange(30);
             }
 
-            // 페이지 로드 시 학생 목록 불러오기
-            loadStudents();
+            // 페이지 로드 시 초기화
+            initPage();
             }
         </script>
     </body>
