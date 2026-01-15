@@ -8435,7 +8435,7 @@ app.get('/tools/parent-message', (c) => {
             async function loadStudents() {
                 try {
                     const academyId = currentUser.academy_id || 1;
-                    const response = await fetch(\`/api/students?academyId=\${academyId}\`);
+                    const response = await fetch('/api/students?academyId=' + academyId);
                     const data = await response.json();
                     
                     if (data.success) {
@@ -8445,7 +8445,7 @@ app.get('/tools/parent-message', (c) => {
                         data.students.forEach(student => {
                             const option = document.createElement('option');
                             option.value = student.id;
-                            option.textContent = \`\${student.name} (\${student.grade}, \${student.class_name || '미배정'})\`;
+                            option.textContent = student.name + ' (' + student.grade + ', ' + (student.class_name || '미배정') + ')';
                             option.dataset.student = JSON.stringify(student);
                             select.appendChild(option);
                         });
@@ -8481,17 +8481,16 @@ app.get('/tools/parent-message', (c) => {
                 }
                 
                 // 학생 정보 표시
-                document.getElementById('studentDetails').innerHTML = \`
-                    <div><strong>이름:</strong> \${currentStudent.name}</div>
-                    <div><strong>학년:</strong> \${currentStudent.grade}</div>
-                    <div><strong>과목:</strong> \${currentStudent.subjects}</div>
-                    <div><strong>학부모:</strong> \${currentStudent.parent_name} (\${currentStudent.parent_phone})</div>
-                \`;
+                document.getElementById('studentDetails').innerHTML = 
+                    '<div><strong>이름:</strong> ' + currentStudent.name + '</div>' +
+                    '<div><strong>학년:</strong> ' + currentStudent.grade + '</div>' +
+                    '<div><strong>과목:</strong> ' + currentStudent.subjects + '</div>' +
+                    '<div><strong>학부모:</strong> ' + currentStudent.parent_name + ' (' + currentStudent.parent_phone + ')</div>';
                 document.getElementById('studentInfoDisplay').classList.remove('hidden');
 
                 // 선택 기간 기록 불러오기
                 try {
-                    const response = await fetch(\`/api/daily-records?studentId=\${currentStudent.id}&startDate=\${startDate}&endDate=\${endDate}\`);
+                    const response = await fetch('/api/daily-records?studentId=' + currentStudent.id + '&startDate=' + startDate + '&endDate=' + endDate);
                     const data = await response.json();
                     
                     if (data.success) {
@@ -8536,16 +8535,15 @@ app.get('/tools/parent-message', (c) => {
                 const endDate = document.getElementById('endDate').value;
                 const daysDiff = Math.ceil((new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24)) + 1;
 
-                document.getElementById('periodSummary').innerHTML = \`
-                    <div class="grid grid-cols-2 gap-2">
-                        <div><strong>조회 기간:</strong> \${daysDiff}일</div>
-                        <div><strong>수업 일수:</strong> \${totalDays}일</div>
-                        <div><strong>출석률:</strong> \${attendanceRate}%</div>
-                        <div><strong>과제 완성률:</strong> \${homeworkRate}%</div>
-                        <div><strong>평균 이해도:</strong> \${avgUnderstanding}/5점</div>
-                        <div><strong>평균 참여도:</strong> \${avgParticipation}/5점</div>
-                    </div>
-                \`;
+                document.getElementById('periodSummary').innerHTML = 
+                    '<div class="grid grid-cols-2 gap-2">' +
+                        '<div><strong>조회 기간:</strong> ' + daysDiff + '일</div>' +
+                        '<div><strong>수업 일수:</strong> ' + totalDays + '일</div>' +
+                        '<div><strong>출석률:</strong> ' + attendanceRate + '%</div>' +
+                        '<div><strong>과제 완성률:</strong> ' + homeworkRate + '%</div>' +
+                        '<div><strong>평균 이해도:</strong> ' + avgUnderstanding + '/5점</div>' +
+                        '<div><strong>평균 참여도:</strong> ' + avgParticipation + '/5점</div>' +
+                    '</div>';
 
                 document.getElementById('periodSummaryDisplay').classList.remove('hidden');
             }
@@ -8561,26 +8559,26 @@ app.get('/tools/parent-message', (c) => {
                     return;
                 }
 
-                recordsList.innerHTML = recentRecords.map(record => \`
-                    <div class="bg-white border border-gray-200 rounded-lg p-3 text-sm">
-                        <div class="flex justify-between items-start mb-2">
-                            <span class="font-medium text-gray-900">\${record.record_date}</span>
-                            <span class="text-xs px-2 py-1 rounded-full \${
-                                record.attendance === '출석' ? 'bg-green-100 text-green-800' :
-                                record.attendance === '지각' ? 'bg-yellow-100 text-yellow-800' :
-                                record.attendance === '결석' ? 'bg-red-100 text-red-800' :
-                                'bg-gray-100 text-gray-800'
-                            }">\${record.attendance || '-'}</span>
-                        </div>
-                        <div class="space-y-1 text-gray-600">
-                            \${record.homework_status ? \`<div>📝 과제: \${record.homework_status}</div>\` : ''}
-                            \${record.understanding_level ? \`<div>💡 이해도: \${record.understanding_level}/5</div>\` : ''}
-                            \${record.participation_level ? \`<div>🙋 참여도: \${record.participation_level}/5</div>\` : ''}
-                            \${record.achievement ? \`<div>🎯 성과: \${record.achievement}</div>\` : ''}
-                            \${record.memo ? \`<div class="text-gray-500">📌 \${record.memo}</div>\` : ''}
-                        </div>
-                    </div>
-                \`).join('');
+                recordsList.innerHTML = recentRecords.map(record => {
+                    let attendanceClass = 'bg-gray-100 text-gray-800';
+                    if (record.attendance === '출석') attendanceClass = 'bg-green-100 text-green-800';
+                    else if (record.attendance === '지각') attendanceClass = 'bg-yellow-100 text-yellow-800';
+                    else if (record.attendance === '결석') attendanceClass = 'bg-red-100 text-red-800';
+                    
+                    let html = '<div class="bg-white border border-gray-200 rounded-lg p-3 text-sm">';
+                    html += '<div class="flex justify-between items-start mb-2">';
+                    html += '<span class="font-medium text-gray-900">' + record.record_date + '</span>';
+                    html += '<span class="text-xs px-2 py-1 rounded-full ' + attendanceClass + '">' + (record.attendance || '-') + '</span>';
+                    html += '</div>';
+                    html += '<div class="space-y-1 text-gray-600">';
+                    if (record.homework_status) html += '<div>📝 과제: ' + record.homework_status + '</div>';
+                    if (record.understanding_level) html += '<div>💡 이해도: ' + record.understanding_level + '/5</div>';
+                    if (record.participation_level) html += '<div>🙋 참여도: ' + record.participation_level + '/5</div>';
+                    if (record.achievement) html += '<div>🎯 성과: ' + record.achievement + '</div>';
+                    if (record.memo) html += '<div class="text-gray-500">📌 ' + record.memo + '</div>';
+                    html += '</div></div>';
+                    return html;
+                }).join('');
 
                 document.getElementById('recentRecordsDisplay').classList.remove('hidden');
             }
@@ -8634,7 +8632,7 @@ app.get('/tools/parent-message', (c) => {
                         // 결과 표시
                         const daysDiff = Math.ceil((new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24)) + 1;
                         document.getElementById('studentInfo').textContent = currentStudent.name + ' 학생';
-                        document.getElementById('subjectInfo').textContent = \`\${currentStudent.grade} · \${currentStudent.subjects} · \${daysDiff}일간 (\${recentRecords.length}개 기록)\`;
+                        document.getElementById('subjectInfo').textContent = currentStudent.grade + ' · ' + currentStudent.subjects + ' · ' + daysDiff + '일간 (' + recentRecords.length + '개 기록)';
                         document.getElementById('generatedMessage').textContent = data.message;
                         
                         document.getElementById('emptyState').classList.add('hidden');
