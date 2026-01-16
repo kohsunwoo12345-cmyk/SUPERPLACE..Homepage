@@ -1,0 +1,9 @@
+# This file tells Cloudflare Pages to skip building
+# and use the pre-built dist folder from Git
+
+# Build settings
+BUILD_COMMAND=""
+OUTPUT_DIRECTORY="dist"
+
+# This project uses pre-built dist folder
+# No build step required
