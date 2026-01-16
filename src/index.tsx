@@ -5669,6 +5669,11 @@ app.get('/login', (c) => {
   `)
 })
 
+// 테스트 라우트
+app.get('/test-route', (c) => {
+  return c.html('<h1>Test Route Works!</h1>')
+})
+
 // 선생님 등록 페이지
 app.get('/teachers/register', (c) => {
   return c.html(`
