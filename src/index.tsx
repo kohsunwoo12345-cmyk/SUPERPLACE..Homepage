@@ -557,6 +557,56 @@ app.post('/api/admin/revoke-permission', async (c) => {
   }
 })
 
+// 관리자: 데이터베이스 마이그레이션 실행 API
+app.post('/api/admin/run-migration', async (c) => {
+  try {
+    const { adminId } = await c.req.json()
+    
+    // 관리자 권한 확인
+    const admin = await c.env.DB.prepare('SELECT role FROM users WHERE id = ?').bind(adminId).first()
+    if (!admin || admin.role !== 'admin') {
+      return c.json({ success: false, error: '관리자 권한이 필요합니다.' }, 403)
+    }
+
+    // user_permissions 테이블 재생성
+    await c.env.DB.prepare(`DROP TABLE IF EXISTS user_permissions_backup`).run()
+    
+    // 기존 테이블을 백업으로 이름 변경 (데이터가 있을 경우)
+    try {
+      await c.env.DB.prepare(`ALTER TABLE user_permissions RENAME TO user_permissions_backup`).run()
+    } catch (e) {
+      // 테이블이 없으면 무시
+      console.log('No existing user_permissions table to backup')
+    }
+    
+    // 새 테이블 생성
+    await c.env.DB.prepare(`
+      CREATE TABLE IF NOT EXISTS user_permissions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        program_key TEXT NOT NULL,
+        granted_by INTEGER,
+        granted_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        expires_at DATETIME,
+        is_active INTEGER DEFAULT 1,
+        FOREIGN KEY (user_id) REFERENCES users(id),
+        FOREIGN KEY (granted_by) REFERENCES users(id),
+        UNIQUE(user_id, program_key)
+      )
+    `).run()
+    
+    // 인덱스 생성
+    await c.env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_user_permissions_user_id ON user_permissions(user_id)`).run()
+    await c.env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_user_permissions_program_key ON user_permissions(program_key)`).run()
+    await c.env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_user_permissions_active ON user_permissions(is_active)`).run()
+
+    return c.json({ success: true, message: 'user_permissions 테이블이 성공적으로 재생성되었습니다.' })
+  } catch (err) {
+    console.error('Migration error:', err)
+    return c.json({ success: false, error: '마이그레이션 실행 중 오류가 발생했습니다: ' + err.message }, 500)
+  }
+})
+
 // SMS API Routes
 // ========================================
 
@@ -16124,7 +16174,7 @@ app.get('/admin', async (c) => {
             <!-- 빠른 메뉴 -->
             <div class="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
                 <h2 class="text-xl font-bold text-gray-900 mb-6">빠른 메뉴</h2>
-                <div class="grid md:grid-cols-3 gap-4">
+                <div class="grid md:grid-cols-4 gap-4">
                     <a href="/admin/users" class="flex items-center gap-4 p-4 rounded-xl border border-gray-200 hover:border-purple-300 hover:bg-purple-50 transition">
                         <div class="w-12 h-12 gradient-purple rounded-xl flex items-center justify-center">
                             <i class="fas fa-users text-white"></i>
@@ -16154,11 +16204,51 @@ app.get('/admin', async (c) => {
                             <div class="text-sm text-gray-600">교육 프로그램 관리</div>
                         </div>
                     </a>
+                    
+                    <button onclick="runMigration()" class="flex items-center gap-4 p-4 rounded-xl border border-gray-200 hover:border-red-300 hover:bg-red-50 transition text-left">
+                        <div class="w-12 h-12 bg-red-500 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-database text-white"></i>
+                        </div>
+                        <div>
+                            <div class="font-bold text-gray-900">DB 마이그레이션</div>
+                            <div class="text-sm text-gray-600">권한 테이블 초기화</div>
+                        </div>
+                    </button>
                 </div>
             </div>
         </div>
 
         <script>
+            async function runMigration() {
+                if (!confirm('⚠️ 권한 테이블을 재생성하시겠습니까?\n\n기존 권한 데이터는 백업되지만, 모든 사용자의 권한이 초기화됩니다.')) {
+                    return;
+                }
+                
+                const user = JSON.parse(localStorage.getItem('user') || '{}');
+                if (!user.id) {
+                    alert('로그인이 필요합니다.');
+                    return;
+                }
+                
+                try {
+                    const response = await fetch('/api/admin/run-migration', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ adminId: user.id })
+                    });
+                    
+                    const data = await response.json();
+                    if (data.success) {
+                        alert('✅ ' + data.message + '\n\n이제 권한 시스템을 정상적으로 사용할 수 있습니다.');
+                        location.reload();
+                    } else {
+                        alert('❌ 오류: ' + data.error);
+                    }
+                } catch (err) {
+                    alert('❌ 마이그레이션 실행 중 오류가 발생했습니다: ' + err.message);
+                }
+            }
+            
             function logout() {
                 if(confirm('로그아웃 하시겠습니까?')) {
                     localStorage.removeItem('user');

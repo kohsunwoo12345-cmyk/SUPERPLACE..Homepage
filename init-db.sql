@@ -26,13 +26,14 @@ CREATE TABLE IF NOT EXISTS contacts (
 CREATE TABLE IF NOT EXISTS user_permissions (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   user_id INTEGER NOT NULL,
-  permission_type TEXT NOT NULL,
-  permission_name TEXT NOT NULL,
+  program_key TEXT NOT NULL,
   granted_by INTEGER,
   granted_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   expires_at DATETIME,
   is_active INTEGER DEFAULT 1,
-  FOREIGN KEY (user_id) REFERENCES users(id)
+  FOREIGN KEY (user_id) REFERENCES users(id),
+  FOREIGN KEY (granted_by) REFERENCES users(id),
+  UNIQUE(user_id, program_key)
 );
 
 -- 인덱스 생성
