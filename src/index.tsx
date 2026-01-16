@@ -5915,7 +5915,7 @@ app.get('/signup', (c) => {
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>회원가입 - 우리는 슈퍼플레이스다</title>
+        <title>회원가입 v2.0 - 우리는 슈퍼플레이스다</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
         <style>
@@ -5935,7 +5935,10 @@ app.get('/signup', (c) => {
                     <a href="/" class="inline-block mb-6">
                         <span class="text-2xl font-bold text-gray-900">우리는 슈퍼플레이스다</span>
                     </a>
-                    <h1 class="text-3xl font-bold text-gray-900 mb-2">회원가입</h1>
+                    <div class="flex items-center justify-center gap-3 mb-2">
+                        <h1 class="text-3xl font-bold text-gray-900">회원가입</h1>
+                        <span class="px-2 py-1 bg-purple-100 text-purple-700 text-xs font-bold rounded-full">v2.0</span>
+                    </div>
                     <p class="text-gray-600">학원 마케팅 교육을 시작해보세요</p>
                 </div>
 
