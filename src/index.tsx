@@ -22197,7 +22197,7 @@ app.get('/students', (c) => {
             <!-- 대시보드 카드 그리드 -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                 <!-- 선생님 관리 (원장님 전용) -->
-                <a id="teacherManagementCard" href="/teachers/manage" class="hidden block bg-white rounded-xl shadow-lg hover:shadow-xl transition transform hover:-translate-y-1">
+                <button id="teacherManagementCard" onclick="openTeacherModal()" class="hidden text-left bg-white rounded-xl shadow-lg hover:shadow-xl transition transform hover:-translate-y-1 cursor-pointer w-full">
                     <div class="bg-gradient-to-br from-purple-500 to-indigo-600 text-white p-6 rounded-t-xl">
                         <i class="fas fa-chalkboard-teacher text-4xl mb-3"></i>
                         <h3 class="text-xl font-bold">선생님 관리</h3>
@@ -22209,7 +22209,7 @@ app.get('/students', (c) => {
                             <i class="fas fa-arrow-right text-purple-600"></i>
                         </div>
                     </div>
-                </a>
+                </button>
 
                 <!-- 반 관리 -->
                 <a href="/students/classes" class="block bg-white rounded-xl shadow-lg hover:shadow-xl transition transform hover:-translate-y-1">
@@ -22277,6 +22277,103 @@ app.get('/students', (c) => {
                 <h2 class="text-2xl font-bold text-gray-900 mb-6">📊 최근 활동</h2>
                 <div id="recentActivity" class="space-y-4">
                     <div class="text-center text-gray-500 py-8">데이터 로딩 중...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 선생님 관리 모달 -->
+        <div id="teacherModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                <div class="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">
+                    <h2 class="text-2xl font-bold text-gray-900">
+                        <i class="fas fa-chalkboard-teacher text-purple-600 mr-2"></i>선생님 관리
+                    </h2>
+                    <button onclick="closeTeacherModal()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-2xl"></i>
+                    </button>
+                </div>
+                
+                <div class="p-6">
+                    <!-- 탭 메뉴 -->
+                    <div class="flex gap-2 mb-6 border-b">
+                        <button onclick="switchTab('register')" id="tab-register" class="px-6 py-3 font-medium text-purple-600 border-b-2 border-purple-600">
+                            선생님 등록
+                        </button>
+                        <button onclick="switchTab('list')" id="tab-list" class="px-6 py-3 font-medium text-gray-600 hover:text-purple-600">
+                            선생님 목록
+                        </button>
+                        <button onclick="switchTab('pending')" id="tab-pending" class="px-6 py-3 font-medium text-gray-600 hover:text-purple-600">
+                            승인 대기 <span id="pendingCount" class="ml-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">0</span>
+                        </button>
+                    </div>
+
+                    <!-- 선생님 등록 탭 -->
+                    <div id="content-register" class="tab-content">
+                        <!-- 인증 코드 섹션 -->
+                        <div class="bg-purple-50 border-2 border-purple-200 rounded-xl p-6 mb-6">
+                            <h3 class="text-lg font-bold text-gray-900 mb-4">
+                                <i class="fas fa-key text-purple-600 mr-2"></i>학원 인증 코드
+                            </h3>
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm text-gray-600 mb-2">선생님에게 이 코드를 전달하세요</p>
+                                    <div class="flex items-center gap-4">
+                                        <span id="verificationCode" class="text-3xl font-mono font-bold text-purple-600">------</span>
+                                        <button onclick="copyCode()" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
+                                            <i class="fas fa-copy mr-2"></i>복사
+                                        </button>
+                                    </div>
+                                </div>
+                                <button onclick="regenerateCode()" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700">
+                                    <i class="fas fa-sync-alt mr-2"></i>재생성
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 등록 방법 안내 -->
+                        <div class="bg-blue-50 border border-blue-200 rounded-xl p-6">
+                            <h3 class="text-lg font-bold text-gray-900 mb-4">
+                                <i class="fas fa-info-circle text-blue-600 mr-2"></i>선생님 등록 방법
+                            </h3>
+                            <ol class="space-y-3 text-gray-700">
+                                <li class="flex items-start">
+                                    <span class="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm mr-3">1</span>
+                                    <span>선생님에게 위의 <strong>인증 코드</strong>와 <strong>학원명</strong>을 전달하세요</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <span class="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm mr-3">2</span>
+                                    <span>선생님이 등록 페이지에서 정보를 입력하고 신청합니다</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <span class="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm mr-3">3</span>
+                                    <span>"승인 대기" 탭에서 신청을 확인하고 승인하세요</span>
+                                </li>
+                            </ol>
+                            <div class="mt-4 p-4 bg-white rounded-lg">
+                                <p class="text-sm font-medium text-gray-700 mb-2">📱 선생님 등록 링크:</p>
+                                <div class="flex items-center gap-2">
+                                    <input type="text" value="https://superplace-academy.pages.dev/signup?type=teacher" readonly class="flex-1 px-3 py-2 border rounded-lg text-sm">
+                                    <button onclick="copyRegisterLink()" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 text-sm whitespace-nowrap">
+                                        <i class="fas fa-copy mr-1"></i>복사
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 선생님 목록 탭 -->
+                    <div id="content-list" class="tab-content hidden">
+                        <div id="teachersList" class="space-y-4">
+                            <div class="text-center text-gray-500 py-8">로딩 중...</div>
+                        </div>
+                    </div>
+
+                    <!-- 승인 대기 탭 -->
+                    <div id="content-pending" class="tab-content hidden">
+                        <div id="pendingList" class="space-y-4">
+                            <div class="text-center text-gray-500 py-8">로딩 중...</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -22365,6 +22462,214 @@ app.get('/students', (c) => {
                         </a>
                     </div>
                 \`).join('');
+            }
+
+            // 선생님 관리 모달 함수들
+            function openTeacherModal() {
+                document.getElementById('teacherModal').classList.remove('hidden');
+                loadVerificationCode();
+                loadTeachersList();
+                loadPendingApplications();
+            }
+
+            function closeTeacherModal() {
+                document.getElementById('teacherModal').classList.add('hidden');
+            }
+
+            function switchTab(tab) {
+                // 탭 버튼 스타일
+                ['register', 'list', 'pending'].forEach(t => {
+                    const btn = document.getElementById('tab-' + t);
+                    const content = document.getElementById('content-' + t);
+                    if (t === tab) {
+                        btn.classList.add('text-purple-600', 'border-b-2', 'border-purple-600');
+                        btn.classList.remove('text-gray-600');
+                        content.classList.remove('hidden');
+                    } else {
+                        btn.classList.remove('text-purple-600', 'border-b-2', 'border-purple-600');
+                        btn.classList.add('text-gray-600');
+                        content.classList.add('hidden');
+                    }
+                });
+            }
+
+            async function loadVerificationCode() {
+                try {
+                    const res = await fetch('/api/teachers/verification-code?directorId=' + currentUser.id);
+                    const data = await res.json();
+                    if (data.success && data.code) {
+                        document.getElementById('verificationCode').textContent = data.code;
+                    }
+                } catch (error) {
+                    console.error('인증 코드 로딩 실패:', error);
+                }
+            }
+
+            async function regenerateCode() {
+                if (!confirm('인증 코드를 재생성하시겠습니까? 이전 코드는 사용할 수 없게 됩니다.')) return;
+                try {
+                    const res = await fetch('/api/teachers/verification-code/regenerate', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ directorId: currentUser.id })
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        document.getElementById('verificationCode').textContent = data.code;
+                        alert('인증 코드가 재생성되었습니다: ' + data.code);
+                    } else {
+                        alert('코드 재생성 실패: ' + data.error);
+                    }
+                } catch (error) {
+                    console.error('코드 재생성 실패:', error);
+                    alert('코드 재생성 중 오류가 발생했습니다.');
+                }
+            }
+
+            function copyCode() {
+                const code = document.getElementById('verificationCode').textContent;
+                navigator.clipboard.writeText(code).then(() => {
+                    alert('인증 코드가 복사되었습니다: ' + code);
+                });
+            }
+
+            function copyRegisterLink() {
+                const link = 'https://superplace-academy.pages.dev/signup?type=teacher';
+                navigator.clipboard.writeText(link).then(() => {
+                    alert('등록 링크가 복사되었습니다!');
+                });
+            }
+
+            async function loadTeachersList() {
+                try {
+                    const res = await fetch('/api/teachers/list?directorId=' + currentUser.id);
+                    const data = await res.json();
+                    const container = document.getElementById('teachersList');
+                    
+                    if (!data.success || data.teachers.length === 0) {
+                        container.innerHTML = '<div class="text-center text-gray-500 py-8">등록된 선생님이 없습니다.</div>';
+                        return;
+                    }
+
+                    container.innerHTML = data.teachers.map(teacher => \`
+                        <div class="bg-white border rounded-xl p-6 hover:shadow-lg transition">
+                            <div class="flex items-start justify-between">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-14 h-14 bg-purple-100 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-user-tie text-purple-600 text-2xl"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-lg font-bold text-gray-900">\${teacher.name}</h3>
+                                        <p class="text-sm text-gray-600">\${teacher.email}</p>
+                                        <p class="text-sm text-gray-500">\${teacher.phone || '-'}</p>
+                                        <span class="inline-block mt-2 px-3 py-1 bg-purple-100 text-purple-600 rounded-full text-xs font-medium">
+                                            담당 반: \${teacher.class_count || 0}개
+                                        </span>
+                                    </div>
+                                </div>
+                                <button onclick="showTeacherPermissions(\${teacher.id}, '\${teacher.name}')" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                                    <i class="fas fa-cog mr-2"></i>권한 설정
+                                </button>
+                            </div>
+                        </div>
+                    \`).join('');
+                } catch (error) {
+                    console.error('선생님 목록 로딩 실패:', error);
+                }
+            }
+
+            async function loadPendingApplications() {
+                try {
+                    const res = await fetch('/api/teachers/applications?directorId=' + currentUser.id + '&status=pending');
+                    const data = await res.json();
+                    const container = document.getElementById('pendingList');
+                    const countBadge = document.getElementById('pendingCount');
+                    
+                    if (!data.success || data.applications.length === 0) {
+                        container.innerHTML = '<div class="text-center text-gray-500 py-8">승인 대기 중인 신청이 없습니다.</div>';
+                        countBadge.textContent = '0';
+                        return;
+                    }
+
+                    countBadge.textContent = data.applications.length;
+                    container.innerHTML = data.applications.map(app => \`
+                        <div class="bg-yellow-50 border-2 border-yellow-200 rounded-xl p-6">
+                            <div class="flex items-start justify-between mb-4">
+                                <div>
+                                    <h3 class="text-lg font-bold text-gray-900">\${app.name}</h3>
+                                    <p class="text-sm text-gray-600">\${app.email}</p>
+                                    <p class="text-sm text-gray-500">\${app.phone || '-'}</p>
+                                    <p class="text-xs text-gray-400 mt-2">신청일: \${new Date(app.applied_at).toLocaleString('ko-KR')}</p>
+                                </div>
+                                <span class="px-3 py-1 bg-yellow-500 text-white rounded-full text-xs font-medium">
+                                    대기중
+                                </span>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="approveApplication(\${app.id}, '\${app.name}')" class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                                    <i class="fas fa-check mr-2"></i>승인
+                                </button>
+                                <button onclick="rejectApplication(\${app.id}, '\${app.name}')" class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+                                    <i class="fas fa-times mr-2"></i>거절
+                                </button>
+                            </div>
+                        </div>
+                    \`).join('');
+                } catch (error) {
+                    console.error('승인 대기 목록 로딩 실패:', error);
+                }
+            }
+
+            async function approveApplication(id, name) {
+                if (!confirm(\`\${name} 선생님의 신청을 승인하시겠습니까?\`)) return;
+                try {
+                    const res = await fetch(\`/api/teachers/applications/\${id}/approve\`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ directorId: currentUser.id })
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        alert(\`\${name} 선생님이 승인되었습니다!\`);
+                        loadPendingApplications();
+                        loadTeachersList();
+                        loadDashboard();
+                    } else {
+                        alert('승인 실패: ' + data.error);
+                    }
+                } catch (error) {
+                    console.error('승인 실패:', error);
+                    alert('승인 중 오류가 발생했습니다.');
+                }
+            }
+
+            async function rejectApplication(id, name) {
+                if (!confirm(\`\${name} 선생님의 신청을 거절하시겠습니까?\`)) return;
+                const reason = prompt('거절 사유를 입력하세요 (선택사항):');
+                try {
+                    const res = await fetch(\`/api/teachers/applications/\${id}/reject\`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                            directorId: currentUser.id,
+                            reason: reason || '승인 거부'
+                        })
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        alert(\`\${name} 선생님의 신청이 거절되었습니다.\`);
+                        loadPendingApplications();
+                    } else {
+                        alert('거절 실패: ' + data.error);
+                    }
+                } catch (error) {
+                    console.error('거절 실패:', error);
+                    alert('거절 중 오류가 발생했습니다.');
+                }
+            }
+
+            function showTeacherPermissions(teacherId, teacherName) {
+                alert(\`\${teacherName} 선생님의 권한 설정 기능은 추후 추가됩니다.\`);
             }
 
             loadDashboard();
