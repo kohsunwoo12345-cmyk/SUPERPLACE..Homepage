@@ -16780,6 +16780,374 @@ app.get('/my-deposits', (c) => {
   `)
 })
 
+// 관리자: 사용자 상세 정보 조회 API
+app.get('/api/admin/users/:id/detail', async (c) => {
+  try {
+    const userId = c.req.param('id')
+    
+    // 사용자 기본 정보
+    const user = await c.env.DB.prepare(`
+      SELECT id, email, name, phone, academy_name, academy_location, role, points, created_at
+      FROM users WHERE id = ?
+    `).bind(userId).first()
+    
+    if (!user) {
+      return c.json({ success: false, error: '사용자를 찾을 수 없습니다.' }, 404)
+    }
+    
+    // 발신번호 인증 요청 내역
+    const verificationRequests = await c.env.DB.prepare(`
+      SELECT id, phone_number, verification_method, document_url, status, 
+             created_at, processed_at, admin_note
+      FROM sender_verification_requests
+      WHERE user_id = ?
+      ORDER BY created_at DESC
+    `).bind(userId).all()
+    
+    // 등록된 발신번호 목록
+    const senderNumbers = await c.env.DB.prepare(`
+      SELECT id, phone_number, verification_method, status, verification_date, created_at
+      FROM sender_ids
+      WHERE user_id = ?
+      ORDER BY created_at DESC
+    `).bind(userId).all()
+    
+    // 랜딩페이지 목록
+    const landingPages = await c.env.DB.prepare(`
+      SELECT id, title, slug, status, view_count, created_at, updated_at
+      FROM landing_pages
+      WHERE user_id = ?
+      ORDER BY created_at DESC
+      LIMIT 10
+    `).bind(userId).all()
+    
+    // 권한 목록
+    const permissions = await c.env.DB.prepare(`
+      SELECT program_key, granted_at, expires_at
+      FROM user_permissions
+      WHERE user_id = ? AND is_active = 1
+      ORDER BY granted_at DESC
+    `).bind(userId).all()
+    
+    // SMS 발송 통계
+    const smsStats = await c.env.DB.prepare(`
+      SELECT 
+        COUNT(*) as total_sent,
+        SUM(CASE WHEN status = 'success' THEN 1 ELSE 0 END) as success_count,
+        SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) as failed_count
+      FROM sms_logs
+      WHERE user_id = ?
+    `).bind(userId).first()
+    
+    return c.json({
+      success: true,
+      user,
+      verificationRequests: verificationRequests.results || [],
+      senderNumbers: senderNumbers.results || [],
+      landingPages: landingPages.results || [],
+      permissions: permissions.results || [],
+      smsStats: smsStats || { total_sent: 0, success_count: 0, failed_count: 0 }
+    })
+  } catch (err) {
+    console.error('Get user detail error:', err)
+    return c.json({ success: false, error: '사용자 정보 조회 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
+// 관리자: 사용자 상세 정보 페이지
+app.get('/admin/users/:id', async (c) => {
+  const userId = c.req.param('id')
+  
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>사용자 상세 정보 - 슈퍼플레이스</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+        <style>
+            .gradient-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+            .card-hover { transition: all 0.3s ease; }
+            .card-hover:hover { transform: translateY(-2px); box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.1); }
+        </style>
+    </head>
+    <body class="bg-gray-50">
+        <!-- 헤더 -->
+        <nav class="bg-white border-b border-gray-200 sticky top-0 z-50">
+            <div class="max-w-7xl mx-auto px-6 py-4">
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center gap-8">
+                        <a href="/" class="text-2xl font-bold text-purple-600">슈퍼플레이스 관리자</a>
+                        <div class="flex gap-4">
+                            <a href="/admin" class="text-gray-600 hover:text-purple-600">대시보드</a>
+                            <a href="/admin/users" class="text-purple-600 font-medium">사용자</a>
+                            <a href="/admin/deposits" class="text-gray-600 hover:text-purple-600">입금 신청</a>
+                            <a href="/admin/contacts" class="text-gray-600 hover:text-purple-600">문의</a>
+                        </div>
+                    </div>
+                    <button onclick="logout()" class="text-gray-600 hover:text-red-600">
+                        <i class="fas fa-sign-out-alt mr-2"></i>로그아웃
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- 메인 컨텐츠 -->
+        <div class="max-w-7xl mx-auto px-6 py-8">
+            <!-- 뒤로 가기 -->
+            <div class="mb-6">
+                <a href="/admin/users" class="inline-flex items-center text-gray-600 hover:text-purple-600">
+                    <i class="fas fa-arrow-left mr-2"></i>사용자 목록으로 돌아가기
+                </a>
+            </div>
+
+            <!-- 로딩 상태 -->
+            <div id="loading" class="text-center py-12">
+                <i class="fas fa-spinner fa-spin text-4xl text-purple-600"></i>
+                <p class="mt-4 text-gray-600">사용자 정보를 불러오는 중...</p>
+            </div>
+
+            <!-- 사용자 정보 컨테이너 -->
+            <div id="userDetailContainer" class="hidden">
+                <!-- 사용자 기본 정보 카드 -->
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-2xl font-bold text-gray-900">
+                            <i class="fas fa-user-circle text-purple-600 mr-2"></i>
+                            <span id="userName"></span>
+                        </h2>
+                        <span id="userRole" class="px-4 py-2 rounded-full text-sm font-medium"></span>
+                    </div>
+                    
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-500 mb-1">이메일</label>
+                            <p id="userEmail" class="text-gray-900"></p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-500 mb-1">연락처</label>
+                            <p id="userPhone" class="text-gray-900"></p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-500 mb-1">학원명</label>
+                            <p id="userAcademy" class="text-gray-900"></p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-500 mb-1">학원 위치</label>
+                            <p id="userLocation" class="text-gray-900"></p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-500 mb-1">포인트</label>
+                            <p id="userPoints" class="text-xl font-bold text-purple-600"></p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-500 mb-1">가입일</label>
+                            <p id="userCreatedAt" class="text-gray-900"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SMS 통계 -->
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">
+                        <i class="fas fa-chart-bar text-blue-600 mr-2"></i>SMS 발송 통계
+                    </h3>
+                    <div class="grid md:grid-cols-3 gap-4">
+                        <div class="bg-gray-50 rounded-xl p-4">
+                            <div class="text-sm text-gray-500 mb-1">총 발송</div>
+                            <div id="smsTotalSent" class="text-2xl font-bold text-gray-900">0</div>
+                        </div>
+                        <div class="bg-green-50 rounded-xl p-4">
+                            <div class="text-sm text-green-700 mb-1">성공</div>
+                            <div id="smsSuccess" class="text-2xl font-bold text-green-600">0</div>
+                        </div>
+                        <div class="bg-red-50 rounded-xl p-4">
+                            <div class="text-sm text-red-700 mb-1">실패</div>
+                            <div id="smsFailed" class="text-2xl font-bold text-red-600">0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 권한 목록 -->
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">
+                        <i class="fas fa-key text-yellow-600 mr-2"></i>보유 권한
+                    </h3>
+                    <div id="permissionsList" class="grid md:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+                </div>
+
+                <!-- 발신번호 인증 요청 내역 -->
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">
+                        <i class="fas fa-file-alt text-orange-600 mr-2"></i>발신번호 인증 요청 내역
+                    </h3>
+                    <div id="verificationRequestsList" class="space-y-4"></div>
+                </div>
+
+                <!-- 등록된 발신번호 -->
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">
+                        <i class="fas fa-phone text-green-600 mr-2"></i>등록된 발신번호
+                    </h3>
+                    <div id="senderNumbersList" class="space-y-3"></div>
+                </div>
+
+                <!-- 랜딩페이지 목록 -->
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">
+                        <i class="fas fa-rocket text-purple-600 mr-2"></i>생성한 랜딩페이지 (최근 10개)
+                    </h3>
+                    <div id="landingPagesList" class="space-y-3"></div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            const userId = '${userId}';
+
+            async function loadUserDetail() {
+                try {
+                    const response = await fetch(\`/api/admin/users/\${userId}/detail\`);
+                    const data = await response.json();
+
+                    if (!data.success) {
+                        alert('오류: ' + (data.error || '사용자 정보를 불러올 수 없습니다.'));
+                        window.location.href = '/admin/users';
+                        return;
+                    }
+
+                    // 로딩 숨기고 컨텐츠 표시
+                    document.getElementById('loading').classList.add('hidden');
+                    document.getElementById('userDetailContainer').classList.remove('hidden');
+
+                    // 사용자 기본 정보
+                    const user = data.user;
+                    document.getElementById('userName').textContent = user.name;
+                    document.getElementById('userEmail').textContent = user.email;
+                    document.getElementById('userPhone').textContent = user.phone || '-';
+                    document.getElementById('userAcademy').textContent = user.academy_name || '-';
+                    document.getElementById('userLocation').textContent = user.academy_location || '-';
+                    document.getElementById('userPoints').textContent = (user.points || 0).toLocaleString() + 'P';
+                    document.getElementById('userCreatedAt').textContent = new Date(user.created_at).toLocaleDateString('ko-KR');
+
+                    // 역할 배지
+                    const roleEl = document.getElementById('userRole');
+                    if (user.role === 'admin') {
+                        roleEl.textContent = '관리자';
+                        roleEl.className = 'px-4 py-2 rounded-full text-sm font-medium bg-red-100 text-red-700';
+                    } else {
+                        roleEl.textContent = '일반 회원';
+                        roleEl.className = 'px-4 py-2 rounded-full text-sm font-medium bg-blue-100 text-blue-700';
+                    }
+
+                    // SMS 통계
+                    document.getElementById('smsTotalSent').textContent = (data.smsStats.total_sent || 0).toLocaleString();
+                    document.getElementById('smsSuccess').textContent = (data.smsStats.success_count || 0).toLocaleString();
+                    document.getElementById('smsFailed').textContent = (data.smsStats.failed_count || 0).toLocaleString();
+
+                    // 권한 목록
+                    const permissionsList = document.getElementById('permissionsList');
+                    if (data.permissions.length === 0) {
+                        permissionsList.innerHTML = '<p class="text-gray-500 col-span-full">보유한 권한이 없습니다.</p>';
+                    } else {
+                        permissionsList.innerHTML = data.permissions.map(p => \`
+                            <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                                <div class="font-medium text-blue-900">\${p.program_key}</div>
+                                <div class="text-xs text-blue-600 mt-1">부여: \${new Date(p.granted_at).toLocaleDateString('ko-KR')}</div>
+                            </div>
+                        \`).join('');
+                    }
+
+                    // 발신번호 인증 요청
+                    const verificationRequestsList = document.getElementById('verificationRequestsList');
+                    if (data.verificationRequests.length === 0) {
+                        verificationRequestsList.innerHTML = '<p class="text-gray-500">인증 요청 내역이 없습니다.</p>';
+                    } else {
+                        verificationRequestsList.innerHTML = data.verificationRequests.map(r => \`
+                            <div class="border border-gray-200 rounded-lg p-4">
+                                <div class="flex justify-between items-start mb-2">
+                                    <div>
+                                        <div class="font-bold text-gray-900">\${r.phone_number}</div>
+                                        <div class="text-sm text-gray-500">\${r.verification_method === 'document' ? '서류 인증' : '통신사 인증'}</div>
+                                    </div>
+                                    <span class="\${r.status === 'approved' ? 'bg-green-100 text-green-700' : r.status === 'rejected' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'} px-3 py-1 rounded-full text-xs font-medium">
+                                        \${r.status === 'approved' ? '승인' : r.status === 'rejected' ? '거절' : '대기중'}
+                                    </span>
+                                </div>
+                                \${r.document_url ? \`
+                                    <a href="\${r.document_url}" target="_blank" class="inline-flex items-center text-sm text-blue-600 hover:text-blue-700 mb-2">
+                                        <i class="fas fa-file-download mr-1"></i>사업자등록증 보기
+                                    </a>
+                                \` : ''}
+                                <div class="text-xs text-gray-500">신청: \${new Date(r.created_at).toLocaleString('ko-KR')}</div>
+                                \${r.admin_note ? \`<div class="mt-2 text-sm text-gray-600 bg-gray-50 p-2 rounded">관리자 메모: \${r.admin_note}</div>\` : ''}
+                            </div>
+                        \`).join('');
+                    }
+
+                    // 등록된 발신번호
+                    const senderNumbersList = document.getElementById('senderNumbersList');
+                    if (data.senderNumbers.length === 0) {
+                        senderNumbersList.innerHTML = '<p class="text-gray-500">등록된 발신번호가 없습니다.</p>';
+                    } else {
+                        senderNumbersList.innerHTML = data.senderNumbers.map(s => \`
+                            <div class="flex justify-between items-center border border-gray-200 rounded-lg p-3">
+                                <div>
+                                    <div class="font-medium text-gray-900">\${s.phone_number}</div>
+                                    <div class="text-xs text-gray-500">인증일: \${s.verification_date ? new Date(s.verification_date).toLocaleDateString('ko-KR') : '-'}</div>
+                                </div>
+                                <span class="\${s.status === 'verified' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'} px-3 py-1 rounded-full text-xs font-medium">
+                                    \${s.status === 'verified' ? '인증완료' : s.status}
+                                </span>
+                            </div>
+                        \`).join('');
+                    }
+
+                    // 랜딩페이지 목록
+                    const landingPagesList = document.getElementById('landingPagesList');
+                    if (data.landingPages.length === 0) {
+                        landingPagesList.innerHTML = '<p class="text-gray-500">생성한 랜딩페이지가 없습니다.</p>';
+                    } else {
+                        landingPagesList.innerHTML = data.landingPages.map(lp => \`
+                            <div class="flex justify-between items-center border border-gray-200 rounded-lg p-4">
+                                <div class="flex-1">
+                                    <div class="font-medium text-gray-900">\${lp.title}</div>
+                                    <div class="text-sm text-gray-500">/landing/\${lp.slug}</div>
+                                    <div class="text-xs text-gray-400 mt-1">
+                                        조회수: \${(lp.view_count || 0).toLocaleString()}회 | 
+                                        생성: \${new Date(lp.created_at).toLocaleDateString('ko-KR')}
+                                    </div>
+                                </div>
+                                <a href="/landing/\${lp.slug}" target="_blank" class="ml-4 text-blue-600 hover:text-blue-700">
+                                    <i class="fas fa-external-link-alt"></i>
+                                </a>
+                            </div>
+                        \`).join('');
+                    }
+
+                } catch (err) {
+                    console.error('Load user detail error:', err);
+                    alert('사용자 정보를 불러오는 중 오류가 발생했습니다.');
+                }
+            }
+
+            function logout() {
+                if(confirm('로그아웃 하시겠습니까?')) {
+                    localStorage.removeItem('user');
+                    window.location.href = '/';
+                }
+            }
+
+            // 페이지 로드 시 실행
+            loadUserDetail();
+        </script>
+    </body>
+    </html>
+  `)
+})
+
 // 사용자: 내 입금 내역 페이지
 app.get('/my-deposits', (c) => {
   return c.html(`
