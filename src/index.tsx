@@ -16780,6 +16780,242 @@ app.get('/my-deposits', (c) => {
   `)
 })
 
+// ============================================
+// 선생님 관리 API
+// ============================================
+
+// 원장님: 선생님 계정 생성
+app.post('/api/teachers/create', async (c) => {
+  try {
+    const { email, password, name, phone, directorId } = await c.req.json()
+    
+    // 필수 필드 확인
+    if (!email || !password || !name || !directorId) {
+      return c.json({ success: false, error: '필수 정보를 모두 입력해주세요.' }, 400)
+    }
+    
+    // 원장님 정보 확인
+    const director = await c.env.DB.prepare(
+      'SELECT id, academy_name, user_type FROM users WHERE id = ?'
+    ).bind(directorId).first()
+    
+    if (!director) {
+      return c.json({ success: false, error: '원장님 정보를 찾을 수 없습니다.' }, 404)
+    }
+    
+    // 이메일 중복 확인
+    const existing = await c.env.DB.prepare(
+      'SELECT id FROM users WHERE email = ?'
+    ).bind(email).first()
+    
+    if (existing) {
+      return c.json({ success: false, error: '이미 사용 중인 이메일입니다.' }, 400)
+    }
+    
+    // 선생님 계정 생성
+    const result = await c.env.DB.prepare(`
+      INSERT INTO users (email, password, name, phone, role, user_type, parent_user_id, academy_name, created_at)
+      VALUES (?, ?, ?, ?, 'user', 'teacher', ?, ?, datetime('now'))
+    `).bind(email, password, name, phone || null, directorId, director.academy_name).run()
+    
+    return c.json({ 
+      success: true, 
+      teacherId: result.meta.last_row_id,
+      message: '선생님 계정이 생성되었습니다.'
+    })
+  } catch (error) {
+    console.error('Create teacher error:', error)
+    return c.json({ success: false, error: '선생님 계정 생성 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
+// 원장님: 소속 선생님 목록 조회
+app.get('/api/teachers/list', async (c) => {
+  try {
+    const directorId = c.req.query('directorId')
+    
+    if (!directorId) {
+      return c.json({ success: false, error: '원장님 ID가 필요합니다.' }, 400)
+    }
+    
+    const teachers = await c.env.DB.prepare(`
+      SELECT id, email, name, phone, created_at, 
+             (SELECT COUNT(*) FROM classes WHERE teacher_id = users.id) as class_count
+      FROM users 
+      WHERE parent_user_id = ? AND user_type = 'teacher'
+      ORDER BY created_at DESC
+    `).bind(directorId).all()
+    
+    return c.json({ success: true, teachers: teachers.results || [] })
+  } catch (error) {
+    console.error('Get teachers error:', error)
+    return c.json({ success: false, error: '선생님 목록 조회 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
+// 원장님: 반 생성
+app.post('/api/classes/create', async (c) => {
+  try {
+    const { name, description, userId, teacherId, gradeLevel, subject, maxStudents } = await c.req.json()
+    
+    if (!name || !userId) {
+      return c.json({ success: false, error: '반 이름과 원장님 정보가 필요합니다.' }, 400)
+    }
+    
+    const result = await c.env.DB.prepare(`
+      INSERT INTO classes (name, description, user_id, teacher_id, grade_level, subject, max_students, status, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, 'active', datetime('now'))
+    `).bind(name, description || null, userId, teacherId || null, gradeLevel || null, subject || null, maxStudents || 20).run()
+    
+    return c.json({ 
+      success: true, 
+      classId: result.meta.last_row_id,
+      message: '반이 생성되었습니다.'
+    })
+  } catch (error) {
+    console.error('Create class error:', error)
+    return c.json({ success: false, error: '반 생성 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
+// 원장님/선생님: 반 목록 조회
+app.get('/api/classes/list', async (c) => {
+  try {
+    const userId = c.req.query('userId')
+    const userType = c.req.query('userType')
+    
+    if (!userId) {
+      return c.json({ success: false, error: '사용자 ID가 필요합니다.' }, 400)
+    }
+    
+    let query = ''
+    if (userType === 'teacher') {
+      // 선생님은 자신이 담당하는 반만 조회
+      query = `
+        SELECT c.*, u.name as director_name,
+               (SELECT COUNT(*) FROM students WHERE class_id = c.id AND status = 'active') as student_count
+        FROM classes c
+        LEFT JOIN users u ON c.user_id = u.id
+        WHERE c.teacher_id = ? AND c.status = 'active'
+        ORDER BY c.created_at DESC
+      `
+    } else {
+      // 원장님은 자신이 생성한 모든 반 조회
+      query = `
+        SELECT c.*, t.name as teacher_name,
+               (SELECT COUNT(*) FROM students WHERE class_id = c.id AND status = 'active') as student_count
+        FROM classes c
+        LEFT JOIN users t ON c.teacher_id = t.id
+        WHERE c.user_id = ? AND c.status = 'active'
+        ORDER BY c.created_at DESC
+      `
+    }
+    
+    const classes = await c.env.DB.prepare(query).bind(userId).all()
+    
+    return c.json({ success: true, classes: classes.results || [] })
+  } catch (error) {
+    console.error('Get classes error:', error)
+    return c.json({ success: false, error: '반 목록 조회 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
+// 원장님: 반에 선생님 배정
+app.put('/api/classes/:id/assign-teacher', async (c) => {
+  try {
+    const classId = c.req.param('id')
+    const { teacherId, userId } = await c.req.json()
+    
+    // 원장님 권한 확인
+    const classInfo = await c.env.DB.prepare(
+      'SELECT user_id FROM classes WHERE id = ?'
+    ).bind(classId).first()
+    
+    if (!classInfo || classInfo.user_id !== userId) {
+      return c.json({ success: false, error: '권한이 없습니다.' }, 403)
+    }
+    
+    // 선생님 배정
+    await c.env.DB.prepare(
+      'UPDATE classes SET teacher_id = ?, updated_at = datetime(\'now\') WHERE id = ?'
+    ).bind(teacherId, classId).run()
+    
+    return c.json({ success: true, message: '선생님이 배정되었습니다.' })
+  } catch (error) {
+    console.error('Assign teacher error:', error)
+    return c.json({ success: false, error: '선생님 배정 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
+// 학생 목록 조회 (원장님/선생님별 권한)
+app.get('/api/students/list', async (c) => {
+  try {
+    const userId = c.req.query('userId')
+    const userType = c.req.query('userType')
+    const classId = c.req.query('classId')
+    
+    if (!userId) {
+      return c.json({ success: false, error: '사용자 ID가 필요합니다.' }, 400)
+    }
+    
+    let query = ''
+    let params = []
+    
+    if (userType === 'teacher') {
+      // 선생님은 자신이 담당하는 반의 학생만 조회
+      if (classId) {
+        query = `
+          SELECT s.*, c.name as class_name
+          FROM students s
+          LEFT JOIN classes c ON s.class_id = c.id
+          WHERE c.teacher_id = ? AND s.class_id = ? AND s.status = 'active'
+          ORDER BY s.name
+        `
+        params = [userId, classId]
+      } else {
+        query = `
+          SELECT s.*, c.name as class_name
+          FROM students s
+          LEFT JOIN classes c ON s.class_id = c.id
+          WHERE c.teacher_id = ? AND s.status = 'active'
+          ORDER BY c.name, s.name
+        `
+        params = [userId]
+      }
+    } else {
+      // 원장님은 자신의 학원의 모든 학생 조회
+      if (classId) {
+        query = `
+          SELECT s.*, c.name as class_name, u.name as teacher_name
+          FROM students s
+          LEFT JOIN classes c ON s.class_id = c.id
+          LEFT JOIN users u ON c.teacher_id = u.id
+          WHERE s.user_id = ? AND s.class_id = ? AND s.status = 'active'
+          ORDER BY s.name
+        `
+        params = [userId, classId]
+      } else {
+        query = `
+          SELECT s.*, c.name as class_name, u.name as teacher_name
+          FROM students s
+          LEFT JOIN classes c ON s.class_id = c.id
+          LEFT JOIN users u ON c.teacher_id = u.id
+          WHERE s.user_id = ? AND s.status = 'active'
+          ORDER BY c.name, s.name
+        `
+        params = [userId]
+      }
+    }
+    
+    const students = await c.env.DB.prepare(query).bind(...params).all()
+    
+    return c.json({ success: true, students: students.results || [] })
+  } catch (error) {
+    console.error('Get students error:', error)
+    return c.json({ success: false, error: '학생 목록 조회 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
 // 관리자: 사용자 상세 정보 조회 API
 app.get('/api/admin/users/:id/detail', async (c) => {
   try {
@@ -21034,7 +21270,212 @@ app.get('/admin/sender/verification', (c) => {
 // 학생 관리 시스템 페이지
 // ========================================
 
-// 학생 관리 메인 페이지
+// 선생님 관리 페이지 (원장님 전용)
+app.get('/teachers/manage', (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>선생님 관리 - 슈퍼플레이스</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+        <style>
+            .gradient-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        </style>
+    </head>
+    <body class="bg-gray-50">
+        <!-- 네비게이션 -->
+        <nav class="bg-white shadow-sm border-b sticky top-0 z-50">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between h-16">
+                    <div class="flex items-center gap-8">
+                        <h1 class="text-xl font-bold text-purple-600">
+                            <i class="fas fa-chalkboard-teacher mr-2"></i>선생님 & 반 관리
+                        </h1>
+                        <div class="flex gap-4">
+                            <a href="/dashboard" class="text-gray-600 hover:text-purple-600">대시보드</a>
+                            <a href="/students" class="text-gray-600 hover:text-purple-600">학생 관리</a>
+                        </div>
+                    </div>
+                    <button onclick="logout()" class="text-gray-600 hover:text-red-600">
+                        <i class="fas fa-sign-out-alt mr-2"></i>로그아웃
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- 메인 컨텐츠 -->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <!-- 상단 요약 -->
+            <div class="grid md:grid-cols-2 gap-6 mb-8">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-500 mb-1">등록된 선생님</p>
+                            <p id="teacherCount" class="text-3xl font-bold text-purple-600">0명</p>
+                        </div>
+                        <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-user-tie text-purple-600 text-2xl"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-500 mb-1">운영 중인 반</p>
+                            <p id="classCount" class="text-3xl font-bold text-blue-600">0개</p>
+                        </div>
+                        <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-chalkboard text-blue-600 text-2xl"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 선생님 목록 섹션 -->
+            <div class="mb-8">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-900">
+                        <i class="fas fa-user-tie text-purple-600 mr-2"></i>선생님 목록
+                    </h2>
+                    <button onclick="openCreateTeacherModal()" class="px-4 py-2 gradient-purple text-white rounded-lg hover:opacity-90 transition">
+                        <i class="fas fa-plus mr-2"></i>선생님 추가
+                    </button>
+                </div>
+                <div id="teacherList" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- 선생님 카드가 여기에 렌더링됩니다 -->
+                    <div class="col-span-full text-center py-12 text-gray-500">
+                        <i class="fas fa-spinner fa-spin text-4xl mb-4"></i>
+                        <p>로딩 중...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 반 목록 섹션 -->
+            <div>
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-900">
+                        <i class="fas fa-chalkboard text-blue-600 mr-2"></i>반 목록
+                    </h2>
+                    <button onclick="openCreateClassModal()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                        <i class="fas fa-plus mr-2"></i>반 생성
+                    </button>
+                </div>
+                <div id="classList" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- 반 카드가 여기에 렌더링됩니다 -->
+                    <div class="col-span-full text-center py-12 text-gray-500">
+                        <i class="fas fa-spinner fa-spin text-4xl mb-4"></i>
+                        <p>로딩 중...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 선생님 생성 모달 -->
+        <div id="createTeacherModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-bold text-gray-900">선생님 계정 생성</h3>
+                    <button onclick="closeCreateTeacherModal()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-2xl"></i>
+                    </button>
+                </div>
+                
+                <form id="createTeacherForm" onsubmit="createTeacher(event)">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">이름 *</label>
+                            <input type="text" name="name" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">이메일 *</label>
+                            <input type="email" name="email" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">비밀번호 *</label>
+                            <input type="password" name="password" required minlength="6" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">비밀번호 확인 *</label>
+                            <input type="password" name="confirmPassword" required minlength="6" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">전화번호</label>
+                            <input type="tel" name="phone" placeholder="010-1234-5678" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3 mt-6">
+                        <button type="button" onclick="closeCreateTeacherModal()" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                            취소
+                        </button>
+                        <button type="submit" class="flex-1 px-4 py-2 gradient-purple text-white rounded-lg hover:opacity-90">
+                            생성
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- 반 생성 모달 -->
+        <div id="createClassModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-bold text-gray-900">반 생성</h3>
+                    <button onclick="closeCreateClassModal()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-2xl"></i>
+                    </button>
+                </div>
+                
+                <form id="createClassForm" onsubmit="createClass(event)">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">반 이름 *</label>
+                            <input type="text" name="className" required placeholder="예: 초등 1반" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">설명</label>
+                            <textarea name="description" rows="2" placeholder="반에 대한 간단한 설명" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">학년 수준</label>
+                            <select name="gradeLevel" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <option value="">선택하세요</option>
+                                <option value="초등">초등</option>
+                                <option value="중등">중등</option>
+                                <option value="고등">고등</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">과목</label>
+                            <input type="text" name="subject" placeholder="예: 수학, 영어, 전과목" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">최대 학생 수</label>
+                            <input type="number" name="maxStudents" value="20" min="1" max="50" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3 mt-6">
+                        <button type="button" onclick="closeCreateClassModal()" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                            취소
+                        </button>
+                        <button type="submit" class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                            생성
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <script src="/static/teacher-management.js"></script>
+    </body>
+    </html>
+  `)
+})
+
 app.get('/students', (c) => {
   return c.html(`
     <!DOCTYPE html>
