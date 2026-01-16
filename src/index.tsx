@@ -4586,7 +4586,7 @@ app.get('/', (c) => {
                         <a href="/contact" class="text-gray-700 hover:text-purple-600 font-medium transition">문의하기</a>
                         
                         <!-- 로그인 전 -->
-                        <a href="/teachers/register" class="text-purple-600 hover:text-purple-700 font-semibold border border-purple-600 px-5 py-2.5 rounded-full hover:bg-purple-50 transition-all">
+                        <a href="/teachers/register" id="teacherRegisterBtn" class="text-purple-600 hover:text-purple-700 font-semibold border border-purple-600 px-5 py-2.5 rounded-full hover:bg-purple-50 transition-all">
                             선생님 등록
                         </a>
                         <a href="/login" id="loginBtn" class="gradient-purple text-white px-6 py-2.5 rounded-full font-medium hover:shadow-lg transition-all">
@@ -5160,6 +5160,7 @@ app.get('/', (c) => {
                 if (user) {
                     // 로그인된 상태
                     document.getElementById('loginBtn').classList.add('hidden');
+                    document.getElementById('teacherRegisterBtn').classList.add('hidden');
                     document.getElementById('userMenu').classList.remove('hidden');
                     document.getElementById('userMenu').classList.add('flex');
                     document.getElementById('userName').textContent = user.name;
@@ -5167,6 +5168,7 @@ app.get('/', (c) => {
                 } else {
                     // 로그아웃 상태
                     document.getElementById('loginBtn').classList.remove('hidden');
+                    document.getElementById('teacherRegisterBtn').classList.remove('hidden');
                     document.getElementById('userMenu').classList.add('hidden');
                 }
             }
