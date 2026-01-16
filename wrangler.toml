@@ -7,3 +7,8 @@ command = "npm run build"
 
 [build.upload]
 format = "service-worker"
+
+# 환경 변수 (임시 - 보안상 나중에 Cloudflare Dashboard에서 관리 권장)
+[vars]
+ALIGO_API_KEY = "4bbi3l27pb5qh11tkujl578bttz6vb5j"
+ALIGO_USER_ID = "wangholy"
