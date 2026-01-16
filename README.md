@@ -523,3 +523,4 @@ npx wrangler pages secret put RESEND_API_KEY --project-name superplace
 # Force rebuild
 # Teacher registration update
 
+# Force redeploy Fri Jan 16 20:34:53 UTC 2026
