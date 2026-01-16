@@ -521,3 +521,4 @@ npx wrangler pages secret put RESEND_API_KEY --project-name superplace
 
 자세한 설정 방법은 **SMS_API_SETUP.md** 문서를 참고하세요.
 # Force rebuild
+# Teacher registration update
