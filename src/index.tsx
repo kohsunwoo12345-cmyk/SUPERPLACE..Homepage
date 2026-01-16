@@ -4584,8 +4584,6 @@ app.get('/', (c) => {
                         <a href="/programs" class="text-gray-700 hover:text-purple-600 font-medium transition">교육 프로그램</a>
                         <a href="/success" class="text-gray-700 hover:text-purple-600 font-medium transition">성공 사례</a>
                         <a href="/contact" class="text-gray-700 hover:text-purple-600 font-medium transition">문의하기</a>
-                        <a href="/academy-manage" id="academyManageLink" class="hidden text-gray-700 hover:text-purple-600 font-medium transition">학원 관리</a>
-                        
                         <!-- 로그인 전 -->
                         <a href="/signup?teacher=true" id="teacherRegisterBtn" class="text-purple-600 hover:text-purple-700 font-semibold border border-purple-600 px-5 py-2.5 rounded-full hover:bg-purple-50 transition-all">
                             선생님 등록
@@ -4593,6 +4591,9 @@ app.get('/', (c) => {
                         <a href="/login" id="loginBtn" class="gradient-purple text-white px-6 py-2.5 rounded-full font-medium hover:shadow-lg transition-all">
                             로그인
                         </a>
+                        
+                        <!-- 선생님 전용 (로그인 후) -->
+                        <a href="/academy-management" id="academyManageLink" class="hidden text-gray-700 hover:text-purple-600 font-medium transition">학원 관리</a>
                         
                         <!-- 로그인 후 -->
                         <div id="userMenu" class="hidden flex items-center space-x-4">
@@ -5166,11 +5167,17 @@ app.get('/', (c) => {
                     document.getElementById('userMenu').classList.add('flex');
                     document.getElementById('userName').textContent = user.name;
                     document.getElementById('userAvatar').textContent = user.name.charAt(0);
+                    
+                    // 선생님인 경우 '학원 관리' 버튼 보이기
+                    if (user.user_type === 'teacher') {
+                        document.getElementById('academyManageLink').classList.remove('hidden');
+                    }
                 } else {
                     // 로그아웃 상태
                     document.getElementById('loginBtn').classList.remove('hidden');
                     document.getElementById('teacherRegisterBtn').classList.remove('hidden');
                     document.getElementById('userMenu').classList.add('hidden');
+                    document.getElementById('academyManageLink').classList.add('hidden');
                 }
             }
 
@@ -5932,15 +5939,29 @@ app.get('/signup', (c) => {
                 </div>
 
                 <div class="bg-white rounded-2xl border border-gray-200 p-8">
-                    <!-- 사용자 유형 선택 -->
-                    <div class="mb-6 p-4 bg-purple-50 border-2 border-purple-200 rounded-xl">
-                        <label class="flex items-center cursor-pointer">
-                            <input type="checkbox" id="isTeacher" class="w-5 h-5 text-purple-600 rounded focus:ring-purple-500">
-                            <span class="ml-3 text-sm font-medium text-gray-900">
-                                <i class="fas fa-chalkboard-teacher text-purple-600 mr-2"></i>나는 선생님입니다
-                            </span>
+                    <!-- 계정 유형 선택 (라디오 버튼) -->
+                    <div class="mb-6">
+                        <label class="block text-lg font-bold text-gray-900 mb-4 text-center">
+                            어떤 계정으로 가입하시겠습니까?
                         </label>
-                        <p class="text-xs text-gray-600 mt-2 ml-8">선생님은 원장님의 인증 코드가 필요합니다</p>
+                        <div class="grid grid-cols-2 gap-4 mb-6">
+                            <label class="relative cursor-pointer">
+                                <input type="radio" name="userType" value="director" checked class="peer sr-only" onchange="toggleUserType()">
+                                <div class="p-6 border-2 border-gray-300 rounded-xl peer-checked:border-purple-600 peer-checked:bg-purple-50 hover:border-purple-400 transition text-center">
+                                    <i class="fas fa-school text-4xl text-purple-600 mb-3 block"></i>
+                                    <p class="font-bold text-gray-900 text-lg mb-1">학원장</p>
+                                    <p class="text-xs text-gray-600">학원을 운영합니다</p>
+                                </div>
+                            </label>
+                            <label class="relative cursor-pointer">
+                                <input type="radio" name="userType" value="teacher" class="peer sr-only" onchange="toggleUserType()">
+                                <div class="p-6 border-2 border-gray-300 rounded-xl peer-checked:border-purple-600 peer-checked:bg-purple-50 hover:border-purple-400 transition text-center">
+                                    <i class="fas fa-chalkboard-teacher text-4xl text-purple-600 mb-3 block"></i>
+                                    <p class="font-bold text-gray-900 text-lg mb-1">선생님</p>
+                                    <p class="text-xs text-gray-600">학원에서 가르칩니다</p>
+                                </div>
+                            </label>
+                        </div>
                     </div>
 
                     <form id="signupForm" class="space-y-5">
@@ -6015,18 +6036,20 @@ app.get('/signup', (c) => {
         </div>
 
         <script>
-            // 체크박스 토글
-            const isTeacherCheckbox = document.getElementById('isTeacher');
-            const teacherFields = document.getElementById('teacherFields');
-            const directorFields = document.getElementById('directorFields');
-            const teacherNotice = document.getElementById('teacherNotice');
-            const academyHint = document.getElementById('academyHint');
-            const nameLabel = document.getElementById('nameLabel');
-            const submitText = document.getElementById('submitText');
-            const verificationCodeInput = document.getElementById('verificationCode');
+            // 라디오 버튼 토글 함수
+            function toggleUserType() {
+                const userTypeRadio = document.querySelector('input[name="userType"]:checked').value;
+                const isTeacher = userTypeRadio === 'teacher';
+                
+                const teacherFields = document.getElementById('teacherFields');
+                const directorFields = document.getElementById('directorFields');
+                const teacherNotice = document.getElementById('teacherNotice');
+                const academyHint = document.getElementById('academyHint');
+                const nameLabel = document.getElementById('nameLabel');
+                const submitText = document.getElementById('submitText');
+                const verificationCodeInput = document.getElementById('verificationCode');
 
-            isTeacherCheckbox.addEventListener('change', function() {
-                if (this.checked) {
+                if (isTeacher) {
                     // 선생님 모드
                     teacherFields.classList.remove('hidden');
                     directorFields.classList.add('hidden');
@@ -6045,14 +6068,15 @@ app.get('/signup', (c) => {
                     submitText.textContent = '회원가입';
                     verificationCodeInput.required = false;
                 }
-            });
+            }
 
             // 폼 제출
             document.getElementById('signupForm').addEventListener('submit', async (e) => {
                 e.preventDefault()
                 
                 const formData = new FormData(e.target)
-                const isTeacher = isTeacherCheckbox.checked
+                const userTypeRadio = document.querySelector('input[name="userType"]:checked').value;
+                const isTeacher = userTypeRadio === 'teacher';
                 
                 // 선생님 등록인 경우
                 if (isTeacher) {
@@ -22263,7 +22287,7 @@ app.get('/teachers/manage', (c) => {
 })
 
 // 선생님: 학원 관리 페이지
-app.get('/academy-manage', (c) => {
+app.get('/academy-management', (c) => {
   return c.html(`
     <!DOCTYPE html>
     <html lang="ko">
@@ -22630,12 +22654,83 @@ app.get('/students', (c) => {
 
                 <!-- 등록된 선생님 -->
                 <div class="bg-white rounded-xl shadow-lg p-6">
-                    <h3 class="text-xl font-bold text-gray-900 mb-4">
-                        <i class="fas fa-users text-green-600 mr-2"></i>등록된 선생님
-                    </h3>
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xl font-bold text-gray-900">
+                            <i class="fas fa-users text-green-600 mr-2"></i>등록된 선생님
+                        </h3>
+                        <button onclick="openAddTeacherModal()" class="px-6 py-3 gradient-purple text-white rounded-lg hover:opacity-90 font-semibold shadow-lg">
+                            <i class="fas fa-user-plus mr-2"></i>선생님 추가
+                        </button>
+                    </div>
                     <div id="teachersList" class="space-y-4">
                         <div class="text-center text-gray-500 py-4">로딩 중...</div>
                     </div>
+                </div>
+            </div>
+
+            <!-- 선생님 추가 모달 -->
+            <div id="addTeacherModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+                <div class="bg-white rounded-2xl max-w-md w-full p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-bold text-gray-900">
+                            <i class="fas fa-user-plus text-purple-600 mr-2"></i>선생님 추가
+                        </h3>
+                        <button onclick="closeAddTeacherModal()" class="text-gray-400 hover:text-gray-600">
+                            <i class="fas fa-times text-2xl"></i>
+                        </button>
+                    </div>
+                    
+                    <form id="addTeacherForm" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 mb-2">
+                                이름 <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" name="name" required class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500" placeholder="김선생">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 mb-2">
+                                이메일 (회원 아이디) <span class="text-red-500">*</span>
+                            </label>
+                            <input type="email" name="email" required class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500" placeholder="teacher@example.com">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 mb-2">
+                                연락처 <span class="text-red-500">*</span>
+                            </label>
+                            <input type="tel" name="phone" required class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500" placeholder="010-0000-0000">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 mb-2">
+                                초기 비밀번호 <span class="text-red-500">*</span>
+                            </label>
+                            <input type="password" name="password" required minlength="6" class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500" placeholder="최소 6자">
+                            <p class="text-xs text-gray-500 mt-1">선생님이 로그인 후 변경할 수 있습니다</p>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 mb-2">
+                                담당 반 배정 (선택)
+                            </label>
+                            <select name="class_id" class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500">
+                                <option value="">나중에 배정</option>
+                                <!-- 반 목록이 여기에 동적으로 추가됩니다 -->
+                            </select>
+                        </div>
+                        
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                            <p class="text-sm text-blue-800">
+                                <i class="fas fa-info-circle mr-2"></i>
+                                선생님 계정이 자동으로 생성되며, 이메일과 비밀번호로 로그인할 수 있습니다.
+                            </p>
+                        </div>
+                        
+                        <button type="submit" class="w-full gradient-purple text-white py-3 rounded-lg font-medium hover:opacity-90">
+                            <i class="fas fa-check mr-2"></i>선생님 추가하기
+                        </button>
+                    </form>
                 </div>
             </div>
 
@@ -22656,10 +22751,7 @@ app.get('/students', (c) => {
             let currentUser = null;
             if (userStr) {
                 currentUser = JSON.parse(userStr);
-                // 원장님인 경우에만 선생님 관리 카드 표시
-                if (currentUser.user_type !== 'teacher') {
-                    document.getElementById('teacherManagementCard').classList.remove('hidden');
-                }
+                // 선생님 관리 카드는 항상 표시
             }
 
             async function loadDashboard() {
