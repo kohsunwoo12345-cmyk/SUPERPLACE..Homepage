@@ -17466,6 +17466,110 @@ app.put('/api/classes/:id/assign-teacher', async (c) => {
   }
 })
 
+// 원장님: 선생님 권한 조회
+app.get('/api/teachers/:id/permissions', async (c) => {
+  try {
+    const teacherId = c.req.param('id')
+    const directorId = c.req.query('directorId')
+    
+    if (!directorId) {
+      return c.json({ success: false, error: '원장님 ID가 필요합니다.' }, 400)
+    }
+    
+    // 선생님이 해당 원장님 소속인지 확인
+    const teacher = await c.env.DB.prepare(
+      'SELECT id, parent_user_id FROM users WHERE id = ? AND user_type = "teacher"'
+    ).bind(teacherId).first()
+    
+    if (!teacher || teacher.parent_user_id !== parseInt(directorId)) {
+      return c.json({ success: false, error: '권한이 없습니다.' }, 403)
+    }
+    
+    // 권한 조회
+    const permissions = await c.env.DB.prepare(
+      'SELECT permission_key, permission_value FROM teacher_permissions WHERE teacher_id = ?'
+    ).bind(teacherId).all()
+    
+    // 권한을 객체로 변환
+    const permissionsMap = {}
+    if (permissions.results) {
+      permissions.results.forEach(p => {
+        permissionsMap[p.permission_key] = p.permission_value === 1
+      })
+    }
+    
+    return c.json({ success: true, permissions: permissionsMap })
+  } catch (error) {
+    console.error('Get teacher permissions error:', error)
+    return c.json({ success: false, error: '권한 조회 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
+// 원장님: 선생님 권한 설정
+app.post('/api/teachers/:id/permissions', async (c) => {
+  try {
+    const teacherId = c.req.param('id')
+    const { permissionKey, permissionValue, directorId } = await c.req.json()
+    
+    if (!directorId) {
+      return c.json({ success: false, error: '원장님 ID가 필요합니다.' }, 400)
+    }
+    
+    // 선생님이 해당 원장님 소속인지 확인
+    const teacher = await c.env.DB.prepare(
+      'SELECT id, parent_user_id, name FROM users WHERE id = ? AND user_type = "teacher"'
+    ).bind(teacherId).first()
+    
+    if (!teacher || teacher.parent_user_id !== parseInt(directorId)) {
+      return c.json({ success: false, error: '권한이 없습니다.' }, 403)
+    }
+    
+    // 권한 설정 (INSERT OR REPLACE)
+    await c.env.DB.prepare(`
+      INSERT OR REPLACE INTO teacher_permissions (teacher_id, permission_key, permission_value, granted_by, updated_at)
+      VALUES (?, ?, ?, ?, datetime('now'))
+    `).bind(teacherId, permissionKey, permissionValue ? 1 : 0, directorId).run()
+    
+    const actionText = permissionValue ? '활성화' : '비활성화'
+    const permissionText = permissionKey === 'view_parent_contact' ? '학부모 연락처 조회' : permissionKey
+    
+    return c.json({ 
+      success: true, 
+      message: `${teacher.name} 선생님의 ${permissionText} 권한이 ${actionText}되었습니다.`
+    })
+  } catch (error) {
+    console.error('Set teacher permission error:', error)
+    return c.json({ success: false, error: '권한 설정 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
+// 선생님: 내 권한 확인
+app.get('/api/teachers/my-permissions', async (c) => {
+  try {
+    const teacherId = c.req.query('teacherId')
+    
+    if (!teacherId) {
+      return c.json({ success: false, error: '선생님 ID가 필요합니다.' }, 400)
+    }
+    
+    const permissions = await c.env.DB.prepare(
+      'SELECT permission_key, permission_value FROM teacher_permissions WHERE teacher_id = ?'
+    ).bind(teacherId).all()
+    
+    const permissionsMap = {}
+    if (permissions.results) {
+      permissions.results.forEach(p => {
+        permissionsMap[p.permission_key] = p.permission_value === 1
+      })
+    }
+    
+    return c.json({ success: true, permissions: permissionsMap })
+  } catch (error) {
+    console.error('Get my permissions error:', error)
+    return c.json({ success: false, error: '권한 조회 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
 // 학생 목록 조회 (원장님/선생님별 권한)
 app.get('/api/students/list', async (c) => {
   try {

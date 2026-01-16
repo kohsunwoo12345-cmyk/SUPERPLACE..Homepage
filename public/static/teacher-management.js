@@ -4,6 +4,7 @@ console.log('🎓 Teacher Management JS Loaded');
 
 // 현재 로그인한 사용자 정보
 let currentUser = null;
+let currentTeacherPermissions = null;
 
 // 페이지 로드 시 초기화
 document.addEventListener('DOMContentLoaded', async () => {
@@ -90,8 +91,11 @@ function renderTeachers(teachers) {
             </div>
             
             <div class="mt-4 pt-4 border-t border-gray-100 flex gap-2">
-                <button onclick="viewTeacherDetail(${teacher.id})" class="flex-1 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm">
-                    <i class="fas fa-eye mr-1"></i> 상세보기
+                <button onclick="manageTeacherPermissions(${teacher.id}, '${teacher.name}')" class="flex-1 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-sm">
+                    <i class="fas fa-key mr-1"></i> 권한 설정
+                </button>
+                <button onclick="viewTeacherDetail(${teacher.id})" class="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm">
+                    <i class="fas fa-eye"></i>
                 </button>
                 <button onclick="deleteTeacher(${teacher.id}, '${teacher.name}')" class="px-3 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition text-sm">
                     <i class="fas fa-trash"></i>
@@ -323,6 +327,151 @@ async function assignTeacherToClass(classId, className) {
     } catch (error) {
         console.error('Assign teacher error:', error);
         alert('선생님 배정 중 오류가 발생했습니다.');
+    }
+}
+
+// 선생님 권한 관리
+async function manageTeacherPermissions(teacherId, teacherName) {
+    try {
+        // 현재 권한 조회
+        const response = await fetch(`/api/teachers/${teacherId}/permissions?directorId=${currentUser.id}`);
+        const data = await response.json();
+        
+        if (!data.success) {
+            alert('권한 조회 실패: ' + data.error);
+            return;
+        }
+        
+        currentTeacherPermissions = {
+            teacherId: teacherId,
+            teacherName: teacherName,
+            permissions: data.permissions || {}
+        };
+        
+        // 모달 표시
+        showPermissionModal();
+    } catch (error) {
+        console.error('Load permissions error:', error);
+        alert('권한 조회 중 오류가 발생했습니다.');
+    }
+}
+
+// 권한 설정 모달 표시
+function showPermissionModal() {
+    const modal = document.getElementById('permissionModal');
+    if (!modal) {
+        createPermissionModal();
+        return;
+    }
+    
+    // 모달 내용 업데이트
+    document.getElementById('permissionTeacherName').textContent = currentTeacherPermissions.teacherName;
+    
+    // 학부모 연락처 조회 권한 체크박스 상태 설정
+    const checkbox = document.getElementById('permission_view_parent_contact');
+    if (checkbox) {
+        checkbox.checked = currentTeacherPermissions.permissions.view_parent_contact || false;
+    }
+    
+    modal.classList.remove('hidden');
+}
+
+// 권한 설정 모달 생성 (최초 1회)
+function createPermissionModal() {
+    const modalHTML = `
+        <div id="permissionModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-900">선생님 권한 설정</h3>
+                        <p id="permissionTeacherName" class="text-sm text-gray-600 mt-1"></p>
+                    </div>
+                    <button onclick="closePermissionModal()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-2xl"></i>
+                    </button>
+                </div>
+                
+                <div class="space-y-4">
+                    <div class="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                        <p class="text-sm text-blue-800">
+                            <i class="fas fa-info-circle mr-2"></i>
+                            선생님이 볼 수 있는 정보를 설정하세요.
+                        </p>
+                    </div>
+                    
+                    <!-- 권한 항목 -->
+                    <div class="space-y-3">
+                        <label class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition">
+                            <input 
+                                type="checkbox" 
+                                id="permission_view_parent_contact"
+                                class="w-5 h-5 text-green-600 rounded focus:ring-2 focus:ring-green-500"
+                            >
+                            <div class="ml-3 flex-1">
+                                <div class="font-medium text-gray-900">📱 학부모 연락처 조회</div>
+                                <div class="text-sm text-gray-600">선생님이 학생의 학부모 전화번호와 이메일을 볼 수 있습니다</div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="flex gap-3 mt-6">
+                    <button onclick="closePermissionModal()" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                        취소
+                    </button>
+                    <button onclick="saveTeacherPermissions()" class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                        저장
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    
+    // 재귀 호출로 모달 표시
+    setTimeout(() => showPermissionModal(), 100);
+}
+
+// 권한 설정 모달 닫기
+function closePermissionModal() {
+    const modal = document.getElementById('permissionModal');
+    if (modal) {
+        modal.classList.add('hidden');
+    }
+    currentTeacherPermissions = null;
+}
+
+// 선생님 권한 저장
+async function saveTeacherPermissions() {
+    if (!currentTeacherPermissions) return;
+    
+    const checkbox = document.getElementById('permission_view_parent_contact');
+    const newValue = checkbox.checked;
+    
+    try {
+        const response = await fetch(`/api/teachers/${currentTeacherPermissions.teacherId}/permissions`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                permissionKey: 'view_parent_contact',
+                permissionValue: newValue,
+                directorId: currentUser.id
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            alert(data.message);
+            closePermissionModal();
+            await loadTeachers();
+        } else {
+            alert('오류: ' + data.error);
+        }
+    } catch (error) {
+        console.error('Save permissions error:', error);
+        alert('권한 저장 중 오류가 발생했습니다.');
     }
 }
 
