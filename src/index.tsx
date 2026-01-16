@@ -16564,31 +16564,41 @@ app.get('/admin/users', async (c) => {
                     if (!button) return;
 
                     console.log('🎯 Button clicked:', button.dataset.action);
+                    console.log('🎯 Button data:', button.dataset);
 
                     const action = button.dataset.action;
-                    const userId = parseInt(button.dataset.userId);
+                    const userId = button.dataset.userId;
                     const userName = button.dataset.userName;
-                    const userPoints = parseInt(button.dataset.userPoints);
+                    const userPoints = button.dataset.userPoints;
+
+                    console.log('🎯 Action:', action, 'UserId:', userId, 'UserName:', userName, 'Points:', userPoints);
 
                     e.preventDefault();
                     e.stopPropagation();
 
-                    switch(action) {
-                        case 'changePassword':
-                            changePassword(userId, userName);
-                            break;
-                        case 'givePoints':
-                            givePoints(userId, userName, userPoints);
-                            break;
-                        case 'deductPoints':
-                            deductPoints(userId, userName, userPoints);
-                            break;
-                        case 'loginAs':
-                            loginAs(userId, userName);
-                            break;
-                        case 'managePermissions':
-                            managePermissions(userId, userName);
-                            break;
+                    try {
+                        switch(action) {
+                            case 'changePassword':
+                                changePassword(userId, userName);
+                                break;
+                            case 'givePoints':
+                                givePoints(userId, userName, userPoints);
+                                break;
+                            case 'deductPoints':
+                                deductPoints(userId, userName, userPoints);
+                                break;
+                            case 'loginAs':
+                                loginAs(userId, userName);
+                                break;
+                            case 'managePermissions':
+                                managePermissions(userId, userName);
+                                break;
+                            default:
+                                console.error('Unknown action:', action);
+                        }
+                    } catch (err) {
+                        console.error('Error handling button click:', err);
+                        alert('오류가 발생했습니다: ' + err.message);
                     }
                 });
             })();
