@@ -4586,6 +4586,9 @@ app.get('/', (c) => {
                         <a href="/contact" class="text-gray-700 hover:text-purple-600 font-medium transition">문의하기</a>
                         
                         <!-- 로그인 전 -->
+                        <a href="/teachers/register" class="text-purple-600 hover:text-purple-700 font-semibold border border-purple-600 px-5 py-2.5 rounded-full hover:bg-purple-50 transition-all">
+                            선생님 등록
+                        </a>
                         <a href="/login" id="loginBtn" class="gradient-purple text-white px-6 py-2.5 rounded-full font-medium hover:shadow-lg transition-all">
                             로그인
                         </a>
@@ -4617,6 +4620,7 @@ app.get('/', (c) => {
                     <a href="/programs" class="block px-4 py-3 text-gray-700 hover:bg-purple-50 rounded-xl transition">교육 프로그램</a>
                     <a href="/success" class="block px-4 py-3 text-gray-700 hover:bg-purple-50 rounded-xl transition">성공 사례</a>
                     <a href="/contact" class="block px-4 py-3 text-gray-700 hover:bg-purple-50 rounded-xl transition">문의하기</a>
+                    <a href="/teachers/register" class="block px-4 py-3 text-purple-600 border border-purple-600 bg-white hover:bg-purple-50 rounded-xl text-center font-semibold">선생님 등록</a>
                     <a href="/login" class="block px-4 py-3 gradient-purple text-white rounded-xl text-center font-medium">로그인</a>
                 </div>
             </div>
@@ -4650,6 +4654,31 @@ app.get('/', (c) => {
                             <a href="/programs" class="bg-white text-purple-600 border-2 border-purple-200 px-10 py-4 rounded-full text-lg font-medium hover:border-purple-400 hover:bg-purple-50 transition-all text-center">
                                 교육 프로그램 보기
                             </a>
+                        </div>
+                        
+                        <!-- 선생님 등록 안내 -->
+                        <div class="bg-gradient-to-r from-purple-50 to-blue-50 border-2 border-purple-200 rounded-2xl p-6">
+                            <div class="flex items-start space-x-4">
+                                <div class="flex-shrink-0">
+                                    <div class="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center">
+                                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                                        </svg>
+                                    </div>
+                                </div>
+                                <div class="flex-1">
+                                    <h3 class="text-lg font-bold text-gray-900 mb-2">선생님이신가요?</h3>
+                                    <p class="text-gray-600 mb-4">
+                                        학원 원장님과 함께 학생 관리를 시작하세요. 간편한 등록 절차로 바로 시작할 수 있습니다.
+                                    </p>
+                                    <a href="/teachers/register" class="inline-flex items-center px-6 py-3 bg-white border-2 border-purple-600 text-purple-600 rounded-full font-semibold hover:bg-purple-600 hover:text-white transition-all">
+                                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+                                        </svg>
+                                        선생님 등록하기
+                                    </a>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     
@@ -5434,6 +5463,16 @@ app.get('/login', (c) => {
                     <div class="mt-6 text-center text-sm text-gray-600">
                         계정이 없으신가요? <a href="/signup" class="text-purple-600 hover:text-purple-700 font-medium">회원가입</a>
                     </div>
+                    
+                    <div class="mt-4 pt-4 border-t border-gray-200">
+                        <div class="text-center">
+                            <p class="text-sm text-gray-600 mb-2">선생님이신가요?</p>
+                            <a href="/teachers/register" class="inline-flex items-center text-sm text-purple-600 hover:text-purple-700 font-medium">
+                                <i class="fas fa-chalkboard-teacher mr-2"></i>
+                                선생님 등록하기
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -5925,6 +5964,16 @@ app.get('/signup', (c) => {
 
                     <div class="mt-6 text-center text-sm text-gray-600">
                         이미 계정이 있으신가요? <a href="/login" class="text-purple-600 hover:text-purple-700 font-medium">로그인</a>
+                    </div>
+                    
+                    <div class="mt-4 pt-4 border-t border-gray-200">
+                        <div class="text-center">
+                            <p class="text-sm text-gray-600 mb-2">선생님이신가요?</p>
+                            <a href="/teachers/register" class="inline-flex items-center text-sm text-purple-600 hover:text-purple-700 font-medium">
+                                <i class="fas fa-chalkboard-teacher mr-2"></i>
+                                선생님 등록하기 (학원 인증 코드 필요)
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
