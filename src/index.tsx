@@ -1064,8 +1064,8 @@ app.post('/api/sms/send', async (c) => {
     }
 
     // 8. 알리고 API 호출 (실제 발송)
-    const aligoApiKey = c.env.ALIGO_API_KEY || 'YOUR_ALIGO_API_KEY'
-    const aligoUserId = c.env.ALIGO_USER_ID || 'YOUR_ALIGO_USER_ID'
+    const aligoApiKey = c.env.ALIGO_API_KEY || '4bbi3l27pb5qh11tkujl578bttz6vb5j'
+    const aligoUserId = c.env.ALIGO_USER_ID || 'wangholy'
     
     console.log('Aligo ENV Check:', { 
       hasApiKey: !!c.env.ALIGO_API_KEY, 
