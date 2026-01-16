@@ -16222,19 +16222,19 @@ app.get('/admin/users', async (c) => {
                                     <td class="px-6 py-4 whitespace-nowrap text-sm">
                                         ${user.role !== 'admin' ? `
                                             <div class="flex gap-2 flex-wrap">
-                                                <button data-action="changePassword" data-user-id="${user.id}" data-user-name="${userName}" data-user-points="${user.points || 0}" class="px-3 py-1.5 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition text-xs font-medium" title="비밀번호 변경">
+                                                <button onclick="changePassword(${user.id}, '${userName}')" class="px-3 py-1.5 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition text-xs font-medium" title="비밀번호 변경">
                                                     🔑 비밀번호
                                                 </button>
-                                                <button data-action="givePoints" data-user-id="${user.id}" data-user-name="${userName}" data-user-points="${user.points || 0}" class="px-3 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-xs font-medium" title="포인트 지급">
+                                                <button onclick="givePoints(${user.id}, '${userName}', ${user.points || 0})" class="px-3 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-xs font-medium" title="포인트 지급">
                                                     💰 지급
                                                 </button>
-                                                <button data-action="deductPoints" data-user-id="${user.id}" data-user-name="${userName}" data-user-points="${user.points || 0}" class="px-3 py-1.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition text-xs font-medium" title="포인트 차감">
+                                                <button onclick="deductPoints(${user.id}, '${userName}', ${user.points || 0})" class="px-3 py-1.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition text-xs font-medium" title="포인트 차감">
                                                     ❌ 차감
                                                 </button>
-                                                <button data-action="loginAs" data-user-id="${user.id}" data-user-name="${userName}" class="px-3 py-1.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition text-xs font-medium" title="이 사용자로 로그인">
+                                                <button onclick="loginAs(${user.id}, '${userName}')" class="px-3 py-1.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition text-xs font-medium" title="이 사용자로 로그인">
                                                     👤 로그인
                                                 </button>
-                                                <button data-action="managePermissions" data-user-id="${user.id}" data-user-name="${userName}" class="px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-xs font-medium" title="권한 관리">
+                                                <button onclick="managePermissions(${user.id}, '${userName}')" class="px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-xs font-medium" title="권한 관리">
                                                     ⚙️ 권한
                                                 </button>
                                             </div>
@@ -16555,53 +16555,7 @@ app.get('/admin/users', async (c) => {
             window.closeModal = closeModal;
             window.logout = logout;
 
-            // 이벤트 위임으로 버튼 클릭 처리 (즉시 실행)
-            (function() {
-                console.log('🔥 Admin buttons event listener initialized');
-                
-                document.body.addEventListener('click', function(e) {
-                    const button = e.target.closest('button[data-action]');
-                    if (!button) return;
-
-                    console.log('🎯 Button clicked:', button.dataset.action);
-                    console.log('🎯 Button data:', button.dataset);
-
-                    const action = button.dataset.action;
-                    const userId = button.dataset.userId;
-                    const userName = button.dataset.userName;
-                    const userPoints = button.dataset.userPoints;
-
-                    console.log('🎯 Action:', action, 'UserId:', userId, 'UserName:', userName, 'Points:', userPoints);
-
-                    e.preventDefault();
-                    e.stopPropagation();
-
-                    try {
-                        switch(action) {
-                            case 'changePassword':
-                                changePassword(userId, userName);
-                                break;
-                            case 'givePoints':
-                                givePoints(userId, userName, userPoints);
-                                break;
-                            case 'deductPoints':
-                                deductPoints(userId, userName, userPoints);
-                                break;
-                            case 'loginAs':
-                                loginAs(userId, userName);
-                                break;
-                            case 'managePermissions':
-                                managePermissions(userId, userName);
-                                break;
-                            default:
-                                console.error('Unknown action:', action);
-                        }
-                    } catch (err) {
-                        console.error('Error handling button click:', err);
-                        alert('오류가 발생했습니다: ' + err.message);
-                    }
-                });
-            })();
+            console.log('✅ Admin functions loaded and ready');
         </script>
     </body>
     </html>
