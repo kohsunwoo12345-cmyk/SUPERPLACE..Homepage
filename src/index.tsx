@@ -4584,9 +4584,10 @@ app.get('/', (c) => {
                         <a href="/programs" class="text-gray-700 hover:text-purple-600 font-medium transition">교육 프로그램</a>
                         <a href="/success" class="text-gray-700 hover:text-purple-600 font-medium transition">성공 사례</a>
                         <a href="/contact" class="text-gray-700 hover:text-purple-600 font-medium transition">문의하기</a>
+                        <a href="/academy-manage" id="academyManageLink" class="hidden text-gray-700 hover:text-purple-600 font-medium transition">학원 관리</a>
                         
                         <!-- 로그인 전 -->
-                        <a href="/teachers/register" id="teacherRegisterBtn" class="text-purple-600 hover:text-purple-700 font-semibold border border-purple-600 px-5 py-2.5 rounded-full hover:bg-purple-50 transition-all">
+                        <a href="/signup?teacher=true" id="teacherRegisterBtn" class="text-purple-600 hover:text-purple-700 font-semibold border border-purple-600 px-5 py-2.5 rounded-full hover:bg-purple-50 transition-all">
                             선생님 등록
                         </a>
                         <a href="/login" id="loginBtn" class="gradient-purple text-white px-6 py-2.5 rounded-full font-medium hover:shadow-lg transition-all">
@@ -22256,6 +22257,216 @@ app.get('/teachers/manage', (c) => {
         </div>
 
         <script src="/static/teacher-management.js"></script>
+    </body>
+    </html>
+  `)
+})
+
+// 선생님: 학원 관리 페이지
+app.get('/academy-manage', (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>학원 관리 - 슈퍼플레이스</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+        <style>
+            .gradient-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        </style>
+    </head>
+    <body class="bg-gray-50">
+        <!-- 네비게이션 -->
+        <nav class="bg-white shadow-sm border-b sticky top-0 z-50">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between h-16">
+                    <div class="flex items-center gap-8">
+                        <h1 class="text-xl font-bold text-purple-600">
+                            <i class="fas fa-school mr-2"></i>학원 관리
+                        </h1>
+                        <a href="/" class="text-gray-600 hover:text-purple-600">홈으로</a>
+                    </div>
+                    <button onclick="logout()" class="text-gray-600 hover:text-red-600">
+                        <i class="fas fa-sign-out-alt mr-2"></i>로그아웃
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- 메인 컨텐츠 -->
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <!-- 내 학원 목록 -->
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-2xl font-bold text-gray-900">
+                        <i class="fas fa-building text-purple-600 mr-2"></i>내 학원
+                    </h2>
+                    <button onclick="openAddAcademyModal()" class="px-4 py-2 gradient-purple text-white rounded-lg hover:opacity-90">
+                        <i class="fas fa-plus mr-2"></i>학원 추가
+                    </button>
+                </div>
+                <div id="academyList" class="space-y-4">
+                    <div class="text-center text-gray-500 py-8">로딩 중...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 학원 추가 모달 -->
+        <div id="addAcademyModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl max-w-md w-full p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-bold text-gray-900">학원 추가하기</h3>
+                    <button onclick="closeAddAcademyModal()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-2xl"></i>
+                    </button>
+                </div>
+                
+                <form id="addAcademyForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-900 mb-2">학원명 <span class="text-red-500">*</span></label>
+                        <input type="text" name="academy_name" required class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500" placeholder="꾸메땅학원 분당점">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-900 mb-2">학원 주소 <span class="text-red-500">*</span></label>
+                        <input type="text" name="academy_address" required class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500" placeholder="인천 서구 검단동">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-900 mb-2">원장님 이름 <span class="text-red-500">*</span></label>
+                        <input type="text" name="director_name" required class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500" placeholder="홍길동">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-900 mb-2">원장님 연락처 <span class="text-red-500">*</span></label>
+                        <input type="tel" name="director_phone" required class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500" placeholder="010-0000-0000">
+                    </div>
+                    
+                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                        <p class="text-sm text-yellow-800">
+                            <i class="fas fa-info-circle mr-2"></i>
+                            관리자 승인 후 사용 가능합니다
+                        </p>
+                    </div>
+                    
+                    <button type="submit" class="w-full gradient-purple text-white py-3 rounded-lg font-medium hover:opacity-90">
+                        <i class="fas fa-paper-plane mr-2"></i>신청하기
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <script>
+            let currentUser = null;
+            
+            // 로그인 확인
+            const userStr = localStorage.getItem('user');
+            if (!userStr) {
+                alert('로그인이 필요합니다.');
+                location.href = '/login';
+            } else {
+                currentUser = JSON.parse(userStr);
+                if (currentUser.user_type !== 'teacher') {
+                    alert('선생님 계정만 접근 가능합니다.');
+                    location.href = '/';
+                }
+                loadMyAcademies();
+            }
+            
+            async function loadMyAcademies() {
+                try {
+                    const res = await fetch('/api/teacher/academies?teacherId=' + currentUser.id);
+                    const data = await res.json();
+                    const container = document.getElementById('academyList');
+                    
+                    if (!data.success || data.academies.length === 0) {
+                        container.innerHTML = \`
+                            <div class="text-center py-12">
+                                <i class="fas fa-school text-6xl text-gray-300 mb-4"></i>
+                                <p class="text-gray-600 mb-4">등록된 학원이 없습니다</p>
+                                <button onclick="openAddAcademyModal()" class="px-6 py-3 gradient-purple text-white rounded-lg hover:opacity-90">
+                                    <i class="fas fa-plus mr-2"></i>첫 학원 추가하기
+                                </button>
+                            </div>
+                        \`;
+                        return;
+                    }
+                    
+                    container.innerHTML = data.academies.map(academy => \`
+                        <div class="border rounded-xl p-6 hover:shadow-lg transition">
+                            <div class="flex items-start justify-between">
+                                <div>
+                                    <h3 class="text-lg font-bold text-gray-900 mb-2">\${academy.academy_name}</h3>
+                                    <p class="text-sm text-gray-600 mb-1"><i class="fas fa-map-marker-alt mr-2"></i>\${academy.academy_address}</p>
+                                    <p class="text-sm text-gray-600 mb-1"><i class="fas fa-user mr-2"></i>원장: \${academy.director_name}</p>
+                                    <p class="text-sm text-gray-600"><i class="fas fa-phone mr-2"></i>\${academy.director_phone}</p>
+                                </div>
+                                <div>
+                                    \${academy.status === 'pending' ? 
+                                        '<span class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-medium">승인 대기</span>' :
+                                      academy.status === 'approved' ?
+                                        '<span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">승인 완료</span>' :
+                                        '<span class="px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm font-medium">거절됨</span>'
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    \`).join('');
+                } catch (error) {
+                    console.error('Load academies error:', error);
+                }
+            }
+            
+            function openAddAcademyModal() {
+                document.getElementById('addAcademyModal').classList.remove('hidden');
+            }
+            
+            function closeAddAcademyModal() {
+                document.getElementById('addAcademyModal').classList.add('hidden');
+            }
+            
+            document.getElementById('addAcademyForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                const data = {
+                    teacher_id: currentUser.id,
+                    academy_name: formData.get('academy_name'),
+                    academy_address: formData.get('academy_address'),
+                    director_name: formData.get('director_name'),
+                    director_phone: formData.get('director_phone')
+                };
+                
+                try {
+                    const res = await fetch('/api/teacher/academy/add', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+                    const result = await res.json();
+                    
+                    if (result.success) {
+                        alert('학원 추가 신청이 완료되었습니다. 관리자 승인을 기다려주세요.');
+                        closeAddAcademyModal();
+                        e.target.reset();
+                        loadMyAcademies();
+                    } else {
+                        alert(result.error || '학원 추가 실패');
+                    }
+                } catch (error) {
+                    console.error('Add academy error:', error);
+                    alert('학원 추가 중 오류가 발생했습니다.');
+                }
+            });
+            
+            function logout() {
+                if (confirm('로그아웃 하시겠습니까?')) {
+                    localStorage.removeItem('user');
+                    location.href = '/';
+                }
+            }
+        </script>
     </body>
     </html>
   `)
