@@ -22197,7 +22197,7 @@ app.get('/students', (c) => {
             <!-- 대시보드 카드 그리드 -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                 <!-- 선생님 관리 (원장님 전용) -->
-                <button id="teacherManagementCard" onclick="openTeacherModal()" class="hidden text-left bg-white rounded-xl shadow-lg hover:shadow-xl transition transform hover:-translate-y-1 cursor-pointer w-full">
+                <div id="teacherManagementCard" class="bg-white rounded-xl shadow-lg hover:shadow-xl transition cursor-pointer" onclick="toggleTeacherSection()">
                     <div class="bg-gradient-to-br from-purple-500 to-indigo-600 text-white p-6 rounded-t-xl">
                         <i class="fas fa-chalkboard-teacher text-4xl mb-3"></i>
                         <h3 class="text-xl font-bold">선생님 관리</h3>
@@ -22206,10 +22206,10 @@ app.get('/students', (c) => {
                         <p class="text-gray-600 mb-4">선생님 등록, 반 배정, 승인 관리</p>
                         <div class="flex items-center justify-between">
                             <span class="text-sm text-gray-500">등록 <span id="totalTeachers" class="font-bold text-purple-600">0</span>명</span>
-                            <i class="fas fa-arrow-right text-purple-600"></i>
+                            <i class="fas fa-chevron-down text-purple-600" id="teacherSectionIcon"></i>
                         </div>
                     </div>
-                </button>
+                </div>
 
                 <!-- 반 관리 -->
                 <a href="/students/classes" class="block bg-white rounded-xl shadow-lg hover:shadow-xl transition transform hover:-translate-y-1">
@@ -22272,108 +22272,61 @@ app.get('/students', (c) => {
                 </a>
             </div>
 
+            <!-- 선생님 관리 섹션 -->
+            <div id="teacherSection" class="hidden mb-8 space-y-6">
+                <!-- 인증 코드 -->
+                <div class="bg-purple-50 border-2 border-purple-200 rounded-xl p-6">
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">
+                        <i class="fas fa-key text-purple-600 mr-2"></i>학원 인증 코드
+                    </h3>
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                        <div>
+                            <p class="text-sm text-gray-600 mb-2">선생님에게 이 코드를 전달하세요</p>
+                            <span id="verificationCode" class="text-3xl font-mono font-bold text-purple-600 block mb-2">------</span>
+                            <a href="/signup?teacher=true" target="_blank" class="text-sm text-purple-600 hover:underline">
+                                <i class="fas fa-external-link-alt mr-1"></i>선생님 등록 페이지로 이동
+                            </a>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="copyVerificationCode()" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 whitespace-nowrap">
+                                <i class="fas fa-copy mr-2"></i>복사
+                            </button>
+                            <button onclick="regenerateVerificationCode()" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 whitespace-nowrap">
+                                <i class="fas fa-sync-alt mr-2"></i>재생성
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 승인 대기 -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xl font-bold text-gray-900">
+                            <i class="fas fa-clock text-yellow-600 mr-2"></i>승인 대기 중
+                        </h3>
+                        <span id="pendingBadge" class="px-3 py-1 bg-yellow-500 text-white rounded-full text-sm font-bold">0</span>
+                    </div>
+                    <div id="pendingApplications" class="space-y-4">
+                        <div class="text-center text-gray-500 py-4">로딩 중...</div>
+                    </div>
+                </div>
+
+                <!-- 등록된 선생님 -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">
+                        <i class="fas fa-users text-green-600 mr-2"></i>등록된 선생님
+                    </h3>
+                    <div id="teachersList" class="space-y-4">
+                        <div class="text-center text-gray-500 py-4">로딩 중...</div>
+                    </div>
+                </div>
+            </div>
+
             <!-- 최근 활동 -->
             <div class="bg-white rounded-xl shadow-lg p-6">
                 <h2 class="text-2xl font-bold text-gray-900 mb-6">📊 최근 활동</h2>
                 <div id="recentActivity" class="space-y-4">
                     <div class="text-center text-gray-500 py-8">데이터 로딩 중...</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- 선생님 관리 모달 -->
-        <div id="teacherModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-            <div class="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-                <div class="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">
-                    <h2 class="text-2xl font-bold text-gray-900">
-                        <i class="fas fa-chalkboard-teacher text-purple-600 mr-2"></i>선생님 관리
-                    </h2>
-                    <button onclick="closeTeacherModal()" class="text-gray-400 hover:text-gray-600">
-                        <i class="fas fa-times text-2xl"></i>
-                    </button>
-                </div>
-                
-                <div class="p-6">
-                    <!-- 탭 메뉴 -->
-                    <div class="flex gap-2 mb-6 border-b">
-                        <button onclick="switchTab('register')" id="tab-register" class="px-6 py-3 font-medium text-purple-600 border-b-2 border-purple-600">
-                            선생님 등록
-                        </button>
-                        <button onclick="switchTab('list')" id="tab-list" class="px-6 py-3 font-medium text-gray-600 hover:text-purple-600">
-                            선생님 목록
-                        </button>
-                        <button onclick="switchTab('pending')" id="tab-pending" class="px-6 py-3 font-medium text-gray-600 hover:text-purple-600">
-                            승인 대기 <span id="pendingCount" class="ml-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">0</span>
-                        </button>
-                    </div>
-
-                    <!-- 선생님 등록 탭 -->
-                    <div id="content-register" class="tab-content">
-                        <!-- 인증 코드 섹션 -->
-                        <div class="bg-purple-50 border-2 border-purple-200 rounded-xl p-6 mb-6">
-                            <h3 class="text-lg font-bold text-gray-900 mb-4">
-                                <i class="fas fa-key text-purple-600 mr-2"></i>학원 인증 코드
-                            </h3>
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <p class="text-sm text-gray-600 mb-2">선생님에게 이 코드를 전달하세요</p>
-                                    <div class="flex items-center gap-4">
-                                        <span id="verificationCode" class="text-3xl font-mono font-bold text-purple-600">------</span>
-                                        <button onclick="copyCode()" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
-                                            <i class="fas fa-copy mr-2"></i>복사
-                                        </button>
-                                    </div>
-                                </div>
-                                <button onclick="regenerateCode()" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700">
-                                    <i class="fas fa-sync-alt mr-2"></i>재생성
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- 등록 방법 안내 -->
-                        <div class="bg-blue-50 border border-blue-200 rounded-xl p-6">
-                            <h3 class="text-lg font-bold text-gray-900 mb-4">
-                                <i class="fas fa-info-circle text-blue-600 mr-2"></i>선생님 등록 방법
-                            </h3>
-                            <ol class="space-y-3 text-gray-700">
-                                <li class="flex items-start">
-                                    <span class="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm mr-3">1</span>
-                                    <span>선생님에게 위의 <strong>인증 코드</strong>와 <strong>학원명</strong>을 전달하세요</span>
-                                </li>
-                                <li class="flex items-start">
-                                    <span class="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm mr-3">2</span>
-                                    <span>선생님이 등록 페이지에서 정보를 입력하고 신청합니다</span>
-                                </li>
-                                <li class="flex items-start">
-                                    <span class="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm mr-3">3</span>
-                                    <span>"승인 대기" 탭에서 신청을 확인하고 승인하세요</span>
-                                </li>
-                            </ol>
-                            <div class="mt-4 p-4 bg-white rounded-lg">
-                                <p class="text-sm font-medium text-gray-700 mb-2">📱 선생님 등록 링크:</p>
-                                <div class="flex items-center gap-2">
-                                    <input type="text" value="https://superplace-academy.pages.dev/signup?type=teacher" readonly class="flex-1 px-3 py-2 border rounded-lg text-sm">
-                                    <button onclick="copyRegisterLink()" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 text-sm whitespace-nowrap">
-                                        <i class="fas fa-copy mr-1"></i>복사
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 선생님 목록 탭 -->
-                    <div id="content-list" class="tab-content hidden">
-                        <div id="teachersList" class="space-y-4">
-                            <div class="text-center text-gray-500 py-8">로딩 중...</div>
-                        </div>
-                    </div>
-
-                    <!-- 승인 대기 탭 -->
-                    <div id="content-pending" class="tab-content hidden">
-                        <div id="pendingList" class="space-y-4">
-                            <div class="text-center text-gray-500 py-8">로딩 중...</div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -22464,33 +22417,28 @@ app.get('/students', (c) => {
                 \`).join('');
             }
 
-            // 선생님 관리 모달 함수들
-            function openTeacherModal() {
-                document.getElementById('teacherModal').classList.remove('hidden');
+            // 선생님 관리 섹션 토글
+            function toggleTeacherSection() {
+                const section = document.getElementById('teacherSection');
+                const icon = document.getElementById('teacherSectionIcon');
+                
+                if (section.classList.contains('hidden')) {
+                    section.classList.remove('hidden');
+                    icon.classList.remove('fa-chevron-down');
+                    icon.classList.add('fa-chevron-up');
+                    loadTeacherData();
+                } else {
+                    section.classList.add('hidden');
+                    icon.classList.remove('fa-chevron-up');
+                    icon.classList.add('fa-chevron-down');
+                }
+            }
+
+            function loadTeacherData() {
+                if (!currentUser) return;
                 loadVerificationCode();
                 loadTeachersList();
                 loadPendingApplications();
-            }
-
-            function closeTeacherModal() {
-                document.getElementById('teacherModal').classList.add('hidden');
-            }
-
-            function switchTab(tab) {
-                // 탭 버튼 스타일
-                ['register', 'list', 'pending'].forEach(t => {
-                    const btn = document.getElementById('tab-' + t);
-                    const content = document.getElementById('content-' + t);
-                    if (t === tab) {
-                        btn.classList.add('text-purple-600', 'border-b-2', 'border-purple-600');
-                        btn.classList.remove('text-gray-600');
-                        content.classList.remove('hidden');
-                    } else {
-                        btn.classList.remove('text-purple-600', 'border-b-2', 'border-purple-600');
-                        btn.classList.add('text-gray-600');
-                        content.classList.add('hidden');
-                    }
-                });
             }
 
             async function loadVerificationCode() {
@@ -22505,7 +22453,7 @@ app.get('/students', (c) => {
                 }
             }
 
-            async function regenerateCode() {
+            async function regenerateVerificationCode() {
                 if (!confirm('인증 코드를 재생성하시겠습니까? 이전 코드는 사용할 수 없게 됩니다.')) return;
                 try {
                     const res = await fetch('/api/teachers/verification-code/regenerate', {
@@ -22526,7 +22474,7 @@ app.get('/students', (c) => {
                 }
             }
 
-            function copyCode() {
+            function copyVerificationCode() {
                 const code = document.getElementById('verificationCode').textContent;
                 navigator.clipboard.writeText(code).then(() => {
                     alert('인증 코드가 복사되었습니다: ' + code);
@@ -22534,7 +22482,7 @@ app.get('/students', (c) => {
             }
 
             function copyRegisterLink() {
-                const link = 'https://superplace-academy.pages.dev/signup?type=teacher';
+                const link = 'https://superplace-academy.pages.dev/signup?teacher=true';
                 navigator.clipboard.writeText(link).then(() => {
                     alert('등록 링크가 복사되었습니다!');
                 });
