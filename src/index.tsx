@@ -16151,6 +16151,7 @@ app.get('/admin/users', async (c) => {
         <title>사용자 관리 - 슈퍼플레이스</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+        <script src="/admin-users.js" defer></script>
         <style>
             .gradient-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
         </style>
@@ -16283,9 +16284,21 @@ app.get('/admin/users', async (c) => {
                 </div>
             </div>
         </div>
+    </body>
+    </html>
+  `)
+})
 
-        <script>
-            console.log('🚀 Admin Users Page - Script Start');
+// 사용자: 내 입금 내역 페이지
+app.get('/my-deposits', (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>내 입금 내역 - 슈퍼플레이스</title>
+        <script src="https://cdn.tailwindcss.com"></script>
             
             let currentUserId = null;
 
