@@ -2,8 +2,9 @@ name = "superplace-academy"
 compatibility_date = "2024-01-01"
 pages_build_output_dir = "dist"
 
-[build]
-command = "npm run build"
+# NO BUILD COMMAND - Use pre-built dist folder from Git
+# [build]
+# command = "npm run build"
 
 [build.upload]
 format = "service-worker"
