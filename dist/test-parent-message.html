@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>학부모 소통 시스템 - 작동하는 버전</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
+        * {
+            font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+        }
+        .gradient-purple {
+            background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="pt-24 pb-12 px-6">
+        <div class="max-w-5xl mx-auto">
+            <div class="text-center mb-10">
+                <h1 class="text-4xl font-bold text-gray-900 mb-4">📱 학부모 소통 시스템</h1>
+                <p class="text-xl text-gray-600">학생을 선택하여 메시지를 생성하세요</p>
+            </div>
+
+            <div class="grid lg:grid-cols-2 gap-8">
+                <!-- 입력 폼 -->
+                <div class="bg-white rounded-2xl shadow-lg p-8">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6">학생 정보</h2>
+                    
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 mb-2">학생 선택 *</label>
+                            <select id="studentSelect" 
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none"
+                                    onchange="showStudentInfo()">
+                                <option value="">학생을 선택하세요</option>
+                            </select>
+                        </div>
+
+                        <div id="studentInfo" class="hidden bg-blue-50 border-l-4 border-blue-500 rounded-lg p-4">
+                            <div class="text-sm font-medium text-blue-900 mb-2">📊 학생 정보</div>
+                            <div id="studentDetails" class="text-sm text-blue-800"></div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 mb-2">추가 메모</label>
+                            <textarea id="memo" rows="3"
+                                      class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none resize-none"
+                                      placeholder="추가로 전달할 내용을 입력하세요"></textarea>
+                        </div>
+
+                        <button onclick="generateMessage()" 
+                                class="w-full gradient-purple text-white py-4 rounded-xl text-lg font-medium hover:shadow-xl transition">
+                            ✨ 메시지 생성하기
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 결과 -->
+                <div class="bg-white rounded-2xl shadow-lg p-8">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6">생성된 메시지</h2>
+                    
+                    <div id="result" class="hidden">
+                        <div class="bg-purple-50 border-l-4 border-purple-600 rounded-lg p-6 mb-6">
+                            <div id="generatedMessage" class="text-gray-800 leading-relaxed whitespace-pre-wrap"></div>
+                        </div>
+                        <button onclick="copyMessage()" 
+                                class="w-full bg-purple-600 text-white py-3 rounded-xl font-medium hover:bg-purple-700 transition">
+                            📋 복사하기
+                        </button>
+                    </div>
+
+                    <div id="empty" class="text-center py-16">
+                        <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
+                            </svg>
+                        </div>
+                        <p class="text-gray-500">학생을 선택하고<br>메시지를 생성해보세요</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let students = [];
+        let currentStudent = null;
+
+        // 페이지 로드 시
+        window.addEventListener('DOMContentLoaded', function() {
+            loadStudents();
+        });
+
+        // 학생 목록 불러오기
+        async function loadStudents() {
+            try {
+                const response = await fetch('https://superplace-academy.pages.dev/api/students?academyId=1');
+                const data = await response.json();
+                
+                if (data.success) {
+                    students = data.students;
+                    const select = document.getElementById('studentSelect');
+                    
+                    data.students.forEach(function(student) {
+                        const option = document.createElement('option');
+                        option.value = student.id;
+                        option.textContent = student.name + ' (' + student.grade + ', ' + (student.class_name || '미배정') + ')';
+                        select.appendChild(option);
+                    });
+                    
+                    console.log('학생 목록 로드 완료:', students.length + '명');
+                }
+            } catch (err) {
+                console.error('Error:', err);
+                alert('학생 목록을 불러오는데 실패했습니다: ' + err.message);
+            }
+        }
+
+        // 학생 정보 표시
+        function showStudentInfo() {
+            const select = document.getElementById('studentSelect');
+            const studentId = select.value;
+            
+            if (!studentId) {
+                document.getElementById('studentInfo').classList.add('hidden');
+                return;
+            }
+
+            currentStudent = students.find(function(s) { return s.id == studentId; });
+            
+            if (currentStudent) {
+                document.getElementById('studentDetails').innerHTML = 
+                    '<div><strong>이름:</strong> ' + currentStudent.name + '</div>' +
+                    '<div><strong>학년:</strong> ' + currentStudent.grade + '</div>' +
+                    '<div><strong>과목:</strong> ' + currentStudent.subjects + '</div>' +
+                    '<div><strong>학부모:</strong> ' + currentStudent.parent_name + ' (' + currentStudent.parent_phone + ')</div>';
+                
+                document.getElementById('studentInfo').classList.remove('hidden');
+            }
+        }
+
+        // 메시지 생성
+        function generateMessage() {
+            if (!currentStudent) {
+                alert('학생을 선택해주세요.');
+                return;
+            }
+
+            const memo = document.getElementById('memo').value;
+            
+            let message = '안녕하세요, ' + currentStudent.parent_name + ' 학부모님!\n\n';
+            message += currentStudent.name + ' 학생(' + currentStudent.grade + ')의 학습 현황을 알려드립니다.\n\n';
+            message += '📚 수강 과목: ' + currentStudent.subjects + '\n\n';
+            
+            if (memo) {
+                message += '💬 전달 사항:\n' + memo + '\n\n';
+            }
+            
+            message += '궁금하신 점이 있으시면 언제든 연락 주세요.\n';
+            message += '감사합니다.';
+
+            document.getElementById('generatedMessage').textContent = message;
+            document.getElementById('empty').classList.add('hidden');
+            document.getElementById('result').classList.remove('hidden');
+        }
+
+        // 복사
+        function copyMessage() {
+            const message = document.getElementById('generatedMessage').textContent;
+            navigator.clipboard.writeText(message).then(function() {
+                alert('✅ 메시지가 복사되었습니다!');
+            });
+        }
+    </script>
+</body>
+</html>
