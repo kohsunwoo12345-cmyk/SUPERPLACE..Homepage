@@ -557,6 +557,54 @@ app.post('/api/admin/revoke-permission', async (c) => {
   }
 })
 
+// 관리자: 사용자 권한 일괄 업데이트 API
+app.post('/api/admin/update-user-permissions', async (c) => {
+  try {
+    const { userId, permissions, adminId } = await c.req.json()
+    
+    if (!userId || !permissions || !adminId) {
+      return c.json({ success: false, error: '필수 정보를 입력해주세요.' }, 400)
+    }
+
+    // 관리자 권한 확인
+    const admin = await c.env.DB.prepare('SELECT role FROM users WHERE id = ?').bind(adminId).first()
+    if (!admin || admin.role !== 'admin') {
+      return c.json({ success: false, error: '관리자 권한이 필요합니다.' }, 403)
+    }
+
+    // 트랜잭션으로 일괄 처리
+    // 1. 해당 사용자의 기존 권한 모두 비활성화
+    await c.env.DB.prepare(`
+      UPDATE user_permissions 
+      SET is_active = 0 
+      WHERE user_id = ?
+    `).bind(userId).run()
+
+    // 2. 새로운 권한 추가
+    let successCount = 0
+    for (const programKey of permissions) {
+      try {
+        await c.env.DB.prepare(`
+          INSERT OR REPLACE INTO user_permissions (user_id, program_key, granted_by, is_active)
+          VALUES (?, ?, ?, 1)
+        `).bind(userId, programKey, adminId).run()
+        successCount++
+      } catch (err) {
+        console.error('권한 추가 오류:', programKey, err)
+      }
+    }
+
+    return c.json({ 
+      success: true, 
+      message: `${successCount}개의 권한이 업데이트되었습니다.`,
+      count: successCount
+    })
+  } catch (err) {
+    console.error('Update permissions error:', err)
+    return c.json({ success: false, error: '권한 업데이트 중 오류가 발생했습니다: ' + err.message }, 500)
+  }
+})
+
 // 관리자: 데이터베이스 마이그레이션 실행 API
 app.post('/api/admin/run-migration', async (c) => {
   try {
