@@ -80,8 +80,8 @@ app.post('/api/signup', async (c) => {
 
     // DB 저장 (academy_location은 선택사항으로 변경)
     const result = await c.env.DB.prepare(`
-      INSERT INTO users (email, password, name, phone, academy_name, role)
-      VALUES (?, ?, ?, ?, ?, 'member')
+      INSERT INTO users (email, password, name, phone, academy_name, role, user_type)
+      VALUES (?, ?, ?, ?, ?, 'member', 'director')
     `).bind(email, hashedPassword, name, phone, academy_name).run()
 
     return c.json({ 
@@ -106,7 +106,7 @@ app.post('/api/login', async (c) => {
 
     // 사용자 조회
     const user = await c.env.DB.prepare(`
-      SELECT id, email, name, role, points FROM users WHERE email = ? AND password = ?
+      SELECT id, email, name, role, points, user_type, academy_name FROM users WHERE email = ? AND password = ?
     `).bind(email, password).first()
 
     if (!user) {
