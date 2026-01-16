@@ -4,29 +4,134 @@ let currentUserId = null;
 
 // 시스템 기능 권한 (DB의 program_key와 일치)
 const systemFeatures = [
+    // 핵심 도구
     { 
         key: 'search_volume', 
         name: '네이버 검색량 조회',
         icon: '📊',
-        description: '키워드 검색량, 플레이스 순위, 경쟁사 분석'
+        description: '키워드 검색량, 플레이스 순위, 경쟁사 분석',
+        category: '핵심 도구'
     },
     { 
-        key: 'sms', 
-        name: 'SMS 문자 발송',
-        icon: '📱',
-        description: '문자 작성, 발신번호 관리, 발송 내역'
+        key: 'parent_message', 
+        name: '학부모 소통 메시지',
+        icon: '💬',
+        description: 'AI 기반 학부모 소통 메시지 자동 생성',
+        category: '핵심 도구'
+    },
+    { 
+        key: 'blog_writer', 
+        name: '블로그 자동 작성',
+        icon: '✍️',
+        description: 'AI 기반 블로그 포스팅 자동 생성',
+        category: '핵심 도구'
     },
     { 
         key: 'landing_builder', 
         name: '랜딩페이지 생성기',
         icon: '🚀',
-        description: 'AI 기반 랜딩페이지 자동 생성'
+        description: 'AI 기반 랜딩페이지 자동 생성 및 관리',
+        category: '핵심 도구'
     },
     { 
-        key: 'analytics', 
-        name: '분석 도구',
+        key: 'sms_sender', 
+        name: 'SMS 문자 발송',
+        icon: '📱',
+        description: '문자 작성, 발신번호 관리, 발송 내역',
+        category: '핵심 도구'
+    },
+    { 
+        key: 'student_management', 
+        name: '학생 관리',
+        icon: '👨‍🎓',
+        description: '학생 정보, 출결, 성적, 상담 기록 관리',
+        category: '핵심 도구'
+    },
+    { 
+        key: 'dashboard_analytics', 
+        name: '통합 분석 대시보드',
         icon: '📈',
-        description: '데이터 분석 및 리포트 생성 (예정)'
+        description: '매출·학생·마케팅 통계 분석',
+        category: '핵심 도구'
+    },
+    { 
+        key: 'ai_learning_report', 
+        name: 'AI 학습 리포트',
+        icon: '🤖',
+        description: 'AI 기반 학생 맞춤 학습 리포트 생성',
+        category: '핵심 도구'
+    },
+    
+    // 마케팅 도구
+    { 
+        key: 'keyword_analyzer', 
+        name: '키워드 분석기',
+        icon: '🔍',
+        description: '검색량 높은 키워드 발굴 및 분석',
+        category: '마케팅 도구'
+    },
+    { 
+        key: 'review_template', 
+        name: '후기 템플릿',
+        icon: '⭐',
+        description: '학부모 후기 요청 템플릿 생성',
+        category: '마케팅 도구'
+    },
+    { 
+        key: 'ad_copy_generator', 
+        name: '광고 문구 생성기',
+        icon: '💡',
+        description: 'SNS·블로그 광고 문구 자동 생성',
+        category: '마케팅 도구'
+    },
+    { 
+        key: 'photo_optimizer', 
+        name: '사진 최적화',
+        icon: '📸',
+        description: '학원 사진 자동 보정 및 최적화',
+        category: '마케팅 도구'
+    },
+    { 
+        key: 'competitor_analysis', 
+        name: '경쟁사 분석',
+        icon: '🎯',
+        description: '주변 학원 마케팅 전략 분석',
+        category: '마케팅 도구'
+    },
+    { 
+        key: 'blog_checklist', 
+        name: '블로그 체크리스트',
+        icon: '✅',
+        description: 'SEO 최적화 블로그 작성 가이드',
+        category: '마케팅 도구'
+    },
+    { 
+        key: 'content_calendar', 
+        name: '콘텐츠 캘린더',
+        icon: '📅',
+        description: '월간 마케팅 콘텐츠 계획 관리',
+        category: '마케팅 도구'
+    },
+    { 
+        key: 'consultation_script', 
+        name: '상담 스크립트',
+        icon: '📝',
+        description: '학부모 상담용 맞춤 스크립트 생성',
+        category: '마케팅 도구'
+    },
+    { 
+        key: 'place_optimization', 
+        name: '플레이스 최적화',
+        icon: '🗺️',
+        description: '네이버 플레이스 정보 최적화 가이드',
+        category: '마케팅 도구'
+    },
+    { 
+        key: 'roi_calculator', 
+        name: 'ROI 계산기',
+        icon: '💰',
+        description: '마케팅 투자 대비 효과 측정',
+        category: '마케팅 도구'
     }
 ];
 
@@ -34,29 +139,61 @@ async function managePermissions(userId, userName) {
     currentUserId = userId;
     document.getElementById('modalUserName').textContent = userName + '님의 프로그램 권한 설정';
     
-    // 현재 권한 조회 (새로운 API)
+    // 현재 권한 조회
     const response = await fetch('/api/user/permissions?userId=' + userId);
     const data = await response.json();
     
-    // 시스템 기능 권한 렌더링
+    // 카테고리별로 그룹화
+    const categories = {};
+    systemFeatures.forEach(feature => {
+        const cat = feature.category || '기타';
+        if (!categories[cat]) {
+            categories[cat] = [];
+        }
+        categories[cat].push(feature);
+    });
+    
+    // 시스템 기능 권한 렌더링 (카테고리별)
     const systemPerms = document.getElementById('systemPermissions');
-    systemPerms.innerHTML = systemFeatures.map(feature => {
-        const hasPermission = data.success && data.permissions && data.permissions[feature.key];
-        const borderClass = hasPermission ? 'border-blue-500 bg-blue-50' : 'border-gray-200';
-        return '<label class="flex items-start p-4 border-2 ' + borderClass + ' rounded-lg hover:border-blue-300 cursor-pointer transition">' +
-            '<input type="checkbox" ' +
-                   'class="w-5 h-5 text-blue-600 rounded mr-3 mt-1" ' +
-                   'data-program-key="' + feature.key + '" ' +
-                   (hasPermission ? 'checked' : '') + '>' +
-            '<div class="flex-1">' +
-                '<div class="flex items-center gap-2 mb-1">' +
-                    '<span class="text-xl">' + feature.icon + '</span>' +
-                    '<span class="text-sm font-bold text-gray-900">' + feature.name + '</span>' +
-                '</div>' +
-                '<p class="text-xs text-gray-600">' + feature.description + '</p>' +
-            '</div>' +
-        '</label>';
-    }).join('');
+    systemPerms.innerHTML = '';
+    
+    Object.keys(categories).forEach(category => {
+        const categoryDiv = document.createElement('div');
+        categoryDiv.className = 'col-span-2 mb-6';
+        
+        const categoryTitle = document.createElement('h4');
+        categoryTitle.className = 'text-lg font-bold text-gray-900 mb-3 flex items-center gap-2';
+        categoryTitle.innerHTML = '<span class="text-2xl">🎯</span>' + category;
+        categoryDiv.appendChild(categoryTitle);
+        
+        const featuresGrid = document.createElement('div');
+        featuresGrid.className = 'grid md:grid-cols-2 gap-3';
+        
+        categories[category].forEach(feature => {
+            const hasPermission = data.success && data.permissions && data.permissions[feature.key];
+            const borderClass = hasPermission ? 'border-blue-500 bg-blue-50' : 'border-gray-200';
+            
+            const label = document.createElement('label');
+            label.className = 'flex items-start p-3 border-2 ' + borderClass + ' rounded-lg hover:border-blue-300 cursor-pointer transition';
+            label.innerHTML = 
+                '<input type="checkbox" ' +
+                       'class="w-5 h-5 text-blue-600 rounded mr-3 mt-1" ' +
+                       'data-program-key="' + feature.key + '" ' +
+                       (hasPermission ? 'checked' : '') + '>' +
+                '<div class="flex-1">' +
+                    '<div class="flex items-center gap-2 mb-1">' +
+                        '<span class="text-lg">' + feature.icon + '</span>' +
+                        '<span class="text-sm font-bold text-gray-900">' + feature.name + '</span>' +
+                    '</div>' +
+                    '<p class="text-xs text-gray-600">' + feature.description + '</p>' +
+                '</div>';
+            
+            featuresGrid.appendChild(label);
+        });
+        
+        categoryDiv.appendChild(featuresGrid);
+        systemPerms.appendChild(categoryDiv);
+    });
 
     // 모달 표시
     document.getElementById('permissionModal').classList.remove('hidden');
@@ -126,6 +263,24 @@ async function savePermissions() {
 function closeModal() {
     document.getElementById('permissionModal').classList.add('hidden');
     currentUserId = null;
+}
+
+function selectAllPermissions() {
+    const checkboxes = document.querySelectorAll('#systemPermissions input[type="checkbox"]');
+    const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+    
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = !allChecked;
+        // 체크박스 변경 시 라벨 스타일도 업데이트
+        const label = checkbox.closest('label');
+        if (checkbox.checked) {
+            label.classList.remove('border-gray-200');
+            label.classList.add('border-blue-500', 'bg-blue-50');
+        } else {
+            label.classList.remove('border-blue-500', 'bg-blue-50');
+            label.classList.add('border-gray-200');
+        }
+    });
 }
 
 function logout() {
@@ -266,7 +421,8 @@ window.loginAs = loginAs;
 window.managePermissions = managePermissions;
 window.savePermissions = savePermissions;
 window.closeModal = closeModal;
+window.selectAllPermissions = selectAllPermissions;
 window.logout = logout;
 
 console.log('✅ All admin functions registered globally');
-console.log('Available functions:', Object.keys({changePassword, givePoints, deductPoints, loginAs, managePermissions}));
+console.log('Available functions:', Object.keys({changePassword, givePoints, deductPoints, loginAs, managePermissions, selectAllPermissions}));

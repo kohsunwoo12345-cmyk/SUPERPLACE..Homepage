@@ -7613,32 +7613,68 @@ app.get('/dashboard', (c) => {
                     if (data.success) {
                         const permissions = data.permissions
                         
-                        // SMS 권한 체크
-                        if (permissions.sms || user.role === 'admin') {
+                        // 관리자는 모든 도구 표시
+                        if (user.role === 'admin') {
+                            console.log('✅ 관리자 계정 - 모든 도구 표시')
+                            return
+                        }
+                        
+                        // 각 도구별 권한 체크 및 숨김 처리
+                        const toolMapping = {
+                            'search_volume': 'a[href="/tools/search-volume"]',
+                            'parent_message': 'a[href="/tools/parent-message"]',
+                            'blog_writer': 'a[href="/tools/blog-writer"]',
+                            'landing_builder': 'a[href="/tools/landing-builder"]',
+                            'sms_sender': 'a[href="/tools/sms-sender"]',
+                            'student_management': 'a[href="/students"]',
+                            'dashboard_analytics': 'a[href="/tools/dashboard-analytics"]',
+                            'ai_learning_report': 'a[href="/tools/ai-learning-report"]',
+                            'keyword_analyzer': 'a[href="/tools/keyword-analyzer"]',
+                            'review_template': 'a[href="/tools/review-template"]',
+                            'ad_copy_generator': 'a[href="/tools/ad-copy-generator"]',
+                            'photo_optimizer': 'a[href="/tools/photo-optimizer"]',
+                            'competitor_analysis': 'a[href="/tools/competitor-analysis"]',
+                            'blog_checklist': 'a[href="/tools/blog-checklist"]',
+                            'content_calendar': 'a[href="/tools/content-calendar"]',
+                            'consultation_script': 'a[href="/tools/consultation-script"]',
+                            'place_optimization': 'a[href="/tools/place-optimization"]',
+                            'roi_calculator': 'a[href="/tools/roi-calculator"]'
+                        }
+                        
+                        // 모든 도구 카드를 먼저 숨김
+                        Object.values(toolMapping).forEach(selector => {
+                            const elements = document.querySelectorAll(selector)
+                            elements.forEach(el => {
+                                el.style.display = 'none'
+                            })
+                        })
+                        
+                        // 권한이 있는 도구만 표시
+                        Object.keys(permissions).forEach(permKey => {
+                            if (permissions[permKey] && toolMapping[permKey]) {
+                                const elements = document.querySelectorAll(toolMapping[permKey])
+                                elements.forEach(el => {
+                                    el.style.display = ''
+                                })
+                                console.log('✅ 권한 있음:', permKey)
+                            }
+                        })
+                        
+                        // SMS 네비게이션 드롭다운
+                        if (permissions.sms_sender) {
                             document.getElementById('smsNavDropdown')?.classList.remove('hidden')
                             document.getElementById('smsQuickAccess')?.classList.remove('hidden')
-                        }
-                        
-                        // 검색량 조회 권한 체크
-                        if (permissions.search_volume || user.role === 'admin') {
-                            // 검색량 조회 섹션 표시 (향후 추가)
-                        }
-                        
-                        // 랜딩페이지 빌더 권한 체크
-                        if (permissions.landing_builder || user.role === 'admin') {
-                            // 랜딩페이지 섹션 표시 (기본 표시 중)
                         }
                     }
                 } catch (err) {
                     console.error('권한 조회 실패:', err)
                     // 에러 시 기본적으로 모두 숨김 (관리자는 제외)
                     if (user.role !== 'admin') {
-                        document.getElementById('smsNavDropdown')?.classList.add('hidden')
-                        document.getElementById('smsQuickAccess')?.classList.add('hidden')
-                    } else {
-                        // 관리자는 모든 메뉴 표시
-                        document.getElementById('smsNavDropdown')?.classList.remove('hidden')
-                        document.getElementById('smsQuickAccess')?.classList.remove('hidden')
+                        // 모든 도구 카드 숨기기
+                        const allTools = document.querySelectorAll('a[href^="/tools/"], a[href="/students"]')
+                        allTools.forEach(tool => {
+                            tool.style.display = 'none'
+                        })
                     }
                 }
             }
@@ -16251,36 +16287,45 @@ app.get('/admin/users', async (c) => {
 
         <!-- 권한 관리 모달 -->
         <div id="permissionModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-            <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-                <div class="p-6 border-b border-gray-200">
+            <div class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-y-auto">
+                <div class="p-6 border-b border-gray-200 sticky top-0 bg-white z-10">
                     <div class="flex justify-between items-center">
-                        <h2 class="text-2xl font-bold text-gray-900">프로그램 권한 관리</h2>
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-900">프로그램 권한 관리</h2>
+                            <p id="modalUserName" class="text-gray-600 mt-1"></p>
+                        </div>
                         <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
                             <i class="fas fa-times text-2xl"></i>
                         </button>
                     </div>
-                    <p id="modalUserName" class="text-gray-600 mt-2"></p>
                 </div>
                 
                 <div class="p-6">
-                    <!-- 시스템 기능 권한 섹션 -->
-                    <h3 class="text-lg font-bold text-gray-900 mb-4">📱 시스템 기능 권한</h3>
-                    <div id="systemPermissions" class="grid md:grid-cols-2 gap-4 mb-6">
-                        <!-- 시스템 권한 체크박스가 여기에 렌더링됩니다 -->
+                    <div class="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                        <p class="text-sm text-blue-800">
+                            <i class="fas fa-info-circle mr-2"></i>
+                            <strong>권한 설정:</strong> 체크박스를 선택/해제하여 사용자가 대시보드에서 볼 수 있는 도구를 관리할 수 있습니다.
+                        </p>
                     </div>
-
-                    <!-- 툴 권한 섹션 -->
-                    <h3 class="text-lg font-bold text-gray-900 mb-4">🎯 마케팅 툴 권한 (예정)</h3>
-                    <p class="text-sm text-gray-500 mb-4">추가 마케팅 툴 권한은 향후 추가될 예정입니다.</p>
+                    
+                    <!-- 권한 목록 (카테고리별로 JS에서 동적 렌더링) -->
+                    <div id="systemPermissions" class="space-y-6">
+                        <!-- 권한 체크박스가 여기에 렌더링됩니다 -->
+                    </div>
                 </div>
 
-                <div class="p-6 border-t border-gray-200 flex justify-end gap-3">
-                    <button onclick="closeModal()" class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
-                        취소
+                <div class="p-6 border-t border-gray-200 bg-gray-50 sticky bottom-0 flex justify-between items-center">
+                    <button onclick="selectAllPermissions()" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition text-sm font-medium">
+                        전체 선택
                     </button>
-                    <button onclick="savePermissions()" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">
-                        저장
-                    </button>
+                    <div class="flex gap-3">
+                        <button onclick="closeModal()" class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                            취소
+                        </button>
+                        <button onclick="savePermissions()" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">
+                            저장
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
