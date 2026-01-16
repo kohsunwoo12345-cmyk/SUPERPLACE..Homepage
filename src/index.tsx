@@ -1,3 +1,4 @@
+// SUPERPLACE Academy - Complete Restructure 2026
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { serveStatic } from 'hono/cloudflare-workers'
