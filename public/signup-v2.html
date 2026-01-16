@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>회원가입 v2.0 - 우리는 슈퍼플레이스다</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+      @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
+      * {
+        font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      }
+      .gradient-purple {
+        background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+      }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="min-h-screen flex items-center justify-center px-6 py-12">
+        <div class="max-w-md w-full">
+            <div class="text-center mb-10">
+                <a href="/" class="inline-block mb-6">
+                    <span class="text-2xl font-bold text-gray-900">우리는 슈퍼플레이스다</span>
+                </a>
+                <div class="flex items-center justify-center gap-3 mb-2">
+                    <h1 class="text-3xl font-bold text-gray-900">회원가입</h1>
+                    <span class="px-3 py-1 bg-purple-100 text-purple-700 text-sm font-bold rounded-full">v2.0 ✅</span>
+                </div>
+                <p class="text-gray-600">학원 마케팅 교육을 시작해보세요</p>
+            </div>
+
+            <div class="bg-white rounded-2xl border border-gray-200 p-8">
+                <!-- 계정 유형 선택 (라디오 버튼) -->
+                <div class="mb-6">
+                    <label class="block text-lg font-bold text-gray-900 mb-4 text-center">
+                        어떤 계정으로 가입하시겠습니까?
+                    </label>
+                    <div class="grid grid-cols-2 gap-4 mb-6">
+                        <label class="relative cursor-pointer">
+                            <input type="radio" name="userType" value="director" checked class="peer sr-only" onchange="toggleUserType()">
+                            <div class="p-6 border-2 border-gray-300 rounded-xl peer-checked:border-purple-600 peer-checked:bg-purple-50 hover:border-purple-400 transition text-center">
+                                <i class="fas fa-school text-4xl text-purple-600 mb-3 block"></i>
+                                <p class="font-bold text-gray-900 text-lg mb-1">학원장</p>
+                                <p class="text-xs text-gray-600">학원을 운영합니다</p>
+                            </div>
+                        </label>
+                        <label class="relative cursor-pointer">
+                            <input type="radio" name="userType" value="teacher" class="peer sr-only" onchange="toggleUserType()">
+                            <div class="p-6 border-2 border-gray-300 rounded-xl peer-checked:border-purple-600 peer-checked:bg-purple-50 hover:border-purple-400 transition text-center">
+                                <i class="fas fa-chalkboard-teacher text-4xl text-purple-600 mb-3 block"></i>
+                                <p class="font-bold text-gray-900 text-lg mb-1">선생님</p>
+                                <p class="text-xs text-gray-600">학원에서 가르칩니다</p>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <form id="signupForm" class="space-y-5">
+                    <!-- 선생님 전용 필드 -->
+                    <div id="teacherFields" class="hidden space-y-5">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 mb-2">
+                                <i class="fas fa-key text-purple-600 mr-2"></i>학원 인증 코드 <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" name="verificationCode" id="verificationCode" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition uppercase" placeholder="ABC123" maxlength="6">
+                            <p class="text-xs text-gray-500 mt-1">원장님에게 받은 6자리 코드</p>
+                        </div>
+                    </div>
+
+                    <!-- 공통 필드 -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-900 mb-2">
+                            <span id="nameLabel">원장님 성함</span> <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" name="name" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition" placeholder="홍길동">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-900 mb-2">이메일 <span class="text-red-500">*</span></label>
+                        <input type="email" name="email" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition" placeholder="example@email.com">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-900 mb-2">비밀번호 <span class="text-red-500">*</span></label>
+                        <input type="password" name="password" required minlength="6" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition" placeholder="최소 6자 이상">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-900 mb-2">연락처 <span class="text-red-500">*</span></label>
+                        <input type="tel" name="phone" required placeholder="010-0000-0000" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-900 mb-2">학원 이름 <span class="text-red-500">*</span></label>
+                        <input type="text" name="academy_name" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition" placeholder="꾸메땅학원">
+                        <p id="academyHint" class="text-xs text-gray-500 mt-1 hidden">인증 코드와 일치하는 학원명을 정확히 입력하세요</p>
+                    </div>
+
+                    <!-- 원장님 전용 필드 -->
+                    <div id="directorFields">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 mb-2">학원 위치</label>
+                            <input type="text" name="academy_location" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition" placeholder="인천 서구 검단동 (선택사항)">
+                        </div>
+                    </div>
+
+                    <!-- 선생님 안내 메시지 -->
+                    <div id="teacherNotice" class="hidden bg-purple-50 border border-purple-200 rounded-xl p-4">
+                        <p class="text-sm text-purple-800">
+                            <i class="fas fa-info-circle mr-2"></i>
+                            <strong>등록 절차:</strong> 신청 후 원장님의 승인을 받으면 계정이 활성화됩니다.
+                        </p>
+                    </div>
+
+                    <button type="submit" class="w-full gradient-purple text-white py-3 rounded-xl font-medium hover:shadow-xl transition-all">
+                        <span id="submitText">회원가입</span>
+                    </button>
+
+                    <div id="message" class="hidden mt-4 p-4 rounded-xl"></div>
+                </form>
+
+                <div class="mt-6 text-center text-sm text-gray-600">
+                    이미 계정이 있으신가요? <a href="/login" class="text-purple-600 hover:text-purple-700 font-medium">로그인</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 라디오 버튼 토글 함수
+        function toggleUserType() {
+            const userTypeRadio = document.querySelector('input[name="userType"]:checked').value;
+            const isTeacher = userTypeRadio === 'teacher';
+            
+            const teacherFields = document.getElementById('teacherFields');
+            const directorFields = document.getElementById('directorFields');
+            const teacherNotice = document.getElementById('teacherNotice');
+            const academyHint = document.getElementById('academyHint');
+            const nameLabel = document.getElementById('nameLabel');
+            const submitText = document.getElementById('submitText');
+            const verificationCodeInput = document.getElementById('verificationCode');
+
+            if (isTeacher) {
+                // 선생님 모드
+                teacherFields.classList.remove('hidden');
+                directorFields.classList.add('hidden');
+                teacherNotice.classList.remove('hidden');
+                academyHint.classList.remove('hidden');
+                nameLabel.textContent = '이름';
+                submitText.innerHTML = '<i class="fas fa-user-plus mr-2"></i>선생님 등록 신청';
+                verificationCodeInput.required = true;
+            } else {
+                // 원장님 모드
+                teacherFields.classList.add('hidden');
+                directorFields.classList.remove('hidden');
+                teacherNotice.classList.add('hidden');
+                academyHint.classList.add('hidden');
+                nameLabel.textContent = '원장님 성함';
+                submitText.textContent = '회원가입';
+                verificationCodeInput.required = false;
+            }
+        }
+
+        // 폼 제출
+        document.getElementById('signupForm').addEventListener('submit', async (e) => {
+            e.preventDefault()
+            
+            const formData = new FormData(e.target)
+            const userTypeRadio = document.querySelector('input[name="userType"]:checked').value;
+            const isTeacher = userTypeRadio === 'teacher';
+            
+            // 선생님 등록인 경우
+            if (isTeacher) {
+                const data = {
+                    verificationCode: formData.get('verificationCode'),
+                    academy_name: formData.get('academy_name'),
+                    name: formData.get('name'),
+                    email: formData.get('email'),
+                    password: formData.get('password'),
+                    phone: formData.get('phone')
+                }
+                
+                try {
+                    const response = await fetch('/api/teachers/apply', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    })
+
+                    const result = await response.json()
+                    const messageEl = document.getElementById('message')
+                    messageEl.classList.remove('hidden')
+
+                    if (result.success) {
+                        messageEl.className = 'mt-4 p-4 rounded-xl bg-green-50 text-green-800 border border-green-200'
+                        messageEl.textContent = result.message || '등록 신청이 완료되었습니다. 원장님의 승인을 기다려주세요.'
+                        e.target.reset()
+                        setTimeout(() => {
+                            window.location.href = '/login'
+                        }, 2000)
+                    } else {
+                        messageEl.className = 'mt-4 p-4 rounded-xl bg-red-50 text-red-800 border border-red-200'
+                        messageEl.textContent = result.error || '등록 신청 중 오류가 발생했습니다.'
+                    }
+                } catch (error) {
+                    console.error('Teacher registration error:', error)
+                    const messageEl = document.getElementById('message')
+                    messageEl.classList.remove('hidden')
+                    messageEl.className = 'mt-4 p-4 rounded-xl bg-red-50 text-red-800 border border-red-200'
+                    messageEl.textContent = '등록 신청 중 오류가 발생했습니다.'
+                }
+                return
+            }
+            
+            // 원장님 회원가입인 경우
+            const data = {
+                name: formData.get('name'),
+                email: formData.get('email'),
+                password: formData.get('password'),
+                phone: formData.get('phone'),
+                academy_name: formData.get('academy_name'),
+                academy_location: formData.get('academy_location'),
+                user_type: 'director'
+            }
+
+            try {
+                const response = await fetch('/api/signup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                })
+
+                const result = await response.json()
+                const messageEl = document.getElementById('message')
+                messageEl.classList.remove('hidden')
+
+                if (result.success) {
+                    messageEl.className = 'mt-4 p-4 rounded-xl bg-green-50 text-green-800 border border-green-200'
+                    messageEl.textContent = '회원가입이 완료되었습니다! 로그인 페이지로 이동합니다...'
+                    setTimeout(() => {
+                        window.location.href = '/login'
+                    }, 1500)
+                } else {
+                    messageEl.className = 'mt-4 p-4 rounded-xl bg-red-50 text-red-800 border border-red-200'
+                    messageEl.textContent = result.error || '회원가입 중 오류가 발생했습니다.'
+                }
+            } catch (err) {
+                const messageEl = document.getElementById('message')
+                messageEl.classList.remove('hidden')
+                messageEl.className = 'mt-4 p-4 rounded-xl bg-red-50 text-red-800 border border-red-200'
+                messageEl.textContent = '회원가입 중 오류가 발생했습니다.'
+            }
+        })
+    </script>
+</body>
+</html>
