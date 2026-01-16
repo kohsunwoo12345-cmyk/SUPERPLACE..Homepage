@@ -16412,6 +16412,9 @@ app.get('/admin/users', async (c) => {
                                                 <button onclick="managePermissions(${user.id}, '${userName}')" class="px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-xs font-medium" title="권한 관리">
                                                     ⚙️ 권한
                                                 </button>
+                                                <a href="/admin/users/${user.id}" class="px-3 py-1.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition text-xs font-medium inline-block" title="상세정보">
+                                                    📋 상세
+                                                </a>
                                             </div>
                                         ` : '-'}
                                     </td>
@@ -17139,6 +17142,275 @@ app.get('/admin/deposits', async (c) => {
     </body>
     </html>
   `)
+})
+
+// 사용자 상세 정보 페이지
+app.get('/admin/users/:id', async (c) => {
+  const { env } = c
+  const userId = c.req.param('id')
+  
+  try {
+    // 사용자 기본 정보 조회
+    const user = await env.DB.prepare('SELECT * FROM users WHERE id = ?').bind(userId).first()
+    
+    if (!user) {
+      return c.html('<h1>사용자를 찾을 수 없습니다</h1>', 404)
+    }
+    
+    // 사용자 권한 조회
+    const permissions = await env.DB.prepare(
+      'SELECT program_key, granted_at FROM user_permissions WHERE user_id = ? AND is_active = 1'
+    ).bind(userId).all()
+    
+    // 사용자의 문의 내역 조회
+    const contacts = await env.DB.prepare(
+      'SELECT * FROM contacts WHERE email = ? ORDER BY created_at DESC'
+    ).bind(user.email).all()
+    
+    // 사용자의 입금 신청 내역 조회 (있다면)
+    const deposits = await env.DB.prepare(
+      'SELECT * FROM deposits WHERE user_id = ? ORDER BY created_at DESC'
+    ).bind(userId).all()
+    
+    // 권한을 읽기 쉬운 이름으로 변환
+    const permissionNames = {
+      'search_volume': '네이버 검색량 조회',
+      'parent_message': '학부모 소통 메시지',
+      'blog_writer': '블로그 자동 작성',
+      'landing_builder': '랜딩페이지 생성기',
+      'sms_sender': 'SMS 문자 발송',
+      'student_management': '학생 관리',
+      'dashboard_analytics': '통합 분석 대시보드',
+      'ai_learning_report': 'AI 학습 리포트',
+      'landing_manager': '랜딩페이지 관리',
+      'keyword_analyzer': '키워드 분석기',
+      'review_template': '후기 템플릿',
+      'ad_copy_generator': '광고 문구 생성기',
+      'photo_optimizer': '사진 최적화',
+      'competitor_analysis': '경쟁사 분석',
+      'blog_checklist': '블로그 체크리스트',
+      'content_calendar': '콘텐츠 캘린더',
+      'consultation_script': '상담 스크립트',
+      'place_optimization': '플레이스 최적화',
+      'roi_calculator': 'ROI 계산기'
+    }
+    
+    return c.html(`
+      <!DOCTYPE html>
+      <html lang="ko">
+      <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>${user.name} 상세 정보 - 슈퍼플레이스</title>
+          <script src="https://cdn.tailwindcss.com"></script>
+          <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+          <style>
+              .gradient-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+              .info-card { transition: all 0.3s ease; }
+              .info-card:hover { transform: translateY(-2px); box-shadow: 0 8px 15px -5px rgba(0, 0, 0, 0.1); }
+          </style>
+      </head>
+      <body class="bg-gray-50">
+          <!-- 헤더 -->
+          <nav class="bg-white border-b border-gray-200 sticky top-0 z-50">
+              <div class="max-w-7xl mx-auto px-6 py-4">
+                  <div class="flex justify-between items-center">
+                      <div class="flex items-center gap-8">
+                          <a href="/admin" class="text-2xl font-bold text-purple-600">슈퍼플레이스 관리자</a>
+                          <div class="flex gap-4">
+                              <a href="/admin" class="text-gray-600 hover:text-purple-600">대시보드</a>
+                              <a href="/admin/users" class="text-purple-600 font-medium">사용자</a>
+                              <a href="/admin/contacts" class="text-gray-600 hover:text-purple-600">문의</a>
+                          </div>
+                      </div>
+                      <button onclick="logout()" class="text-gray-600 hover:text-red-600">
+                          <i class="fas fa-sign-out-alt mr-2"></i>로그아웃
+                      </button>
+                  </div>
+              </div>
+          </nav>
+
+          <!-- 메인 컨텐츠 -->
+          <div class="max-w-7xl mx-auto px-6 py-8">
+              <!-- 상단: 뒤로가기 + 사용자 이름 -->
+              <div class="mb-8">
+                  <a href="/admin/users" class="text-purple-600 hover:text-purple-700 font-medium mb-4 inline-flex items-center">
+                      <i class="fas fa-arrow-left mr-2"></i> 사용자 목록으로
+                  </a>
+                  <h1 class="text-3xl font-bold text-gray-900 mt-4 mb-2">${user.name}님의 상세 정보</h1>
+                  <p class="text-gray-600">사용자 ID: ${user.id} | 이메일: ${user.email}</p>
+              </div>
+
+              <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  <!-- 왼쪽: 기본 정보 -->
+                  <div class="lg:col-span-1 space-y-6">
+                      <!-- 기본 정보 카드 -->
+                      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 info-card">
+                          <div class="flex items-center gap-4 mb-6">
+                              <div class="w-16 h-16 gradient-purple rounded-full flex items-center justify-center">
+                                  <i class="fas fa-user text-white text-2xl"></i>
+                              </div>
+                              <div>
+                                  <h2 class="text-xl font-bold text-gray-900">${user.name}</h2>
+                                  <span class="px-3 py-1 text-xs font-medium rounded-full ${user.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-700'}">
+                                      ${user.role === 'admin' ? '관리자' : '일반회원'}
+                                  </span>
+                              </div>
+                          </div>
+
+                          <div class="space-y-4">
+                              <div>
+                                  <div class="text-xs text-gray-500 mb-1">📧 이메일</div>
+                                  <div class="text-sm font-medium text-gray-900">${user.email}</div>
+                              </div>
+                              <div>
+                                  <div class="text-xs text-gray-500 mb-1">📱 전화번호</div>
+                                  <div class="text-sm font-medium text-gray-900">${user.phone || '-'}</div>
+                              </div>
+                              <div>
+                                  <div class="text-xs text-gray-500 mb-1">🏫 학원명</div>
+                                  <div class="text-sm font-medium text-gray-900">${user.academy_name || '-'}</div>
+                              </div>
+                              <div>
+                                  <div class="text-xs text-gray-500 mb-1">💰 포인트</div>
+                                  <div class="text-xl font-bold text-blue-600">${(user.points || 0).toLocaleString()}P</div>
+                              </div>
+                              <div>
+                                  <div class="text-xs text-gray-500 mb-1">📅 가입일</div>
+                                  <div class="text-sm font-medium text-gray-900">${new Date(user.created_at).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })}</div>
+                              </div>
+                          </div>
+                      </div>
+
+                      <!-- 빠른 관리 버튼 -->
+                      ${user.role !== 'admin' ? `
+                      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 info-card">
+                          <h3 class="text-lg font-bold text-gray-900 mb-4">빠른 관리</h3>
+                          <div class="space-y-2">
+                              <button onclick="changePassword(${user.id}, '${user.name}')" class="w-full px-4 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition text-sm font-medium text-left">
+                                  🔑 비밀번호 변경
+                              </button>
+                              <button onclick="givePoints(${user.id}, '${user.name}', ${user.points || 0})" class="w-full px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-sm font-medium text-left">
+                                  💰 포인트 지급
+                              </button>
+                              <button onclick="deductPoints(${user.id}, '${user.name}', ${user.points || 0})" class="w-full px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition text-sm font-medium text-left">
+                                  ❌ 포인트 차감
+                              </button>
+                              <button onclick="loginAs(${user.id}, '${user.name}')" class="w-full px-4 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition text-sm font-medium text-left">
+                                  👤 이 사용자로 로그인
+                              </button>
+                          </div>
+                      </div>
+                      ` : ''}
+                  </div>
+
+                  <!-- 오른쪽: 상세 정보 -->
+                  <div class="lg:col-span-2 space-y-6">
+                      <!-- 활성화된 권한 -->
+                      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 info-card">
+                          <h3 class="text-lg font-bold text-gray-900 mb-4">⚙️ 활성화된 권한</h3>
+                          ${permissions?.results && permissions.results.length > 0 ? `
+                              <div class="grid grid-cols-2 gap-3">
+                                  ${permissions.results.map(perm => `
+                                      <div class="flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                                          <i class="fas fa-check-circle text-blue-600"></i>
+                                          <span class="text-sm font-medium text-blue-900">${permissionNames[perm.program_key] || perm.program_key}</span>
+                                      </div>
+                                  `).join('')}
+                              </div>
+                          ` : '<p class="text-gray-500 text-sm">활성화된 권한이 없습니다</p>'}
+                          <button onclick="window.location.href='/admin/users'" class="mt-4 text-purple-600 hover:text-purple-700 text-sm font-medium">
+                              권한 수정하려면 사용자 목록에서 권한 관리 버튼을 사용하세요 →
+                          </button>
+                      </div>
+
+                      <!-- 문의 내역 -->
+                      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 info-card">
+                          <h3 class="text-lg font-bold text-gray-900 mb-4">📧 문의 내역</h3>
+                          ${contacts?.results && contacts.results.length > 0 ? `
+                              <div class="space-y-3 max-h-96 overflow-y-auto">
+                                  ${contacts.results.map(contact => `
+                                      <div class="p-4 border border-gray-200 rounded-lg hover:border-purple-300 transition">
+                                          <div class="flex justify-between items-start mb-2">
+                                              <div class="font-medium text-gray-900">${contact.message}</div>
+                                              <span class="px-2 py-1 text-xs font-medium rounded ${contact.status === 'pending' ? 'bg-orange-100 text-orange-700' : 'bg-green-100 text-green-700'}">
+                                                  ${contact.status === 'pending' ? '대기중' : '완료'}
+                                              </span>
+                                          </div>
+                                          <div class="text-xs text-gray-500">
+                                              ${new Date(contact.created_at).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })}
+                                          </div>
+                                      </div>
+                                  `).join('')}
+                              </div>
+                          ` : '<p class="text-gray-500 text-sm">문의 내역이 없습니다</p>'}
+                      </div>
+
+                      <!-- 입금 신청 내역 (deposits 테이블이 있다면) -->
+                      ${deposits?.results && deposits.results.length > 0 ? `
+                      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 info-card">
+                          <h3 class="text-lg font-bold text-gray-900 mb-4">💳 입금 신청 내역</h3>
+                          <div class="space-y-3 max-h-96 overflow-y-auto">
+                              ${deposits.results.map(deposit => `
+                                  <div class="p-4 border border-gray-200 rounded-lg hover:border-purple-300 transition">
+                                      <div class="flex justify-between items-start mb-2">
+                                          <div class="font-medium text-gray-900">${(deposit.amount || 0).toLocaleString()}원</div>
+                                          <span class="px-2 py-1 text-xs font-medium rounded ${deposit.status === 'pending' ? 'bg-orange-100 text-orange-700' : deposit.status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">
+                                              ${deposit.status === 'pending' ? '대기중' : deposit.status === 'approved' ? '승인' : '거부'}
+                                          </span>
+                                      </div>
+                                      ${deposit.business_license_url ? `
+                                          <a href="${deposit.business_license_url}" target="_blank" class="text-xs text-purple-600 hover:text-purple-700">
+                                              📄 사업자등록증 보기
+                                          </a>
+                                      ` : ''}
+                                      <div class="text-xs text-gray-500 mt-2">
+                                          ${new Date(deposit.created_at).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })}
+                                      </div>
+                                  </div>
+                              `).join('')}
+                          </div>
+                      </div>
+                      ` : ''}
+
+                      <!-- 추가 정보 (있다면) -->
+                      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 info-card">
+                          <h3 class="text-lg font-bold text-gray-900 mb-4">📊 통계 정보</h3>
+                          <div class="grid grid-cols-3 gap-4">
+                              <div class="text-center p-4 bg-purple-50 rounded-lg">
+                                  <div class="text-2xl font-bold text-purple-600">${permissions?.results?.length || 0}</div>
+                                  <div class="text-xs text-gray-600 mt-1">활성 권한</div>
+                              </div>
+                              <div class="text-center p-4 bg-blue-50 rounded-lg">
+                                  <div class="text-2xl font-bold text-blue-600">${contacts?.results?.length || 0}</div>
+                                  <div class="text-xs text-gray-600 mt-1">총 문의</div>
+                              </div>
+                              <div class="text-center p-4 bg-green-50 rounded-lg">
+                                  <div class="text-2xl font-bold text-green-600">${(user.points || 0).toLocaleString()}</div>
+                                  <div class="text-xs text-gray-600 mt-1">포인트</div>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+          </div>
+
+          <script src="/static/admin-users.js"></script>
+          <script>
+              function logout() {
+                  if (confirm('로그아웃 하시겠습니까?')) {
+                      localStorage.removeItem('user');
+                      window.location.href = '/';
+                  }
+              }
+          </script>
+      </body>
+      </html>
+    `)
+  } catch (error) {
+    console.error('사용자 상세 정보 조회 오류:', error)
+    return c.html('<h1>오류가 발생했습니다</h1>', 500)
+  }
 })
 
 // 문의 관리 페이지
