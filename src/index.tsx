@@ -16566,9 +16566,9 @@ app.get('/admin/users', async (c) => {
                     console.log('🎯 Button clicked:', button.dataset.action);
 
                     const action = button.dataset.action;
-                    const userId = button.dataset.userId;
+                    const userId = parseInt(button.dataset.userId);
                     const userName = button.dataset.userName;
-                    const userPoints = button.dataset.userPoints;
+                    const userPoints = parseInt(button.dataset.userPoints);
 
                     e.preventDefault();
                     e.stopPropagation();
