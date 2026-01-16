@@ -5628,6 +5628,230 @@ app.get('/login', (c) => {
   `)
 })
 
+// 선생님 등록 페이지
+app.get('/teachers/register', (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>선생님 등록 - 슈퍼플레이스</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+        <style>
+            .gradient-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        </style>
+    </head>
+    <body class="bg-gradient-to-br from-purple-50 to-blue-50 min-h-screen flex items-center justify-center p-4">
+        <div class="max-w-md w-full">
+            <!-- 로고 -->
+            <div class="text-center mb-8">
+                <div class="inline-flex items-center justify-center w-16 h-16 gradient-purple rounded-2xl mb-4">
+                    <i class="fas fa-chalkboard-teacher text-3xl text-white"></i>
+                </div>
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">선생님 등록</h1>
+                <p class="text-gray-600">학원 인증 코드로 선생님 계정을 등록하세요</p>
+            </div>
+
+            <!-- 등록 폼 -->
+            <div class="bg-white rounded-2xl shadow-xl p-8">
+                <form id="registerForm" onsubmit="handleRegister(event)">
+                    <div class="space-y-4">
+                        <!-- 학원 인증 코드 -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-key text-purple-600 mr-2"></i>학원 인증 코드 *
+                            </label>
+                            <input 
+                                type="text" 
+                                name="verificationCode" 
+                                required 
+                                maxlength="6"
+                                placeholder="6자리 코드"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent uppercase"
+                            >
+                            <p class="text-xs text-gray-500 mt-1">
+                                원장님으로부터 받은 6자리 인증 코드를 입력하세요
+                            </p>
+                        </div>
+
+                        <!-- 학원명 -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-school text-purple-600 mr-2"></i>학원명 *
+                            </label>
+                            <input 
+                                type="text" 
+                                name="academyName" 
+                                required 
+                                placeholder="예: 꾸메땅학원 분당점"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            >
+                            <p class="text-xs text-gray-500 mt-1">
+                                인증 코드와 일치하는 학원명을 정확히 입력하세요
+                            </p>
+                        </div>
+
+                        <!-- 이름 -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-user text-purple-600 mr-2"></i>이름 *
+                            </label>
+                            <input 
+                                type="text" 
+                                name="name" 
+                                required 
+                                placeholder="홍길동"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            >
+                        </div>
+
+                        <!-- 이메일 -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-envelope text-purple-600 mr-2"></i>이메일 *
+                            </label>
+                            <input 
+                                type="email" 
+                                name="email" 
+                                required 
+                                placeholder="teacher@example.com"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            >
+                        </div>
+
+                        <!-- 비밀번호 -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-lock text-purple-600 mr-2"></i>비밀번호 *
+                            </label>
+                            <input 
+                                type="password" 
+                                name="password" 
+                                required 
+                                minlength="6"
+                                placeholder="최소 6자 이상"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            >
+                        </div>
+
+                        <!-- 비밀번호 확인 -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-lock text-purple-600 mr-2"></i>비밀번호 확인 *
+                            </label>
+                            <input 
+                                type="password" 
+                                name="confirmPassword" 
+                                required 
+                                minlength="6"
+                                placeholder="비밀번호를 다시 입력하세요"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            >
+                        </div>
+
+                        <!-- 전화번호 -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-phone text-purple-600 mr-2"></i>전화번호
+                            </label>
+                            <input 
+                                type="tel" 
+                                name="phone" 
+                                placeholder="010-1234-5678"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            >
+                        </div>
+                    </div>
+
+                    <!-- 안내 메시지 -->
+                    <div class="mt-6 p-4 bg-purple-50 border border-purple-200 rounded-lg">
+                        <p class="text-sm text-purple-800">
+                            <i class="fas fa-info-circle mr-2"></i>
+                            <strong>등록 절차:</strong> 신청 후 원장님의 승인을 받으면 계정이 활성화됩니다.
+                        </p>
+                    </div>
+
+                    <!-- 버튼 -->
+                    <button 
+                        type="submit" 
+                        class="w-full mt-6 gradient-purple text-white py-3 rounded-lg font-medium hover:opacity-90 transition"
+                    >
+                        <i class="fas fa-user-plus mr-2"></i>등록 신청
+                    </button>
+                </form>
+
+                <!-- 로그인 링크 -->
+                <div class="mt-6 text-center">
+                    <p class="text-gray-600">
+                        이미 계정이 있으신가요? 
+                        <a href="/login" class="text-purple-600 hover:text-purple-700 font-medium">로그인</a>
+                    </p>
+                    <p class="text-gray-600 mt-2">
+                        <a href="/" class="text-gray-500 hover:text-gray-700">
+                            <i class="fas fa-home mr-1"></i>홈으로 돌아가기
+                        </a>
+                    </p>
+                </div>
+            </div>
+
+            <!-- 도움말 -->
+            <div class="mt-8 text-center">
+                <p class="text-sm text-gray-600">
+                    <i class="fas fa-question-circle mr-2"></i>
+                    인증 코드가 없으신가요? 소속 학원 원장님께 문의하세요.
+                </p>
+            </div>
+        </div>
+
+        <script>
+            async function handleRegister(event) {
+                event.preventDefault();
+                
+                const form = event.target;
+                const formData = {
+                    verificationCode: form.verificationCode.value.toUpperCase().trim(),
+                    academyName: form.academyName.value.trim(),
+                    name: form.name.value.trim(),
+                    email: form.email.value.trim(),
+                    password: form.password.value,
+                    phone: form.phone.value.trim()
+                };
+                
+                // 비밀번호 확인
+                if (formData.password !== form.confirmPassword.value) {
+                    alert('비밀번호가 일치하지 않습니다.');
+                    return;
+                }
+                
+                try {
+                    const response = await fetch('/api/teachers/apply', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(formData)
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        alert(data.message);
+                        // 로그인 페이지로 이동
+                        window.location.href = '/login';
+                    } else {
+                        alert('오류: ' + data.error);
+                    }
+                } catch (error) {
+                    console.error('Register error:', error);
+                    alert('등록 신청 중 오류가 발생했습니다.');
+                }
+            }
+        </script>
+    </body>
+    </html>
+  `)
+})
+
 // 회원가입 페이지
 app.get('/signup', (c) => {
   return c.html(`
@@ -16784,6 +17008,301 @@ app.get('/my-deposits', (c) => {
 // 선생님 관리 API
 // ============================================
 
+// 선생님: 등록 신청 (회원가입)
+app.post('/api/teachers/apply', async (c) => {
+  try {
+    const { email, password, name, phone, academyName, verificationCode } = await c.req.json()
+    
+    // 필수 필드 확인
+    if (!email || !password || !name || !academyName || !verificationCode) {
+      return c.json({ success: false, error: '필수 정보를 모두 입력해주세요.' }, 400)
+    }
+    
+    // 이메일 중복 확인
+    const existing = await c.env.DB.prepare(
+      'SELECT id FROM users WHERE email = ?'
+    ).bind(email).first()
+    
+    if (existing) {
+      return c.json({ success: false, error: '이미 사용 중인 이메일입니다.' }, 400)
+    }
+    
+    // 등록 신청 중복 확인
+    const existingApplication = await c.env.DB.prepare(
+      'SELECT id FROM teacher_applications WHERE email = ? AND status = "pending"'
+    ).bind(email).first()
+    
+    if (existingApplication) {
+      return c.json({ success: false, error: '이미 등록 신청이 진행 중입니다.' }, 400)
+    }
+    
+    // 인증 코드 확인
+    const codeInfo = await c.env.DB.prepare(`
+      SELECT avc.*, u.id as director_id, u.email as director_email, u.name as director_name
+      FROM academy_verification_codes avc
+      JOIN users u ON avc.user_id = u.id
+      WHERE avc.verification_code = ? AND avc.is_active = 1
+    `).bind(verificationCode.toUpperCase()).first()
+    
+    if (!codeInfo) {
+      return c.json({ success: false, error: '유효하지 않은 인증 코드입니다.' }, 400)
+    }
+    
+    // 학원명 확인 (대소문자 구분 없이)
+    if (codeInfo.academy_name.toLowerCase() !== academyName.toLowerCase()) {
+      return c.json({ 
+        success: false, 
+        error: `인증 코드는 "${codeInfo.academy_name}" 학원용입니다. 입력하신 학원명을 확인해주세요.` 
+      }, 400)
+    }
+    
+    // 등록 신청 저장
+    const result = await c.env.DB.prepare(`
+      INSERT INTO teacher_applications (
+        email, password, name, phone, academy_name, 
+        director_email, verification_code, status, applied_at
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', datetime('now'))
+    `).bind(
+      email, 
+      password, 
+      name, 
+      phone || null, 
+      codeInfo.academy_name,
+      codeInfo.director_email,
+      verificationCode.toUpperCase()
+    ).run()
+    
+    return c.json({ 
+      success: true, 
+      applicationId: result.meta.last_row_id,
+      message: `등록 신청이 완료되었습니다. ${codeInfo.director_name} 원장님의 승인을 기다려주세요.`,
+      directorName: codeInfo.director_name
+    })
+  } catch (error) {
+    console.error('Teacher application error:', error)
+    return c.json({ success: false, error: '등록 신청 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
+// 원장님: 선생님 등록 신청 목록 조회
+app.get('/api/teachers/applications', async (c) => {
+  try {
+    const directorId = c.req.query('directorId')
+    const status = c.req.query('status') || 'pending'
+    
+    if (!directorId) {
+      return c.json({ success: false, error: '원장님 ID가 필요합니다.' }, 400)
+    }
+    
+    // 원장님의 인증 코드로 신청한 목록 조회
+    const applications = await c.env.DB.prepare(`
+      SELECT ta.*, avc.academy_name
+      FROM teacher_applications ta
+      JOIN academy_verification_codes avc ON ta.verification_code = avc.verification_code
+      WHERE avc.user_id = ? AND ta.status = ?
+      ORDER BY ta.applied_at DESC
+    `).bind(directorId, status).all()
+    
+    return c.json({ success: true, applications: applications.results || [] })
+  } catch (error) {
+    console.error('Get applications error:', error)
+    return c.json({ success: false, error: '신청 목록 조회 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
+// 원장님: 선생님 등록 신청 승인
+app.post('/api/teachers/applications/:id/approve', async (c) => {
+  try {
+    const applicationId = c.req.param('id')
+    const { directorId } = await c.req.json()
+    
+    if (!directorId) {
+      return c.json({ success: false, error: '원장님 ID가 필요합니다.' }, 400)
+    }
+    
+    // 신청 정보 조회
+    const application = await c.env.DB.prepare(
+      'SELECT * FROM teacher_applications WHERE id = ? AND status = "pending"'
+    ).bind(applicationId).first()
+    
+    if (!application) {
+      return c.json({ success: false, error: '신청을 찾을 수 없거나 이미 처리되었습니다.' }, 404)
+    }
+    
+    // 원장님 정보 확인
+    const director = await c.env.DB.prepare(
+      'SELECT id, academy_name FROM users WHERE id = ?'
+    ).bind(directorId).first()
+    
+    if (!director) {
+      return c.json({ success: false, error: '원장님 정보를 찾을 수 없습니다.' }, 404)
+    }
+    
+    // 선생님 계정 생성
+    const userResult = await c.env.DB.prepare(`
+      INSERT INTO users (
+        email, password, name, phone, role, user_type, 
+        parent_user_id, academy_name, created_at
+      )
+      VALUES (?, ?, ?, ?, 'user', 'teacher', ?, ?, datetime('now'))
+    `).bind(
+      application.email,
+      application.password,
+      application.name,
+      application.phone,
+      directorId,
+      director.academy_name
+    ).run()
+    
+    // 신청 상태 업데이트
+    await c.env.DB.prepare(`
+      UPDATE teacher_applications 
+      SET status = 'approved', processed_at = datetime('now'), processed_by = ?
+      WHERE id = ?
+    `).bind(directorId, applicationId).run()
+    
+    return c.json({ 
+      success: true, 
+      teacherId: userResult.meta.last_row_id,
+      message: `${application.name} 선생님의 등록이 승인되었습니다.`
+    })
+  } catch (error) {
+    console.error('Approve application error:', error)
+    return c.json({ success: false, error: '승인 처리 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
+// 원장님: 선생님 등록 신청 거부
+app.post('/api/teachers/applications/:id/reject', async (c) => {
+  try {
+    const applicationId = c.req.param('id')
+    const { directorId, reason } = await c.req.json()
+    
+    if (!directorId) {
+      return c.json({ success: false, error: '원장님 ID가 필요합니다.' }, 400)
+    }
+    
+    // 신청 정보 조회
+    const application = await c.env.DB.prepare(
+      'SELECT * FROM teacher_applications WHERE id = ? AND status = "pending"'
+    ).bind(applicationId).first()
+    
+    if (!application) {
+      return c.json({ success: false, error: '신청을 찾을 수 없거나 이미 처리되었습니다.' }, 404)
+    }
+    
+    // 신청 상태 업데이트
+    await c.env.DB.prepare(`
+      UPDATE teacher_applications 
+      SET status = 'rejected', processed_at = datetime('now'), 
+          processed_by = ?, reject_reason = ?
+      WHERE id = ?
+    `).bind(directorId, reason || '원장님에 의해 거부됨', applicationId).run()
+    
+    return c.json({ 
+      success: true, 
+      message: `${application.name} 선생님의 등록 신청이 거부되었습니다.`
+    })
+  } catch (error) {
+    console.error('Reject application error:', error)
+    return c.json({ success: false, error: '거부 처리 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
+// 원장님: 인증 코드 생성/조회
+app.get('/api/teachers/verification-code', async (c) => {
+  try {
+    const directorId = c.req.query('directorId')
+    
+    if (!directorId) {
+      return c.json({ success: false, error: '원장님 ID가 필요합니다.' }, 400)
+    }
+    
+    // 기존 활성 코드 조회
+    let code = await c.env.DB.prepare(
+      'SELECT * FROM academy_verification_codes WHERE user_id = ? AND is_active = 1'
+    ).bind(directorId).first()
+    
+    // 코드가 없으면 새로 생성
+    if (!code) {
+      const director = await c.env.DB.prepare(
+        'SELECT academy_name FROM users WHERE id = ?'
+      ).bind(directorId).first()
+      
+      if (!director) {
+        return c.json({ success: false, error: '원장님 정보를 찾을 수 없습니다.' }, 404)
+      }
+      
+      // 6자리 랜덤 코드 생성
+      const newCode = Math.random().toString(36).substring(2, 8).toUpperCase()
+      
+      const result = await c.env.DB.prepare(`
+        INSERT INTO academy_verification_codes (user_id, academy_name, verification_code, is_active)
+        VALUES (?, ?, ?, 1)
+      `).bind(directorId, director.academy_name, newCode).run()
+      
+      code = {
+        id: result.meta.last_row_id,
+        user_id: directorId,
+        academy_name: director.academy_name,
+        verification_code: newCode,
+        is_active: 1
+      }
+    }
+    
+    return c.json({ success: true, code })
+  } catch (error) {
+    console.error('Get verification code error:', error)
+    return c.json({ success: false, error: '인증 코드 조회 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
+// 원장님: 인증 코드 재생성
+app.post('/api/teachers/verification-code/regenerate', async (c) => {
+  try {
+    const { directorId } = await c.req.json()
+    
+    if (!directorId) {
+      return c.json({ success: false, error: '원장님 ID가 필요합니다.' }, 400)
+    }
+    
+    const director = await c.env.DB.prepare(
+      'SELECT academy_name FROM users WHERE id = ?'
+    ).bind(directorId).first()
+    
+    if (!director) {
+      return c.json({ success: false, error: '원장님 정보를 찾을 수 없습니다.' }, 404)
+    }
+    
+    // 기존 코드 비활성화
+    await c.env.DB.prepare(
+      'UPDATE academy_verification_codes SET is_active = 0 WHERE user_id = ?'
+    ).bind(directorId).run()
+    
+    // 새 코드 생성
+    const newCode = Math.random().toString(36).substring(2, 8).toUpperCase()
+    
+    const result = await c.env.DB.prepare(`
+      INSERT INTO academy_verification_codes (user_id, academy_name, verification_code, is_active)
+      VALUES (?, ?, ?, 1)
+    `).bind(directorId, director.academy_name, newCode).run()
+    
+    return c.json({ 
+      success: true, 
+      code: {
+        id: result.meta.last_row_id,
+        verification_code: newCode,
+        academy_name: director.academy_name
+      },
+      message: '새로운 인증 코드가 생성되었습니다.'
+    })
+  } catch (error) {
+    console.error('Regenerate code error:', error)
+    return c.json({ success: false, error: '인증 코드 재생성 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
 // 원장님: 선생님 계정 생성
 app.post('/api/teachers/create', async (c) => {
   try {
@@ -21516,7 +22035,22 @@ app.get('/students', (c) => {
         <!-- 메인 컨텐츠 -->
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <!-- 대시보드 카드 그리드 -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                <!-- 선생님 관리 (원장님 전용) -->
+                <a id="teacherManagementCard" href="/teachers/manage" class="hidden block bg-white rounded-xl shadow-lg hover:shadow-xl transition transform hover:-translate-y-1">
+                    <div class="bg-gradient-to-br from-purple-500 to-indigo-600 text-white p-6 rounded-t-xl">
+                        <i class="fas fa-chalkboard-teacher text-4xl mb-3"></i>
+                        <h3 class="text-xl font-bold">선생님 관리</h3>
+                    </div>
+                    <div class="p-6">
+                        <p class="text-gray-600 mb-4">선생님 등록, 반 배정, 승인 관리</p>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-gray-500">등록 <span id="totalTeachers" class="font-bold text-purple-600">0</span>명</span>
+                            <i class="fas fa-arrow-right text-purple-600"></i>
+                        </div>
+                    </div>
+                </a>
+
                 <!-- 반 관리 -->
                 <a href="/students/classes" class="block bg-white rounded-xl shadow-lg hover:shadow-xl transition transform hover:-translate-y-1">
                     <div class="gradient-purple text-white p-6 rounded-t-xl">
@@ -21589,9 +22123,29 @@ app.get('/students', (c) => {
 
         <script>
             const academyId = 1; // 현재 학원 ID
+            
+            // 로그인 사용자 정보 확인
+            const userStr = localStorage.getItem('user');
+            let currentUser = null;
+            if (userStr) {
+                currentUser = JSON.parse(userStr);
+                // 원장님인 경우에만 선생님 관리 카드 표시
+                if (currentUser.user_type !== 'teacher') {
+                    document.getElementById('teacherManagementCard').classList.remove('hidden');
+                }
+            }
 
             async function loadDashboard() {
                 try {
+                    // 선생님 수 (원장님만)
+                    if (currentUser && currentUser.user_type !== 'teacher') {
+                        const teachersRes = await fetch('/api/teachers/list?directorId=' + currentUser.id);
+                        const teachersData = await teachersRes.json();
+                        if (teachersData.success) {
+                            document.getElementById('totalTeachers').textContent = teachersData.teachers.length;
+                        }
+                    }
+                
                     // 반 개수
                     const classesRes = await fetch('/api/classes?academyId=' + academyId);
                     const classesData = await classesRes.json();
