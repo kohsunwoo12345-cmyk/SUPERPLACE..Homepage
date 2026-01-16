@@ -16285,6 +16285,8 @@ app.get('/admin/users', async (c) => {
         </div>
 
         <script>
+            console.log('🚀 Admin Users Page - Script Start');
+            
             let currentUserId = null;
 
             // 시스템 기능 권한 (DB의 program_key와 일치)
@@ -16556,6 +16558,23 @@ app.get('/admin/users', async (c) => {
             window.logout = logout;
 
             console.log('✅ Admin functions loaded and ready');
+            console.log('✅ changePassword:', typeof window.changePassword);
+            console.log('✅ givePoints:', typeof window.givePoints);
+            console.log('✅ deductPoints:', typeof window.deductPoints);
+            console.log('✅ loginAs:', typeof window.loginAs);
+            console.log('✅ managePermissions:', typeof window.managePermissions);
+            
+            // 테스트 함수 호출 가능 여부 확인
+            window.testAdminFunctions = function() {
+                console.log('🧪 Testing admin functions...');
+                console.log('changePassword:', typeof changePassword);
+                console.log('givePoints:', typeof givePoints);
+                console.log('deductPoints:', typeof deductPoints);
+                console.log('loginAs:', typeof loginAs);
+                console.log('managePermissions:', typeof managePermissions);
+                alert('Admin functions are loaded! Check console for details.');
+            };
+            console.log('💡 You can test by running: testAdminFunctions()');
         </script>
     </body>
     </html>
