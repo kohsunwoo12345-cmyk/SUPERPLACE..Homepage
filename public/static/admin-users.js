@@ -203,58 +203,99 @@ async function savePermissions() {
     const checkboxes = document.querySelectorAll('#systemPermissions input[type="checkbox"]');
     const adminUser = JSON.parse(localStorage.getItem('user') || '{}');
     
+    console.log('🔄 권한 저장 시작...', {
+        userId: currentUserId,
+        adminId: adminUser.id,
+        totalCheckboxes: checkboxes.length
+    });
+    
+    if (!currentUserId) {
+        alert('❌ 오류: 사용자 ID가 없습니다.');
+        return;
+    }
+    
+    if (!adminUser.id) {
+        alert('❌ 오류: 관리자 정보가 없습니다. 다시 로그인해주세요.');
+        return;
+    }
+    
     let successCount = 0;
     let errorCount = 0;
+    let errorMessages = [];
     
     for (const checkbox of checkboxes) {
         const programKey = checkbox.dataset.programKey;
         
+        if (!programKey) {
+            console.warn('⚠️ programKey가 없는 체크박스 발견');
+            continue;
+        }
+        
         try {
             if (checkbox.checked) {
                 // 권한 부여
+                console.log('✅ 권한 부여:', programKey);
                 const response = await fetch('/api/admin/grant-permission', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        userId: currentUserId,
+                        userId: parseInt(currentUserId),
                         programKey: programKey,
-                        grantedBy: adminUser.id || 1
+                        grantedBy: parseInt(adminUser.id),
+                        adminId: parseInt(adminUser.id)
                     })
                 });
                 const result = await response.json();
+                console.log('응답:', result);
                 if (result.success) {
                     successCount++;
                 } else {
                     errorCount++;
+                    errorMessages.push(programKey + ': ' + (result.error || '알 수 없는 오류'));
                 }
             } else {
                 // 권한 회수
+                console.log('❌ 권한 회수:', programKey);
                 const response = await fetch('/api/admin/revoke-permission', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        userId: currentUserId,
+                        userId: parseInt(currentUserId),
                         programKey: programKey,
-                        adminId: adminUser.id || 1
+                        adminId: parseInt(adminUser.id)
                     })
                 });
                 const result = await response.json();
+                console.log('응답:', result);
                 if (result.success) {
                     successCount++;
                 } else {
                     errorCount++;
+                    errorMessages.push(programKey + ': ' + (result.error || '알 수 없는 오류'));
                 }
             }
         } catch (err) {
             console.error('권한 처리 오류:', err);
             errorCount++;
+            errorMessages.push(programKey + ': ' + err.message);
         }
     }
 
+    console.log('✅ 처리 완료:', { successCount, errorCount });
+    
     if (errorCount === 0) {
-        alert('✅ 권한이 성공적으로 업데이트되었습니다!');
+        alert('✅ 권한이 성공적으로 업데이트되었습니다!\n처리된 항목: ' + successCount + '개');
     } else {
-        alert('⚠️ 권한 업데이트 완료\n성공: ' + successCount + '개\n실패: ' + errorCount + '개');
+        let message = '⚠️ 권한 업데이트 완료\n';
+        message += '성공: ' + successCount + '개\n';
+        message += '실패: ' + errorCount + '개\n\n';
+        if (errorMessages.length > 0) {
+            message += '오류 상세:\n' + errorMessages.slice(0, 5).join('\n');
+            if (errorMessages.length > 5) {
+                message += '\n... 외 ' + (errorMessages.length - 5) + '개';
+            }
+        }
+        alert(message);
     }
     closeModal();
     location.reload();
