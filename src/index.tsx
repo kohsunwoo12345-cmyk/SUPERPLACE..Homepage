@@ -17334,14 +17334,9 @@ app.post('/api/teachers/apply', async (c) => {
       return c.json({ success: false, error: '유효하지 않은 인증 코드입니다.' }, 400)
     }
     
-    // 학원명 확인 (대소문자 구분 없이)
+    // 학원명은 원장님의 academy_name 사용 (입력값 무시)
+    // 인증 코드로 이미 학원이 검증되었으므로 학원명 불일치 체크 불필요
     const directorAcademyName = codeInfo.academy_name || academyName
-    if (directorAcademyName && directorAcademyName.toLowerCase() !== academyName.toLowerCase()) {
-      return c.json({ 
-        success: false, 
-        error: `인증 코드는 "${directorAcademyName}" 학원용입니다. 입력하신 학원명을 확인해주세요.` 
-      }, 400)
-    }
     
     // 이메일 중복 확인 - 기존 사용자 처리
     const existingUser = await c.env.DB.prepare(

@@ -14956,7 +14956,7 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
       FROM academy_verification_codes avc
       JOIN users u ON avc.user_id = u.id
       WHERE avc.code = ? AND avc.is_active = 1
-    `).bind(l.toUpperCase()).first();if(!o)return e.json({success:!1,error:"유효하지 않은 인증 코드입니다."},400);const i=o.academy_name||n;if(i&&i.toLowerCase()!==n.toLowerCase())return e.json({success:!1,error:`인증 코드는 "${i}" 학원용입니다. 입력하신 학원명을 확인해주세요.`},400);const c=await e.env.DB.prepare("SELECT id, email, name, user_type FROM users WHERE email = ?").bind(t).first();if(c){if(console.log("[TeacherApply] Existing user found, creating connection request:",c),await e.env.DB.prepare('SELECT id FROM teacher_applications WHERE email = ? AND director_email = ? AND status = "pending"').bind(t,o.director_email).first())return e.json({success:!1,error:"이미 이 학원에 등록 신청이 진행 중입니다."},400);const x=await e.env.DB.prepare(`
+    `).bind(l.toUpperCase()).first();if(!o)return e.json({success:!1,error:"유효하지 않은 인증 코드입니다."},400);const i=o.academy_name||n,c=await e.env.DB.prepare("SELECT id, email, name, user_type FROM users WHERE email = ?").bind(t).first();if(c){if(console.log("[TeacherApply] Existing user found, creating connection request:",c),await e.env.DB.prepare('SELECT id FROM teacher_applications WHERE email = ? AND director_email = ? AND status = "pending"').bind(t,o.director_email).first())return e.json({success:!1,error:"이미 이 학원에 등록 신청이 진행 중입니다."},400);const x=await e.env.DB.prepare(`
         INSERT INTO teacher_applications (
           email, password, name, phone, academy_name, 
           director_email, verification_code, status, applied_at
