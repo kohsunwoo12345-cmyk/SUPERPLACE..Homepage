@@ -11545,7 +11545,7 @@ app.post('/api/students', async (c) => {
   }
 })
 
-// DELETE /api/students/:id - 학생 삭제 (Batch delete with transaction)
+// DELETE /api/students/:id - 학생 삭제 (Foreign key safe deletion)
 app.delete('/api/students/:id', async (c) => {
   try {
     const studentId = c.req.param('id')
@@ -11556,17 +11556,22 @@ app.delete('/api/students/:id', async (c) => {
     
     console.log('[DeleteStudent] Starting deletion for student ID:', studentId)
     
-    // D1 batch를 사용하여 순서대로 삭제
+    // D1 batch를 사용하여 안전하게 삭제
     const statements = [
-      // 1. daily_records 삭제
+      // 1. 학생의 class_id를 NULL로 설정 (외래키 해제)
+      c.env.DB.prepare('UPDATE students SET class_id = NULL WHERE id = ?').bind(studentId),
+      // 2. daily_records 삭제
       c.env.DB.prepare('DELETE FROM daily_records WHERE student_id = ?').bind(studentId),
-      // 2. 학생 삭제
+      // 3. 학생 삭제
       c.env.DB.prepare('DELETE FROM students WHERE id = ?').bind(studentId)
     ]
     
     const results = await c.env.DB.batch(statements)
     
-    console.log('[DeleteStudent] Batch delete results:', results.map(r => r.meta))
+    console.log('[DeleteStudent] Batch delete results:', results.map(r => ({
+      success: r.success,
+      changes: r.meta?.changes
+    })))
     
     return c.json({ 
       success: true, 
