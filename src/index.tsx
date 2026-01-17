@@ -11545,7 +11545,7 @@ app.post('/api/students', async (c) => {
   }
 })
 
-// DELETE /api/students/:id - 학생 삭제 (PRAGMA로 외래 키 제약 우회)
+// DELETE /api/students/:id - 학생 삭제 (Soft Delete)
 app.delete('/api/students/:id', async (c) => {
   try {
     const studentId = c.req.param('id')
@@ -11554,57 +11554,21 @@ app.delete('/api/students/:id', async (c) => {
       return c.json({ success: false, error: '학생 ID가 필요합니다.' }, 400)
     }
     
-    console.log('[DeleteStudent] Starting deletion for student ID:', studentId)
+    console.log('[DeleteStudent] Starting soft deletion for student ID:', studentId)
     
-    // PRAGMA foreign_keys = OFF로 외래 키 제약 임시 비활성화
-    await c.env.DB.prepare(`PRAGMA foreign_keys = OFF`).run()
+    // Soft Delete: status를 'deleted'로 변경
+    const result = await c.env.DB.prepare(`
+      UPDATE students 
+      SET status = 'deleted'
+      WHERE id = ?
+    `).bind(studentId).run()
     
-    try {
-      // 1. daily_records 삭제
-      try {
-        const result1 = await c.env.DB.prepare(`
-          DELETE FROM daily_records WHERE student_id = ?
-        `).bind(studentId).run()
-        console.log('[DeleteStudent] Deleted daily_records:', result1.meta?.changes || 0)
-      } catch (e) {
-        console.log('[DeleteStudent] daily_records error:', e.message)
-      }
-      
-      // 2. learning_reports 삭제
-      try {
-        const result2 = await c.env.DB.prepare(`
-          DELETE FROM learning_reports WHERE student_id = ?
-        `).bind(studentId).run()
-        console.log('[DeleteStudent] Deleted learning_reports:', result2.meta?.changes || 0)
-      } catch (e) {
-        console.log('[DeleteStudent] learning_reports error:', e.message)
-      }
-      
-      // 3. student_courses 삭제
-      try {
-        const result3 = await c.env.DB.prepare(`
-          DELETE FROM student_courses WHERE student_id = ?
-        `).bind(studentId).run()
-        console.log('[DeleteStudent] Deleted student_courses:', result3.meta?.changes || 0)
-      } catch (e) {
-        console.log('[DeleteStudent] student_courses error:', e.message)
-      }
-      
-      // 4. 학생 삭제
-      const finalResult = await c.env.DB.prepare(`
-        DELETE FROM students WHERE id = ?
-      `).bind(studentId).run()
-      
-      console.log('[DeleteStudent] Deleted student:', finalResult.meta?.changes || 0)
-      
-      return c.json({ 
-        success: true, 
-        message: '학생이 삭제되었습니다.' 
-      })
-    } finally {
-      // PRAGMA foreign_keys = ON으로 외래 키 제약 재활성화
-      await c.env.DB.prepare(`PRAGMA foreign_keys = ON`).run()
-    }
+    console.log('[DeleteStudent] Soft deleted student:', result.meta?.changes || 0)
+    
+    return c.json({ 
+      success: true, 
+      message: '학생이 삭제되었습니다.' 
+    })
   } catch (error) {
     console.error('[DeleteStudent] Error:', error)
     return c.json({ 
