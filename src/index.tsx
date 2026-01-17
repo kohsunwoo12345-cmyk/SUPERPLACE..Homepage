@@ -96,9 +96,50 @@ app.post('/api/signup', async (c) => {
   }
 })
 
+// DB Health Check API
+app.get('/api/health', async (c) => {
+  try {
+    // DB 바인딩 확인
+    if (!c.env.DB) {
+      return c.json({ 
+        success: false, 
+        error: 'DB binding not found',
+        env_keys: Object.keys(c.env)
+      }, 500)
+    }
+
+    // 간단한 쿼리 테스트
+    const result = await c.env.DB.prepare('SELECT 1 as test').first()
+    
+    return c.json({ 
+      success: true, 
+      message: 'DB connection is healthy',
+      test_result: result
+    })
+  } catch (err) {
+    return c.json({ 
+      success: false, 
+      error: err.message,
+      stack: err.stack
+    }, 500)
+  }
+})
+
 // 로그인 API
 app.post('/api/login', async (c) => {
   try {
+    // DB 바인딩 확인
+    if (!c.env.DB) {
+      return c.json({ 
+        success: false, 
+        error: 'DB binding not configured. Please check Cloudflare Pages settings.',
+        debug: {
+          env_keys: Object.keys(c.env),
+          has_db: !!c.env.DB
+        }
+      }, 500)
+    }
+
     const { email, password } = await c.req.json()
     
     if (!email || !password) {
@@ -121,7 +162,20 @@ app.post('/api/login', async (c) => {
     })
   } catch (err) {
     console.error('Login error:', err)
-    return c.json({ success: false, error: '로그인 중 오류가 발생했습니다.' }, 500)
+    console.error('Login error details:', {
+      message: err.message,
+      stack: err.stack,
+      name: err.name
+    })
+    return c.json({ 
+      success: false, 
+      error: '로그인 중 오류가 발생했습니다.',
+      debug: {
+        error_message: err.message,
+        error_name: err.name,
+        has_db: !!c.env.DB
+      }
+    }, 500)
   }
 })
 
