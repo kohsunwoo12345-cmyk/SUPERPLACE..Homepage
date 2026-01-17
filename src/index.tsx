@@ -3158,11 +3158,30 @@ app.get('/api/landing/stats/summary', async (c) => {
 app.delete('/api/landing/:id', async (c) => {
   try {
     const id = c.req.param('id')
-    const user = JSON.parse(c.req.header('X-User-Data') || '{"id":1}')
-    await c.env.DB.prepare('DELETE FROM landing_pages WHERE id = ? AND user_id = ?').bind(id, user.id).run()
+    const userId = c.req.query('userId')
+    const userHeader = c.req.header('X-User-Data')
+    
+    let user
+    if (userId) {
+      user = { id: parseInt(userId) }
+    } else if (userHeader) {
+      user = JSON.parse(userHeader)
+    } else {
+      return c.json({ success: false, error: '사용자 인증 정보가 없습니다.' }, 401)
+    }
+    
+    console.log('Deleting landing page:', { id, userId: user.id })
+    const result = await c.env.DB.prepare('DELETE FROM landing_pages WHERE id = ? AND user_id = ?').bind(id, user.id).run()
+    console.log('Delete result:', result)
+    
+    if (result.meta.changes === 0) {
+      return c.json({ success: false, error: '삭제할 페이지를 찾을 수 없거나 권한이 없습니다.' }, 404)
+    }
+    
     return c.json({ success: true, message: '삭제되었습니다.' })
-  } catch (err) {
-    return c.json({ success: false, error: '삭제 실패' }, 500)
+  } catch (err: any) {
+    console.error('Landing page delete error:', err)
+    return c.json({ success: false, error: err.message || '삭제 실패' }, 500)
   }
 })
 
@@ -10788,9 +10807,12 @@ app.get('/tools/landing-manager', (c) => {
             if (!confirm('정말 삭제하시겠습니까?')) return;
             
             try {
-                const response = await fetch('/api/landing/' + id, {
+                const response = await fetch('/api/landing/' + id + '?userId=' + user.id, {
                     method: 'DELETE',
-                    headers: { 'X-User-Data': JSON.stringify(user) }
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'X-User-Data': JSON.stringify(user) 
+                    }
                 });
                 const result = await response.json();
                 if (result.success) {
@@ -10798,10 +10820,11 @@ app.get('/tools/landing-manager', (c) => {
                     loadFolders();
                     loadPages();
                 } else {
-                    alert('삭제 실패: ' + result.error);
+                    alert('삭제 실패: ' + (result.error || '알 수 없는 오류'));
                 }
             } catch (err) {
-                alert('오류가 발생했습니다.');
+                console.error('Delete error:', err);
+                alert('오류가 발생했습니다: ' + err.message);
             }
         }
         </script>
