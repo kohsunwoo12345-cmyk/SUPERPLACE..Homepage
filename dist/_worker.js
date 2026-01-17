@@ -14978,13 +14978,13 @@ ${t?t.split(",").map(l=>l.trim()).join(", "):e}과 관련해서 체계적인 커
       SET status = 'rejected', processed_at = datetime('now'), 
           processed_by = ?, reject_reason = ?
       WHERE id = ?
-    `).bind(s,r||"원장님에 의해 거부됨",t).run(),e.json({success:!0,message:`${a.name} 선생님의 등록 신청이 거부되었습니다.`})):e.json({success:!1,error:"신청을 찾을 수 없거나 이미 처리되었습니다."},404)}catch(t){return console.error("Reject application error:",t),e.json({success:!1,error:"거부 처리 중 오류가 발생했습니다."},500)}});d.get("/api/teachers/verification-code",async e=>{try{const t=e.req.query("directorId");if(!t)return e.json({success:!1,error:"원장님 ID가 필요합니다."},400);let s=await e.env.DB.prepare("SELECT * FROM academy_verification_codes WHERE user_id = ? AND is_active = 1").bind(t).first();if(!s){const r=await e.env.DB.prepare("SELECT academy_name FROM users WHERE id = ?").bind(t).first();if(!r)return e.json({success:!1,error:"원장님 정보를 찾을 수 없습니다."},404);const a=Math.random().toString(36).substring(2,8).toUpperCase();s={id:(await e.env.DB.prepare(`
+    `).bind(s,r||"원장님에 의해 거부됨",t).run(),e.json({success:!0,message:`${a.name} 선생님의 등록 신청이 거부되었습니다.`})):e.json({success:!1,error:"신청을 찾을 수 없거나 이미 처리되었습니다."},404)}catch(t){return console.error("Reject application error:",t),e.json({success:!1,error:"거부 처리 중 오류가 발생했습니다."},500)}});d.get("/api/teachers/verification-code",async e=>{try{const t=e.req.query("directorId");if(!t)return e.json({success:!1,error:"원장님 ID가 필요합니다."},400);let s=await e.env.DB.prepare("SELECT * FROM academy_verification_codes WHERE user_id = ? AND is_active = 1 ORDER BY created_at DESC LIMIT 1").bind(t).first();if(!s){const r=await e.env.DB.prepare("SELECT academy_name FROM users WHERE id = ?").bind(t).first();if(!r)return e.json({success:!1,error:"원장님 정보를 찾을 수 없습니다."},404);const a=Math.random().toString(36).substring(2,8).toUpperCase();s={id:(await e.env.DB.prepare(`
         INSERT INTO academy_verification_codes (user_id, academy_name, verification_code, is_active)
         VALUES (?, ?, ?, 1)
-      `).bind(t,r.academy_name,a).run()).meta.last_row_id,user_id:t,academy_name:r.academy_name,verification_code:a,is_active:1}}return e.json({success:!0,code:s})}catch(t){return console.error("Get verification code error:",t),e.json({success:!1,error:"인증 코드 조회 중 오류가 발생했습니다."},500)}});d.post("/api/teachers/verification-code/regenerate",async e=>{try{const{directorId:t}=await e.req.json();if(!t)return e.json({success:!1,error:"원장님 ID가 필요합니다."},400);const s=await e.env.DB.prepare("SELECT academy_name FROM users WHERE id = ?").bind(t).first();if(!s)return e.json({success:!1,error:"원장님 정보를 찾을 수 없습니다."},404);await e.env.DB.prepare("UPDATE academy_verification_codes SET is_active = 0 WHERE user_id = ?").bind(t).run();const r=Math.random().toString(36).substring(2,8).toUpperCase(),a=await e.env.DB.prepare(`
+      `).bind(t,r.academy_name,a).run()).meta.last_row_id,user_id:parseInt(t),academy_name:r.academy_name,verification_code:a,is_active:1,created_at:new Date().toISOString()}}return e.json({success:!0,code:s.verification_code||s.code,codeData:s})}catch(t){return console.error("Get verification code error:",t),e.json({success:!1,error:"인증 코드 조회 중 오류가 발생했습니다.",details:t.message},500)}});d.post("/api/teachers/verification-code/regenerate",async e=>{try{const{directorId:t}=await e.req.json();if(!t)return e.json({success:!1,error:"원장님 ID가 필요합니다."},400);const s=await e.env.DB.prepare("SELECT academy_name FROM users WHERE id = ?").bind(t).first();if(!s)return e.json({success:!1,error:"원장님 정보를 찾을 수 없습니다."},404);await e.env.DB.prepare("UPDATE academy_verification_codes SET is_active = 0 WHERE user_id = ?").bind(t).run();const r=Math.random().toString(36).substring(2,8).toUpperCase(),a=await e.env.DB.prepare(`
       INSERT INTO academy_verification_codes (user_id, academy_name, verification_code, is_active)
       VALUES (?, ?, ?, 1)
-    `).bind(t,s.academy_name,r).run();return e.json({success:!0,code:{id:a.meta.last_row_id,verification_code:r,academy_name:s.academy_name},message:"새로운 인증 코드가 생성되었습니다."})}catch(t){return console.error("Regenerate code error:",t),e.json({success:!1,error:"인증 코드 재생성 중 오류가 발생했습니다."},500)}});d.post("/api/teachers/create",async e=>{try{const{email:t,password:s,name:r,phone:a,directorId:l}=await e.req.json();if(!t||!s||!r||!l)return e.json({success:!1,error:"필수 정보를 모두 입력해주세요."},400);const n=await e.env.DB.prepare("SELECT id, academy_name, user_type FROM users WHERE id = ?").bind(l).first();if(!n)return e.json({success:!1,error:"원장님 정보를 찾을 수 없습니다."},404);if(await e.env.DB.prepare("SELECT id FROM users WHERE email = ?").bind(t).first())return e.json({success:!1,error:"이미 사용 중인 이메일입니다."},400);const i=await e.env.DB.prepare(`
+    `).bind(t,s.academy_name,r).run();return e.json({success:!0,code:r,codeData:{id:a.meta.last_row_id,verification_code:r,academy_name:s.academy_name,user_id:parseInt(t),is_active:1,created_at:new Date().toISOString()},message:"새로운 인증 코드가 생성되었습니다."})}catch(t){return console.error("Regenerate code error:",t),e.json({success:!1,error:"인증 코드 재생성 중 오류가 발생했습니다.",details:t.message},500)}});d.post("/api/teachers/create",async e=>{try{const{email:t,password:s,name:r,phone:a,directorId:l}=await e.req.json();if(!t||!s||!r||!l)return e.json({success:!1,error:"필수 정보를 모두 입력해주세요."},400);const n=await e.env.DB.prepare("SELECT id, academy_name, user_type FROM users WHERE id = ?").bind(l).first();if(!n)return e.json({success:!1,error:"원장님 정보를 찾을 수 없습니다."},404);if(await e.env.DB.prepare("SELECT id FROM users WHERE email = ?").bind(t).first())return e.json({success:!1,error:"이미 사용 중인 이메일입니다."},400);const i=await e.env.DB.prepare(`
       INSERT INTO users (email, password, name, phone, role, user_type, parent_user_id, academy_name, created_at)
       VALUES (?, ?, ?, ?, 'user', 'teacher', ?, ?, datetime('now'))
     `).bind(t,s,r,a||null,l,n.academy_name).run();return e.json({success:!0,teacherId:i.meta.last_row_id,message:"선생님 계정이 생성되었습니다."})}catch(t){return console.error("Create teacher error:",t),e.json({success:!1,error:"선생님 계정 생성 중 오류가 발생했습니다."},500)}});d.get("/api/teachers/list",async e=>{try{const t=e.req.query("directorId");if(!t)return e.json({success:!1,error:"원장님 ID가 필요합니다."},400);const s=await e.env.DB.prepare(`
@@ -19652,11 +19652,19 @@ ${t?t.split(",").map(l=>l.trim()).join(", "):e}과 관련해서 체계적인 커
                 try {
                     const res = await fetch('/api/teachers/verification-code?directorId=' + currentUser.id);
                     const data = await res.json();
-                    if (data.success && data.code) {
-                        document.getElementById('verificationCode').textContent = data.code;
+                    console.log('Verification code response:', data);
+                    
+                    if (data.success) {
+                        // code 또는 codeData.verification_code 사용
+                        const code = data.code || (data.codeData && data.codeData.verification_code) || '------';
+                        document.getElementById('verificationCode').textContent = code;
+                    } else {
+                        console.error('인증 코드 로딩 실패:', data.error);
+                        document.getElementById('verificationCode').textContent = '오류';
                     }
                 } catch (error) {
                     console.error('인증 코드 로딩 실패:', error);
+                    document.getElementById('verificationCode').textContent = '오류';
                 }
             }
 
@@ -19669,15 +19677,20 @@ ${t?t.split(",").map(l=>l.trim()).join(", "):e}과 관련해서 체계적인 커
                         body: JSON.stringify({ directorId: currentUser.id })
                     });
                     const data = await res.json();
+                    console.log('Regenerate response:', data);
+                    
                     if (data.success) {
-                        document.getElementById('verificationCode').textContent = data.code;
-                        alert('인증 코드가 재생성되었습니다: ' + data.code);
+                        // code 또는 codeData.verification_code 사용
+                        const newCode = data.code || (data.codeData && data.codeData.verification_code);
+                        document.getElementById('verificationCode').textContent = newCode;
+                        alert('인증 코드가 재생성되었습니다: ' + newCode);
                     } else {
-                        alert('코드 재생성 실패: ' + data.error);
+                        alert('코드 재생성 실패: ' + (data.error || '알 수 없는 오류'));
+                        console.error('재생성 실패 상세:', data);
                     }
                 } catch (error) {
                     console.error('코드 재생성 실패:', error);
-                    alert('코드 재생성 중 오류가 발생했습니다.');
+                    alert('코드 재생성 중 오류가 발생했습니다: ' + error.message);
                 }
             }
 

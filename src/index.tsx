@@ -17453,12 +17453,12 @@ app.get('/api/teachers/verification-code', async (c) => {
     }
     
     // 기존 활성 코드 조회
-    let code = await c.env.DB.prepare(
-      'SELECT * FROM academy_verification_codes WHERE user_id = ? AND is_active = 1'
+    let codeData = await c.env.DB.prepare(
+      'SELECT * FROM academy_verification_codes WHERE user_id = ? AND is_active = 1 ORDER BY created_at DESC LIMIT 1'
     ).bind(directorId).first()
     
     // 코드가 없으면 새로 생성
-    if (!code) {
+    if (!codeData) {
       const director = await c.env.DB.prepare(
         'SELECT academy_name FROM users WHERE id = ?'
       ).bind(directorId).first()
@@ -17475,19 +17475,24 @@ app.get('/api/teachers/verification-code', async (c) => {
         VALUES (?, ?, ?, 1)
       `).bind(directorId, director.academy_name, newCode).run()
       
-      code = {
+      codeData = {
         id: result.meta.last_row_id,
-        user_id: directorId,
+        user_id: parseInt(directorId),
         academy_name: director.academy_name,
         verification_code: newCode,
-        is_active: 1
+        is_active: 1,
+        created_at: new Date().toISOString()
       }
     }
     
-    return c.json({ success: true, code })
+    return c.json({ 
+      success: true, 
+      code: codeData.verification_code || codeData.code,
+      codeData: codeData
+    })
   } catch (error) {
     console.error('Get verification code error:', error)
-    return c.json({ success: false, error: '인증 코드 조회 중 오류가 발생했습니다.' }, 500)
+    return c.json({ success: false, error: '인증 코드 조회 중 오류가 발생했습니다.', details: error.message }, 500)
   }
 })
 
@@ -17523,16 +17528,20 @@ app.post('/api/teachers/verification-code/regenerate', async (c) => {
     
     return c.json({ 
       success: true, 
-      code: {
+      code: newCode,
+      codeData: {
         id: result.meta.last_row_id,
         verification_code: newCode,
-        academy_name: director.academy_name
+        academy_name: director.academy_name,
+        user_id: parseInt(directorId),
+        is_active: 1,
+        created_at: new Date().toISOString()
       },
       message: '새로운 인증 코드가 생성되었습니다.'
     })
   } catch (error) {
     console.error('Regenerate code error:', error)
-    return c.json({ success: false, error: '인증 코드 재생성 중 오류가 발생했습니다.' }, 500)
+    return c.json({ success: false, error: '인증 코드 재생성 중 오류가 발생했습니다.', details: error.message }, 500)
   }
 })
 
@@ -22900,11 +22909,19 @@ app.get('/students', (c) => {
                 try {
                     const res = await fetch('/api/teachers/verification-code?directorId=' + currentUser.id);
                     const data = await res.json();
-                    if (data.success && data.code) {
-                        document.getElementById('verificationCode').textContent = data.code;
+                    console.log('Verification code response:', data);
+                    
+                    if (data.success) {
+                        // code 또는 codeData.verification_code 사용
+                        const code = data.code || (data.codeData && data.codeData.verification_code) || '------';
+                        document.getElementById('verificationCode').textContent = code;
+                    } else {
+                        console.error('인증 코드 로딩 실패:', data.error);
+                        document.getElementById('verificationCode').textContent = '오류';
                     }
                 } catch (error) {
                     console.error('인증 코드 로딩 실패:', error);
+                    document.getElementById('verificationCode').textContent = '오류';
                 }
             }
 
@@ -22917,15 +22934,20 @@ app.get('/students', (c) => {
                         body: JSON.stringify({ directorId: currentUser.id })
                     });
                     const data = await res.json();
+                    console.log('Regenerate response:', data);
+                    
                     if (data.success) {
-                        document.getElementById('verificationCode').textContent = data.code;
-                        alert('인증 코드가 재생성되었습니다: ' + data.code);
+                        // code 또는 codeData.verification_code 사용
+                        const newCode = data.code || (data.codeData && data.codeData.verification_code);
+                        document.getElementById('verificationCode').textContent = newCode;
+                        alert('인증 코드가 재생성되었습니다: ' + newCode);
                     } else {
-                        alert('코드 재생성 실패: ' + data.error);
+                        alert('코드 재생성 실패: ' + (data.error || '알 수 없는 오류'));
+                        console.error('재생성 실패 상세:', data);
                     }
                 } catch (error) {
                     console.error('코드 재생성 실패:', error);
-                    alert('코드 재생성 중 오류가 발생했습니다.');
+                    alert('코드 재생성 중 오류가 발생했습니다: ' + error.message);
                 }
             }
 
