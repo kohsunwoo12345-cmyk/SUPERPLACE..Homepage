@@ -10130,8 +10130,11 @@ app.get('/tools/landing-builder', (c) => {
                     <div class="space-y-4">
                         <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-sm font-medium text-gray-900 mb-2">학생 이름 *</label>
-                                <input type="text" name="studentName" required class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                                <label class="block text-sm font-medium text-gray-900 mb-2">학생 선택 *</label>
+                                <select name="studentName" id="studentSelect" required class="w-full px-4 py-3 border border-gray-300 rounded-xl bg-white">
+                                    <option value="">학생을 선택하세요</option>
+                                </select>
+                                <p class="text-xs text-gray-500 mt-1">💡 학생 목록에서 자동으로 불러옵니다</p>
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-900 mb-2">월 *</label>
@@ -10287,6 +10290,45 @@ app.get('/tools/landing-builder', (c) => {
             document.getElementById('landingForm').innerHTML = forms[type];
             document.getElementById('formArea').classList.remove('hidden');
             document.getElementById('formArea').scrollIntoView({ behavior: 'smooth' });
+            
+            // student-report 템플릿일 때 학생 목록 로드
+            if (type === 'student-report') {
+                loadStudentsForSelect();
+            }
+        }
+
+        // 학생 목록을 select에 로드하는 함수
+        async function loadStudentsForSelect() {
+            const user = JSON.parse(localStorage.getItem('user'));
+            if (!user || !user.id) return;
+            
+            try {
+                const response = await fetch('/api/students?userId=' + user.id);
+                const data = await response.json();
+                
+                if (data.success && data.students) {
+                    const select = document.getElementById('studentSelect');
+                    if (select) {
+                        // 기존 옵션 유지하고 학생 추가
+                        data.students.forEach(student => {
+                            const option = document.createElement('option');
+                            option.value = student.name;
+                            option.textContent = student.name + (student.grade ? ' (' + student.grade + ')' : '');
+                            select.appendChild(option);
+                        });
+                        
+                        if (data.students.length === 0) {
+                            const option = document.createElement('option');
+                            option.value = '';
+                            option.textContent = '등록된 학생이 없습니다';
+                            option.disabled = true;
+                            select.appendChild(option);
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error('학생 목록 로드 실패:', err);
+            }
         }
 
         // 썸네일 업로드 처리
