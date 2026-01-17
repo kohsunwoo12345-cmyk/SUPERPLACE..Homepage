@@ -24307,9 +24307,80 @@ app.get('/students', (c) => {
             // 로그인 사용자 정보 확인
             const userStr = localStorage.getItem('user');
             let currentUser = null;
+            let userPermissions = {
+                canViewAllStudents: false,
+                canWriteDailyReports: false,
+                assignedClasses: []
+            };
+            
             if (userStr) {
                 currentUser = JSON.parse(userStr);
-                // 선생님 관리 카드는 항상 표시
+                console.log('Current user:', currentUser);
+            }
+
+            // 페이지 로드 시 권한 확인 및 UI 제한
+            async function initializePage() {
+                if (!currentUser) {
+                    window.location.href = '/login';
+                    return;
+                }
+                
+                // 선생님인 경우 권한 확인
+                if (currentUser.user_type === 'teacher') {
+                    await loadTeacherPermissions();
+                    applyTeacherRestrictions();
+                }
+                
+                await loadDashboard();
+            }
+
+            // 선생님 권한 로드
+            async function loadTeacherPermissions() {
+                try {
+                    if (!currentUser.parent_user_id) {
+                        console.error('선생님 계정에 parent_user_id가 없습니다.');
+                        return;
+                    }
+                    
+                    const res = await fetch(\`/api/teachers/\${currentUser.id}/permissions?directorId=\${currentUser.parent_user_id}\`);
+                    const data = await res.json();
+                    
+                    if (data.success && data.permissions) {
+                        userPermissions = data.permissions;
+                        console.log('✅ Teacher permissions loaded:', userPermissions);
+                    }
+                } catch (error) {
+                    console.error('권한 로드 실패:', error);
+                }
+            }
+
+            // 선생님 UI 제한 적용
+            function applyTeacherRestrictions() {
+                console.log('🔒 Applying teacher restrictions...');
+                console.log('Permissions:', userPermissions);
+                
+                // 선생님 관리 카드 숨기기
+                const teacherCard = document.getElementById('teacherManagementCard');
+                if (teacherCard) {
+                    teacherCard.style.display = 'none';
+                }
+                
+                // 전체 학생 조회 권한이 없으면 반 관리, 과목 관리 숨기기
+                if (!userPermissions.canViewAllStudents) {
+                    const classCard = document.querySelector('a[href="/students/classes"]');
+                    if (classCard) {
+                        classCard.style.display = 'none';
+                    }
+                    
+                    const courseCard = document.querySelector('a[href="/students/courses"]');
+                    if (courseCard) {
+                        courseCard.style.display = 'none';
+                    }
+                    
+                    console.log('🔒 Hiding class and course management (no full access)');
+                }
+                
+                console.log('✅ Teacher restrictions applied');
             }
 
             async function loadDashboard() {
@@ -24323,18 +24394,25 @@ app.get('/students', (c) => {
                         }
                     }
                 
-                    // 반 개수
-                    const classesRes = await fetch('/api/classes?academyId=' + academyId);
-                    const classesData = await classesRes.json();
-                    if (classesData.success) {
-                        document.getElementById('totalClasses').textContent = classesData.classes.length;
+                    // 반 개수 (선생님은 자신의 배정된 반만)
+                    if (currentUser && currentUser.user_type === 'teacher' && !userPermissions.canViewAllStudents) {
+                        // 배정된 반만 표시
+                        document.getElementById('totalClasses').textContent = userPermissions.assignedClasses.length;
+                    } else {
+                        const classesRes = await fetch('/api/classes?academyId=' + academyId);
+                        const classesData = await classesRes.json();
+                        if (classesData.success) {
+                            document.getElementById('totalClasses').textContent = classesData.classes.length;
+                        }
                     }
 
-                    // 학생 수
-                    const studentsRes = await fetch('/api/students?academyId=' + academyId);
+                    // 학생 수 (API가 자동으로 권한 필터링함)
+                    const studentsRes = await fetch('/api/students');
                     const studentsData = await studentsRes.json();
                     if (studentsData.success) {
                         document.getElementById('totalStudents').textContent = studentsData.students.length;
+                        // 최근 활동 표시
+                        showRecentActivity(studentsData.students.slice(0, 5));
                     }
 
                     // 과목 수
@@ -24351,9 +24429,6 @@ app.get('/students', (c) => {
                     if (recordsData.success) {
                         document.getElementById('todayRecords').textContent = recordsData.records.length;
                     }
-
-                    // 최근 활동 표시
-                    showRecentActivity(studentsData.students.slice(0, 5));
                 } catch (error) {
                     console.error('대시보드 로딩 실패:', error);
                 }
@@ -24797,7 +24872,8 @@ app.get('/students', (c) => {
                 }
             });
 
-            loadDashboard();
+            // 페이지 초기화
+            initializePage();
         </script>
     </body>
     </html>
