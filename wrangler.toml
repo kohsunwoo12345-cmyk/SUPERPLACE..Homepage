@@ -1,13 +1,6 @@
-name = "superplace-academy"
+name = "superplace-academy-app"
+main = "dist/_worker.js"
 compatibility_date = "2025-12-18"
-pages_build_output_dir = "dist"
-
-# 빌드 건너뛰기 - dist 폴더 직접 사용
-[build]
-command = "echo 'Using pre-built dist'"
-
-[build.upload]
-format = "service-worker"
 
 # D1 Database Bindings
 [[d1_databases]]
@@ -24,3 +17,8 @@ bucket_name = "superplace-documents"
 [vars]
 ALIGO_API_KEY = "4bbi3l27pb5qh11tkujl578bttz6vb5j"
 ALIGO_USER_ID = "wangholy"
+
+# Assets (static files)
+[assets]
+directory = "dist"
+binding = "ASSETS"

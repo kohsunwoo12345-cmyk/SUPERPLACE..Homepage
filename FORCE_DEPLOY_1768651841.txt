@@ -1,0 +1,8 @@
+이 파일은 Cloudflare Pages 배포를 강제하기 위해 생성되었습니다.
+생성 시각: Sat Jan 17 12:10:41 UTC 2026
+커밋 해시: f1980d1c20e2f58966c86a61fe18bb7ee69865a4
+
+이 배포에는 다음이 포함되어 있습니다:
+- loadDeposits 함수가 있는 올바른 /my-deposits 페이지
+- submitDeposit 함수가 있는 작동하는 입금 신청 모달
+- 부가세 10% 자동 계산 기능
