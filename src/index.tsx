@@ -11591,10 +11591,7 @@ app.post('/api/students', async (c) => {
   }
 })
 
-// 삭제 불가능한 학생 ID 목록 (외래키 제약으로 인해)
-const BLOCKED_STUDENT_IDS = [4];
-
-// DELETE /api/students/:id - 학생 삭제 (블랙리스트 학생은 숨김 처리)
+// DELETE /api/students/:id - 학생 삭제 (Soft Delete)
 app.delete('/api/students/:id', async (c) => {
   try {
     const studentId = c.req.param('id')
@@ -11603,70 +11600,27 @@ app.delete('/api/students/:id', async (c) => {
       return c.json({ success: false, error: '학생 ID가 필요합니다.' }, 400)
     }
     
-    const id = parseInt(studentId)
+    console.log('[DeleteStudent] Soft deleting student:', studentId)
     
-    // 블랙리스트 학생은 무조건 성공 반환 (실제로는 이미 필터링됨)
-    if (BLOCKED_STUDENT_IDS.includes(id)) {
-      console.log('[DeleteStudent] Blocked student - returning success without action')
+    // Soft Delete: status를 'deleted'로 변경
+    const result = await c.env.DB.prepare(`
+      UPDATE students 
+      SET status = 'deleted', updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `).bind(studentId).run()
+    
+    if (result.meta.changes === 0) {
       return c.json({ 
-        success: true, 
-        message: '학생이 삭제되었습니다.' 
-      })
+        success: false, 
+        error: '해당 학생을 찾을 수 없습니다.' 
+      }, 404)
     }
     
-    console.log('[DeleteStudent] Attempting delete for student:', studentId)
-    
-    try {
-      // 관련 레코드 삭제 시도
-      await c.env.DB.prepare('DELETE FROM daily_records WHERE student_id = ?').bind(studentId).run().catch(() => {})
-      await c.env.DB.prepare('DELETE FROM attendance WHERE student_id = ?').bind(studentId).run().catch(() => {})
-      await c.env.DB.prepare('DELETE FROM grades WHERE student_id = ?').bind(studentId).run().catch(() => {})
-      await c.env.DB.prepare('DELETE FROM counseling WHERE student_id = ?').bind(studentId).run().catch(() => {})
-      await c.env.DB.prepare('DELETE FROM learning_reports WHERE student_id = ?').bind(studentId).run().catch(() => {})
-      
-      // 학생 삭제
-      const result = await c.env.DB.prepare('DELETE FROM students WHERE id = ?').bind(studentId).run()
-      
-      if (result.meta.changes === 0) {
-        return c.json({ 
-          success: false, 
-          error: '해당 학생을 찾을 수 없습니다.' 
-        }, 404)
-      }
-      
-      console.log('[DeleteStudent] Successfully deleted student')
-      return c.json({ 
-        success: true, 
-        message: '학생이 삭제되었습니다.' 
-      })
-    } catch (deleteError) {
-      // 하드 삭제 실패 시 Soft Delete
-      console.log('[DeleteStudent] Hard delete failed, using soft delete:', deleteError)
-      
-      try {
-        const result = await c.env.DB.prepare(`
-          UPDATE students 
-          SET status = 'deleted'
-          WHERE id = ?
-        `).bind(studentId).run()
-        
-        if (result.meta.changes > 0) {
-          return c.json({ 
-            success: true, 
-            message: '학생이 삭제되었습니다.' 
-          })
-        }
-      } catch (softError) {
-        console.error('[DeleteStudent] Soft delete also failed:', softError)
-      }
-      
-      // 모두 실패 시 블랙리스트에 추가
-      console.log('[DeleteStudent] Adding to blacklist and returning success')
-      return c.json({ 
-        success: true, 
-        message: '학생이 삭제되었습니다.' 
-      })
-    }
+    console.log('[DeleteStudent] Successfully soft deleted student')
+    return c.json({ 
+      success: true, 
+      message: '학생이 삭제되었습니다.' 
+    })
   } catch (error) {
     console.error('[DeleteStudent] Error:', error)
     return c.json({ 

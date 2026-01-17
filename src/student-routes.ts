@@ -93,7 +93,7 @@ studentRoutes.get('/api/students', async (c) => {
       SELECT s.*, c.class_name
       FROM students s
       LEFT JOIN classes c ON s.class_id = c.id
-      WHERE s.academy_id = ?
+      WHERE s.academy_id = ? AND (s.status = 'active' OR s.status IS NULL)
     `
     const params = [academyId]
     
@@ -105,7 +105,7 @@ studentRoutes.get('/api/students', async (c) => {
         FROM students s
         LEFT JOIN classes c ON s.class_id = c.id
         INNER JOIN teacher_classes tc ON s.class_id = tc.class_id
-        WHERE s.academy_id = ? AND tc.teacher_id = ?
+        WHERE s.academy_id = ? AND tc.teacher_id = ? AND (s.status = 'active' OR s.status IS NULL)
       `
       params.push(userId)
     }
@@ -197,13 +197,19 @@ studentRoutes.put('/api/students/:studentId', async (c) => {
   }
 })
 
-// 학생 삭제
+// 학생 삭제 (Soft Delete)
 studentRoutes.delete('/api/students/:studentId', async (c) => {
   const { DB } = c.env
   const studentId = c.req.param('studentId')
   
   try {
-    await DB.prepare('DELETE FROM students WHERE id = ?').bind(studentId).run()
+    // Soft delete: status를 'deleted'로 변경
+    await DB.prepare(`
+      UPDATE students 
+      SET status = 'deleted', updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `).bind(studentId).run()
+    
     return c.json({ success: true })
   } catch (error) {
     return c.json({ success: false, error: error.message }, 500)
