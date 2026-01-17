@@ -14951,12 +14951,16 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
         <\/script>
     </body>
     </html>
-  `));d.post("/api/teachers/apply",async e=>{try{const{email:t,password:s,name:r,phone:a,academyName:n,verificationCode:l}=await e.req.json();if(!t||!s||!r||!n||!l)return e.json({success:!1,error:"필수 정보를 모두 입력해주세요."},400);const o=await e.env.DB.prepare(`
+  `));d.post("/api/teachers/apply",async e=>{try{try{await e.env.DB.prepare(`
+        ALTER TABLE users ADD COLUMN user_type TEXT DEFAULT 'director'
+      `).run(),console.log("[Migration] user_type column added")}catch{}try{await e.env.DB.prepare(`
+        ALTER TABLE users ADD COLUMN parent_user_id INTEGER
+      `).run(),console.log("[Migration] parent_user_id column added")}catch{}const{email:t,password:s,name:r,phone:a,academyName:n,verificationCode:l}=await e.req.json();if(!t||!s||!r||!n||!l)return e.json({success:!1,error:"필수 정보를 모두 입력해주세요."},400);const o=await e.env.DB.prepare(`
       SELECT avc.*, u.id as director_id, u.email as director_email, u.name as director_name, u.academy_name
       FROM academy_verification_codes avc
       JOIN users u ON avc.user_id = u.id
       WHERE avc.code = ? AND avc.is_active = 1
-    `).bind(l.toUpperCase()).first();if(!o)return e.json({success:!1,error:"유효하지 않은 인증 코드입니다."},400);const i=o.academy_name||n,c=await e.env.DB.prepare("SELECT id, email, name, user_type FROM users WHERE email = ?").bind(t).first();if(c){if(console.log("[TeacherApply] Existing user found, creating connection request:",c),await e.env.DB.prepare('SELECT id FROM teacher_applications WHERE email = ? AND director_email = ? AND status = "pending"').bind(t,o.director_email).first())return e.json({success:!1,error:"이미 이 학원에 등록 신청이 진행 중입니다."},400);const x=await e.env.DB.prepare(`
+    `).bind(l.toUpperCase()).first();if(!o)return e.json({success:!1,error:"유효하지 않은 인증 코드입니다."},400);const i=o.academy_name||n,c=await e.env.DB.prepare("SELECT id, email, name FROM users WHERE email = ?").bind(t).first();if(c){if(console.log("[TeacherApply] Existing user found, creating connection request:",c),await e.env.DB.prepare('SELECT id FROM teacher_applications WHERE email = ? AND director_email = ? AND status = "pending"').bind(t,o.director_email).first())return e.json({success:!1,error:"이미 이 학원에 등록 신청이 진행 중입니다."},400);const x=await e.env.DB.prepare(`
         INSERT INTO teacher_applications (
           email, password, name, phone, academy_name, 
           director_email, verification_code, status, applied_at

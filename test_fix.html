@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>선생님 등록 테스트</title>
+    <meta charset="UTF-8">
+</head>
+<body>
+    <h1>선생님 등록 API 테스트</h1>
+    <form id="testForm">
+        <div>
+            <label>이메일:</label>
+            <input type="email" id="email" value="newteacher@test.com" required>
+        </div>
+        <div>
+            <label>비밀번호:</label>
+            <input type="password" id="password" value="test1234!" required>
+        </div>
+        <div>
+            <label>이름:</label>
+            <input type="text" id="name" value="김선생" required>
+        </div>
+        <div>
+            <label>연락처:</label>
+            <input type="tel" id="phone" value="010-1234-5678">
+        </div>
+        <div>
+            <label>학원 이름:</label>
+            <input type="text" id="academyName" value="아무 학원이나" required>
+        </div>
+        <div>
+            <label>인증 코드:</label>
+            <input type="text" id="verificationCode" value="APXE7J" required>
+        </div>
+        <button type="submit">등록 신청</button>
+    </form>
+    <div id="result"></div>
+
+    <script>
+        document.getElementById('testForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const data = {
+                email: document.getElementById('email').value,
+                password: document.getElementById('password').value,
+                name: document.getElementById('name').value,
+                phone: document.getElementById('phone').value,
+                academyName: document.getElementById('academyName').value,
+                verificationCode: document.getElementById('verificationCode').value
+            };
+            
+            console.log('요청 데이터:', data);
+            
+            try {
+                const response = await fetch('https://superplace-academy.pages.dev/api/teachers/apply', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                console.log('응답:', result);
+                
+                document.getElementById('result').innerHTML = `
+                    <h2>결과:</h2>
+                    <pre>${JSON.stringify(result, null, 2)}</pre>
+                `;
+                
+                if (result.success) {
+                    alert('✅ 성공: ' + result.message);
+                } else {
+                    alert('❌ 오류: ' + result.error);
+                }
+            } catch (error) {
+                console.error('에러:', error);
+                document.getElementById('result').innerHTML = `
+                    <h2>에러:</h2>
+                    <pre>${error.message}</pre>
+                `;
+                alert('❌ 에러: ' + error.message);
+            }
+        });
+    </script>
+</body>
+</html>

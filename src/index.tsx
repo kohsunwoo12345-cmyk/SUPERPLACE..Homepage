@@ -17315,6 +17315,25 @@ app.get('/my-deposits', (c) => {
 // 선생님: 등록 신청 (회원가입)
 app.post('/api/teachers/apply', async (c) => {
   try {
+    // DB 스키마 확인 및 자동 마이그레이션
+    try {
+      await c.env.DB.prepare(`
+        ALTER TABLE users ADD COLUMN user_type TEXT DEFAULT 'director'
+      `).run()
+      console.log('[Migration] user_type column added')
+    } catch (e) {
+      // 컬럼이 이미 존재하면 에러 무시
+    }
+    
+    try {
+      await c.env.DB.prepare(`
+        ALTER TABLE users ADD COLUMN parent_user_id INTEGER
+      `).run()
+      console.log('[Migration] parent_user_id column added')
+    } catch (e) {
+      // 컬럼이 이미 존재하면 에러 무시
+    }
+    
     const { email, password, name, phone, academyName, verificationCode } = await c.req.json()
     
     // 필수 필드 확인
@@ -17340,7 +17359,7 @@ app.post('/api/teachers/apply', async (c) => {
     
     // 이메일 중복 확인 - 기존 사용자 처리
     const existingUser = await c.env.DB.prepare(
-      'SELECT id, email, name, user_type FROM users WHERE email = ?'
+      'SELECT id, email, name FROM users WHERE email = ?'
     ).bind(email).first()
     
     if (existingUser) {
