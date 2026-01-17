@@ -20002,22 +20002,38 @@ ${o.director_name} 원장님의 승인을 기다려주세요.`,directorName:o.di
             // 선생님 추가 폼 제출
             document.getElementById('addTeacherForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
+                
+                console.log('[AddTeacher] Form submitted');
+                console.log('[AddTeacher] Current user:', currentUser);
+                
                 const formData = new FormData(e.target);
                 const data = {
                     name: formData.get('name'),
                     email: formData.get('email'),
                     phone: formData.get('phone'),
                     password: formData.get('password'),
-                    directorId: currentUser.id
+                    directorId: currentUser?.id
                 };
+                
+                console.log('[AddTeacher] Form data:', data);
+                
+                if (!data.directorId) {
+                    alert('로그인 정보를 찾을 수 없습니다. 다시 로그인해주세요.');
+                    return;
+                }
 
                 try {
+                    console.log('[AddTeacher] Sending request...');
                     const res = await fetch('/api/teachers/add', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(data)
                     });
+                    
+                    console.log('[AddTeacher] Response status:', res.status);
                     const result = await res.json();
+                    console.log('[AddTeacher] Response data:', result);
+                    
                     if (result.success) {
                         alert(\`\${data.name} 선생님이 추가되었습니다!\`);
                         closeAddTeacherModal();
@@ -20025,10 +20041,13 @@ ${o.director_name} 원장님의 승인을 기다려주세요.`,directorName:o.di
                         loadDashboard();
                     } else {
                         alert('추가 실패: ' + result.error);
+                        if (result.details) {
+                            console.error('[AddTeacher] Error details:', result.details);
+                        }
                     }
                 } catch (error) {
-                    console.error('선생님 추가 실패:', error);
-                    alert('선생님 추가 중 오류가 발생했습니다.');
+                    console.error('[AddTeacher] Network error:', error);
+                    alert('선생님 추가 중 네트워크 오류가 발생했습니다: ' + error.message);
                 }
             });
 
