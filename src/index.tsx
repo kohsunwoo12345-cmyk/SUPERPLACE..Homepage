@@ -79,11 +79,11 @@ app.post('/api/signup', async (c) => {
     // 비밀번호 해싱 (실제로는 bcrypt 등 사용 권장)
     const hashedPassword = password // TODO: 실제 프로젝트에서는 해싱 필요
 
-    // DB 저장 (academy_location은 선택사항으로 변경)
+    // DB 저장 (academy_name 컬럼 포함)
     const result = await c.env.DB.prepare(`
-      INSERT INTO users (email, password, name, phone, academy_name, role, user_type)
-      VALUES (?, ?, ?, ?, ?, 'member', 'director')
-    `).bind(email, hashedPassword, name, phone, academy_name).run()
+      INSERT INTO users (email, password, name, phone, academy_name, role)
+      VALUES (?, ?, ?, ?, ?, 'member')
+    `).bind(email, hashedPassword, name, phone, academy_name || '').run()
 
     return c.json({ 
       success: true, 
@@ -109,12 +109,16 @@ app.get('/api/health', async (c) => {
     }
 
     // 간단한 쿼리 테스트
-    const result = await c.env.DB.prepare('SELECT 1 as test').first()
+    const testResult = await c.env.DB.prepare('SELECT 1 as test').first()
+    
+    // users 테이블 구조 확인
+    const tableInfo = await c.env.DB.prepare(`PRAGMA table_info(users)`).all()
     
     return c.json({ 
       success: true, 
       message: 'DB connection is healthy',
-      test_result: result
+      test_result: testResult,
+      users_table_columns: tableInfo.results.map(col => col.name)
     })
   } catch (err) {
     return c.json({ 
@@ -146,9 +150,9 @@ app.post('/api/login', async (c) => {
       return c.json({ success: false, error: '이메일과 비밀번호를 입력해주세요.' }, 400)
     }
 
-    // 사용자 조회
+    // 사용자 조회 (실제 데이터베이스 컬럼에 맞춰 수정)
     const user = await c.env.DB.prepare(`
-      SELECT id, email, name, role, points, user_type, academy_name FROM users WHERE email = ? AND password = ?
+      SELECT id, email, name, role, points, academy_name FROM users WHERE email = ? AND password = ?
     `).bind(email, password).first()
 
     if (!user) {
@@ -158,7 +162,15 @@ app.post('/api/login', async (c) => {
     return c.json({ 
       success: true, 
       message: '로그인 성공',
-      user: { id: user.id, email: user.email, name: user.name, role: user.role, points: user.points || 0 }
+      user: { 
+        id: user.id, 
+        email: user.email, 
+        name: user.name, 
+        role: user.role, 
+        points: user.points || 0,
+        academy_name: user.academy_name || '',
+        user_type: 'director' // 기본값 (컴럼 없음)
+      }
     })
   } catch (err) {
     console.error('Login error:', err)
