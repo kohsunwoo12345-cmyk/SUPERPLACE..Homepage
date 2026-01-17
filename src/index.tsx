@@ -18450,22 +18450,24 @@ app.get('/api/classes/list', async (c) => {
       let query = ''
       if (userType === 'teacher') {
         // 선생님은 자신이 담당하는 반만 조회
+        // teacher_id 기반으로 조회
         query = `
-          SELECT c.*, u.name as director_name,
+          SELECT c.*, 
                  (SELECT COUNT(*) FROM students WHERE class_id = c.id AND status = 'active') as student_count
           FROM classes c
-          LEFT JOIN users u ON c.user_id = u.id
-          WHERE c.teacher_id = ? AND c.status = 'active'
+          WHERE c.teacher_id = ?
           ORDER BY c.created_at DESC
         `
       } else {
-        // 원장님은 자신이 생성한 모든 반 조회
+        // 원장님은 academy_id로 모든 반 조회 (user_id가 아니라 academy_id)
         query = `
-          SELECT c.*, t.name as teacher_name,
+          SELECT c.id, c.class_name as name, c.grade as grade_level, c.description, 
+                 c.schedule_days, c.start_time, c.end_time, c.created_at,
+                 t.name as teacher_name,
                  (SELECT COUNT(*) FROM students WHERE class_id = c.id AND status = 'active') as student_count
           FROM classes c
           LEFT JOIN users t ON c.teacher_id = t.id
-          WHERE c.user_id = ? AND c.status = 'active'
+          WHERE c.academy_id = ?
           ORDER BY c.created_at DESC
         `
       }

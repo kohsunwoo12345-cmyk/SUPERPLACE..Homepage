@@ -15204,18 +15204,19 @@ ${o.director_name} 원장님의 승인을 기다려주세요.`,directorName:o.di
       INSERT INTO classes (name, description, user_id, teacher_id, grade_level, subject, max_students, status, created_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, 'active', datetime('now'))
     `).bind(t,s||null,r,a||null,n||null,l||null,o||20).run();return e.json({success:!0,classId:i.meta.last_row_id,message:"반이 생성되었습니다."})}catch(t){return console.error("Create class error:",t),e.json({success:!1,error:"반 생성 중 오류가 발생했습니다.",details:t.message},500)}});d.get("/api/classes/list",async e=>{try{const t=e.req.query("userId"),s=e.req.query("userType");if(!t)return e.json({success:!1,error:"사용자 ID가 필요합니다."},400);try{let r="";s==="teacher"?r=`
-          SELECT c.*, u.name as director_name,
+          SELECT c.*, 
                  (SELECT COUNT(*) FROM students WHERE class_id = c.id AND status = 'active') as student_count
           FROM classes c
-          LEFT JOIN users u ON c.user_id = u.id
-          WHERE c.teacher_id = ? AND c.status = 'active'
+          WHERE c.teacher_id = ?
           ORDER BY c.created_at DESC
         `:r=`
-          SELECT c.*, t.name as teacher_name,
+          SELECT c.id, c.class_name as name, c.grade as grade_level, c.description, 
+                 c.schedule_days, c.start_time, c.end_time, c.created_at,
+                 t.name as teacher_name,
                  (SELECT COUNT(*) FROM students WHERE class_id = c.id AND status = 'active') as student_count
           FROM classes c
           LEFT JOIN users t ON c.teacher_id = t.id
-          WHERE c.user_id = ? AND c.status = 'active'
+          WHERE c.academy_id = ?
           ORDER BY c.created_at DESC
         `;const a=await e.env.DB.prepare(r).bind(t).all();return e.json({success:!0,classes:a.results||[]})}catch(r){if(r.message&&r.message.includes("no such table"))return e.json({success:!0,classes:[]});throw r}}catch(t){return console.error("[ClassesList] Error:",t),console.error("[ClassesList] Error message:",t.message),e.json({success:!0,classes:[],warning:"반 목록을 불러올 수 없습니다. 먼저 반을 생성해주세요."})}});d.put("/api/classes/:id/assign-teacher",async e=>{try{const t=e.req.param("id"),{teacherId:s,userId:r}=await e.req.json(),a=await e.env.DB.prepare("SELECT user_id FROM classes WHERE id = ?").bind(t).first();return!a||a.user_id!==r?e.json({success:!1,error:"권한이 없습니다."},403):(await e.env.DB.prepare("UPDATE classes SET teacher_id = ?, updated_at = datetime('now') WHERE id = ?").bind(s,t).run(),e.json({success:!0,message:"선생님이 배정되었습니다."}))}catch(t){return console.error("Assign teacher error:",t),e.json({success:!1,error:"선생님 배정 중 오류가 발생했습니다."},500)}});d.get("/api/classes",async e=>{try{const t=e.req.query("academyId")||"1",s=await e.env.DB.prepare(`
       SELECT 
