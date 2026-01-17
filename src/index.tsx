@@ -11511,14 +11511,59 @@ app.get('/api/students', async (c) => {
   try {
     const user = JSON.parse(c.req.header('X-User-Data-Base64') ? decodeURIComponent(escape(atob(c.req.header('X-User-Data-Base64') || ''))) : '{"id":1}')
     
-    const { results } = await c.env.DB.prepare(`
-      SELECT * FROM students WHERE academy_id = ? AND status = 'active' ORDER BY name
-    `).bind(user.id).all()
+    // 사용자 정보 조회 (user_type과 permissions 확인)
+    const userInfo = await c.env.DB.prepare(
+      'SELECT id, user_type, parent_user_id, permissions FROM users WHERE id = ?'
+    ).bind(user.id).first()
+    
+    let query = `SELECT * FROM students WHERE status = 'active' ORDER BY name`
+    let params = []
+    
+    // 선생님인 경우 권한에 따라 필터링
+    if (userInfo && userInfo.user_type === 'teacher') {
+      let permissions = {
+        canViewAllStudents: false,
+        assignedClasses: []
+      }
+      
+      if (userInfo.permissions) {
+        try {
+          permissions = JSON.parse(userInfo.permissions)
+        } catch (e) {
+          console.error('Failed to parse permissions:', e)
+        }
+      }
+      
+      // 전체 학생 조회 권한이 없으면 배정된 반의 학생만 조회
+      if (!permissions.canViewAllStudents) {
+        const assignedClasses = permissions.assignedClasses || []
+        
+        if (assignedClasses.length === 0) {
+          // 배정된 반이 없으면 빈 결과 반환
+          return c.json({ success: true, students: [] })
+        }
+        
+        // 배정된 반의 학생만 조회
+        const placeholders = assignedClasses.map(() => '?').join(',')
+        query = `SELECT * FROM students WHERE status = 'active' AND class_id IN (${placeholders}) ORDER BY name`
+        params = assignedClasses
+      } else {
+        // 전체 학생 조회 권한이 있으면 academy_id로 필터링
+        query = `SELECT * FROM students WHERE academy_id = ? AND status = 'active' ORDER BY name`
+        params = [userInfo.parent_user_id || user.id]
+      }
+    } else {
+      // 원장님인 경우 자신의 학원 학생 전체 조회
+      query = `SELECT * FROM students WHERE academy_id = ? AND status = 'active' ORDER BY name`
+      params = [user.id]
+    }
+    
+    const { results } = await c.env.DB.prepare(query).bind(...params).all()
     
     return c.json({ success: true, students: results })
   } catch (err) {
     console.error('Get students error:', err)
-    return c.json({ success: false, error: '학생 목록 조회 실패' }, 500)
+    return c.json({ success: false, error: '학생 목록 조회 실패', details: err.message }, 500)
   }
 })
 
@@ -18514,6 +18559,242 @@ app.delete('/api/classes/:id', async (c) => {
   } catch (error) {
     console.error('Delete class error:', error)
     return c.json({ success: false, error: '반 삭제 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
+// 일일 성과 기록 조회
+app.get('/api/daily-records', async (c) => {
+  try {
+    const studentId = c.req.query('studentId')
+    const date = c.req.query('date')
+    const startDate = c.req.query('startDate')
+    const endDate = c.req.query('endDate')
+    
+    let query = 'SELECT * FROM daily_records WHERE 1=1'
+    const params = []
+    
+    if (studentId) {
+      query += ' AND student_id = ?'
+      params.push(studentId)
+    }
+    
+    if (date) {
+      query += ' AND record_date = ?'
+      params.push(date)
+    } else if (startDate && endDate) {
+      query += ' AND record_date BETWEEN ? AND ?'
+      params.push(startDate, endDate)
+    }
+    
+    query += ' ORDER BY record_date DESC, id DESC'
+    
+    const result = await c.env.DB.prepare(query).bind(...params).all()
+    
+    return c.json({ success: true, records: result.results || [] })
+  } catch (error) {
+    console.error('Get daily records error:', error)
+    return c.json({ success: false, error: '일일 성과 조회 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
+// 일일 성과 기록 추가
+app.post('/api/daily-records', async (c) => {
+  try {
+    const data = await c.req.json()
+    const user = JSON.parse(c.req.header('X-User-Data-Base64') ? decodeURIComponent(escape(atob(c.req.header('X-User-Data-Base64') || ''))) : '{"id":1}')
+    
+    // 사용자 정보 및 권한 조회
+    const userInfo = await c.env.DB.prepare(
+      'SELECT id, user_type, permissions FROM users WHERE id = ?'
+    ).bind(user.id).first()
+    
+    // 선생님인 경우 권한 확인
+    if (userInfo && userInfo.user_type === 'teacher') {
+      let permissions = { canWriteDailyReports: false, assignedClasses: [] }
+      
+      if (userInfo.permissions) {
+        try {
+          permissions = JSON.parse(userInfo.permissions)
+        } catch (e) {
+          console.error('Failed to parse permissions:', e)
+        }
+      }
+      
+      // 일일 성과 작성 권한이 없으면 거부
+      if (!permissions.canWriteDailyReports) {
+        return c.json({ success: false, error: '일일 성과 작성 권한이 없습니다.' }, 403)
+      }
+      
+      // 학생이 배정된 반에 속하는지 확인
+      const student = await c.env.DB.prepare(
+        'SELECT class_id FROM students WHERE id = ?'
+      ).bind(data.studentId).first()
+      
+      if (!student) {
+        return c.json({ success: false, error: '학생을 찾을 수 없습니다.' }, 404)
+      }
+      
+      const assignedClasses = permissions.assignedClasses || []
+      if (!permissions.canViewAllStudents && !assignedClasses.includes(student.class_id)) {
+        return c.json({ success: false, error: '이 학생의 성과를 작성할 권한이 없습니다.' }, 403)
+      }
+    }
+    
+    const result = await c.env.DB.prepare(`
+      INSERT INTO daily_records (
+        student_id, course_id, record_date, attendance, homework_status,
+        understanding_level, participation_level, achievement, memo, created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+    `).bind(
+      data.studentId,
+      data.courseId || null,
+      data.recordDate,
+      data.attendance || null,
+      data.homeworkStatus || null,
+      data.understandingLevel || null,
+      data.participationLevel || null,
+      data.achievement || null,
+      data.memo || null
+    ).run()
+    
+    return c.json({ success: true, id: result.meta.last_row_id, message: '일일 성과가 기록되었습니다.' })
+  } catch (error) {
+    console.error('Add daily record error:', error)
+    return c.json({ success: false, error: '일일 성과 기록 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
+// 일일 성과 기록 수정
+app.put('/api/daily-records/:id', async (c) => {
+  try {
+    const recordId = c.req.param('id')
+    const data = await c.req.json()
+    const user = JSON.parse(c.req.header('X-User-Data-Base64') ? decodeURIComponent(escape(atob(c.req.header('X-User-Data-Base64') || ''))) : '{"id":1}')
+    
+    // 사용자 정보 및 권한 조회
+    const userInfo = await c.env.DB.prepare(
+      'SELECT id, user_type, permissions FROM users WHERE id = ?'
+    ).bind(user.id).first()
+    
+    // 선생님인 경우 권한 확인
+    if (userInfo && userInfo.user_type === 'teacher') {
+      let permissions = { canWriteDailyReports: false, assignedClasses: [] }
+      
+      if (userInfo.permissions) {
+        try {
+          permissions = JSON.parse(userInfo.permissions)
+        } catch (e) {
+          console.error('Failed to parse permissions:', e)
+        }
+      }
+      
+      if (!permissions.canWriteDailyReports) {
+        return c.json({ success: false, error: '일일 성과 수정 권한이 없습니다.' }, 403)
+      }
+      
+      // 기록의 학생이 배정된 반에 속하는지 확인
+      const record = await c.env.DB.prepare(
+        'SELECT student_id FROM daily_records WHERE id = ?'
+      ).bind(recordId).first()
+      
+      if (!record) {
+        return c.json({ success: false, error: '기록을 찾을 수 없습니다.' }, 404)
+      }
+      
+      const student = await c.env.DB.prepare(
+        'SELECT class_id FROM students WHERE id = ?'
+      ).bind(record.student_id).first()
+      
+      const assignedClasses = permissions.assignedClasses || []
+      if (!permissions.canViewAllStudents && !assignedClasses.includes(student.class_id)) {
+        return c.json({ success: false, error: '이 학생의 성과를 수정할 권한이 없습니다.' }, 403)
+      }
+    }
+    
+    await c.env.DB.prepare(`
+      UPDATE daily_records SET
+        course_id = ?,
+        record_date = ?,
+        attendance = ?,
+        homework_status = ?,
+        understanding_level = ?,
+        participation_level = ?,
+        achievement = ?,
+        memo = ?
+      WHERE id = ?
+    `).bind(
+      data.courseId || null,
+      data.recordDate,
+      data.attendance || null,
+      data.homeworkStatus || null,
+      data.understandingLevel || null,
+      data.participationLevel || null,
+      data.achievement || null,
+      data.memo || null,
+      recordId
+    ).run()
+    
+    return c.json({ success: true, message: '일일 성과가 수정되었습니다.' })
+  } catch (error) {
+    console.error('Update daily record error:', error)
+    return c.json({ success: false, error: '일일 성과 수정 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
+// 일일 성과 기록 삭제
+app.delete('/api/daily-records/:id', async (c) => {
+  try {
+    const recordId = c.req.param('id')
+    const user = JSON.parse(c.req.header('X-User-Data-Base64') ? decodeURIComponent(escape(atob(c.req.header('X-User-Data-Base64') || ''))) : '{"id":1}')
+    
+    // 사용자 정보 및 권한 조회
+    const userInfo = await c.env.DB.prepare(
+      'SELECT id, user_type, permissions FROM users WHERE id = ?'
+    ).bind(user.id).first()
+    
+    // 선생님인 경우 권한 확인
+    if (userInfo && userInfo.user_type === 'teacher') {
+      let permissions = { canWriteDailyReports: false, assignedClasses: [] }
+      
+      if (userInfo.permissions) {
+        try {
+          permissions = JSON.parse(userInfo.permissions)
+        } catch (e) {
+          console.error('Failed to parse permissions:', e)
+        }
+      }
+      
+      if (!permissions.canWriteDailyReports) {
+        return c.json({ success: false, error: '일일 성과 삭제 권한이 없습니다.' }, 403)
+      }
+      
+      // 기록의 학생이 배정된 반에 속하는지 확인
+      const record = await c.env.DB.prepare(
+        'SELECT student_id FROM daily_records WHERE id = ?'
+      ).bind(recordId).first()
+      
+      if (!record) {
+        return c.json({ success: false, error: '기록을 찾을 수 없습니다.' }, 404)
+      }
+      
+      const student = await c.env.DB.prepare(
+        'SELECT class_id FROM students WHERE id = ?'
+      ).bind(record.student_id).first()
+      
+      const assignedClasses = permissions.assignedClasses || []
+      if (!permissions.canViewAllStudents && !assignedClasses.includes(student.class_id)) {
+        return c.json({ success: false, error: '이 학생의 성과를 삭제할 권한이 없습니다.' }, 403)
+      }
+    }
+    
+    await c.env.DB.prepare(`
+      DELETE FROM daily_records WHERE id = ?
+    `).bind(recordId).run()
+    
+    return c.json({ success: true, message: '일일 성과가 삭제되었습니다.' })
+  } catch (error) {
+    console.error('Delete daily record error:', error)
+    return c.json({ success: false, error: '일일 성과 삭제 중 오류가 발생했습니다.' }, 500)
   }
 })
 
