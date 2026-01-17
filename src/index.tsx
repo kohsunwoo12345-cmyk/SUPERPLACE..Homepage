@@ -19412,7 +19412,7 @@ app.get('/sms/sender/request', (c) => {
                                     </ul>
                                 </li>
                                 <li><strong>문자메시지 이용계약서</strong> (필수, 도장 날인 필수)</li>
-                                <li>파일 형식: JPG, PNG, PDF (각 파일 최대 5MB)</li>
+                                <li>파일 형식: JPG, PNG, PDF, DOC, DOCX (각 파일 최대 5MB)</li>
                                 <li>승인 소요: 평일 업무시간(10시~17시) 내 평균 1~3시간 소요</li>
                                 <li class="text-red-700 font-bold">⚠️ 모든 서류는 접수일 기준 최근 1개월 이내만 인정</li>
                             </ul>
@@ -19477,13 +19477,13 @@ app.get('/sms/sender/request', (c) => {
                             <label class="block text-sm font-bold text-gray-700 mb-2">1. 사업자 등록증 * <span class="text-red-600">(필수)</span></label>
                             <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-purple-500 transition cursor-pointer upload-area"
                                  data-target="businessRegistrationImage">
-                                <input type="file" id="businessRegistrationImage" accept="image/*,application/pdf" class="hidden" required>
+                                <input type="file" id="businessRegistrationImage" accept="image/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" class="hidden" required>
                                 <div class="upload-placeholder">
                                     <svg class="w-12 h-12 text-gray-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
                                     </svg>
                                     <p class="text-gray-600 font-medium mb-1">클릭하거나 파일을 드래그하세요</p>
-                                    <p class="text-sm text-gray-500">JPG, PNG, PDF (최대 5MB)</p>
+                                    <p class="text-sm text-gray-500">JPG, PNG, PDF, DOC, DOCX (최대 5MB)</p>
                                 </div>
                                 <div class="upload-preview hidden">
                                     <img class="preview-image max-w-full max-h-64 mx-auto rounded-lg mb-3">
@@ -19501,13 +19501,13 @@ app.get('/sms/sender/request', (c) => {
                             <p class="text-xs text-gray-500 mb-2">발신번호가 명확히 표시되어야 합니다 (010-1234-5678 형식, 가림 없이)</p>
                             <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-purple-500 transition cursor-pointer upload-area"
                                  data-target="certificateImage">
-                                <input type="file" id="certificateImage" accept="image/*,application/pdf" class="hidden" required>
+                                <input type="file" id="certificateImage" accept="image/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" class="hidden" required>
                                 <div class="upload-placeholder">
                                     <svg class="w-12 h-12 text-gray-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
                                     </svg>
                                     <p class="text-gray-600 font-medium mb-1">클릭하거나 파일을 드래그하세요</p>
-                                    <p class="text-sm text-gray-500">JPG, PNG, PDF (최대 5MB)</p>
+                                    <p class="text-sm text-gray-500">JPG, PNG, PDF, DOC, DOCX (최대 5MB)</p>
                                 </div>
                                 <div class="upload-preview hidden">
                                     <img class="preview-image max-w-full max-h-64 mx-auto rounded-lg mb-3">
@@ -19526,13 +19526,13 @@ app.get('/sms/sender/request', (c) => {
                             <p class="text-xs text-gray-500 mb-2">사업자 대표도 본인의 재직증명서 제출 필요</p>
                             <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-purple-500 transition cursor-pointer upload-area"
                                  data-target="employmentCertImage">
-                                <input type="file" id="employmentCertImage" accept="image/*,application/pdf" class="hidden" required>
+                                <input type="file" id="employmentCertImage" accept="image/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" class="hidden" required>
                                 <div class="upload-placeholder">
                                     <svg class="w-12 h-12 text-gray-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
                                     </svg>
                                     <p class="text-gray-600 font-medium mb-1">클릭하거나 파일을 드래그하세요</p>
-                                    <p class="text-sm text-gray-500">JPG, PNG, PDF (최대 5MB)</p>
+                                    <p class="text-sm text-gray-500">JPG, PNG, PDF, DOC, DOCX (최대 5MB)</p>
                                 </div>
                                 <div class="upload-preview hidden">
                                     <img class="preview-image max-w-full max-h-64 mx-auto rounded-lg mb-3">
@@ -19549,13 +19549,13 @@ app.get('/sms/sender/request', (c) => {
                             <label class="block text-sm font-bold text-gray-700 mb-2">4. 문자메시지 이용계약서 * <span class="text-red-600">(필수, 도장 날인 필수)</span></label>
                             <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-purple-500 transition cursor-pointer upload-area"
                                  data-target="contractImage">
-                                <input type="file" id="contractImage" accept="image/*,application/pdf" class="hidden" required>
+                                <input type="file" id="contractImage" accept="image/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" class="hidden" required>
                                 <div class="upload-placeholder">
                                     <svg class="w-12 h-12 text-gray-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
                                     </svg>
                                     <p class="text-gray-600 font-medium mb-1">클릭하거나 파일을 드래그하세요</p>
-                                    <p class="text-sm text-gray-500">JPG, PNG, PDF (최대 5MB)</p>
+                                    <p class="text-sm text-gray-500">JPG, PNG, PDF, DOC, DOCX (최대 5MB)</p>
                                 </div>
                                 <div class="upload-preview hidden">
                                     <img class="preview-image max-w-full max-h-64 mx-auto rounded-lg mb-3">
@@ -19655,8 +19655,15 @@ app.get('/sms/sender/request', (c) => {
                     e.preventDefault()
                     uploadArea.classList.remove('border-purple-500', 'bg-purple-50')
                     const file = e.dataTransfer.files[0]
-                    if (file && (file.type.startsWith('image/') || file.type === 'application/pdf')) {
+                    if (file && (
+                        file.type.startsWith('image/') || 
+                        file.type === 'application/pdf' ||
+                        file.type === 'application/msword' ||
+                        file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+                    )) {
                         handleFileUpload(file, fileInput, placeholder, preview, previewImage, fileNameEl)
+                    } else if (file) {
+                        alert('JPG, PNG, PDF, DOC, DOCX 파일만 업로드 가능합니다.')
                     }
                 })
 
@@ -19684,17 +19691,27 @@ app.get('/sms/sender/request', (c) => {
                 }
 
                 // 파일 타입 검증
-                const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf']
+                const allowedTypes = [
+                    'image/jpeg', 
+                    'image/jpg', 
+                    'image/png', 
+                    'application/pdf',
+                    'application/msword', // .doc
+                    'application/vnd.openxmlformats-officedocument.wordprocessingml.document' // .docx
+                ]
                 if (!allowedTypes.includes(file.type)) {
-                    alert('JPG, PNG, PDF 파일만 업로드 가능합니다.')
+                    alert('JPG, PNG, PDF, DOC, DOCX 파일만 업로드 가능합니다.')
                     return
                 }
 
                 const reader = new FileReader()
                 reader.onload = (e) => {
-                    // PDF는 이미지 미리보기 대신 파일명만 표시
+                    // PDF와 Word 파일은 이미지 미리보기 대신 파일명만 표시
                     if (file.type === 'application/pdf') {
                         previewImage.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2YzZjRmNiIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LXNpemU9IjQwIiBmaWxsPSIjZWY0NDQ0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+UERGPC90ZXh0Pjwvc3ZnPg=='
+                        previewImage.classList.add('max-h-32')
+                    } else if (file.type === 'application/msword' || file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+                        previewImage.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2YzZjRmNiIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LXNpemU9IjM1IiBmaWxsPSIjMjk2N2FhIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+RE9DPC90ZXh0Pjwvc3ZnPg=='
                         previewImage.classList.add('max-h-32')
                     } else {
                         previewImage.src = e.target.result
