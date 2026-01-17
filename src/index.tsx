@@ -11545,7 +11545,7 @@ app.post('/api/students', async (c) => {
   }
 })
 
-// DELETE /api/students/:id - 학생 삭제 (Foreign key safe deletion)
+// DELETE /api/students/:id - 학생 삭제 (Soft Delete - 안전)
 app.delete('/api/students/:id', async (c) => {
   try {
     const studentId = c.req.param('id')
@@ -11554,24 +11554,24 @@ app.delete('/api/students/:id', async (c) => {
       return c.json({ success: false, error: '학생 ID가 필요합니다.' }, 400)
     }
     
-    console.log('[DeleteStudent] Starting deletion for student ID:', studentId)
+    console.log('[DeleteStudent] Soft deleting student ID:', studentId)
     
-    // D1 batch를 사용하여 안전하게 삭제
-    const statements = [
-      // 1. 학생의 class_id를 NULL로 설정 (외래키 해제)
-      c.env.DB.prepare('UPDATE students SET class_id = NULL WHERE id = ?').bind(studentId),
-      // 2. daily_records 삭제
-      c.env.DB.prepare('DELETE FROM daily_records WHERE student_id = ?').bind(studentId),
-      // 3. 학생 삭제
-      c.env.DB.prepare('DELETE FROM students WHERE id = ?').bind(studentId)
-    ]
+    // Soft Delete: status를 'deleted'로 변경
+    // 이 방법은 외래키 제약과 무관하게 작동
+    const result = await c.env.DB.prepare(`
+      UPDATE students 
+      SET status = 'deleted', updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `).bind(studentId).run()
     
-    const results = await c.env.DB.batch(statements)
+    if (result.meta.changes === 0) {
+      return c.json({ 
+        success: false, 
+        error: '해당 학생을 찾을 수 없습니다.' 
+      }, 404)
+    }
     
-    console.log('[DeleteStudent] Batch delete results:', results.map(r => ({
-      success: r.success,
-      changes: r.meta?.changes
-    })))
+    console.log('[DeleteStudent] Soft deleted student successfully')
     
     return c.json({ 
       success: true, 
@@ -24644,6 +24644,35 @@ app.get('/api/init-student-tables', async (c) => {
     return c.json({
       success: true,
       message: '학생 관리 테이블이 성공적으로 생성되었습니다! (students, classes, courses, daily_records)'
+    })
+  } catch (error: any) {
+    return c.json({
+      success: false,
+      error: error.message
+    }, 500)
+  }
+})
+
+// 디버그: 학생 참조 확인 API
+app.get('/api/debug/student-references/:studentId', async (c) => {
+  try {
+    const studentId = c.req.param('studentId')
+    const { DB } = c.env
+    
+    const references: any = {}
+    
+    // daily_records 확인
+    const dailyRecords = await DB.prepare('SELECT COUNT(*) as count FROM daily_records WHERE student_id = ?').bind(studentId).first()
+    references.daily_records = dailyRecords
+    
+    // 학생 정보 확인
+    const student = await DB.prepare('SELECT * FROM students WHERE id = ?').bind(studentId).first()
+    references.student = student
+    
+    return c.json({
+      success: true,
+      studentId,
+      references
     })
   } catch (error: any) {
     return c.json({
