@@ -8586,13 +8586,13 @@ app.get('/dashboard', (c) => {
                             bankName,
                             accountNumber,
                             depositorName,
-                            message: message + ' [포인트: ' + amount.toLocaleString() + 'P + 부가세: ' + vat.toLocaleString() + '원 = 총 ' + totalAmount.toLocaleString() + '원]'
+                            message: message + ` [포인트: ${amount.toLocaleString()}P + 부가세: ${vat.toLocaleString()}원 = 총 ${totalAmount.toLocaleString()}원]`
                         })
                     })
 
                     const data = await response.json()
                     if (data.success) {
-                        alert('입금 신청이 완료되었습니다!\\n\\n충전 포인트: ' + amount.toLocaleString() + 'P\\n부가세 (10%): ' + vat.toLocaleString() + '원\\n입금하실 금액: ' + totalAmount.toLocaleString() + '원\\n\\n관리자 확인 후 ' + amount.toLocaleString() + 'P가 지급됩니다.')
+                        alert(`입금 신청이 완료되었습니다!\n\n충전 포인트: ${amount.toLocaleString()}P\n부가세 (10%): ${vat.toLocaleString()}원\n입금하실 금액: ${totalAmount.toLocaleString()}원\n\n관리자 확인 후 ${amount.toLocaleString()}P가 지급됩니다.`)
                         closeDepositModal()
                         // 폼 초기화
                         document.getElementById('depositAmount').value = ''
@@ -17147,7 +17147,6 @@ app.get('/my-deposits', (c) => {
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>내 입금 내역 - 슈퍼플레이스</title>
         <script src="https://cdn.tailwindcss.com"></script>
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
         <style>
             @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
             * { font-family: 'Pretendard Variable', sans-serif; }
@@ -17155,14 +17154,9 @@ app.get('/my-deposits', (c) => {
     </head>
     <body class="bg-gray-50">
         <div class="max-w-7xl mx-auto px-4 py-8">
-            <div class="mb-8 flex items-center justify-between">
-                <div>
-                    <h1 class="text-3xl font-bold text-gray-900 mb-2">💰 내 입금 내역</h1>
-                    <p class="text-gray-600">포인트 충전 신청 내역을 확인하세요</p>
-                </div>
-                <a href="/dashboard" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium">
-                    <i class="fas fa-arrow-left mr-2"></i> 대시보드
-                </a>
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">💰 내 입금 내역</h1>
+                <p class="text-gray-600">포인트 충전 신청 내역을 확인하세요</p>
             </div>
 
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
@@ -17171,18 +17165,15 @@ app.get('/my-deposits', (c) => {
                         <thead class="bg-gray-50 border-b border-gray-200">
                             <tr>
                                 <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">신청일시</th>
-                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">충전 포인트</th>
-                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">부가세 (10%)</th>
-                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">총 입금액</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">입금액</th>
                                 <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">입금자명</th>
-                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">은행</th>
                                 <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">상태</th>
                                 <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">처리일시</th>
                             </tr>
                         </thead>
                         <tbody id="depositList" class="divide-y divide-gray-200">
                             <tr>
-                                <td colspan="8" class="px-6 py-12 text-center text-gray-500">
+                                <td colspan="5" class="px-6 py-12 text-center text-gray-500">
                                     <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
                                     로딩 중...
                                 </td>
@@ -17191,66 +17182,303 @@ app.get('/my-deposits', (c) => {
                     </table>
                 </div>
             </div>
+
+            <div class="mt-6">
+                <a href="/dashboard" class="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium">
+                    ← 대시보드로 돌아가기
+                </a>
+            </div>
         </div>
 
         <script>
-            async function loadDeposits() {
-                const user = JSON.parse(localStorage.getItem('user'));
-                if (!user || !user.id) {
-                    alert('로그인이 필요합니다.');
+            let currentUserId = null;
+
+            // 시스템 기능 권한 (DB의 program_key와 일치)
+            const systemFeatures = [
+                { 
+                    key: 'search_volume', 
+                    name: '네이버 검색량 조회',
+                    icon: '📊',
+                    description: '키워드 검색량, 플레이스 순위, 경쟁사 분석'
+                },
+                { 
+                    key: 'sms', 
+                    name: 'SMS 문자 발송',
+                    icon: '📱',
+                    description: '문자 작성, 발신번호 관리, 발송 내역'
+                },
+                { 
+                    key: 'landing_builder', 
+                    name: '랜딩페이지 생성기',
+                    icon: '🚀',
+                    description: 'AI 기반 랜딩페이지 자동 생성'
+                },
+                { 
+                    key: 'analytics', 
+                    name: '분석 도구',
+                    icon: '📈',
+                    description: '데이터 분석 및 리포트 생성 (예정)'
+                }
+            ];
+
+            async function managePermissions(userId, userName) {
+                currentUserId = userId;
+                document.getElementById('modalUserName').textContent = userName + '님의 프로그램 권한 설정';
+                
+                // 현재 권한 조회 (새로운 API)
+                const response = await fetch('/api/user/permissions?userId=' + userId);
+                const data = await response.json();
+                
+                // 시스템 기능 권한 렌더링
+                const systemPerms = document.getElementById('systemPermissions');
+                systemPerms.innerHTML = systemFeatures.map(feature => {
+                    const hasPermission = data.success && data.permissions && data.permissions[feature.key];
+                    const borderClass = hasPermission ? 'border-blue-500 bg-blue-50' : 'border-gray-200';
+                    return '<label class="flex items-start p-4 border-2 ' + borderClass + ' rounded-lg hover:border-blue-300 cursor-pointer transition">' +
+                        '<input type="checkbox" ' +
+                               'class="w-5 h-5 text-blue-600 rounded mr-3 mt-1" ' +
+                               'data-program-key="' + feature.key + '" ' +
+                               (hasPermission ? 'checked' : '') + '>' +
+                        '<div class="flex-1">' +
+                            '<div class="flex items-center gap-2 mb-1">' +
+                                '<span class="text-xl">' + feature.icon + '</span>' +
+                                '<span class="text-sm font-bold text-gray-900">' + feature.name + '</span>' +
+                            '</div>' +
+                            '<p class="text-xs text-gray-600">' + feature.description + '</p>' +
+                        '</div>' +
+                    '</label>';
+                }).join('');
+
+                // 모달 표시
+                document.getElementById('permissionModal').classList.remove('hidden');
+            }
+
+            async function savePermissions() {
+                const checkboxes = document.querySelectorAll('#systemPermissions input[type="checkbox"]');
+                const adminUser = JSON.parse(localStorage.getItem('user') || '{}');
+                
+                let successCount = 0;
+                let errorCount = 0;
+                
+                for (const checkbox of checkboxes) {
+                    const programKey = checkbox.dataset.programKey;
+                    
+                    try {
+                        if (checkbox.checked) {
+                            // 권한 부여
+                            const response = await fetch('/api/admin/grant-permission', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    userId: currentUserId,
+                                    programKey: programKey,
+                                    grantedBy: adminUser.id || 1
+                                })
+                            });
+                            const result = await response.json();
+                            if (result.success) {
+                                successCount++;
+                            } else {
+                                errorCount++;
+                            }
+                        } else {
+                            // 권한 회수
+                            const response = await fetch('/api/admin/revoke-permission', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    userId: currentUserId,
+                                    programKey: programKey,
+                                    adminId: adminUser.id || 1
+                                })
+                            });
+                            const result = await response.json();
+                            if (result.success) {
+                                successCount++;
+                            } else {
+                                errorCount++;
+                            }
+                        }
+                    } catch (err) {
+                        console.error('권한 처리 오류:', err);
+                        errorCount++;
+                    }
+                }
+
+                if (errorCount === 0) {
+                    alert('✅ 권한이 성공적으로 업데이트되었습니다!');
+                } else {
+                    alert('⚠️ 권한 업데이트 완료\n성공: ' + successCount + '개\n실패: ' + errorCount + '개');
+                }
+                closeModal();
+                location.reload(); // 페이지 새로고침으로 변경사항 반영
+            }
+
+            function closeModal() {
+                document.getElementById('permissionModal').classList.add('hidden');
+                currentUserId = null;
+            }
+
+            function logout() {
+                if(confirm('로그아웃 하시겠습니까?')) {
+                    localStorage.removeItem('user');
                     window.location.href = '/';
+                }
+            }
+
+            // 비밀번호 변경
+            async function changePassword(userId, userName) {
+                const newPassword = prompt(userName + '님의 새 비밀번호를 입력하세요 (최소 6자):');
+                if (!newPassword) return;
+                
+                if (newPassword.length < 6) {
+                    alert('비밀번호는 최소 6자 이상이어야 합니다.');
                     return;
                 }
 
                 try {
-                    const response = await fetch('/api/deposit/my-requests/' + user.id);
+                    const response = await fetch('/api/admin/users/' + userId + '/password', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ newPassword })
+                    });
+
                     const data = await response.json();
-
-                    const depositList = document.getElementById('depositList');
-                    
-                    if (!data.success || !data.requests || data.requests.length === 0) {
-                        depositList.innerHTML = '<tr><td colspan="8" class="px-6 py-12 text-center text-gray-500"><i class="fas fa-inbox text-4xl text-gray-300 mb-4"></i><div>입금 신청 내역이 없습니다</div></td></tr>';
-                        return;
+                    if (data.success) {
+                        alert('비밀번호가 변경되었습니다!');
+                    } else {
+                        alert('오류: ' + (data.error || '비밀번호 변경 실패'));
                     }
-
-                    depositList.innerHTML = data.requests.map(req => {
-                        const createdDate = new Date(req.created_at);
-                        const processedDate = req.processed_at ? new Date(req.processed_at) : null;
-                        
-                        // 부가세 계산 (포인트 금액의 10%)
-                        const points = parseInt(req.amount) || 0;
-                        const vat = Math.round(points * 0.1);
-                        const totalAmount = points + vat;
-
-                        let statusBadge = '';
-                        if (req.status === 'approved') {
-                            statusBadge = '<span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">✓ 승인</span>';
-                        } else if (req.status === 'rejected') {
-                            statusBadge = '<span class="px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-medium">✗ 거절</span>';
-                        } else {
-                            statusBadge = '<span class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-sm font-medium">⏳ 대기중</span>';
-                        }
-
-                        return '<tr class="hover:bg-gray-50">' +
-                            '<td class="px-6 py-4 text-sm text-gray-900">' + createdDate.toLocaleString('ko-KR') + '</td>' +
-                            '<td class="px-6 py-4 text-sm font-bold text-blue-600">' + points.toLocaleString() + 'P</td>' +
-                            '<td class="px-6 py-4 text-sm text-gray-600">+' + vat.toLocaleString() + '원</td>' +
-                            '<td class="px-6 py-4 text-sm font-bold text-gray-900">' + totalAmount.toLocaleString() + '원</td>' +
-                            '<td class="px-6 py-4 text-sm text-gray-700">' + (req.depositor_name || '-') + '</td>' +
-                            '<td class="px-6 py-4 text-sm text-gray-600">' + (req.bank_name || '-') + '</td>' +
-                            '<td class="px-6 py-4">' + statusBadge + '</td>' +
-                            '<td class="px-6 py-4 text-sm text-gray-600">' + (processedDate ? processedDate.toLocaleString('ko-KR') : '-') + '</td>' +
-                        '</tr>';
-                    }).join('');
-                } catch (error) {
-                    console.error('입금 내역 로드 실패:', error);
-                    const depositList = document.getElementById('depositList');
-                    depositList.innerHTML = '<tr><td colspan="8" class="px-6 py-12 text-center text-red-500"><i class="fas fa-exclamation-circle text-4xl mb-4"></i><div>입금 내역을 불러오는데 실패했습니다</div></td></tr>';
+                } catch (err) {
+                    alert('비밀번호 변경 중 오류가 발생했습니다.');
                 }
             }
 
-            // 페이지 로드 시 자동 실행
-            window.addEventListener('DOMContentLoaded', loadDeposits);
+            // 포인트 지급
+            async function givePoints(userId, userName, currentPoints) {
+                // data 속성에서 전달된 문자열을 숫자로 변환
+                currentPoints = parseInt(currentPoints) || 0;
+                const pointsStr = prompt(userName + '님에게 지급할 포인트를 입력하세요 (현재: ' + currentPoints + 'P):');
+                if (!pointsStr) return;
+                
+                const points = parseInt(pointsStr);
+                if (isNaN(points) || points <= 0) {
+                    alert('올바른 포인트를 입력하세요.');
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/api/admin/users/' + userId + '/points', {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ points })
+                    });
+
+                    const data = await response.json();
+                    if (data.success) {
+                        alert(points.toLocaleString() + 'P가 지급되었습니다! 새 잔액: ' + data.newPoints.toLocaleString() + 'P');
+                        location.reload();
+                    } else {
+                        alert('오류: ' + (data.error || '포인트 지급 실패'));
+                    }
+                } catch (err) {
+                    alert('포인트 지급 중 오류가 발생했습니다.');
+                }
+            }
+
+            // 포인트 차감 (환수)
+            async function deductPoints(userId, userName, currentPoints) {
+                // data 속성에서 전달된 문자열을 숫자로 변환
+                currentPoints = parseInt(currentPoints) || 0;
+                const pointsStr = prompt(userName + '님의 포인트를 차감합니다 (현재: ' + currentPoints.toLocaleString() + 'P) - 차감할 포인트를 입력하세요:');
+                if (!pointsStr) return;
+                
+                const points = parseInt(pointsStr);
+                if (isNaN(points) || points <= 0) {
+                    alert('올바른 포인트를 입력하세요.');
+                    return;
+                }
+
+                // 현재 포인트보다 많이 차감하려는 경우 경고
+                if (points > currentPoints) {
+                    if (!confirm('경고: 현재 포인트(' + currentPoints.toLocaleString() + 'P)보다 많은 금액(' + points.toLocaleString() + 'P)을 차감하면 포인트가 마이너스가 됩니다. 계속하시겠습니까?')) {
+                        return;
+                    }
+                }
+
+                if (!confirm(userName + '님의 포인트를 ' + points.toLocaleString() + 'P 차감하시겠습니까? (차감 후 잔액: ' + (currentPoints - points).toLocaleString() + 'P)')) {
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/api/admin/users/' + userId + '/points/deduct', {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ points })
+                    });
+
+                    const data = await response.json();
+                    if (data.success) {
+                        alert(points.toLocaleString() + 'P가 차감되었습니다! 새 잔액: ' + data.newPoints.toLocaleString() + 'P');
+                        location.reload();
+                    } else {
+                        alert('오류: ' + (data.error || '포인트 차감 실패'));
+                    }
+                } catch (err) {
+                    alert('포인트 차감 중 오류가 발생했습니다.');
+                }
+            }
+
+            // 사용자로 로그인
+            async function loginAs(userId, userName) {
+                if (!confirm(userName + '님의 계정으로 로그인하시겠습니까?')) return;
+
+                try {
+                    const response = await fetch('/api/admin/login-as/' + userId, {
+                        method: 'POST'
+                    });
+
+                    const data = await response.json();
+                    if (data.success) {
+                        localStorage.setItem('user', JSON.stringify(data.user));
+                        alert(userName + '님으로 로그인되었습니다!');
+                        window.location.href = '/dashboard';
+                    } else {
+                        alert('오류: ' + (data.error || '로그인 실패'));
+                    }
+                } catch (err) {
+                    alert('로그인 중 오류가 발생했습니다.');
+                }
+            }
+
+            // 함수들을 전역 window 객체에 명시적으로 할당
+            window.changePassword = changePassword;
+            window.givePoints = givePoints;
+            window.deductPoints = deductPoints;
+            window.loginAs = loginAs;
+            window.managePermissions = managePermissions;
+            window.savePermissions = savePermissions;
+            window.closeModal = closeModal;
+            window.logout = logout;
+
+            console.log('✅ Admin functions loaded and ready');
+            console.log('✅ changePassword:', typeof window.changePassword);
+            console.log('✅ givePoints:', typeof window.givePoints);
+            console.log('✅ deductPoints:', typeof window.deductPoints);
+            console.log('✅ loginAs:', typeof window.loginAs);
+            console.log('✅ managePermissions:', typeof window.managePermissions);
+            
+            // 테스트 함수 호출 가능 여부 확인
+            window.testAdminFunctions = function() {
+                console.log('🧪 Testing admin functions...');
+                console.log('changePassword:', typeof changePassword);
+                console.log('givePoints:', typeof givePoints);
+                console.log('deductPoints:', typeof deductPoints);
+                console.log('loginAs:', typeof loginAs);
+                console.log('managePermissions:', typeof managePermissions);
+                alert('Admin functions are loaded! Check console for details.');
+            };
+            console.log('💡 You can test by running: testAdminFunctions()');
         </script>
     </body>
     </html>

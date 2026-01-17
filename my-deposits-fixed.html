@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>내 입금 내역 - 슈퍼플레이스</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
+        * { font-family: 'Pretendard Variable', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">💰 내 입금 내역</h1>
+            <p class="text-gray-600">포인트 충전 신청 내역을 확인하세요</p>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50 border-b border-gray-200">
+                        <tr>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">신청일시</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">입금액</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">입금자명</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">상태</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">처리일시</th>
+                        </tr>
+                    </thead>
+                    <tbody id="depositList" class="divide-y divide-gray-200">
+                        <tr>
+                            <td colspan="5" class="px-6 py-12 text-center text-gray-500">
+                                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                                로딩 중...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="mt-6">
+            <a href="/dashboard" class="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium">
+                ← 대시보드로 돌아가기
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // 로그인 체크
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (!user || !user.id) {
+            alert('로그인이 필요합니다.');
+            window.location.href = '/login';
+        }
+
+        // 입금 내역 로드
+        async function loadDeposits() {
+            try {
+                const response = await fetch(`/api/my-deposits?userId=${user.id}`);
+                const data = await response.json();
+                
+                const tbody = document.getElementById('depositList');
+                
+                if (data.success && data.deposits && data.deposits.length > 0) {
+                    tbody.innerHTML = data.deposits.map(deposit => {
+                        const statusMap = {
+                            'pending': '<span class="px-3 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">대기중</span>',
+                            'approved': '<span class="px-3 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">승인완료</span>',
+                            'rejected': '<span class="px-3 py-1 bg-red-100 text-red-800 text-xs font-medium rounded-full">거절됨</span>'
+                        };
+                        
+                        return `
+                            <tr>
+                                <td class="px-6 py-4 text-sm text-gray-900">${new Date(deposit.created_at).toLocaleString('ko-KR')}</td>
+                                <td class="px-6 py-4 text-sm font-semibold text-gray-900">${deposit.amount.toLocaleString()}원</td>
+                                <td class="px-6 py-4 text-sm text-gray-600">${deposit.depositor_name || '-'}</td>
+                                <td class="px-6 py-4">${statusMap[deposit.status] || deposit.status}</td>
+                                <td class="px-6 py-4 text-sm text-gray-600">${deposit.processed_at ? new Date(deposit.processed_at).toLocaleString('ko-KR') : '-'}</td>
+                            </tr>
+                        `;
+                    }).join('');
+                } else {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="5" class="px-6 py-12 text-center text-gray-500">
+                                입금 신청 내역이 없습니다.
+                            </td>
+                        </tr>
+                    `;
+                }
+            } catch (err) {
+                console.error('입금 내역 로드 실패:', err);
+                document.getElementById('depositList').innerHTML = `
+                    <tr>
+                        <td colspan="5" class="px-6 py-12 text-center text-red-500">
+                            로딩 중 오류가 발생했습니다.
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        // 페이지 로드 시 실행
+        loadDeposits();
+    </script>
+</body>
+</html>
