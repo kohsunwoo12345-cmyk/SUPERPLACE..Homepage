@@ -7828,7 +7828,7 @@ app.get('/dashboard', (c) => {
                 </div>
 
                 <!-- My Landing Pages Section -->
-                <div id="landingPagesSection" class="mb-12 hidden">
+                <div id="landingPagesSection" class="mb-12">
                     <div class="flex justify-between items-center mb-6">
                         <h2 class="text-2xl font-bold text-gray-900">🚀 내 랜딩페이지</h2>
                         <a href="/tools/landing-builder" class="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all shadow-md hover:shadow-lg font-medium flex items-center space-x-2">
@@ -8041,26 +8041,6 @@ app.get('/dashboard', (c) => {
                                 </svg>
                             </div>
                         </a>
-                    </div>
-                </div>
-
-                <!-- My Landing Pages Section -->
-                <div id="landingSection" class="mb-12">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-2xl font-bold text-gray-900">🚀 내 랜딩페이지</h2>
-                        <div class="flex gap-3">
-                            <a href="/tools/landing-builder" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition font-medium text-sm">
-                                + 새 랜딩페이지
-                            </a>
-                            <a href="/tools/landing-manager" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition font-medium text-sm">
-                                전체 관리
-                            </a>
-                        </div>
-                    </div>
-                    <div id="landingPagesContainer" class="grid md:grid-cols-3 gap-6">
-                        <div class="col-span-3 text-center py-12 text-gray-500">
-                            로딩 중...
-                        </div>
                     </div>
                 </div>
 
@@ -8439,11 +8419,8 @@ app.get('/dashboard', (c) => {
                         const data = await response.json()
                         
                         const container = document.getElementById('landingPagesList')
-                        const section = document.getElementById('landingPagesSection')
                         
                         if (data.success && data.pages && data.pages.length > 0) {
-                            // 섹션 표시
-                            if (section) section.classList.remove('hidden')
                             
                             // 최근 4개만 표시 (2x2 그리드)
                             const recentPages = data.pages.slice(0, 4)
@@ -8478,13 +8455,20 @@ app.get('/dashboard', (c) => {
                                 '</div>'
                             }).join('')
                         } else {
-                            // 랜딩페이지가 없으면 섹션 숨김
-                            if (section) section.classList.add('hidden')
+                            // 랜딩페이지가 없을 때 안내 메시지 표시
+                            container.innerHTML = '<div class="col-span-2 text-center py-12 text-gray-500">' +
+                                '<p class="mb-4">아직 생성한 랜딩페이지가 없습니다</p>' +
+                                '<a href="/tools/landing-builder" class="inline-block px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition">' +
+                                '첫 랜딩페이지 만들기' +
+                                '</a>' +
+                                '</div>'
                         }
                     } catch (err) {
                         console.error('랜딩페이지 로드 실패:', err)
-                        const section = document.getElementById('landingPagesSection')
-                        if (section) section.classList.add('hidden')
+                        const container = document.getElementById('landingPagesList')
+                        if (container) {
+                            container.innerHTML = '<div class="col-span-2 text-center py-12 text-red-500">로딩 실패</div>'
+                        }
                     }
                 }
             }
