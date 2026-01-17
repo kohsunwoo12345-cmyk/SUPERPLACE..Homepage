@@ -7704,23 +7704,49 @@ app.get('/dashboard', (c) => {
                 </div>
 
                 <!-- Stats Grid -->
-                <div class="grid md:grid-cols-1 gap-6 mb-12">
-                    <div class="bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl p-8 text-white shadow-xl">
-                        <div class="flex items-center justify-between mb-6">
-                            <div class="text-xl text-blue-100 font-semibold">보유 포인트</div>
-                            <svg class="w-16 h-16 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="grid md:grid-cols-3 gap-6 mb-12">
+                    <div class="bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl p-6 text-white shadow-lg">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="text-sm text-blue-100">보유 포인트</div>
+                            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                             </svg>
                         </div>
-                        <div class="text-6xl font-bold mb-8"><span id="userPoints">0</span>P</div>
-                        <div class="grid grid-cols-2 gap-4">
-                            <button onclick="openDepositModal()" class="w-full bg-white text-blue-600 px-6 py-4 rounded-xl hover:bg-blue-50 transition font-semibold text-lg shadow-md hover:shadow-lg">
+                        <div class="text-4xl font-bold mb-4"><span id="userPoints">0</span>P</div>
+                        <div class="space-y-2">
+                            <button onclick="openDepositModal()" class="w-full bg-white text-blue-600 px-4 py-2 rounded-lg hover:bg-blue-50 transition font-medium text-sm">
                                 💰 입금 신청
                             </button>
-                            <a href="/my-deposits" class="flex items-center justify-center w-full bg-white/20 backdrop-blur-sm text-white px-6 py-4 rounded-xl hover:bg-white/30 transition font-semibold text-lg">
+                            <a href="/my-deposits" class="block w-full bg-blue-50 text-blue-600 px-4 py-2 rounded-lg hover:bg-blue-100 transition font-medium text-sm text-center">
                                 📋 입금 내역
                             </a>
                         </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm hover:shadow-md transition">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="text-sm text-gray-600">등록 학생 현황</div>
+                            <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                            </svg>
+                        </div>
+                        <div class="text-4xl font-bold text-gray-900 mb-2"><span id="studentCount">0</span>명</div>
+                        <a href="/students" class="text-sm text-purple-600 hover:text-purple-700 font-medium">
+                            학생 관리 →
+                        </a>
+                    </div>
+
+                    <div class="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm hover:shadow-md transition">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="text-sm text-gray-600">선생님 현황</div>
+                            <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                            </svg>
+                        </div>
+                        <div class="text-4xl font-bold text-gray-900 mb-2"><span id="teacherCount">0</span>명</div>
+                        <a href="/teachers" class="text-sm text-green-600 hover:text-green-700 font-medium">
+                            선생님 관리 →
+                        </a>
                     </div>
                 </div>
 
@@ -8273,6 +8299,8 @@ app.get('/dashboard', (c) => {
             checkUserPermissions()
             loadUserPoints()
             loadMyLandingPages()
+            loadStudentCount()
+            loadTeacherCount()
 
             function returnToAdmin() {
                 const originalAdmin = JSON.parse(localStorage.getItem('original_admin'))
@@ -8314,6 +8342,38 @@ app.get('/dashboard', (c) => {
                         }
                     } catch (err) {
                         console.error('포인트 로드 실패:', err)
+                    }
+                }
+            }
+
+            async function loadStudentCount() {
+                const user = JSON.parse(localStorage.getItem('user'))
+                if (user && user.id) {
+                    try {
+                        const response = await fetch('/api/students?userId=' + user.id)
+                        const data = await response.json()
+                        if (data.success && data.students) {
+                            const count = data.students.length
+                            document.getElementById('studentCount').textContent = count
+                        }
+                    } catch (err) {
+                        console.error('학생 수 로드 실패:', err)
+                    }
+                }
+            }
+
+            async function loadTeacherCount() {
+                const user = JSON.parse(localStorage.getItem('user'))
+                if (user && user.id) {
+                    try {
+                        const response = await fetch('/api/teachers?userId=' + user.id)
+                        const data = await response.json()
+                        if (data.success && data.teachers) {
+                            const count = data.teachers.length
+                            document.getElementById('teacherCount').textContent = count
+                        }
+                    } catch (err) {
+                        console.error('선생님 수 로드 실패:', err)
                     }
                 }
             }
