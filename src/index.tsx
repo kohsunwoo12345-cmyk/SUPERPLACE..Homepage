@@ -17334,6 +17334,43 @@ app.post('/api/teachers/apply', async (c) => {
       // 컬럼이 이미 존재하면 에러 무시
     }
     
+    // teacher_applications 테이블 자동 생성
+    try {
+      await c.env.DB.prepare(`
+        CREATE TABLE IF NOT EXISTS teacher_applications (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          email TEXT NOT NULL,
+          password TEXT NOT NULL,
+          name TEXT NOT NULL,
+          phone TEXT,
+          academy_name TEXT NOT NULL,
+          director_email TEXT,
+          verification_code TEXT,
+          status TEXT DEFAULT 'pending',
+          applied_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          processed_at DATETIME,
+          processed_by INTEGER,
+          reject_reason TEXT,
+          FOREIGN KEY (processed_by) REFERENCES users(id)
+        )
+      `).run()
+      console.log('[Migration] teacher_applications table created')
+    } catch (e) {
+      console.log('[Migration] teacher_applications table already exists')
+    }
+    
+    try {
+      await c.env.DB.prepare(`
+        CREATE INDEX IF NOT EXISTS idx_teacher_applications_status ON teacher_applications(status)
+      `).run()
+      await c.env.DB.prepare(`
+        CREATE INDEX IF NOT EXISTS idx_teacher_applications_email ON teacher_applications(email)
+      `).run()
+      console.log('[Migration] teacher_applications indexes created')
+    } catch (e) {
+      // 인덱스가 이미 존재하면 에러 무시
+    }
+    
     const { email, password, name, phone, academyName, verificationCode } = await c.req.json()
     
     // 필수 필드 확인
