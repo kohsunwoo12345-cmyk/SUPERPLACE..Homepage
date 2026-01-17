@@ -17493,14 +17493,20 @@ app.get('/api/teachers/applications', async (c) => {
       return c.json({ success: false, error: '원장님 ID가 필요합니다.' }, 400)
     }
     
-    // 원장님의 인증 코드로 신청한 목록 조회
+    // 원장님의 이메일로 신청한 목록 조회
+    const director = await c.env.DB.prepare(
+      'SELECT email FROM users WHERE id = ?'
+    ).bind(directorId).first()
+    
+    if (!director) {
+      return c.json({ success: false, error: '원장님 정보를 찾을 수 없습니다.' }, 404)
+    }
+    
     const applications = await c.env.DB.prepare(`
-      SELECT ta.*, avc.academy_name
-      FROM teacher_applications ta
-      JOIN academy_verification_codes avc ON ta.verification_code = avc.verification_code
-      WHERE avc.user_id = ? AND ta.status = ?
-      ORDER BY ta.applied_at DESC
-    `).bind(directorId, status).all()
+      SELECT * FROM teacher_applications
+      WHERE director_email = ? AND status = ?
+      ORDER BY applied_at DESC
+    `).bind(director.email, status).all()
     
     return c.json({ success: true, applications: applications.results || [] })
   } catch (error) {
