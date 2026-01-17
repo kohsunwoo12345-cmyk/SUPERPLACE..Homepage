@@ -9520,11 +9520,7 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
             
             try {
                 const response = await fetch('/api/landing/' + id + '?userId=' + user.id, {
-                    method: 'DELETE',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'X-User-Data': JSON.stringify(user) 
-                    }
+                    method: 'DELETE'
                 });
                 const result = await response.json();
                 if (result.success) {

@@ -10808,11 +10808,7 @@ app.get('/tools/landing-manager', (c) => {
             
             try {
                 const response = await fetch('/api/landing/' + id + '?userId=' + user.id, {
-                    method: 'DELETE',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'X-User-Data': JSON.stringify(user) 
-                    }
+                    method: 'DELETE'
                 });
                 const result = await response.json();
                 if (result.success) {
