@@ -17641,8 +17641,15 @@ app.post('/api/teachers/applications/:id/approve', async (c) => {
       message: `${application.name} 선생님의 등록이 승인되었습니다.`
     })
   } catch (error) {
-    console.error('Approve application error:', error)
-    return c.json({ success: false, error: '승인 처리 중 오류가 발생했습니다.' }, 500)
+    console.error('[ApproveTeacher] Error:', error)
+    console.error('[ApproveTeacher] Error message:', error.message)
+    console.error('[ApproveTeacher] Error stack:', error.stack)
+    return c.json({ 
+      success: false, 
+      error: '승인 처리 중 오류가 발생했습니다.',
+      details: error.message,
+      stack: error.stack
+    }, 500)
   }
 })
 
