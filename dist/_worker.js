@@ -15014,7 +15014,7 @@ ${o.director_name} 원장님의 승인을 기다려주세요.`,directorName:o.di
         name, 
         phone, 
         assigned_class,
-        (SELECT COUNT(*) FROM students WHERE teacher_id = users.id) as student_count,
+        0 as student_count,
         created_at
       FROM users 
       WHERE parent_user_id = ? AND user_type = 'teacher'
