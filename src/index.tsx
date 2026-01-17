@@ -6179,14 +6179,19 @@ app.get('/signup', (c) => {
                             }, 2000)
                         } else {
                             messageEl.className = 'mt-4 p-4 rounded-xl bg-red-50 text-red-800 border border-red-200'
-                            messageEl.textContent = result.error || '등록 신청 중 오류가 발생했습니다.'
+                            let errorMsg = result.error || '등록 신청 중 오류가 발생했습니다.'
+                            if (result.details) {
+                                errorMsg += '\\n\\n상세: ' + result.details
+                            }
+                            messageEl.textContent = errorMsg
+                            console.error('Error details:', result)
                         }
                     } catch (error) {
                         console.error('Teacher registration error:', error)
                         const messageEl = document.getElementById('message')
                         messageEl.classList.remove('hidden')
                         messageEl.className = 'mt-4 p-4 rounded-xl bg-red-50 text-red-800 border border-red-200'
-                        messageEl.textContent = '등록 신청 중 오류가 발생했습니다.'
+                        messageEl.textContent = '등록 신청 중 오류가 발생했습니다.\\n\\n' + error.message
                     }
                     return
                 }
@@ -17415,8 +17420,15 @@ app.post('/api/teachers/apply', async (c) => {
       directorName: codeInfo.director_name
     })
   } catch (error) {
-    console.error('Teacher application error:', error)
-    return c.json({ success: false, error: '등록 신청 중 오류가 발생했습니다.' }, 500)
+    console.error('[TeacherApply] Error:', error)
+    console.error('[TeacherApply] Error stack:', error.stack)
+    console.error('[TeacherApply] Error message:', error.message)
+    return c.json({ 
+      success: false, 
+      error: '등록 신청 중 오류가 발생했습니다.', 
+      details: error.message,
+      stack: error.stack
+    }, 500)
   }
 })
 

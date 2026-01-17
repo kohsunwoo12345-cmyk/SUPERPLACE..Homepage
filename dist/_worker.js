@@ -4965,14 +4965,19 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
                             }, 2000)
                         } else {
                             messageEl.className = 'mt-4 p-4 rounded-xl bg-red-50 text-red-800 border border-red-200'
-                            messageEl.textContent = result.error || '등록 신청 중 오류가 발생했습니다.'
+                            let errorMsg = result.error || '등록 신청 중 오류가 발생했습니다.'
+                            if (result.details) {
+                                errorMsg += '\\n\\n상세: ' + result.details
+                            }
+                            messageEl.textContent = errorMsg
+                            console.error('Error details:', result)
                         }
                     } catch (error) {
                         console.error('Teacher registration error:', error)
                         const messageEl = document.getElementById('message')
                         messageEl.classList.remove('hidden')
                         messageEl.className = 'mt-4 p-4 rounded-xl bg-red-50 text-red-800 border border-red-200'
-                        messageEl.textContent = '등록 신청 중 오류가 발생했습니다.'
+                        messageEl.textContent = '등록 신청 중 오류가 발생했습니다.\\n\\n' + error.message
                     }
                     return
                 }
@@ -14964,7 +14969,7 @@ ${o.director_name} 원장님의 승인을 기다려주세요.`,directorName:o.di
         director_email, verification_code, status, applied_at
       )
       VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', datetime('now'))
-    `).bind(t,s,r,a||null,i,o.director_email,l.toUpperCase()).run();return e.json({success:!0,applicationId:m.meta.last_row_id,message:`등록 신청이 완료되었습니다. ${o.director_name} 원장님의 승인을 기다려주세요.`,directorName:o.director_name})}catch(t){return console.error("Teacher application error:",t),e.json({success:!1,error:"등록 신청 중 오류가 발생했습니다."},500)}});d.get("/api/teachers/applications",async e=>{try{const t=e.req.query("directorId"),s=e.req.query("status")||"pending";if(!t)return e.json({success:!1,error:"원장님 ID가 필요합니다."},400);const r=await e.env.DB.prepare(`
+    `).bind(t,s,r,a||null,i,o.director_email,l.toUpperCase()).run();return e.json({success:!0,applicationId:m.meta.last_row_id,message:`등록 신청이 완료되었습니다. ${o.director_name} 원장님의 승인을 기다려주세요.`,directorName:o.director_name})}catch(t){return console.error("[TeacherApply] Error:",t),console.error("[TeacherApply] Error stack:",t.stack),console.error("[TeacherApply] Error message:",t.message),e.json({success:!1,error:"등록 신청 중 오류가 발생했습니다.",details:t.message,stack:t.stack},500)}});d.get("/api/teachers/applications",async e=>{try{const t=e.req.query("directorId"),s=e.req.query("status")||"pending";if(!t)return e.json({success:!1,error:"원장님 ID가 필요합니다."},400);const r=await e.env.DB.prepare(`
       SELECT ta.*, avc.academy_name
       FROM teacher_applications ta
       JOIN academy_verification_codes avc ON ta.verification_code = avc.verification_code
