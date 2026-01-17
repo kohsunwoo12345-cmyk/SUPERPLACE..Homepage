@@ -17452,47 +17452,84 @@ app.get('/api/teachers/verification-code', async (c) => {
       return c.json({ success: false, error: '원장님 ID가 필요합니다.' }, 400)
     }
     
+    console.log('[VerificationCode] GET request for directorId:', directorId)
+    
+    // 원장님 정보 먼저 조회
+    const director = await c.env.DB.prepare(
+      'SELECT id, academy_name, email FROM users WHERE id = ?'
+    ).bind(directorId).first()
+    
+    if (!director) {
+      console.error('[VerificationCode] Director not found:', directorId)
+      return c.json({ success: false, error: '원장님 정보를 찾을 수 없습니다.' }, 404)
+    }
+    
+    console.log('[VerificationCode] Director found:', director)
+    
     // 기존 활성 코드 조회
     let codeData = await c.env.DB.prepare(
       'SELECT * FROM academy_verification_codes WHERE user_id = ? AND is_active = 1 ORDER BY created_at DESC LIMIT 1'
     ).bind(directorId).first()
     
-    // 코드가 없으면 새로 생성
-    if (!codeData) {
-      const director = await c.env.DB.prepare(
-        'SELECT academy_name FROM users WHERE id = ?'
-      ).bind(directorId).first()
+    console.log('[VerificationCode] Existing code:', codeData)
+    
+    // 코드가 없거나 유효하지 않으면 새로 생성
+    if (!codeData || !codeData.verification_code) {
+      console.log('[VerificationCode] Creating new code for director:', directorId)
       
-      if (!director) {
-        return c.json({ success: false, error: '원장님 정보를 찾을 수 없습니다.' }, 404)
+      // 6자리 랜덤 코드 생성 (영문 대문자 + 숫자)
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+      let newCode = ''
+      for (let i = 0; i < 6; i++) {
+        newCode += chars.charAt(Math.floor(Math.random() * chars.length))
       }
       
-      // 6자리 랜덤 코드 생성
-      const newCode = Math.random().toString(36).substring(2, 8).toUpperCase()
+      console.log('[VerificationCode] Generated new code:', newCode)
       
-      const result = await c.env.DB.prepare(`
-        INSERT INTO academy_verification_codes (user_id, academy_name, verification_code, is_active)
-        VALUES (?, ?, ?, 1)
-      `).bind(directorId, director.academy_name, newCode).run()
-      
-      codeData = {
-        id: result.meta.last_row_id,
-        user_id: parseInt(directorId),
-        academy_name: director.academy_name,
-        verification_code: newCode,
-        is_active: 1,
-        created_at: new Date().toISOString()
+      try {
+        const result = await c.env.DB.prepare(`
+          INSERT INTO academy_verification_codes (user_id, academy_name, verification_code, is_active, created_at)
+          VALUES (?, ?, ?, 1, datetime('now'))
+        `).bind(directorId, director.academy_name, newCode).run()
+        
+        console.log('[VerificationCode] Insert result:', result)
+        
+        codeData = {
+          id: result.meta.last_row_id,
+          user_id: parseInt(directorId),
+          academy_name: director.academy_name,
+          verification_code: newCode,
+          is_active: 1,
+          created_at: new Date().toISOString()
+        }
+      } catch (insertError) {
+        console.error('[VerificationCode] Insert error:', insertError)
+        throw insertError
       }
     }
     
+    const responseCode = codeData.verification_code || codeData.code || 'ERROR'
+    console.log('[VerificationCode] Final response code:', responseCode)
+    
     return c.json({ 
       success: true, 
-      code: codeData.verification_code || codeData.code,
-      codeData: codeData
+      code: responseCode,
+      codeData: codeData,
+      debug: {
+        directorId: directorId,
+        directorEmail: director.email,
+        hasCode: !!codeData,
+        codeValue: responseCode
+      }
     })
   } catch (error) {
-    console.error('Get verification code error:', error)
-    return c.json({ success: false, error: '인증 코드 조회 중 오류가 발생했습니다.', details: error.message }, 500)
+    console.error('[VerificationCode] Error:', error)
+    return c.json({ 
+      success: false, 
+      error: '인증 코드 조회 중 오류가 발생했습니다.', 
+      details: error.message,
+      stack: error.stack
+    }, 500)
   }
 })
 
@@ -17505,26 +17542,39 @@ app.post('/api/teachers/verification-code/regenerate', async (c) => {
       return c.json({ success: false, error: '원장님 ID가 필요합니다.' }, 400)
     }
     
+    console.log('[RegenerateCode] POST request for directorId:', directorId)
+    
     const director = await c.env.DB.prepare(
-      'SELECT academy_name FROM users WHERE id = ?'
+      'SELECT id, academy_name, email FROM users WHERE id = ?'
     ).bind(directorId).first()
     
     if (!director) {
+      console.error('[RegenerateCode] Director not found:', directorId)
       return c.json({ success: false, error: '원장님 정보를 찾을 수 없습니다.' }, 404)
     }
+    
+    console.log('[RegenerateCode] Director found:', director)
     
     // 기존 코드 비활성화
     await c.env.DB.prepare(
       'UPDATE academy_verification_codes SET is_active = 0 WHERE user_id = ?'
     ).bind(directorId).run()
     
-    // 새 코드 생성
-    const newCode = Math.random().toString(36).substring(2, 8).toUpperCase()
+    // 6자리 랜덤 코드 생성 (영문 대문자 + 숫자)
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+    let newCode = ''
+    for (let i = 0; i < 6; i++) {
+      newCode += chars.charAt(Math.floor(Math.random() * chars.length))
+    }
+    
+    console.log('[RegenerateCode] Generated new code:', newCode)
     
     const result = await c.env.DB.prepare(`
-      INSERT INTO academy_verification_codes (user_id, academy_name, verification_code, is_active)
-      VALUES (?, ?, ?, 1)
+      INSERT INTO academy_verification_codes (user_id, academy_name, verification_code, is_active, created_at)
+      VALUES (?, ?, ?, 1, datetime('now'))
     `).bind(directorId, director.academy_name, newCode).run()
+    
+    console.log('[RegenerateCode] Insert result:', result)
     
     return c.json({ 
       success: true, 
@@ -17537,11 +17587,21 @@ app.post('/api/teachers/verification-code/regenerate', async (c) => {
         is_active: 1,
         created_at: new Date().toISOString()
       },
-      message: '새로운 인증 코드가 생성되었습니다.'
+      message: '새로운 인증 코드가 생성되었습니다.',
+      debug: {
+        directorId: directorId,
+        directorEmail: director.email,
+        newCode: newCode
+      }
     })
   } catch (error) {
-    console.error('Regenerate code error:', error)
-    return c.json({ success: false, error: '인증 코드 재생성 중 오류가 발생했습니다.', details: error.message }, 500)
+    console.error('[RegenerateCode] Error:', error)
+    return c.json({ 
+      success: false, 
+      error: '인증 코드 재생성 중 오류가 발생했습니다.', 
+      details: error.message,
+      stack: error.stack
+    }, 500)
   }
 })
 
@@ -22907,42 +22967,78 @@ app.get('/students', (c) => {
 
             async function loadVerificationCode() {
                 try {
+                    console.log('[Frontend] Loading verification code for user:', currentUser);
+                    
                     const res = await fetch('/api/teachers/verification-code?directorId=' + currentUser.id);
                     const data = await res.json();
-                    console.log('Verification code response:', data);
+                    console.log('[Frontend] Verification code response:', data);
                     
                     if (data.success) {
                         // code 또는 codeData.verification_code 사용
                         const code = data.code || (data.codeData && data.codeData.verification_code) || '------';
-                        document.getElementById('verificationCode').textContent = code;
+                        console.log('[Frontend] Setting code to:', code);
+                        
+                        const codeElement = document.getElementById('verificationCode');
+                        if (codeElement) {
+                            codeElement.textContent = code;
+                            // 코드가 유효하지 않으면 빨간색으로 표시
+                            if (code === '------' || code === '오류' || code === 'ERROR') {
+                                codeElement.classList.add('text-red-600');
+                                codeElement.classList.remove('text-purple-600');
+                            } else {
+                                codeElement.classList.add('text-purple-600');
+                                codeElement.classList.remove('text-red-600');
+                            }
+                        }
                     } else {
-                        console.error('인증 코드 로딩 실패:', data.error);
-                        document.getElementById('verificationCode').textContent = '오류';
+                        console.error('[Frontend] 인증 코드 로딩 실패:', data.error, data.details);
+                        const codeElement = document.getElementById('verificationCode');
+                        if (codeElement) {
+                            codeElement.textContent = '오류';
+                            codeElement.classList.add('text-red-600');
+                            codeElement.classList.remove('text-purple-600');
+                        }
+                        alert('인증 코드 로딩 실패: ' + data.error);
                     }
                 } catch (error) {
-                    console.error('인증 코드 로딩 실패:', error);
-                    document.getElementById('verificationCode').textContent = '오류';
+                    console.error('[Frontend] 인증 코드 로딩 실패:', error);
+                    const codeElement = document.getElementById('verificationCode');
+                    if (codeElement) {
+                        codeElement.textContent = '오류';
+                        codeElement.classList.add('text-red-600');
+                        codeElement.classList.remove('text-purple-600');
+                    }
                 }
             }
 
             async function regenerateVerificationCode() {
-                if (!confirm('인증 코드를 재생성하시겠습니까? 이전 코드는 사용할 수 없게 됩니다.')) return;
+                if (!confirm('인증 코드를 재생성하시겠습니까?\\n\\n⚠️ 이전 코드는 사용할 수 없게 됩니다.')) return;
                 try {
+                    console.log('[Frontend] Regenerating code for user:', currentUser);
+                    
                     const res = await fetch('/api/teachers/verification-code/regenerate', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ directorId: currentUser.id })
                     });
                     const data = await res.json();
-                    console.log('Regenerate response:', data);
+                    console.log('[Frontend] Regenerate response:', data);
                     
                     if (data.success) {
                         // code 또는 codeData.verification_code 사용
                         const newCode = data.code || (data.codeData && data.codeData.verification_code);
-                        document.getElementById('verificationCode').textContent = newCode;
-                        alert('인증 코드가 재생성되었습니다: ' + newCode);
+                        console.log('[Frontend] New code:', newCode);
+                        
+                        const codeElement = document.getElementById('verificationCode');
+                        if (codeElement) {
+                            codeElement.textContent = newCode;
+                            codeElement.classList.add('text-purple-600');
+                            codeElement.classList.remove('text-red-600');
+                        }
+                        alert('✅ 인증 코드가 재생성되었습니다!\\n\\n새 코드: ' + newCode);
                     } else {
-                        alert('코드 재생성 실패: ' + (data.error || '알 수 없는 오류'));
+                        console.error('[Frontend] 재생성 실패:', data);
+                        alert('❌ 코드 재생성 실패: ' + (data.error || '알 수 없는 오류'));
                         console.error('재생성 실패 상세:', data);
                     }
                 } catch (error) {
