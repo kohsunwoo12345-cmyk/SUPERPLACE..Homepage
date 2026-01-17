@@ -17666,6 +17666,17 @@ app.post('/api/teachers/applications/:id/reject', async (c) => {
 // 원장님: 선생님 직접 추가 (승인 없이 즉시 계정 생성)
 app.post('/api/teachers/add', async (c) => {
   try {
+    // DB 스키마 마이그레이션: assigned_class 컬럼 추가
+    try {
+      await c.env.DB.prepare(`
+        ALTER TABLE users ADD COLUMN assigned_class TEXT
+      `).run()
+      console.log('[Migration] assigned_class column added to users table')
+    } catch (e) {
+      // 컬럼이 이미 존재하면 에러 무시
+      console.log('[Migration] assigned_class column already exists or migration skipped')
+    }
+    
     const { name, email, phone, assigned_class, user_id, directorId, password } = await c.req.json()
     
     // user_id 또는 directorId 중 하나는 있어야 함
