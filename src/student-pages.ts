@@ -850,6 +850,25 @@ export const dailyRecordPage = `
                     </div>
 
                     <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">구분 *</label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <label class="flex items-center justify-center px-4 py-3 border-2 border-gray-300 rounded-lg cursor-pointer hover:bg-blue-50 has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50">
+                                <input type="radio" name="recordType" value="수업" class="mr-2" required>
+                                <span class="text-sm font-medium">📚 수업</span>
+                            </label>
+                            <label class="flex items-center justify-center px-4 py-3 border-2 border-gray-300 rounded-lg cursor-pointer hover:bg-purple-50 has-[:checked]:border-purple-500 has-[:checked]:bg-purple-50">
+                                <input type="radio" name="recordType" value="숙제" class="mr-2" required>
+                                <span class="text-sm font-medium">✏️ 숙제</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">개념</label>
+                        <input type="text" id="recordConcept" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500" placeholder="예: 이차방정식, 현재완료 시제 등">
+                    </div>
+
+                    <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">출석</label>
                         <div class="grid grid-cols-4 gap-2">
                             <label class="flex items-center justify-center px-4 py-3 border-2 border-gray-300 rounded-lg cursor-pointer hover:bg-green-50 has-[:checked]:border-green-500 has-[:checked]:bg-green-50">
@@ -945,6 +964,11 @@ export const dailyRecordPage = `
         let courses = [];
         let records = [];
         let monthlyRecords = [];
+        
+        // 로컬 스토리지에서 사용자 정보 가져오기
+        const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+        const userId = currentUser.id;
+        const userType = currentUser.user_type || 'director'; // 기본값은 원장님
 
         // 슬라이더 값 표시
         document.getElementById('understanding').addEventListener('input', (e) => {
@@ -967,7 +991,13 @@ export const dailyRecordPage = `
 
         async function loadStudents() {
             try {
-                const res = await fetch('/api/students?academyId=' + academyId);
+                // 권한 기반 학생 목록 조회
+                let url = '/api/students?academyId=' + academyId;
+                if (userId) {
+                    url += '&userId=' + userId + '&userType=' + userType;
+                }
+                
+                const res = await fetch(url);
                 const data = await res.json();
                 if (data.success) {
                     students = data.students;
@@ -1097,6 +1127,11 @@ export const dailyRecordPage = `
             }
 
             container.innerHTML = records.map(record => {
+                const recordTypeColor = {
+                    '수업': 'bg-blue-100 text-blue-800',
+                    '숙제': 'bg-purple-100 text-purple-800'
+                }[record.record_type] || 'bg-gray-100 text-gray-800';
+
                 const attendanceColor = {
                     '출석': 'bg-green-100 text-green-800',
                     '지각': 'bg-yellow-100 text-yellow-800',
@@ -1115,7 +1150,11 @@ export const dailyRecordPage = `
                         <div class="flex justify-between items-start mb-3">
                             <div>
                                 <h3 class="text-lg font-bold text-gray-900">\${record.student_name}</h3>
-                                <p class="text-sm text-gray-500">\${record.course_name || '과목 미지정'}</p>
+                                <div class="flex items-center gap-2 mt-1">
+                                    <p class="text-sm text-gray-500">\${record.course_name || '과목 미지정'}</p>
+                                    \${record.record_type ? \`<span class="px-2 py-1 rounded text-xs font-medium \${recordTypeColor}">\${record.record_type}</span>\` : ''}
+                                </div>
+                                \${record.concept ? \`<p class="text-xs text-gray-600 mt-1">📖 개념: \${record.concept}</p>\` : ''}
                             </div>
                             <div class="flex space-x-2">
                                 <button onclick="editRecord(\${record.id})" class="text-blue-600 hover:text-blue-800">
@@ -1169,7 +1208,11 @@ export const dailyRecordPage = `
             document.getElementById('recordId').value = record.id;
             document.getElementById('recordStudent').value = record.student_id;
             document.getElementById('recordCourse').value = record.course_id || '';
+            document.getElementById('recordConcept').value = record.concept || '';
             
+            if (record.record_type) {
+                document.querySelector(\`input[name="recordType"][value="\${record.record_type}"]\`).checked = true;
+            }
             if (record.attendance) {
                 document.querySelector(\`input[name="attendance"][value="\${record.attendance}"]\`).checked = true;
             }
@@ -1213,6 +1256,7 @@ export const dailyRecordPage = `
             e.preventDefault();
             
             const recordId = document.getElementById('recordId').value;
+            const recordType = document.querySelector('input[name="recordType"]:checked');
             const attendance = document.querySelector('input[name="attendance"]:checked');
             const homework = document.querySelector('input[name="homework"]:checked');
             
@@ -1220,6 +1264,8 @@ export const dailyRecordPage = `
                 studentId: document.getElementById('recordStudent').value,
                 courseId: document.getElementById('recordCourse').value || null,
                 recordDate: formatDate(selectedDate),
+                recordType: recordType ? recordType.value : null,
+                concept: document.getElementById('recordConcept').value || null,
                 attendance: attendance ? attendance.value : null,
                 homeworkStatus: homework ? homework.value : null,
                 understandingLevel: parseInt(document.getElementById('understanding').value),

@@ -24962,6 +24962,8 @@ app.get('/api/init-student-tables', async (c) => {
         student_id INTEGER NOT NULL,
         course_id INTEGER,
         record_date DATE NOT NULL,
+        record_type TEXT CHECK(record_type IN ('수업', '숙제')),
+        concept TEXT,
         attendance TEXT CHECK(attendance IN ('출석', '지각', '결석', '조퇴')),
         homework_status TEXT CHECK(homework_status IN ('완료', '미완료', '부분완료')),
         understanding_level INTEGER CHECK(understanding_level >= 1 AND understanding_level <= 5),
@@ -24971,6 +24973,18 @@ app.get('/api/init-student-tables', async (c) => {
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )
     `).run()
+    
+    // 기존 테이블에 새 컬럼 추가 (이미 있으면 무시)
+    try {
+      await DB.prepare(`ALTER TABLE daily_records ADD COLUMN record_type TEXT CHECK(record_type IN ('수업', '숙제'))`).run()
+    } catch (e) {
+      console.log('record_type column already exists')
+    }
+    try {
+      await DB.prepare(`ALTER TABLE daily_records ADD COLUMN concept TEXT`).run()
+    } catch (e) {
+      console.log('concept column already exists')
+    }
     
     // 인덱스 생성
     await DB.prepare(`CREATE INDEX IF NOT EXISTS idx_students_academy_id ON students(academy_id)`).run()
