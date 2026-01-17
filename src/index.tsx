@@ -11545,7 +11545,7 @@ app.post('/api/students', async (c) => {
   }
 })
 
-// DELETE /api/students/:id - 학생 삭제 (Hard Delete with cascade)
+// DELETE /api/students/:id - 학생 삭제 (Batch delete with transaction)
 app.delete('/api/students/:id', async (c) => {
   try {
     const studentId = c.req.param('id')
@@ -11556,22 +11556,17 @@ app.delete('/api/students/:id', async (c) => {
     
     console.log('[DeleteStudent] Starting deletion for student ID:', studentId)
     
-    // 1. 먼저 관련된 daily_records 삭제
-    console.log('[DeleteStudent] Deleting daily_records...')
-    await c.env.DB.prepare(`
-      DELETE FROM daily_records WHERE student_id = ?
-    `).bind(studentId).run()
+    // D1 batch를 사용하여 순서대로 삭제
+    const statements = [
+      // 1. daily_records 삭제
+      c.env.DB.prepare('DELETE FROM daily_records WHERE student_id = ?').bind(studentId),
+      // 2. 학생 삭제
+      c.env.DB.prepare('DELETE FROM students WHERE id = ?').bind(studentId)
+    ]
     
-    // 2. 다른 관련 테이블도 확인 (필요시 추가)
-    // 예: enrollments, attendance 등
+    const results = await c.env.DB.batch(statements)
     
-    // 3. 마지막으로 학생 삭제
-    console.log('[DeleteStudent] Deleting student...')
-    const result = await c.env.DB.prepare(`
-      DELETE FROM students WHERE id = ?
-    `).bind(studentId).run()
-    
-    console.log('[DeleteStudent] Deleted student:', result.meta?.changes || 0)
+    console.log('[DeleteStudent] Batch delete results:', results.map(r => r.meta))
     
     return c.json({ 
       success: true, 
