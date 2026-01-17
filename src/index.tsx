@@ -2432,20 +2432,22 @@ app.put('/api/admin/deposit/requests/:id/process', async (c) => {
       const points = request.amount
       console.log('Approving deposit for user:', request.user_id, 'adding:', points)
       
-      // 현재 잔액 조회
+      // 현재 잔액 조회 (points와 balance 모두 확인)
       const user = await c.env.DB.prepare(`
-        SELECT balance FROM users WHERE id = ?
+        SELECT points, balance FROM users WHERE id = ?
       `).bind(request.user_id).first()
 
-      const balanceBefore = user?.balance || 0
+      const currentPoints = user?.points || 0
+      const currentBalance = user?.balance || 0
+      const balanceBefore = currentPoints || currentBalance
       balanceAfter = balanceBefore + points
 
-      // 포인트 충전 (balance 컬럼 사용)
+      // 포인트 충전 (points와 balance 둘 다 업데이트)
       await c.env.DB.prepare(`
-        UPDATE users SET balance = ? WHERE id = ?
-      `).bind(balanceAfter, request.user_id).run()
+        UPDATE users SET points = ?, balance = ? WHERE id = ?
+      `).bind(balanceAfter, balanceAfter, request.user_id).run()
       
-      console.log('Balance updated:', balanceBefore, '->', balanceAfter)
+      console.log('Points/Balance updated:', balanceBefore, '->', balanceAfter)
 
       // 포인트 거래 내역 기록
       await c.env.DB.prepare(`
