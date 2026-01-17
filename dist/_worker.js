@@ -20593,22 +20593,29 @@ ${o.director_name} 원장님의 승인을 기다려주세요.`,directorName:o.di
                 document.getElementById('permissionsTeacherId').value = teacherId;
                 
                 try {
-                    // 반 목록 로드
-                    const classesRes = await fetch(\`/api/classes/list?userId=\${currentUser.id}&userType=director\`);
+                    // 반 목록 로드 - /api/classes 엔드포인트 사용
+                    const classesRes = await fetch('/api/classes?academyId=1');
                     const classesData = await classesRes.json();
+                    
+                    console.log('✅ Classes API response:', classesData);
                     
                     if (classesData.success) {
                         const classList = document.getElementById('classesCheckboxList');
                         if (classesData.classes && classesData.classes.length > 0) {
+                            console.log('✅ Found ' + classesData.classes.length + ' classes');
                             classList.innerHTML = classesData.classes.map(cls => \`
                                 <label class="flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer">
                                     <input type="checkbox" value="\${cls.id}" class="class-checkbox w-4 h-4 text-purple-600 rounded focus:ring-purple-500">
-                                    <span class="ml-2 text-sm text-gray-700">\${cls.name}</span>
+                                    <span class="ml-2 text-sm text-gray-700">\${cls.class_name} \${cls.grade ? '(' + cls.grade + ')' : ''}</span>
                                 </label>
                             \`).join('');
                         } else {
+                            console.warn('⚠️ No classes found');
                             classList.innerHTML = '<div class="text-center text-gray-500 py-4">등록된 반이 없습니다</div>';
                         }
+                    } else {
+                        console.error('❌ Classes API failed:', classesData);
+                        document.getElementById('classesCheckboxList').innerHTML = '<div class="text-center text-red-500 py-4">반 목록 로드 실패</div>';
                     }
                     
                     // 선생님 권한 정보 로드
