@@ -15488,13 +15488,47 @@ app.post('/api/login', async (c) => {
     }
     
     // 비밀번호 제외하고 사용자 정보 반환
-    const userInfo = {
+    const userInfo: any = {
       id: user.id,
       email: user.email,
       name: user.name,
       phone: user.phone,
       academy_name: user.academy_name,
-      role: user.role
+      role: user.role,
+      user_type: user.role, // API에서 user_type을 기대함
+      parent_user_id: user.parent_user_id || null
+    }
+    
+    // 선생님인 경우 권한 정보 조회
+    if (user.role === 'teacher') {
+      try {
+        const permData = await env.DB.prepare(`
+          SELECT permissions 
+          FROM teacher_permissions 
+          WHERE teacher_id = ?
+        `).bind(user.id).first()
+        
+        if (permData && permData.permissions) {
+          userInfo.permissions = JSON.parse(permData.permissions)
+          console.log('Teacher permissions loaded:', userInfo.permissions)
+        } else {
+          // 기본 권한 설정
+          userInfo.permissions = {
+            canViewAllStudents: false,
+            canWriteDailyReports: false,
+            assignedClasses: []
+          }
+          console.log('No permissions found, using defaults')
+        }
+      } catch (permErr) {
+        console.error('Error loading teacher permissions:', permErr)
+        // 권한 조회 실패 시 기본 권한
+        userInfo.permissions = {
+          canViewAllStudents: false,
+          canWriteDailyReports: false,
+          assignedClasses: []
+        }
+      }
     }
     
     return c.json({ success: true, message: '로그인 성공', user: userInfo })
