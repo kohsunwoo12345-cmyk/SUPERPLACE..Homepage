@@ -811,6 +811,11 @@ export const dailyRecordPage = `
         .calendar-day.selected { background-color: #818cf8; color: white; }
         .calendar-day.today { border: 2px solid #6366f1; }
         .calendar-day.has-record { background-color: #dbeafe; }
+        
+        /* 모달 스크롤 문제 해결 */
+        #recordModal { overflow: hidden !important; }
+        #recordModal > div { overflow: hidden !important; }
+        #recordModal .bg-white.rounded-xl { overflow-y: auto !important; }
     </style>
 </head>
 <body class="bg-gray-50">
