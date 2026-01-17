@@ -7845,7 +7845,7 @@ app.get('/dashboard', (c) => {
                         </div>
                     </div>
                     <div class="mt-6 text-center">
-                        <a href="/landing-pages" class="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium">
+                        <a href="/tools/landing-manager" class="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium">
                             <span>전체 관리</span>
                             <svg class="w-5 h-5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
