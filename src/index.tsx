@@ -17600,7 +17600,7 @@ app.post('/api/teachers/applications/:id/approve', async (c) => {
       // parent_user_id 업데이트 (학원 연결)
       await c.env.DB.prepare(`
         UPDATE users 
-        SET parent_user_id = ?, academy_name = ?, user_type = 'teacher', updated_at = datetime('now')
+        SET parent_user_id = ?, academy_name = ?, user_type = 'teacher'
         WHERE id = ?
       `).bind(directorId, director.academy_name, existingUser.id).run()
       
