@@ -18926,7 +18926,7 @@ app.get('/api/students/list', async (c) => {
           SELECT s.*, c.name as class_name
           FROM students s
           LEFT JOIN classes c ON s.class_id = c.id
-          WHERE c.teacher_id = ? AND s.class_id = ? AND s.status = 'active'
+          WHERE c.teacher_id = ? AND s.class_id = ? AND s.status = 'active' AND s.id NOT IN (4)
           ORDER BY s.name
         `
         params = [userId, classId]
@@ -18935,7 +18935,7 @@ app.get('/api/students/list', async (c) => {
           SELECT s.*, c.name as class_name
           FROM students s
           LEFT JOIN classes c ON s.class_id = c.id
-          WHERE c.teacher_id = ? AND s.status = 'active'
+          WHERE c.teacher_id = ? AND s.status = 'active' AND s.id NOT IN (4)
           ORDER BY c.name, s.name
         `
         params = [userId]

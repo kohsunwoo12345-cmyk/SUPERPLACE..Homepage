@@ -15255,13 +15255,13 @@ ${o.director_name} 원장님의 승인을 기다려주세요.`,directorName:o.di
           SELECT s.*, c.name as class_name
           FROM students s
           LEFT JOIN classes c ON s.class_id = c.id
-          WHERE c.teacher_id = ? AND s.class_id = ? AND s.status = 'active'
+          WHERE c.teacher_id = ? AND s.class_id = ? AND s.status = 'active' AND s.id NOT IN (4)
           ORDER BY s.name
         `,n=[t,r]):(a=`
           SELECT s.*, c.name as class_name
           FROM students s
           LEFT JOIN classes c ON s.class_id = c.id
-          WHERE c.teacher_id = ? AND s.status = 'active'
+          WHERE c.teacher_id = ? AND s.status = 'active' AND s.id NOT IN (4)
           ORDER BY c.name, s.name
         `,n=[t]):r?(a=`
           SELECT s.*, c.name as class_name, u.name as teacher_name
