@@ -1,7 +1,13 @@
 name = "superplace-academy"
-main = "dist/_worker.js"
 compatibility_date = "2025-12-18"
-workers_dev = true
+pages_build_output_dir = "dist"
+
+# 빌드 건너뛰기 - dist 폴더 직접 사용
+[build]
+command = "echo 'Using pre-built dist'"
+
+[build.upload]
+format = "service-worker"
 
 # D1 Database Bindings
 [[d1_databases]]
@@ -14,7 +20,7 @@ database_id = "8c106540-21b4-4fa9-8879-c4956e459ca1"
 binding = "R2"
 bucket_name = "superplace-documents"
 
-# 환경 변수 (임시 - 보안상 나중에 Cloudflare Dashboard에서 관리 권장)
+# 환경 변수
 [vars]
 ALIGO_API_KEY = "4bbi3l27pb5qh11tkujl578bttz6vb5j"
 ALIGO_USER_ID = "wangholy"

@@ -1,9 +1,9 @@
 /*
-  Cache-Control: no-cache, no-store, must-revalidate
-  X-Build-Time: $(date +%s)
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
 
 /my-deposits
-  Cache-Control: no-cache, no-store, must-revalidate, max-age=0
-
-/dashboard
-  Cache-Control: no-cache, no-store, must-revalidate, max-age=0
+  Cache-Control: no-cache, no-store, must-revalidate
+  
+/dashboard  
+  Cache-Control: no-cache, no-store, must-revalidate
