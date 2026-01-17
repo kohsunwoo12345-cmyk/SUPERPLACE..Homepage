@@ -13946,21 +13946,21 @@ app.get('/contact', (c) => {
                                 <i class="fas fa-phone text-purple-600 text-2xl"></i>
                             </div>
                             <h3 class="font-bold text-gray-900 mb-2">전화 문의</h3>
-                            <p class="text-gray-600">032-1234-5678</p>
+                            <p class="text-gray-600">010-8739-9697</p>
                         </div>
                         <div class="text-center">
                             <div class="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
                                 <i class="fas fa-envelope text-purple-600 text-2xl"></i>
                             </div>
                             <h3 class="font-bold text-gray-900 mb-2">이메일</h3>
-                            <p class="text-gray-600">contact@superplace.kr</p>
+                            <p class="text-gray-600">wangholy1@naver.com</p>
                         </div>
                         <div class="text-center">
                             <div class="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
                                 <i class="fas fa-map-marker-alt text-purple-600 text-2xl"></i>
                             </div>
                             <h3 class="font-bold text-gray-900 mb-2">위치</h3>
-                            <p class="text-gray-600">인천 서구 검단동</p>
+                            <p class="text-gray-600">인천광역시 서구 청라커낼로 270, 2층</p>
                         </div>
                     </div>
                 </div>
