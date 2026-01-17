@@ -17317,16 +17317,72 @@ app.post('/api/teachers/apply', async (c) => {
       return c.json({ success: false, error: '필수 정보를 모두 입력해주세요.' }, 400)
     }
     
-    // 이메일 중복 확인
-    const existing = await c.env.DB.prepare(
-      'SELECT id FROM users WHERE email = ?'
-    ).bind(email).first()
+    // 인증 코드 확인 (먼저 확인)
+    const codeInfo = await c.env.DB.prepare(`
+      SELECT avc.*, u.id as director_id, u.email as director_email, u.name as director_name, u.academy_name
+      FROM academy_verification_codes avc
+      JOIN users u ON avc.user_id = u.id
+      WHERE avc.code = ? AND avc.is_active = 1
+    `).bind(verificationCode.toUpperCase()).first()
     
-    if (existing) {
-      return c.json({ success: false, error: '이미 사용 중인 이메일입니다.' }, 400)
+    if (!codeInfo) {
+      return c.json({ success: false, error: '유효하지 않은 인증 코드입니다.' }, 400)
     }
     
-    // 등록 신청 중복 확인
+    // 학원명 확인 (대소문자 구분 없이)
+    const directorAcademyName = codeInfo.academy_name || academyName
+    if (directorAcademyName && directorAcademyName.toLowerCase() !== academyName.toLowerCase()) {
+      return c.json({ 
+        success: false, 
+        error: `인증 코드는 "${directorAcademyName}" 학원용입니다. 입력하신 학원명을 확인해주세요.` 
+      }, 400)
+    }
+    
+    // 이메일 중복 확인 - 기존 사용자 처리
+    const existingUser = await c.env.DB.prepare(
+      'SELECT id, email, name, user_type FROM users WHERE email = ?'
+    ).bind(email).first()
+    
+    if (existingUser) {
+      // 기존 사용자가 있으면 학원 연결 신청으로 처리
+      console.log('[TeacherApply] Existing user found, creating connection request:', existingUser)
+      
+      // 이미 이 학원에 신청했는지 확인
+      const existingApplication = await c.env.DB.prepare(
+        'SELECT id FROM teacher_applications WHERE email = ? AND director_email = ? AND status = "pending"'
+      ).bind(email, codeInfo.director_email).first()
+      
+      if (existingApplication) {
+        return c.json({ success: false, error: '이미 이 학원에 등록 신청이 진행 중입니다.' }, 400)
+      }
+      
+      // 학원 연결 신청 생성 (비밀번호 불필요)
+      const result = await c.env.DB.prepare(`
+        INSERT INTO teacher_applications (
+          email, password, name, phone, academy_name, 
+          director_email, verification_code, status, applied_at
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', datetime('now'))
+      `).bind(
+        email, 
+        'EXISTING_USER', // 기존 사용자는 비밀번호 불필요
+        existingUser.name || name, 
+        phone || null, 
+        directorAcademyName,
+        codeInfo.director_email,
+        verificationCode.toUpperCase()
+      ).run()
+      
+      return c.json({ 
+        success: true, 
+        applicationId: result.meta.last_row_id,
+        message: `기존 계정으로 학원 연결 신청이 완료되었습니다.\n${codeInfo.director_name} 원장님의 승인을 기다려주세요.`,
+        directorName: codeInfo.director_name,
+        isExistingUser: true
+      })
+    }
+    
+    // 신규 사용자 - 등록 신청 중복 확인
     const existingApplication = await c.env.DB.prepare(
       'SELECT id FROM teacher_applications WHERE email = ? AND status = "pending"'
     ).bind(email).first()
@@ -17335,27 +17391,7 @@ app.post('/api/teachers/apply', async (c) => {
       return c.json({ success: false, error: '이미 등록 신청이 진행 중입니다.' }, 400)
     }
     
-    // 인증 코드 확인
-    const codeInfo = await c.env.DB.prepare(`
-      SELECT avc.*, u.id as director_id, u.email as director_email, u.name as director_name
-      FROM academy_verification_codes avc
-      JOIN users u ON avc.user_id = u.id
-      WHERE avc.verification_code = ? AND avc.is_active = 1
-    `).bind(verificationCode.toUpperCase()).first()
-    
-    if (!codeInfo) {
-      return c.json({ success: false, error: '유효하지 않은 인증 코드입니다.' }, 400)
-    }
-    
-    // 학원명 확인 (대소문자 구분 없이)
-    if (codeInfo.academy_name.toLowerCase() !== academyName.toLowerCase()) {
-      return c.json({ 
-        success: false, 
-        error: `인증 코드는 "${codeInfo.academy_name}" 학원용입니다. 입력하신 학원명을 확인해주세요.` 
-      }, 400)
-    }
-    
-    // 등록 신청 저장
+    // 신규 사용자 - 등록 신청 저장
     const result = await c.env.DB.prepare(`
       INSERT INTO teacher_applications (
         email, password, name, phone, academy_name, 
@@ -17367,7 +17403,7 @@ app.post('/api/teachers/apply', async (c) => {
       password, 
       name, 
       phone || null, 
-      codeInfo.academy_name,
+      directorAcademyName,
       codeInfo.director_email,
       verificationCode.toUpperCase()
     ).run()
@@ -17438,21 +17474,49 @@ app.post('/api/teachers/applications/:id/approve', async (c) => {
       return c.json({ success: false, error: '원장님 정보를 찾을 수 없습니다.' }, 404)
     }
     
-    // 선생님 계정 생성
-    const userResult = await c.env.DB.prepare(`
-      INSERT INTO users (
-        email, password, name, phone, role, user_type, 
-        parent_user_id, academy_name, created_at
-      )
-      VALUES (?, ?, ?, ?, 'user', 'teacher', ?, ?, datetime('now'))
-    `).bind(
-      application.email,
-      application.password,
-      application.name,
-      application.phone,
-      directorId,
-      director.academy_name
-    ).run()
+    // 기존 사용자인지 확인
+    const existingUser = await c.env.DB.prepare(
+      'SELECT id, email, name, user_type, parent_user_id FROM users WHERE email = ?'
+    ).bind(application.email).first()
+    
+    let teacherId
+    
+    if (existingUser && application.password === 'EXISTING_USER') {
+      // 기존 사용자 - 학원 연결만 수행
+      console.log('[ApproveTeacher] Existing user, updating connection:', existingUser)
+      
+      teacherId = existingUser.id
+      
+      // parent_user_id 업데이트 (학원 연결)
+      await c.env.DB.prepare(`
+        UPDATE users 
+        SET parent_user_id = ?, academy_name = ?, user_type = 'teacher', updated_at = datetime('now')
+        WHERE id = ?
+      `).bind(directorId, director.academy_name, existingUser.id).run()
+      
+      console.log('[ApproveTeacher] User connected to academy')
+      
+    } else {
+      // 신규 사용자 - 계정 생성
+      console.log('[ApproveTeacher] New user, creating account')
+      
+      const userResult = await c.env.DB.prepare(`
+        INSERT INTO users (
+          email, password, name, phone, role, user_type, 
+          parent_user_id, academy_name, created_at
+        )
+        VALUES (?, ?, ?, ?, 'user', 'teacher', ?, ?, datetime('now'))
+      `).bind(
+        application.email,
+        application.password,
+        application.name,
+        application.phone,
+        directorId,
+        director.academy_name
+      ).run()
+      
+      teacherId = userResult.meta.last_row_id
+    }
     
     // 신청 상태 업데이트
     await c.env.DB.prepare(`
@@ -17463,7 +17527,7 @@ app.post('/api/teachers/applications/:id/approve', async (c) => {
     
     return c.json({ 
       success: true, 
-      teacherId: userResult.meta.last_row_id,
+      teacherId: teacherId,
       message: `${application.name} 선생님의 등록이 승인되었습니다.`
     })
   } catch (error) {

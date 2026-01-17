@@ -14946,34 +14946,45 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
         <\/script>
     </body>
     </html>
-  `));d.post("/api/teachers/apply",async e=>{try{const{email:t,password:s,name:r,phone:a,academyName:n,verificationCode:l}=await e.req.json();if(!t||!s||!r||!n||!l)return e.json({success:!1,error:"필수 정보를 모두 입력해주세요."},400);if(await e.env.DB.prepare("SELECT id FROM users WHERE email = ?").bind(t).first())return e.json({success:!1,error:"이미 사용 중인 이메일입니다."},400);if(await e.env.DB.prepare('SELECT id FROM teacher_applications WHERE email = ? AND status = "pending"').bind(t).first())return e.json({success:!1,error:"이미 등록 신청이 진행 중입니다."},400);const c=await e.env.DB.prepare(`
-      SELECT avc.*, u.id as director_id, u.email as director_email, u.name as director_name
+  `));d.post("/api/teachers/apply",async e=>{try{const{email:t,password:s,name:r,phone:a,academyName:n,verificationCode:l}=await e.req.json();if(!t||!s||!r||!n||!l)return e.json({success:!1,error:"필수 정보를 모두 입력해주세요."},400);const o=await e.env.DB.prepare(`
+      SELECT avc.*, u.id as director_id, u.email as director_email, u.name as director_name, u.academy_name
       FROM academy_verification_codes avc
       JOIN users u ON avc.user_id = u.id
-      WHERE avc.verification_code = ? AND avc.is_active = 1
-    `).bind(l.toUpperCase()).first();if(!c)return e.json({success:!1,error:"유효하지 않은 인증 코드입니다."},400);if(c.academy_name.toLowerCase()!==n.toLowerCase())return e.json({success:!1,error:`인증 코드는 "${c.academy_name}" 학원용입니다. 입력하신 학원명을 확인해주세요.`},400);const p=await e.env.DB.prepare(`
+      WHERE avc.code = ? AND avc.is_active = 1
+    `).bind(l.toUpperCase()).first();if(!o)return e.json({success:!1,error:"유효하지 않은 인증 코드입니다."},400);const i=o.academy_name||n;if(i&&i.toLowerCase()!==n.toLowerCase())return e.json({success:!1,error:`인증 코드는 "${i}" 학원용입니다. 입력하신 학원명을 확인해주세요.`},400);const c=await e.env.DB.prepare("SELECT id, email, name, user_type FROM users WHERE email = ?").bind(t).first();if(c){if(console.log("[TeacherApply] Existing user found, creating connection request:",c),await e.env.DB.prepare('SELECT id FROM teacher_applications WHERE email = ? AND director_email = ? AND status = "pending"').bind(t,o.director_email).first())return e.json({success:!1,error:"이미 이 학원에 등록 신청이 진행 중입니다."},400);const x=await e.env.DB.prepare(`
+        INSERT INTO teacher_applications (
+          email, password, name, phone, academy_name, 
+          director_email, verification_code, status, applied_at
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', datetime('now'))
+      `).bind(t,"EXISTING_USER",c.name||r,a||null,i,o.director_email,l.toUpperCase()).run();return e.json({success:!0,applicationId:x.meta.last_row_id,message:`기존 계정으로 학원 연결 신청이 완료되었습니다.
+${o.director_name} 원장님의 승인을 기다려주세요.`,directorName:o.director_name,isExistingUser:!0})}if(await e.env.DB.prepare('SELECT id FROM teacher_applications WHERE email = ? AND status = "pending"').bind(t).first())return e.json({success:!1,error:"이미 등록 신청이 진행 중입니다."},400);const m=await e.env.DB.prepare(`
       INSERT INTO teacher_applications (
         email, password, name, phone, academy_name, 
         director_email, verification_code, status, applied_at
       )
       VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', datetime('now'))
-    `).bind(t,s,r,a||null,c.academy_name,c.director_email,l.toUpperCase()).run();return e.json({success:!0,applicationId:p.meta.last_row_id,message:`등록 신청이 완료되었습니다. ${c.director_name} 원장님의 승인을 기다려주세요.`,directorName:c.director_name})}catch(t){return console.error("Teacher application error:",t),e.json({success:!1,error:"등록 신청 중 오류가 발생했습니다."},500)}});d.get("/api/teachers/applications",async e=>{try{const t=e.req.query("directorId"),s=e.req.query("status")||"pending";if(!t)return e.json({success:!1,error:"원장님 ID가 필요합니다."},400);const r=await e.env.DB.prepare(`
+    `).bind(t,s,r,a||null,i,o.director_email,l.toUpperCase()).run();return e.json({success:!0,applicationId:m.meta.last_row_id,message:`등록 신청이 완료되었습니다. ${o.director_name} 원장님의 승인을 기다려주세요.`,directorName:o.director_name})}catch(t){return console.error("Teacher application error:",t),e.json({success:!1,error:"등록 신청 중 오류가 발생했습니다."},500)}});d.get("/api/teachers/applications",async e=>{try{const t=e.req.query("directorId"),s=e.req.query("status")||"pending";if(!t)return e.json({success:!1,error:"원장님 ID가 필요합니다."},400);const r=await e.env.DB.prepare(`
       SELECT ta.*, avc.academy_name
       FROM teacher_applications ta
       JOIN academy_verification_codes avc ON ta.verification_code = avc.verification_code
       WHERE avc.user_id = ? AND ta.status = ?
       ORDER BY ta.applied_at DESC
-    `).bind(t,s).all();return e.json({success:!0,applications:r.results||[]})}catch(t){return console.error("Get applications error:",t),e.json({success:!1,error:"신청 목록 조회 중 오류가 발생했습니다."},500)}});d.post("/api/teachers/applications/:id/approve",async e=>{try{const t=e.req.param("id"),{directorId:s}=await e.req.json();if(!s)return e.json({success:!1,error:"원장님 ID가 필요합니다."},400);const r=await e.env.DB.prepare('SELECT * FROM teacher_applications WHERE id = ? AND status = "pending"').bind(t).first();if(!r)return e.json({success:!1,error:"신청을 찾을 수 없거나 이미 처리되었습니다."},404);const a=await e.env.DB.prepare("SELECT id, academy_name FROM users WHERE id = ?").bind(s).first();if(!a)return e.json({success:!1,error:"원장님 정보를 찾을 수 없습니다."},404);const n=await e.env.DB.prepare(`
-      INSERT INTO users (
-        email, password, name, phone, role, user_type, 
-        parent_user_id, academy_name, created_at
-      )
-      VALUES (?, ?, ?, ?, 'user', 'teacher', ?, ?, datetime('now'))
-    `).bind(r.email,r.password,r.name,r.phone,s,a.academy_name).run();return await e.env.DB.prepare(`
+    `).bind(t,s).all();return e.json({success:!0,applications:r.results||[]})}catch(t){return console.error("Get applications error:",t),e.json({success:!1,error:"신청 목록 조회 중 오류가 발생했습니다."},500)}});d.post("/api/teachers/applications/:id/approve",async e=>{try{const t=e.req.param("id"),{directorId:s}=await e.req.json();if(!s)return e.json({success:!1,error:"원장님 ID가 필요합니다."},400);const r=await e.env.DB.prepare('SELECT * FROM teacher_applications WHERE id = ? AND status = "pending"').bind(t).first();if(!r)return e.json({success:!1,error:"신청을 찾을 수 없거나 이미 처리되었습니다."},404);const a=await e.env.DB.prepare("SELECT id, academy_name FROM users WHERE id = ?").bind(s).first();if(!a)return e.json({success:!1,error:"원장님 정보를 찾을 수 없습니다."},404);const n=await e.env.DB.prepare("SELECT id, email, name, user_type, parent_user_id FROM users WHERE email = ?").bind(r.email).first();let l;return n&&r.password==="EXISTING_USER"?(console.log("[ApproveTeacher] Existing user, updating connection:",n),l=n.id,await e.env.DB.prepare(`
+        UPDATE users 
+        SET parent_user_id = ?, academy_name = ?, user_type = 'teacher', updated_at = datetime('now')
+        WHERE id = ?
+      `).bind(s,a.academy_name,n.id).run(),console.log("[ApproveTeacher] User connected to academy")):(console.log("[ApproveTeacher] New user, creating account"),l=(await e.env.DB.prepare(`
+        INSERT INTO users (
+          email, password, name, phone, role, user_type, 
+          parent_user_id, academy_name, created_at
+        )
+        VALUES (?, ?, ?, ?, 'user', 'teacher', ?, ?, datetime('now'))
+      `).bind(r.email,r.password,r.name,r.phone,s,a.academy_name).run()).meta.last_row_id),await e.env.DB.prepare(`
       UPDATE teacher_applications 
       SET status = 'approved', processed_at = datetime('now'), processed_by = ?
       WHERE id = ?
-    `).bind(s,t).run(),e.json({success:!0,teacherId:n.meta.last_row_id,message:`${r.name} 선생님의 등록이 승인되었습니다.`})}catch(t){return console.error("Approve application error:",t),e.json({success:!1,error:"승인 처리 중 오류가 발생했습니다."},500)}});d.post("/api/teachers/applications/:id/reject",async e=>{try{const t=e.req.param("id"),{directorId:s,reason:r}=await e.req.json();if(!s)return e.json({success:!1,error:"원장님 ID가 필요합니다."},400);const a=await e.env.DB.prepare('SELECT * FROM teacher_applications WHERE id = ? AND status = "pending"').bind(t).first();return a?(await e.env.DB.prepare(`
+    `).bind(s,t).run(),e.json({success:!0,teacherId:l,message:`${r.name} 선생님의 등록이 승인되었습니다.`})}catch(t){return console.error("Approve application error:",t),e.json({success:!1,error:"승인 처리 중 오류가 발생했습니다."},500)}});d.post("/api/teachers/applications/:id/reject",async e=>{try{const t=e.req.param("id"),{directorId:s,reason:r}=await e.req.json();if(!s)return e.json({success:!1,error:"원장님 ID가 필요합니다."},400);const a=await e.env.DB.prepare('SELECT * FROM teacher_applications WHERE id = ? AND status = "pending"').bind(t).first();return a?(await e.env.DB.prepare(`
       UPDATE teacher_applications 
       SET status = 'rejected', processed_at = datetime('now'), 
           processed_by = ?, reject_reason = ?
