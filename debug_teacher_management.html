@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>선생님 관리 디버그 테스트</title>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; }
+        .test-section { margin: 20px 0; padding: 15px; border: 2px solid #ddd; border-radius: 8px; }
+        .test-section h3 { margin-top: 0; color: #6366f1; }
+        button { background: #6366f1; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; margin: 5px; }
+        button:hover { background: #4f46e5; }
+        .result { margin-top: 10px; padding: 10px; border-radius: 4px; background: #f3f4f6; }
+        .success { background: #d1fae5; border: 2px solid #10b981; }
+        .error { background: #fee2e2; border: 2px solid #ef4444; }
+        pre { background: #1f2937; color: #f9fafb; padding: 10px; border-radius: 4px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🔍 선생님 관리 시스템 디버그</h1>
+    
+    <div class="test-section">
+        <h3>1. API 테스트 - 승인 대기 목록</h3>
+        <button onclick="testApplicationsAPI()">승인 대기 목록 조회</button>
+        <div id="apiResult" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>2. API 테스트 - 선생님 추가</h3>
+        <input type="email" id="testEmail" placeholder="이메일" value="newteacher@test.com" style="padding: 8px; margin: 5px;">
+        <button onclick="testAddTeacherAPI()">선생님 추가 API 테스트</button>
+        <div id="addResult" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>3. 프론트엔드 테스트</h3>
+        <p>실제 페이지에서 F12를 누르고 Console에 아래 코드를 붙여넣으세요:</p>
+        <pre>
+// 1. 로그인 상태 확인
+const user = JSON.parse(localStorage.getItem('user'));
+console.log('현재 사용자:', user);
+
+// 2. 승인 대기 목록 로드 함수 실행
+async function testLoad() {
+    const res = await fetch('/api/teachers/applications?directorId=' + user.id);
+    const data = await res.json();
+    console.log('승인 대기 목록:', data);
+    return data;
+}
+testLoad();
+
+// 3. 선생님 관리 섹션 토글
+if (typeof toggleTeacherSection === 'function') {
+    console.log('✅ toggleTeacherSection 함수 존재');
+    toggleTeacherSection();
+} else {
+    console.log('❌ toggleTeacherSection 함수 없음');
+}
+
+// 4. 선생님 추가 버튼 테스트
+if (typeof openAddTeacherModal === 'function') {
+    console.log('✅ openAddTeacherModal 함수 존재');
+    openAddTeacherModal();
+} else {
+    console.log('❌ openAddTeacherModal 함수 없음');
+}
+        </pre>
+    </div>
+
+    <div class="test-section">
+        <h3>4. 실제 페이지로 이동</h3>
+        <p>테스트를 위해 실제 페이지로 이동하세요:</p>
+        <a href="https://superplace-academy.pages.dev/login" target="_blank" style="display: inline-block; padding: 10px 20px; background: #10b981; color: white; text-decoration: none; border-radius: 4px; margin: 5px;">
+            로그인 페이지
+        </a>
+        <a href="https://superplace-academy.pages.dev/students" target="_blank" style="display: inline-block; padding: 10px 20px; background: #6366f1; color: white; text-decoration: none; border-radius: 4px; margin: 5px;">
+            학생 관리 페이지
+        </a>
+    </div>
+
+    <script>
+        async function testApplicationsAPI() {
+            const resultDiv = document.getElementById('apiResult');
+            resultDiv.innerHTML = '로딩 중...';
+            
+            try {
+                const response = await fetch('https://superplace-academy.pages.dev/api/teachers/applications?directorId=1');
+                const data = await response.json();
+                
+                resultDiv.className = 'result success';
+                resultDiv.innerHTML = `
+                    <h4>✅ API 응답 성공</h4>
+                    <p><strong>승인 대기 수:</strong> ${data.applications ? data.applications.length : 0}</p>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `
+                    <h4>❌ API 에러</h4>
+                    <p>${error.message}</p>
+                `;
+            }
+        }
+
+        async function testAddTeacherAPI() {
+            const resultDiv = document.getElementById('addResult');
+            const email = document.getElementById('testEmail').value;
+            
+            resultDiv.innerHTML = '로딩 중...';
+            
+            const testData = {
+                name: '테스트선생님',
+                email: email,
+                phone: '010-1234-5678',
+                password: 'test1234!',
+                directorId: 1
+            };
+            
+            try {
+                const response = await fetch('https://superplace-academy.pages.dev/api/teachers/add', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(testData)
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `
+                        <h4>✅ 선생님 추가 성공</h4>
+                        <p><strong>메시지:</strong> ${data.message}</p>
+                        <p><strong>선생님 ID:</strong> ${data.teacherId}</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `
+                        <h4>❌ 선생님 추가 실패</h4>
+                        <p><strong>에러:</strong> ${data.error}</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `
+                    <h4>❌ API 에러</h4>
+                    <p>${error.message}</p>
+                `;
+            }
+        }
+
+        // 페이지 로드 시 자동으로 API 테스트
+        window.addEventListener('load', () => {
+            console.log('페이지 로드됨. API 테스트 준비 완료.');
+        });
+    </script>
+</body>
+</html>

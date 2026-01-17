@@ -23477,40 +23477,45 @@ app.get('/students', (c) => {
                     const res = await fetch('/api/teachers/applications?directorId=' + currentUser.id + '&status=pending');
                     const data = await res.json();
                     const container = document.getElementById('pendingList');
-                    const countBadge = document.getElementById('pendingCount');
+                    const countBadge = document.getElementById('pendingBadge');
                     
-                    if (!data.success || data.applications.length === 0) {
-                        container.innerHTML = '<div class="text-center text-gray-500 py-8">승인 대기 중인 신청이 없습니다.</div>';
-                        countBadge.textContent = '0';
+                    console.log('[LoadPending] Response:', data);
+                    
+                    if (!data.success || !data.applications || data.applications.length === 0) {
+                        if (container) container.innerHTML = '<div class="text-center text-gray-500 py-8">승인 대기 중인 신청이 없습니다.</div>';
+                        if (countBadge) countBadge.textContent = '0';
                         return;
                     }
 
-                    countBadge.textContent = data.applications.length;
-                    container.innerHTML = data.applications.map(app => \`
-                        <div class="bg-yellow-50 border-2 border-yellow-200 rounded-xl p-6">
-                            <div class="flex items-start justify-between mb-4">
-                                <div>
-                                    <h3 class="text-lg font-bold text-gray-900">\${app.name}</h3>
-                                    <p class="text-sm text-gray-600">\${app.email}</p>
-                                    <p class="text-sm text-gray-500">\${app.phone || '-'}</p>
-                                    <p class="text-xs text-gray-400 mt-2">신청일: \${new Date(app.applied_at).toLocaleString('ko-KR')}</p>
+                    if (countBadge) countBadge.textContent = data.applications.length;
+                    if (container) {
+                        container.innerHTML = data.applications.map(app => \`
+                            <div class="bg-yellow-50 border-2 border-yellow-200 rounded-xl p-6">
+                                <div class="flex items-start justify-between mb-4">
+                                    <div>
+                                        <h3 class="text-lg font-bold text-gray-900">\${app.name}</h3>
+                                        <p class="text-sm text-gray-600">\${app.email}</p>
+                                        <p class="text-sm text-gray-500">\${app.phone || '-'}</p>
+                                        <p class="text-xs text-gray-400 mt-2">신청일: \${new Date(app.applied_at).toLocaleString('ko-KR')}</p>
+                                    </div>
+                                    <span class="px-3 py-1 bg-yellow-500 text-white rounded-full text-xs font-medium">
+                                        대기중
+                                    </span>
                                 </div>
-                                <span class="px-3 py-1 bg-yellow-500 text-white rounded-full text-xs font-medium">
-                                    대기중
-                                </span>
+                                <div class="flex gap-2">
+                                    <button onclick="approveApplication(\${app.id}, '\${app.name}')" class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                                        <i class="fas fa-check mr-2"></i>승인
+                                    </button>
+                                    <button onclick="rejectApplication(\${app.id}, '\${app.name}')" class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+                                        <i class="fas fa-times mr-2"></i>거절
+                                    </button>
+                                </div>
                             </div>
-                            <div class="flex gap-2">
-                                <button onclick="approveApplication(\${app.id}, '\${app.name}')" class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-                                    <i class="fas fa-check mr-2"></i>승인
-                                </button>
-                                <button onclick="rejectApplication(\${app.id}, '\${app.name}')" class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
-                                    <i class="fas fa-times mr-2"></i>거절
-                                </button>
-                            </div>
-                        </div>
-                    \`).join('');
+                        \`).join('');
+                    }
                 } catch (error) {
                     console.error('승인 대기 목록 로딩 실패:', error);
+                    alert('승인 대기 목록 로딩 실패: ' + error.message);
                 }
             }
 
