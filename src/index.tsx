@@ -17488,16 +17488,15 @@ app.get('/api/teachers/verification-code', async (c) => {
       
       try {
         const result = await c.env.DB.prepare(`
-          INSERT INTO academy_verification_codes (user_id, academy_name, verification_code, is_active, created_at)
-          VALUES (?, ?, ?, 1, datetime('now'))
-        `).bind(directorId, director.academy_name, newCode).run()
+          INSERT INTO academy_verification_codes (user_id, verification_code, is_active, created_at)
+          VALUES (?, ?, 1, datetime('now'))
+        `).bind(directorId, newCode).run()
         
         console.log('[VerificationCode] Insert result:', result)
         
         codeData = {
           id: result.meta.last_row_id,
           user_id: parseInt(directorId),
-          academy_name: director.academy_name,
           verification_code: newCode,
           is_active: 1,
           created_at: new Date().toISOString()
@@ -17570,9 +17569,9 @@ app.post('/api/teachers/verification-code/regenerate', async (c) => {
     console.log('[RegenerateCode] Generated new code:', newCode)
     
     const result = await c.env.DB.prepare(`
-      INSERT INTO academy_verification_codes (user_id, academy_name, verification_code, is_active, created_at)
-      VALUES (?, ?, ?, 1, datetime('now'))
-    `).bind(directorId, director.academy_name, newCode).run()
+      INSERT INTO academy_verification_codes (user_id, verification_code, is_active, created_at)
+      VALUES (?, ?, 1, datetime('now'))
+    `).bind(directorId, newCode).run()
     
     console.log('[RegenerateCode] Insert result:', result)
     
@@ -17582,7 +17581,6 @@ app.post('/api/teachers/verification-code/regenerate', async (c) => {
       codeData: {
         id: result.meta.last_row_id,
         verification_code: newCode,
-        academy_name: director.academy_name,
         user_id: parseInt(directorId),
         is_active: 1,
         created_at: new Date().toISOString()
