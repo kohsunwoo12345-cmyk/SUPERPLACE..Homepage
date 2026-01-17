@@ -381,14 +381,15 @@ export const studentsListPage = `
                     
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">학생 연락처</label>
-                        <input type="tel" id="studentPhone" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="010-1234-5678">
+                        <input type="tel" id="studentPhone" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="010-1234-5678" maxlength="13">
                     </div>
                     
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">반 배정</label>
-                        <select id="studentClass" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                            <option value="">미배정</option>
-                        </select>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">반 배정 (최대 3개)</label>
+                        <div id="classCheckboxes" class="grid grid-cols-1 gap-2 p-3 border border-gray-300 rounded-lg max-h-48 overflow-y-auto">
+                            <!-- 반 목록이 동적으로 로드됩니다 -->
+                        </div>
+                        <input type="hidden" id="studentClasses">
                     </div>
                     
                     <div>
@@ -470,7 +471,7 @@ export const studentsListPage = `
                     
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">학부모 연락처 *</label>
-                        <input type="tel" id="parentPhone" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="010-1234-5678">
+                        <input type="tel" id="parentPhone" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="010-1234-5678" maxlength="13">
                     </div>
                     
                     <div class="col-span-2">
@@ -497,6 +498,24 @@ export const studentsListPage = `
         let allStudents = [];
         let classes = [];
 
+        // 전화번호 포맷팅 함수
+        function formatPhoneNumber(value) {
+            // 숫자만 추출
+            const numbers = value.replace(/[^0-9]/g, '');
+            
+            // 010-1234-5678 형식으로 변환
+            if (numbers.length <= 3) {
+                return numbers;
+            } else if (numbers.length <= 7) {
+                return numbers.slice(0, 3) + '-' + numbers.slice(3);
+            } else if (numbers.length <= 11) {
+                return numbers.slice(0, 3) + '-' + numbers.slice(3, 7) + '-' + numbers.slice(7);
+            } else {
+                // 11자리 넘어가면 자르기
+                return numbers.slice(0, 3) + '-' + numbers.slice(3, 7) + '-' + numbers.slice(7, 11);
+            }
+        }
+
         async function loadClasses() {
             try {
                 const res = await fetch('/api/classes?academyId=' + academyId);
@@ -506,13 +525,28 @@ export const studentsListPage = `
                     
                     // 반 필터 드롭다운 채우기
                     const classFilter = document.getElementById('classFilter');
-                    const studentClassSelect = document.getElementById('studentClass');
-                    
                     classFilter.innerHTML = '<option value="">전체 학생</option>' +
                         classes.map(c => \`<option value="\${c.id}">\${c.class_name}</option>\`).join('');
                     
-                    studentClassSelect.innerHTML = '<option value="">미배정</option>' +
-                        classes.map(c => \`<option value="\${c.id}">\${c.class_name}</option>\`).join('');
+                    // 반 배정 체크박스 채우기
+                    const classCheckboxes = document.getElementById('classCheckboxes');
+                    classCheckboxes.innerHTML = classes.map(c => \`
+                        <label class="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                            <input type="checkbox" name="classCheckbox" value="\${c.id}" class="w-4 h-4 text-blue-600">
+                            <span class="text-sm">\${c.class_name}</span>
+                        </label>
+                    \`).join('');
+                    
+                    // 체크박스 변경 이벤트 리스너 추가 (최대 3개 제한)
+                    document.querySelectorAll('input[name="classCheckbox"]').forEach(checkbox => {
+                        checkbox.addEventListener('change', function() {
+                            const checkedCount = document.querySelectorAll('input[name="classCheckbox"]:checked').length;
+                            if (checkedCount > 3) {
+                                this.checked = false;
+                                alert('반 배정은 최대 3개까지 가능합니다.');
+                            }
+                        });
+                    });
                     
                     // URL 파라미터에서 classId 확인
                     const urlParams = new URLSearchParams(window.location.search);
@@ -615,6 +649,7 @@ export const studentsListPage = `
             
             // 체크박스 초기화
             document.querySelectorAll('input[name="subject"]').forEach(cb => cb.checked = false);
+            document.querySelectorAll('input[name="classCheckbox"]').forEach(cb => cb.checked = false);
             
             // 최신 반 목록 로드
             await loadClasses();
@@ -643,8 +678,16 @@ export const studentsListPage = `
             // 최신 반 목록 로드
             await loadClasses();
             
-            // 반 선택 복원
-            document.getElementById('studentClass').value = student.class_id || '';
+            // 반 배정 체크박스 설정
+            document.querySelectorAll('input[name="classCheckbox"]').forEach(cb => cb.checked = false);
+            if (student.class_id) {
+                // class_id가 쉼표로 구분된 문자열일 수 있음
+                const classIds = String(student.class_id).split(',').map(id => id.trim());
+                classIds.forEach(classId => {
+                    const checkbox = document.querySelector(\`input[name="classCheckbox"][value="\${classId}"]\`);
+                    if (checkbox) checkbox.checked = true;
+                });
+            }
             
             // 체크박스 초기화 후 선택된 과목 체크
             document.querySelectorAll('input[name="subject"]').forEach(cb => cb.checked = false);
@@ -674,6 +717,15 @@ export const studentsListPage = `
             }
         }
 
+        // 전화번호 입력 필드에 포맷팅 적용
+        document.getElementById('studentPhone').addEventListener('input', function(e) {
+            e.target.value = formatPhoneNumber(e.target.value);
+        });
+        
+        document.getElementById('parentPhone').addEventListener('input', function(e) {
+            e.target.value = formatPhoneNumber(e.target.value);
+        });
+
         document.getElementById('studentForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -686,10 +738,14 @@ export const studentsListPage = `
                 return;
             }
             
+            // 체크박스에서 선택된 반 수집
+            const selectedClasses = Array.from(document.querySelectorAll('input[name="classCheckbox"]:checked'))
+                .map(cb => cb.value);
+            
             const studentId = document.getElementById('studentId').value;
             const payload = {
                 academyId,
-                classId: document.getElementById('studentClass').value || null,
+                classId: selectedClasses.length > 0 ? selectedClasses.join(',') : null,
                 name: document.getElementById('studentName').value,
                 phone: document.getElementById('studentPhone').value,
                 parentName: document.getElementById('parentName').value,
