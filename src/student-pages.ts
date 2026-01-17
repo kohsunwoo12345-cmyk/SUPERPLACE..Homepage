@@ -364,11 +364,11 @@ export const studentsListPage = `
     <!-- 학생 추가/수정 모달 -->
     <div id="studentModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
         <div class="bg-white rounded-xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <h2 id="modalTitle" class="text-2xl font-bold mb-6 sticky top-0 bg-white pb-4 border-b -mx-8 px-8 -mt-8 pt-8">새 학생 등록</h2>
+            <h2 id="modalTitle" class="text-2xl font-bold mb-6 sticky top-0 bg-white z-10 pb-4 border-b -mx-8 px-8 -mt-8 pt-8">새 학생 등록</h2>
             <form id="studentForm">
                 <input type="hidden" id="studentId">
                 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-2">
                     <!-- 학생 기본 정보 -->
                     <div class="col-span-2 border-b pb-4 mb-2">
                         <h3 class="text-lg font-semibold text-gray-800">📋 학생 정보</h3>
