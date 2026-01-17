@@ -17520,6 +17520,33 @@ app.get('/api/teachers/verification-code', async (c) => {
     
     console.log('[VerificationCode] GET request for directorId:', directorId)
     
+    // 테이블 존재 확인 및 자동 생성
+    try {
+      await c.env.DB.prepare(`
+        CREATE TABLE IF NOT EXISTS academy_verification_codes (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          user_id INTEGER NOT NULL,
+          code TEXT NOT NULL UNIQUE,
+          is_active INTEGER DEFAULT 1,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          expires_at DATETIME,
+          FOREIGN KEY (user_id) REFERENCES users(id)
+        )
+      `).run()
+      
+      await c.env.DB.prepare(`
+        CREATE INDEX IF NOT EXISTS idx_verification_codes_user ON academy_verification_codes(user_id)
+      `).run()
+      
+      await c.env.DB.prepare(`
+        CREATE INDEX IF NOT EXISTS idx_verification_codes_code ON academy_verification_codes(code)
+      `).run()
+      
+      console.log('[VerificationCode] Table and indexes ensured')
+    } catch (tableError) {
+      console.log('[VerificationCode] Table already exists or creation skipped')
+    }
+    
     // 원장님 정보 먼저 조회
     const director = await c.env.DB.prepare(
       'SELECT id, academy_name, email FROM users WHERE id = ?'
@@ -17533,9 +17560,14 @@ app.get('/api/teachers/verification-code', async (c) => {
     console.log('[VerificationCode] Director found:', director)
     
     // 기존 활성 코드 조회
-    let codeData = await c.env.DB.prepare(
-      'SELECT * FROM academy_verification_codes WHERE user_id = ? AND is_active = 1 ORDER BY created_at DESC LIMIT 1'
-    ).bind(directorId).first()
+    let codeData = null
+    try {
+      codeData = await c.env.DB.prepare(
+        'SELECT * FROM academy_verification_codes WHERE user_id = ? AND is_active = 1 ORDER BY created_at DESC LIMIT 1'
+      ).bind(directorId).first()
+    } catch (selectError) {
+      console.log('[VerificationCode] SELECT error (table might not exist):', selectError)
+    }
     
     console.log('[VerificationCode] Existing code:', codeData)
     
