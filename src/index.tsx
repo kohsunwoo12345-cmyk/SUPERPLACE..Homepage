@@ -17591,9 +17591,9 @@ app.post('/api/teachers/applications/:id/approve', async (c) => {
     
     let teacherId
     
-    if (existingUser && application.password === 'EXISTING_USER') {
-      // 기존 사용자 - 학원 연결만 수행
-      console.log('[ApproveTeacher] Existing user, updating connection:', existingUser)
+    if (existingUser) {
+      // 기존 사용자 - 학원 연결만 수행 (password 값에 관계없이)
+      console.log('[ApproveTeacher] Existing user found, updating connection:', existingUser)
       
       teacherId = existingUser.id
       
