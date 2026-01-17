@@ -18103,8 +18103,14 @@ app.get('/api/teachers/list', async (c) => {
     
     return c.json({ success: true, teachers: teachers.results || [] })
   } catch (error) {
-    console.error('Get teachers error:', error)
-    return c.json({ success: false, error: '선생님 목록 조회 중 오류가 발생했습니다.' }, 500)
+    console.error('[TeachersList] Error:', error)
+    console.error('[TeachersList] Error message:', error.message)
+    console.error('[TeachersList] Error stack:', error.stack)
+    return c.json({ 
+      success: false, 
+      error: '선생님 목록 조회 중 오류가 발생했습니다.',
+      details: error.message
+    }, 500)
   }
 })
 
