@@ -7704,63 +7704,23 @@ app.get('/dashboard', (c) => {
                 </div>
 
                 <!-- Stats Grid -->
-                <div class="grid md:grid-cols-5 gap-6 mb-12">
-                    <div class="bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl p-6 text-white shadow-lg">
-                        <div class="flex items-center justify-between mb-4">
-                            <div class="text-sm text-blue-100">보유 포인트</div>
-                            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="grid md:grid-cols-1 gap-6 mb-12">
+                    <div class="bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl p-8 text-white shadow-xl">
+                        <div class="flex items-center justify-between mb-6">
+                            <div class="text-xl text-blue-100 font-semibold">보유 포인트</div>
+                            <svg class="w-16 h-16 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                             </svg>
                         </div>
-                        <div class="text-4xl font-bold mb-3"><span id="userPoints">0</span>P</div>
-                        <div class="space-y-2">
-                            <button onclick="openDepositModal()" class="w-full bg-white text-blue-600 px-4 py-2 rounded-lg hover:bg-blue-50 transition font-medium text-sm">
+                        <div class="text-6xl font-bold mb-8"><span id="userPoints">0</span>P</div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <button onclick="openDepositModal()" class="w-full bg-white text-blue-600 px-6 py-4 rounded-xl hover:bg-blue-50 transition font-semibold text-lg shadow-md hover:shadow-lg">
                                 💰 입금 신청
                             </button>
-                            <a href="/my-deposits" class="block w-full bg-blue-50 text-blue-600 px-4 py-2 rounded-lg hover:bg-blue-100 transition font-medium text-sm text-center">
+                            <a href="/my-deposits" class="flex items-center justify-center w-full bg-white/20 backdrop-blur-sm text-white px-6 py-4 rounded-xl hover:bg-white/30 transition font-semibold text-lg">
                                 📋 입금 내역
                             </a>
                         </div>
-                    </div>
-
-                    <div class="bg-white rounded-2xl p-6 border border-gray-200">
-                        <div class="flex items-center justify-between mb-4">
-                            <div class="text-sm text-gray-600">수강 중인 프로그램</div>
-                            <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
-                            </svg>
-                        </div>
-                        <div class="text-3xl font-bold text-gray-900">3개</div>
-                    </div>
-
-                    <div class="bg-white rounded-2xl p-6 border border-gray-200">
-                        <div class="flex items-center justify-between mb-4">
-                            <div class="text-sm text-gray-600">완료한 과제</div>
-                            <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                        </div>
-                        <div class="text-3xl font-bold text-gray-900">12/15</div>
-                    </div>
-
-                    <div class="bg-white rounded-2xl p-6 border border-gray-200">
-                        <div class="flex items-center justify-between mb-4">
-                            <div class="text-sm text-gray-600">학습 진행률</div>
-                            <svg class="w-8 h-8 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                            </svg>
-                        </div>
-                        <div class="text-3xl font-bold text-gray-900">80%</div>
-                    </div>
-
-                    <div class="bg-white rounded-2xl p-6 border border-gray-200">
-                        <div class="flex items-center justify-between mb-4">
-                            <div class="text-sm text-gray-600">1:1 컨설팅</div>
-                            <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
-                            </svg>
-                        </div>
-                        <div class="text-3xl font-bold text-gray-900">2회</div>
                     </div>
                 </div>
 
