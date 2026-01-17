@@ -11677,11 +11677,31 @@ app.get('/tools/ai-learning-report', (c) => {
                 </div>
             </div>
 
+            <!-- 폴더 관리 섹션 -->
+            <div class="bg-white rounded-2xl p-8 border border-gray-200 mb-8">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold">📁 리포트 폴더</h2>
+                    <button onclick="showCreateFolderModal()" class="px-4 py-2 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition">
+                        + 새 폴더
+                    </button>
+                </div>
+                
+                <div id="foldersList" class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <p class="text-gray-500 col-span-full text-center py-8">폴더를 생성하면 여기에 표시됩니다.</p>
+                </div>
+            </div>
+
             <!-- 리포트 생성 섹션 -->
             <div class="bg-white rounded-2xl p-8 border border-gray-200 mb-8">
                 <h2 class="text-2xl font-bold mb-6">📝 리포트 생성</h2>
                 
-                <div class="grid md:grid-cols-2 gap-6 mb-6">
+                <div class="grid md:grid-cols-3 gap-6 mb-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">저장할 폴더</label>
+                        <select id="folderSelect" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                            <option value="">폴더 선택 (선택사항)</option>
+                        </select>
+                    </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">학생 선택</label>
                         <select id="studentSelect" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent">
@@ -11703,9 +11723,51 @@ app.get('/tools/ai-learning-report', (c) => {
 
             <!-- 생성된 리포트 목록 -->
             <div class="bg-white rounded-2xl p-8 border border-gray-200">
-                <h2 class="text-2xl font-bold mb-6">📚 생성된 리포트</h2>
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold">📚 생성된 리포트</h2>
+                    <select id="filterFolder" onchange="filterReportsByFolder()" class="px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500">
+                        <option value="">전체 폴더</option>
+                    </select>
+                </div>
                 <div id="reportsList" class="space-y-4">
                     <p class="text-gray-500 text-center py-12">리포트를 생성하면 여기에 표시됩니다.</p>
+                </div>
+            </div>
+
+            <!-- 폴더 생성 모달 -->
+            <div id="folderModal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                <div class="bg-white rounded-2xl max-w-md w-full p-6">
+                    <h3 class="text-xl font-bold mb-4">새 폴더 만들기</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">폴더 이름</label>
+                            <input type="text" id="folderName" class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500" placeholder="예: 2024년 1학기">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">설명 (선택사항)</label>
+                            <textarea id="folderDescription" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500" placeholder="폴더 설명을 입력하세요"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">폴더 색상</label>
+                            <div class="grid grid-cols-6 gap-2">
+                                <button onclick="selectFolderColor('#6366f1')" class="w-10 h-10 rounded-lg bg-indigo-500 hover:ring-2 ring-indigo-600" data-color="#6366f1"></button>
+                                <button onclick="selectFolderColor('#8b5cf6')" class="w-10 h-10 rounded-lg bg-purple-500 hover:ring-2 ring-purple-600" data-color="#8b5cf6"></button>
+                                <button onclick="selectFolderColor('#ec4899')" class="w-10 h-10 rounded-lg bg-pink-500 hover:ring-2 ring-pink-600" data-color="#ec4899"></button>
+                                <button onclick="selectFolderColor('#f43f5e')" class="w-10 h-10 rounded-lg bg-rose-500 hover:ring-2 ring-rose-600" data-color="#f43f5e"></button>
+                                <button onclick="selectFolderColor('#10b981')" class="w-10 h-10 rounded-lg bg-emerald-500 hover:ring-2 ring-emerald-600" data-color="#10b981"></button>
+                                <button onclick="selectFolderColor('#06b6d4')" class="w-10 h-10 rounded-lg bg-cyan-500 hover:ring-2 ring-cyan-600" data-color="#06b6d4"></button>
+                            </div>
+                        </div>
+                    </div>
+                    <input type="hidden" id="selectedColor" value="#6366f1">
+                    <div class="flex space-x-3 mt-6">
+                        <button onclick="createFolder()" class="flex-1 px-4 py-2 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition">
+                            생성
+                        </button>
+                        <button onclick="closeFolderModal()" class="flex-1 px-4 py-2 bg-gray-300 text-gray-700 rounded-xl hover:bg-gray-400 transition">
+                            취소
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -11727,6 +11789,8 @@ app.get('/tools/ai-learning-report', (c) => {
 
         <script>
             let currentUser = null;
+            let folders = [];
+            let allReports = [];
 
             // 로그인 체크
             window.addEventListener('DOMContentLoaded', () => {
@@ -11737,9 +11801,158 @@ app.get('/tools/ai-learning-report', (c) => {
                     return;
                 }
                 currentUser = JSON.parse(userData);
+                loadFolders();
                 loadStudents();
                 setDefaultMonth();
             });
+
+            // 폴더 목록 로드
+            async function loadFolders() {
+                try {
+                    const response = await fetch(\`/api/report-folders?academyId=\${currentUser.id}\`);
+                    const data = await response.json();
+                    
+                    if (data.success && data.folders) {
+                        folders = data.folders;
+                        renderFolders();
+                        updateFolderSelects();
+                    }
+                } catch (err) {
+                    console.error('폴더 목록 로드 실패:', err);
+                }
+            }
+
+            // 폴더 렌더링
+            function renderFolders() {
+                const container = document.getElementById('foldersList');
+                if (folders.length === 0) {
+                    container.innerHTML = '<p class="text-gray-500 col-span-full text-center py-8">폴더를 생성하면 여기에 표시됩니다.</p>';
+                    return;
+                }
+
+                container.innerHTML = folders.map(folder => \`
+                    <div class="p-4 rounded-xl border-2 hover:shadow-lg transition cursor-pointer group" 
+                         style="border-color: \${folder.color}20; background: \${folder.color}10;"
+                         onclick="filterByFolder(\${folder.id})">
+                        <div class="flex items-center space-x-3 mb-2">
+                            <div class="w-10 h-10 rounded-lg flex items-center justify-center text-white text-xl" 
+                                 style="background: \${folder.color};">
+                                📁
+                            </div>
+                            <div class="flex-1">
+                                <div class="font-bold text-gray-900">\${folder.folder_name}</div>
+                                <div class="text-xs text-gray-500">\${folder.description || ''}</div>
+                            </div>
+                        </div>
+                        <button onclick="event.stopPropagation(); deleteFolder(\${folder.id})" 
+                                class="text-xs text-red-500 hover:text-red-700 opacity-0 group-hover:opacity-100 transition">
+                            삭제
+                        </button>
+                    </div>
+                \`).join('');
+            }
+
+            // 폴더 선택 드롭다운 업데이트
+            function updateFolderSelects() {
+                const folderSelect = document.getElementById('folderSelect');
+                const filterFolder = document.getElementById('filterFolder');
+                
+                const folderOptions = folders.map(f => \`<option value="\${f.id}">\${f.folder_name}</option>\`).join('');
+                
+                folderSelect.innerHTML = '<option value="">폴더 선택 (선택사항)</option>' + folderOptions;
+                filterFolder.innerHTML = '<option value="">전체 폴더</option>' + folderOptions;
+            }
+
+            // 폴더 생성 모달 열기
+            function showCreateFolderModal() {
+                document.getElementById('folderModal').classList.remove('hidden');
+            }
+
+            // 폴더 생성 모달 닫기
+            function closeFolderModal() {
+                document.getElementById('folderModal').classList.add('hidden');
+                document.getElementById('folderName').value = '';
+                document.getElementById('folderDescription').value = '';
+            }
+
+            // 폴더 색상 선택
+            function selectFolderColor(color) {
+                document.getElementById('selectedColor').value = color;
+                document.querySelectorAll('[data-color]').forEach(btn => {
+                    btn.classList.remove('ring-2');
+                });
+                event.target.classList.add('ring-2');
+            }
+
+            // 폴더 생성
+            async function createFolder() {
+                const folderName = document.getElementById('folderName').value.trim();
+                const description = document.getElementById('folderDescription').value.trim();
+                const color = document.getElementById('selectedColor').value;
+
+                if (!folderName) {
+                    alert('폴더 이름을 입력해주세요.');
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/api/report-folders', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            academyId: currentUser.id,
+                            folderName,
+                            description,
+                            color
+                        })
+                    });
+
+                    const data = await response.json();
+                    if (data.success) {
+                        closeFolderModal();
+                        loadFolders();
+                        alert('폴더가 생성되었습니다.');
+                    } else {
+                        alert('폴더 생성 실패: ' + data.error);
+                    }
+                } catch (err) {
+                    console.error('폴더 생성 실패:', err);
+                    alert('폴더 생성 중 오류가 발생했습니다.');
+                }
+            }
+
+            // 폴더 삭제
+            async function deleteFolder(folderId) {
+                if (!confirm('이 폴더를 삭제하시겠습니까? (폴더 내 리포트는 유지됩니다)')) {
+                    return;
+                }
+
+                try {
+                    const response = await fetch(\`/api/report-folders/\${folderId}\`, {
+                        method: 'DELETE'
+                    });
+
+                    const data = await response.json();
+                    if (data.success) {
+                        loadFolders();
+                        alert('폴더가 삭제되었습니다.');
+                    }
+                } catch (err) {
+                    console.error('폴더 삭제 실패:', err);
+                }
+            }
+
+            // 폴더별 필터링
+            function filterByFolder(folderId) {
+                document.getElementById('filterFolder').value = folderId;
+                filterReportsByFolder();
+            }
+
+            function filterReportsByFolder() {
+                const folderId = document.getElementById('filterFolder').value;
+                // 리포트 목록을 folderId로 필터링하여 표시
+                // loadReportsForStudent 함수에서 처리
+            }
 
             // 기본 월 설정 (이번 달)
             function setDefaultMonth() {
@@ -11780,6 +11993,7 @@ app.get('/tools/ai-learning-report', (c) => {
             async function generateReport() {
                 const studentId = document.getElementById('studentSelect').value;
                 const reportMonth = document.getElementById('reportMonth').value;
+                const folderId = document.getElementById('folderSelect').value;
                 const resultDiv = document.getElementById('generateResult');
 
                 if (!studentId) {
@@ -11802,7 +12016,8 @@ app.get('/tools/ai-learning-report', (c) => {
                         },
                         body: JSON.stringify({
                             student_id: studentId,
-                            report_month: reportMonth
+                            report_month: reportMonth,
+                            folder_id: folderId || null
                         })
                     });
 
@@ -12390,10 +12605,68 @@ app.get('/api/learning-reports/:student_id', async (c) => {
   }
 })
 
+// ============================================
+// 리포트 폴더 관리 API
+// ============================================
+
+// 폴더 목록 조회
+app.get('/api/report-folders', async (c) => {
+  try {
+    const academyId = c.req.query('academyId')
+    
+    const result = await c.env.DB.prepare(`
+      SELECT * FROM report_folders
+      WHERE academy_id = ?
+      ORDER BY created_at DESC
+    `).bind(academyId).all()
+    
+    return c.json({ success: true, folders: result.results })
+  } catch (error) {
+    return c.json({ success: false, error: error.message }, 500)
+  }
+})
+
+// 폴더 생성
+app.post('/api/report-folders', async (c) => {
+  try {
+    const { academyId, folderName, description, color } = await c.req.json()
+    
+    const result = await c.env.DB.prepare(`
+      INSERT INTO report_folders (academy_id, folder_name, description, color)
+      VALUES (?, ?, ?, ?)
+    `).bind(academyId, folderName, description || '', color || '#6366f1').run()
+    
+    return c.json({ success: true, folderId: result.meta.last_row_id })
+  } catch (error) {
+    return c.json({ success: false, error: error.message }, 500)
+  }
+})
+
+// 폴더 삭제
+app.delete('/api/report-folders/:folderId', async (c) => {
+  try {
+    const folderId = c.req.param('folderId')
+    
+    // 폴더 내 리포트의 folder_id를 NULL로 설정
+    await c.env.DB.prepare(`
+      UPDATE learning_reports SET folder_id = NULL WHERE folder_id = ?
+    `).bind(folderId).run()
+    
+    // 폴더 삭제
+    await c.env.DB.prepare(`
+      DELETE FROM report_folders WHERE id = ?
+    `).bind(folderId).run()
+    
+    return c.json({ success: true })
+  } catch (error) {
+    return c.json({ success: false, error: error.message }, 500)
+  }
+})
+
 // AI 리포트 자동 생성
 app.post('/api/learning-reports/generate', async (c) => {
   try {
-    const { student_id, report_month } = await c.req.json()
+    const { student_id, report_month, folder_id } = await c.req.json()
     
     // 학생 정보 조회
     const student = await c.env.DB.prepare(`
@@ -12519,8 +12792,8 @@ ${recommendations}
     // 리포트 저장
     const result = await c.env.DB.prepare(`
       INSERT INTO learning_reports 
-      (student_id, report_month, overall_score, study_attitude, strengths, weaknesses, improvements, recommendations, next_month_goals, ai_analysis, parent_message)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      (student_id, report_month, overall_score, study_attitude, strengths, weaknesses, improvements, recommendations, next_month_goals, ai_analysis, parent_message, folder_id)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).bind(
       student_id, 
       report_month, 
@@ -12532,7 +12805,8 @@ ${recommendations}
       recommendations, 
       nextMonthGoals, 
       aiAnalysis, 
-      parentMessage
+      parentMessage,
+      folder_id || null
     ).run()
     
     return c.json({ 
