@@ -362,9 +362,9 @@ export const studentsListPage = `
     </div>
 
     <!-- 학생 추가/수정 모달 -->
-    <div id="studentModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-y-auto">
-        <div class="bg-white rounded-xl p-8 max-w-2xl w-full mx-4 my-8">
-            <h2 id="modalTitle" class="text-2xl font-bold mb-6">새 학생 등록</h2>
+    <div id="studentModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <h2 id="modalTitle" class="text-2xl font-bold mb-6 sticky top-0 bg-white pb-4 border-b -mx-8 px-8 -mt-8 pt-8">새 학생 등록</h2>
             <form id="studentForm">
                 <input type="hidden" id="studentId">
                 
@@ -668,7 +668,16 @@ export const studentsListPage = `
             // 최신 반 목록 로드
             await loadClasses();
             
-            document.getElementById('studentModal').classList.remove('hidden');
+            const modal = document.getElementById('studentModal');
+            modal.classList.remove('hidden');
+            
+            // 모달 컨텐츠를 맨 위로 스크롤
+            setTimeout(() => {
+                const modalContent = modal.querySelector('.bg-white.rounded-xl');
+                if (modalContent) {
+                    modalContent.scrollTop = 0;
+                }
+            }, 10);
         }
 
         function hideModal() {
@@ -711,7 +720,16 @@ export const studentsListPage = `
                 if (checkbox) checkbox.checked = true;
             });
             
-            document.getElementById('studentModal').classList.remove('hidden');
+            const modal = document.getElementById('studentModal');
+            modal.classList.remove('hidden');
+            
+            // 모달 컨텐츠를 맨 위로 스크롤
+            setTimeout(() => {
+                const modalContent = modal.querySelector('.bg-white.rounded-xl');
+                if (modalContent) {
+                    modalContent.scrollTop = 0;
+                }
+            }, 10);
         }
 
         async function deleteStudent(studentId, studentName) {
