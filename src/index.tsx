@@ -19358,10 +19358,10 @@ app.get('/sms/sender/request', (c) => {
                         <div class="text-sm text-green-800">
                             <p class="font-bold mb-3">📥 서류 양식 다운로드</p>
                             <div class="flex flex-wrap gap-3">
-                                <a href="/api/downloads/consent-form" download class="px-4 py-2 bg-white border border-green-300 rounded-lg hover:bg-green-100 transition font-medium">
+                                <a href="/downloads/발신번호_사전등록_대리_신청서.docx" download class="px-4 py-2 bg-white border border-green-300 rounded-lg hover:bg-green-100 transition font-medium">
                                     📄 발신번호 사전등록 대리 신청서
                                 </a>
-                                <a href="/api/downloads/contract" download class="px-4 py-2 bg-white border border-green-300 rounded-lg hover:bg-green-100 transition font-medium">
+                                <a href="/downloads/문자메시지_이용계약서.docx" download class="px-4 py-2 bg-white border border-green-300 rounded-lg hover:bg-green-100 transition font-medium">
                                     📄 문자메시지 이용계약서
                                 </a>
                                 <a href="/api/downloads/employment-cert" download class="px-4 py-2 bg-white border border-green-300 rounded-lg hover:bg-green-100 transition font-medium">
