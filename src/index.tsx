@@ -18311,8 +18311,13 @@ app.get('/api/classes/list', async (c) => {
     
     return c.json({ success: true, classes: classes.results || [] })
   } catch (error) {
-    console.error('Get classes error:', error)
-    return c.json({ success: false, error: '반 목록 조회 중 오류가 발생했습니다.' }, 500)
+    console.error('[ClassesList] Error:', error)
+    console.error('[ClassesList] Error message:', error.message)
+    return c.json({ 
+      success: false, 
+      error: '반 목록 조회 중 오류가 발생했습니다.',
+      details: error.message
+    }, 500)
   }
 })
 
