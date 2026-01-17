@@ -1,12 +1,7 @@
 name = "superplace-academy"
+main = "dist/_worker.js"
 compatibility_date = "2025-12-18"
-pages_build_output_dir = "dist"
-
-[build]
-command = "npm run build"
-
-[build.upload]
-format = "service-worker"
+workers_dev = true
 
 # D1 Database Bindings
 [[d1_databases]]
