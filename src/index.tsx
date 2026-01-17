@@ -8181,20 +8181,22 @@ app.get('/dashboard', (c) => {
                             }
                         })
                         
-                        // SMS 네비게이션 드롭다운 및 섹션 (sms 권한으로 통일)
-                        if (permissions.sms) {
+                        // SMS 네비게이션 드롭다운 및 섹션 (sms 또는 sms_sender 권한으로 체크 - 호환성)
+                        if (permissions.sms || permissions.sms_sender) {
                             document.getElementById('smsNavDropdown')?.classList.remove('hidden')
                             document.getElementById('smsQuickAccess')?.classList.remove('hidden')
                             const smsSection = document.getElementById('smsSection')
                             if (smsSection) {
                                 smsSection.style.display = 'block'
                             }
+                            console.log('✅ SMS 권한 있음 (sms 또는 sms_sender)')
                         } else {
                             // SMS 권한이 없으면 숨김
                             const smsSection = document.getElementById('smsSection')
                             if (smsSection) {
                                 smsSection.style.display = 'none'
                             }
+                            console.log('❌ SMS 권한 없음')
                         }
                     }
                 } catch (err) {
@@ -8285,10 +8287,10 @@ app.get('/dashboard', (c) => {
                             }
                         }
                         
-                        // sms 권한 체크 - SMS 문자 발송 (권한 명칭 통일)
+                        // sms 권한 체크 - SMS 문자 발송 (sms 또는 sms_sender 호환성)
                         const smsSection = document.getElementById('smsSection')
                         if (smsSection) {
-                            if (!permissions.sms) {
+                            if (!permissions.sms && !permissions.sms_sender) {
                                 smsSection.style.display = 'none'
                                 console.log('❌ sms 권한 없음 - SMS 섹션 숨김')
                             } else {
@@ -8297,10 +8299,10 @@ app.get('/dashboard', (c) => {
                             }
                         }
                         
-                        // SMS 네비게이션 드롭다운도 sms 권한으로 통일
+                        // SMS 네비게이션 드롭다운도 sms 또는 sms_sender 권한으로 체크
                         const smsNavDropdown = document.getElementById('smsNavDropdown')
                         if (smsNavDropdown) {
-                            if (!permissions.sms) {
+                            if (!permissions.sms && !permissions.sms_sender) {
                                 smsNavDropdown.style.display = 'none'
                                 console.log('❌ sms 권한 없음 - SMS 네비게이션 드롭다운 숨김')
                             } else {
