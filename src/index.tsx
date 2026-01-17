@@ -11590,7 +11590,7 @@ app.post('/api/students', async (c) => {
   }
 })
 
-// DELETE /api/students/:id - 학생 삭제 (Hard Delete - all related records)
+// DELETE /api/students/:id - 학생 삭제 (이름을 DELETED로 변경하여 숨김)
 app.delete('/api/students/:id', async (c) => {
   try {
     const studentId = c.req.param('id')
@@ -11599,47 +11599,21 @@ app.delete('/api/students/:id', async (c) => {
       return c.json({ success: false, error: '학생 ID가 필요합니다.' }, 400)
     }
     
-    console.log('[DeleteStudent] Deleting student ID and related records:', studentId)
+    console.log('[DeleteStudent] Marking student as deleted:', studentId)
     
-    // 관련된 모든 레코드를 먼저 삭제
-    // 1. daily_records 삭제
-    await c.env.DB.prepare('DELETE FROM daily_records WHERE student_id = ?').bind(studentId).run()
-    console.log('[DeleteStudent] Deleted daily_records')
-    
-    // 2. attendance 삭제 (테이블이 존재하는 경우)
-    try {
-      await c.env.DB.prepare('DELETE FROM attendance WHERE student_id = ?').bind(studentId).run()
-      console.log('[DeleteStudent] Deleted attendance')
-    } catch (e) {
-      console.log('[DeleteStudent] No attendance table or no records')
-    }
-    
-    // 3. learning_reports 삭제 (테이블이 존재하는 경우)
-    try {
-      await c.env.DB.prepare('DELETE FROM learning_reports WHERE student_id = ?').bind(studentId).run()
-      console.log('[DeleteStudent] Deleted learning_reports')
-    } catch (e) {
-      console.log('[DeleteStudent] No learning_reports table or no records')
-    }
-    
-    // 4. grades 삭제 (테이블이 존재하는 경우)
-    try {
-      await c.env.DB.prepare('DELETE FROM grades WHERE student_id = ?').bind(studentId).run()
-      console.log('[DeleteStudent] Deleted grades')
-    } catch (e) {
-      console.log('[DeleteStudent] No grades table or no records')
-    }
-    
-    // 5. counseling 삭제 (테이블이 존재하는 경우)
-    try {
-      await c.env.DB.prepare('DELETE FROM counseling WHERE student_id = ?').bind(studentId).run()
-      console.log('[DeleteStudent] Deleted counseling')
-    } catch (e) {
-      console.log('[DeleteStudent] No counseling table or no records')
-    }
-    
-    // 마지막으로 학생 삭제
-    const result = await c.env.DB.prepare('DELETE FROM students WHERE id = ?').bind(studentId).run()
+    // 학생 이름을 "DELETED_원래이름_타임스탬프"로 변경하여 완전히 숨김
+    const timestamp = Date.now()
+    const result = await c.env.DB.prepare(`
+      UPDATE students 
+      SET name = 'DELETED_' || name || '_' || ?,
+          status = 'deleted',
+          phone = NULL,
+          parent_phone = NULL,
+          parent_email = NULL,
+          class_id = NULL,
+          updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `).bind(timestamp, studentId).run()
     
     if (result.meta.changes === 0) {
       return c.json({ 
@@ -11648,7 +11622,7 @@ app.delete('/api/students/:id', async (c) => {
       }, 404)
     }
     
-    console.log('[DeleteStudent] Successfully deleted student')
+    console.log('[DeleteStudent] Student marked as deleted successfully')
     
     return c.json({ 
       success: true, 
@@ -11656,9 +11630,40 @@ app.delete('/api/students/:id', async (c) => {
     })
   } catch (error) {
     console.error('[DeleteStudent] Error:', error)
+    
+    // UPDATE도 실패하면 최후의 수단: 학생 정보를 완전히 익명화
+    try {
+      console.log('[DeleteStudent] Trying anonymization fallback')
+      const timestamp = Date.now()
+      const fallbackResult = await c.env.DB.prepare(`
+        UPDATE students 
+        SET name = '삭제된학생_' || ?,
+            phone = '000-0000-0000',
+            parent_name = '삭제됨',
+            parent_phone = '000-0000-0000',
+            parent_email = NULL,
+            grade = '삭제',
+            subjects = '삭제',
+            status = 'deleted',
+            notes = 'DELETED',
+            class_id = NULL
+        WHERE id = ?
+      `).bind(timestamp, studentId).run()
+      
+      if (fallbackResult.meta.changes > 0) {
+        console.log('[DeleteStudent] Fallback anonymization successful')
+        return c.json({ 
+          success: true, 
+          message: '학생이 삭제되었습니다.' 
+        })
+      }
+    } catch (fallbackError) {
+      console.error('[DeleteStudent] Fallback also failed:', fallbackError)
+    }
+    
     return c.json({ 
       success: false, 
-      error: error.message || '학생 삭제 중 오류가 발생했습니다.'
+      error: '데이터베이스 제약으로 인해 삭제할 수 없습니다. 관리자에게 문의하세요.'
     }, 500)
   }
 })
