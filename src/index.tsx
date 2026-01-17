@@ -17528,7 +17528,7 @@ app.get('/api/teachers/verification-code', async (c) => {
     console.log('[VerificationCode] Existing code:', codeData)
     
     // 코드가 없거나 유효하지 않으면 새로 생성
-    if (!codeData || !codeData.verification_code) {
+    if (!codeData || (!codeData.code && !codeData.verification_code)) {
       console.log('[VerificationCode] Creating new code for director:', directorId)
       
       // 6자리 랜덤 코드 생성 (영문 대문자 + 숫자)
@@ -17542,7 +17542,7 @@ app.get('/api/teachers/verification-code', async (c) => {
       
       try {
         const result = await c.env.DB.prepare(`
-          INSERT INTO academy_verification_codes (user_id, verification_code, is_active, created_at)
+          INSERT INTO academy_verification_codes (user_id, code, is_active, created_at)
           VALUES (?, ?, 1, datetime('now'))
         `).bind(directorId, newCode).run()
         
@@ -17551,7 +17551,7 @@ app.get('/api/teachers/verification-code', async (c) => {
         codeData = {
           id: result.meta.last_row_id,
           user_id: parseInt(directorId),
-          verification_code: newCode,
+          code: newCode,
           is_active: 1,
           created_at: new Date().toISOString()
         }
@@ -17561,7 +17561,7 @@ app.get('/api/teachers/verification-code', async (c) => {
       }
     }
     
-    const responseCode = codeData.verification_code || codeData.code || 'ERROR'
+    const responseCode = codeData.code || codeData.verification_code || 'ERROR'
     console.log('[VerificationCode] Final response code:', responseCode)
     
     return c.json({ 
@@ -17623,7 +17623,7 @@ app.post('/api/teachers/verification-code/regenerate', async (c) => {
     console.log('[RegenerateCode] Generated new code:', newCode)
     
     const result = await c.env.DB.prepare(`
-      INSERT INTO academy_verification_codes (user_id, verification_code, is_active, created_at)
+      INSERT INTO academy_verification_codes (user_id, code, is_active, created_at)
       VALUES (?, ?, 1, datetime('now'))
     `).bind(directorId, newCode).run()
     
@@ -17634,6 +17634,7 @@ app.post('/api/teachers/verification-code/regenerate', async (c) => {
       code: newCode,
       codeData: {
         id: result.meta.last_row_id,
+        code: newCode,
         verification_code: newCode,
         user_id: parseInt(directorId),
         is_active: 1,
@@ -23026,8 +23027,8 @@ app.get('/students', (c) => {
                     console.log('[Frontend] Verification code response:', data);
                     
                     if (data.success) {
-                        // code 또는 codeData.verification_code 사용
-                        const code = data.code || (data.codeData && data.codeData.verification_code) || '------';
+                        // code 우선, 그 다음 codeData.code, 마지막으로 codeData.verification_code
+                        const code = data.code || (data.codeData && (data.codeData.code || data.codeData.verification_code)) || '------';
                         console.log('[Frontend] Setting code to:', code);
                         
                         const codeElement = document.getElementById('verificationCode');
@@ -23077,8 +23078,8 @@ app.get('/students', (c) => {
                     console.log('[Frontend] Regenerate response:', data);
                     
                     if (data.success) {
-                        // code 또는 codeData.verification_code 사용
-                        const newCode = data.code || (data.codeData && data.codeData.verification_code);
+                        // code 우선, 그 다음 codeData.code, 마지막으로 codeData.verification_code
+                        const newCode = data.code || (data.codeData && (data.codeData.code || data.codeData.verification_code));
                         console.log('[Frontend] New code:', newCode);
                         
                         const codeElement = document.getElementById('verificationCode');
