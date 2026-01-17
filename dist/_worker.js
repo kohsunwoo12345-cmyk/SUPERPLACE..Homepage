@@ -10660,7 +10660,30 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
       AND strftime('%Y-%m', counseling_date) = ?
       ORDER BY counseling_date DESC
       LIMIT 3
-    `).bind(r,a).all(),c=o.reduce((T,S)=>T+(S.count||0),0),p=((t=o.find(T=>T.status==="present"))==null?void 0:t.count)||0,m=c>0?(p/c*100).toFixed(1):0,g=l.length>0?(l.reduce((T,S)=>T+S.score/S.max_score*100,0)/l.length).toFixed(1):0;let x="양호";m>=95&&g>=85?x="매우 우수":m>=90&&g>=80?x="우수":(m<85||g<70)&&(x="개선 필요");const v=l.length>0?l.reduce((T,S)=>S.score/S.max_score>T.score/T.max_score?S:T):null,w=v?v.subject+" 과목에서 "+(v.score/v.max_score*100).toFixed(1)+"점으로 우수한 성적을 보였습니다. 꾸준한 노력이 돋보입니다.":"기본기가 탄탄하며, 수업 참여도가 높습니다.",b=l.length>0?l.reduce((T,S)=>S.score/S.max_score<T.score/T.max_score?S:T):null,E=b&&b.score/b.max_score*100<75?b.subject+" 과목에서 "+(b.score/b.max_score*100).toFixed(1)+"점으로 보완이 필요합니다.":"전반적으로 균형잡힌 학습을 하고 있습니다.",_=m<90?"출석률 개선이 필요합니다. 규칙적인 수업 참여가 성적 향상의 기본입니다.":g<80?"기본 개념 복습에 더 많은 시간을 투자하면 좋겠습니다.":"현재 학습 패턴을 유지하면서 심화 학습으로 나아가면 좋겠습니다.",U=g>=85?"상위권 유지를 위해 심화 문제 풀이를 추천합니다. 경시대회 준비도 고려해볼 만합니다.":g>=75?"기본기 강화와 함께 문제 풀이 속도를 높이는 연습이 필요합니다.":"개념 이해를 위한 1:1 보충 수업을 추천합니다. 기초부터 차근차근 다져가면 충분히 성적이 오를 수 있습니다.",I=g>=85?"현재 평균 "+g+"점 수준을 유지하면서, "+((b==null?void 0:b.subject)||"취약 과목")+"에서 5점 이상 향상 목표":"평균 점수 "+g+"점에서 "+Math.min(100,parseFloat(g)+10).toFixed(0)+"점으로 향상, 출석률 "+m+"%에서 95% 이상 달성",j="["+n.name+"] 학생은 이번 달 평균 "+g+"점의 성적을 기록했으며, 출석률은 "+m+"%입니다. "+(x==="매우 우수"||x==="우수"?"전반적으로 성실하게 학업에 임하고 있으며, 지속적인 성장이 기대됩니다.":"학습 태도와 출석 관리에 더 많은 관심이 필요합니다.")+(v?" 특히 "+v.subject+" 과목에서 강점을 보이고 있습니다.":"")+" 꾸준한 노력으로 더욱 발전할 수 있습니다.",$="학부모님, 안녕하세요.\\n\\n"+n.name+" 학생의 "+a+" 학습 분석 리포트를 전달드립니다.\\n\\n📊 이번 달 성과\\n- 평균 점수: "+g+"점\\n- 출석률: "+m+"%\\n- 학습 태도: "+x+"\\n\\n💪 강점\\n"+w+"\\n\\n🎯 개선 필요 사항\\n"+E+"\\n\\n📝 선생님의 추천\\n"+U+"\\n\\n다음 달 목표: "+I+"\\n\\n앞으로도 "+n.name+" 학생이 더욱 성장할 수 있도록 최선을 다하겠습니다.\\n궁금하신 점은 언제든 연락 주세요!\\n\\n- 꾸메땅학원 "+(((s=i[0])==null?void 0:s.counselor_name)||"선생님"),M=await e.env.DB.prepare(`
+    `).bind(r,a).all(),c=o.reduce((T,S)=>T+(S.count||0),0),p=((t=o.find(T=>T.status==="present"))==null?void 0:t.count)||0,m=c>0?(p/c*100).toFixed(1):0,g=l.length>0?(l.reduce((T,S)=>T+S.score/S.max_score*100,0)/l.length).toFixed(1):0;let x="양호";m>=95&&g>=85?x="매우 우수":m>=90&&g>=80?x="우수":(m<85||g<70)&&(x="개선 필요");const v=l.length>0?l.reduce((T,S)=>S.score/S.max_score>T.score/T.max_score?S:T):null,w=v?v.subject+" 과목에서 "+(v.score/v.max_score*100).toFixed(1)+"점으로 우수한 성적을 보였습니다. 꾸준한 노력이 돋보입니다.":"기본기가 탄탄하며, 수업 참여도가 높습니다.",b=l.length>0?l.reduce((T,S)=>S.score/S.max_score<T.score/T.max_score?S:T):null,E=b&&b.score/b.max_score*100<75?b.subject+" 과목에서 "+(b.score/b.max_score*100).toFixed(1)+"점으로 보완이 필요합니다.":"전반적으로 균형잡힌 학습을 하고 있습니다.",_=m<90?"출석률 개선이 필요합니다. 규칙적인 수업 참여가 성적 향상의 기본입니다.":g<80?"기본 개념 복습에 더 많은 시간을 투자하면 좋겠습니다.":"현재 학습 패턴을 유지하면서 심화 학습으로 나아가면 좋겠습니다.",U=g>=85?"상위권 유지를 위해 심화 문제 풀이를 추천합니다. 경시대회 준비도 고려해볼 만합니다.":g>=75?"기본기 강화와 함께 문제 풀이 속도를 높이는 연습이 필요합니다.":"개념 이해를 위한 1:1 보충 수업을 추천합니다. 기초부터 차근차근 다져가면 충분히 성적이 오를 수 있습니다.",I=g>=85?"현재 평균 "+g+"점 수준을 유지하면서, "+((b==null?void 0:b.subject)||"취약 과목")+"에서 5점 이상 향상 목표":"평균 점수 "+g+"점에서 "+Math.min(100,parseFloat(g)+10).toFixed(0)+"점으로 향상, 출석률 "+m+"%에서 95% 이상 달성",j="["+n.name+"] 학생은 이번 달 평균 "+g+"점의 성적을 기록했으며, 출석률은 "+m+"%입니다. "+(x==="매우 우수"||x==="우수"?"전반적으로 성실하게 학업에 임하고 있으며, 지속적인 성장이 기대됩니다.":"학습 태도와 출석 관리에 더 많은 관심이 필요합니다.")+(v?" 특히 "+v.subject+" 과목에서 강점을 보이고 있습니다.":"")+" 꾸준한 노력으로 더욱 발전할 수 있습니다.",$=`학부모님, 안녕하세요.
+
+${n.name} 학생의 ${a} 학습 분석 리포트를 전달드립니다.
+
+📊 이번 달 성과
+- 평균 점수: ${g}점
+- 출석률: ${m}%
+- 학습 태도: ${x}
+
+💪 강점
+${w}
+
+🎯 개선 필요 사항
+${E}
+
+📝 선생님의 추천
+${U}
+
+다음 달 목표: ${I}
+
+앞으로도 ${n.name} 학생이 더욱 성장할 수 있도록 최선을 다하겠습니다.
+궁금하신 점은 언제든 연락 주세요!
+
+- 꾸메땅학원 ${((s=i[0])==null?void 0:s.counselor_name)||"선생님"}`,M=await e.env.DB.prepare(`
       INSERT INTO learning_reports 
       (student_id, report_month, overall_score, study_attitude, strengths, weaknesses, improvements, recommendations, next_month_goals, ai_analysis, parent_message)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
