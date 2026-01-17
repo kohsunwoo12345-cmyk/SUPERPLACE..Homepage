@@ -5403,7 +5403,7 @@ app.get('/contact', (c) => {
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
                         </svg>
                         <div class="font-medium text-gray-900">이메일</div>
-                        <div class="text-sm text-gray-600 mt-1">contact@superplace.kr</div>
+                        <div class="text-sm text-gray-600 mt-1">wangholy1@naver.com</div>
                     </div>
                     <div class="text-center p-6 bg-gray-50 rounded-xl">
                         <svg class="w-10 h-10 mx-auto mb-3 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -11229,7 +11229,7 @@ app.get('/about', (c) => {
                         <h4 class="font-bold text-gray-900 mb-4">연락처</h4>
                         <ul class="space-y-3 text-sm">
                             <li>인천광역시 서구</li>
-                            <li>contact@superplace.kr</li>
+                            <li>wangholy1@naver.com</li>
                             <li>문의 양식 이용 가능</li>
                         </ul>
                     </div>
