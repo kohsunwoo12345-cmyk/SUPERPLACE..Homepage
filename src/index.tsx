@@ -18276,6 +18276,29 @@ app.post('/api/classes/create', async (c) => {
       return c.json({ success: false, error: '반 이름과 원장님 정보가 필요합니다.' }, 400)
     }
     
+    // classes 테이블이 없으면 생성
+    try {
+      await c.env.DB.prepare(`
+        CREATE TABLE IF NOT EXISTS classes (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL,
+          description TEXT,
+          user_id INTEGER NOT NULL,
+          teacher_id INTEGER,
+          grade_level TEXT,
+          subject TEXT,
+          max_students INTEGER DEFAULT 20,
+          status TEXT DEFAULT 'active',
+          created_at TEXT NOT NULL,
+          updated_at TEXT,
+          FOREIGN KEY (user_id) REFERENCES users(id),
+          FOREIGN KEY (teacher_id) REFERENCES users(id)
+        )
+      `).run()
+    } catch (tableError) {
+      console.error('Create classes table error:', tableError)
+    }
+    
     const result = await c.env.DB.prepare(`
       INSERT INTO classes (name, description, user_id, teacher_id, grade_level, subject, max_students, status, created_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, 'active', datetime('now'))
@@ -18288,7 +18311,11 @@ app.post('/api/classes/create', async (c) => {
     })
   } catch (error) {
     console.error('Create class error:', error)
-    return c.json({ success: false, error: '반 생성 중 오류가 발생했습니다.' }, 500)
+    return c.json({ 
+      success: false, 
+      error: '반 생성 중 오류가 발생했습니다.',
+      details: error.message 
+    }, 500)
   }
 })
 

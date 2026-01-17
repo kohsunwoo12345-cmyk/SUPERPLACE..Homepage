@@ -15166,10 +15166,26 @@ ${l.director_name} 원장님의 승인을 기다려주세요.`,directorName:l.di
           UPDATE users 
           SET permissions = ?
           WHERE id = ?
-        `).bind(JSON.stringify(r),t).run();else throw n}return e.json({success:!0,message:"권한이 저장되었습니다."})}catch(t){return console.error("[SavePermissions] Error:",t),e.json({success:!1,error:"권한 저장 중 오류가 발생했습니다.",details:t.message},500)}});d.post("/api/classes/create",async e=>{try{const{name:t,description:s,userId:r,teacherId:a,gradeLevel:n,subject:o,maxStudents:l}=await e.req.json();if(!t||!r)return e.json({success:!1,error:"반 이름과 원장님 정보가 필요합니다."},400);const i=await e.env.DB.prepare(`
+        `).bind(JSON.stringify(r),t).run();else throw n}return e.json({success:!0,message:"권한이 저장되었습니다."})}catch(t){return console.error("[SavePermissions] Error:",t),e.json({success:!1,error:"권한 저장 중 오류가 발생했습니다.",details:t.message},500)}});d.post("/api/classes/create",async e=>{try{const{name:t,description:s,userId:r,teacherId:a,gradeLevel:n,subject:o,maxStudents:l}=await e.req.json();if(!t||!r)return e.json({success:!1,error:"반 이름과 원장님 정보가 필요합니다."},400);try{await e.env.DB.prepare(`
+        CREATE TABLE IF NOT EXISTS classes (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL,
+          description TEXT,
+          user_id INTEGER NOT NULL,
+          teacher_id INTEGER,
+          grade_level TEXT,
+          subject TEXT,
+          max_students INTEGER DEFAULT 20,
+          status TEXT DEFAULT 'active',
+          created_at TEXT NOT NULL,
+          updated_at TEXT,
+          FOREIGN KEY (user_id) REFERENCES users(id),
+          FOREIGN KEY (teacher_id) REFERENCES users(id)
+        )
+      `).run()}catch(c){console.error("Create classes table error:",c)}const i=await e.env.DB.prepare(`
       INSERT INTO classes (name, description, user_id, teacher_id, grade_level, subject, max_students, status, created_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, 'active', datetime('now'))
-    `).bind(t,s||null,r,a||null,n||null,o||null,l||20).run();return e.json({success:!0,classId:i.meta.last_row_id,message:"반이 생성되었습니다."})}catch(t){return console.error("Create class error:",t),e.json({success:!1,error:"반 생성 중 오류가 발생했습니다."},500)}});d.get("/api/classes/list",async e=>{try{const t=e.req.query("userId"),s=e.req.query("userType");if(!t)return e.json({success:!1,error:"사용자 ID가 필요합니다."},400);try{let r="";s==="teacher"?r=`
+    `).bind(t,s||null,r,a||null,n||null,o||null,l||20).run();return e.json({success:!0,classId:i.meta.last_row_id,message:"반이 생성되었습니다."})}catch(t){return console.error("Create class error:",t),e.json({success:!1,error:"반 생성 중 오류가 발생했습니다.",details:t.message},500)}});d.get("/api/classes/list",async e=>{try{const t=e.req.query("userId"),s=e.req.query("userType");if(!t)return e.json({success:!1,error:"사용자 ID가 필요합니다."},400);try{let r="";s==="teacher"?r=`
           SELECT c.*, u.name as director_name,
                  (SELECT COUNT(*) FROM students WHERE class_id = c.id AND status = 'active') as student_count
           FROM classes c
