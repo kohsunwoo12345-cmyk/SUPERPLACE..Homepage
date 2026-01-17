@@ -1275,11 +1275,27 @@ export const dailyRecordPage = `
             
             document.getElementById('recordModal').classList.remove('hidden');
             
-            // 모달을 맨 위로 스크롤
-            const modalContent = document.querySelector('#recordModal .overflow-y-auto');
-            if (modalContent) {
-                modalContent.scrollTop = 0;
-            }
+            // 모달을 맨 위로 스크롤 (setTimeout으로 DOM 업데이트 후 실행)
+            setTimeout(() => {
+                const modal = document.getElementById('recordModal');
+                const modalContent = modal.querySelector('.bg-white.rounded-xl');
+                
+                // 외부 모달 오버레이 스크롤
+                if (modal) {
+                    modal.scrollTop = 0;
+                }
+                
+                // 내부 컨텐츠 컨테이너 스크롤
+                if (modalContent) {
+                    modalContent.scrollTop = 0;
+                }
+                
+                // 모든 overflow-y-auto 요소 스크롤
+                const scrollables = modal.querySelectorAll('.overflow-y-auto');
+                scrollables.forEach(el => {
+                    el.scrollTop = 0;
+                });
+            }, 0);
         }
 
         function hideRecordModal() {
@@ -1297,12 +1313,6 @@ export const dailyRecordPage = `
             document.getElementById('recordId').value = record.id;
             document.getElementById('recordStudent').value = record.student_id;
             document.getElementById('recordClass').value = record.class_id || '';
-            
-            // 모달을 맨 위로 스크롤
-            const modalContent = document.querySelector('#recordModal .overflow-y-auto');
-            if (modalContent) {
-                modalContent.scrollTop = 0;
-            }
             
             if (record.attendance) {
                 document.querySelector(\`input[name="attendance"][value="\${record.attendance}"]\`).checked = true;
@@ -1329,6 +1339,28 @@ export const dailyRecordPage = `
             
             document.getElementById('recordMemo').value = record.memo || '';
             document.getElementById('recordModal').classList.remove('hidden');
+            
+            // 모달을 맨 위로 스크롤 (setTimeout으로 DOM 업데이트 후 실행)
+            setTimeout(() => {
+                const modal = document.getElementById('recordModal');
+                const modalContent = modal.querySelector('.bg-white.rounded-xl');
+                
+                // 외부 모달 오버레이 스크롤
+                if (modal) {
+                    modal.scrollTop = 0;
+                }
+                
+                // 내부 컨텐츠 컨테이너 스크롤
+                if (modalContent) {
+                    modalContent.scrollTop = 0;
+                }
+                
+                // 모든 overflow-y-auto 요소 스크롤
+                const scrollables = modal.querySelectorAll('.overflow-y-auto');
+                scrollables.forEach(el => {
+                    el.scrollTop = 0;
+                });
+            }, 0);
         }
 
         async function deleteRecord(recordId, studentName) {
