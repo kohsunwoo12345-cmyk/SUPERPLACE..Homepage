@@ -8123,12 +8123,20 @@ app.get('/dashboard', (c) => {
                     const response = await fetch('/api/user/permissions?userId=' + user.id)
                     const data = await response.json()
                     
+                    console.log('🔍 checkPermissions - 권한 조회 결과:', data)
+                    
                     if (data.success) {
                         const permissions = data.permissions
+                        console.log('✅ checkPermissions - 현재 권한:', permissions)
                         
                         // 관리자는 모든 도구 표시
                         if (user.role === 'admin') {
                             console.log('✅ 관리자 계정 - 모든 도구 표시')
+                            // 관리자는 SMS 섹션과 네비게이션도 모두 표시
+                            const smsSection = document.getElementById('smsSection')
+                            if (smsSection) smsSection.style.display = 'block'
+                            const smsNavDropdown = document.getElementById('smsNavDropdown')
+                            if (smsNavDropdown) smsNavDropdown.classList.remove('hidden')
                             return
                         }
                         
@@ -8260,14 +8268,20 @@ app.get('/dashboard', (c) => {
                     const response = await fetch('/api/user/permissions?userId=' + user.id)
                     const data = await response.json()
                     
+                    console.log('🔍 사용자 권한 조회 결과:', data)
+                    
                     if (data.success && data.permissions) {
                         const permissions = data.permissions
+                        console.log('✅ 현재 사용자 권한:', permissions)
                         
                         // search_volume 권한 체크 - 네이버 검색량 조회
                         const searchVolumeCard = document.querySelector('a[href="/tools/search-volume"]')
                         if (searchVolumeCard) {
                             if (!permissions.search_volume) {
                                 searchVolumeCard.style.display = 'none'
+                                console.log('❌ search_volume 권한 없음 - 카드 숨김')
+                            } else {
+                                console.log('✅ search_volume 권한 있음 - 카드 표시')
                             }
                         }
                         
@@ -8276,6 +8290,10 @@ app.get('/dashboard', (c) => {
                         if (smsSection) {
                             if (!permissions.sms) {
                                 smsSection.style.display = 'none'
+                                console.log('❌ sms 권한 없음 - SMS 섹션 숨김')
+                            } else {
+                                smsSection.style.display = 'block'
+                                console.log('✅ sms 권한 있음 - SMS 섹션 표시')
                             }
                         }
                         
@@ -8284,8 +8302,10 @@ app.get('/dashboard', (c) => {
                         if (smsNavDropdown) {
                             if (!permissions.sms) {
                                 smsNavDropdown.style.display = 'none'
+                                console.log('❌ sms 권한 없음 - SMS 네비게이션 드롭다운 숨김')
                             } else {
                                 smsNavDropdown.classList.remove('hidden')
+                                console.log('✅ sms 권한 있음 - SMS 네비게이션 드롭다운 표시')
                             }
                         }
                         
