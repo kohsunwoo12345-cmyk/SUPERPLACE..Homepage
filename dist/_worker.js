@@ -9993,11 +9993,11 @@ ${t?t.split(",").map(l=>l.trim()).join(", "):e}과 관련해서 체계적인 커
     `).bind(t.id).all();return e.json({success:!0,students:s})}catch(t){return console.error("Get students error:",t),e.json({success:!1,error:"학생 목록 조회 실패"},500)}});d.post("/api/students",async e=>{try{const{name:t,phone:s,grade:r,school:a,subjects:l,parent_name:n,parent_phone:o,notes:i}=await e.req.json(),c=JSON.parse(e.req.header("X-User-Data-Base64")?decodeURIComponent(escape(atob(e.req.header("X-User-Data-Base64")||""))):'{"id":1}');if(!t||!r||!n||!o)return e.json({success:!1,error:"필수 항목을 입력해주세요."},400);const p=await e.env.DB.prepare(`
       INSERT INTO students (name, phone, grade, school, subjects, parent_name, parent_phone, academy_id, enrollment_date, notes, status)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, DATE('now'), ?, 'active')
-    `).bind(t,s||null,r,a||null,l||"",n,o,c.id,i||null).run();return e.json({success:!0,message:"학생이 추가되었습니다.",id:p.meta.last_row_id})}catch(t){return console.error("Add student error:",t),e.json({success:!1,error:"학생 추가 실패"},500)}});d.delete("/api/students/:id",async e=>{var t;try{const s=e.req.param("id");if(!s)return e.json({success:!1,error:"학생 ID가 필요합니다."},400);console.log("[DeleteStudent] Starting soft deletion for student ID:",s);const r=await e.env.DB.prepare(`
-      UPDATE students 
-      SET status = 'deleted'
-      WHERE id = ?
-    `).bind(s).run();return console.log("[DeleteStudent] Soft deleted student:",((t=r.meta)==null?void 0:t.changes)||0),e.json({success:!0,message:"학생이 삭제되었습니다."})}catch(s){return console.error("[DeleteStudent] Error:",s),e.json({success:!1,error:"학생 삭제 중 오류가 발생했습니다.",details:s.message},500)}});d.get("/tools/student-management",e=>e.redirect("/students"));d.get("/tools/ai-learning-report",e=>e.html(`
+    `).bind(t,s||null,r,a||null,l||"",n,o,c.id,i||null).run();return e.json({success:!0,message:"학생이 추가되었습니다.",id:p.meta.last_row_id})}catch(t){return console.error("Add student error:",t),e.json({success:!1,error:"학생 추가 실패"},500)}});d.delete("/api/students/:id",async e=>{var t;try{const s=e.req.param("id");if(!s)return e.json({success:!1,error:"학생 ID가 필요합니다."},400);console.log("[DeleteStudent] Starting deletion for student ID:",s),console.log("[DeleteStudent] Deleting daily_records..."),await e.env.DB.prepare(`
+      DELETE FROM daily_records WHERE student_id = ?
+    `).bind(s).run(),console.log("[DeleteStudent] Deleting student...");const r=await e.env.DB.prepare(`
+      DELETE FROM students WHERE id = ?
+    `).bind(s).run();return console.log("[DeleteStudent] Deleted student:",((t=r.meta)==null?void 0:t.changes)||0),e.json({success:!0,message:"학생이 삭제되었습니다."})}catch(s){return console.error("[DeleteStudent] Error:",s),e.json({success:!1,error:s.message||"학생 삭제 중 오류가 발생했습니다."},500)}});d.get("/tools/student-management",e=>e.redirect("/students"));d.get("/tools/ai-learning-report",e=>e.html(`
     <!DOCTYPE html>
     <html lang="ko">
     <head>

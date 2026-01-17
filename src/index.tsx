@@ -11545,7 +11545,7 @@ app.post('/api/students', async (c) => {
   }
 })
 
-// DELETE /api/students/:id - 학생 삭제 (Soft Delete)
+// DELETE /api/students/:id - 학생 삭제 (Hard Delete with cascade)
 app.delete('/api/students/:id', async (c) => {
   try {
     const studentId = c.req.param('id')
@@ -11554,16 +11554,24 @@ app.delete('/api/students/:id', async (c) => {
       return c.json({ success: false, error: '학생 ID가 필요합니다.' }, 400)
     }
     
-    console.log('[DeleteStudent] Starting soft deletion for student ID:', studentId)
+    console.log('[DeleteStudent] Starting deletion for student ID:', studentId)
     
-    // Soft Delete: status를 'deleted'로 변경
-    const result = await c.env.DB.prepare(`
-      UPDATE students 
-      SET status = 'deleted'
-      WHERE id = ?
+    // 1. 먼저 관련된 daily_records 삭제
+    console.log('[DeleteStudent] Deleting daily_records...')
+    await c.env.DB.prepare(`
+      DELETE FROM daily_records WHERE student_id = ?
     `).bind(studentId).run()
     
-    console.log('[DeleteStudent] Soft deleted student:', result.meta?.changes || 0)
+    // 2. 다른 관련 테이블도 확인 (필요시 추가)
+    // 예: enrollments, attendance 등
+    
+    // 3. 마지막으로 학생 삭제
+    console.log('[DeleteStudent] Deleting student...')
+    const result = await c.env.DB.prepare(`
+      DELETE FROM students WHERE id = ?
+    `).bind(studentId).run()
+    
+    console.log('[DeleteStudent] Deleted student:', result.meta?.changes || 0)
     
     return c.json({ 
       success: true, 
@@ -11573,8 +11581,7 @@ app.delete('/api/students/:id', async (c) => {
     console.error('[DeleteStudent] Error:', error)
     return c.json({ 
       success: false, 
-      error: '학생 삭제 중 오류가 발생했습니다.',
-      details: error.message
+      error: error.message || '학생 삭제 중 오류가 발생했습니다.'
     }, 500)
   }
 })
