@@ -19538,7 +19538,7 @@ ${o.director_name} 원장님의 승인을 기다려주세요.`,directorName:o.di
                         </h3>
                         <span id="pendingBadge" class="px-3 py-1 bg-yellow-500 text-white rounded-full text-sm font-bold">0</span>
                     </div>
-                    <div id="pendingApplications" class="space-y-4">
+                    <div id="pendingList" class="space-y-4">
                         <div class="text-center text-gray-500 py-4">로딩 중...</div>
                     </div>
                 </div>
