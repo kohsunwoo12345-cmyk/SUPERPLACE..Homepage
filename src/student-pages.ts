@@ -562,11 +562,19 @@ export const studentsListPage = `
 
         async function loadStudents() {
             try {
-                const classId = document.getElementById('classFilter').value;
-                let url = '/api/students?academyId=' + academyId;
-                if (classId) url += '&classId=' + classId;
+                // 현재 사용자 정보 가져오기
+                const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+                const userDataHeader = btoa(unescape(encodeURIComponent(JSON.stringify(currentUser))));
                 
-                const res = await fetch(url);
+                const classId = document.getElementById('classFilter').value;
+                let url = '/api/students';
+                if (classId) url += '?classId=' + classId;
+                
+                const res = await fetch(url, {
+                    headers: {
+                        'X-User-Data-Base64': userDataHeader
+                    }
+                });
                 const data = await res.json();
                 if (data.success) {
                     allStudents = data.students;
@@ -1070,13 +1078,15 @@ export const dailyRecordPage = `
 
         async function loadStudents() {
             try {
-                // 권한 기반 학생 목록 조회
-                let url = '/api/students?academyId=' + academyId;
-                if (userId) {
-                    url += '&userId=' + userId + '&userType=' + userType;
-                }
+                // 현재 사용자 정보 가져오기
+                const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+                const userDataHeader = btoa(unescape(encodeURIComponent(JSON.stringify(currentUser))));
                 
-                const res = await fetch(url);
+                const res = await fetch('/api/students', {
+                    headers: {
+                        'X-User-Data-Base64': userDataHeader
+                    }
+                });
                 const data = await res.json();
                 if (data.success) {
                     students = data.students;
