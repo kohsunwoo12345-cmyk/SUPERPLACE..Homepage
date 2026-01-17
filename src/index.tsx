@@ -7827,6 +7827,33 @@ app.get('/dashboard', (c) => {
                     </div>
                 </div>
 
+                <!-- My Landing Pages Section -->
+                <div id="landingPagesSection" class="mb-12 hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-gray-900">🚀 내 랜딩페이지</h2>
+                        <a href="/tools/landing-builder" class="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all shadow-md hover:shadow-lg font-medium flex items-center space-x-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                            </svg>
+                            <span>+ 새 랜딩페이지</span>
+                        </a>
+                    </div>
+                    <div id="landingPagesList" class="grid md:grid-cols-2 gap-6">
+                        <div class="text-center text-gray-500 py-12 md:col-span-2">
+                            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                            불러오는 중...
+                        </div>
+                    </div>
+                    <div class="mt-6 text-center">
+                        <a href="/landing-pages" class="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium">
+                            <span>전체 관리</span>
+                            <svg class="w-5 h-5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+
                 <!-- Marketing Tools -->
                 <div class="mb-12">
                     <h2 class="text-2xl font-bold text-gray-900 mb-6">🎯 마케팅 도구</h2>
@@ -8411,11 +8438,15 @@ app.get('/dashboard', (c) => {
                         const response = await fetch('/api/landing/my-pages?userId=' + user.id)
                         const data = await response.json()
                         
-                        const container = document.getElementById('landingPagesContainer')
+                        const container = document.getElementById('landingPagesList')
+                        const section = document.getElementById('landingPagesSection')
                         
                         if (data.success && data.pages && data.pages.length > 0) {
-                            // 최근 3개만 표시
-                            const recentPages = data.pages.slice(0, 3)
+                            // 섹션 표시
+                            if (section) section.classList.remove('hidden')
+                            
+                            // 최근 4개만 표시 (2x2 그리드)
+                            const recentPages = data.pages.slice(0, 4)
                             container.innerHTML = recentPages.map(page => {
                                 const pageUrl = window.location.origin + '/landing/' + page.slug
                                 const statusBadge = page.status === 'active' 
@@ -8447,22 +8478,13 @@ app.get('/dashboard', (c) => {
                                 '</div>'
                             }).join('')
                         } else {
-                            container.innerHTML = '<div class="col-span-3 text-center py-12">' +
-                                '<div class="text-gray-400 mb-4">' +
-                                    '<svg class="w-16 h-16 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">' +
-                                        '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>' +
-                                    '</svg>' +
-                                    '<p class="text-lg font-medium">아직 생성한 랜딩페이지가 없습니다</p>' +
-                                '</div>' +
-                                '<a href="/tools/landing-builder" class="inline-block px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition font-medium">' +
-                                    '첫 랜딩페이지 만들기' +
-                                '</a>' +
-                            '</div>'
+                            // 랜딩페이지가 없으면 섹션 숨김
+                            if (section) section.classList.add('hidden')
                         }
                     } catch (err) {
                         console.error('랜딩페이지 로드 실패:', err)
-                        document.getElementById('landingPagesContainer').innerHTML = 
-                            '<div class="col-span-3 text-center py-12 text-gray-500">로딩 실패</div>'
+                        const section = document.getElementById('landingPagesSection')
+                        if (section) section.classList.add('hidden')
                     }
                 }
             }
