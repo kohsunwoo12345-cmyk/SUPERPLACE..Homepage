@@ -11590,7 +11590,7 @@ app.post('/api/students', async (c) => {
   }
 })
 
-// DELETE /api/students/:id - 학생 삭제 (Soft Delete with FK bypass)
+// DELETE /api/students/:id - 학생 삭제 (Hard Delete - all related records)
 app.delete('/api/students/:id', async (c) => {
   try {
     const studentId = c.req.param('id')
@@ -11599,21 +11599,47 @@ app.delete('/api/students/:id', async (c) => {
       return c.json({ success: false, error: '학생 ID가 필요합니다.' }, 400)
     }
     
-    console.log('[DeleteStudent] Soft deleting student ID:', studentId)
+    console.log('[DeleteStudent] Deleting student ID and related records:', studentId)
     
-    // Step 1: 먼저 class_id를 NULL로 설정 (외래키 해제)
-    await c.env.DB.prepare(`
-      UPDATE students 
-      SET class_id = NULL
-      WHERE id = ?
-    `).bind(studentId).run()
+    // 관련된 모든 레코드를 먼저 삭제
+    // 1. daily_records 삭제
+    await c.env.DB.prepare('DELETE FROM daily_records WHERE student_id = ?').bind(studentId).run()
+    console.log('[DeleteStudent] Deleted daily_records')
     
-    // Step 2: status를 'deleted'로 변경
-    const result = await c.env.DB.prepare(`
-      UPDATE students 
-      SET status = 'deleted', updated_at = CURRENT_TIMESTAMP
-      WHERE id = ?
-    `).bind(studentId).run()
+    // 2. attendance 삭제 (테이블이 존재하는 경우)
+    try {
+      await c.env.DB.prepare('DELETE FROM attendance WHERE student_id = ?').bind(studentId).run()
+      console.log('[DeleteStudent] Deleted attendance')
+    } catch (e) {
+      console.log('[DeleteStudent] No attendance table or no records')
+    }
+    
+    // 3. learning_reports 삭제 (테이블이 존재하는 경우)
+    try {
+      await c.env.DB.prepare('DELETE FROM learning_reports WHERE student_id = ?').bind(studentId).run()
+      console.log('[DeleteStudent] Deleted learning_reports')
+    } catch (e) {
+      console.log('[DeleteStudent] No learning_reports table or no records')
+    }
+    
+    // 4. grades 삭제 (테이블이 존재하는 경우)
+    try {
+      await c.env.DB.prepare('DELETE FROM grades WHERE student_id = ?').bind(studentId).run()
+      console.log('[DeleteStudent] Deleted grades')
+    } catch (e) {
+      console.log('[DeleteStudent] No grades table or no records')
+    }
+    
+    // 5. counseling 삭제 (테이블이 존재하는 경우)
+    try {
+      await c.env.DB.prepare('DELETE FROM counseling WHERE student_id = ?').bind(studentId).run()
+      console.log('[DeleteStudent] Deleted counseling')
+    } catch (e) {
+      console.log('[DeleteStudent] No counseling table or no records')
+    }
+    
+    // 마지막으로 학생 삭제
+    const result = await c.env.DB.prepare('DELETE FROM students WHERE id = ?').bind(studentId).run()
     
     if (result.meta.changes === 0) {
       return c.json({ 
@@ -11622,7 +11648,7 @@ app.delete('/api/students/:id', async (c) => {
       }, 404)
     }
     
-    console.log('[DeleteStudent] Soft deleted student successfully')
+    console.log('[DeleteStudent] Successfully deleted student')
     
     return c.json({ 
       success: true, 
