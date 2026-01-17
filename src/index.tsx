@@ -8173,10 +8173,20 @@ app.get('/dashboard', (c) => {
                             }
                         })
                         
-                        // SMS 네비게이션 드롭다운
-                        if (permissions.sms_sender) {
+                        // SMS 네비게이션 드롭다운 및 섹션 (sms 권한으로 통일)
+                        if (permissions.sms) {
                             document.getElementById('smsNavDropdown')?.classList.remove('hidden')
                             document.getElementById('smsQuickAccess')?.classList.remove('hidden')
+                            const smsSection = document.getElementById('smsSection')
+                            if (smsSection) {
+                                smsSection.style.display = 'block'
+                            }
+                        } else {
+                            // SMS 권한이 없으면 숨김
+                            const smsSection = document.getElementById('smsSection')
+                            if (smsSection) {
+                                smsSection.style.display = 'none'
+                            }
                         }
                     }
                 } catch (err) {
@@ -8261,11 +8271,21 @@ app.get('/dashboard', (c) => {
                             }
                         }
                         
-                        // sms 권한 체크 - SMS 문자 발송
+                        // sms 권한 체크 - SMS 문자 발송 (권한 명칭 통일)
                         const smsSection = document.getElementById('smsSection')
                         if (smsSection) {
                             if (!permissions.sms) {
                                 smsSection.style.display = 'none'
+                            }
+                        }
+                        
+                        // SMS 네비게이션 드롭다운도 sms 권한으로 통일
+                        const smsNavDropdown = document.getElementById('smsNavDropdown')
+                        if (smsNavDropdown) {
+                            if (!permissions.sms) {
+                                smsNavDropdown.style.display = 'none'
+                            } else {
+                                smsNavDropdown.classList.remove('hidden')
                             }
                         }
                         
