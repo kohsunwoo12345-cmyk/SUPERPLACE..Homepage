@@ -17438,13 +17438,13 @@ app.post('/api/teachers/apply', async (c) => {
       })
     }
     
-    // 신규 사용자 - 등록 신청 중복 확인
+    // 신규 사용자 - 이 학원에 이미 신청했는지 확인
     const existingApplication = await c.env.DB.prepare(
-      'SELECT id FROM teacher_applications WHERE email = ? AND status = "pending"'
-    ).bind(email).first()
+      'SELECT id FROM teacher_applications WHERE email = ? AND director_email = ? AND status = "pending"'
+    ).bind(email, codeInfo.director_email).first()
     
     if (existingApplication) {
-      return c.json({ success: false, error: '이미 등록 신청이 진행 중입니다.' }, 400)
+      return c.json({ success: false, error: '이미 이 학원에 등록 신청이 진행 중입니다.' }, 400)
     }
     
     // 신규 사용자 - 등록 신청 저장
@@ -17502,13 +17502,25 @@ app.get('/api/teachers/applications', async (c) => {
       return c.json({ success: false, error: '원장님 정보를 찾을 수 없습니다.' }, 404)
     }
     
+    console.log('[GetApplications] Director:', director.email, 'Status:', status)
+    
     const applications = await c.env.DB.prepare(`
       SELECT * FROM teacher_applications
       WHERE director_email = ? AND status = ?
       ORDER BY applied_at DESC
     `).bind(director.email, status).all()
     
-    return c.json({ success: true, applications: applications.results || [] })
+    console.log('[GetApplications] Found applications:', applications.results?.length || 0)
+    
+    return c.json({ 
+      success: true, 
+      applications: applications.results || [],
+      debug: {
+        directorEmail: director.email,
+        status: status,
+        count: applications.results?.length || 0
+      }
+    })
   } catch (error) {
     console.error('Get applications error:', error)
     return c.json({ success: false, error: '신청 목록 조회 중 오류가 발생했습니다.' }, 500)
@@ -17662,14 +17674,38 @@ app.post('/api/teachers/add', async (c) => {
     
     // 이메일 중복 확인
     const existingUser = await c.env.DB.prepare(
-      'SELECT id FROM users WHERE email = ?'
+      'SELECT id, name, user_type, parent_user_id FROM users WHERE email = ?'
     ).bind(email).first()
     
+    let teacherId
+    
     if (existingUser) {
-      return c.json({ success: false, error: '이미 사용 중인 이메일입니다.' }, 400)
+      // 기존 사용자가 있으면 학원 연결
+      console.log('[AddTeacher] Existing user found, connecting to academy:', existingUser)
+      
+      // 이미 이 학원의 선생님인지 확인
+      if (existingUser.parent_user_id === parseInt(directorId)) {
+        return c.json({ success: false, error: '이미 이 학원의 선생님입니다.' }, 400)
+      }
+      
+      teacherId = existingUser.id
+      
+      // 기존 사용자를 이 학원의 선생님으로 연결
+      await c.env.DB.prepare(`
+        UPDATE users 
+        SET parent_user_id = ?, academy_name = ?, user_type = 'teacher', updated_at = datetime('now')
+        WHERE id = ?
+      `).bind(directorId, director.academy_name, existingUser.id).run()
+      
+      return c.json({ 
+        success: true, 
+        teacherId: teacherId,
+        message: `${existingUser.name || name} 선생님이 이 학원에 연결되었습니다.`,
+        isExistingUser: true
+      })
     }
     
-    // 선생님 계정 생성
+    // 신규 사용자 - 선생님 계정 생성
     const result = await c.env.DB.prepare(`
       INSERT INTO users (
         email, password, name, phone, role, user_type, 
@@ -17685,10 +17721,13 @@ app.post('/api/teachers/add', async (c) => {
       director.academy_name
     ).run()
     
+    teacherId = result.meta.last_row_id
+    
     return c.json({ 
       success: true, 
-      teacherId: result.meta.last_row_id,
-      message: `${name} 선생님이 추가되었습니다.`
+      teacherId: teacherId,
+      message: `${name} 선생님이 추가되었습니다.`,
+      isExistingUser: false
     })
   } catch (error) {
     console.error('Add teacher error:', error)
