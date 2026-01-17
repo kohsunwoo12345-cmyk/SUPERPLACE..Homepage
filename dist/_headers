@@ -1,9 +1,0 @@
-/*
-  X-Frame-Options: DENY
-  X-Content-Type-Options: nosniff
-
-/my-deposits
-  Cache-Control: no-cache, no-store, must-revalidate
-  
-/dashboard  
-  Cache-Control: no-cache, no-store, must-revalidate
