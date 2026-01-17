@@ -966,24 +966,23 @@ var kt=Object.defineProperty;var ze=e=>{throw TypeError(e)};var _t=(e,t,s)=>t in
     </div>
 
     <!-- 성과 기록 추가/수정 모달 -->
-    <div id="recordModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 overflow-y-auto">
-        <div class="min-h-screen flex items-center justify-center p-4">
-            <div class="bg-white rounded-xl p-6 max-w-3xl w-full max-h-[90vh] overflow-y-auto my-8">
-                <h2 id="recordModalTitle" class="text-2xl font-bold mb-6 sticky top-0 bg-white pb-4 border-b">성과 기록 추가</h2>
-                <form id="recordForm">
-                <input type="hidden" id="recordId">
-                
-                <div class="space-y-6">
-                    <!-- 기본 정보 -->
-                    <div class="bg-gray-50 p-4 rounded-lg space-y-4">
-                        <h3 class="text-lg font-semibold text-gray-900">기본 정보</h3>
-                        
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">학생 선택 *</label>
-                            <select id="recordStudent" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
-                                <option value="">선택하세요</option>
-                            </select>
-                        </div>
+    <div id="recordModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl p-6 max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+            <h2 id="recordModalTitle" class="text-2xl font-bold mb-6 sticky top-0 bg-white pb-4 border-b -mx-6 px-6 -mt-6 pt-6">성과 기록 추가</h2>
+            <form id="recordForm">
+            <input type="hidden" id="recordId">
+            
+            <div class="space-y-6">
+                <!-- 기본 정보 -->
+                <div class="bg-gray-50 p-4 rounded-lg space-y-4">
+                    <h3 class="text-lg font-semibold text-gray-900">기본 정보</h3>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">학생 선택 *</label>
+                        <select id="recordStudent" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                            <option value="">선택하세요</option>
+                        </select>
+                    </div>
 
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">반 선택</label>
@@ -1355,29 +1354,16 @@ var kt=Object.defineProperty;var ze=e=>{throw TypeError(e)};var _t=(e,t,s)=>t in
             await loadStudents();
             await loadClasses();
             
-            document.getElementById('recordModal').classList.remove('hidden');
+            const modal = document.getElementById('recordModal');
+            modal.classList.remove('hidden');
             
-            // 모달을 맨 위로 스크롤 (setTimeout으로 DOM 업데이트 후 실행)
+            // 모달 컨텐츠를 맨 위로 스크롤
             setTimeout(() => {
-                const modal = document.getElementById('recordModal');
                 const modalContent = modal.querySelector('.bg-white.rounded-xl');
-                
-                // 외부 모달 오버레이 스크롤
-                if (modal) {
-                    modal.scrollTop = 0;
-                }
-                
-                // 내부 컨텐츠 컨테이너 스크롤
                 if (modalContent) {
                     modalContent.scrollTop = 0;
                 }
-                
-                // 모든 overflow-y-auto 요소 스크롤
-                const scrollables = modal.querySelectorAll('.overflow-y-auto');
-                scrollables.forEach(el => {
-                    el.scrollTop = 0;
-                });
-            }, 0);
+            }, 10);
         }
 
         function hideRecordModal() {
@@ -1420,29 +1406,17 @@ var kt=Object.defineProperty;var ze=e=>{throw TypeError(e)};var _t=(e,t,s)=>t in
             document.getElementById('homeworkAchievement').value = record.homework_achievement || '';
             
             document.getElementById('recordMemo').value = record.memo || '';
-            document.getElementById('recordModal').classList.remove('hidden');
             
-            // 모달을 맨 위로 스크롤 (setTimeout으로 DOM 업데이트 후 실행)
+            const modal = document.getElementById('recordModal');
+            modal.classList.remove('hidden');
+            
+            // 모달 컨텐츠를 맨 위로 스크롤
             setTimeout(() => {
-                const modal = document.getElementById('recordModal');
                 const modalContent = modal.querySelector('.bg-white.rounded-xl');
-                
-                // 외부 모달 오버레이 스크롤
-                if (modal) {
-                    modal.scrollTop = 0;
-                }
-                
-                // 내부 컨텐츠 컨테이너 스크롤
                 if (modalContent) {
                     modalContent.scrollTop = 0;
                 }
-                
-                // 모든 overflow-y-auto 요소 스크롤
-                const scrollables = modal.querySelectorAll('.overflow-y-auto');
-                scrollables.forEach(el => {
-                    el.scrollTop = 0;
-                });
-            }, 0);
+            }, 10);
         }
 
         async function deleteRecord(recordId, studentName) {
