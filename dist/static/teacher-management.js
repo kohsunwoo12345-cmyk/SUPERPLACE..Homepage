@@ -126,12 +126,13 @@ async function loadClasses() {
 // 권한 모달용 반 목록 로드
 async function loadAvailableClasses() {
     try {
-        const response = await fetch(`/api/classes?academyId=${currentUser.id}`);
+        // academyId는 1로 고정 (모든 반이 academy_id = 1로 저장되어 있음)
+        const response = await fetch(`/api/classes?academyId=1`);
         const data = await response.json();
         
         if (data.success) {
             availableClasses = data.classes || [];
-            console.log('Available classes loaded:', availableClasses);
+            console.log('Available classes loaded:', availableClasses.length, 'classes');
         } else {
             console.error('Failed to load available classes:', data.error);
             availableClasses = [];
