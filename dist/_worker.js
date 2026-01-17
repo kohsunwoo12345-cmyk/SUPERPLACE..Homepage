@@ -1,4 +1,4 @@
-var Et=Object.defineProperty;var We=e=>{throw TypeError(e)};var kt=(e,t,s)=>t in e?Et(e,t,{enumerable:!0,configurable:!0,writable:!0,value:s}):e[t]=s;var f=(e,t,s)=>kt(e,typeof t!="symbol"?t+"":t,s),$e=(e,t,s)=>t.has(e)||We("Cannot "+s);var m=(e,t,s)=>($e(e,t,"read from private field"),s?s.call(e):t.get(e)),y=(e,t,s)=>t.has(e)?We("Cannot add the same private member more than once"):t instanceof WeakSet?t.add(e):t.set(e,s),h=(e,t,s,r)=>($e(e,t,"write to private field"),r?r.call(e,s):t.set(e,s),s),k=(e,t,s)=>($e(e,t,"access private method"),s);var Ye=(e,t,s,r)=>({set _(a){h(e,t,a,s)},get _(){return m(e,t,r)}});var Ve=(e,t,s)=>(r,a)=>{let l=-1;return n(0);async function n(o){if(o<=l)throw new Error("next() called multiple times");l=o;let i,c=!1,p;if(e[o]?(p=e[o][0][0],r.req.routeIndex=o):p=o===e.length&&a||void 0,p)try{i=await p(r,()=>n(o+1))}catch(u){if(u instanceof Error&&t)r.error=u,i=await t(u,r),c=!0;else throw u}else r.finalized===!1&&s&&(i=await s(r));return i&&(r.finalized===!1||c)&&(r.res=i),r}},It=Symbol(),_t=async(e,t=Object.create(null))=>{const{all:s=!1,dot:r=!1}=t,l=(e instanceof dt?e.raw.headers:e.headers).get("Content-Type");return l!=null&&l.startsWith("multipart/form-data")||l!=null&&l.startsWith("application/x-www-form-urlencoded")?Tt(e,{all:s,dot:r}):{}};async function Tt(e,t){const s=await e.formData();return s?St(s,t):{}}function St(e,t){const s=Object.create(null);return e.forEach((r,a)=>{t.all||a.endsWith("[]")?jt(s,a,r):s[a]=r}),t.dot&&Object.entries(s).forEach(([r,a])=>{r.includes(".")&&(Dt(s,r,a),delete s[r])}),s}var jt=(e,t,s)=>{e[t]!==void 0?Array.isArray(e[t])?e[t].push(s):e[t]=[e[t],s]:t.endsWith("[]")?e[t]=[s]:e[t]=s},Dt=(e,t,s)=>{let r=e;const a=t.split(".");a.forEach((l,n)=>{n===a.length-1?r[l]=s:((!r[l]||typeof r[l]!="object"||Array.isArray(r[l])||r[l]instanceof File)&&(r[l]=Object.create(null)),r=r[l])})},at=e=>{const t=e.split("/");return t[0]===""&&t.shift(),t},Ct=e=>{const{groups:t,path:s}=Bt(e),r=at(s);return Rt(r,t)},Bt=e=>{const t=[];return e=e.replace(/\{[^}]+\}/g,(s,r)=>{const a=`@${r}`;return t.push([a,s]),a}),{groups:t,path:e}},Rt=(e,t)=>{for(let s=t.length-1;s>=0;s--){const[r]=t[s];for(let a=e.length-1;a>=0;a--)if(e[a].includes(r)){e[a]=e[a].replace(r,t[s][1]);break}}return e},De={},Mt=(e,t)=>{if(e==="*")return"*";const s=e.match(/^\:([^\{\}]+)(?:\{(.+)\})?$/);if(s){const r=`${e}#${t}`;return De[r]||(s[2]?De[r]=t&&t[0]!==":"&&t[0]!=="*"?[r,s[1],new RegExp(`^${s[2]}(?=/${t})`)]:[e,s[1],new RegExp(`^${s[2]}$`)]:De[r]=[e,s[1],!0]),De[r]}return null},He=(e,t)=>{try{return t(e)}catch{return e.replace(/(?:%[0-9A-Fa-f]{2})+/g,s=>{try{return t(s)}catch{return s}})}},Lt=e=>He(e,decodeURI),lt=e=>{const t=e.url,s=t.indexOf("/",t.indexOf(":")+4);let r=s;for(;r<t.length;r++){const a=t.charCodeAt(r);if(a===37){const l=t.indexOf("?",r),n=t.slice(s,l===-1?void 0:l);return Lt(n.includes("%25")?n.replace(/%25/g,"%2525"):n)}else if(a===63)break}return t.slice(s,r)},Nt=e=>{const t=lt(e);return t.length>1&&t.at(-1)==="/"?t.slice(0,-1):t},de=(e,t,...s)=>(s.length&&(t=de(t,...s)),`${(e==null?void 0:e[0])==="/"?"":"/"}${e}${t==="/"?"":`${(e==null?void 0:e.at(-1))==="/"?"":"/"}${(t==null?void 0:t[0])==="/"?t.slice(1):t}`}`),nt=e=>{if(e.charCodeAt(e.length-1)!==63||!e.includes(":"))return null;const t=e.split("/"),s=[];let r="";return t.forEach(a=>{if(a!==""&&!/\:/.test(a))r+="/"+a;else if(/\:/.test(a))if(/\?/.test(a)){s.length===0&&r===""?s.push("/"):s.push(r);const l=a.replace("?","");r+="/"+l,s.push(r)}else r+="/"+a}),s.filter((a,l,n)=>n.indexOf(a)===l)},Ae=e=>/[%+]/.test(e)?(e.indexOf("+")!==-1&&(e=e.replace(/\+/g," ")),e.indexOf("%")!==-1?He(e,it):e):e,ot=(e,t,s)=>{let r;if(!s&&t&&!/[%+]/.test(t)){let n=e.indexOf("?",8);if(n===-1)return;for(e.startsWith(t,n+1)||(n=e.indexOf(`&${t}`,n+1));n!==-1;){const o=e.charCodeAt(n+t.length+1);if(o===61){const i=n+t.length+2,c=e.indexOf("&",i);return Ae(e.slice(i,c===-1?void 0:c))}else if(o==38||isNaN(o))return"";n=e.indexOf(`&${t}`,n+1)}if(r=/[%+]/.test(e),!r)return}const a={};r??(r=/[%+]/.test(e));let l=e.indexOf("?",8);for(;l!==-1;){const n=e.indexOf("&",l+1);let o=e.indexOf("=",l);o>n&&n!==-1&&(o=-1);let i=e.slice(l+1,o===-1?n===-1?void 0:n:o);if(r&&(i=Ae(i)),l=n,i==="")continue;let c;o===-1?c="":(c=e.slice(o+1,n===-1?void 0:n),r&&(c=Ae(c))),s?(a[i]&&Array.isArray(a[i])||(a[i]=[]),a[i].push(c)):a[i]??(a[i]=c)}return t?a[t]:a},Ot=ot,$t=(e,t)=>ot(e,t,!0),it=decodeURIComponent,Ge=e=>He(e,it),ue,O,Y,ct,pt,qe,G,Ze,dt=(Ze=class{constructor(e,t="/",s=[[]]){y(this,Y);f(this,"raw");y(this,ue);y(this,O);f(this,"routeIndex",0);f(this,"path");f(this,"bodyCache",{});y(this,G,e=>{const{bodyCache:t,raw:s}=this,r=t[e];if(r)return r;const a=Object.keys(t)[0];return a?t[a].then(l=>(a==="json"&&(l=JSON.stringify(l)),new Response(l)[e]())):t[e]=s[e]()});this.raw=e,this.path=t,h(this,O,s),h(this,ue,{})}param(e){return e?k(this,Y,ct).call(this,e):k(this,Y,pt).call(this)}query(e){return Ot(this.url,e)}queries(e){return $t(this.url,e)}header(e){if(e)return this.raw.headers.get(e)??void 0;const t={};return this.raw.headers.forEach((s,r)=>{t[r]=s}),t}async parseBody(e){var t;return(t=this.bodyCache).parsedBody??(t.parsedBody=await _t(this,e))}json(){return m(this,G).call(this,"text").then(e=>JSON.parse(e))}text(){return m(this,G).call(this,"text")}arrayBuffer(){return m(this,G).call(this,"arrayBuffer")}blob(){return m(this,G).call(this,"blob")}formData(){return m(this,G).call(this,"formData")}addValidatedData(e,t){m(this,ue)[e]=t}valid(e){return m(this,ue)[e]}get url(){return this.raw.url}get method(){return this.raw.method}get[It](){return m(this,O)}get matchedRoutes(){return m(this,O)[0].map(([[,e]])=>e)}get routePath(){return m(this,O)[0].map(([[,e]])=>e)[this.routeIndex].path}},ue=new WeakMap,O=new WeakMap,Y=new WeakSet,ct=function(e){const t=m(this,O)[0][this.routeIndex][1][e],s=k(this,Y,qe).call(this,t);return s&&/\%/.test(s)?Ge(s):s},pt=function(){const e={},t=Object.keys(m(this,O)[0][this.routeIndex][1]);for(const s of t){const r=k(this,Y,qe).call(this,m(this,O)[0][this.routeIndex][1][s]);r!==void 0&&(e[s]=/\%/.test(r)?Ge(r):r)}return e},qe=function(e){return m(this,O)[1]?m(this,O)[1][e]:e},G=new WeakMap,Ze),At={Stringify:1},ut=async(e,t,s,r,a)=>{typeof e=="object"&&!(e instanceof String)&&(e instanceof Promise||(e=e.toString()),e instanceof Promise&&(e=await e));const l=e.callbacks;return l!=null&&l.length?(a?a[0]+=e:a=[e],Promise.all(l.map(o=>o({phase:t,buffer:a,context:r}))).then(o=>Promise.all(o.filter(Boolean).map(i=>ut(i,t,!1,r,a))).then(()=>a[0]))):Promise.resolve(e)},Pt="text/plain; charset=UTF-8",Pe=(e,t)=>({"Content-Type":e,...t}),Ee,ke,q,me,H,N,Ie,ge,xe,se,_e,Te,X,ce,Qe,Ft=(Qe=class{constructor(e,t){y(this,X);y(this,Ee);y(this,ke);f(this,"env",{});y(this,q);f(this,"finalized",!1);f(this,"error");y(this,me);y(this,H);y(this,N);y(this,Ie);y(this,ge);y(this,xe);y(this,se);y(this,_e);y(this,Te);f(this,"render",(...e)=>(m(this,ge)??h(this,ge,t=>this.html(t)),m(this,ge).call(this,...e)));f(this,"setLayout",e=>h(this,Ie,e));f(this,"getLayout",()=>m(this,Ie));f(this,"setRenderer",e=>{h(this,ge,e)});f(this,"header",(e,t,s)=>{this.finalized&&h(this,N,new Response(m(this,N).body,m(this,N)));const r=m(this,N)?m(this,N).headers:m(this,se)??h(this,se,new Headers);t===void 0?r.delete(e):s!=null&&s.append?r.append(e,t):r.set(e,t)});f(this,"status",e=>{h(this,me,e)});f(this,"set",(e,t)=>{m(this,q)??h(this,q,new Map),m(this,q).set(e,t)});f(this,"get",e=>m(this,q)?m(this,q).get(e):void 0);f(this,"newResponse",(...e)=>k(this,X,ce).call(this,...e));f(this,"body",(e,t,s)=>k(this,X,ce).call(this,e,t,s));f(this,"text",(e,t,s)=>!m(this,se)&&!m(this,me)&&!t&&!s&&!this.finalized?new Response(e):k(this,X,ce).call(this,e,t,Pe(Pt,s)));f(this,"json",(e,t,s)=>k(this,X,ce).call(this,JSON.stringify(e),t,Pe("application/json",s)));f(this,"html",(e,t,s)=>{const r=a=>k(this,X,ce).call(this,a,t,Pe("text/html; charset=UTF-8",s));return typeof e=="object"?ut(e,At.Stringify,!1,{}).then(r):r(e)});f(this,"redirect",(e,t)=>{const s=String(e);return this.header("Location",/[^\x00-\xFF]/.test(s)?encodeURI(s):s),this.newResponse(null,t??302)});f(this,"notFound",()=>(m(this,xe)??h(this,xe,()=>new Response),m(this,xe).call(this,this)));h(this,Ee,e),t&&(h(this,H,t.executionCtx),this.env=t.env,h(this,xe,t.notFoundHandler),h(this,Te,t.path),h(this,_e,t.matchResult))}get req(){return m(this,ke)??h(this,ke,new dt(m(this,Ee),m(this,Te),m(this,_e))),m(this,ke)}get event(){if(m(this,H)&&"respondWith"in m(this,H))return m(this,H);throw Error("This context has no FetchEvent")}get executionCtx(){if(m(this,H))return m(this,H);throw Error("This context has no ExecutionContext")}get res(){return m(this,N)||h(this,N,new Response(null,{headers:m(this,se)??h(this,se,new Headers)}))}set res(e){if(m(this,N)&&e){e=new Response(e.body,e);for(const[t,s]of m(this,N).headers.entries())if(t!=="content-type")if(t==="set-cookie"){const r=m(this,N).headers.getSetCookie();e.headers.delete("set-cookie");for(const a of r)e.headers.append("set-cookie",a)}else e.headers.set(t,s)}h(this,N,e),this.finalized=!0}get var(){return m(this,q)?Object.fromEntries(m(this,q)):{}}},Ee=new WeakMap,ke=new WeakMap,q=new WeakMap,me=new WeakMap,H=new WeakMap,N=new WeakMap,Ie=new WeakMap,ge=new WeakMap,xe=new WeakMap,se=new WeakMap,_e=new WeakMap,Te=new WeakMap,X=new WeakSet,ce=function(e,t,s){const r=m(this,N)?new Headers(m(this,N).headers):m(this,se)??new Headers;if(typeof t=="object"&&"headers"in t){const l=t.headers instanceof Headers?t.headers:new Headers(t.headers);for(const[n,o]of l)n.toLowerCase()==="set-cookie"?r.append(n,o):r.set(n,o)}if(s)for(const[l,n]of Object.entries(s))if(typeof n=="string")r.set(l,n);else{r.delete(l);for(const o of n)r.append(l,o)}const a=typeof t=="number"?t:(t==null?void 0:t.status)??m(this,me);return new Response(e,{status:a,headers:r})},Qe),D="ALL",Ut="all",qt=["get","post","put","delete","options","patch"],mt="Can not add a route since the matcher is already built.",gt=class extends Error{},Ht="__COMPOSED_HANDLER",zt=e=>e.text("404 Not Found",404),Xe=(e,t)=>{if("getResponse"in e){const s=e.getResponse();return t.newResponse(s.body,s)}return console.error(e),t.text("Internal Server Error",500)},A,C,xt,P,ee,Ce,Be,be,Wt=(be=class{constructor(t={}){y(this,C);f(this,"get");f(this,"post");f(this,"put");f(this,"delete");f(this,"options");f(this,"patch");f(this,"all");f(this,"on");f(this,"use");f(this,"router");f(this,"getPath");f(this,"_basePath","/");y(this,A,"/");f(this,"routes",[]);y(this,P,zt);f(this,"errorHandler",Xe);f(this,"onError",t=>(this.errorHandler=t,this));f(this,"notFound",t=>(h(this,P,t),this));f(this,"fetch",(t,...s)=>k(this,C,Be).call(this,t,s[1],s[0],t.method));f(this,"request",(t,s,r,a)=>t instanceof Request?this.fetch(s?new Request(t,s):t,r,a):(t=t.toString(),this.fetch(new Request(/^https?:\/\//.test(t)?t:`http://localhost${de("/",t)}`,s),r,a)));f(this,"fire",()=>{addEventListener("fetch",t=>{t.respondWith(k(this,C,Be).call(this,t.request,t,void 0,t.request.method))})});[...qt,Ut].forEach(l=>{this[l]=(n,...o)=>(typeof n=="string"?h(this,A,n):k(this,C,ee).call(this,l,m(this,A),n),o.forEach(i=>{k(this,C,ee).call(this,l,m(this,A),i)}),this)}),this.on=(l,n,...o)=>{for(const i of[n].flat()){h(this,A,i);for(const c of[l].flat())o.map(p=>{k(this,C,ee).call(this,c.toUpperCase(),m(this,A),p)})}return this},this.use=(l,...n)=>(typeof l=="string"?h(this,A,l):(h(this,A,"*"),n.unshift(l)),n.forEach(o=>{k(this,C,ee).call(this,D,m(this,A),o)}),this);const{strict:r,...a}=t;Object.assign(this,a),this.getPath=r??!0?t.getPath??lt:Nt}route(t,s){const r=this.basePath(t);return s.routes.map(a=>{var n;let l;s.errorHandler===Xe?l=a.handler:(l=async(o,i)=>(await Ve([],s.errorHandler)(o,()=>a.handler(o,i))).res,l[Ht]=a.handler),k(n=r,C,ee).call(n,a.method,a.path,l)}),this}basePath(t){const s=k(this,C,xt).call(this);return s._basePath=de(this._basePath,t),s}mount(t,s,r){let a,l;r&&(typeof r=="function"?l=r:(l=r.optionHandler,r.replaceRequest===!1?a=i=>i:a=r.replaceRequest));const n=l?i=>{const c=l(i);return Array.isArray(c)?c:[c]}:i=>{let c;try{c=i.executionCtx}catch{}return[i.env,c]};a||(a=(()=>{const i=de(this._basePath,t),c=i==="/"?0:i.length;return p=>{const u=new URL(p.url);return u.pathname=u.pathname.slice(c)||"/",new Request(u,p)}})());const o=async(i,c)=>{const p=await s(a(i.req.raw),...n(i));if(p)return p;await c()};return k(this,C,ee).call(this,D,de(t,"*"),o),this}},A=new WeakMap,C=new WeakSet,xt=function(){const t=new be({router:this.router,getPath:this.getPath});return t.errorHandler=this.errorHandler,h(t,P,m(this,P)),t.routes=this.routes,t},P=new WeakMap,ee=function(t,s,r){t=t.toUpperCase(),s=de(this._basePath,s);const a={basePath:this._basePath,path:s,method:t,handler:r};this.router.add(t,s,[r,a]),this.routes.push(a)},Ce=function(t,s){if(t instanceof Error)return this.errorHandler(t,s);throw t},Be=function(t,s,r,a){if(a==="HEAD")return(async()=>new Response(null,await k(this,C,Be).call(this,t,s,r,"GET")))();const l=this.getPath(t,{env:r}),n=this.router.match(a,l),o=new Ft(t,{path:l,matchResult:n,env:r,executionCtx:s,notFoundHandler:m(this,P)});if(n[0].length===1){let c;try{c=n[0][0][0][0](o,async()=>{o.res=await m(this,P).call(this,o)})}catch(p){return k(this,C,Ce).call(this,p,o)}return c instanceof Promise?c.then(p=>p||(o.finalized?o.res:m(this,P).call(this,o))).catch(p=>k(this,C,Ce).call(this,p,o)):c??m(this,P).call(this,o)}const i=Ve(n[0],this.errorHandler,m(this,P));return(async()=>{try{const c=await i(o);if(!c.finalized)throw new Error("Context is not finalized. Did you forget to return a Response object or `await next()`?");return c.res}catch(c){return k(this,C,Ce).call(this,c,o)}})()},be),bt=[];function Yt(e,t){const s=this.buildAllMatchers(),r=((a,l)=>{const n=s[a]||s[D],o=n[2][l];if(o)return o;const i=l.match(n[0]);if(!i)return[[],bt];const c=i.indexOf("",1);return[n[1][c],i]});return this.match=r,r(e,t)}var Me="[^/]+",ye=".*",we="(?:|/.*)",pe=Symbol(),Vt=new Set(".\\+*[^]$()");function Gt(e,t){return e.length===1?t.length===1?e<t?-1:1:-1:t.length===1||e===ye||e===we?1:t===ye||t===we?-1:e===Me?1:t===Me?-1:e.length===t.length?e<t?-1:1:t.length-e.length}var re,ae,F,oe,Xt=(oe=class{constructor(){y(this,re);y(this,ae);y(this,F,Object.create(null))}insert(t,s,r,a,l){if(t.length===0){if(m(this,re)!==void 0)throw pe;if(l)return;h(this,re,s);return}const[n,...o]=t,i=n==="*"?o.length===0?["","",ye]:["","",Me]:n==="/*"?["","",we]:n.match(/^\:([^\{\}]+)(?:\{(.+)\})?$/);let c;if(i){const p=i[1];let u=i[2]||Me;if(p&&i[2]&&(u===".*"||(u=u.replace(/^\((?!\?:)(?=[^)]+\)$)/,"(?:"),/\((?!\?:)/.test(u))))throw pe;if(c=m(this,F)[u],!c){if(Object.keys(m(this,F)).some(g=>g!==ye&&g!==we))throw pe;if(l)return;c=m(this,F)[u]=new oe,p!==""&&h(c,ae,a.varIndex++)}!l&&p!==""&&r.push([p,m(c,ae)])}else if(c=m(this,F)[n],!c){if(Object.keys(m(this,F)).some(p=>p.length>1&&p!==ye&&p!==we))throw pe;if(l)return;c=m(this,F)[n]=new oe}c.insert(o,s,r,a,l)}buildRegExpStr(){const s=Object.keys(m(this,F)).sort(Gt).map(r=>{const a=m(this,F)[r];return(typeof m(a,ae)=="number"?`(${r})@${m(a,ae)}`:Vt.has(r)?`\\${r}`:r)+a.buildRegExpStr()});return typeof m(this,re)=="number"&&s.unshift(`#${m(this,re)}`),s.length===0?"":s.length===1?s[0]:"(?:"+s.join("|")+")"}},re=new WeakMap,ae=new WeakMap,F=new WeakMap,oe),Le,Se,et,Jt=(et=class{constructor(){y(this,Le,{varIndex:0});y(this,Se,new Xt)}insert(e,t,s){const r=[],a=[];for(let n=0;;){let o=!1;if(e=e.replace(/\{[^}]+\}/g,i=>{const c=`@\\${n}`;return a[n]=[c,i],n++,o=!0,c}),!o)break}const l=e.match(/(?::[^\/]+)|(?:\/\*$)|./g)||[];for(let n=a.length-1;n>=0;n--){const[o]=a[n];for(let i=l.length-1;i>=0;i--)if(l[i].indexOf(o)!==-1){l[i]=l[i].replace(o,a[n][1]);break}}return m(this,Se).insert(l,t,r,m(this,Le),s),r}buildRegExp(){let e=m(this,Se).buildRegExpStr();if(e==="")return[/^$/,[],[]];let t=0;const s=[],r=[];return e=e.replace(/#(\d+)|@(\d+)|\.\*\$/g,(a,l,n)=>l!==void 0?(s[++t]=Number(l),"$()"):(n!==void 0&&(r[Number(n)]=++t),"")),[new RegExp(`^${e}`),s,r]}},Le=new WeakMap,Se=new WeakMap,et),Kt=[/^$/,[],Object.create(null)],Re=Object.create(null);function vt(e){return Re[e]??(Re[e]=new RegExp(e==="*"?"":`^${e.replace(/\/\*$|([.\\+*[^\]$()])/g,(t,s)=>s?`\\${s}`:"(?:|/.*)")}$`))}function Zt(){Re=Object.create(null)}function Qt(e){var c;const t=new Jt,s=[];if(e.length===0)return Kt;const r=e.map(p=>[!/\*|\/:/.test(p[0]),...p]).sort(([p,u],[g,x])=>p?1:g?-1:u.length-x.length),a=Object.create(null);for(let p=0,u=-1,g=r.length;p<g;p++){const[x,b,w]=r[p];x?a[b]=[w.map(([E])=>[E,Object.create(null)]),bt]:u++;let v;try{v=t.insert(b,u,x)}catch(E){throw E===pe?new gt(b):E}x||(s[u]=w.map(([E,_])=>{const U=Object.create(null);for(_-=1;_>=0;_--){const[I,j]=v[_];U[I]=j}return[E,U]}))}const[l,n,o]=t.buildRegExp();for(let p=0,u=s.length;p<u;p++)for(let g=0,x=s[p].length;g<x;g++){const b=(c=s[p][g])==null?void 0:c[1];if(!b)continue;const w=Object.keys(b);for(let v=0,E=w.length;v<E;v++)b[w[v]]=o[b[w[v]]]}const i=[];for(const p in n)i[p]=s[n[p]];return[l,i,a]}function ie(e,t){if(e){for(const s of Object.keys(e).sort((r,a)=>a.length-r.length))if(vt(s).test(t))return[...e[s]]}}var J,K,Ne,ht,tt,es=(tt=class{constructor(){y(this,Ne);f(this,"name","RegExpRouter");y(this,J);y(this,K);f(this,"match",Yt);h(this,J,{[D]:Object.create(null)}),h(this,K,{[D]:Object.create(null)})}add(e,t,s){var o;const r=m(this,J),a=m(this,K);if(!r||!a)throw new Error(mt);r[e]||[r,a].forEach(i=>{i[e]=Object.create(null),Object.keys(i[D]).forEach(c=>{i[e][c]=[...i[D][c]]})}),t==="/*"&&(t="*");const l=(t.match(/\/:/g)||[]).length;if(/\*$/.test(t)){const i=vt(t);e===D?Object.keys(r).forEach(c=>{var p;(p=r[c])[t]||(p[t]=ie(r[c],t)||ie(r[D],t)||[])}):(o=r[e])[t]||(o[t]=ie(r[e],t)||ie(r[D],t)||[]),Object.keys(r).forEach(c=>{(e===D||e===c)&&Object.keys(r[c]).forEach(p=>{i.test(p)&&r[c][p].push([s,l])})}),Object.keys(a).forEach(c=>{(e===D||e===c)&&Object.keys(a[c]).forEach(p=>i.test(p)&&a[c][p].push([s,l]))});return}const n=nt(t)||[t];for(let i=0,c=n.length;i<c;i++){const p=n[i];Object.keys(a).forEach(u=>{var g;(e===D||e===u)&&((g=a[u])[p]||(g[p]=[...ie(r[u],p)||ie(r[D],p)||[]]),a[u][p].push([s,l-c+i+1]))})}}buildAllMatchers(){const e=Object.create(null);return Object.keys(m(this,K)).concat(Object.keys(m(this,J))).forEach(t=>{e[t]||(e[t]=k(this,Ne,ht).call(this,t))}),h(this,J,h(this,K,void 0)),Zt(),e}},J=new WeakMap,K=new WeakMap,Ne=new WeakSet,ht=function(e){const t=[];let s=e===D;return[m(this,J),m(this,K)].forEach(r=>{const a=r[e]?Object.keys(r[e]).map(l=>[l,r[e][l]]):[];a.length!==0?(s||(s=!0),t.push(...a)):e!==D&&t.push(...Object.keys(r[D]).map(l=>[l,r[D][l]]))}),s?Qt(t):null},tt),Z,z,st,ts=(st=class{constructor(e){f(this,"name","SmartRouter");y(this,Z,[]);y(this,z,[]);h(this,Z,e.routers)}add(e,t,s){if(!m(this,z))throw new Error(mt);m(this,z).push([e,t,s])}match(e,t){if(!m(this,z))throw new Error("Fatal error");const s=m(this,Z),r=m(this,z),a=s.length;let l=0,n;for(;l<a;l++){const o=s[l];try{for(let i=0,c=r.length;i<c;i++)o.add(...r[i]);n=o.match(e,t)}catch(i){if(i instanceof gt)continue;throw i}this.match=o.match.bind(o),h(this,Z,[o]),h(this,z,void 0);break}if(l===a)throw new Error("Fatal error");return this.name=`SmartRouter + ${this.activeRouter.name}`,n}get activeRouter(){if(m(this,z)||m(this,Z).length!==1)throw new Error("No active router has been determined yet.");return m(this,Z)[0]}},Z=new WeakMap,z=new WeakMap,st),fe=Object.create(null),Q,L,le,ve,R,W,te,he,ss=(he=class{constructor(t,s,r){y(this,W);y(this,Q);y(this,L);y(this,le);y(this,ve,0);y(this,R,fe);if(h(this,L,r||Object.create(null)),h(this,Q,[]),t&&s){const a=Object.create(null);a[t]={handler:s,possibleKeys:[],score:0},h(this,Q,[a])}h(this,le,[])}insert(t,s,r){h(this,ve,++Ye(this,ve)._);let a=this;const l=Ct(s),n=[];for(let o=0,i=l.length;o<i;o++){const c=l[o],p=l[o+1],u=Mt(c,p),g=Array.isArray(u)?u[0]:c;if(g in m(a,L)){a=m(a,L)[g],u&&n.push(u[1]);continue}m(a,L)[g]=new he,u&&(m(a,le).push(u),n.push(u[1])),a=m(a,L)[g]}return m(a,Q).push({[t]:{handler:r,possibleKeys:n.filter((o,i,c)=>c.indexOf(o)===i),score:m(this,ve)}}),a}search(t,s){var i;const r=[];h(this,R,fe);let l=[this];const n=at(s),o=[];for(let c=0,p=n.length;c<p;c++){const u=n[c],g=c===p-1,x=[];for(let b=0,w=l.length;b<w;b++){const v=l[b],E=m(v,L)[u];E&&(h(E,R,m(v,R)),g?(m(E,L)["*"]&&r.push(...k(this,W,te).call(this,m(E,L)["*"],t,m(v,R))),r.push(...k(this,W,te).call(this,E,t,m(v,R)))):x.push(E));for(let _=0,U=m(v,le).length;_<U;_++){const I=m(v,le)[_],j=m(v,R)===fe?{}:{...m(v,R)};if(I==="*"){const V=m(v,L)["*"];V&&(r.push(...k(this,W,te).call(this,V,t,m(v,R))),h(V,R,j),x.push(V));continue}const[$,M,T]=I;if(!u&&!(T instanceof RegExp))continue;const S=m(v,L)[$],wt=n.slice(c).join("/");if(T instanceof RegExp){const V=T.exec(wt);if(V){if(j[M]=V[0],r.push(...k(this,W,te).call(this,S,t,m(v,R),j)),Object.keys(m(S,L)).length){h(S,R,j);const Oe=((i=V[0].match(/\//))==null?void 0:i.length)??0;(o[Oe]||(o[Oe]=[])).push(S)}continue}}(T===!0||T.test(u))&&(j[M]=u,g?(r.push(...k(this,W,te).call(this,S,t,j,m(v,R))),m(S,L)["*"]&&r.push(...k(this,W,te).call(this,m(S,L)["*"],t,j,m(v,R)))):(h(S,R,j),x.push(S)))}}l=x.concat(o.shift()??[])}return r.length>1&&r.sort((c,p)=>c.score-p.score),[r.map(({handler:c,params:p})=>[c,p])]}},Q=new WeakMap,L=new WeakMap,le=new WeakMap,ve=new WeakMap,R=new WeakMap,W=new WeakSet,te=function(t,s,r,a){const l=[];for(let n=0,o=m(t,Q).length;n<o;n++){const i=m(t,Q)[n],c=i[s]||i[D],p={};if(c!==void 0&&(c.params=Object.create(null),l.push(c),r!==fe||a&&a!==fe))for(let u=0,g=c.possibleKeys.length;u<g;u++){const x=c.possibleKeys[u],b=p[c.score];c.params[x]=a!=null&&a[x]&&!b?a[x]:r[x]??(a==null?void 0:a[x]),p[c.score]=!0}}return l},he),ne,rt,rs=(rt=class{constructor(){f(this,"name","TrieRouter");y(this,ne);h(this,ne,new ss)}add(e,t,s){const r=nt(t);if(r){for(let a=0,l=r.length;a<l;a++)m(this,ne).insert(e,r[a],s);return}m(this,ne).insert(e,t,s)}match(e,t){return m(this,ne).search(e,t)}},ne=new WeakMap,rt),ze=class extends Wt{constructor(e={}){super(e),this.router=e.router??new ts({routers:[new es,new rs]})}},as=e=>{const s={...{origin:"*",allowMethods:["GET","HEAD","PUT","POST","DELETE","PATCH"],allowHeaders:[],exposeHeaders:[]},...e},r=(l=>typeof l=="string"?l==="*"?()=>l:n=>l===n?n:null:typeof l=="function"?l:n=>l.includes(n)?n:null)(s.origin),a=(l=>typeof l=="function"?l:Array.isArray(l)?()=>l:()=>[])(s.allowMethods);return async function(n,o){var p;function i(u,g){n.res.headers.set(u,g)}const c=await r(n.req.header("origin")||"",n);if(c&&i("Access-Control-Allow-Origin",c),s.credentials&&i("Access-Control-Allow-Credentials","true"),(p=s.exposeHeaders)!=null&&p.length&&i("Access-Control-Expose-Headers",s.exposeHeaders.join(",")),n.req.method==="OPTIONS"){s.origin!=="*"&&i("Vary","Origin"),s.maxAge!=null&&i("Access-Control-Max-Age",s.maxAge.toString());const u=await a(n.req.header("origin")||"",n);u.length&&i("Access-Control-Allow-Methods",u.join(","));let g=s.allowHeaders;if(!(g!=null&&g.length)){const x=n.req.header("Access-Control-Request-Headers");x&&(g=x.split(/\s*,\s*/))}return g!=null&&g.length&&(i("Access-Control-Allow-Headers",g.join(",")),n.res.headers.append("Vary","Access-Control-Request-Headers")),n.res.headers.delete("Content-Length"),n.res.headers.delete("Content-Type"),new Response(null,{headers:n.res.headers,status:204,statusText:"No Content"})}await o(),s.origin!=="*"&&n.header("Vary","Origin",{append:!0})}},ls=/^\s*(?:text\/(?!event-stream(?:[;\s]|$))[^;\s]+|application\/(?:javascript|json|xml|xml-dtd|ecmascript|dart|postscript|rtf|tar|toml|vnd\.dart|vnd\.ms-fontobject|vnd\.ms-opentype|wasm|x-httpd-php|x-javascript|x-ns-proxy-autoconfig|x-sh|x-tar|x-virtualbox-hdd|x-virtualbox-ova|x-virtualbox-ovf|x-virtualbox-vbox|x-virtualbox-vdi|x-virtualbox-vhd|x-virtualbox-vmdk|x-www-form-urlencoded)|font\/(?:otf|ttf)|image\/(?:bmp|vnd\.adobe\.photoshop|vnd\.microsoft\.icon|vnd\.ms-dds|x-icon|x-ms-bmp)|message\/rfc822|model\/gltf-binary|x-shader\/x-fragment|x-shader\/x-vertex|[^;\s]+?\+(?:json|text|xml|yaml))(?:[;\s]|$)/i,Je=(e,t=os)=>{const s=/\.([a-zA-Z0-9]+?)$/,r=e.match(s);if(!r)return;let a=t[r[1]];return a&&a.startsWith("text")&&(a+="; charset=utf-8"),a},ns={aac:"audio/aac",avi:"video/x-msvideo",avif:"image/avif",av1:"video/av1",bin:"application/octet-stream",bmp:"image/bmp",css:"text/css",csv:"text/csv",eot:"application/vnd.ms-fontobject",epub:"application/epub+zip",gif:"image/gif",gz:"application/gzip",htm:"text/html",html:"text/html",ico:"image/x-icon",ics:"text/calendar",jpeg:"image/jpeg",jpg:"image/jpeg",js:"text/javascript",json:"application/json",jsonld:"application/ld+json",map:"application/json",mid:"audio/x-midi",midi:"audio/x-midi",mjs:"text/javascript",mp3:"audio/mpeg",mp4:"video/mp4",mpeg:"video/mpeg",oga:"audio/ogg",ogv:"video/ogg",ogx:"application/ogg",opus:"audio/opus",otf:"font/otf",pdf:"application/pdf",png:"image/png",rtf:"application/rtf",svg:"image/svg+xml",tif:"image/tiff",tiff:"image/tiff",ts:"video/mp2t",ttf:"font/ttf",txt:"text/plain",wasm:"application/wasm",webm:"video/webm",weba:"audio/webm",webmanifest:"application/manifest+json",webp:"image/webp",woff:"font/woff",woff2:"font/woff2",xhtml:"application/xhtml+xml",xml:"application/xml",zip:"application/zip","3gp":"video/3gpp","3g2":"video/3gpp2",gltf:"model/gltf+json",glb:"model/gltf-binary"},os=ns,is=(...e)=>{let t=e.filter(a=>a!=="").join("/");t=t.replace(new RegExp("(?<=\\/)\\/+","g"),"");const s=t.split("/"),r=[];for(const a of s)a===".."&&r.length>0&&r.at(-1)!==".."?r.pop():a!=="."&&r.push(a);return r.join("/")||"."},ft={br:".br",zstd:".zst",gzip:".gz"},ds=Object.keys(ft),cs="index.html",ps=e=>{const t=e.root??"./",s=e.path,r=e.join??is;return async(a,l)=>{var p,u,g,x;if(a.finalized)return l();let n;if(e.path)n=e.path;else try{if(n=decodeURIComponent(a.req.path),/(?:^|[\/\\])\.\.(?:$|[\/\\])/.test(n))throw new Error}catch{return await((p=e.onNotFound)==null?void 0:p.call(e,a.req.path,a)),l()}let o=r(t,!s&&e.rewriteRequestPath?e.rewriteRequestPath(n):n);e.isDir&&await e.isDir(o)&&(o=r(o,cs));const i=e.getContent;let c=await i(o,a);if(c instanceof Response)return a.newResponse(c.body,c);if(c){const b=e.mimes&&Je(o,e.mimes)||Je(o);if(a.header("Content-Type",b||"application/octet-stream"),e.precompressed&&(!b||ls.test(b))){const w=new Set((u=a.req.header("Accept-Encoding"))==null?void 0:u.split(",").map(v=>v.trim()));for(const v of ds){if(!w.has(v))continue;const E=await i(o+ft[v],a);if(E){c=E,a.header("Content-Encoding",v),a.header("Vary","Accept-Encoding",{append:!0});break}}}return await((g=e.onFound)==null?void 0:g.call(e,o,a)),a.body(c)}await((x=e.onNotFound)==null?void 0:x.call(e,o,a)),await l()}},us=async(e,t)=>{let s;t&&t.manifest?typeof t.manifest=="string"?s=JSON.parse(t.manifest):s=t.manifest:typeof __STATIC_CONTENT_MANIFEST=="string"?s=JSON.parse(__STATIC_CONTENT_MANIFEST):s=__STATIC_CONTENT_MANIFEST;let r;t&&t.namespace?r=t.namespace:r=__STATIC_CONTENT;const a=s[e]||e;if(!a)return null;const l=await r.get(a,{type:"stream"});return l||null},ms=e=>async function(s,r){return ps({...e,getContent:async l=>us(l,{manifest:e.manifest,namespace:e.namespace?e.namespace:s.env?s.env.__STATIC_CONTENT:void 0})})(s,r)},gs=e=>ms(e);const B=new ze;B.get("/api/classes",async e=>{const{DB:t}=e.env,s=e.req.query("academyId")||"1";try{const r=await t.prepare(`
+var Et=Object.defineProperty;var We=e=>{throw TypeError(e)};var kt=(e,t,s)=>t in e?Et(e,t,{enumerable:!0,configurable:!0,writable:!0,value:s}):e[t]=s;var f=(e,t,s)=>kt(e,typeof t!="symbol"?t+"":t,s),Ae=(e,t,s)=>t.has(e)||We("Cannot "+s);var m=(e,t,s)=>(Ae(e,t,"read from private field"),s?s.call(e):t.get(e)),y=(e,t,s)=>t.has(e)?We("Cannot add the same private member more than once"):t instanceof WeakSet?t.add(e):t.set(e,s),h=(e,t,s,r)=>(Ae(e,t,"write to private field"),r?r.call(e,s):t.set(e,s),s),k=(e,t,s)=>(Ae(e,t,"access private method"),s);var Ye=(e,t,s,r)=>({set _(a){h(e,t,a,s)},get _(){return m(e,t,r)}});var Ve=(e,t,s)=>(r,a)=>{let l=-1;return n(0);async function n(o){if(o<=l)throw new Error("next() called multiple times");l=o;let i,c=!1,p;if(e[o]?(p=e[o][0][0],r.req.routeIndex=o):p=o===e.length&&a||void 0,p)try{i=await p(r,()=>n(o+1))}catch(u){if(u instanceof Error&&t)r.error=u,i=await t(u,r),c=!0;else throw u}else r.finalized===!1&&s&&(i=await s(r));return i&&(r.finalized===!1||c)&&(r.res=i),r}},It=Symbol(),_t=async(e,t=Object.create(null))=>{const{all:s=!1,dot:r=!1}=t,l=(e instanceof dt?e.raw.headers:e.headers).get("Content-Type");return l!=null&&l.startsWith("multipart/form-data")||l!=null&&l.startsWith("application/x-www-form-urlencoded")?Tt(e,{all:s,dot:r}):{}};async function Tt(e,t){const s=await e.formData();return s?St(s,t):{}}function St(e,t){const s=Object.create(null);return e.forEach((r,a)=>{t.all||a.endsWith("[]")?jt(s,a,r):s[a]=r}),t.dot&&Object.entries(s).forEach(([r,a])=>{r.includes(".")&&(Dt(s,r,a),delete s[r])}),s}var jt=(e,t,s)=>{e[t]!==void 0?Array.isArray(e[t])?e[t].push(s):e[t]=[e[t],s]:t.endsWith("[]")?e[t]=[s]:e[t]=s},Dt=(e,t,s)=>{let r=e;const a=t.split(".");a.forEach((l,n)=>{n===a.length-1?r[l]=s:((!r[l]||typeof r[l]!="object"||Array.isArray(r[l])||r[l]instanceof File)&&(r[l]=Object.create(null)),r=r[l])})},at=e=>{const t=e.split("/");return t[0]===""&&t.shift(),t},Ct=e=>{const{groups:t,path:s}=Bt(e),r=at(s);return Rt(r,t)},Bt=e=>{const t=[];return e=e.replace(/\{[^}]+\}/g,(s,r)=>{const a=`@${r}`;return t.push([a,s]),a}),{groups:t,path:e}},Rt=(e,t)=>{for(let s=t.length-1;s>=0;s--){const[r]=t[s];for(let a=e.length-1;a>=0;a--)if(e[a].includes(r)){e[a]=e[a].replace(r,t[s][1]);break}}return e},De={},Mt=(e,t)=>{if(e==="*")return"*";const s=e.match(/^\:([^\{\}]+)(?:\{(.+)\})?$/);if(s){const r=`${e}#${t}`;return De[r]||(s[2]?De[r]=t&&t[0]!==":"&&t[0]!=="*"?[r,s[1],new RegExp(`^${s[2]}(?=/${t})`)]:[e,s[1],new RegExp(`^${s[2]}$`)]:De[r]=[e,s[1],!0]),De[r]}return null},He=(e,t)=>{try{return t(e)}catch{return e.replace(/(?:%[0-9A-Fa-f]{2})+/g,s=>{try{return t(s)}catch{return s}})}},Lt=e=>He(e,decodeURI),lt=e=>{const t=e.url,s=t.indexOf("/",t.indexOf(":")+4);let r=s;for(;r<t.length;r++){const a=t.charCodeAt(r);if(a===37){const l=t.indexOf("?",r),n=t.slice(s,l===-1?void 0:l);return Lt(n.includes("%25")?n.replace(/%25/g,"%2525"):n)}else if(a===63)break}return t.slice(s,r)},Nt=e=>{const t=lt(e);return t.length>1&&t.at(-1)==="/"?t.slice(0,-1):t},de=(e,t,...s)=>(s.length&&(t=de(t,...s)),`${(e==null?void 0:e[0])==="/"?"":"/"}${e}${t==="/"?"":`${(e==null?void 0:e.at(-1))==="/"?"":"/"}${(t==null?void 0:t[0])==="/"?t.slice(1):t}`}`),nt=e=>{if(e.charCodeAt(e.length-1)!==63||!e.includes(":"))return null;const t=e.split("/"),s=[];let r="";return t.forEach(a=>{if(a!==""&&!/\:/.test(a))r+="/"+a;else if(/\:/.test(a))if(/\?/.test(a)){s.length===0&&r===""?s.push("/"):s.push(r);const l=a.replace("?","");r+="/"+l,s.push(r)}else r+="/"+a}),s.filter((a,l,n)=>n.indexOf(a)===l)},$e=e=>/[%+]/.test(e)?(e.indexOf("+")!==-1&&(e=e.replace(/\+/g," ")),e.indexOf("%")!==-1?He(e,it):e):e,ot=(e,t,s)=>{let r;if(!s&&t&&!/[%+]/.test(t)){let n=e.indexOf("?",8);if(n===-1)return;for(e.startsWith(t,n+1)||(n=e.indexOf(`&${t}`,n+1));n!==-1;){const o=e.charCodeAt(n+t.length+1);if(o===61){const i=n+t.length+2,c=e.indexOf("&",i);return $e(e.slice(i,c===-1?void 0:c))}else if(o==38||isNaN(o))return"";n=e.indexOf(`&${t}`,n+1)}if(r=/[%+]/.test(e),!r)return}const a={};r??(r=/[%+]/.test(e));let l=e.indexOf("?",8);for(;l!==-1;){const n=e.indexOf("&",l+1);let o=e.indexOf("=",l);o>n&&n!==-1&&(o=-1);let i=e.slice(l+1,o===-1?n===-1?void 0:n:o);if(r&&(i=$e(i)),l=n,i==="")continue;let c;o===-1?c="":(c=e.slice(o+1,n===-1?void 0:n),r&&(c=$e(c))),s?(a[i]&&Array.isArray(a[i])||(a[i]=[]),a[i].push(c)):a[i]??(a[i]=c)}return t?a[t]:a},Ot=ot,At=(e,t)=>ot(e,t,!0),it=decodeURIComponent,Ge=e=>He(e,it),ue,O,Y,ct,pt,qe,G,Ze,dt=(Ze=class{constructor(e,t="/",s=[[]]){y(this,Y);f(this,"raw");y(this,ue);y(this,O);f(this,"routeIndex",0);f(this,"path");f(this,"bodyCache",{});y(this,G,e=>{const{bodyCache:t,raw:s}=this,r=t[e];if(r)return r;const a=Object.keys(t)[0];return a?t[a].then(l=>(a==="json"&&(l=JSON.stringify(l)),new Response(l)[e]())):t[e]=s[e]()});this.raw=e,this.path=t,h(this,O,s),h(this,ue,{})}param(e){return e?k(this,Y,ct).call(this,e):k(this,Y,pt).call(this)}query(e){return Ot(this.url,e)}queries(e){return At(this.url,e)}header(e){if(e)return this.raw.headers.get(e)??void 0;const t={};return this.raw.headers.forEach((s,r)=>{t[r]=s}),t}async parseBody(e){var t;return(t=this.bodyCache).parsedBody??(t.parsedBody=await _t(this,e))}json(){return m(this,G).call(this,"text").then(e=>JSON.parse(e))}text(){return m(this,G).call(this,"text")}arrayBuffer(){return m(this,G).call(this,"arrayBuffer")}blob(){return m(this,G).call(this,"blob")}formData(){return m(this,G).call(this,"formData")}addValidatedData(e,t){m(this,ue)[e]=t}valid(e){return m(this,ue)[e]}get url(){return this.raw.url}get method(){return this.raw.method}get[It](){return m(this,O)}get matchedRoutes(){return m(this,O)[0].map(([[,e]])=>e)}get routePath(){return m(this,O)[0].map(([[,e]])=>e)[this.routeIndex].path}},ue=new WeakMap,O=new WeakMap,Y=new WeakSet,ct=function(e){const t=m(this,O)[0][this.routeIndex][1][e],s=k(this,Y,qe).call(this,t);return s&&/\%/.test(s)?Ge(s):s},pt=function(){const e={},t=Object.keys(m(this,O)[0][this.routeIndex][1]);for(const s of t){const r=k(this,Y,qe).call(this,m(this,O)[0][this.routeIndex][1][s]);r!==void 0&&(e[s]=/\%/.test(r)?Ge(r):r)}return e},qe=function(e){return m(this,O)[1]?m(this,O)[1][e]:e},G=new WeakMap,Ze),$t={Stringify:1},ut=async(e,t,s,r,a)=>{typeof e=="object"&&!(e instanceof String)&&(e instanceof Promise||(e=e.toString()),e instanceof Promise&&(e=await e));const l=e.callbacks;return l!=null&&l.length?(a?a[0]+=e:a=[e],Promise.all(l.map(o=>o({phase:t,buffer:a,context:r}))).then(o=>Promise.all(o.filter(Boolean).map(i=>ut(i,t,!1,r,a))).then(()=>a[0]))):Promise.resolve(e)},Pt="text/plain; charset=UTF-8",Pe=(e,t)=>({"Content-Type":e,...t}),Ee,ke,q,me,H,N,Ie,ge,xe,se,_e,Te,X,ce,Qe,Ft=(Qe=class{constructor(e,t){y(this,X);y(this,Ee);y(this,ke);f(this,"env",{});y(this,q);f(this,"finalized",!1);f(this,"error");y(this,me);y(this,H);y(this,N);y(this,Ie);y(this,ge);y(this,xe);y(this,se);y(this,_e);y(this,Te);f(this,"render",(...e)=>(m(this,ge)??h(this,ge,t=>this.html(t)),m(this,ge).call(this,...e)));f(this,"setLayout",e=>h(this,Ie,e));f(this,"getLayout",()=>m(this,Ie));f(this,"setRenderer",e=>{h(this,ge,e)});f(this,"header",(e,t,s)=>{this.finalized&&h(this,N,new Response(m(this,N).body,m(this,N)));const r=m(this,N)?m(this,N).headers:m(this,se)??h(this,se,new Headers);t===void 0?r.delete(e):s!=null&&s.append?r.append(e,t):r.set(e,t)});f(this,"status",e=>{h(this,me,e)});f(this,"set",(e,t)=>{m(this,q)??h(this,q,new Map),m(this,q).set(e,t)});f(this,"get",e=>m(this,q)?m(this,q).get(e):void 0);f(this,"newResponse",(...e)=>k(this,X,ce).call(this,...e));f(this,"body",(e,t,s)=>k(this,X,ce).call(this,e,t,s));f(this,"text",(e,t,s)=>!m(this,se)&&!m(this,me)&&!t&&!s&&!this.finalized?new Response(e):k(this,X,ce).call(this,e,t,Pe(Pt,s)));f(this,"json",(e,t,s)=>k(this,X,ce).call(this,JSON.stringify(e),t,Pe("application/json",s)));f(this,"html",(e,t,s)=>{const r=a=>k(this,X,ce).call(this,a,t,Pe("text/html; charset=UTF-8",s));return typeof e=="object"?ut(e,$t.Stringify,!1,{}).then(r):r(e)});f(this,"redirect",(e,t)=>{const s=String(e);return this.header("Location",/[^\x00-\xFF]/.test(s)?encodeURI(s):s),this.newResponse(null,t??302)});f(this,"notFound",()=>(m(this,xe)??h(this,xe,()=>new Response),m(this,xe).call(this,this)));h(this,Ee,e),t&&(h(this,H,t.executionCtx),this.env=t.env,h(this,xe,t.notFoundHandler),h(this,Te,t.path),h(this,_e,t.matchResult))}get req(){return m(this,ke)??h(this,ke,new dt(m(this,Ee),m(this,Te),m(this,_e))),m(this,ke)}get event(){if(m(this,H)&&"respondWith"in m(this,H))return m(this,H);throw Error("This context has no FetchEvent")}get executionCtx(){if(m(this,H))return m(this,H);throw Error("This context has no ExecutionContext")}get res(){return m(this,N)||h(this,N,new Response(null,{headers:m(this,se)??h(this,se,new Headers)}))}set res(e){if(m(this,N)&&e){e=new Response(e.body,e);for(const[t,s]of m(this,N).headers.entries())if(t!=="content-type")if(t==="set-cookie"){const r=m(this,N).headers.getSetCookie();e.headers.delete("set-cookie");for(const a of r)e.headers.append("set-cookie",a)}else e.headers.set(t,s)}h(this,N,e),this.finalized=!0}get var(){return m(this,q)?Object.fromEntries(m(this,q)):{}}},Ee=new WeakMap,ke=new WeakMap,q=new WeakMap,me=new WeakMap,H=new WeakMap,N=new WeakMap,Ie=new WeakMap,ge=new WeakMap,xe=new WeakMap,se=new WeakMap,_e=new WeakMap,Te=new WeakMap,X=new WeakSet,ce=function(e,t,s){const r=m(this,N)?new Headers(m(this,N).headers):m(this,se)??new Headers;if(typeof t=="object"&&"headers"in t){const l=t.headers instanceof Headers?t.headers:new Headers(t.headers);for(const[n,o]of l)n.toLowerCase()==="set-cookie"?r.append(n,o):r.set(n,o)}if(s)for(const[l,n]of Object.entries(s))if(typeof n=="string")r.set(l,n);else{r.delete(l);for(const o of n)r.append(l,o)}const a=typeof t=="number"?t:(t==null?void 0:t.status)??m(this,me);return new Response(e,{status:a,headers:r})},Qe),D="ALL",Ut="all",qt=["get","post","put","delete","options","patch"],mt="Can not add a route since the matcher is already built.",gt=class extends Error{},Ht="__COMPOSED_HANDLER",zt=e=>e.text("404 Not Found",404),Xe=(e,t)=>{if("getResponse"in e){const s=e.getResponse();return t.newResponse(s.body,s)}return console.error(e),t.text("Internal Server Error",500)},$,C,xt,P,ee,Ce,Be,be,Wt=(be=class{constructor(t={}){y(this,C);f(this,"get");f(this,"post");f(this,"put");f(this,"delete");f(this,"options");f(this,"patch");f(this,"all");f(this,"on");f(this,"use");f(this,"router");f(this,"getPath");f(this,"_basePath","/");y(this,$,"/");f(this,"routes",[]);y(this,P,zt);f(this,"errorHandler",Xe);f(this,"onError",t=>(this.errorHandler=t,this));f(this,"notFound",t=>(h(this,P,t),this));f(this,"fetch",(t,...s)=>k(this,C,Be).call(this,t,s[1],s[0],t.method));f(this,"request",(t,s,r,a)=>t instanceof Request?this.fetch(s?new Request(t,s):t,r,a):(t=t.toString(),this.fetch(new Request(/^https?:\/\//.test(t)?t:`http://localhost${de("/",t)}`,s),r,a)));f(this,"fire",()=>{addEventListener("fetch",t=>{t.respondWith(k(this,C,Be).call(this,t.request,t,void 0,t.request.method))})});[...qt,Ut].forEach(l=>{this[l]=(n,...o)=>(typeof n=="string"?h(this,$,n):k(this,C,ee).call(this,l,m(this,$),n),o.forEach(i=>{k(this,C,ee).call(this,l,m(this,$),i)}),this)}),this.on=(l,n,...o)=>{for(const i of[n].flat()){h(this,$,i);for(const c of[l].flat())o.map(p=>{k(this,C,ee).call(this,c.toUpperCase(),m(this,$),p)})}return this},this.use=(l,...n)=>(typeof l=="string"?h(this,$,l):(h(this,$,"*"),n.unshift(l)),n.forEach(o=>{k(this,C,ee).call(this,D,m(this,$),o)}),this);const{strict:r,...a}=t;Object.assign(this,a),this.getPath=r??!0?t.getPath??lt:Nt}route(t,s){const r=this.basePath(t);return s.routes.map(a=>{var n;let l;s.errorHandler===Xe?l=a.handler:(l=async(o,i)=>(await Ve([],s.errorHandler)(o,()=>a.handler(o,i))).res,l[Ht]=a.handler),k(n=r,C,ee).call(n,a.method,a.path,l)}),this}basePath(t){const s=k(this,C,xt).call(this);return s._basePath=de(this._basePath,t),s}mount(t,s,r){let a,l;r&&(typeof r=="function"?l=r:(l=r.optionHandler,r.replaceRequest===!1?a=i=>i:a=r.replaceRequest));const n=l?i=>{const c=l(i);return Array.isArray(c)?c:[c]}:i=>{let c;try{c=i.executionCtx}catch{}return[i.env,c]};a||(a=(()=>{const i=de(this._basePath,t),c=i==="/"?0:i.length;return p=>{const u=new URL(p.url);return u.pathname=u.pathname.slice(c)||"/",new Request(u,p)}})());const o=async(i,c)=>{const p=await s(a(i.req.raw),...n(i));if(p)return p;await c()};return k(this,C,ee).call(this,D,de(t,"*"),o),this}},$=new WeakMap,C=new WeakSet,xt=function(){const t=new be({router:this.router,getPath:this.getPath});return t.errorHandler=this.errorHandler,h(t,P,m(this,P)),t.routes=this.routes,t},P=new WeakMap,ee=function(t,s,r){t=t.toUpperCase(),s=de(this._basePath,s);const a={basePath:this._basePath,path:s,method:t,handler:r};this.router.add(t,s,[r,a]),this.routes.push(a)},Ce=function(t,s){if(t instanceof Error)return this.errorHandler(t,s);throw t},Be=function(t,s,r,a){if(a==="HEAD")return(async()=>new Response(null,await k(this,C,Be).call(this,t,s,r,"GET")))();const l=this.getPath(t,{env:r}),n=this.router.match(a,l),o=new Ft(t,{path:l,matchResult:n,env:r,executionCtx:s,notFoundHandler:m(this,P)});if(n[0].length===1){let c;try{c=n[0][0][0][0](o,async()=>{o.res=await m(this,P).call(this,o)})}catch(p){return k(this,C,Ce).call(this,p,o)}return c instanceof Promise?c.then(p=>p||(o.finalized?o.res:m(this,P).call(this,o))).catch(p=>k(this,C,Ce).call(this,p,o)):c??m(this,P).call(this,o)}const i=Ve(n[0],this.errorHandler,m(this,P));return(async()=>{try{const c=await i(o);if(!c.finalized)throw new Error("Context is not finalized. Did you forget to return a Response object or `await next()`?");return c.res}catch(c){return k(this,C,Ce).call(this,c,o)}})()},be),bt=[];function Yt(e,t){const s=this.buildAllMatchers(),r=((a,l)=>{const n=s[a]||s[D],o=n[2][l];if(o)return o;const i=l.match(n[0]);if(!i)return[[],bt];const c=i.indexOf("",1);return[n[1][c],i]});return this.match=r,r(e,t)}var Me="[^/]+",ye=".*",we="(?:|/.*)",pe=Symbol(),Vt=new Set(".\\+*[^]$()");function Gt(e,t){return e.length===1?t.length===1?e<t?-1:1:-1:t.length===1||e===ye||e===we?1:t===ye||t===we?-1:e===Me?1:t===Me?-1:e.length===t.length?e<t?-1:1:t.length-e.length}var re,ae,F,oe,Xt=(oe=class{constructor(){y(this,re);y(this,ae);y(this,F,Object.create(null))}insert(t,s,r,a,l){if(t.length===0){if(m(this,re)!==void 0)throw pe;if(l)return;h(this,re,s);return}const[n,...o]=t,i=n==="*"?o.length===0?["","",ye]:["","",Me]:n==="/*"?["","",we]:n.match(/^\:([^\{\}]+)(?:\{(.+)\})?$/);let c;if(i){const p=i[1];let u=i[2]||Me;if(p&&i[2]&&(u===".*"||(u=u.replace(/^\((?!\?:)(?=[^)]+\)$)/,"(?:"),/\((?!\?:)/.test(u))))throw pe;if(c=m(this,F)[u],!c){if(Object.keys(m(this,F)).some(g=>g!==ye&&g!==we))throw pe;if(l)return;c=m(this,F)[u]=new oe,p!==""&&h(c,ae,a.varIndex++)}!l&&p!==""&&r.push([p,m(c,ae)])}else if(c=m(this,F)[n],!c){if(Object.keys(m(this,F)).some(p=>p.length>1&&p!==ye&&p!==we))throw pe;if(l)return;c=m(this,F)[n]=new oe}c.insert(o,s,r,a,l)}buildRegExpStr(){const s=Object.keys(m(this,F)).sort(Gt).map(r=>{const a=m(this,F)[r];return(typeof m(a,ae)=="number"?`(${r})@${m(a,ae)}`:Vt.has(r)?`\\${r}`:r)+a.buildRegExpStr()});return typeof m(this,re)=="number"&&s.unshift(`#${m(this,re)}`),s.length===0?"":s.length===1?s[0]:"(?:"+s.join("|")+")"}},re=new WeakMap,ae=new WeakMap,F=new WeakMap,oe),Le,Se,et,Jt=(et=class{constructor(){y(this,Le,{varIndex:0});y(this,Se,new Xt)}insert(e,t,s){const r=[],a=[];for(let n=0;;){let o=!1;if(e=e.replace(/\{[^}]+\}/g,i=>{const c=`@\\${n}`;return a[n]=[c,i],n++,o=!0,c}),!o)break}const l=e.match(/(?::[^\/]+)|(?:\/\*$)|./g)||[];for(let n=a.length-1;n>=0;n--){const[o]=a[n];for(let i=l.length-1;i>=0;i--)if(l[i].indexOf(o)!==-1){l[i]=l[i].replace(o,a[n][1]);break}}return m(this,Se).insert(l,t,r,m(this,Le),s),r}buildRegExp(){let e=m(this,Se).buildRegExpStr();if(e==="")return[/^$/,[],[]];let t=0;const s=[],r=[];return e=e.replace(/#(\d+)|@(\d+)|\.\*\$/g,(a,l,n)=>l!==void 0?(s[++t]=Number(l),"$()"):(n!==void 0&&(r[Number(n)]=++t),"")),[new RegExp(`^${e}`),s,r]}},Le=new WeakMap,Se=new WeakMap,et),Kt=[/^$/,[],Object.create(null)],Re=Object.create(null);function vt(e){return Re[e]??(Re[e]=new RegExp(e==="*"?"":`^${e.replace(/\/\*$|([.\\+*[^\]$()])/g,(t,s)=>s?`\\${s}`:"(?:|/.*)")}$`))}function Zt(){Re=Object.create(null)}function Qt(e){var c;const t=new Jt,s=[];if(e.length===0)return Kt;const r=e.map(p=>[!/\*|\/:/.test(p[0]),...p]).sort(([p,u],[g,x])=>p?1:g?-1:u.length-x.length),a=Object.create(null);for(let p=0,u=-1,g=r.length;p<g;p++){const[x,b,w]=r[p];x?a[b]=[w.map(([E])=>[E,Object.create(null)]),bt]:u++;let v;try{v=t.insert(b,u,x)}catch(E){throw E===pe?new gt(b):E}x||(s[u]=w.map(([E,_])=>{const U=Object.create(null);for(_-=1;_>=0;_--){const[I,j]=v[_];U[I]=j}return[E,U]}))}const[l,n,o]=t.buildRegExp();for(let p=0,u=s.length;p<u;p++)for(let g=0,x=s[p].length;g<x;g++){const b=(c=s[p][g])==null?void 0:c[1];if(!b)continue;const w=Object.keys(b);for(let v=0,E=w.length;v<E;v++)b[w[v]]=o[b[w[v]]]}const i=[];for(const p in n)i[p]=s[n[p]];return[l,i,a]}function ie(e,t){if(e){for(const s of Object.keys(e).sort((r,a)=>a.length-r.length))if(vt(s).test(t))return[...e[s]]}}var J,K,Ne,ht,tt,es=(tt=class{constructor(){y(this,Ne);f(this,"name","RegExpRouter");y(this,J);y(this,K);f(this,"match",Yt);h(this,J,{[D]:Object.create(null)}),h(this,K,{[D]:Object.create(null)})}add(e,t,s){var o;const r=m(this,J),a=m(this,K);if(!r||!a)throw new Error(mt);r[e]||[r,a].forEach(i=>{i[e]=Object.create(null),Object.keys(i[D]).forEach(c=>{i[e][c]=[...i[D][c]]})}),t==="/*"&&(t="*");const l=(t.match(/\/:/g)||[]).length;if(/\*$/.test(t)){const i=vt(t);e===D?Object.keys(r).forEach(c=>{var p;(p=r[c])[t]||(p[t]=ie(r[c],t)||ie(r[D],t)||[])}):(o=r[e])[t]||(o[t]=ie(r[e],t)||ie(r[D],t)||[]),Object.keys(r).forEach(c=>{(e===D||e===c)&&Object.keys(r[c]).forEach(p=>{i.test(p)&&r[c][p].push([s,l])})}),Object.keys(a).forEach(c=>{(e===D||e===c)&&Object.keys(a[c]).forEach(p=>i.test(p)&&a[c][p].push([s,l]))});return}const n=nt(t)||[t];for(let i=0,c=n.length;i<c;i++){const p=n[i];Object.keys(a).forEach(u=>{var g;(e===D||e===u)&&((g=a[u])[p]||(g[p]=[...ie(r[u],p)||ie(r[D],p)||[]]),a[u][p].push([s,l-c+i+1]))})}}buildAllMatchers(){const e=Object.create(null);return Object.keys(m(this,K)).concat(Object.keys(m(this,J))).forEach(t=>{e[t]||(e[t]=k(this,Ne,ht).call(this,t))}),h(this,J,h(this,K,void 0)),Zt(),e}},J=new WeakMap,K=new WeakMap,Ne=new WeakSet,ht=function(e){const t=[];let s=e===D;return[m(this,J),m(this,K)].forEach(r=>{const a=r[e]?Object.keys(r[e]).map(l=>[l,r[e][l]]):[];a.length!==0?(s||(s=!0),t.push(...a)):e!==D&&t.push(...Object.keys(r[D]).map(l=>[l,r[D][l]]))}),s?Qt(t):null},tt),Z,z,st,ts=(st=class{constructor(e){f(this,"name","SmartRouter");y(this,Z,[]);y(this,z,[]);h(this,Z,e.routers)}add(e,t,s){if(!m(this,z))throw new Error(mt);m(this,z).push([e,t,s])}match(e,t){if(!m(this,z))throw new Error("Fatal error");const s=m(this,Z),r=m(this,z),a=s.length;let l=0,n;for(;l<a;l++){const o=s[l];try{for(let i=0,c=r.length;i<c;i++)o.add(...r[i]);n=o.match(e,t)}catch(i){if(i instanceof gt)continue;throw i}this.match=o.match.bind(o),h(this,Z,[o]),h(this,z,void 0);break}if(l===a)throw new Error("Fatal error");return this.name=`SmartRouter + ${this.activeRouter.name}`,n}get activeRouter(){if(m(this,z)||m(this,Z).length!==1)throw new Error("No active router has been determined yet.");return m(this,Z)[0]}},Z=new WeakMap,z=new WeakMap,st),fe=Object.create(null),Q,L,le,ve,R,W,te,he,ss=(he=class{constructor(t,s,r){y(this,W);y(this,Q);y(this,L);y(this,le);y(this,ve,0);y(this,R,fe);if(h(this,L,r||Object.create(null)),h(this,Q,[]),t&&s){const a=Object.create(null);a[t]={handler:s,possibleKeys:[],score:0},h(this,Q,[a])}h(this,le,[])}insert(t,s,r){h(this,ve,++Ye(this,ve)._);let a=this;const l=Ct(s),n=[];for(let o=0,i=l.length;o<i;o++){const c=l[o],p=l[o+1],u=Mt(c,p),g=Array.isArray(u)?u[0]:c;if(g in m(a,L)){a=m(a,L)[g],u&&n.push(u[1]);continue}m(a,L)[g]=new he,u&&(m(a,le).push(u),n.push(u[1])),a=m(a,L)[g]}return m(a,Q).push({[t]:{handler:r,possibleKeys:n.filter((o,i,c)=>c.indexOf(o)===i),score:m(this,ve)}}),a}search(t,s){var i;const r=[];h(this,R,fe);let l=[this];const n=at(s),o=[];for(let c=0,p=n.length;c<p;c++){const u=n[c],g=c===p-1,x=[];for(let b=0,w=l.length;b<w;b++){const v=l[b],E=m(v,L)[u];E&&(h(E,R,m(v,R)),g?(m(E,L)["*"]&&r.push(...k(this,W,te).call(this,m(E,L)["*"],t,m(v,R))),r.push(...k(this,W,te).call(this,E,t,m(v,R)))):x.push(E));for(let _=0,U=m(v,le).length;_<U;_++){const I=m(v,le)[_],j=m(v,R)===fe?{}:{...m(v,R)};if(I==="*"){const V=m(v,L)["*"];V&&(r.push(...k(this,W,te).call(this,V,t,m(v,R))),h(V,R,j),x.push(V));continue}const[A,M,T]=I;if(!u&&!(T instanceof RegExp))continue;const S=m(v,L)[A],wt=n.slice(c).join("/");if(T instanceof RegExp){const V=T.exec(wt);if(V){if(j[M]=V[0],r.push(...k(this,W,te).call(this,S,t,m(v,R),j)),Object.keys(m(S,L)).length){h(S,R,j);const Oe=((i=V[0].match(/\//))==null?void 0:i.length)??0;(o[Oe]||(o[Oe]=[])).push(S)}continue}}(T===!0||T.test(u))&&(j[M]=u,g?(r.push(...k(this,W,te).call(this,S,t,j,m(v,R))),m(S,L)["*"]&&r.push(...k(this,W,te).call(this,m(S,L)["*"],t,j,m(v,R)))):(h(S,R,j),x.push(S)))}}l=x.concat(o.shift()??[])}return r.length>1&&r.sort((c,p)=>c.score-p.score),[r.map(({handler:c,params:p})=>[c,p])]}},Q=new WeakMap,L=new WeakMap,le=new WeakMap,ve=new WeakMap,R=new WeakMap,W=new WeakSet,te=function(t,s,r,a){const l=[];for(let n=0,o=m(t,Q).length;n<o;n++){const i=m(t,Q)[n],c=i[s]||i[D],p={};if(c!==void 0&&(c.params=Object.create(null),l.push(c),r!==fe||a&&a!==fe))for(let u=0,g=c.possibleKeys.length;u<g;u++){const x=c.possibleKeys[u],b=p[c.score];c.params[x]=a!=null&&a[x]&&!b?a[x]:r[x]??(a==null?void 0:a[x]),p[c.score]=!0}}return l},he),ne,rt,rs=(rt=class{constructor(){f(this,"name","TrieRouter");y(this,ne);h(this,ne,new ss)}add(e,t,s){const r=nt(t);if(r){for(let a=0,l=r.length;a<l;a++)m(this,ne).insert(e,r[a],s);return}m(this,ne).insert(e,t,s)}match(e,t){return m(this,ne).search(e,t)}},ne=new WeakMap,rt),ze=class extends Wt{constructor(e={}){super(e),this.router=e.router??new ts({routers:[new es,new rs]})}},as=e=>{const s={...{origin:"*",allowMethods:["GET","HEAD","PUT","POST","DELETE","PATCH"],allowHeaders:[],exposeHeaders:[]},...e},r=(l=>typeof l=="string"?l==="*"?()=>l:n=>l===n?n:null:typeof l=="function"?l:n=>l.includes(n)?n:null)(s.origin),a=(l=>typeof l=="function"?l:Array.isArray(l)?()=>l:()=>[])(s.allowMethods);return async function(n,o){var p;function i(u,g){n.res.headers.set(u,g)}const c=await r(n.req.header("origin")||"",n);if(c&&i("Access-Control-Allow-Origin",c),s.credentials&&i("Access-Control-Allow-Credentials","true"),(p=s.exposeHeaders)!=null&&p.length&&i("Access-Control-Expose-Headers",s.exposeHeaders.join(",")),n.req.method==="OPTIONS"){s.origin!=="*"&&i("Vary","Origin"),s.maxAge!=null&&i("Access-Control-Max-Age",s.maxAge.toString());const u=await a(n.req.header("origin")||"",n);u.length&&i("Access-Control-Allow-Methods",u.join(","));let g=s.allowHeaders;if(!(g!=null&&g.length)){const x=n.req.header("Access-Control-Request-Headers");x&&(g=x.split(/\s*,\s*/))}return g!=null&&g.length&&(i("Access-Control-Allow-Headers",g.join(",")),n.res.headers.append("Vary","Access-Control-Request-Headers")),n.res.headers.delete("Content-Length"),n.res.headers.delete("Content-Type"),new Response(null,{headers:n.res.headers,status:204,statusText:"No Content"})}await o(),s.origin!=="*"&&n.header("Vary","Origin",{append:!0})}},ls=/^\s*(?:text\/(?!event-stream(?:[;\s]|$))[^;\s]+|application\/(?:javascript|json|xml|xml-dtd|ecmascript|dart|postscript|rtf|tar|toml|vnd\.dart|vnd\.ms-fontobject|vnd\.ms-opentype|wasm|x-httpd-php|x-javascript|x-ns-proxy-autoconfig|x-sh|x-tar|x-virtualbox-hdd|x-virtualbox-ova|x-virtualbox-ovf|x-virtualbox-vbox|x-virtualbox-vdi|x-virtualbox-vhd|x-virtualbox-vmdk|x-www-form-urlencoded)|font\/(?:otf|ttf)|image\/(?:bmp|vnd\.adobe\.photoshop|vnd\.microsoft\.icon|vnd\.ms-dds|x-icon|x-ms-bmp)|message\/rfc822|model\/gltf-binary|x-shader\/x-fragment|x-shader\/x-vertex|[^;\s]+?\+(?:json|text|xml|yaml))(?:[;\s]|$)/i,Je=(e,t=os)=>{const s=/\.([a-zA-Z0-9]+?)$/,r=e.match(s);if(!r)return;let a=t[r[1]];return a&&a.startsWith("text")&&(a+="; charset=utf-8"),a},ns={aac:"audio/aac",avi:"video/x-msvideo",avif:"image/avif",av1:"video/av1",bin:"application/octet-stream",bmp:"image/bmp",css:"text/css",csv:"text/csv",eot:"application/vnd.ms-fontobject",epub:"application/epub+zip",gif:"image/gif",gz:"application/gzip",htm:"text/html",html:"text/html",ico:"image/x-icon",ics:"text/calendar",jpeg:"image/jpeg",jpg:"image/jpeg",js:"text/javascript",json:"application/json",jsonld:"application/ld+json",map:"application/json",mid:"audio/x-midi",midi:"audio/x-midi",mjs:"text/javascript",mp3:"audio/mpeg",mp4:"video/mp4",mpeg:"video/mpeg",oga:"audio/ogg",ogv:"video/ogg",ogx:"application/ogg",opus:"audio/opus",otf:"font/otf",pdf:"application/pdf",png:"image/png",rtf:"application/rtf",svg:"image/svg+xml",tif:"image/tiff",tiff:"image/tiff",ts:"video/mp2t",ttf:"font/ttf",txt:"text/plain",wasm:"application/wasm",webm:"video/webm",weba:"audio/webm",webmanifest:"application/manifest+json",webp:"image/webp",woff:"font/woff",woff2:"font/woff2",xhtml:"application/xhtml+xml",xml:"application/xml",zip:"application/zip","3gp":"video/3gpp","3g2":"video/3gpp2",gltf:"model/gltf+json",glb:"model/gltf-binary"},os=ns,is=(...e)=>{let t=e.filter(a=>a!=="").join("/");t=t.replace(new RegExp("(?<=\\/)\\/+","g"),"");const s=t.split("/"),r=[];for(const a of s)a===".."&&r.length>0&&r.at(-1)!==".."?r.pop():a!=="."&&r.push(a);return r.join("/")||"."},ft={br:".br",zstd:".zst",gzip:".gz"},ds=Object.keys(ft),cs="index.html",ps=e=>{const t=e.root??"./",s=e.path,r=e.join??is;return async(a,l)=>{var p,u,g,x;if(a.finalized)return l();let n;if(e.path)n=e.path;else try{if(n=decodeURIComponent(a.req.path),/(?:^|[\/\\])\.\.(?:$|[\/\\])/.test(n))throw new Error}catch{return await((p=e.onNotFound)==null?void 0:p.call(e,a.req.path,a)),l()}let o=r(t,!s&&e.rewriteRequestPath?e.rewriteRequestPath(n):n);e.isDir&&await e.isDir(o)&&(o=r(o,cs));const i=e.getContent;let c=await i(o,a);if(c instanceof Response)return a.newResponse(c.body,c);if(c){const b=e.mimes&&Je(o,e.mimes)||Je(o);if(a.header("Content-Type",b||"application/octet-stream"),e.precompressed&&(!b||ls.test(b))){const w=new Set((u=a.req.header("Accept-Encoding"))==null?void 0:u.split(",").map(v=>v.trim()));for(const v of ds){if(!w.has(v))continue;const E=await i(o+ft[v],a);if(E){c=E,a.header("Content-Encoding",v),a.header("Vary","Accept-Encoding",{append:!0});break}}}return await((g=e.onFound)==null?void 0:g.call(e,o,a)),a.body(c)}await((x=e.onNotFound)==null?void 0:x.call(e,o,a)),await l()}},us=async(e,t)=>{let s;t&&t.manifest?typeof t.manifest=="string"?s=JSON.parse(t.manifest):s=t.manifest:typeof __STATIC_CONTENT_MANIFEST=="string"?s=JSON.parse(__STATIC_CONTENT_MANIFEST):s=__STATIC_CONTENT_MANIFEST;let r;t&&t.namespace?r=t.namespace:r=__STATIC_CONTENT;const a=s[e]||e;if(!a)return null;const l=await r.get(a,{type:"stream"});return l||null},ms=e=>async function(s,r){return ps({...e,getContent:async l=>us(l,{manifest:e.manifest,namespace:e.namespace?e.namespace:s.env?s.env.__STATIC_CONTENT:void 0})})(s,r)},gs=e=>ms(e);const B=new ze;B.get("/api/classes",async e=>{const{DB:t}=e.env,s=e.req.query("academyId")||"1";try{const r=await t.prepare(`
       SELECT c.*, COUNT(s.id) as student_count
       FROM classes c
       LEFT JOIN students s ON c.id = s.class_id
@@ -2125,10 +2125,10 @@ var Et=Object.defineProperty;var We=e=>{throw TypeError(e)};var kt=(e,t,s)=>t in
       `).bind(x,s).run(),e.json({success:!1,error:"인증된 발신번호를 찾을 수 없습니다."},404);const v=e.env.ALIGO_API_KEY||"4bbi3l27pb5qh11tkujl578bttz6vb5j",E=e.env.ALIGO_USER_ID||"wangholy";console.log("Aligo ENV Check:",{hasApiKey:!!e.env.ALIGO_API_KEY,hasUserId:!!e.env.ALIGO_USER_ID,apiKeyLength:(t=e.env.ALIGO_API_KEY)==null?void 0:t.length,userId:e.env.ALIGO_USER_ID});const _=new URLSearchParams;_.append("key",v),_.append("user_id",E),_.append("sender",w.phone_number),_.append("receiver",a.map(j=>j.phone).join(",")),_.append("msg",l),_.append("msg_type",c),n&&(_.append("rdate",n.split("T")[0].replace(/-/g,"")),_.append("rtime",n.split("T")[1].substring(0,5).replace(":","")));const I=await(await fetch("https://apis.aligo.in/send/",{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:_})).json();if(I.result_code==="1"){const j=await e.env.DB.prepare(`
         INSERT INTO sms_logs (user_id, sender_id, sender_number, receiver_number, message_type, message_content, byte_size, point_cost, status, alligo_response, alligo_msg_id, reserve_time, sent_at)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'success', ?, ?, ?, CURRENT_TIMESTAMP)
-      `).bind(s,r,w.phone_number,a.map($=>$.phone).join(","),c,l,i,g,JSON.stringify(I),I.msg_id||null,n||null).run();for(const $ of a){const M=l.replace(/#{이름}/g,$.name||"");await e.env.DB.prepare(`
+      `).bind(s,r,w.phone_number,a.map(A=>A.phone).join(","),c,l,i,g,JSON.stringify(I),I.msg_id||null,n||null).run();for(const A of a){const M=l.replace(/#{이름}/g,A.name||"");await e.env.DB.prepare(`
           INSERT INTO sms_recipients (sms_log_id, receiver_number, receiver_name, message_content, status, sent_at)
           VALUES (?, ?, ?, ?, 'success', CURRENT_TIMESTAMP)
-        `).bind(j.meta.last_row_id,$.phone,$.name||null,M).run()}return e.json({success:!0,message:"문자 발송이 완료되었습니다.",sentCount:a.length,totalCost:g,remainingBalance:b})}else return await e.env.DB.prepare(`
+        `).bind(j.meta.last_row_id,A.phone,A.name||null,M).run()}return e.json({success:!0,message:"문자 발송이 완료되었습니다.",sentCount:a.length,totalCost:g,remainingBalance:b})}else return await e.env.DB.prepare(`
         UPDATE users SET balance = ? WHERE id = ?
       `).bind(x,s).run(),await e.env.DB.prepare(`
         INSERT INTO point_transactions (user_id, transaction_type, amount, balance_before, balance_after, description)
@@ -2188,7 +2188,7 @@ var Et=Object.defineProperty;var We=e=>{throw TypeError(e)};var kt=(e,t,s)=>t in
     `).bind(b,t).run(),await e.env.DB.prepare(`
       INSERT INTO point_transactions (user_id, transaction_type, amount, balance_before, balance_after, description)
       VALUES (?, 'kakao_cost', ?, ?, ?, ?)
-    `).bind(t,-u,x,b,`카카오 알림톡 ${a.length}건 발송`).run(),console.log("Points deducted:",x,"->",b);try{const w=e.env.ALIGO_API_KEY,v=e.env.ALIGO_USER_ID;if(!w||!v)throw new Error("알리고 API 키가 설정되지 않았습니다.");const E=a.map(M=>{var T;return{rcv:M.phone.replace(/-/g,""),rcv_name:M.name||"",emtitle_1:((T=M.variables)==null?void 0:T.title)||"",message:i.template_content}}),_={apikey:w,userid:v,senderkey:s,tpl_code:r,sender:s,receiver_1:E[0].rcv,recvname_1:E[0].rcv_name,subject_1:E[0].emtitle_1,message_1:E[0].message,failover:l||"Y",fsubject_1:n||"카카오톡 알림",fmessage_1:n||i.template_content};if(o){const M=new Date(o);_.rdate=M.toISOString().split("T")[0].replace(/-/g,""),_.rtime=M.toTimeString().split(" ")[0].replace(/:/g,"").substring(0,4)}const I=await(await fetch("https://kakaoapi.aligo.in/akv10/alimtalk/send/",{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams(_)})).json();console.log("Aligo kakao response:",I);const $=(await e.env.DB.prepare(`
+    `).bind(t,-u,x,b,`카카오 알림톡 ${a.length}건 발송`).run(),console.log("Points deducted:",x,"->",b);try{const w=e.env.ALIGO_API_KEY,v=e.env.ALIGO_USER_ID;if(!w||!v)throw new Error("알리고 API 키가 설정되지 않았습니다.");const E=a.map(M=>{var T;return{rcv:M.phone.replace(/-/g,""),rcv_name:M.name||"",emtitle_1:((T=M.variables)==null?void 0:T.title)||"",message:i.template_content}}),_={apikey:w,userid:v,senderkey:s,tpl_code:r,sender:s,receiver_1:E[0].rcv,recvname_1:E[0].rcv_name,subject_1:E[0].emtitle_1,message_1:E[0].message,failover:l||"Y",fsubject_1:n||"카카오톡 알림",fmessage_1:n||i.template_content};if(o){const M=new Date(o);_.rdate=M.toISOString().split("T")[0].replace(/-/g,""),_.rtime=M.toTimeString().split(" ")[0].replace(/:/g,"").substring(0,4)}const I=await(await fetch("https://kakaoapi.aligo.in/akv10/alimtalk/send/",{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams(_)})).json();console.log("Aligo kakao response:",I);const A=(await e.env.DB.prepare(`
         INSERT INTO kakao_logs (
           user_id, sender_key, template_code, receiver_phone, receiver_name, 
           message, buttons_json, fail_over, fail_over_sms, 
@@ -2198,7 +2198,7 @@ var Et=Object.defineProperty;var We=e=>{throw TypeError(e)};var kt=(e,t,s)=>t in
           INSERT INTO kakao_recipients (
             kakao_log_id, receiver_phone, receiver_name, status, sent_at
           ) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
-        `).bind($,M.phone,M.name,I.result_code===1?"success":"pending").run();return I.result_code===1?e.json({success:!0,message:`카카오 알림톡 ${a.length}건이 발송되었습니다.`,balance:b,cost:u,msgId:I.msg_id}):(await e.env.DB.prepare(`
+        `).bind(A,M.phone,M.name,I.result_code===1?"success":"pending").run();return I.result_code===1?e.json({success:!0,message:`카카오 알림톡 ${a.length}건이 발송되었습니다.`,balance:b,cost:u,msgId:I.msg_id}):(await e.env.DB.prepare(`
           UPDATE users SET balance = ? WHERE id = ?
         `).bind(x,t).run(),await e.env.DB.prepare(`
           INSERT INTO point_transactions (user_id, transaction_type, amount, balance_before, balance_after, description)
@@ -10736,7 +10736,7 @@ ${t?t.split(",").map(l=>l.trim()).join(", "):e}과 관련해서 체계적인 커
       AND strftime('%Y-%m', counseling_date) = ?
       ORDER BY counseling_date DESC
       LIMIT 3
-    `).bind(r,a).all(),c=o.reduce((T,S)=>T+(S.count||0),0),p=((t=o.find(T=>T.status==="present"))==null?void 0:t.count)||0,u=c>0?(p/c*100).toFixed(1):0,g=n.length>0?(n.reduce((T,S)=>T+S.score/S.max_score*100,0)/n.length).toFixed(1):0;let x="양호";u>=95&&g>=85?x="매우 우수":u>=90&&g>=80?x="우수":(u<85||g<70)&&(x="개선 필요");const b=n.length>0?n.reduce((T,S)=>S.score/S.max_score>T.score/T.max_score?S:T):null,w=b?b.subject+" 과목에서 "+(b.score/b.max_score*100).toFixed(1)+"점으로 우수한 성적을 보였습니다. 꾸준한 노력이 돋보입니다.":"기본기가 탄탄하며, 수업 참여도가 높습니다.",v=n.length>0?n.reduce((T,S)=>S.score/S.max_score<T.score/T.max_score?S:T):null,E=v&&v.score/v.max_score*100<75?v.subject+" 과목에서 "+(v.score/v.max_score*100).toFixed(1)+"점으로 보완이 필요합니다.":"전반적으로 균형잡힌 학습을 하고 있습니다.",_=u<90?"출석률 개선이 필요합니다. 규칙적인 수업 참여가 성적 향상의 기본입니다.":g<80?"기본 개념 복습에 더 많은 시간을 투자하면 좋겠습니다.":"현재 학습 패턴을 유지하면서 심화 학습으로 나아가면 좋겠습니다.",U=g>=85?"상위권 유지를 위해 심화 문제 풀이를 추천합니다. 경시대회 준비도 고려해볼 만합니다.":g>=75?"기본기 강화와 함께 문제 풀이 속도를 높이는 연습이 필요합니다.":"개념 이해를 위한 1:1 보충 수업을 추천합니다. 기초부터 차근차근 다져가면 충분히 성적이 오를 수 있습니다.",I=g>=85?"현재 평균 "+g+"점 수준을 유지하면서, "+((v==null?void 0:v.subject)||"취약 과목")+"에서 5점 이상 향상 목표":"평균 점수 "+g+"점에서 "+Math.min(100,parseFloat(g)+10).toFixed(0)+"점으로 향상, 출석률 "+u+"%에서 95% 이상 달성",j="["+l.name+"] 학생은 이번 달 평균 "+g+"점의 성적을 기록했으며, 출석률은 "+u+"%입니다. "+(x==="매우 우수"||x==="우수"?"전반적으로 성실하게 학업에 임하고 있으며, 지속적인 성장이 기대됩니다.":"학습 태도와 출석 관리에 더 많은 관심이 필요합니다.")+(b?" 특히 "+b.subject+" 과목에서 강점을 보이고 있습니다.":"")+" 꾸준한 노력으로 더욱 발전할 수 있습니다.",$=`학부모님, 안녕하세요.
+    `).bind(r,a).all(),c=o.reduce((T,S)=>T+(S.count||0),0),p=((t=o.find(T=>T.status==="present"))==null?void 0:t.count)||0,u=c>0?(p/c*100).toFixed(1):0,g=n.length>0?(n.reduce((T,S)=>T+S.score/S.max_score*100,0)/n.length).toFixed(1):0;let x="양호";u>=95&&g>=85?x="매우 우수":u>=90&&g>=80?x="우수":(u<85||g<70)&&(x="개선 필요");const b=n.length>0?n.reduce((T,S)=>S.score/S.max_score>T.score/T.max_score?S:T):null,w=b?b.subject+" 과목에서 "+(b.score/b.max_score*100).toFixed(1)+"점으로 우수한 성적을 보였습니다. 꾸준한 노력이 돋보입니다.":"기본기가 탄탄하며, 수업 참여도가 높습니다.",v=n.length>0?n.reduce((T,S)=>S.score/S.max_score<T.score/T.max_score?S:T):null,E=v&&v.score/v.max_score*100<75?v.subject+" 과목에서 "+(v.score/v.max_score*100).toFixed(1)+"점으로 보완이 필요합니다.":"전반적으로 균형잡힌 학습을 하고 있습니다.",_=u<90?"출석률 개선이 필요합니다. 규칙적인 수업 참여가 성적 향상의 기본입니다.":g<80?"기본 개념 복습에 더 많은 시간을 투자하면 좋겠습니다.":"현재 학습 패턴을 유지하면서 심화 학습으로 나아가면 좋겠습니다.",U=g>=85?"상위권 유지를 위해 심화 문제 풀이를 추천합니다. 경시대회 준비도 고려해볼 만합니다.":g>=75?"기본기 강화와 함께 문제 풀이 속도를 높이는 연습이 필요합니다.":"개념 이해를 위한 1:1 보충 수업을 추천합니다. 기초부터 차근차근 다져가면 충분히 성적이 오를 수 있습니다.",I=g>=85?"현재 평균 "+g+"점 수준을 유지하면서, "+((v==null?void 0:v.subject)||"취약 과목")+"에서 5점 이상 향상 목표":"평균 점수 "+g+"점에서 "+Math.min(100,parseFloat(g)+10).toFixed(0)+"점으로 향상, 출석률 "+u+"%에서 95% 이상 달성",j="["+l.name+"] 학생은 이번 달 평균 "+g+"점의 성적을 기록했으며, 출석률은 "+u+"%입니다. "+(x==="매우 우수"||x==="우수"?"전반적으로 성실하게 학업에 임하고 있으며, 지속적인 성장이 기대됩니다.":"학습 태도와 출석 관리에 더 많은 관심이 필요합니다.")+(b?" 특히 "+b.subject+" 과목에서 강점을 보이고 있습니다.":"")+" 꾸준한 노력으로 더욱 발전할 수 있습니다.",A=`학부모님, 안녕하세요.
 
 ${l.name} 학생의 ${a} 학습 분석 리포트를 전달드립니다.
 
@@ -10763,7 +10763,7 @@ ${U}
       INSERT INTO learning_reports 
       (student_id, report_month, overall_score, study_attitude, strengths, weaknesses, improvements, recommendations, next_month_goals, ai_analysis, parent_message)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).bind(r,a,g,x,w,E,_,U,I,j,$).run();return e.json({success:!0,message:"AI 학습 분석 리포트가 생성되었습니다.",report_id:M.meta.last_row_id,preview:{overall_score:g,attendance_rate:u,study_attitude:x}})}catch(r){return console.error("Generate learning report error:",r),e.json({success:!1,error:"AI 리포트 생성 실패"},500)}});d.get("/api/learning-reports/detail/:report_id",async e=>{try{const t=e.req.param("report_id"),s=await e.env.DB.prepare(`
+    `).bind(r,a,g,x,w,E,_,U,I,j,A).run();return e.json({success:!0,message:"AI 학습 분석 리포트가 생성되었습니다.",report_id:M.meta.last_row_id,preview:{overall_score:g,attendance_rate:u,study_attitude:x}})}catch(r){return console.error("Generate learning report error:",r),e.json({success:!1,error:"AI 리포트 생성 실패"},500)}});d.get("/api/learning-reports/detail/:report_id",async e=>{try{const t=e.req.param("report_id"),s=await e.env.DB.prepare(`
       SELECT lr.*, s.name as student_name, s.parent_name, s.parent_phone
       FROM learning_reports lr
       JOIN students s ON lr.student_id = s.id
@@ -14894,6 +14894,8 @@ ${U}
       `).run(),console.log("[Migration] user_type column added")}catch{}try{await e.env.DB.prepare(`
         ALTER TABLE users ADD COLUMN parent_user_id INTEGER
       `).run(),console.log("[Migration] parent_user_id column added")}catch{}try{await e.env.DB.prepare(`
+        ALTER TABLE users ADD COLUMN assigned_class TEXT
+      `).run(),console.log("[Migration] assigned_class column added")}catch{}try{await e.env.DB.prepare(`
         CREATE TABLE IF NOT EXISTS teacher_applications (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           email TEXT NOT NULL,
@@ -14965,17 +14967,17 @@ ${o.director_name} 원장님의 승인을 기다려주세요.`,directorName:o.di
       SET status = 'rejected', processed_at = datetime('now'), 
           processed_by = ?, reject_reason = ?
       WHERE id = ?
-    `).bind(s,r||"원장님에 의해 거부됨",t).run(),e.json({success:!0,message:`${a.name} 선생님의 등록 신청이 거부되었습니다.`})):e.json({success:!1,error:"신청을 찾을 수 없거나 이미 처리되었습니다."},404)}catch(t){return console.error("Reject application error:",t),e.json({success:!1,error:"거부 처리 중 오류가 발생했습니다."},500)}});d.post("/api/teachers/add",async e=>{try{const{name:t,email:s,phone:r,password:a,directorId:l}=await e.req.json();if(!l||!t||!s||!a)return e.json({success:!1,error:"필수 정보를 모두 입력해주세요."},400);const n=await e.env.DB.prepare("SELECT id, academy_name, email FROM users WHERE id = ?").bind(l).first();if(!n)return e.json({success:!1,error:"원장님 정보를 찾을 수 없습니다."},404);const o=await e.env.DB.prepare("SELECT id, name, user_type, parent_user_id FROM users WHERE email = ?").bind(s).first();let i;return o?(console.log("[AddTeacher] Existing user found, connecting to academy:",o),o.parent_user_id===parseInt(l)?e.json({success:!1,error:"이미 이 학원의 선생님입니다."},400):(i=o.id,await e.env.DB.prepare(`
+    `).bind(s,r||"원장님에 의해 거부됨",t).run(),e.json({success:!0,message:`${a.name} 선생님의 등록 신청이 거부되었습니다.`})):e.json({success:!1,error:"신청을 찾을 수 없거나 이미 처리되었습니다."},404)}catch(t){return console.error("Reject application error:",t),e.json({success:!1,error:"거부 처리 중 오류가 발생했습니다."},500)}});d.post("/api/teachers/add",async e=>{try{const{name:t,email:s,phone:r,assigned_class:a,user_id:l,directorId:n,password:o}=await e.req.json(),i=l||n;if(!i||!t||!s)return e.json({success:!1,error:"필수 정보를 모두 입력해주세요."},400);const c=await e.env.DB.prepare("SELECT id, academy_name, email FROM users WHERE id = ?").bind(i).first();if(!c)return e.json({success:!1,error:"원장님 정보를 찾을 수 없습니다."},404);const p=await e.env.DB.prepare("SELECT id, name, user_type, parent_user_id FROM users WHERE email = ?").bind(s).first();let u;if(p)return console.log("[AddTeacher] Existing user found, connecting to academy:",p),p.parent_user_id===parseInt(i)?e.json({success:!1,error:"이미 이 학원의 선생님입니다."},400):(u=p.id,await e.env.DB.prepare(`
         UPDATE users 
-        SET parent_user_id = ?, academy_name = ?, user_type = 'teacher', updated_at = datetime('now')
+        SET parent_user_id = ?, academy_name = ?, user_type = 'teacher', assigned_class = ?, updated_at = datetime('now')
         WHERE id = ?
-      `).bind(l,n.academy_name,o.id).run(),e.json({success:!0,teacherId:i,message:`${o.name||t} 선생님이 이 학원에 연결되었습니다.`,isExistingUser:!0}))):(i=(await e.env.DB.prepare(`
+      `).bind(i,c.academy_name,a||null,p.id).run(),e.json({success:!0,teacherId:u,message:`${p.name||t} 선생님이 이 학원에 연결되었습니다.`,isExistingUser:!0}));const g=o||"teacher123";return u=(await e.env.DB.prepare(`
       INSERT INTO users (
         email, password, name, phone, role, user_type, 
-        parent_user_id, academy_name, created_at
+        parent_user_id, academy_name, assigned_class, created_at
       )
-      VALUES (?, ?, ?, ?, 'user', 'teacher', ?, ?, datetime('now'))
-    `).bind(s,a,t,r||null,l,n.academy_name).run()).meta.last_row_id,e.json({success:!0,teacherId:i,message:`${t} 선생님이 추가되었습니다.`,isExistingUser:!1}))}catch(t){return console.error("Add teacher error:",t),e.json({success:!1,error:"선생님 추가 중 오류가 발생했습니다.",details:t.message},500)}});d.get("/api/teachers/verification-code",async e=>{try{const t=e.req.query("directorId");if(!t)return e.json({success:!1,error:"원장님 ID가 필요합니다."},400);console.log("[VerificationCode] GET request for directorId:",t);try{await e.env.DB.prepare(`
+      VALUES (?, ?, ?, ?, 'user', 'teacher', ?, ?, ?, datetime('now'))
+    `).bind(s,g,t,r||null,i,c.academy_name,a||null).run()).meta.last_row_id,e.json({success:!0,teacherId:u,message:`${t} 선생님이 추가되었습니다.`,isExistingUser:!1})}catch(t){return console.error("Add teacher error:",t),e.json({success:!1,error:"선생님 추가 중 오류가 발생했습니다.",details:t.message},500)}});d.get("/api/teachers/verification-code",async e=>{try{const t=e.req.query("directorId");if(!t)return e.json({success:!1,error:"원장님 ID가 필요합니다."},400);console.log("[VerificationCode] GET request for directorId:",t);try{await e.env.DB.prepare(`
         CREATE TABLE IF NOT EXISTS academy_verification_codes (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           user_id INTEGER NOT NULL,
@@ -15003,7 +15005,27 @@ ${o.director_name} 원장님의 승인을 기다려주세요.`,directorName:o.di
       FROM users 
       WHERE parent_user_id = ? AND user_type = 'teacher'
       ORDER BY created_at DESC
-    `).bind(t).all();return e.json({success:!0,teachers:s.results||[]})}catch(t){return console.error("[TeachersList] Error:",t),console.error("[TeachersList] Error message:",t.message),console.error("[TeachersList] Error stack:",t.stack),e.json({success:!1,error:"선생님 목록 조회 중 오류가 발생했습니다.",details:t.message},500)}});d.get("/api/teachers/:id/permissions",async e=>{try{const t=e.req.param("id"),s=e.req.query("directorId");if(!s)return e.json({success:!1,error:"원장님 ID가 필요합니다."},400);const r=await e.env.DB.prepare("SELECT id, name, email, permissions FROM users WHERE id = ? AND parent_user_id = ?").bind(t,s).first();if(!r)return e.json({success:!1,error:"선생님을 찾을 수 없습니다."},404);let a={canViewAllStudents:!1,canEditAllStudents:!1,canWriteDailyReports:!1,assignedClasses:[]};if(r.permissions)try{a=JSON.parse(r.permissions)}catch(l){console.error("Failed to parse permissions:",l)}return e.json({success:!0,teacher:{id:r.id,name:r.name,email:r.email},permissions:a})}catch(t){return console.error("[GetPermissions] Error:",t),e.json({success:!1,error:"권한 조회 중 오류가 발생했습니다.",details:t.message},500)}});d.post("/api/teachers/:id/permissions",async e=>{try{const t=e.req.param("id"),{directorId:s,permissions:r}=await e.req.json();if(!s)return e.json({success:!1,error:"원장님 ID가 필요합니다."},400);if(!await e.env.DB.prepare("SELECT id FROM users WHERE id = ? AND parent_user_id = ?").bind(t,s).first())return e.json({success:!1,error:"선생님을 찾을 수 없습니다."},404);try{await e.env.DB.prepare(`
+    `).bind(t).all();return e.json({success:!0,teachers:s.results||[]})}catch(t){return console.error("[TeachersList] Error:",t),console.error("[TeachersList] Error message:",t.message),console.error("[TeachersList] Error stack:",t.stack),e.json({success:!1,error:"선생님 목록 조회 중 오류가 발생했습니다.",details:t.message},500)}});d.get("/api/teachers",async e=>{try{const t=e.req.query("userId");if(!t)return e.json({success:!1,error:"userId가 필요합니다."},400);const s=await e.env.DB.prepare(`
+      SELECT 
+        id, 
+        email, 
+        name, 
+        phone, 
+        assigned_class,
+        (SELECT COUNT(*) FROM students WHERE teacher_id = users.id) as student_count,
+        created_at
+      FROM users 
+      WHERE parent_user_id = ? AND user_type = 'teacher'
+      ORDER BY created_at DESC
+    `).bind(t).all();return e.json({success:!0,teachers:s.results||[]})}catch(t){return console.error("[Teachers] Error:",t),e.json({success:!1,error:"선생님 목록 조회 중 오류가 발생했습니다.",details:t.message},500)}});d.post("/api/teachers/:id/assign-class",async e=>{try{const t=e.req.param("id"),{assigned_class:s}=await e.req.json();return!t||!s?e.json({success:!1,error:"필수 정보가 누락되었습니다."},400):(await e.env.DB.prepare(`
+      UPDATE users 
+      SET assigned_class = ?, updated_at = datetime('now')
+      WHERE id = ? AND user_type = 'teacher'
+    `).bind(s,t).run(),e.json({success:!0,message:"반 배정이 완료되었습니다."}))}catch(t){return console.error("[AssignClass] Error:",t),e.json({success:!1,error:"반 배정 중 오류가 발생했습니다.",details:t.message},500)}});d.delete("/api/teachers/:id",async e=>{try{const t=e.req.param("id");return t?(await e.env.DB.prepare(`
+      UPDATE users 
+      SET parent_user_id = NULL, user_type = 'user', assigned_class = NULL, updated_at = datetime('now')
+      WHERE id = ? AND user_type = 'teacher'
+    `).bind(t).run(),e.json({success:!0,message:"선생님이 삭제되었습니다."})):e.json({success:!1,error:"선생님 ID가 필요합니다."},400)}catch(t){return console.error("[DeleteTeacher] Error:",t),e.json({success:!1,error:"선생님 삭제 중 오류가 발생했습니다.",details:t.message},500)}});d.get("/api/teachers/:id/permissions",async e=>{try{const t=e.req.param("id"),s=e.req.query("directorId");if(!s)return e.json({success:!1,error:"원장님 ID가 필요합니다."},400);const r=await e.env.DB.prepare("SELECT id, name, email, permissions FROM users WHERE id = ? AND parent_user_id = ?").bind(t,s).first();if(!r)return e.json({success:!1,error:"선생님을 찾을 수 없습니다."},404);let a={canViewAllStudents:!1,canEditAllStudents:!1,canWriteDailyReports:!1,assignedClasses:[]};if(r.permissions)try{a=JSON.parse(r.permissions)}catch(l){console.error("Failed to parse permissions:",l)}return e.json({success:!0,teacher:{id:r.id,name:r.name,email:r.email},permissions:a})}catch(t){return console.error("[GetPermissions] Error:",t),e.json({success:!1,error:"권한 조회 중 오류가 발생했습니다.",details:t.message},500)}});d.post("/api/teachers/:id/permissions",async e=>{try{const t=e.req.param("id"),{directorId:s,permissions:r}=await e.req.json();if(!s)return e.json({success:!1,error:"원장님 ID가 필요합니다."},400);if(!await e.env.DB.prepare("SELECT id FROM users WHERE id = ? AND parent_user_id = ?").bind(t,s).first())return e.json({success:!1,error:"선생님을 찾을 수 없습니다."},404);try{await e.env.DB.prepare(`
         UPDATE users 
         SET permissions = ?
         WHERE id = ?
@@ -19368,6 +19390,387 @@ ${o.director_name} 원장님의 승인을 기다려주세요.`,directorName:o.di
         <\/script>
     </body>
     </html>
+  `));d.get("/teachers",e=>e.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>선생님 관리 - 슈퍼플레이스</title>
+        <script src="https://cdn.tailwindcss.com"><\/script>
+        <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+        <style>
+            @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
+            * { font-family: 'Pretendard Variable', sans-serif; }
+        </style>
+    </head>
+    <body class="bg-gray-50">
+        <!-- 네비게이션 -->
+        <nav class="bg-white shadow-sm border-b">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between h-16">
+                    <div class="flex items-center">
+                        <h1 class="text-xl font-bold text-gray-900">👨‍🏫 선생님 관리</h1>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <a href="/dashboard" class="text-gray-600 hover:text-gray-900">
+                            <i class="fas fa-home mr-2"></i>대시보드
+                        </a>
+                        <a href="/students" class="text-gray-600 hover:text-gray-900">
+                            <i class="fas fa-user-graduate mr-2"></i>학생 관리
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- 메인 컨텐츠 -->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            
+            <!-- 통계 카드 -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-600 mb-1">전체 선생님</p>
+                            <p class="text-3xl font-bold text-gray-900" id="totalTeachers">0</p>
+                        </div>
+                        <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-chalkboard-teacher text-green-600 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-600 mb-1">반 배정 완료</p>
+                            <p class="text-3xl font-bold text-gray-900" id="assignedTeachers">0</p>
+                        </div>
+                        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-check-circle text-blue-600 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-600 mb-1">미배정</p>
+                            <p class="text-3xl font-bold text-gray-900" id="unassignedTeachers">0</p>
+                        </div>
+                        <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-exclamation-circle text-yellow-600 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 선생님 추가 버튼 -->
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-900">선생님 목록</h2>
+                <button onclick="openAddTeacherModal()" class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition font-medium flex items-center space-x-2">
+                    <i class="fas fa-plus"></i>
+                    <span>선생님 추가</span>
+                </button>
+            </div>
+
+            <!-- 선생님 목록 테이블 -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <table class="w-full">
+                    <thead class="bg-gray-50 border-b border-gray-200">
+                        <tr>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">이름</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">이메일</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">전화번호</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">담당 반</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">학생 수</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">관리</th>
+                        </tr>
+                    </thead>
+                    <tbody id="teachersList" class="divide-y divide-gray-200">
+                        <tr>
+                            <td colspan="6" class="px-6 py-12 text-center text-gray-500">
+                                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto mb-4"></div>
+                                로딩 중...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 선생님 추가 모달 -->
+        <div id="addTeacherModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 overflow-y-auto">
+            <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 my-8 max-h-[90vh] overflow-y-auto">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-2xl font-bold text-gray-900">👨‍🏫 선생님 추가</h3>
+                    <button onclick="closeAddTeacherModal()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">이름 *</label>
+                        <input type="text" id="teacherName" placeholder="홍길동" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">이메일 *</label>
+                        <input type="email" id="teacherEmail" placeholder="teacher@example.com" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">전화번호</label>
+                        <input type="tel" id="teacherPhone" placeholder="010-1234-5678" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">담당 반</label>
+                        <input type="text" id="teacherClass" placeholder="예: 초등 3학년 A반" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                    </div>
+
+                    <div class="flex gap-3 pt-4">
+                        <button onclick="closeAddTeacherModal()" class="flex-1 px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 font-medium">
+                            취소
+                        </button>
+                        <button onclick="submitAddTeacher()" class="flex-1 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium">
+                            추가하기
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 반 배정 모달 -->
+        <div id="assignClassModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 overflow-y-auto">
+            <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 my-8">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-2xl font-bold text-gray-900">📚 반 배정</h3>
+                    <button onclick="closeAssignClassModal()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+
+                <div class="mb-4">
+                    <p class="text-gray-600">선생님: <span id="assignTeacherName" class="font-bold text-gray-900"></span></p>
+                </div>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">담당 반 *</label>
+                        <input type="text" id="assignClassName" placeholder="예: 초등 3학년 A반" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        <p class="text-xs text-gray-500 mt-1">학년과 반 정보를 입력하세요</p>
+                    </div>
+
+                    <div class="flex gap-3 pt-4">
+                        <button onclick="closeAssignClassModal()" class="flex-1 px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 font-medium">
+                            취소
+                        </button>
+                        <button onclick="submitAssignClass()" class="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">
+                            배정하기
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            let currentTeacherId = null;
+
+            // 페이지 로드 시 데이터 로드
+            window.addEventListener('DOMContentLoaded', () => {
+                loadTeachers();
+            });
+
+            async function loadTeachers() {
+                const user = JSON.parse(localStorage.getItem('user'));
+                if (!user || !user.id) {
+                    alert('로그인이 필요합니다.');
+                    window.location.href = '/';
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/api/teachers?userId=' + user.id);
+                    const data = await response.json();
+
+                    const teachersList = document.getElementById('teachersList');
+                    
+                    if (!data.success || !data.teachers || data.teachers.length === 0) {
+                        teachersList.innerHTML = '<tr><td colspan="6" class="px-6 py-12 text-center text-gray-500"><i class="fas fa-inbox text-4xl text-gray-300 mb-4"></i><div>등록된 선생님이 없습니다</div></td></tr>';
+                        updateStats(0, 0, 0);
+                        return;
+                    }
+
+                    let assignedCount = 0;
+                    let unassignedCount = 0;
+
+                    teachersList.innerHTML = data.teachers.map(teacher => {
+                        const hasClass = teacher.assigned_class && teacher.assigned_class.trim() !== '';
+                        if (hasClass) assignedCount++;
+                        else unassignedCount++;
+
+                        return '<tr class="hover:bg-gray-50">' +
+                            '<td class="px-6 py-4"><span class="font-medium text-gray-900">' + (teacher.name || '-') + '</span></td>' +
+                            '<td class="px-6 py-4"><span class="text-gray-600">' + (teacher.email || '-') + '</span></td>' +
+                            '<td class="px-6 py-4"><span class="text-gray-600">' + (teacher.phone || '-') + '</span></td>' +
+                            '<td class="px-6 py-4">' + 
+                                (hasClass 
+                                    ? '<span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">' + teacher.assigned_class + '</span>'
+                                    : '<span class="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm">미배정</span>'
+                                ) +
+                            '</td>' +
+                            '<td class="px-6 py-4"><span class="text-gray-900 font-medium">' + (teacher.student_count || 0) + '명</span></td>' +
+                            '<td class="px-6 py-4">' +
+                                '<div class="flex gap-2">' +
+                                    '<button onclick="openAssignClass(' + teacher.id + ', '' + (teacher.name || '').replace(/'/g, "\\'") + '', '' + (teacher.assigned_class || '').replace(/'/g, "\\'") + '')" class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm">' +
+                                        '<i class="fas fa-edit mr-1"></i>반 배정' +
+                                    '</button>' +
+                                    '<button onclick="deleteTeacher(' + teacher.id + ', '' + (teacher.name || '').replace(/'/g, "\\'") + '')" class="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-sm">' +
+                                        '<i class="fas fa-trash mr-1"></i>삭제' +
+                                    '</button>' +
+                                '</div>' +
+                            '</td>' +
+                        '</tr>';
+                    }).join('');
+
+                    updateStats(data.teachers.length, assignedCount, unassignedCount);
+                } catch (error) {
+                    console.error('선생님 목록 로드 실패:', error);
+                    document.getElementById('teachersList').innerHTML = 
+                        '<tr><td colspan="6" class="px-6 py-12 text-center text-red-500">데이터를 불러오는데 실패했습니다</td></tr>';
+                }
+            }
+
+            function updateStats(total, assigned, unassigned) {
+                document.getElementById('totalTeachers').textContent = total;
+                document.getElementById('assignedTeachers').textContent = assigned;
+                document.getElementById('unassignedTeachers').textContent = unassigned;
+            }
+
+            function openAddTeacherModal() {
+                document.getElementById('addTeacherModal').classList.remove('hidden');
+            }
+
+            function closeAddTeacherModal() {
+                document.getElementById('addTeacherModal').classList.add('hidden');
+                document.getElementById('teacherName').value = '';
+                document.getElementById('teacherEmail').value = '';
+                document.getElementById('teacherPhone').value = '';
+                document.getElementById('teacherClass').value = '';
+            }
+
+            async function submitAddTeacher() {
+                const name = document.getElementById('teacherName').value.trim();
+                const email = document.getElementById('teacherEmail').value.trim();
+                const phone = document.getElementById('teacherPhone').value.trim();
+                const assignedClass = document.getElementById('teacherClass').value.trim();
+
+                if (!name || !email) {
+                    alert('이름과 이메일은 필수 항목입니다.');
+                    return;
+                }
+
+                const user = JSON.parse(localStorage.getItem('user'));
+
+                try {
+                    const response = await fetch('/api/teachers/add', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            name,
+                            email,
+                            phone,
+                            assigned_class: assignedClass,
+                            user_id: user.id
+                        })
+                    });
+
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        alert('선생님이 추가되었습니다!');
+                        closeAddTeacherModal();
+                        loadTeachers();
+                    } else {
+                        alert('오류: ' + (data.error || '선생님 추가 실패'));
+                    }
+                } catch (error) {
+                    console.error('선생님 추가 오류:', error);
+                    alert('선생님 추가 중 오류가 발생했습니다.');
+                }
+            }
+
+            function openAssignClass(teacherId, teacherName, currentClass) {
+                currentTeacherId = teacherId;
+                document.getElementById('assignTeacherName').textContent = teacherName;
+                document.getElementById('assignClassName').value = currentClass || '';
+                document.getElementById('assignClassModal').classList.remove('hidden');
+            }
+
+            function closeAssignClassModal() {
+                document.getElementById('assignClassModal').classList.add('hidden');
+                currentTeacherId = null;
+            }
+
+            async function submitAssignClass() {
+                const className = document.getElementById('assignClassName').value.trim();
+
+                if (!className) {
+                    alert('반 이름을 입력하세요.');
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/api/teachers/' + currentTeacherId + '/assign-class', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ assigned_class: className })
+                    });
+
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        alert('반 배정이 완료되었습니다!');
+                        closeAssignClassModal();
+                        loadTeachers();
+                    } else {
+                        alert('오류: ' + (data.error || '반 배정 실패'));
+                    }
+                } catch (error) {
+                    console.error('반 배정 오류:', error);
+                    alert('반 배정 중 오류가 발생했습니다.');
+                }
+            }
+
+            async function deleteTeacher(teacherId, teacherName) {
+                if (!confirm(teacherName + ' 선생님을 삭제하시겠습니까?')) {
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/api/teachers/' + teacherId, {
+                        method: 'DELETE'
+                    });
+
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        alert('선생님이 삭제되었습니다.');
+                        loadTeachers();
+                    } else {
+                        alert('오류: ' + (data.error || '삭제 실패'));
+                    }
+                } catch (error) {
+                    console.error('선생님 삭제 오류:', error);
+                    alert('삭제 중 오류가 발생했습니다.');
+                }
+            }
+        <\/script>
+    </body>
+    </html>
   `));d.get("/students",e=>e.html(`
     <!DOCTYPE html>
     <html lang="ko">
@@ -20222,4 +20625,3 @@ ${o.director_name} 원장님의 승인을 기다려주세요.`,directorName:o.di
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )
     `).run(),await t.prepare("CREATE INDEX IF NOT EXISTS idx_students_academy_id ON students(academy_id)").run(),await t.prepare("CREATE INDEX IF NOT EXISTS idx_classes_academy_id ON classes(academy_id)").run(),await t.prepare("CREATE INDEX IF NOT EXISTS idx_courses_academy_id ON courses(academy_id)").run(),await t.prepare("CREATE INDEX IF NOT EXISTS idx_students_class_id ON students(class_id)").run(),await t.prepare("CREATE INDEX IF NOT EXISTS idx_daily_records_student_id ON daily_records(student_id)").run(),await t.prepare("CREATE INDEX IF NOT EXISTS idx_daily_records_date ON daily_records(record_date)").run(),e.json({success:!0,message:"학생 관리 테이블이 성공적으로 생성되었습니다! (students, classes, courses, daily_records)"})}catch(t){return e.json({success:!1,error:t.message},500)}});const Ke=new ze,Rs=Object.assign({"/src/index.tsx":d});let yt=!1;for(const[,e]of Object.entries(Rs))e&&(Ke.all("*",t=>{let s;try{s=t.executionCtx}catch{}return e.fetch(t.req.raw,t.env,s)}),Ke.notFound(t=>{let s;try{s=t.executionCtx}catch{}return e.fetch(t.req.raw,t.env,s)}),yt=!0);if(!yt)throw new Error("Can't import modules from ['/src/index.ts','/src/index.tsx','/app/server.ts']");export{Ke as default};
-// DEPLOY_FIX_MODAL_SCROLL_20260117_140306

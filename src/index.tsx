@@ -17283,6 +17283,15 @@ app.post('/api/teachers/apply', async (c) => {
       // 컬럼이 이미 존재하면 에러 무시
     }
     
+    try {
+      await c.env.DB.prepare(`
+        ALTER TABLE users ADD COLUMN assigned_class TEXT
+      `).run()
+      console.log('[Migration] assigned_class column added')
+    } catch (e) {
+      // 컬럼이 이미 존재하면 에러 무시
+    }
+    
     // teacher_applications 테이블 자동 생성
     try {
       await c.env.DB.prepare(`
@@ -17657,16 +17666,19 @@ app.post('/api/teachers/applications/:id/reject', async (c) => {
 // 원장님: 선생님 직접 추가 (승인 없이 즉시 계정 생성)
 app.post('/api/teachers/add', async (c) => {
   try {
-    const { name, email, phone, password, directorId } = await c.req.json()
+    const { name, email, phone, assigned_class, user_id, directorId, password } = await c.req.json()
     
-    if (!directorId || !name || !email || !password) {
+    // user_id 또는 directorId 중 하나는 있어야 함
+    const userId = user_id || directorId
+    
+    if (!userId || !name || !email) {
       return c.json({ success: false, error: '필수 정보를 모두 입력해주세요.' }, 400)
     }
     
     // 원장님 정보 조회
     const director = await c.env.DB.prepare(
       'SELECT id, academy_name, email FROM users WHERE id = ?'
-    ).bind(directorId).first()
+    ).bind(userId).first()
     
     if (!director) {
       return c.json({ success: false, error: '원장님 정보를 찾을 수 없습니다.' }, 404)
@@ -17684,7 +17696,7 @@ app.post('/api/teachers/add', async (c) => {
       console.log('[AddTeacher] Existing user found, connecting to academy:', existingUser)
       
       // 이미 이 학원의 선생님인지 확인
-      if (existingUser.parent_user_id === parseInt(directorId)) {
+      if (existingUser.parent_user_id === parseInt(userId)) {
         return c.json({ success: false, error: '이미 이 학원의 선생님입니다.' }, 400)
       }
       
@@ -17693,9 +17705,9 @@ app.post('/api/teachers/add', async (c) => {
       // 기존 사용자를 이 학원의 선생님으로 연결
       await c.env.DB.prepare(`
         UPDATE users 
-        SET parent_user_id = ?, academy_name = ?, user_type = 'teacher', updated_at = datetime('now')
+        SET parent_user_id = ?, academy_name = ?, user_type = 'teacher', assigned_class = ?, updated_at = datetime('now')
         WHERE id = ?
-      `).bind(directorId, director.academy_name, existingUser.id).run()
+      `).bind(userId, director.academy_name, assigned_class || null, existingUser.id).run()
       
       return c.json({ 
         success: true, 
@@ -17705,20 +17717,22 @@ app.post('/api/teachers/add', async (c) => {
       })
     }
     
-    // 신규 사용자 - 선생님 계정 생성
+    // 신규 사용자 - 선생님 계정 생성 (비밀번호는 기본값 또는 제공된 값)
+    const defaultPassword = password || 'teacher123' // 기본 비밀번호
     const result = await c.env.DB.prepare(`
       INSERT INTO users (
         email, password, name, phone, role, user_type, 
-        parent_user_id, academy_name, created_at
+        parent_user_id, academy_name, assigned_class, created_at
       )
-      VALUES (?, ?, ?, ?, 'user', 'teacher', ?, ?, datetime('now'))
+      VALUES (?, ?, ?, ?, 'user', 'teacher', ?, ?, ?, datetime('now'))
     `).bind(
       email,
-      password,
+      defaultPassword,
       name,
       phone || null,
-      directorId,
-      director.academy_name
+      userId,
+      director.academy_name,
+      assigned_class || null
     ).run()
     
     teacherId = result.meta.last_row_id
@@ -18001,6 +18015,102 @@ app.get('/api/teachers/list', async (c) => {
     return c.json({ 
       success: false, 
       error: '선생님 목록 조회 중 오류가 발생했습니다.',
+      details: error.message
+    }, 500)
+  }
+})
+
+// GET /api/teachers - 선생님 목록 조회 (userId로)
+app.get('/api/teachers', async (c) => {
+  try {
+    const userId = c.req.query('userId')
+    
+    if (!userId) {
+      return c.json({ success: false, error: 'userId가 필요합니다.' }, 400)
+    }
+    
+    // 선생님 목록 조회 (assigned_class 포함)
+    const teachers = await c.env.DB.prepare(`
+      SELECT 
+        id, 
+        email, 
+        name, 
+        phone, 
+        assigned_class,
+        (SELECT COUNT(*) FROM students WHERE teacher_id = users.id) as student_count,
+        created_at
+      FROM users 
+      WHERE parent_user_id = ? AND user_type = 'teacher'
+      ORDER BY created_at DESC
+    `).bind(userId).all()
+    
+    return c.json({ success: true, teachers: teachers.results || [] })
+  } catch (error) {
+    console.error('[Teachers] Error:', error)
+    return c.json({ 
+      success: false, 
+      error: '선생님 목록 조회 중 오류가 발생했습니다.',
+      details: error.message
+    }, 500)
+  }
+})
+
+// POST /api/teachers/:id/assign-class - 반 배정
+app.post('/api/teachers/:id/assign-class', async (c) => {
+  try {
+    const teacherId = c.req.param('id')
+    const { assigned_class } = await c.req.json()
+    
+    if (!teacherId || !assigned_class) {
+      return c.json({ success: false, error: '필수 정보가 누락되었습니다.' }, 400)
+    }
+    
+    // 반 배정 업데이트
+    await c.env.DB.prepare(`
+      UPDATE users 
+      SET assigned_class = ?, updated_at = datetime('now')
+      WHERE id = ? AND user_type = 'teacher'
+    `).bind(assigned_class, teacherId).run()
+    
+    return c.json({ 
+      success: true, 
+      message: '반 배정이 완료되었습니다.' 
+    })
+  } catch (error) {
+    console.error('[AssignClass] Error:', error)
+    return c.json({ 
+      success: false, 
+      error: '반 배정 중 오류가 발생했습니다.',
+      details: error.message
+    }, 500)
+  }
+})
+
+// DELETE /api/teachers/:id - 선생님 삭제
+app.delete('/api/teachers/:id', async (c) => {
+  try {
+    const teacherId = c.req.param('id')
+    
+    if (!teacherId) {
+      return c.json({ success: false, error: '선생님 ID가 필요합니다.' }, 400)
+    }
+    
+    // 선생님 삭제 (실제로는 parent_user_id를 NULL로 설정)
+    await c.env.DB.prepare(`
+      UPDATE users 
+      SET parent_user_id = NULL, user_type = 'user', assigned_class = NULL, updated_at = datetime('now')
+      WHERE id = ? AND user_type = 'teacher'
+    `).bind(teacherId).run()
+    
+    return c.json({ 
+      success: true, 
+      message: '선생님이 삭제되었습니다.' 
+    })
+  } catch (error) {
+    console.error('[DeleteTeacher] Error:', error)
+    return c.json({ 
+      success: false, 
+      error: '선생님 삭제 중 오류가 발생했습니다.',
       details: error.message
     }, 500)
   }
@@ -23090,6 +23200,391 @@ app.get('/academy-management', (c) => {
                 if (confirm('로그아웃 하시겠습니까?')) {
                     localStorage.removeItem('user');
                     location.href = '/';
+                }
+            }
+        </script>
+    </body>
+    </html>
+  `)
+})
+
+app.get('/teachers', (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>선생님 관리 - 슈퍼플레이스</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+        <style>
+            @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
+            * { font-family: 'Pretendard Variable', sans-serif; }
+        </style>
+    </head>
+    <body class="bg-gray-50">
+        <!-- 네비게이션 -->
+        <nav class="bg-white shadow-sm border-b">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between h-16">
+                    <div class="flex items-center">
+                        <h1 class="text-xl font-bold text-gray-900">👨‍🏫 선생님 관리</h1>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <a href="/dashboard" class="text-gray-600 hover:text-gray-900">
+                            <i class="fas fa-home mr-2"></i>대시보드
+                        </a>
+                        <a href="/students" class="text-gray-600 hover:text-gray-900">
+                            <i class="fas fa-user-graduate mr-2"></i>학생 관리
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- 메인 컨텐츠 -->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            
+            <!-- 통계 카드 -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-600 mb-1">전체 선생님</p>
+                            <p class="text-3xl font-bold text-gray-900" id="totalTeachers">0</p>
+                        </div>
+                        <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-chalkboard-teacher text-green-600 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-600 mb-1">반 배정 완료</p>
+                            <p class="text-3xl font-bold text-gray-900" id="assignedTeachers">0</p>
+                        </div>
+                        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-check-circle text-blue-600 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-600 mb-1">미배정</p>
+                            <p class="text-3xl font-bold text-gray-900" id="unassignedTeachers">0</p>
+                        </div>
+                        <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-exclamation-circle text-yellow-600 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 선생님 추가 버튼 -->
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-900">선생님 목록</h2>
+                <button onclick="openAddTeacherModal()" class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition font-medium flex items-center space-x-2">
+                    <i class="fas fa-plus"></i>
+                    <span>선생님 추가</span>
+                </button>
+            </div>
+
+            <!-- 선생님 목록 테이블 -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <table class="w-full">
+                    <thead class="bg-gray-50 border-b border-gray-200">
+                        <tr>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">이름</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">이메일</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">전화번호</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">담당 반</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">학생 수</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">관리</th>
+                        </tr>
+                    </thead>
+                    <tbody id="teachersList" class="divide-y divide-gray-200">
+                        <tr>
+                            <td colspan="6" class="px-6 py-12 text-center text-gray-500">
+                                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto mb-4"></div>
+                                로딩 중...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 선생님 추가 모달 -->
+        <div id="addTeacherModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 overflow-y-auto">
+            <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 my-8 max-h-[90vh] overflow-y-auto">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-2xl font-bold text-gray-900">👨‍🏫 선생님 추가</h3>
+                    <button onclick="closeAddTeacherModal()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">이름 *</label>
+                        <input type="text" id="teacherName" placeholder="홍길동" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">이메일 *</label>
+                        <input type="email" id="teacherEmail" placeholder="teacher@example.com" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">전화번호</label>
+                        <input type="tel" id="teacherPhone" placeholder="010-1234-5678" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">담당 반</label>
+                        <input type="text" id="teacherClass" placeholder="예: 초등 3학년 A반" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                    </div>
+
+                    <div class="flex gap-3 pt-4">
+                        <button onclick="closeAddTeacherModal()" class="flex-1 px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 font-medium">
+                            취소
+                        </button>
+                        <button onclick="submitAddTeacher()" class="flex-1 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium">
+                            추가하기
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 반 배정 모달 -->
+        <div id="assignClassModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 overflow-y-auto">
+            <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 my-8">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-2xl font-bold text-gray-900">📚 반 배정</h3>
+                    <button onclick="closeAssignClassModal()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+
+                <div class="mb-4">
+                    <p class="text-gray-600">선생님: <span id="assignTeacherName" class="font-bold text-gray-900"></span></p>
+                </div>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">담당 반 *</label>
+                        <input type="text" id="assignClassName" placeholder="예: 초등 3학년 A반" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        <p class="text-xs text-gray-500 mt-1">학년과 반 정보를 입력하세요</p>
+                    </div>
+
+                    <div class="flex gap-3 pt-4">
+                        <button onclick="closeAssignClassModal()" class="flex-1 px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 font-medium">
+                            취소
+                        </button>
+                        <button onclick="submitAssignClass()" class="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">
+                            배정하기
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            let currentTeacherId = null;
+
+            // 페이지 로드 시 데이터 로드
+            window.addEventListener('DOMContentLoaded', () => {
+                loadTeachers();
+            });
+
+            async function loadTeachers() {
+                const user = JSON.parse(localStorage.getItem('user'));
+                if (!user || !user.id) {
+                    alert('로그인이 필요합니다.');
+                    window.location.href = '/';
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/api/teachers?userId=' + user.id);
+                    const data = await response.json();
+
+                    const teachersList = document.getElementById('teachersList');
+                    
+                    if (!data.success || !data.teachers || data.teachers.length === 0) {
+                        teachersList.innerHTML = '<tr><td colspan="6" class="px-6 py-12 text-center text-gray-500"><i class="fas fa-inbox text-4xl text-gray-300 mb-4"></i><div>등록된 선생님이 없습니다</div></td></tr>';
+                        updateStats(0, 0, 0);
+                        return;
+                    }
+
+                    let assignedCount = 0;
+                    let unassignedCount = 0;
+
+                    teachersList.innerHTML = data.teachers.map(teacher => {
+                        const hasClass = teacher.assigned_class && teacher.assigned_class.trim() !== '';
+                        if (hasClass) assignedCount++;
+                        else unassignedCount++;
+
+                        return '<tr class="hover:bg-gray-50">' +
+                            '<td class="px-6 py-4"><span class="font-medium text-gray-900">' + (teacher.name || '-') + '</span></td>' +
+                            '<td class="px-6 py-4"><span class="text-gray-600">' + (teacher.email || '-') + '</span></td>' +
+                            '<td class="px-6 py-4"><span class="text-gray-600">' + (teacher.phone || '-') + '</span></td>' +
+                            '<td class="px-6 py-4">' + 
+                                (hasClass 
+                                    ? '<span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">' + teacher.assigned_class + '</span>'
+                                    : '<span class="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm">미배정</span>'
+                                ) +
+                            '</td>' +
+                            '<td class="px-6 py-4"><span class="text-gray-900 font-medium">' + (teacher.student_count || 0) + '명</span></td>' +
+                            '<td class="px-6 py-4">' +
+                                '<div class="flex gap-2">' +
+                                    '<button onclick="openAssignClass(' + teacher.id + ', \'' + (teacher.name || '').replace(/'/g, "\\'") + '\', \'' + (teacher.assigned_class || '').replace(/'/g, "\\'") + '\')" class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm">' +
+                                        '<i class="fas fa-edit mr-1"></i>반 배정' +
+                                    '</button>' +
+                                    '<button onclick="deleteTeacher(' + teacher.id + ', \'' + (teacher.name || '').replace(/'/g, "\\'") + '\')" class="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-sm">' +
+                                        '<i class="fas fa-trash mr-1"></i>삭제' +
+                                    '</button>' +
+                                '</div>' +
+                            '</td>' +
+                        '</tr>';
+                    }).join('');
+
+                    updateStats(data.teachers.length, assignedCount, unassignedCount);
+                } catch (error) {
+                    console.error('선생님 목록 로드 실패:', error);
+                    document.getElementById('teachersList').innerHTML = 
+                        '<tr><td colspan="6" class="px-6 py-12 text-center text-red-500">데이터를 불러오는데 실패했습니다</td></tr>';
+                }
+            }
+
+            function updateStats(total, assigned, unassigned) {
+                document.getElementById('totalTeachers').textContent = total;
+                document.getElementById('assignedTeachers').textContent = assigned;
+                document.getElementById('unassignedTeachers').textContent = unassigned;
+            }
+
+            function openAddTeacherModal() {
+                document.getElementById('addTeacherModal').classList.remove('hidden');
+            }
+
+            function closeAddTeacherModal() {
+                document.getElementById('addTeacherModal').classList.add('hidden');
+                document.getElementById('teacherName').value = '';
+                document.getElementById('teacherEmail').value = '';
+                document.getElementById('teacherPhone').value = '';
+                document.getElementById('teacherClass').value = '';
+            }
+
+            async function submitAddTeacher() {
+                const name = document.getElementById('teacherName').value.trim();
+                const email = document.getElementById('teacherEmail').value.trim();
+                const phone = document.getElementById('teacherPhone').value.trim();
+                const assignedClass = document.getElementById('teacherClass').value.trim();
+
+                if (!name || !email) {
+                    alert('이름과 이메일은 필수 항목입니다.');
+                    return;
+                }
+
+                const user = JSON.parse(localStorage.getItem('user'));
+
+                try {
+                    const response = await fetch('/api/teachers/add', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            name,
+                            email,
+                            phone,
+                            assigned_class: assignedClass,
+                            user_id: user.id
+                        })
+                    });
+
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        alert('선생님이 추가되었습니다!');
+                        closeAddTeacherModal();
+                        loadTeachers();
+                    } else {
+                        alert('오류: ' + (data.error || '선생님 추가 실패'));
+                    }
+                } catch (error) {
+                    console.error('선생님 추가 오류:', error);
+                    alert('선생님 추가 중 오류가 발생했습니다.');
+                }
+            }
+
+            function openAssignClass(teacherId, teacherName, currentClass) {
+                currentTeacherId = teacherId;
+                document.getElementById('assignTeacherName').textContent = teacherName;
+                document.getElementById('assignClassName').value = currentClass || '';
+                document.getElementById('assignClassModal').classList.remove('hidden');
+            }
+
+            function closeAssignClassModal() {
+                document.getElementById('assignClassModal').classList.add('hidden');
+                currentTeacherId = null;
+            }
+
+            async function submitAssignClass() {
+                const className = document.getElementById('assignClassName').value.trim();
+
+                if (!className) {
+                    alert('반 이름을 입력하세요.');
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/api/teachers/' + currentTeacherId + '/assign-class', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ assigned_class: className })
+                    });
+
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        alert('반 배정이 완료되었습니다!');
+                        closeAssignClassModal();
+                        loadTeachers();
+                    } else {
+                        alert('오류: ' + (data.error || '반 배정 실패'));
+                    }
+                } catch (error) {
+                    console.error('반 배정 오류:', error);
+                    alert('반 배정 중 오류가 발생했습니다.');
+                }
+            }
+
+            async function deleteTeacher(teacherId, teacherName) {
+                if (!confirm(teacherName + ' 선생님을 삭제하시겠습니까?')) {
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/api/teachers/' + teacherId, {
+                        method: 'DELETE'
+                    });
+
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        alert('선생님이 삭제되었습니다.');
+                        loadTeachers();
+                    } else {
+                        alert('오류: ' + (data.error || '삭제 실패'));
+                    }
+                } catch (error) {
+                    console.error('선생님 삭제 오류:', error);
+                    alert('삭제 중 오류가 발생했습니다.');
                 }
             }
         </script>
