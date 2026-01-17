@@ -20467,7 +20467,12 @@ ${o.director_name} 원장님의 승인을 기다려주세요.`,directorName:o.di
                     }
 
                     // 학생 수 (API가 자동으로 권한 필터링함)
-                    const studentsRes = await fetch('/api/students');
+                    const userDataHeader = btoa(unescape(encodeURIComponent(JSON.stringify(currentUser))));
+                    const studentsRes = await fetch('/api/students', {
+                        headers: {
+                            'X-User-Data-Base64': userDataHeader
+                        }
+                    });
                     const studentsData = await studentsRes.json();
                     if (studentsData.success) {
                         document.getElementById('totalStudents').textContent = studentsData.students.length;
