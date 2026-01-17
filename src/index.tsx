@@ -18625,20 +18625,35 @@ app.get('/admin/users/:id', async (c) => {
       return c.html('<h1>사용자를 찾을 수 없습니다</h1>', 404)
     }
     
-    // 사용자 권한 조회
-    const permissions = await env.DB.prepare(
-      'SELECT program_key, granted_at FROM user_permissions WHERE user_id = ? AND is_active = 1'
-    ).bind(userId).all()
+    // 사용자 권한 조회 (테이블이 없으면 빈 배열)
+    let permissions = { results: [] }
+    try {
+      permissions = await env.DB.prepare(
+        'SELECT program_key, granted_at FROM user_permissions WHERE user_id = ? AND is_active = 1'
+      ).bind(userId).all()
+    } catch (e) {
+      console.log('user_permissions 테이블 없음:', e.message)
+    }
     
-    // 사용자의 문의 내역 조회
-    const contacts = await env.DB.prepare(
-      'SELECT * FROM contacts WHERE email = ? ORDER BY created_at DESC'
-    ).bind(user.email).all()
+    // 사용자의 문의 내역 조회 (테이블이 없으면 빈 배열)
+    let contacts = { results: [] }
+    try {
+      contacts = await env.DB.prepare(
+        'SELECT * FROM contacts WHERE email = ? ORDER BY created_at DESC'
+      ).bind(user.email).all()
+    } catch (e) {
+      console.log('contacts 테이블 없음:', e.message)
+    }
     
-    // 사용자의 입금 신청 내역 조회 (있다면)
-    const deposits = await env.DB.prepare(
-      'SELECT * FROM deposits WHERE user_id = ? ORDER BY created_at DESC'
-    ).bind(userId).all()
+    // 사용자의 입금 신청 내역 조회 (테이블이 없으면 빈 배열)
+    let deposits = { results: [] }
+    try {
+      deposits = await env.DB.prepare(
+        'SELECT * FROM deposits WHERE user_id = ? ORDER BY created_at DESC'
+      ).bind(userId).all()
+    } catch (e) {
+      console.log('deposits 테이블 없음:', e.message)
+    }
     
     // 권한을 읽기 쉬운 이름으로 변환
     const permissionNames = {
