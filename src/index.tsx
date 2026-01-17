@@ -17430,11 +17430,33 @@ app.post('/api/teachers/apply', async (c) => {
       
       // 이미 이 학원에 신청했는지 확인
       const existingApplication = await c.env.DB.prepare(
-        'SELECT id FROM teacher_applications WHERE email = ? AND director_email = ? AND status = "pending"'
+        'SELECT id, name, phone FROM teacher_applications WHERE email = ? AND director_email = ? AND status = "pending"'
       ).bind(email, codeInfo.director_email).first()
       
       if (existingApplication) {
-        return c.json({ success: false, error: '이미 이 학원에 등록 신청이 진행 중입니다.' }, 400)
+        // 기존 pending 신청이 있으면 정보를 업데이트
+        console.log('[TeacherApply] Updating existing pending application:', existingApplication.id)
+        
+        await c.env.DB.prepare(`
+          UPDATE teacher_applications 
+          SET name = ?, phone = ?, academy_name = ?, verification_code = ?, applied_at = datetime('now')
+          WHERE id = ?
+        `).bind(
+          existingUser.name || name,
+          phone || null,
+          directorAcademyName,
+          verificationCode.toUpperCase(),
+          existingApplication.id
+        ).run()
+        
+        return c.json({ 
+          success: true, 
+          applicationId: existingApplication.id,
+          message: `이미 신청하신 내역이 있습니다.\n신청 정보가 업데이트되었으며, ${codeInfo.director_name} 원장님의 승인을 기다리고 있습니다.`,
+          directorName: codeInfo.director_name,
+          isExistingUser: true,
+          updated: true
+        })
       }
       
       // 학원 연결 신청 생성 (비밀번호 불필요)
@@ -17469,7 +17491,29 @@ app.post('/api/teachers/apply', async (c) => {
     ).bind(email, codeInfo.director_email).first()
     
     if (existingApplication) {
-      return c.json({ success: false, error: '이미 이 학원에 등록 신청이 진행 중입니다.' }, 400)
+      // 기존 pending 신청이 있으면 정보를 업데이트
+      console.log('[TeacherApply] Updating existing pending application for new user:', existingApplication.id)
+      
+      await c.env.DB.prepare(`
+        UPDATE teacher_applications 
+        SET name = ?, phone = ?, password = ?, academy_name = ?, verification_code = ?, applied_at = datetime('now')
+        WHERE id = ?
+      `).bind(
+        name,
+        phone || null,
+        password,
+        directorAcademyName,
+        verificationCode.toUpperCase(),
+        existingApplication.id
+      ).run()
+      
+      return c.json({ 
+        success: true, 
+        applicationId: existingApplication.id,
+        message: `이미 신청하신 내역이 있습니다.\n신청 정보가 업데이트되었으며, ${codeInfo.director_name} 원장님의 승인을 기다리고 있습니다.`,
+        directorName: codeInfo.director_name,
+        updated: true
+      })
     }
     
     // 신규 사용자 - 등록 신청 저장

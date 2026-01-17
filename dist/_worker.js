@@ -14987,14 +14987,24 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
       FROM academy_verification_codes avc
       JOIN users u ON avc.user_id = u.id
       WHERE avc.code = ? AND avc.is_active = 1
-    `).bind(l.toUpperCase()).first();if(!o)return e.json({success:!1,error:"유효하지 않은 인증 코드입니다."},400);const i=o.academy_name||n,c=await e.env.DB.prepare("SELECT id, email, name FROM users WHERE email = ?").bind(t).first();if(c){if(console.log("[TeacherApply] Existing user found, creating connection request:",c),await e.env.DB.prepare('SELECT id FROM teacher_applications WHERE email = ? AND director_email = ? AND status = "pending"').bind(t,o.director_email).first())return e.json({success:!1,error:"이미 이 학원에 등록 신청이 진행 중입니다."},400);const x=await e.env.DB.prepare(`
+    `).bind(l.toUpperCase()).first();if(!o)return e.json({success:!1,error:"유효하지 않은 인증 코드입니다."},400);const i=o.academy_name||n,c=await e.env.DB.prepare("SELECT id, email, name FROM users WHERE email = ?").bind(t).first();if(c){console.log("[TeacherApply] Existing user found, creating connection request:",c);const g=await e.env.DB.prepare('SELECT id, name, phone FROM teacher_applications WHERE email = ? AND director_email = ? AND status = "pending"').bind(t,o.director_email).first();if(g)return console.log("[TeacherApply] Updating existing pending application:",g.id),await e.env.DB.prepare(`
+          UPDATE teacher_applications 
+          SET name = ?, phone = ?, academy_name = ?, verification_code = ?, applied_at = datetime('now')
+          WHERE id = ?
+        `).bind(c.name||r,a||null,i,l.toUpperCase(),g.id).run(),e.json({success:!0,applicationId:g.id,message:`이미 신청하신 내역이 있습니다.
+신청 정보가 업데이트되었으며, ${o.director_name} 원장님의 승인을 기다리고 있습니다.`,directorName:o.director_name,isExistingUser:!0,updated:!0});const x=await e.env.DB.prepare(`
         INSERT INTO teacher_applications (
           email, password, name, phone, academy_name, 
           director_email, verification_code, status, applied_at
         )
         VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', datetime('now'))
       `).bind(t,"EXISTING_USER",c.name||r,a||null,i,o.director_email,l.toUpperCase()).run();return e.json({success:!0,applicationId:x.meta.last_row_id,message:`기존 계정으로 학원 연결 신청이 완료되었습니다.
-${o.director_name} 원장님의 승인을 기다려주세요.`,directorName:o.director_name,isExistingUser:!0})}if(await e.env.DB.prepare('SELECT id FROM teacher_applications WHERE email = ? AND director_email = ? AND status = "pending"').bind(t,o.director_email).first())return e.json({success:!1,error:"이미 이 학원에 등록 신청이 진행 중입니다."},400);const m=await e.env.DB.prepare(`
+${o.director_name} 원장님의 승인을 기다려주세요.`,directorName:o.director_name,isExistingUser:!0})}const p=await e.env.DB.prepare('SELECT id FROM teacher_applications WHERE email = ? AND director_email = ? AND status = "pending"').bind(t,o.director_email).first();if(p)return console.log("[TeacherApply] Updating existing pending application for new user:",p.id),await e.env.DB.prepare(`
+        UPDATE teacher_applications 
+        SET name = ?, phone = ?, password = ?, academy_name = ?, verification_code = ?, applied_at = datetime('now')
+        WHERE id = ?
+      `).bind(r,a||null,s,i,l.toUpperCase(),p.id).run(),e.json({success:!0,applicationId:p.id,message:`이미 신청하신 내역이 있습니다.
+신청 정보가 업데이트되었으며, ${o.director_name} 원장님의 승인을 기다리고 있습니다.`,directorName:o.director_name,updated:!0});const m=await e.env.DB.prepare(`
       INSERT INTO teacher_applications (
         email, password, name, phone, academy_name, 
         director_email, verification_code, status, applied_at
