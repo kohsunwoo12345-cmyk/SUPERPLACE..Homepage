@@ -1,10 +1,11 @@
-// 선생님 관리 JavaScript
+// 선생님 관리 JavaScript - 완전 개선 버전
 
-console.log('🎓 Teacher Management JS Loaded');
+console.log('🎓 Teacher Management JS Loaded - v2.0');
 
 // 현재 로그인한 사용자 정보
 let currentUser = null;
 let currentTeacherPermissions = null;
+let availableClasses = [];
 
 // 페이지 로드 시 초기화
 document.addEventListener('DOMContentLoaded', async () => {
@@ -24,6 +25,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // 데이터 로드
         await loadTeachers();
         await loadClasses();
+        await loadAvailableClasses();
     } else {
         alert('로그인이 필요합니다.');
         window.location.href = '/login';
@@ -91,13 +93,13 @@ function renderTeachers(teachers) {
             </div>
             
             <div class="mt-4 pt-4 border-t border-gray-100 flex gap-2">
-                <button onclick="manageTeacherPermissions(${teacher.id}, '${teacher.name}')" class="flex-1 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-sm">
+                <button onclick="manageTeacherPermissions(${teacher.id}, '${teacher.name.replace(/'/g, "\\'")}', '${teacher.email}')" class="flex-1 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-sm">
                     <i class="fas fa-key mr-1"></i> 권한 설정
                 </button>
                 <button onclick="viewTeacherDetail(${teacher.id})" class="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm">
                     <i class="fas fa-eye"></i>
                 </button>
-                <button onclick="deleteTeacher(${teacher.id}, '${teacher.name}')" class="px-3 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition text-sm">
+                <button onclick="deleteTeacher(${teacher.id}, '${teacher.name.replace(/'/g, "\\'")}' )" class="px-3 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition text-sm">
                     <i class="fas fa-trash"></i>
                 </button>
             </div>
@@ -105,7 +107,7 @@ function renderTeachers(teachers) {
     `).join('');
 }
 
-// 반 목록 로드
+// 반 목록 로드 (대시보드용)
 async function loadClasses() {
     try {
         const response = await fetch(`/api/classes/list?userId=${currentUser.id}&userType=director`);
@@ -118,6 +120,25 @@ async function loadClasses() {
         }
     } catch (error) {
         console.error('Load classes error:', error);
+    }
+}
+
+// 권한 모달용 반 목록 로드
+async function loadAvailableClasses() {
+    try {
+        const response = await fetch(`/api/classes?academyId=${currentUser.id}`);
+        const data = await response.json();
+        
+        if (data.success) {
+            availableClasses = data.classes || [];
+            console.log('Available classes loaded:', availableClasses);
+        } else {
+            console.error('Failed to load available classes:', data.error);
+            availableClasses = [];
+        }
+    } catch (error) {
+        console.error('Load available classes error:', error);
+        availableClasses = [];
     }
 }
 
@@ -170,7 +191,7 @@ function renderClasses(classes) {
             </div>
             
             <div class="mt-4 pt-4 border-t border-gray-100 flex gap-2">
-                <button onclick="assignTeacherToClass(${cls.id}, '${cls.name}')" class="flex-1 px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition text-sm">
+                <button onclick="assignTeacherToClass(${cls.id}, '${cls.name.replace(/'/g, "\\'")}' )" class="flex-1 px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition text-sm">
                     <i class="fas fa-user-plus mr-1"></i> 선생님 배정
                 </button>
                 <button onclick="viewClassDetail(${cls.id})" class="px-3 py-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition text-sm">
@@ -271,6 +292,7 @@ async function createClass(event) {
             alert(data.message);
             closeCreateClassModal();
             await loadClasses();
+            await loadAvailableClasses(); // 권한 모달용 반 목록도 업데이트
         } else {
             alert('오류: ' + data.error);
         }
@@ -307,7 +329,7 @@ async function assignTeacherToClass(classId, className) {
     
     try {
         const assignResponse = await fetch(`/api/classes/${classId}/assign-teacher`, {
-            method: 'PUT',
+            method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 teacherId: selectedTeacher.id,
@@ -330,9 +352,11 @@ async function assignTeacherToClass(classId, className) {
     }
 }
 
-// 선생님 권한 관리
-async function manageTeacherPermissions(teacherId, teacherName) {
+// 선생님 권한 관리 - 메인 함수 ⭐
+async function manageTeacherPermissions(teacherId, teacherName, teacherEmail) {
     try {
+        console.log(`Opening permissions modal for teacher ${teacherId}`);
+        
         // 현재 권한 조회
         const response = await fetch(`/api/teachers/${teacherId}/permissions?directorId=${currentUser.id}`);
         const data = await response.json();
@@ -345,8 +369,15 @@ async function manageTeacherPermissions(teacherId, teacherName) {
         currentTeacherPermissions = {
             teacherId: teacherId,
             teacherName: teacherName,
-            permissions: data.permissions || {}
+            teacherEmail: teacherEmail,
+            permissions: data.permissions || {
+                canViewAllStudents: false,
+                canWriteDailyReports: false,
+                assignedClasses: []
+            }
         };
+        
+        console.log('Current permissions:', currentTeacherPermissions);
         
         // 모달 표시
         showPermissionModal();
@@ -356,7 +387,7 @@ async function manageTeacherPermissions(teacherId, teacherName) {
     }
 }
 
-// 권한 설정 모달 표시
+// 권한 설정 모달 표시 - 새로운 버전 ⭐
 function showPermissionModal() {
     const modal = document.getElementById('permissionModal');
     if (!modal) {
@@ -366,61 +397,146 @@ function showPermissionModal() {
     
     // 모달 내용 업데이트
     document.getElementById('permissionTeacherName').textContent = currentTeacherPermissions.teacherName;
+    document.getElementById('permissionTeacherEmail').textContent = currentTeacherPermissions.teacherEmail;
     
-    // 학부모 연락처 조회 권한 체크박스 상태 설정
-    const checkbox = document.getElementById('permission_view_parent_contact');
-    if (checkbox) {
-        checkbox.checked = currentTeacherPermissions.permissions.view_parent_contact || false;
+    // 전체 학생 조회 권한
+    const canViewAllCheckbox = document.getElementById('canViewAllStudents');
+    if (canViewAllCheckbox) {
+        canViewAllCheckbox.checked = currentTeacherPermissions.permissions.canViewAllStudents || false;
     }
+    
+    // 일일 성과 작성 권한
+    const canWriteCheckbox = document.getElementById('canWriteDailyReports');
+    if (canWriteCheckbox) {
+        canWriteCheckbox.checked = currentTeacherPermissions.permissions.canWriteDailyReports || false;
+    }
+    
+    // 반 체크박스 상태 설정
+    const assignedClasses = currentTeacherPermissions.permissions.assignedClasses || [];
+    document.querySelectorAll('.class-checkbox').forEach(checkbox => {
+        checkbox.checked = assignedClasses.includes(parseInt(checkbox.value));
+    });
     
     modal.classList.remove('hidden');
 }
 
-// 권한 설정 모달 생성 (최초 1회)
+// 권한 설정 모달 생성 (최초 1회) - 새로운 버전 ⭐
 function createPermissionModal() {
+    console.log('Creating permission modal...');
+    
+    // 반 체크박스 리스트 생성
+    const classCheckboxHTML = availableClasses.length > 0 
+        ? availableClasses.map(cls => `
+            <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition">
+                <input 
+                    type="checkbox" 
+                    class="class-checkbox w-5 h-5 text-purple-600 rounded focus:ring-2 focus:ring-purple-500"
+                    value="${cls.id}"
+                >
+                <div class="ml-3 flex-1">
+                    <div class="font-medium text-gray-900">${cls.class_name}</div>
+                    <div class="text-xs text-gray-500">${cls.grade || '학년 미지정'} - 학생 ${cls.student_count || 0}명</div>
+                </div>
+            </label>
+        `).join('')
+        : '<div class="text-center text-gray-500 py-4">등록된 반이 없습니다. 먼저 반을 생성해주세요.</div>';
+    
     const modalHTML = `
         <div id="permissionModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-            <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
-                <div class="flex justify-between items-center mb-6">
-                    <div>
-                        <h3 class="text-xl font-bold text-gray-900">선생님 권한 설정</h3>
-                        <p id="permissionTeacherName" class="text-sm text-gray-600 mt-1"></p>
+            <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 rounded-t-2xl">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-900">
+                                <i class="fas fa-user-shield text-purple-600 mr-2"></i>선생님 권한 설정
+                            </h3>
+                            <p class="text-sm text-gray-600 mt-1">
+                                <span id="permissionTeacherName" class="font-medium"></span>
+                                (<span id="permissionTeacherEmail"></span>)
+                            </p>
+                        </div>
+                        <button onclick="closePermissionModal()" class="text-gray-400 hover:text-gray-600">
+                            <i class="fas fa-times text-2xl"></i>
+                        </button>
                     </div>
-                    <button onclick="closePermissionModal()" class="text-gray-400 hover:text-gray-600">
-                        <i class="fas fa-times text-2xl"></i>
-                    </button>
                 </div>
                 
-                <div class="space-y-4">
+                <div class="p-6 space-y-6">
+                    <!-- 안내 메시지 -->
                     <div class="p-4 bg-blue-50 border border-blue-200 rounded-lg">
                         <p class="text-sm text-blue-800">
                             <i class="fas fa-info-circle mr-2"></i>
-                            선생님이 볼 수 있는 정보를 설정하세요.
+                            선생님에게 필요한 권한과 담당 반을 설정하세요.
                         </p>
                     </div>
                     
-                    <!-- 권한 항목 -->
-                    <div class="space-y-3">
-                        <label class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition">
+                    <!-- 전체 학생 조회 권한 -->
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <label class="flex items-center cursor-pointer">
                             <input 
                                 type="checkbox" 
-                                id="permission_view_parent_contact"
-                                class="w-5 h-5 text-green-600 rounded focus:ring-2 focus:ring-green-500"
+                                id="canViewAllStudents"
+                                class="w-5 h-5 text-purple-600 rounded focus:ring-2 focus:ring-purple-500"
                             >
                             <div class="ml-3 flex-1">
-                                <div class="font-medium text-gray-900">📱 학부모 연락처 조회</div>
-                                <div class="text-sm text-gray-600">선생님이 학생의 학부모 전화번호와 이메일을 볼 수 있습니다</div>
+                                <div class="font-medium text-gray-900">
+                                    <i class="fas fa-users text-blue-600 mr-2"></i>전체 학생 조회 권한
+                                </div>
+                                <div class="text-xs text-gray-600 mt-1">
+                                    활성화 시 학원의 모든 학생 정보를 조회할 수 있습니다. 비활성화 시 배정된 반의 학생만 볼 수 있습니다.
+                                </div>
                             </div>
                         </label>
                     </div>
+                    
+                    <!-- 일일 성과 작성 권한 -->
+                    <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                        <label class="flex items-center cursor-pointer">
+                            <input 
+                                type="checkbox" 
+                                id="canWriteDailyReports"
+                                class="w-5 h-5 text-purple-600 rounded focus:ring-2 focus:ring-purple-500"
+                            >
+                            <div class="ml-3 flex-1">
+                                <div class="font-medium text-gray-900">
+                                    <i class="fas fa-clipboard-check text-green-600 mr-2"></i>일일 성과 작성 권한
+                                </div>
+                                <div class="text-xs text-gray-600 mt-1">
+                                    활성화 시 배정된 반 학생들의 일일 성과를 작성할 수 있습니다.
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+                    
+                    <!-- 반 배정 -->
+                    <div class="border border-gray-200 rounded-lg p-4">
+                        <h4 class="font-medium text-gray-900 mb-3">
+                            <i class="fas fa-chalkboard text-purple-600 mr-2"></i>담당 반 배정
+                        </h4>
+                        <div class="text-xs text-gray-600 mb-3">
+                            선생님이 담당할 반을 선택하세요. 선택된 반의 학생들만 조회하고 성과를 작성할 수 있습니다.
+                        </div>
+                        <div id="classCheckboxList" class="space-y-2 max-h-60 overflow-y-auto">
+                            ${classCheckboxHTML}
+                        </div>
+                    </div>
+                    
+                    <!-- 주의사항 -->
+                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                        <p class="text-sm text-yellow-800">
+                            <i class="fas fa-exclamation-triangle mr-2"></i>
+                            <strong>중요:</strong> 권한 설정 후 선생님은 즉시 해당 기능을 사용할 수 있습니다.
+                        </p>
+                    </div>
                 </div>
                 
-                <div class="flex gap-3 mt-6">
-                    <button onclick="closePermissionModal()" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
-                        취소
+                <!-- 버튼 영역 -->
+                <div class="sticky bottom-0 bg-gray-50 border-t border-gray-200 px-6 py-4 rounded-b-2xl flex gap-3">
+                    <button onclick="closePermissionModal()" class="flex-1 px-4 py-3 border border-gray-300 rounded-lg hover:bg-white transition font-medium">
+                        <i class="fas fa-times mr-2"></i>취소
                     </button>
-                    <button onclick="saveTeacherPermissions()" class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-                        저장
+                    <button onclick="saveTeacherPermissions()" class="flex-1 px-4 py-3 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-lg hover:from-purple-700 hover:to-purple-800 transition font-medium shadow-lg">
+                        <i class="fas fa-save mr-2"></i>저장
                     </button>
                 </div>
             </div>
@@ -442,32 +558,46 @@ function closePermissionModal() {
     currentTeacherPermissions = null;
 }
 
-// 선생님 권한 저장
+// 선생님 권한 저장 - 새로운 버전 ⭐
 async function saveTeacherPermissions() {
-    if (!currentTeacherPermissions) return;
+    if (!currentTeacherPermissions) {
+        alert('선생님 정보를 불러올 수 없습니다.');
+        return;
+    }
     
-    const checkbox = document.getElementById('permission_view_parent_contact');
-    const newValue = checkbox.checked;
+    // 체크된 반 ID 수집
+    const assignedClasses = Array.from(document.querySelectorAll('.class-checkbox:checked'))
+        .map(cb => parseInt(cb.value));
+    
+    const permissions = {
+        canViewAllStudents: document.getElementById('canViewAllStudents').checked,
+        canWriteDailyReports: document.getElementById('canWriteDailyReports').checked,
+        assignedClasses: assignedClasses
+    };
+    
+    console.log('Saving permissions:', permissions);
     
     try {
         const response = await fetch(`/api/teachers/${currentTeacherPermissions.teacherId}/permissions`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                permissionKey: 'view_parent_contact',
-                permissionValue: newValue,
-                directorId: currentUser.id
+                directorId: currentUser.id,
+                permissions: permissions
             })
         });
         
         const data = await response.json();
         
         if (data.success) {
-            alert(data.message);
+            alert(`✅ ${currentTeacherPermissions.teacherName} 선생님의 권한이 저장되었습니다!\n\n` +
+                  `🔹 전체 학생 조회: ${permissions.canViewAllStudents ? '허용' : '제한'}\n` +
+                  `🔹 일일 성과 작성: ${permissions.canWriteDailyReports ? '허용' : '제한'}\n` +
+                  `🔹 담당 반: ${assignedClasses.length}개`);
             closePermissionModal();
             await loadTeachers();
         } else {
-            alert('오류: ' + data.error);
+            alert('권한 저장 실패: ' + data.error);
         }
     } catch (error) {
         console.error('Save permissions error:', error);
@@ -475,7 +605,7 @@ async function saveTeacherPermissions() {
     }
 }
 
-// 선생님 상세보기 (추후 구현)
+// 선생님 상세보기
 function viewTeacherDetail(teacherId) {
     window.location.href = `/admin/users/${teacherId}`;
 }
@@ -487,7 +617,7 @@ function viewClassDetail(classId) {
 
 // 선생님 삭제
 async function deleteTeacher(teacherId, teacherName) {
-    if (!confirm(`${teacherName} 선생님의 계정을 삭제하시겠습니까?\n\n삭제 시 복구할 수 없습니다.`)) {
+    if (!confirm(`${teacherName} 선생님의 계정을 삭제하시겠습니까?\n\n⚠️ 삭제 시 복구할 수 없습니다.`)) {
         return;
     }
     
