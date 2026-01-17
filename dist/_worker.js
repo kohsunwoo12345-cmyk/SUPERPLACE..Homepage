@@ -10072,30 +10072,23 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
     `).all();return e.json({success:!0,stats:{today:(t==null?void 0:t.count)||0,thisMonth:(s==null?void 0:s.count)||0,byStatus:r.results||[]}})}catch(t){return console.error("Get SMS stats error:",t),e.json({success:!1,error:"통계 조회 실패"},500)}});d.get("/api/students",async e=>{try{const t=JSON.parse(e.req.header("X-User-Data-Base64")?decodeURIComponent(escape(atob(e.req.header("X-User-Data-Base64")||""))):'{"id":1}'),s=await e.env.DB.prepare("SELECT id, user_type, parent_user_id, permissions FROM users WHERE id = ?").bind(t.id).first();let r="SELECT * FROM students WHERE status = 'active' ORDER BY name",a=[];if(s&&s.user_type==="teacher"){let l={canViewAllStudents:!1,assignedClasses:[]};if(s.permissions)try{l=JSON.parse(s.permissions)}catch(o){console.error("Failed to parse permissions:",o)}if(l.canViewAllStudents)r="SELECT * FROM students WHERE academy_id = ? AND status = 'active' ORDER BY name",a=[s.parent_user_id||t.id];else{const o=l.assignedClasses||[];if(o.length===0)return e.json({success:!0,students:[]});r=`SELECT * FROM students WHERE status = 'active' AND class_id IN (${o.map(()=>"?").join(",")}) ORDER BY name`,a=o}}else r="SELECT * FROM students WHERE academy_id = ? AND status = 'active' ORDER BY name",a=[t.id];const{results:n}=await e.env.DB.prepare(r).bind(...a).all();return e.json({success:!0,students:n})}catch(t){return console.error("Get students error:",t),e.json({success:!1,error:"학생 목록 조회 실패",details:t.message},500)}});d.post("/api/students",async e=>{try{const{name:t,phone:s,grade:r,school:a,subjects:n,parent_name:l,parent_phone:o,notes:i}=await e.req.json(),c=JSON.parse(e.req.header("X-User-Data-Base64")?decodeURIComponent(escape(atob(e.req.header("X-User-Data-Base64")||""))):'{"id":1}');if(!t||!r||!l||!o)return e.json({success:!1,error:"필수 항목을 입력해주세요."},400);const p=await e.env.DB.prepare(`
       INSERT INTO students (name, phone, grade, school, subjects, parent_name, parent_phone, academy_id, enrollment_date, notes, status)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, DATE('now'), ?, 'active')
-    `).bind(t,s||null,r,a||null,n||"",l,o,c.id,i||null).run();return e.json({success:!0,message:"학생이 추가되었습니다.",id:p.meta.last_row_id})}catch(t){return console.error("Add student error:",t),e.json({success:!1,error:"학생 추가 실패"},500)}});d.delete("/api/students/:id",async e=>{try{const t=e.req.param("id");if(!t)return e.json({success:!1,error:"학생 ID가 필요합니다."},400);console.log("[DeleteStudent] Marking student as deleted:",t);const s=Date.now();return(await e.env.DB.prepare(`
-      UPDATE students 
-      SET name = 'DELETED_' || name || '_' || ?,
-          status = 'deleted',
-          phone = NULL,
-          parent_phone = NULL,
-          parent_email = NULL,
-          class_id = NULL,
-          updated_at = CURRENT_TIMESTAMP
-      WHERE id = ?
-    `).bind(s,t).run()).meta.changes===0?e.json({success:!1,error:"해당 학생을 찾을 수 없습니다."},404):(console.log("[DeleteStudent] Student marked as deleted successfully"),e.json({success:!0,message:"학생이 삭제되었습니다."}))}catch(t){console.error("[DeleteStudent] Error:",t);try{console.log("[DeleteStudent] Trying anonymization fallback");const s=Date.now();if((await e.env.DB.prepare(`
+    `).bind(t,s||null,r,a||null,n||"",l,o,c.id,i||null).run();return e.json({success:!0,message:"학생이 추가되었습니다.",id:p.meta.last_row_id})}catch(t){return console.error("Add student error:",t),e.json({success:!1,error:"학생 추가 실패"},500)}});const Rs=[4];d.delete("/api/students/:id",async e=>{try{const t=e.req.param("id");if(!t)return e.json({success:!1,error:"학생 ID가 필요합니다."},400);const s=parseInt(t);if(Rs.includes(s))return console.log("[DeleteStudent] Undeletable student, hiding via status change"),(await e.env.DB.prepare(`
         UPDATE students 
-        SET name = '삭제된학생_' || ?,
-            phone = '000-0000-0000',
-            parent_name = '삭제됨',
-            parent_phone = '000-0000-0000',
-            parent_email = NULL,
-            grade = '삭제',
-            subjects = '삭제',
-            status = 'deleted',
-            notes = 'DELETED',
-            class_id = NULL
+        SET status = 'deleted',
+            name = CASE 
+              WHEN name NOT LIKE '[삭제됨]%' THEN '[삭제됨] ' || name
+              ELSE name
+            END
         WHERE id = ?
-      `).bind(s,studentId).run()).meta.changes>0)return console.log("[DeleteStudent] Fallback anonymization successful"),e.json({success:!0,message:"학생이 삭제되었습니다."})}catch(s){console.error("[DeleteStudent] Fallback also failed:",s)}return e.json({success:!1,error:"데이터베이스 제약으로 인해 삭제할 수 없습니다. 관리자에게 문의하세요."},500)}});d.get("/tools/student-management",e=>e.redirect("/students"));d.get("/tools/ai-learning-report",e=>e.html(`
+      `).bind(t).run()).meta.changes>0?e.json({success:!0,message:"학생이 삭제되었습니다."}):e.json({success:!1,error:"해당 학생을 찾을 수 없습니다."},404);console.log("[DeleteStudent] Attempting normal delete for student:",t);try{return await e.env.DB.prepare("DELETE FROM daily_records WHERE student_id = ?").bind(t).run(),await e.env.DB.prepare("DELETE FROM attendance WHERE student_id = ?").bind(t).run().catch(()=>{}),await e.env.DB.prepare("DELETE FROM grades WHERE student_id = ?").bind(t).run().catch(()=>{}),await e.env.DB.prepare("DELETE FROM counseling WHERE student_id = ?").bind(t).run().catch(()=>{}),await e.env.DB.prepare("DELETE FROM learning_reports WHERE student_id = ?").bind(t).run().catch(()=>{}),(await e.env.DB.prepare("DELETE FROM students WHERE id = ?").bind(t).run()).meta.changes===0?e.json({success:!1,error:"해당 학생을 찾을 수 없습니다."},404):e.json({success:!0,message:"학생이 삭제되었습니다."})}catch(r){if(console.log("[DeleteStudent] Hard delete failed, using soft delete"),(await e.env.DB.prepare(`
+        UPDATE students 
+        SET status = 'deleted',
+            name = CASE 
+              WHEN name NOT LIKE '[삭제됨]%' THEN '[삭제됨] ' || name
+              ELSE name
+            END
+        WHERE id = ?
+      `).bind(t).run()).meta.changes>0)return e.json({success:!0,message:"학생이 삭제되었습니다."});throw r}}catch(t){return console.error("[DeleteStudent] Error:",t),e.json({success:!1,error:"학생 삭제 중 오류가 발생했습니다."},500)}});d.get("/tools/student-management",e=>e.redirect("/students"));d.get("/tools/ai-learning-report",e=>e.html(`
     <!DOCTYPE html>
     <html lang="ko">
     <head>
@@ -20726,4 +20719,4 @@ ${o.director_name} 원장님의 승인을 기다려주세요.`,directorName:o.di
         memo TEXT,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )
-    `).run(),await t.prepare("CREATE INDEX IF NOT EXISTS idx_students_academy_id ON students(academy_id)").run(),await t.prepare("CREATE INDEX IF NOT EXISTS idx_classes_academy_id ON classes(academy_id)").run(),await t.prepare("CREATE INDEX IF NOT EXISTS idx_courses_academy_id ON courses(academy_id)").run(),await t.prepare("CREATE INDEX IF NOT EXISTS idx_students_class_id ON students(class_id)").run(),await t.prepare("CREATE INDEX IF NOT EXISTS idx_daily_records_student_id ON daily_records(student_id)").run(),await t.prepare("CREATE INDEX IF NOT EXISTS idx_daily_records_date ON daily_records(record_date)").run(),e.json({success:!0,message:"학생 관리 테이블이 성공적으로 생성되었습니다! (students, classes, courses, daily_records)"})}catch(t){return e.json({success:!1,error:t.message},500)}});d.get("/api/debug/student-references/:studentId",async e=>{try{const t=e.req.param("studentId"),{DB:s}=e.env,r={},a=await s.prepare("SELECT COUNT(*) as count FROM daily_records WHERE student_id = ?").bind(t).first();r.daily_records=a;const n=await s.prepare("SELECT * FROM students WHERE id = ?").bind(t).first();return r.student=n,e.json({success:!0,studentId:t,references:r})}catch(t){return e.json({success:!1,error:t.message},500)}});const Ke=new We,Rs=Object.assign({"/src/index.tsx":d});let yt=!1;for(const[,e]of Object.entries(Rs))e&&(Ke.all("*",t=>{let s;try{s=t.executionCtx}catch{}return e.fetch(t.req.raw,t.env,s)}),Ke.notFound(t=>{let s;try{s=t.executionCtx}catch{}return e.fetch(t.req.raw,t.env,s)}),yt=!0);if(!yt)throw new Error("Can't import modules from ['/src/index.ts','/src/index.tsx','/app/server.ts']");export{Ke as default};
+    `).run(),await t.prepare("CREATE INDEX IF NOT EXISTS idx_students_academy_id ON students(academy_id)").run(),await t.prepare("CREATE INDEX IF NOT EXISTS idx_classes_academy_id ON classes(academy_id)").run(),await t.prepare("CREATE INDEX IF NOT EXISTS idx_courses_academy_id ON courses(academy_id)").run(),await t.prepare("CREATE INDEX IF NOT EXISTS idx_students_class_id ON students(class_id)").run(),await t.prepare("CREATE INDEX IF NOT EXISTS idx_daily_records_student_id ON daily_records(student_id)").run(),await t.prepare("CREATE INDEX IF NOT EXISTS idx_daily_records_date ON daily_records(record_date)").run(),e.json({success:!0,message:"학생 관리 테이블이 성공적으로 생성되었습니다! (students, classes, courses, daily_records)"})}catch(t){return e.json({success:!1,error:t.message},500)}});d.get("/api/debug/student-references/:studentId",async e=>{try{const t=e.req.param("studentId"),{DB:s}=e.env,r={},a=await s.prepare("SELECT COUNT(*) as count FROM daily_records WHERE student_id = ?").bind(t).first();r.daily_records=a;const n=await s.prepare("SELECT * FROM students WHERE id = ?").bind(t).first();return r.student=n,e.json({success:!0,studentId:t,references:r})}catch(t){return e.json({success:!1,error:t.message},500)}});const Ke=new We,Ls=Object.assign({"/src/index.tsx":d});let yt=!1;for(const[,e]of Object.entries(Ls))e&&(Ke.all("*",t=>{let s;try{s=t.executionCtx}catch{}return e.fetch(t.req.raw,t.env,s)}),Ke.notFound(t=>{let s;try{s=t.executionCtx}catch{}return e.fetch(t.req.raw,t.env,s)}),yt=!0);if(!yt)throw new Error("Can't import modules from ['/src/index.ts','/src/index.tsx','/app/server.ts']");export{Ke as default};
