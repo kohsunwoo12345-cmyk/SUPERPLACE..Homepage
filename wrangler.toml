@@ -1,6 +1,9 @@
-name = "superplace-academy-app"
-main = "dist/_worker.js"
+name = "superplace-fixed"
 compatibility_date = "2025-12-18"
+pages_build_output_dir = "dist"
+
+[build]
+command = ""
 
 # D1 Database Bindings
 [[d1_databases]]
@@ -13,12 +16,6 @@ database_id = "8c106540-21b4-4fa9-8879-c4956e459ca1"
 binding = "R2"
 bucket_name = "superplace-documents"
 
-# 환경 변수
 [vars]
 ALIGO_API_KEY = "4bbi3l27pb5qh11tkujl578bttz6vb5j"
 ALIGO_USER_ID = "wangholy"
-
-# Assets (static files)
-[assets]
-directory = "dist"
-binding = "ASSETS"

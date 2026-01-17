@@ -1,7 +1,0 @@
-{
-  "build": {
-    "command": "echo 'Using pre-built dist folder'",
-    "cwd": ".",
-    "watch_paths": ["dist/**"]
-  }
-}
