@@ -18228,12 +18228,30 @@ app.post('/api/teachers/:id/permissions', async (c) => {
       return c.json({ success: false, error: '선생님을 찾을 수 없습니다.' }, 404)
     }
     
-    // permissions 업데이트
-    await c.env.DB.prepare(`
-      UPDATE users 
-      SET permissions = ?
-      WHERE id = ?
-    `).bind(JSON.stringify(permissions), teacherId).run()
+    try {
+      // permissions 업데이트
+      await c.env.DB.prepare(`
+        UPDATE users 
+        SET permissions = ?
+        WHERE id = ?
+      `).bind(JSON.stringify(permissions), teacherId).run()
+    } catch (updateError) {
+      // permissions 컬럼이 없으면 추가
+      if (updateError.message && updateError.message.includes('no such column: permissions')) {
+        await c.env.DB.prepare(`
+          ALTER TABLE users ADD COLUMN permissions TEXT
+        `).run()
+        
+        // 다시 업데이트 시도
+        await c.env.DB.prepare(`
+          UPDATE users 
+          SET permissions = ?
+          WHERE id = ?
+        `).bind(JSON.stringify(permissions), teacherId).run()
+      } else {
+        throw updateError
+      }
+    }
     
     return c.json({ 
       success: true, 
