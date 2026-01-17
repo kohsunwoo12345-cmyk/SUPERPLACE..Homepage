@@ -18094,8 +18094,7 @@ app.get('/api/teachers/list', async (c) => {
     }
     
     const teachers = await c.env.DB.prepare(`
-      SELECT id, email, name, phone, created_at, 
-             (SELECT COUNT(*) FROM classes WHERE teacher_id = users.id) as class_count
+      SELECT id, email, name, phone, created_at
       FROM users 
       WHERE parent_user_id = ? AND user_type = 'teacher'
       ORDER BY created_at DESC
