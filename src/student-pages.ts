@@ -583,7 +583,9 @@ export const studentsListPage = `
             const searchText = document.getElementById('searchInput').value.toLowerCase();
             
             students = allStudents.filter(student => {
-                const matchGrade = !gradeFilter || student.grade === gradeFilter;
+                // current_grade 또는 grade 사용
+                const displayGrade = student.current_grade || student.grade;
+                const matchGrade = !gradeFilter || displayGrade === gradeFilter;
                 const matchSearch = !searchText || 
                     student.name.toLowerCase().includes(searchText) ||
                     (student.parent_name && student.parent_name.toLowerCase().includes(searchText)) ||
@@ -613,7 +615,11 @@ export const studentsListPage = `
                             <div class="flex-1">
                                 <div class="flex items-center space-x-3 mb-2">
                                     <h3 class="text-xl font-bold text-gray-900">\${student.name}</h3>
-                                    <span class="px-3 py-1 bg-blue-100 text-blue-600 rounded-full text-sm font-medium">\${student.grade}</span>
+                                    <span class="px-3 py-1 bg-blue-100 text-blue-600 rounded-full text-sm font-medium">
+                                        \${student.current_grade || student.grade}
+                                        \${student.current_grade && student.current_grade !== student.entry_grade ? '<i class="fas fa-arrow-up ml-1 text-xs"></i>' : ''}
+                                    </span>
+                                    \${student.entry_grade && student.current_grade && student.current_grade !== student.entry_grade ? \`<span class="text-xs text-gray-400">(\${student.entry_grade}→\${student.current_grade})</span>\` : ''}
                                     \${student.class_name ? \`<span class="px-3 py-1 bg-purple-100 text-purple-600 rounded-full text-sm">\${student.class_name}</span>\` : ''}
                                 </div>
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-600">

@@ -6,6 +6,48 @@ type Bindings = {
 
 const studentRoutes = new Hono<{ Bindings: Bindings }>()
 
+// 학년 자동 계산 함수
+function calculateCurrentGrade(entryYear: number, entryGrade: string): string {
+  const currentYear = new Date().getFullYear()
+  const yearsPassed = currentYear - entryYear
+  
+  // 학년 파싱 (예: "초1" -> { level: "초", grade: 1 })
+  const gradeMatch = entryGrade.match(/^(초|중|고)(\d)$/)
+  if (!gradeMatch) return entryGrade // 파싱 실패 시 원본 반환
+  
+  const [, level, gradeStr] = gradeMatch
+  let grade = parseInt(gradeStr)
+  let currentLevel = level
+  
+  // 연도만큼 학년 증가
+  grade += yearsPassed
+  
+  // 학년 진급 로직
+  if (currentLevel === '초' && grade > 6) {
+    currentLevel = '중'
+    grade = grade - 6
+  }
+  if (currentLevel === '중' && grade > 3) {
+    currentLevel = '고'
+    grade = grade - 3
+  }
+  if (currentLevel === '고' && grade > 3) {
+    return '졸업' // 고3 이후는 졸업
+  }
+  
+  return `${currentLevel}${grade}`
+}
+
+// 학생 데이터에 현재 학년 추가
+function enrichStudentWithCurrentGrade(student: any) {
+  if (student.entry_year && student.entry_grade) {
+    student.current_grade = calculateCurrentGrade(student.entry_year, student.entry_grade)
+  } else {
+    student.current_grade = student.grade // entry 정보가 없으면 기존 grade 사용
+  }
+  return student
+}
+
 // ==================== 반(Class) 관리 API ====================
 
 // 반 목록 조회
@@ -119,7 +161,10 @@ studentRoutes.get('/api/students', async (c) => {
     
     const result = await DB.prepare(query).bind(...params).all()
     
-    return c.json({ success: true, students: result.results })
+    // 각 학생의 현재 학년 계산
+    const studentsWithGrade = result.results.map(student => enrichStudentWithCurrentGrade(student))
+    
+    return c.json({ success: true, students: studentsWithGrade })
   } catch (error) {
     return c.json({ success: false, error: error.message }, 500)
   }
@@ -142,7 +187,10 @@ studentRoutes.get('/api/students/:studentId', async (c) => {
       return c.json({ success: false, error: '학생을 찾을 수 없습니다.' }, 404)
     }
     
-    return c.json({ success: true, student })
+    // 현재 학년 계산
+    const studentWithGrade = enrichStudentWithCurrentGrade(student)
+    
+    return c.json({ success: true, student: studentWithGrade })
   } catch (error) {
     return c.json({ success: false, error: error.message }, 500)
   }
@@ -155,9 +203,12 @@ studentRoutes.post('/api/students', async (c) => {
   const { academyId, classId, name, phone, parentName, parentPhone, grade, subjects, enrollmentDate, memo } = body
   
   try {
+    // 등록일로부터 연도 추출
+    const entryYear = enrollmentDate ? new Date(enrollmentDate).getFullYear() : new Date().getFullYear()
+    
     const result = await DB.prepare(`
-      INSERT INTO students (academy_id, class_id, name, phone, parent_name, parent_phone, grade, subjects, enrollment_date, notes)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO students (academy_id, class_id, name, phone, parent_name, parent_phone, grade, subjects, enrollment_date, notes, entry_year, entry_grade)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).bind(
       academyId || 1,
       classId || null,
@@ -168,7 +219,9 @@ studentRoutes.post('/api/students', async (c) => {
       grade,
       subjects,
       enrollmentDate,
-      memo || ''
+      memo || '',
+      entryYear,
+      grade  // entry_grade는 등록 시 학년과 동일
     ).run()
     
     return c.json({ success: true, studentId: result.meta.last_row_id })
