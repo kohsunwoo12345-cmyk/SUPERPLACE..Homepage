@@ -904,10 +904,11 @@ var Et=Object.defineProperty;var ze=e=>{throw TypeError(e)};var kt=(e,t,s)=>t in
     </div>
 
     <!-- 성과 기록 추가/수정 모달 -->
-    <div id="recordModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-y-auto">
-        <div class="bg-white rounded-xl p-8 max-w-2xl w-full mx-4 my-8">
-            <h2 id="recordModalTitle" class="text-2xl font-bold mb-6">성과 기록 추가</h2>
-            <form id="recordForm">
+    <div id="recordModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 overflow-y-auto">
+        <div class="min-h-screen flex items-center justify-center p-4">
+            <div class="bg-white rounded-xl p-6 max-w-3xl w-full max-h-[90vh] overflow-y-auto my-8">
+                <h2 id="recordModalTitle" class="text-2xl font-bold mb-6 sticky top-0 bg-white pb-4 border-b">성과 기록 추가</h2>
+                <form id="recordForm">
                 <input type="hidden" id="recordId">
                 
                 <div class="space-y-6">
@@ -1293,6 +1294,12 @@ var Et=Object.defineProperty;var ze=e=>{throw TypeError(e)};var kt=(e,t,s)=>t in
             await loadClasses();
             
             document.getElementById('recordModal').classList.remove('hidden');
+            
+            // 모달을 맨 위로 스크롤
+            const modalContent = document.querySelector('#recordModal .overflow-y-auto');
+            if (modalContent) {
+                modalContent.scrollTop = 0;
+            }
         }
 
         function hideRecordModal() {
@@ -1310,6 +1317,12 @@ var Et=Object.defineProperty;var ze=e=>{throw TypeError(e)};var kt=(e,t,s)=>t in
             document.getElementById('recordId').value = record.id;
             document.getElementById('recordStudent').value = record.student_id;
             document.getElementById('recordClass').value = record.class_id || '';
+            
+            // 모달을 맨 위로 스크롤
+            const modalContent = document.querySelector('#recordModal .overflow-y-auto');
+            if (modalContent) {
+                modalContent.scrollTop = 0;
+            }
             
             if (record.attendance) {
                 document.querySelector(\`input[name="attendance"][value="\${record.attendance}"]\`).checked = true;
