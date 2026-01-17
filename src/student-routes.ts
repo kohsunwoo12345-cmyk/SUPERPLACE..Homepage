@@ -294,10 +294,10 @@ studentRoutes.get('/api/daily-records', async (c) => {
   
   try {
     let query = `
-      SELECT dr.*, s.name as student_name, c.course_name
+      SELECT dr.*, s.name as student_name, cl.class_name
       FROM daily_records dr
       LEFT JOIN students s ON dr.student_id = s.id
-      LEFT JOIN courses c ON dr.course_id = c.id
+      LEFT JOIN classes cl ON dr.class_id = cl.id
       WHERE 1=1
     `
     const params: any[] = []
@@ -329,23 +329,41 @@ studentRoutes.get('/api/daily-records', async (c) => {
 studentRoutes.post('/api/daily-records', async (c) => {
   const { DB } = c.env
   const body = await c.req.json()
-  const { studentId, courseId, recordDate, recordType, concept, attendance, homeworkStatus, understandingLevel, participationLevel, achievement, memo } = body
+  const { 
+    studentId, 
+    classId, 
+    recordDate, 
+    attendance, 
+    lessonConcept,
+    lessonUnderstanding,
+    lessonParticipation,
+    lessonAchievement,
+    homeworkStatus, 
+    homeworkContent,
+    homeworkAchievement,
+    memo 
+  } = body
   
   try {
     const result = await DB.prepare(`
-      INSERT INTO daily_records (student_id, course_id, record_date, record_type, concept, attendance, homework_status, understanding_level, participation_level, achievement, memo)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO daily_records (
+        student_id, class_id, record_date, attendance,
+        lesson_concept, lesson_understanding, lesson_participation, lesson_achievement,
+        homework_status, homework_content, homework_achievement, memo
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).bind(
       studentId,
-      courseId || null,
+      classId || null,
       recordDate,
-      recordType || null,
-      concept || null,
       attendance || null,
+      lessonConcept || null,
+      lessonUnderstanding || null,
+      lessonParticipation || null,
+      lessonAchievement || '',
       homeworkStatus || null,
-      understandingLevel || null,
-      participationLevel || null,
-      achievement || '',
+      homeworkContent || null,
+      homeworkAchievement || '',
       memo || ''
     ).run()
     
@@ -360,14 +378,39 @@ studentRoutes.put('/api/daily-records/:recordId', async (c) => {
   const { DB } = c.env
   const recordId = c.req.param('recordId')
   const body = await c.req.json()
-  const { courseId, recordType, concept, attendance, homeworkStatus, understandingLevel, participationLevel, achievement, memo } = body
+  const { 
+    classId, 
+    attendance, 
+    lessonConcept,
+    lessonUnderstanding,
+    lessonParticipation,
+    lessonAchievement,
+    homeworkStatus, 
+    homeworkContent,
+    homeworkAchievement,
+    memo 
+  } = body
   
   try {
     await DB.prepare(`
       UPDATE daily_records
-      SET course_id = ?, record_type = ?, concept = ?, attendance = ?, homework_status = ?, understanding_level = ?, participation_level = ?, achievement = ?, memo = ?
+      SET class_id = ?, attendance = ?, 
+          lesson_concept = ?, lesson_understanding = ?, lesson_participation = ?, lesson_achievement = ?,
+          homework_status = ?, homework_content = ?, homework_achievement = ?, memo = ?
       WHERE id = ?
-    `).bind(courseId || null, recordType || null, concept || null, attendance || null, homeworkStatus || null, understandingLevel || null, participationLevel || null, achievement || '', memo || '', recordId).run()
+    `).bind(
+      classId || null, 
+      attendance || null, 
+      lessonConcept || null,
+      lessonUnderstanding || null,
+      lessonParticipation || null,
+      lessonAchievement || '',
+      homeworkStatus || null, 
+      homeworkContent || null,
+      homeworkAchievement || '',
+      memo || '', 
+      recordId
+    ).run()
     
     return c.json({ success: true })
   } catch (error) {

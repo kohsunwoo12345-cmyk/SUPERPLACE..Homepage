@@ -834,113 +834,125 @@ export const dailyRecordPage = `
             <form id="recordForm">
                 <input type="hidden" id="recordId">
                 
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">학생 선택 *</label>
-                        <select id="recordStudent" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
-                            <option value="">선택하세요</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">과목</label>
-                        <select id="recordCourse" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
-                            <option value="">선택하세요</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">구분 *</label>
-                        <div class="grid grid-cols-2 gap-2">
-                            <label class="flex items-center justify-center px-4 py-3 border-2 border-gray-300 rounded-lg cursor-pointer hover:bg-blue-50 has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50">
-                                <input type="radio" name="recordType" value="수업" class="mr-2" required>
-                                <span class="text-sm font-medium">📚 수업</span>
-                            </label>
-                            <label class="flex items-center justify-center px-4 py-3 border-2 border-gray-300 rounded-lg cursor-pointer hover:bg-purple-50 has-[:checked]:border-purple-500 has-[:checked]:bg-purple-50">
-                                <input type="radio" name="recordType" value="숙제" class="mr-2" required>
-                                <span class="text-sm font-medium">✏️ 숙제</span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">개념</label>
-                        <input type="text" id="recordConcept" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500" placeholder="예: 이차방정식, 현재완료 시제 등">
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">출석</label>
-                        <div class="grid grid-cols-4 gap-2">
-                            <label class="flex items-center justify-center px-4 py-3 border-2 border-gray-300 rounded-lg cursor-pointer hover:bg-green-50 has-[:checked]:border-green-500 has-[:checked]:bg-green-50">
-                                <input type="radio" name="attendance" value="출석" class="mr-2">
-                                <span class="text-sm font-medium">✅ 출석</span>
-                            </label>
-                            <label class="flex items-center justify-center px-4 py-3 border-2 border-gray-300 rounded-lg cursor-pointer hover:bg-yellow-50 has-[:checked]:border-yellow-500 has-[:checked]:bg-yellow-50">
-                                <input type="radio" name="attendance" value="지각" class="mr-2">
-                                <span class="text-sm font-medium">⏰ 지각</span>
-                            </label>
-                            <label class="flex items-center justify-center px-4 py-3 border-2 border-gray-300 rounded-lg cursor-pointer hover:bg-red-50 has-[:checked]:border-red-500 has-[:checked]:bg-red-50">
-                                <input type="radio" name="attendance" value="결석" class="mr-2">
-                                <span class="text-sm font-medium">❌ 결석</span>
-                            </label>
-                            <label class="flex items-center justify-center px-4 py-3 border-2 border-gray-300 rounded-lg cursor-pointer hover:bg-orange-50 has-[:checked]:border-orange-500 has-[:checked]:bg-orange-50">
-                                <input type="radio" name="attendance" value="조퇴" class="mr-2">
-                                <span class="text-sm font-medium">🏃 조퇴</span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">과제 완성도</label>
-                        <div class="grid grid-cols-3 gap-2">
-                            <label class="flex items-center justify-center px-4 py-3 border-2 border-gray-300 rounded-lg cursor-pointer hover:bg-green-50 has-[:checked]:border-green-500 has-[:checked]:bg-green-50">
-                                <input type="radio" name="homework" value="완료" class="mr-2">
-                                <span class="text-sm font-medium">✅ 완료</span>
-                            </label>
-                            <label class="flex items-center justify-center px-4 py-3 border-2 border-gray-300 rounded-lg cursor-pointer hover:bg-yellow-50 has-[:checked]:border-yellow-500 has-[:checked]:bg-yellow-50">
-                                <input type="radio" name="homework" value="부분완료" class="mr-2">
-                                <span class="text-sm font-medium">⚠️ 부분</span>
-                            </label>
-                            <label class="flex items-center justify-center px-4 py-3 border-2 border-gray-300 rounded-lg cursor-pointer hover:bg-red-50 has-[:checked]:border-red-500 has-[:checked]:bg-red-50">
-                                <input type="radio" name="homework" value="미완료" class="mr-2">
-                                <span class="text-sm font-medium">❌ 미완료</span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-4">
+                <div class="space-y-6">
+                    <!-- 기본 정보 -->
+                    <div class="bg-gray-50 p-4 rounded-lg space-y-4">
+                        <h3 class="text-lg font-semibold text-gray-900">기본 정보</h3>
+                        
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">이해도 (1~5)</label>
-                            <div class="flex items-center space-x-2">
-                                <input type="range" id="understanding" min="1" max="5" value="3" class="flex-1">
-                                <span id="understandingValue" class="text-xl font-bold text-blue-600 w-8 text-center">3</span>
-                            </div>
-                            <div class="flex justify-between text-xs text-gray-500 mt-1">
-                                <span>낮음</span>
-                                <span>높음</span>
-                            </div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">학생 선택 *</label>
+                            <select id="recordStudent" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                                <option value="">선택하세요</option>
+                            </select>
                         </div>
+
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">참여도 (1~5)</label>
-                            <div class="flex items-center space-x-2">
-                                <input type="range" id="participation" min="1" max="5" value="3" class="flex-1">
-                                <span id="participationValue" class="text-xl font-bold text-purple-600 w-8 text-center">3</span>
-                            </div>
-                            <div class="flex justify-between text-xs text-gray-500 mt-1">
-                                <span>낮음</span>
-                                <span>높음</span>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">반 선택</label>
+                            <select id="recordClass" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                                <option value="">선택하세요</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">출석</label>
+                            <div class="grid grid-cols-4 gap-2">
+                                <label class="flex items-center justify-center px-4 py-3 border-2 border-gray-300 rounded-lg cursor-pointer hover:bg-green-50 has-[:checked]:border-green-500 has-[:checked]:bg-green-50">
+                                    <input type="radio" name="attendance" value="출석" class="mr-2">
+                                    <span class="text-sm font-medium">✅ 출석</span>
+                                </label>
+                                <label class="flex items-center justify-center px-4 py-3 border-2 border-gray-300 rounded-lg cursor-pointer hover:bg-yellow-50 has-[:checked]:border-yellow-500 has-[:checked]:bg-yellow-50">
+                                    <input type="radio" name="attendance" value="지각" class="mr-2">
+                                    <span class="text-sm font-medium">⏰ 지각</span>
+                                </label>
+                                <label class="flex items-center justify-center px-4 py-3 border-2 border-gray-300 rounded-lg cursor-pointer hover:bg-red-50 has-[:checked]:border-red-500 has-[:checked]:bg-red-50">
+                                    <input type="radio" name="attendance" value="결석" class="mr-2">
+                                    <span class="text-sm font-medium">❌ 결석</span>
+                                </label>
+                                <label class="flex items-center justify-center px-4 py-3 border-2 border-gray-300 rounded-lg cursor-pointer hover:bg-orange-50 has-[:checked]:border-orange-500 has-[:checked]:bg-orange-50">
+                                    <input type="radio" name="attendance" value="조퇴" class="mr-2">
+                                    <span class="text-sm font-medium">🏃 조퇴</span>
+                                </label>
                             </div>
                         </div>
                     </div>
 
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">성과/특이사항</label>
-                        <textarea id="achievement" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500" placeholder="오늘의 학습 성과나 특이사항을 기록하세요"></textarea>
+                    <!-- 수업 섹션 -->
+                    <div class="bg-blue-50 p-4 rounded-lg space-y-4">
+                        <h3 class="text-lg font-semibold text-blue-900">📚 오늘 수업은 어땠나요?</h3>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">학습 개념</label>
+                            <input type="text" id="lessonConcept" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="예: 이차방정식, 현재완료 시제 등">
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">이해도 (1~5)</label>
+                                <div class="flex items-center space-x-2">
+                                    <input type="range" id="lessonUnderstanding" min="1" max="5" value="3" class="flex-1">
+                                    <span id="lessonUnderstandingValue" class="text-xl font-bold text-blue-600 w-8 text-center">3</span>
+                                </div>
+                                <div class="flex justify-between text-xs text-gray-500 mt-1">
+                                    <span>낮음</span>
+                                    <span>높음</span>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">참여도 (1~5)</label>
+                                <div class="flex items-center space-x-2">
+                                    <input type="range" id="lessonParticipation" min="1" max="5" value="3" class="flex-1">
+                                    <span id="lessonParticipationValue" class="text-xl font-bold text-purple-600 w-8 text-center">3</span>
+                                </div>
+                                <div class="flex justify-between text-xs text-gray-500 mt-1">
+                                    <span>낮음</span>
+                                    <span>높음</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">수업 성과/특이사항</label>
+                            <textarea id="lessonAchievement" rows="2" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="수업 내용과 학생의 반응을 기록하세요"></textarea>
+                        </div>
                     </div>
 
+                    <!-- 숙제 섹션 -->
+                    <div class="bg-purple-50 p-4 rounded-lg space-y-4">
+                        <h3 class="text-lg font-semibold text-purple-900">✏️ 오늘 숙제는 어땠나요?</h3>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">숙제 완성도</label>
+                            <div class="grid grid-cols-3 gap-2">
+                                <label class="flex items-center justify-center px-4 py-3 border-2 border-gray-300 rounded-lg cursor-pointer hover:bg-green-50 has-[:checked]:border-green-500 has-[:checked]:bg-green-50">
+                                    <input type="radio" name="homework" value="완료" class="mr-2">
+                                    <span class="text-sm font-medium">✅ 완료</span>
+                                </label>
+                                <label class="flex items-center justify-center px-4 py-3 border-2 border-gray-300 rounded-lg cursor-pointer hover:bg-yellow-50 has-[:checked]:border-yellow-500 has-[:checked]:bg-yellow-50">
+                                    <input type="radio" name="homework" value="부분완료" class="mr-2">
+                                    <span class="text-sm font-medium">⚠️ 부분</span>
+                                </label>
+                                <label class="flex items-center justify-center px-4 py-3 border-2 border-gray-300 rounded-lg cursor-pointer hover:bg-red-50 has-[:checked]:border-red-500 has-[:checked]:bg-red-50">
+                                    <input type="radio" name="homework" value="미완료" class="mr-2">
+                                    <span class="text-sm font-medium">❌ 미완료</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">숙제 내용</label>
+                            <input type="text" id="homeworkContent" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500" placeholder="예: 수학 문제 풀이 10문제, 영어 단어 외우기 등">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">숙제 성과/특이사항</label>
+                            <textarea id="homeworkAchievement" rows="2" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500" placeholder="숙제 수행 상황과 결과를 기록하세요"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- 추가 메모 -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">메모</label>
-                        <textarea id="recordMemo" rows="2" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500" placeholder="추가 메모"></textarea>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">추가 메모</label>
+                        <textarea id="recordMemo" rows="2" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500" placeholder="기타 전달사항이나 메모"></textarea>
                     </div>
                 </div>
                 
@@ -961,7 +973,7 @@ export const dailyRecordPage = `
         let currentDate = new Date();
         let selectedDate = new Date();
         let students = [];
-        let courses = [];
+        let classes = [];
         let records = [];
         let monthlyRecords = [];
         
@@ -971,11 +983,11 @@ export const dailyRecordPage = `
         const userType = currentUser.user_type || 'director'; // 기본값은 원장님
 
         // 슬라이더 값 표시
-        document.getElementById('understanding').addEventListener('input', (e) => {
-            document.getElementById('understandingValue').textContent = e.target.value;
+        document.getElementById('lessonUnderstanding').addEventListener('input', (e) => {
+            document.getElementById('lessonUnderstandingValue').textContent = e.target.value;
         });
-        document.getElementById('participation').addEventListener('input', (e) => {
-            document.getElementById('participationValue').textContent = e.target.value;
+        document.getElementById('lessonParticipation').addEventListener('input', (e) => {
+            document.getElementById('lessonParticipationValue').textContent = e.target.value;
         });
 
         function formatDate(date) {
@@ -1010,18 +1022,18 @@ export const dailyRecordPage = `
             }
         }
 
-        async function loadCourses() {
+        async function loadClasses() {
             try {
-                const res = await fetch('/api/courses?academyId=' + academyId);
+                const res = await fetch('/api/classes?academyId=' + academyId);
                 const data = await res.json();
                 if (data.success) {
-                    courses = data.courses;
-                    const select = document.getElementById('recordCourse');
+                    classes = data.classes;
+                    const select = document.getElementById('recordClass');
                     select.innerHTML = '<option value="">선택하세요</option>' +
-                        courses.map(c => \`<option value="\${c.id}">\${c.course_name}</option>\`).join('');
+                        classes.map(c => \`<option value="\${c.id}">\${c.class_name}</option>\`).join('');
                 }
             } catch (error) {
-                console.error('과목 목록 로딩 실패:', error);
+                console.error('반 목록 로딩 실패:', error);
             }
         }
 
@@ -1127,11 +1139,6 @@ export const dailyRecordPage = `
             }
 
             container.innerHTML = records.map(record => {
-                const recordTypeColor = {
-                    '수업': 'bg-blue-100 text-blue-800',
-                    '숙제': 'bg-purple-100 text-purple-800'
-                }[record.record_type] || 'bg-gray-100 text-gray-800';
-
                 const attendanceColor = {
                     '출석': 'bg-green-100 text-green-800',
                     '지각': 'bg-yellow-100 text-yellow-800',
@@ -1148,13 +1155,9 @@ export const dailyRecordPage = `
                 return \`
                     <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
                         <div class="flex justify-between items-start mb-3">
-                            <div>
+                            <div class="flex-1">
                                 <h3 class="text-lg font-bold text-gray-900">\${record.student_name}</h3>
-                                <div class="flex items-center gap-2 mt-1">
-                                    <p class="text-sm text-gray-500">\${record.course_name || '과목 미지정'}</p>
-                                    \${record.record_type ? \`<span class="px-2 py-1 rounded text-xs font-medium \${recordTypeColor}">\${record.record_type}</span>\` : ''}
-                                </div>
-                                \${record.concept ? \`<p class="text-xs text-gray-600 mt-1">📖 개념: \${record.concept}</p>\` : ''}
+                                <p class="text-sm text-gray-500">\${record.class_name || '반 미지정'}</p>
                             </div>
                             <div class="flex space-x-2">
                                 <button onclick="editRecord(\${record.id})" class="text-blue-600 hover:text-blue-800">
@@ -1165,13 +1168,36 @@ export const dailyRecordPage = `
                                 </button>
                             </div>
                         </div>
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
+                        
+                        <!-- 출석 -->
+                        <div class="mb-3">
                             \${record.attendance ? \`<span class="px-3 py-1 rounded-full text-sm font-medium \${attendanceColor}">\${record.attendance}</span>\` : ''}
-                            \${record.homework_status ? \`<span class="px-3 py-1 rounded-full text-sm font-medium \${homeworkColor}">과제 \${record.homework_status}</span>\` : ''}
-                            \${record.understanding_level ? \`<span class="px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">이해도 \${record.understanding_level}/5</span>\` : ''}
-                            \${record.participation_level ? \`<span class="px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800">참여도 \${record.participation_level}/5</span>\` : ''}
                         </div>
-                        \${record.achievement ? \`<p class="text-sm text-gray-700 mb-2"><strong>성과:</strong> \${record.achievement}</p>\` : ''}
+
+                        <!-- 수업 정보 -->
+                        \${record.lesson_concept || record.lesson_understanding || record.lesson_participation || record.lesson_achievement ? \`
+                        <div class="bg-blue-50 p-3 rounded-lg mb-3">
+                            <h4 class="font-semibold text-blue-900 mb-2">📚 수업</h4>
+                            \${record.lesson_concept ? \`<p class="text-sm text-gray-700 mb-1">개념: \${record.lesson_concept}</p>\` : ''}
+                            <div class="flex gap-2 mb-2">
+                                \${record.lesson_understanding ? \`<span class="px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-800">이해도 \${record.lesson_understanding}/5</span>\` : ''}
+                                \${record.lesson_participation ? \`<span class="px-2 py-1 rounded text-xs font-medium bg-purple-100 text-purple-800">참여도 \${record.lesson_participation}/5</span>\` : ''}
+                            </div>
+                            \${record.lesson_achievement ? \`<p class="text-sm text-gray-700">성과: \${record.lesson_achievement}</p>\` : ''}
+                        </div>
+                        \` : ''}
+
+                        <!-- 숙제 정보 -->
+                        \${record.homework_status || record.homework_content || record.homework_achievement ? \`
+                        <div class="bg-purple-50 p-3 rounded-lg mb-3">
+                            <h4 class="font-semibold text-purple-900 mb-2">✏️ 숙제</h4>
+                            \${record.homework_status ? \`<span class="px-3 py-1 rounded-full text-sm font-medium \${homeworkColor}">\${record.homework_status}</span>\` : ''}
+                            \${record.homework_content ? \`<p class="text-sm text-gray-700 mt-2">내용: \${record.homework_content}</p>\` : ''}
+                            \${record.homework_achievement ? \`<p class="text-sm text-gray-700 mt-1">성과: \${record.homework_achievement}</p>\` : ''}
+                        </div>
+                        \` : ''}
+
+                        <!-- 추가 메모 -->
                         \${record.memo ? \`<p class="text-sm text-gray-600"><strong>메모:</strong> \${record.memo}</p>\` : ''}
                     </div>
                 \`;
@@ -1182,13 +1208,13 @@ export const dailyRecordPage = `
             document.getElementById('recordModalTitle').textContent = formatDateKorean(selectedDate) + ' 성과 기록 추가';
             document.getElementById('recordForm').reset();
             document.getElementById('recordId').value = '';
-            document.getElementById('understanding').value = 3;
-            document.getElementById('participation').value = 3;
-            document.getElementById('understandingValue').textContent = '3';
-            document.getElementById('participationValue').textContent = '3';
+            document.getElementById('lessonUnderstanding').value = 3;
+            document.getElementById('lessonParticipation').value = 3;
+            document.getElementById('lessonUnderstandingValue').textContent = '3';
+            document.getElementById('lessonParticipationValue').textContent = '3';
             
             await loadStudents();
-            await loadCourses();
+            await loadClasses();
             
             document.getElementById('recordModal').classList.remove('hidden');
         }
@@ -1202,34 +1228,36 @@ export const dailyRecordPage = `
             if (!record) return;
 
             await loadStudents();
-            await loadCourses();
+            await loadClasses();
 
             document.getElementById('recordModalTitle').textContent = '성과 기록 수정';
             document.getElementById('recordId').value = record.id;
             document.getElementById('recordStudent').value = record.student_id;
-            document.getElementById('recordCourse').value = record.course_id || '';
-            document.getElementById('recordConcept').value = record.concept || '';
+            document.getElementById('recordClass').value = record.class_id || '';
             
-            if (record.record_type) {
-                document.querySelector(\`input[name="recordType"][value="\${record.record_type}"]\`).checked = true;
-            }
             if (record.attendance) {
                 document.querySelector(\`input[name="attendance"][value="\${record.attendance}"]\`).checked = true;
             }
+            
+            // 수업 정보
+            document.getElementById('lessonConcept').value = record.lesson_concept || '';
+            if (record.lesson_understanding) {
+                document.getElementById('lessonUnderstanding').value = record.lesson_understanding;
+                document.getElementById('lessonUnderstandingValue').textContent = record.lesson_understanding;
+            }
+            if (record.lesson_participation) {
+                document.getElementById('lessonParticipation').value = record.lesson_participation;
+                document.getElementById('lessonParticipationValue').textContent = record.lesson_participation;
+            }
+            document.getElementById('lessonAchievement').value = record.lesson_achievement || '';
+            
+            // 숙제 정보
             if (record.homework_status) {
                 document.querySelector(\`input[name="homework"][value="\${record.homework_status}"]\`).checked = true;
             }
+            document.getElementById('homeworkContent').value = record.homework_content || '';
+            document.getElementById('homeworkAchievement').value = record.homework_achievement || '';
             
-            if (record.understanding_level) {
-                document.getElementById('understanding').value = record.understanding_level;
-                document.getElementById('understandingValue').textContent = record.understanding_level;
-            }
-            if (record.participation_level) {
-                document.getElementById('participation').value = record.participation_level;
-                document.getElementById('participationValue').textContent = record.participation_level;
-            }
-            
-            document.getElementById('achievement').value = record.achievement || '';
             document.getElementById('recordMemo').value = record.memo || '';
             document.getElementById('recordModal').classList.remove('hidden');
         }
@@ -1256,21 +1284,21 @@ export const dailyRecordPage = `
             e.preventDefault();
             
             const recordId = document.getElementById('recordId').value;
-            const recordType = document.querySelector('input[name="recordType"]:checked');
             const attendance = document.querySelector('input[name="attendance"]:checked');
             const homework = document.querySelector('input[name="homework"]:checked');
             
             const payload = {
                 studentId: document.getElementById('recordStudent').value,
-                courseId: document.getElementById('recordCourse').value || null,
+                classId: document.getElementById('recordClass').value || null,
                 recordDate: formatDate(selectedDate),
-                recordType: recordType ? recordType.value : null,
-                concept: document.getElementById('recordConcept').value || null,
                 attendance: attendance ? attendance.value : null,
+                lessonConcept: document.getElementById('lessonConcept').value || null,
+                lessonUnderstanding: parseInt(document.getElementById('lessonUnderstanding').value),
+                lessonParticipation: parseInt(document.getElementById('lessonParticipation').value),
+                lessonAchievement: document.getElementById('lessonAchievement').value || null,
                 homeworkStatus: homework ? homework.value : null,
-                understandingLevel: parseInt(document.getElementById('understanding').value),
-                participationLevel: parseInt(document.getElementById('participation').value),
-                achievement: document.getElementById('achievement').value,
+                homeworkContent: document.getElementById('homeworkContent').value || null,
+                homeworkAchievement: document.getElementById('homeworkAchievement').value || null,
                 memo: document.getElementById('recordMemo').value
             };
 

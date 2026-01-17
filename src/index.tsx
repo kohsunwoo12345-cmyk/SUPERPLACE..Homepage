@@ -24949,15 +24949,16 @@ app.get('/api/init-student-tables', async (c) => {
       CREATE TABLE IF NOT EXISTS daily_records (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         student_id INTEGER NOT NULL,
-        course_id INTEGER,
+        class_id INTEGER,
         record_date DATE NOT NULL,
-        record_type TEXT CHECK(record_type IN ('수업', '숙제')),
-        concept TEXT,
         attendance TEXT CHECK(attendance IN ('출석', '지각', '결석', '조퇴')),
+        lesson_concept TEXT,
+        lesson_understanding INTEGER CHECK(lesson_understanding >= 1 AND lesson_understanding <= 5),
+        lesson_participation INTEGER CHECK(lesson_participation >= 1 AND lesson_participation <= 5),
+        lesson_achievement TEXT,
         homework_status TEXT CHECK(homework_status IN ('완료', '미완료', '부분완료')),
-        understanding_level INTEGER CHECK(understanding_level >= 1 AND understanding_level <= 5),
-        participation_level INTEGER CHECK(participation_level >= 1 AND participation_level <= 5),
-        achievement TEXT,
+        homework_content TEXT,
+        homework_achievement TEXT,
         memo TEXT,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )
@@ -24965,14 +24966,39 @@ app.get('/api/init-student-tables', async (c) => {
     
     // 기존 테이블에 새 컬럼 추가 (이미 있으면 무시)
     try {
-      await DB.prepare(`ALTER TABLE daily_records ADD COLUMN record_type TEXT CHECK(record_type IN ('수업', '숙제'))`).run()
+      await DB.prepare(`ALTER TABLE daily_records ADD COLUMN class_id INTEGER`).run()
     } catch (e) {
-      console.log('record_type column already exists')
+      console.log('class_id column already exists')
     }
     try {
-      await DB.prepare(`ALTER TABLE daily_records ADD COLUMN concept TEXT`).run()
+      await DB.prepare(`ALTER TABLE daily_records ADD COLUMN lesson_concept TEXT`).run()
     } catch (e) {
-      console.log('concept column already exists')
+      console.log('lesson_concept column already exists')
+    }
+    try {
+      await DB.prepare(`ALTER TABLE daily_records ADD COLUMN lesson_understanding INTEGER`).run()
+    } catch (e) {
+      console.log('lesson_understanding column already exists')
+    }
+    try {
+      await DB.prepare(`ALTER TABLE daily_records ADD COLUMN lesson_participation INTEGER`).run()
+    } catch (e) {
+      console.log('lesson_participation column already exists')
+    }
+    try {
+      await DB.prepare(`ALTER TABLE daily_records ADD COLUMN lesson_achievement TEXT`).run()
+    } catch (e) {
+      console.log('lesson_achievement column already exists')
+    }
+    try {
+      await DB.prepare(`ALTER TABLE daily_records ADD COLUMN homework_content TEXT`).run()
+    } catch (e) {
+      console.log('homework_content column already exists')
+    }
+    try {
+      await DB.prepare(`ALTER TABLE daily_records ADD COLUMN homework_achievement TEXT`).run()
+    } catch (e) {
+      console.log('homework_achievement column already exists')
     }
     
     // 인덱스 생성
