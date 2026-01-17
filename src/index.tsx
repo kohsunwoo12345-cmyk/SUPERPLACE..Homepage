@@ -18079,7 +18079,7 @@ app.post('/api/teachers/:id/assign-class', async (c) => {
     // 반 배정 업데이트
     await c.env.DB.prepare(`
       UPDATE users 
-      SET assigned_class = ?, updated_at = datetime('now')
+      SET assigned_class = ?
       WHERE id = ? AND user_type = 'teacher'
     `).bind(assigned_class, teacherId).run()
     
@@ -18109,7 +18109,7 @@ app.delete('/api/teachers/:id', async (c) => {
     // 선생님 삭제 (실제로는 parent_user_id를 NULL로 설정)
     await c.env.DB.prepare(`
       UPDATE users 
-      SET parent_user_id = NULL, user_type = 'user', assigned_class = NULL, updated_at = datetime('now')
+      SET parent_user_id = NULL, user_type = 'user', assigned_class = NULL
       WHERE id = ? AND user_type = 'teacher'
     `).bind(teacherId).run()
     

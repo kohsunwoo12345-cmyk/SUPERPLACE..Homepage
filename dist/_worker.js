@@ -15021,11 +15021,11 @@ ${o.director_name} 원장님의 승인을 기다려주세요.`,directorName:o.di
       ORDER BY created_at DESC
     `).bind(t).all();return e.json({success:!0,teachers:s.results||[]})}catch(t){return console.error("[Teachers] Error:",t),e.json({success:!1,error:"선생님 목록 조회 중 오류가 발생했습니다.",details:t.message},500)}});d.post("/api/teachers/:id/assign-class",async e=>{try{const t=e.req.param("id"),{assigned_class:s}=await e.req.json();return!t||!s?e.json({success:!1,error:"필수 정보가 누락되었습니다."},400):(await e.env.DB.prepare(`
       UPDATE users 
-      SET assigned_class = ?, updated_at = datetime('now')
+      SET assigned_class = ?
       WHERE id = ? AND user_type = 'teacher'
     `).bind(s,t).run(),e.json({success:!0,message:"반 배정이 완료되었습니다."}))}catch(t){return console.error("[AssignClass] Error:",t),e.json({success:!1,error:"반 배정 중 오류가 발생했습니다.",details:t.message},500)}});d.delete("/api/teachers/:id",async e=>{try{const t=e.req.param("id");return t?(await e.env.DB.prepare(`
       UPDATE users 
-      SET parent_user_id = NULL, user_type = 'user', assigned_class = NULL, updated_at = datetime('now')
+      SET parent_user_id = NULL, user_type = 'user', assigned_class = NULL
       WHERE id = ? AND user_type = 'teacher'
     `).bind(t).run(),e.json({success:!0,message:"선생님이 삭제되었습니다."})):e.json({success:!1,error:"선생님 ID가 필요합니다."},400)}catch(t){return console.error("[DeleteTeacher] Error:",t),e.json({success:!1,error:"선생님 삭제 중 오류가 발생했습니다.",details:t.message},500)}});d.get("/api/teachers/:id/permissions",async e=>{try{const t=e.req.param("id"),s=e.req.query("directorId");if(!s)return e.json({success:!1,error:"원장님 ID가 필요합니다."},400);const r=await e.env.DB.prepare("SELECT id, name, email, permissions FROM users WHERE id = ? AND parent_user_id = ?").bind(t,s).first();if(!r)return e.json({success:!1,error:"선생님을 찾을 수 없습니다."},404);let a={canViewAllStudents:!1,canEditAllStudents:!1,canWriteDailyReports:!1,assignedClasses:[]};if(r.permissions)try{a=JSON.parse(r.permissions)}catch(l){console.error("Failed to parse permissions:",l)}return e.json({success:!0,teacher:{id:r.id,name:r.name,email:r.email},permissions:a})}catch(t){return console.error("[GetPermissions] Error:",t),e.json({success:!1,error:"권한 조회 중 오류가 발생했습니다.",details:t.message},500)}});d.post("/api/teachers/:id/permissions",async e=>{try{const t=e.req.param("id"),{directorId:s,permissions:r}=await e.req.json();if(!s)return e.json({success:!1,error:"원장님 ID가 필요합니다."},400);if(!await e.env.DB.prepare("SELECT id FROM users WHERE id = ? AND parent_user_id = ?").bind(t,s).first())return e.json({success:!1,error:"선생님을 찾을 수 없습니다."},404);try{await e.env.DB.prepare(`
         UPDATE users 
