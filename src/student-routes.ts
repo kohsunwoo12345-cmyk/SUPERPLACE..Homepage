@@ -80,11 +80,13 @@ studentRoutes.delete('/api/classes/:classId', async (c) => {
 
 // ==================== 학생 관리 API ====================
 
-// 학생 목록 조회
+// 학생 목록 조회 (권한 기반 필터링)
 studentRoutes.get('/api/students', async (c) => {
   const { DB } = c.env
   const academyId = c.req.query('academyId') || '1'
   const classId = c.req.query('classId')
+  const userId = c.req.query('userId') // 현재 로그인한 사용자 ID
+  const userType = c.req.query('userType') // 'director' 또는 'teacher'
   
   try {
     let query = `
@@ -94,6 +96,19 @@ studentRoutes.get('/api/students', async (c) => {
       WHERE s.academy_id = ?
     `
     const params = [academyId]
+    
+    // 선생님인 경우 배정받은 반의 학생만 조회
+    if (userType === 'teacher' && userId) {
+      // teacher_classes 테이블에서 해당 선생님의 반 목록 조회
+      query = `
+        SELECT DISTINCT s.*, c.class_name
+        FROM students s
+        LEFT JOIN classes c ON s.class_id = c.id
+        INNER JOIN teacher_classes tc ON s.class_id = tc.class_id
+        WHERE s.academy_id = ? AND tc.teacher_id = ?
+      `
+      params.push(userId)
+    }
     
     if (classId) {
       query += ' AND s.class_id = ?'
@@ -314,16 +329,18 @@ studentRoutes.get('/api/daily-records', async (c) => {
 studentRoutes.post('/api/daily-records', async (c) => {
   const { DB } = c.env
   const body = await c.req.json()
-  const { studentId, courseId, recordDate, attendance, homeworkStatus, understandingLevel, participationLevel, achievement, memo } = body
+  const { studentId, courseId, recordDate, recordType, concept, attendance, homeworkStatus, understandingLevel, participationLevel, achievement, memo } = body
   
   try {
     const result = await DB.prepare(`
-      INSERT INTO daily_records (student_id, course_id, record_date, attendance, homework_status, understanding_level, participation_level, achievement, memo)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO daily_records (student_id, course_id, record_date, record_type, concept, attendance, homework_status, understanding_level, participation_level, achievement, memo)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).bind(
       studentId,
       courseId || null,
       recordDate,
+      recordType || null,
+      concept || null,
       attendance || null,
       homeworkStatus || null,
       understandingLevel || null,
@@ -343,14 +360,14 @@ studentRoutes.put('/api/daily-records/:recordId', async (c) => {
   const { DB } = c.env
   const recordId = c.req.param('recordId')
   const body = await c.req.json()
-  const { courseId, attendance, homeworkStatus, understandingLevel, participationLevel, achievement, memo } = body
+  const { courseId, recordType, concept, attendance, homeworkStatus, understandingLevel, participationLevel, achievement, memo } = body
   
   try {
     await DB.prepare(`
       UPDATE daily_records
-      SET course_id = ?, attendance = ?, homework_status = ?, understanding_level = ?, participation_level = ?, achievement = ?, memo = ?
+      SET course_id = ?, record_type = ?, concept = ?, attendance = ?, homework_status = ?, understanding_level = ?, participation_level = ?, achievement = ?, memo = ?
       WHERE id = ?
-    `).bind(courseId || null, attendance || null, homeworkStatus || null, understandingLevel || null, participationLevel || null, achievement || '', memo || '', recordId).run()
+    `).bind(courseId || null, recordType || null, concept || null, attendance || null, homeworkStatus || null, understandingLevel || null, participationLevel || null, achievement || '', memo || '', recordId).run()
     
     return c.json({ success: true })
   } catch (error) {
