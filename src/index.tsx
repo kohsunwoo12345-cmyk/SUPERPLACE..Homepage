@@ -17642,6 +17642,64 @@ app.post('/api/teachers/applications/:id/reject', async (c) => {
   }
 })
 
+// 원장님: 선생님 직접 추가 (승인 없이 즉시 계정 생성)
+app.post('/api/teachers/add', async (c) => {
+  try {
+    const { name, email, phone, password, directorId } = await c.req.json()
+    
+    if (!directorId || !name || !email || !password) {
+      return c.json({ success: false, error: '필수 정보를 모두 입력해주세요.' }, 400)
+    }
+    
+    // 원장님 정보 조회
+    const director = await c.env.DB.prepare(
+      'SELECT id, academy_name, email FROM users WHERE id = ?'
+    ).bind(directorId).first()
+    
+    if (!director) {
+      return c.json({ success: false, error: '원장님 정보를 찾을 수 없습니다.' }, 404)
+    }
+    
+    // 이메일 중복 확인
+    const existingUser = await c.env.DB.prepare(
+      'SELECT id FROM users WHERE email = ?'
+    ).bind(email).first()
+    
+    if (existingUser) {
+      return c.json({ success: false, error: '이미 사용 중인 이메일입니다.' }, 400)
+    }
+    
+    // 선생님 계정 생성
+    const result = await c.env.DB.prepare(`
+      INSERT INTO users (
+        email, password, name, phone, role, user_type, 
+        parent_user_id, academy_name, created_at
+      )
+      VALUES (?, ?, ?, ?, 'user', 'teacher', ?, ?, datetime('now'))
+    `).bind(
+      email,
+      password,
+      name,
+      phone || null,
+      directorId,
+      director.academy_name
+    ).run()
+    
+    return c.json({ 
+      success: true, 
+      teacherId: result.meta.last_row_id,
+      message: `${name} 선생님이 추가되었습니다.`
+    })
+  } catch (error) {
+    console.error('Add teacher error:', error)
+    return c.json({ 
+      success: false, 
+      error: '선생님 추가 중 오류가 발생했습니다.',
+      details: error.message 
+    }, 500)
+  }
+})
+
 // 원장님: 인증 코드 생성/조회
 app.get('/api/teachers/verification-code', async (c) => {
   try {
@@ -23462,6 +23520,48 @@ app.get('/students', (c) => {
             function showTeacherPermissions(teacherId, teacherName) {
                 alert(\`\${teacherName} 선생님의 권한 설정 기능은 추후 추가됩니다.\`);
             }
+
+            function openAddTeacherModal() {
+                document.getElementById('addTeacherModal').classList.remove('hidden');
+            }
+
+            function closeAddTeacherModal() {
+                document.getElementById('addTeacherModal').classList.add('hidden');
+                document.getElementById('addTeacherForm').reset();
+            }
+
+            // 선생님 추가 폼 제출
+            document.getElementById('addTeacherForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                const data = {
+                    name: formData.get('name'),
+                    email: formData.get('email'),
+                    phone: formData.get('phone'),
+                    password: formData.get('password'),
+                    directorId: currentUser.id
+                };
+
+                try {
+                    const res = await fetch('/api/teachers/add', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+                    const result = await res.json();
+                    if (result.success) {
+                        alert(\`\${data.name} 선생님이 추가되었습니다!\`);
+                        closeAddTeacherModal();
+                        loadTeachersList();
+                        loadDashboard();
+                    } else {
+                        alert('추가 실패: ' + result.error);
+                    }
+                } catch (error) {
+                    console.error('선생님 추가 실패:', error);
+                    alert('선생님 추가 중 오류가 발생했습니다.');
+                }
+            });
 
             loadDashboard();
         </script>

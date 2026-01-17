@@ -15017,7 +15017,13 @@ ${o.director_name} 원장님의 승인을 기다려주세요.`,directorName:o.di
       SET status = 'rejected', processed_at = datetime('now'), 
           processed_by = ?, reject_reason = ?
       WHERE id = ?
-    `).bind(s,r||"원장님에 의해 거부됨",t).run(),e.json({success:!0,message:`${a.name} 선생님의 등록 신청이 거부되었습니다.`})):e.json({success:!1,error:"신청을 찾을 수 없거나 이미 처리되었습니다."},404)}catch(t){return console.error("Reject application error:",t),e.json({success:!1,error:"거부 처리 중 오류가 발생했습니다."},500)}});d.get("/api/teachers/verification-code",async e=>{try{const t=e.req.query("directorId");if(!t)return e.json({success:!1,error:"원장님 ID가 필요합니다."},400);console.log("[VerificationCode] GET request for directorId:",t);try{await e.env.DB.prepare(`
+    `).bind(s,r||"원장님에 의해 거부됨",t).run(),e.json({success:!0,message:`${a.name} 선생님의 등록 신청이 거부되었습니다.`})):e.json({success:!1,error:"신청을 찾을 수 없거나 이미 처리되었습니다."},404)}catch(t){return console.error("Reject application error:",t),e.json({success:!1,error:"거부 처리 중 오류가 발생했습니다."},500)}});d.post("/api/teachers/add",async e=>{try{const{name:t,email:s,phone:r,password:a,directorId:n}=await e.req.json();if(!n||!t||!s||!a)return e.json({success:!1,error:"필수 정보를 모두 입력해주세요."},400);const l=await e.env.DB.prepare("SELECT id, academy_name, email FROM users WHERE id = ?").bind(n).first();if(!l)return e.json({success:!1,error:"원장님 정보를 찾을 수 없습니다."},404);if(await e.env.DB.prepare("SELECT id FROM users WHERE email = ?").bind(s).first())return e.json({success:!1,error:"이미 사용 중인 이메일입니다."},400);const i=await e.env.DB.prepare(`
+      INSERT INTO users (
+        email, password, name, phone, role, user_type, 
+        parent_user_id, academy_name, created_at
+      )
+      VALUES (?, ?, ?, ?, 'user', 'teacher', ?, ?, datetime('now'))
+    `).bind(s,a,t,r||null,n,l.academy_name).run();return e.json({success:!0,teacherId:i.meta.last_row_id,message:`${t} 선생님이 추가되었습니다.`})}catch(t){return console.error("Add teacher error:",t),e.json({success:!1,error:"선생님 추가 중 오류가 발생했습니다.",details:t.message},500)}});d.get("/api/teachers/verification-code",async e=>{try{const t=e.req.query("directorId");if(!t)return e.json({success:!1,error:"원장님 ID가 필요합니다."},400);console.log("[VerificationCode] GET request for directorId:",t);try{await e.env.DB.prepare(`
         CREATE TABLE IF NOT EXISTS academy_verification_codes (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           user_id INTEGER NOT NULL,
@@ -19968,6 +19974,48 @@ ${o.director_name} 원장님의 승인을 기다려주세요.`,directorName:o.di
             function showTeacherPermissions(teacherId, teacherName) {
                 alert(\`\${teacherName} 선생님의 권한 설정 기능은 추후 추가됩니다.\`);
             }
+
+            function openAddTeacherModal() {
+                document.getElementById('addTeacherModal').classList.remove('hidden');
+            }
+
+            function closeAddTeacherModal() {
+                document.getElementById('addTeacherModal').classList.add('hidden');
+                document.getElementById('addTeacherForm').reset();
+            }
+
+            // 선생님 추가 폼 제출
+            document.getElementById('addTeacherForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                const data = {
+                    name: formData.get('name'),
+                    email: formData.get('email'),
+                    phone: formData.get('phone'),
+                    password: formData.get('password'),
+                    directorId: currentUser.id
+                };
+
+                try {
+                    const res = await fetch('/api/teachers/add', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+                    const result = await res.json();
+                    if (result.success) {
+                        alert(\`\${data.name} 선생님이 추가되었습니다!\`);
+                        closeAddTeacherModal();
+                        loadTeachersList();
+                        loadDashboard();
+                    } else {
+                        alert('추가 실패: ' + result.error);
+                    }
+                } catch (error) {
+                    console.error('선생님 추가 실패:', error);
+                    alert('선생님 추가 중 오류가 발생했습니다.');
+                }
+            });
 
             loadDashboard();
         <\/script>
