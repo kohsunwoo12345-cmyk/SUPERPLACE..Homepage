@@ -23408,22 +23408,27 @@ app.get('/teachers', (c) => {
 
         <script>
             let currentTeacherId = null;
+            let currentUserId = null; // 현재 사용자 ID 저장
 
             // 페이지 로드 시 데이터 로드
             window.addEventListener('DOMContentLoaded', () => {
+                // URL에서 userId 가져오기 또는 localStorage에서 가져오기
+                const urlParams = new URLSearchParams(window.location.search);
+                const userIdFromUrl = urlParams.get('userId');
+                
+                if (userIdFromUrl) {
+                    currentUserId = userIdFromUrl;
+                } else {
+                    const user = JSON.parse(localStorage.getItem('user') || '{}');
+                    currentUserId = user.id || 1; // 기본값 1
+                }
+                
                 loadTeachers();
             });
 
             async function loadTeachers() {
-                const user = JSON.parse(localStorage.getItem('user'));
-                if (!user || !user.id) {
-                    alert('로그인이 필요합니다.');
-                    window.location.href = '/';
-                    return;
-                }
-
                 try {
-                    const response = await fetch('/api/teachers?userId=' + user.id);
+                    const response = await fetch('/api/teachers?userId=' + currentUserId);
                     const data = await response.json();
 
                     const teachersList = document.getElementById('teachersList');
@@ -23503,8 +23508,6 @@ app.get('/teachers', (c) => {
                     return;
                 }
 
-                const user = JSON.parse(localStorage.getItem('user'));
-
                 try {
                     const response = await fetch('/api/teachers/add', {
                         method: 'POST',
@@ -23514,7 +23517,7 @@ app.get('/teachers', (c) => {
                             email,
                             phone,
                             assigned_class: assignedClass,
-                            user_id: user.id
+                            user_id: currentUserId
                         })
                     });
 
