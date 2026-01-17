@@ -11545,7 +11545,7 @@ app.post('/api/students', async (c) => {
   }
 })
 
-// DELETE /api/students/:id - 학생 삭제 (관련 데이터도 함께 삭제)
+// DELETE /api/students/:id - 학생 삭제 (PRAGMA로 외래 키 제약 우회)
 app.delete('/api/students/:id', async (c) => {
   try {
     const studentId = c.req.param('id')
@@ -11556,47 +11556,55 @@ app.delete('/api/students/:id', async (c) => {
     
     console.log('[DeleteStudent] Starting deletion for student ID:', studentId)
     
-    // 1. daily_records 삭제 (FOREIGN KEY 제약 조건 해결)
+    // PRAGMA foreign_keys = OFF로 외래 키 제약 임시 비활성화
+    await c.env.DB.prepare(`PRAGMA foreign_keys = OFF`).run()
+    
     try {
-      const result1 = await c.env.DB.prepare(`
-        DELETE FROM daily_records WHERE student_id = ?
+      // 1. daily_records 삭제
+      try {
+        const result1 = await c.env.DB.prepare(`
+          DELETE FROM daily_records WHERE student_id = ?
+        `).bind(studentId).run()
+        console.log('[DeleteStudent] Deleted daily_records:', result1.meta?.changes || 0)
+      } catch (e) {
+        console.log('[DeleteStudent] daily_records error:', e.message)
+      }
+      
+      // 2. learning_reports 삭제
+      try {
+        const result2 = await c.env.DB.prepare(`
+          DELETE FROM learning_reports WHERE student_id = ?
+        `).bind(studentId).run()
+        console.log('[DeleteStudent] Deleted learning_reports:', result2.meta?.changes || 0)
+      } catch (e) {
+        console.log('[DeleteStudent] learning_reports error:', e.message)
+      }
+      
+      // 3. student_courses 삭제
+      try {
+        const result3 = await c.env.DB.prepare(`
+          DELETE FROM student_courses WHERE student_id = ?
+        `).bind(studentId).run()
+        console.log('[DeleteStudent] Deleted student_courses:', result3.meta?.changes || 0)
+      } catch (e) {
+        console.log('[DeleteStudent] student_courses error:', e.message)
+      }
+      
+      // 4. 학생 삭제
+      const finalResult = await c.env.DB.prepare(`
+        DELETE FROM students WHERE id = ?
       `).bind(studentId).run()
-      console.log('[DeleteStudent] Deleted daily_records:', result1.meta?.changes || 0)
-    } catch (e) {
-      console.log('[DeleteStudent] daily_records table might not exist:', e.message)
+      
+      console.log('[DeleteStudent] Deleted student:', finalResult.meta?.changes || 0)
+      
+      return c.json({ 
+        success: true, 
+        message: '학생이 삭제되었습니다.' 
+      })
+    } finally {
+      // PRAGMA foreign_keys = ON으로 외래 키 제약 재활성화
+      await c.env.DB.prepare(`PRAGMA foreign_keys = ON`).run()
     }
-    
-    // 2. learning_reports 삭제 (있을 경우)
-    try {
-      const result2 = await c.env.DB.prepare(`
-        DELETE FROM learning_reports WHERE student_id = ?
-      `).bind(studentId).run()
-      console.log('[DeleteStudent] Deleted learning_reports:', result2.meta?.changes || 0)
-    } catch (e) {
-      console.log('[DeleteStudent] learning_reports table might not exist:', e.message)
-    }
-    
-    // 3. 기타 관련 테이블 삭제 시도
-    try {
-      const result3 = await c.env.DB.prepare(`
-        DELETE FROM student_courses WHERE student_id = ?
-      `).bind(studentId).run()
-      console.log('[DeleteStudent] Deleted student_courses:', result3.meta?.changes || 0)
-    } catch (e) {
-      console.log('[DeleteStudent] student_courses table might not exist:', e.message)
-    }
-    
-    // 4. 학생 삭제
-    const finalResult = await c.env.DB.prepare(`
-      DELETE FROM students WHERE id = ?
-    `).bind(studentId).run()
-    
-    console.log('[DeleteStudent] Deleted student:', finalResult.meta?.changes || 0)
-    
-    return c.json({ 
-      success: true, 
-      message: '학생이 삭제되었습니다.' 
-    })
   } catch (error) {
     console.error('[DeleteStudent] Error:', error)
     return c.json({ 
