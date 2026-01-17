@@ -11545,6 +11545,39 @@ app.post('/api/students', async (c) => {
   }
 })
 
+// DELETE /api/students/:id - 학생 삭제 (관련 데이터도 함께 삭제)
+app.delete('/api/students/:id', async (c) => {
+  try {
+    const studentId = c.req.param('id')
+    
+    if (!studentId) {
+      return c.json({ success: false, error: '학생 ID가 필요합니다.' }, 400)
+    }
+    
+    // 1. daily_records 삭제 (FOREIGN KEY 제약 조건 해결)
+    await c.env.DB.prepare(`
+      DELETE FROM daily_records WHERE student_id = ?
+    `).bind(studentId).run()
+    
+    // 2. 학생 삭제
+    await c.env.DB.prepare(`
+      DELETE FROM students WHERE id = ?
+    `).bind(studentId).run()
+    
+    return c.json({ 
+      success: true, 
+      message: '학생이 삭제되었습니다.' 
+    })
+  } catch (error) {
+    console.error('[DeleteStudent] Error:', error)
+    return c.json({ 
+      success: false, 
+      error: '학생 삭제 중 오류가 발생했습니다.',
+      details: error.message
+    }, 500)
+  }
+})
+
 // 학생 관리 페이지 (리다이렉트)
 app.get('/tools/student-management', (c) => {
   return c.redirect('/students')

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>선생님 추가 테스트</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; }
+        .result { margin: 20px 0; padding: 15px; border-radius: 8px; }
+        .success { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .error { background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+        button { background: #28a745; color: white; padding: 12px 24px; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; }
+        button:hover { background: #218838; }
+        input { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        label { font-weight: bold; display: block; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <h1>🧪 선생님 추가 기능 테스트</h1>
+    
+    <div>
+        <label>이름 *</label>
+        <input type="text" id="name" value="테스트선생님" />
+        
+        <label>이메일 *</label>
+        <input type="email" id="email" value="test@example.com" />
+        
+        <label>전화번호</label>
+        <input type="tel" id="phone" value="010-1234-5678" />
+        
+        <label>담당 반</label>
+        <input type="text" id="class" value="1학년 A반" />
+    </div>
+    
+    <button onclick="testAddTeacher()">선생님 추가하기</button>
+    
+    <div id="result"></div>
+    
+    <script>
+        async function testAddTeacher() {
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const phone = document.getElementById('phone').value;
+            const assignedClass = document.getElementById('class').value;
+            
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<p>처리 중...</p>';
+            
+            try {
+                const response = await fetch('https://superplace-academy.pages.dev/api/teachers/add', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name,
+                        email,
+                        phone,
+                        assigned_class: assignedClass,
+                        user_id: 1
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `
+                        <h3>✅ 성공!</h3>
+                        <p>선생님 ID: ${data.teacherId}</p>
+                        <p>${data.message}</p>
+                        <p><a href="https://superplace-academy.pages.dev/teachers" target="_blank">선생님 목록 보기</a></p>
+                    `;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `
+                        <h3>❌ 실패</h3>
+                        <p>오류: ${data.error}</p>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `
+                    <h3>❌ 네트워크 오류</h3>
+                    <p>${error.message}</p>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>
