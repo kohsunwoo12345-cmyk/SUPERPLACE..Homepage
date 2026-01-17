@@ -18792,81 +18792,28 @@ app.get('/admin/users/:id', async (c) => {
                       <!-- 활성화된 권한 -->
                       <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 info-card">
                           <h3 class="text-lg font-bold text-gray-900 mb-4">⚙️ 활성화된 권한</h3>
-                          ${permissions?.results && permissions.results.length > 0 ? `
-                              <div class="grid grid-cols-2 gap-3">
-                                  ${permissions.results.map(perm => `
-                                      <div class="flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                                          <i class="fas fa-check-circle text-blue-600"></i>
-                                          <span class="text-sm font-medium text-blue-900">${permissionNames[perm.program_key] || perm.program_key}</span>
-                                      </div>
-                                  `).join('')}
-                              </div>
-                          ` : '<p class="text-gray-500 text-sm">활성화된 권한이 없습니다</p>'}
+                          <p class="text-gray-500 text-sm">권한 관리는 사용자 목록 페이지에서 가능합니다</p>
                           <button onclick="window.location.href='/admin/users'" class="mt-4 text-purple-600 hover:text-purple-700 text-sm font-medium">
-                              권한 수정하려면 사용자 목록에서 권한 관리 버튼을 사용하세요 →
+                              사용자 목록으로 이동 →
                           </button>
                       </div>
 
                       <!-- 문의 내역 -->
                       <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 info-card">
                           <h3 class="text-lg font-bold text-gray-900 mb-4">📧 문의 내역</h3>
-                          ${contacts?.results && contacts.results.length > 0 ? `
-                              <div class="space-y-3 max-h-96 overflow-y-auto">
-                                  ${contacts.results.map(contact => `
-                                      <div class="p-4 border border-gray-200 rounded-lg hover:border-purple-300 transition">
-                                          <div class="flex justify-between items-start mb-2">
-                                              <div class="font-medium text-gray-900">${contact.message}</div>
-                                              <span class="px-2 py-1 text-xs font-medium rounded ${contact.status === 'pending' ? 'bg-orange-100 text-orange-700' : 'bg-green-100 text-green-700'}">
-                                                  ${contact.status === 'pending' ? '대기중' : '완료'}
-                                              </span>
-                                          </div>
-                                          <div class="text-xs text-gray-500">
-                                              ${new Date(contact.created_at).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })}
-                                          </div>
-                                      </div>
-                                  `).join('')}
-                              </div>
-                          ` : '<p class="text-gray-500 text-sm">문의 내역이 없습니다</p>'}
+                          <p class="text-gray-500 text-sm">문의 내역은 문의 관리 페이지에서 확인 가능합니다</p>
+                          <button onclick="window.location.href='/admin/contacts'" class="mt-4 text-purple-600 hover:text-purple-700 text-sm font-medium">
+                              문의 관리로 이동 →
+                          </button>
                       </div>
 
-                      <!-- 입금 신청 내역 (deposits 테이블이 있다면) -->
-                      ${deposits?.results && deposits.results.length > 0 ? `
+                      <!-- 추가 정보 -->
                       <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 info-card">
-                          <h3 class="text-lg font-bold text-gray-900 mb-4">💳 입금 신청 내역</h3>
-                          <div class="space-y-3 max-h-96 overflow-y-auto">
-                              ${deposits.results.map(deposit => `
-                                  <div class="p-4 border border-gray-200 rounded-lg hover:border-purple-300 transition">
-                                      <div class="flex justify-between items-start mb-2">
-                                          <div class="font-medium text-gray-900">${(deposit.amount || 0).toLocaleString()}원</div>
-                                          <span class="px-2 py-1 text-xs font-medium rounded ${deposit.status === 'pending' ? 'bg-orange-100 text-orange-700' : deposit.status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">
-                                              ${deposit.status === 'pending' ? '대기중' : deposit.status === 'approved' ? '승인' : '거부'}
-                                          </span>
-                                      </div>
-                                      ${deposit.business_license_url ? `
-                                          <a href="${deposit.business_license_url}" target="_blank" class="text-xs text-purple-600 hover:text-purple-700">
-                                              📄 사업자등록증 보기
-                                          </a>
-                                      ` : ''}
-                                      <div class="text-xs text-gray-500 mt-2">
-                                          ${new Date(deposit.created_at).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })}
-                                      </div>
-                                  </div>
-                              `).join('')}
-                          </div>
-                      </div>
-                      ` : ''}
-
-                      <!-- 추가 정보 (있다면) -->
-                      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 info-card">
-                          <h3 class="text-lg font-bold text-gray-900 mb-4">📊 통계 정보</h3>
-                          <div class="grid grid-cols-3 gap-4">
-                              <div class="text-center p-4 bg-purple-50 rounded-lg">
-                                  <div class="text-2xl font-bold text-purple-600">${permissions?.results?.length || 0}</div>
-                                  <div class="text-xs text-gray-600 mt-1">활성 권한</div>
-                              </div>
+                          <h3 class="text-lg font-bold text-gray-900 mb-4">📊 사용자 정보</h3>
+                          <div class="grid grid-cols-2 gap-4">
                               <div class="text-center p-4 bg-blue-50 rounded-lg">
-                                  <div class="text-2xl font-bold text-blue-600">${contacts?.results?.length || 0}</div>
-                                  <div class="text-xs text-gray-600 mt-1">총 문의</div>
+                                  <div class="text-2xl font-bold text-blue-600">${user.email}</div>
+                                  <div class="text-xs text-gray-600 mt-1">이메일</div>
                               </div>
                               <div class="text-center p-4 bg-green-50 rounded-lg">
                                   <div class="text-2xl font-bold text-green-600">${(user.points || 0).toLocaleString()}</div>
