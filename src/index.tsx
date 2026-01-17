@@ -8618,8 +8618,8 @@ app.get('/dashboard', (c) => {
         </script>
 
         <!-- 입금 신청 모달 -->
-        <div id="depositModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-            <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8">
+        <div id="depositModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 overflow-y-auto">
+            <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 my-8 max-h-[90vh] overflow-y-auto">
                 <div class="flex justify-between items-center mb-6">
                     <h3 class="text-2xl font-bold text-gray-900">💰 입금 신청</h3>
                     <button onclick="closeDepositModal()" class="text-gray-400 hover:text-gray-600">

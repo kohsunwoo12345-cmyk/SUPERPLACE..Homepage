@@ -1,0 +1,16 @@
+name = "superplace-app"
+main = "dist/_worker.js"
+compatibility_date = "2025-12-18"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "webapp-production"
+database_id = "8c106540-21b4-4fa9-8879-c4956e459ca1"
+
+[[r2_buckets]]
+binding = "R2"
+bucket_name = "superplace-documents"
+
+[vars]
+ALIGO_API_KEY = "4bbi3l27pb5qh11tkujl578bttz6vb5j"
+ALIGO_USER_ID = "wangholy"
