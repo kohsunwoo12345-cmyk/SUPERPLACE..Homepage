@@ -2263,29 +2263,29 @@ app.get('/api/admin/sender/verification-requests', async (c) => {
 
 // 서류 양식 다운로드 API
 app.get('/api/downloads/consent-form', async (c) => {
-  // 발신번호 사용 동의 위임장 (업로드된 PDF)
-  const pdfUrl = 'https://www.genspark.ai/api/files/s/00mIWEyz'
-  const response = await fetch(pdfUrl)
+  // 발신번호 사전등록 대리 신청서 (사용자 업로드 파일)
+  const docxUrl = 'https://www.genspark.ai/api/files/s/lIFq9l1L'
+  const response = await fetch(docxUrl)
   const blob = await response.arrayBuffer()
   
   return new Response(blob, {
     headers: {
-      'Content-Type': 'application/pdf',
-      'Content-Disposition': 'attachment; filename="발신번호_사용_동의_위임장.pdf"'
+      'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'Content-Disposition': 'attachment; filename="발신번호_사전등록_대리_신청서.docx"'
     }
   })
 })
 
 app.get('/api/downloads/contract', async (c) => {
-  // 문자메시지 이용계약서 (업로드된 PDF)
-  const pdfUrl = 'https://www.genspark.ai/api/files/s/ngXcQTuf'
-  const response = await fetch(pdfUrl)
+  // 문자메시지 이용계약서 (사용자 업로드 파일)
+  const docxUrl = 'https://www.genspark.ai/api/files/s/aKg3VCJT'
+  const response = await fetch(docxUrl)
   const blob = await response.arrayBuffer()
   
   return new Response(blob, {
     headers: {
-      'Content-Type': 'application/pdf',
-      'Content-Disposition': 'attachment; filename="문자메시지_이용계약서.pdf"'
+      'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'Content-Disposition': 'attachment; filename="문자메시지_이용계약서.docx"'
     }
   })
 })
@@ -19077,13 +19077,14 @@ app.get('/sms/senders', (c) => {
                     <h2 class="text-xl font-semibold text-gray-900 mb-4">발신번호 추가</h2>
                     <div class="flex gap-4">
                         <input type="text" id="phoneNumber" placeholder="010-1234-5678" 
-                            class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                        <button onclick="registerSender()" 
+                            class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            onkeypress="if(event.key === 'Enter') registerSender()">
+                        <button id="registerButton" onclick="registerSender()" 
                             class="bg-purple-600 text-white px-8 py-3 rounded-lg hover:bg-purple-700 transition font-medium shadow-sm">
                             등록하기
                         </button>
                     </div>
-
+                    <p class="text-xs text-gray-500 mt-2">💡 먼저 인증 신청을 완료한 후, 인증된 번호를 여기서 등록해주세요</p>
                 </div>
 
                 <!-- 발신번호 목록 -->
@@ -19184,6 +19185,14 @@ app.get('/sms/senders', (c) => {
 
             // 발신번호 등록
             async function registerSender() {
+                console.log('registerSender called, userId:', currentUserId);
+                
+                if (!currentUserId) {
+                    alert('로그인 정보를 확인할 수 없습니다. 다시 로그인해주세요.');
+                    window.location.href = '/login';
+                    return;
+                }
+                
                 const phoneNumber = document.getElementById('phoneNumber').value.trim();
                 
                 if (!phoneNumber) {
@@ -19192,6 +19201,8 @@ app.get('/sms/senders', (c) => {
                 }
 
                 try {
+                    console.log('Sending register request:', { userId: currentUserId, phoneNumber });
+                    
                     const response = await fetch('/api/sms/sender/register', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -19203,6 +19214,7 @@ app.get('/sms/senders', (c) => {
                     });
 
                     const data = await response.json();
+                    console.log('Register response:', data);
 
                     if (data.success) {
                         alert('✅ 발신번호가 등록되었습니다!');
@@ -19213,7 +19225,7 @@ app.get('/sms/senders', (c) => {
                     }
                 } catch (err) {
                     console.error('Failed to register sender:', err);
-                    alert('발신번호 등록 중 오류가 발생했습니다.');
+                    alert('발신번호 등록 중 오류가 발생했습니다: ' + err.message);
                 }
             }
 
@@ -19244,9 +19256,20 @@ app.get('/sms/senders', (c) => {
 
             // 페이지 로드 시 실행
             (async () => {
+                console.log('Page loaded, initializing...');
                 await checkAuth();
                 if (currentUserId) {
+                    console.log('User authenticated, userId:', currentUserId);
                     loadSenders();
+                    
+                    // 이벤트 리스너 추가 (이중 보안)
+                    const registerBtn = document.getElementById('registerButton');
+                    if (registerBtn) {
+                        registerBtn.addEventListener('click', registerSender);
+                        console.log('Register button event listener added');
+                    }
+                } else {
+                    console.error('User not authenticated');
                 }
             })();
         </script>
@@ -19336,7 +19359,7 @@ app.get('/sms/sender/request', (c) => {
                             <p class="font-bold mb-3">📥 서류 양식 다운로드</p>
                             <div class="flex flex-wrap gap-3">
                                 <a href="/api/downloads/consent-form" download class="px-4 py-2 bg-white border border-green-300 rounded-lg hover:bg-green-100 transition font-medium">
-                                    📄 발신번호 사용 동의 위임장
+                                    📄 발신번호 사전등록 대리 신청서
                                 </a>
                                 <a href="/api/downloads/contract" download class="px-4 py-2 bg-white border border-green-300 rounded-lg hover:bg-green-100 transition font-medium">
                                     📄 문자메시지 이용계약서

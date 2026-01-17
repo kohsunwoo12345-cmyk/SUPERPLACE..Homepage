@@ -2308,7 +2308,7 @@ var Et=Object.defineProperty;var We=e=>{throw TypeError(e)};var kt=(e,t,s)=>t in
           WHEN 'rejected' THEN 3 
         END,
         svr.request_date DESC
-    `).all();return e.json({success:!0,requests:r.results})}catch(t){return console.error("Get admin verification requests error:",t),e.json({success:!1,error:"신청 목록 조회 중 오류가 발생했습니다."},500)}});d.get("/api/downloads/consent-form",async e=>{const r=await(await fetch("https://www.genspark.ai/api/files/s/00mIWEyz")).arrayBuffer();return new Response(r,{headers:{"Content-Type":"application/pdf","Content-Disposition":'attachment; filename="발신번호_사용_동의_위임장.pdf"'}})});d.get("/api/downloads/contract",async e=>{const r=await(await fetch("https://www.genspark.ai/api/files/s/ngXcQTuf")).arrayBuffer();return new Response(r,{headers:{"Content-Type":"application/pdf","Content-Disposition":'attachment; filename="문자메시지_이용계약서.pdf"'}})});d.get("/api/downloads/employment-cert",async e=>e.html(`
+    `).all();return e.json({success:!0,requests:r.results})}catch(t){return console.error("Get admin verification requests error:",t),e.json({success:!1,error:"신청 목록 조회 중 오류가 발생했습니다."},500)}});d.get("/api/downloads/consent-form",async e=>{const r=await(await fetch("https://www.genspark.ai/api/files/s/lIFq9l1L")).arrayBuffer();return new Response(r,{headers:{"Content-Type":"application/vnd.openxmlformats-officedocument.wordprocessingml.document","Content-Disposition":'attachment; filename="발신번호_사전등록_대리_신청서.docx"'}})});d.get("/api/downloads/contract",async e=>{const r=await(await fetch("https://www.genspark.ai/api/files/s/aKg3VCJT")).arrayBuffer();return new Response(r,{headers:{"Content-Type":"application/vnd.openxmlformats-officedocument.wordprocessingml.document","Content-Disposition":'attachment; filename="문자메시지_이용계약서.docx"'}})});d.get("/api/downloads/employment-cert",async e=>e.html(`
     <!DOCTYPE html>
     <html>
     <head>
@@ -15765,13 +15765,14 @@ ${t?t.split(",").map(l=>l.trim()).join(", "):e}과 관련해서 체계적인 커
                     <h2 class="text-xl font-semibold text-gray-900 mb-4">발신번호 추가</h2>
                     <div class="flex gap-4">
                         <input type="text" id="phoneNumber" placeholder="010-1234-5678" 
-                            class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                        <button onclick="registerSender()" 
+                            class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            onkeypress="if(event.key === 'Enter') registerSender()">
+                        <button id="registerButton" onclick="registerSender()" 
                             class="bg-purple-600 text-white px-8 py-3 rounded-lg hover:bg-purple-700 transition font-medium shadow-sm">
                             등록하기
                         </button>
                     </div>
-
+                    <p class="text-xs text-gray-500 mt-2">💡 먼저 인증 신청을 완료한 후, 인증된 번호를 여기서 등록해주세요</p>
                 </div>
 
                 <!-- 발신번호 목록 -->
@@ -15872,6 +15873,14 @@ ${t?t.split(",").map(l=>l.trim()).join(", "):e}과 관련해서 체계적인 커
 
             // 발신번호 등록
             async function registerSender() {
+                console.log('registerSender called, userId:', currentUserId);
+                
+                if (!currentUserId) {
+                    alert('로그인 정보를 확인할 수 없습니다. 다시 로그인해주세요.');
+                    window.location.href = '/login';
+                    return;
+                }
+                
                 const phoneNumber = document.getElementById('phoneNumber').value.trim();
                 
                 if (!phoneNumber) {
@@ -15880,6 +15889,8 @@ ${t?t.split(",").map(l=>l.trim()).join(", "):e}과 관련해서 체계적인 커
                 }
 
                 try {
+                    console.log('Sending register request:', { userId: currentUserId, phoneNumber });
+                    
                     const response = await fetch('/api/sms/sender/register', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -15891,6 +15902,7 @@ ${t?t.split(",").map(l=>l.trim()).join(", "):e}과 관련해서 체계적인 커
                     });
 
                     const data = await response.json();
+                    console.log('Register response:', data);
 
                     if (data.success) {
                         alert('✅ 발신번호가 등록되었습니다!');
@@ -15901,7 +15913,7 @@ ${t?t.split(",").map(l=>l.trim()).join(", "):e}과 관련해서 체계적인 커
                     }
                 } catch (err) {
                     console.error('Failed to register sender:', err);
-                    alert('발신번호 등록 중 오류가 발생했습니다.');
+                    alert('발신번호 등록 중 오류가 발생했습니다: ' + err.message);
                 }
             }
 
@@ -15932,9 +15944,20 @@ ${t?t.split(",").map(l=>l.trim()).join(", "):e}과 관련해서 체계적인 커
 
             // 페이지 로드 시 실행
             (async () => {
+                console.log('Page loaded, initializing...');
                 await checkAuth();
                 if (currentUserId) {
+                    console.log('User authenticated, userId:', currentUserId);
                     loadSenders();
+                    
+                    // 이벤트 리스너 추가 (이중 보안)
+                    const registerBtn = document.getElementById('registerButton');
+                    if (registerBtn) {
+                        registerBtn.addEventListener('click', registerSender);
+                        console.log('Register button event listener added');
+                    }
+                } else {
+                    console.error('User not authenticated');
                 }
             })();
         <\/script>
@@ -16019,7 +16042,7 @@ ${t?t.split(",").map(l=>l.trim()).join(", "):e}과 관련해서 체계적인 커
                             <p class="font-bold mb-3">📥 서류 양식 다운로드</p>
                             <div class="flex flex-wrap gap-3">
                                 <a href="/api/downloads/consent-form" download class="px-4 py-2 bg-white border border-green-300 rounded-lg hover:bg-green-100 transition font-medium">
-                                    📄 발신번호 사용 동의 위임장
+                                    📄 발신번호 사전등록 대리 신청서
                                 </a>
                                 <a href="/api/downloads/contract" download class="px-4 py-2 bg-white border border-green-300 rounded-lg hover:bg-green-100 transition font-medium">
                                     📄 문자메시지 이용계약서
