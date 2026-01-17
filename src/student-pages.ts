@@ -63,6 +63,52 @@ export const classesPage = `
                         </select>
                     </div>
                     <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">수업 요일 *</label>
+                        <div class="grid grid-cols-4 gap-2">
+                            <label class="flex items-center space-x-2 cursor-pointer">
+                                <input type="checkbox" class="schedule-day rounded text-purple-600 focus:ring-purple-500" value="월" id="day-mon">
+                                <span class="text-sm">월</span>
+                            </label>
+                            <label class="flex items-center space-x-2 cursor-pointer">
+                                <input type="checkbox" class="schedule-day rounded text-purple-600 focus:ring-purple-500" value="화" id="day-tue">
+                                <span class="text-sm">화</span>
+                            </label>
+                            <label class="flex items-center space-x-2 cursor-pointer">
+                                <input type="checkbox" class="schedule-day rounded text-purple-600 focus:ring-purple-500" value="수" id="day-wed">
+                                <span class="text-sm">수</span>
+                            </label>
+                            <label class="flex items-center space-x-2 cursor-pointer">
+                                <input type="checkbox" class="schedule-day rounded text-purple-600 focus:ring-purple-500" value="목" id="day-thu">
+                                <span class="text-sm">목</span>
+                            </label>
+                            <label class="flex items-center space-x-2 cursor-pointer">
+                                <input type="checkbox" class="schedule-day rounded text-purple-600 focus:ring-purple-500" value="금" id="day-fri">
+                                <span class="text-sm">금</span>
+                            </label>
+                            <label class="flex items-center space-x-2 cursor-pointer">
+                                <input type="checkbox" class="schedule-day rounded text-purple-600 focus:ring-purple-500" value="토" id="day-sat">
+                                <span class="text-sm">토</span>
+                            </label>
+                            <label class="flex items-center space-x-2 cursor-pointer">
+                                <input type="checkbox" class="schedule-day rounded text-purple-600 focus:ring-purple-500" value="일" id="day-sun">
+                                <span class="text-sm">일</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">수업 시간</label>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs text-gray-500 mb-1">시작 시간</label>
+                                <input type="time" id="startTime" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-500 mb-1">종료 시간</label>
+                                <input type="time" id="endTime" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                            </div>
+                        </div>
+                    </div>
+                    <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">설명</label>
                         <textarea id="description" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500" placeholder="반에 대한 간단한 설명"></textarea>
                     </div>
@@ -119,6 +165,18 @@ export const classesPage = `
                             </button>
                         </div>
                     </div>
+                    \${cls.schedule_days ? \`
+                        <div class="mb-2">
+                            <span class="text-xs text-gray-500"><i class="fas fa-calendar mr-1"></i>수업 요일:</span>
+                            <span class="text-sm font-medium text-purple-600 ml-1">\${cls.schedule_days}</span>
+                        </div>
+                    \` : ''}
+                    \${cls.start_time && cls.end_time ? \`
+                        <div class="mb-3">
+                            <span class="text-xs text-gray-500"><i class="fas fa-clock mr-1"></i>수업 시간:</span>
+                            <span class="text-sm font-medium text-blue-600 ml-1">\${cls.start_time} - \${cls.end_time}</span>
+                        </div>
+                    \` : ''}
                     <p class="text-gray-600 mb-4 text-sm">\${cls.description || '설명 없음'}</p>
                     <div class="flex justify-between items-center pt-4 border-t">
                         <span class="text-sm text-gray-500">
@@ -152,6 +210,21 @@ export const classesPage = `
             document.getElementById('className').value = cls.class_name;
             document.getElementById('grade').value = cls.grade || '';
             document.getElementById('description').value = cls.description || '';
+            
+            // 요일 체크박스 설정
+            document.querySelectorAll('.schedule-day').forEach(cb => cb.checked = false);
+            if (cls.schedule_days) {
+                const days = cls.schedule_days.split(',').map(d => d.trim());
+                days.forEach(day => {
+                    const checkbox = document.querySelector(\`.schedule-day[value="\${day}"]\`);
+                    if (checkbox) checkbox.checked = true;
+                });
+            }
+            
+            // 시간 설정
+            document.getElementById('startTime').value = cls.start_time || '';
+            document.getElementById('endTime').value = cls.end_time || '';
+            
             document.getElementById('classModal').classList.remove('hidden');
         }
 
@@ -176,11 +249,19 @@ export const classesPage = `
             e.preventDefault();
             
             const classId = document.getElementById('classId').value;
+            
+            // 선택된 요일 수집
+            const selectedDays = Array.from(document.querySelectorAll('.schedule-day:checked'))
+                .map(cb => cb.value);
+            
             const payload = {
                 academyId,
                 className: document.getElementById('className').value,
                 grade: document.getElementById('grade').value,
-                description: document.getElementById('description').value
+                description: document.getElementById('description').value,
+                scheduleDays: selectedDays.join(', '),
+                startTime: document.getElementById('startTime').value,
+                endTime: document.getElementById('endTime').value
             };
 
             try {

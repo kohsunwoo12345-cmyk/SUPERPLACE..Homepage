@@ -18415,6 +18415,102 @@ app.put('/api/classes/:id/assign-teacher', async (c) => {
   }
 })
 
+// 반 목록 조회 (학생 관리 시스템용)
+app.get('/api/classes', async (c) => {
+  try {
+    const academyId = c.req.query('academyId') || '1'
+    
+    const result = await c.env.DB.prepare(`
+      SELECT 
+        c.id,
+        c.class_name,
+        c.grade,
+        c.description,
+        c.schedule_days,
+        c.start_time,
+        c.end_time,
+        c.created_at,
+        COUNT(s.id) as student_count
+      FROM classes c
+      LEFT JOIN students s ON c.id = s.class_id AND s.status = 'active'
+      WHERE c.academy_id = ?
+      GROUP BY c.id
+      ORDER BY c.created_at DESC
+    `).bind(academyId).all()
+    
+    return c.json({ success: true, classes: result.results || [] })
+  } catch (error) {
+    console.error('Get classes error:', error)
+    return c.json({ success: false, error: '반 목록 조회 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
+// 반 추가
+app.post('/api/classes', async (c) => {
+  try {
+    const { academyId, className, grade, description, scheduleDays, startTime, endTime } = await c.req.json()
+    
+    if (!className) {
+      return c.json({ success: false, error: '반 이름은 필수입니다.' }, 400)
+    }
+    
+    const result = await c.env.DB.prepare(`
+      INSERT INTO classes (academy_id, class_name, grade, description, schedule_days, start_time, end_time, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))
+    `).bind(academyId || 1, className, grade || null, description || null, scheduleDays || null, startTime || null, endTime || null).run()
+    
+    return c.json({ success: true, classId: result.meta.last_row_id, message: '반이 추가되었습니다.' })
+  } catch (error) {
+    console.error('Create class error:', error)
+    return c.json({ success: false, error: '반 추가 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
+// 반 수정
+app.put('/api/classes/:id', async (c) => {
+  try {
+    const classId = c.req.param('id')
+    const { className, grade, description, scheduleDays, startTime, endTime } = await c.req.json()
+    
+    if (!className) {
+      return c.json({ success: false, error: '반 이름은 필수입니다.' }, 400)
+    }
+    
+    await c.env.DB.prepare(`
+      UPDATE classes 
+      SET class_name = ?, grade = ?, description = ?, schedule_days = ?, start_time = ?, end_time = ?
+      WHERE id = ?
+    `).bind(className, grade || null, description || null, scheduleDays || null, startTime || null, endTime || null, classId).run()
+    
+    return c.json({ success: true, message: '반이 수정되었습니다.' })
+  } catch (error) {
+    console.error('Update class error:', error)
+    return c.json({ success: false, error: '반 수정 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
+// 반 삭제
+app.delete('/api/classes/:id', async (c) => {
+  try {
+    const classId = c.req.param('id')
+    
+    // 학생들의 class_id를 NULL로 설정
+    await c.env.DB.prepare(`
+      UPDATE students SET class_id = NULL WHERE class_id = ?
+    `).bind(classId).run()
+    
+    // 반 삭제
+    await c.env.DB.prepare(`
+      DELETE FROM classes WHERE id = ?
+    `).bind(classId).run()
+    
+    return c.json({ success: true, message: '반이 삭제되었습니다.' })
+  } catch (error) {
+    console.error('Delete class error:', error)
+    return c.json({ success: false, error: '반 삭제 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
 // 원장님: 선생님 권한 조회
 app.get('/api/teachers/:id/permissions', async (c) => {
   try {
@@ -24477,9 +24573,29 @@ app.get('/api/init-student-tables', async (c) => {
         class_name TEXT NOT NULL,
         grade TEXT,
         description TEXT,
+        schedule_days TEXT,
+        start_time TEXT,
+        end_time TEXT,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )
     `).run()
+    
+    // classes 테이블에 스케줄 컴럼 추가 (이미 있으면 무시)
+    try {
+      await DB.prepare(`ALTER TABLE classes ADD COLUMN schedule_days TEXT`).run()
+    } catch (e) {
+      console.log('schedule_days column already exists')
+    }
+    try {
+      await DB.prepare(`ALTER TABLE classes ADD COLUMN start_time TEXT`).run()
+    } catch (e) {
+      console.log('start_time column already exists')
+    }
+    try {
+      await DB.prepare(`ALTER TABLE classes ADD COLUMN end_time TEXT`).run()
+    } catch (e) {
+      console.log('end_time column already exists')
+    }
     
     // 과목(Course) 테이블 생성
     await DB.prepare(`
