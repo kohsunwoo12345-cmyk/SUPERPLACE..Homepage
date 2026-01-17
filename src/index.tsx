@@ -11545,7 +11545,7 @@ app.post('/api/students', async (c) => {
   }
 })
 
-// DELETE /api/students/:id - 학생 삭제 (Soft Delete - 안전)
+// DELETE /api/students/:id - 학생 삭제 (Soft Delete with FK bypass)
 app.delete('/api/students/:id', async (c) => {
   try {
     const studentId = c.req.param('id')
@@ -11556,8 +11556,14 @@ app.delete('/api/students/:id', async (c) => {
     
     console.log('[DeleteStudent] Soft deleting student ID:', studentId)
     
-    // Soft Delete: status를 'deleted'로 변경
-    // 이 방법은 외래키 제약과 무관하게 작동
+    // Step 1: 먼저 class_id를 NULL로 설정 (외래키 해제)
+    await c.env.DB.prepare(`
+      UPDATE students 
+      SET class_id = NULL
+      WHERE id = ?
+    `).bind(studentId).run()
+    
+    // Step 2: status를 'deleted'로 변경
     const result = await c.env.DB.prepare(`
       UPDATE students 
       SET status = 'deleted', updated_at = CURRENT_TIMESTAMP

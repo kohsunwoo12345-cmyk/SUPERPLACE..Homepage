@@ -10074,7 +10074,11 @@ ${t?t.split(",").map(l=>l.trim()).join(", "):e}과 관련해서 체계적인 커
     `).bind(t.id).all();return e.json({success:!0,students:s})}catch(t){return console.error("Get students error:",t),e.json({success:!1,error:"학생 목록 조회 실패"},500)}});d.post("/api/students",async e=>{try{const{name:t,phone:s,grade:r,school:a,subjects:l,parent_name:n,parent_phone:o,notes:i}=await e.req.json(),c=JSON.parse(e.req.header("X-User-Data-Base64")?decodeURIComponent(escape(atob(e.req.header("X-User-Data-Base64")||""))):'{"id":1}');if(!t||!r||!n||!o)return e.json({success:!1,error:"필수 항목을 입력해주세요."},400);const p=await e.env.DB.prepare(`
       INSERT INTO students (name, phone, grade, school, subjects, parent_name, parent_phone, academy_id, enrollment_date, notes, status)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, DATE('now'), ?, 'active')
-    `).bind(t,s||null,r,a||null,l||"",n,o,c.id,i||null).run();return e.json({success:!0,message:"학생이 추가되었습니다.",id:p.meta.last_row_id})}catch(t){return console.error("Add student error:",t),e.json({success:!1,error:"학생 추가 실패"},500)}});d.delete("/api/students/:id",async e=>{try{const t=e.req.param("id");return t?(console.log("[DeleteStudent] Soft deleting student ID:",t),(await e.env.DB.prepare(`
+    `).bind(t,s||null,r,a||null,l||"",n,o,c.id,i||null).run();return e.json({success:!0,message:"학생이 추가되었습니다.",id:p.meta.last_row_id})}catch(t){return console.error("Add student error:",t),e.json({success:!1,error:"학생 추가 실패"},500)}});d.delete("/api/students/:id",async e=>{try{const t=e.req.param("id");return t?(console.log("[DeleteStudent] Soft deleting student ID:",t),await e.env.DB.prepare(`
+      UPDATE students 
+      SET class_id = NULL
+      WHERE id = ?
+    `).bind(t).run(),(await e.env.DB.prepare(`
       UPDATE students 
       SET status = 'deleted', updated_at = CURRENT_TIMESTAMP
       WHERE id = ?
