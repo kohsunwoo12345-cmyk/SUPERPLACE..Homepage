@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>내 입금 내역 - 슈퍼플레이스</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
+        * { font-family: 'Pretendard Variable', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <div class="mb-8 flex items-center justify-between">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">💰 내 입금 내역</h1>
+                <p class="text-gray-600">포인트 충전 신청 내역을 확인하세요</p>
+            </div>
+            <a href="/dashboard" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium">
+                <i class="fas fa-arrow-left mr-2"></i> 대시보드
+            </a>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50 border-b border-gray-200">
+                        <tr>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">신청일시</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">충전 포인트</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">부가세 (10%)</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">총 입금액</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">입금자명</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">은행</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">상태</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">처리일시</th>
+                        </tr>
+                    </thead>
+                    <tbody id="depositList" class="divide-y divide-gray-200">
+                        <tr>
+                            <td colspan="8" class="px-6 py-12 text-center text-gray-500">
+                                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                                로딩 중...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function loadDeposits() {
+            const user = JSON.parse(localStorage.getItem('user'));
+            if (!user || !user.id) {
+                alert('로그인이 필요합니다.');
+                window.location.href = '/';
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/deposit/my-requests/' + user.id);
+                const data = await response.json();
+
+                const depositList = document.getElementById('depositList');
+                
+                if (!data.success || !data.requests || data.requests.length === 0) {
+                    depositList.innerHTML = '<tr><td colspan="8" class="px-6 py-12 text-center text-gray-500"><i class="fas fa-inbox text-4xl text-gray-300 mb-4"></i><div>입금 신청 내역이 없습니다</div></td></tr>';
+                    return;
+                }
+
+                depositList.innerHTML = data.requests.map(req => {
+                    const createdDate = new Date(req.created_at);
+                    const processedDate = req.processed_at ? new Date(req.processed_at) : null;
+                    
+                    const points = parseInt(req.amount) || 0;
+                    const vat = Math.round(points * 0.1);
+                    const totalAmount = points + vat;
+
+                    let statusBadge = '';
+                    if (req.status === 'approved') {
+                        statusBadge = '<span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">✓ 승인</span>';
+                    } else if (req.status === 'rejected') {
+                        statusBadge = '<span class="px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-medium">✗ 거절</span>';
+                    } else {
+                        statusBadge = '<span class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-sm font-medium">⏳ 대기중</span>';
+                    }
+
+                    return '<tr class="hover:bg-gray-50">' +
+                        '<td class="px-6 py-4 text-sm text-gray-900">' + createdDate.toLocaleString('ko-KR') + '</td>' +
+                        '<td class="px-6 py-4 text-sm font-bold text-blue-600">' + points.toLocaleString() + 'P</td>' +
+                        '<td class="px-6 py-4 text-sm text-gray-600">+' + vat.toLocaleString() + '원</td>' +
+                        '<td class="px-6 py-4 text-sm font-bold text-gray-900">' + totalAmount.toLocaleString() + '원</td>' +
+                        '<td class="px-6 py-4 text-sm text-gray-700">' + (req.depositor_name || '-') + '</td>' +
+                        '<td class="px-6 py-4 text-sm text-gray-600">' + (req.bank_name || '-') + '</td>' +
+                        '<td class="px-6 py-4">' + statusBadge + '</td>' +
+                        '<td class="px-6 py-4 text-sm text-gray-600">' + (processedDate ? processedDate.toLocaleString('ko-KR') : '-') + '</td>' +
+                    '</tr>';
+                }).join('');
+            } catch (error) {
+                console.error('입금 내역 로드 실패:', error);
+                const depositList = document.getElementById('depositList');
+                depositList.innerHTML = '<tr><td colspan="8" class="px-6 py-12 text-center text-red-500"><i class="fas fa-exclamation-circle text-4xl mb-4"></i><div>입금 내역을 불러오는데 실패했습니다</div></td></tr>';
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', loadDeposits);
+    </script>
+</body>
+</html>
