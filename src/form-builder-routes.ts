@@ -11,22 +11,27 @@ const app = new Hono<{ Bindings: Bindings }>()
 
 // 인증 미들웨어
 const requireAuth = async (c: any, next: any) => {
-  const sessionId = c.req.cookie('session_id')
-  
-  if (!sessionId) {
-    return c.json({ error: '로그인이 필요합니다' }, 401)
+  try {
+    const sessionId = c.req.cookie('session_id')
+    
+    if (!sessionId) {
+      return c.json({ error: '로그인이 필요합니다' }, 401)
+    }
+
+    const session = await c.env.DB.prepare(`
+      SELECT user_id FROM sessions WHERE session_id = ? AND expires_at > datetime('now')
+    `).bind(sessionId).first()
+
+    if (!session) {
+      return c.json({ error: '세션이 만료되었습니다' }, 401)
+    }
+
+    c.set('userId', session.user_id)
+    await next()
+  } catch (error) {
+    console.error('Auth middleware error:', error)
+    return c.json({ error: '인증 처리 중 오류가 발생했습니다' }, 500)
   }
-
-  const session = await c.env.DB.prepare(`
-    SELECT user_id FROM sessions WHERE session_id = ? AND expires_at > datetime('now')
-  `).bind(sessionId).first()
-
-  if (!session) {
-    return c.json({ error: '세션이 만료되었습니다' }, 401)
-  }
-
-  c.set('userId', session.user_id)
-  await next()
 }
 
 // ========================================
