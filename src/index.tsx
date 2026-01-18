@@ -28026,7 +28026,11 @@ app.get('/tools/form-submissions', async (c) => {
 </html>`)
 })
 
+// Test route to verify deployment
+app.get('/test-deployment', async (c) => {
+  return c.text('Deployment successful! Timestamp: ' + Date.now())
+})
+
 export default app
-// Force rebuild: Sun Jan 18 12:54:06 UTC 2026
-// Force cache bust 1768750490
-// Cache buster: 1768750845
+// Force rebuild: Sun Jan 18 18:13:00 UTC 2026
+// Cache buster: 1768763600

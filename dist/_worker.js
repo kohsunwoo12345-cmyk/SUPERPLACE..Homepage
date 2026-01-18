@@ -22874,4 +22874,4 @@ ${l.director_name} 원장님의 승인을 기다려주세요.`,directorName:l.di
         function closeDetailModal(){document.getElementById('detailModal').classList.add('hidden');currentSubmissionId=null}
     <\/script>
 </body>
-</html>`));const Qe=new Ye,Ls=Object.assign({"/src/index.tsx":d});let Et=!1;for(const[,e]of Object.entries(Ls))e&&(Qe.all("*",t=>{let s;try{s=t.executionCtx}catch{}return e.fetch(t.req.raw,t.env,s)}),Qe.notFound(t=>{let s;try{s=t.executionCtx}catch{}return e.fetch(t.req.raw,t.env,s)}),Et=!0);if(!Et)throw new Error("Can't import modules from ['/src/index.ts','/src/index.tsx','/app/server.ts']");export{Qe as default};
+</html>`));d.get("/test-deployment",async e=>e.text("Deployment successful! Timestamp: "+Date.now()));const Qe=new Ye,Ls=Object.assign({"/src/index.tsx":d});let Et=!1;for(const[,e]of Object.entries(Ls))e&&(Qe.all("*",t=>{let s;try{s=t.executionCtx}catch{}return e.fetch(t.req.raw,t.env,s)}),Qe.notFound(t=>{let s;try{s=t.executionCtx}catch{}return e.fetch(t.req.raw,t.env,s)}),Et=!0);if(!Et)throw new Error("Can't import modules from ['/src/index.ts','/src/index.tsx','/app/server.ts']");export{Qe as default};
