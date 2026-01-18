@@ -626,7 +626,7 @@ var kt=Object.defineProperty;var Ye=e=>{throw TypeError(e)};var _t=(e,t,s)=>t in
                     const classCheckboxes = document.getElementById('classCheckboxes');
                     classCheckboxes.innerHTML = classes.map(c => \`
                         <label class="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
-                            <input type="checkbox" name="classCheckbox" value="\${c.id}" class="w-4 h-4 text-blue-600">
+                            <input type="checkbox" name="classCheckbox" value="\${c.id}" class="w-4 h-4 text-blue-600 cursor-pointer">
                             <span class="text-sm">\${c.class_name}</span>
                         </label>
                     \`).join('');
