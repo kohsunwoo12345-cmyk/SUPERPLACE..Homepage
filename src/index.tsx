@@ -26044,7 +26044,31 @@ app.get('/teachers', (c) => {
                     const data = await res.json();
                     
                     if (data.success) {
-                        alert(\`✅ \${teacherName} 선생님의 권한이 저장되었습니다!\`);
+                        // 저장 후 실제 저장된 권한 확인
+                        const verifyRes = await fetch(\`/api/teachers/\${teacherId}/permissions?directorId=\${currentUser.id}\`);
+                        const verifyData = await verifyRes.json();
+                        
+                        let message = \`✅ \${teacherName} 선생님의 권한이 저장되었습니다!\n\n\`;
+                        if (verifyData.success && verifyData.permissions) {
+                            const p = verifyData.permissions;
+                            if (p.canViewAllStudents) {
+                                message += '📌 권한: 모두 다 공개\n';
+                                message += '• 모든 학생 조회 가능\n';
+                                message += '• 모든 반/과목 관리 가능\n';
+                                message += '• 랜딩페이지 접근 가능';
+                            } else {
+                                message += '📌 권한: 배정된 반만 공개\n';
+                                if (p.assignedClasses && p.assignedClasses.length > 0) {
+                                    message += \`• 배정된 반: \${p.assignedClasses.length}개\n\`;
+                                    message += '• 배정된 반의 학생만 조회\n';
+                                    message += '• 배정된 반의 일일 성과만 작성';
+                                } else {
+                                    message += '⚠️ 배정된 반 없음 - 권한 없음 상태';
+                                }
+                            }
+                        }
+                        
+                        alert(message);
                         closePermissionsModal();
                     } else {
                         alert('권한 저장 실패: ' + data.error);
@@ -27190,7 +27214,31 @@ app.get('/students', (c) => {
                     console.log('🔒 [SavePermissions] Response data:', data);
                     
                     if (data.success) {
-                        alert(\`✅ \${teacherName} 선생님의 권한이 저장되었습니다!\`);
+                        // 저장 후 실제 저장된 권한 확인
+                        const verifyRes = await fetch(\`/api/teachers/\${teacherId}/permissions?directorId=\${currentUser.id}\`);
+                        const verifyData = await verifyRes.json();
+                        
+                        let message = \`✅ \${teacherName} 선생님의 권한이 저장되었습니다!\n\n\`;
+                        if (verifyData.success && verifyData.permissions) {
+                            const p = verifyData.permissions;
+                            if (p.canViewAllStudents) {
+                                message += '📌 권한: 모두 다 공개\n';
+                                message += '• 모든 학생 조회 가능\n';
+                                message += '• 모든 반/과목 관리 가능\n';
+                                message += '• 랜딩페이지 접근 가능';
+                            } else {
+                                message += '📌 권한: 배정된 반만 공개\n';
+                                if (p.assignedClasses && p.assignedClasses.length > 0) {
+                                    message += \`• 배정된 반: \${p.assignedClasses.length}개\n\`;
+                                    message += '• 배정된 반의 학생만 조회\n';
+                                    message += '• 배정된 반의 일일 성과만 작성';
+                                } else {
+                                    message += '⚠️ 배정된 반 없음 - 권한 없음 상태';
+                                }
+                            }
+                        }
+                        
+                        alert(message);
                         console.log('✅ [SavePermissions] Success!');
                         closePermissionsModal();
                     } else {
