@@ -2762,6 +2762,40 @@ app.post('/api/admin/fix-class-ownership', async (c) => {
 })
 
 // 관리자 - 반 소유권 이전 (관리자 → 특정 사용자)
+// 관리자 - 모든 반 조회 (디버그용)
+app.get('/api/admin/classes/all', async (c) => {
+  try {
+    console.log('🔍 [AdminClasses] Fetching ALL classes from database')
+    
+    const classes = await c.env.DB.prepare(`
+      SELECT c.*, 
+             u.email as owner_email, 
+             u.name as owner_name,
+             t.email as teacher_email,
+             t.name as teacher_name
+      FROM classes c
+      LEFT JOIN users u ON c.user_id = u.id
+      LEFT JOIN users t ON c.teacher_id = t.id
+      ORDER BY c.created_at DESC
+    `).all()
+    
+    console.log('📚 [AdminClasses] Found', classes.results?.length || 0, 'total classes')
+    
+    return c.json({ 
+      success: true, 
+      classes: classes.results || [],
+      total: classes.results?.length || 0
+    })
+  } catch (error) {
+    console.error('❌ [AdminClasses] Error:', error)
+    return c.json({ 
+      success: false, 
+      error: '반 조회 중 오류가 발생했습니다.',
+      details: error.message 
+    }, 500)
+  }
+})
+
 app.post('/api/admin/transfer-classes', async (c) => {
   try {
     const { fromUserId, toEmail } = await c.req.json()
