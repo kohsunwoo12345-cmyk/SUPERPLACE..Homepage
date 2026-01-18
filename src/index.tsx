@@ -24633,14 +24633,23 @@ app.get('/students', (c) => {
                     return;
                 }
                 
+                console.log('🔍 Initializing page for user:', currentUser);
+                
                 // user_type이 없으면 role을 사용 (하위 호환성)
                 if (!currentUser.user_type && currentUser.role) {
                     currentUser.user_type = currentUser.role;
                 }
                 
-                // 선생님인 경우 권한 확인
-                if (currentUser.user_type === 'teacher' || currentUser.role === 'teacher') {
-                    console.log('🔍 Teacher account detected, loading permissions...');
+                // 선생님 계정 감지 (role 또는 user_type이 'teacher'이거나, id가 1이 아닌 경우)
+                const isTeacher = currentUser.user_type === 'teacher' 
+                                || currentUser.role === 'teacher'
+                                || (currentUser.id !== 1 && !currentUser.academy_name); // id가 1이 아니고 academy_name이 없으면 선생님
+                
+                if (isTeacher) {
+                    console.log('🔍 Teacher account detected!');
+                    console.log('   - user_type:', currentUser.user_type);
+                    console.log('   - role:', currentUser.role);
+                    console.log('   - id:', currentUser.id);
                     
                     // localStorage에 permissions가 없으면 서버에서 조회
                     if (!currentUser.permissions) {
@@ -24651,14 +24660,27 @@ app.get('/students', (c) => {
                         if (userPermissions) {
                             currentUser.permissions = userPermissions;
                             localStorage.setItem('user', JSON.stringify(currentUser));
-                            console.log('✅ Permissions saved to localStorage');
+                            console.log('✅ Permissions saved to localStorage:', userPermissions);
+                        } else {
+                            // 권한 조회 실패 시 기본 제한적 권한
+                            currentUser.permissions = {
+                                canViewAllStudents: false,
+                                canWriteDailyReports: false,
+                                assignedClasses: []
+                            };
+                            userPermissions = currentUser.permissions;
+                            localStorage.setItem('user', JSON.stringify(currentUser));
+                            console.log('⚠️ Using default restrictive permissions');
                         }
                     } else {
                         userPermissions = currentUser.permissions;
                         console.log('✅ Using permissions from localStorage:', userPermissions);
                     }
                     
+                    // 선생님 UI 제한 적용
                     applyTeacherRestrictions();
+                } else {
+                    console.log('✅ Director account detected, no restrictions');
                 }
                 
                 await loadDashboard();
@@ -24705,30 +24727,43 @@ app.get('/students', (c) => {
             // 선생님 UI 제한 적용
             function applyTeacherRestrictions() {
                 console.log('🔒 Applying teacher restrictions...');
-                console.log('Permissions:', userPermissions);
+                console.log('Current user:', currentUser);
+                console.log('User permissions:', userPermissions);
                 
-                // 선생님 관리 카드 숨기기
+                // 선생님 관리 카드는 무조건 숨기기
                 const teacherCard = document.getElementById('teacherManagementCard');
                 if (teacherCard) {
                     teacherCard.style.display = 'none';
+                    console.log('✅ Hidden: Teacher management card');
                 }
                 
-                // 전체 학생 조회 권한이 없으면 반 관리, 과목 관리 숨기기
-                if (!userPermissions.canViewAllStudents) {
-                    const classCard = document.querySelector('a[href="/students/classes"]');
-                    if (classCard) {
+                // 기본적으로 반 관리와 과목 관리 숨기기
+                // canViewAllStudents가 명시적으로 true인 경우에만 표시
+                const hasFullAccess = userPermissions && userPermissions.canViewAllStudents === true;
+                
+                const classCard = document.querySelector('a[href="/students/classes"]');
+                if (classCard) {
+                    if (hasFullAccess) {
+                        classCard.style.display = 'block';
+                        console.log('✅ Showing: Class management (full access)');
+                    } else {
                         classCard.style.display = 'none';
+                        console.log('✅ Hidden: Class management (restricted)');
                     }
-                    
-                    const courseCard = document.querySelector('a[href="/students/courses"]');
-                    if (courseCard) {
-                        courseCard.style.display = 'none';
-                    }
-                    
-                    console.log('🔒 Hiding class and course management (no full access)');
                 }
                 
-                console.log('✅ Teacher restrictions applied');
+                const courseCard = document.querySelector('a[href="/students/courses"]');
+                if (courseCard) {
+                    if (hasFullAccess) {
+                        courseCard.style.display = 'block';
+                        console.log('✅ Showing: Course management (full access)');
+                    } else {
+                        courseCard.style.display = 'none';
+                        console.log('✅ Hidden: Course management (restricted)');
+                    }
+                }
+                
+                console.log('✅ Teacher restrictions applied. Full access:', hasFullAccess);
             }
 
             async function loadDashboard() {
