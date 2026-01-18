@@ -137,26 +137,38 @@ studentRoutes.get('/api/students', async (c) => {
     
     // 선생님인 경우 배정받은 반의 학생만 조회
     if (userType === 'teacher' && userId) {
+      console.log('[StudentRoutes] Teacher mode, userId:', userId)
+      
       // teacher_permissions 테이블에서 해당 선생님의 권한 조회
-      const permRows = await DB.prepare(
-        'SELECT permission_key, permission_value FROM teacher_permissions WHERE teacher_id = ?'
-      ).bind(userId).all()
-      
-      let canViewAllStudents = false
-      let assignedClasses: number[] = []
-      
-      if (permRows.results) {
-        for (const row of permRows.results) {
-          if (row.permission_key === 'canViewAllStudents') {
-            canViewAllStudents = row.permission_value === '1' || row.permission_value === 1 || row.permission_value === true
-          } else if (row.permission_key === 'assignedClasses' && typeof row.permission_value === 'string') {
-            try {
-              assignedClasses = JSON.parse(row.permission_value)
-            } catch (e) {
-              console.error('[StudentRoutes] Failed to parse assignedClasses:', e)
+      try {
+        const permRows = await DB.prepare(
+          'SELECT permission_key, permission_value FROM teacher_permissions WHERE teacher_id = ?'
+        ).bind(userId).all()
+        
+        console.log('[StudentRoutes] Permission rows:', JSON.stringify(permRows.results))
+        
+        let canViewAllStudents = false
+        let assignedClasses: number[] = []
+        
+        if (permRows.results) {
+          for (const row of permRows.results) {
+            if (row.permission_key === 'canViewAllStudents') {
+              canViewAllStudents = row.permission_value === '1' || row.permission_value === 1 || row.permission_value === true
+            } else if (row.permission_key === 'assignedClasses' && typeof row.permission_value === 'string') {
+              try {
+                assignedClasses = JSON.parse(row.permission_value)
+              } catch (e) {
+                console.error('[StudentRoutes] Failed to parse assignedClasses:', e)
+              }
             }
           }
         }
+        
+        console.log('[StudentRoutes] canViewAllStudents:', canViewAllStudents)
+        console.log('[StudentRoutes] assignedClasses:', JSON.stringify(assignedClasses))
+      } catch (permError) {
+        console.error('[StudentRoutes] Error fetching permissions:', permError)
+        return c.json({ success: false, error: permError.message }, 500)
       }
       
       // 전체 조회 권한이 없으면 배정된 반만 조회

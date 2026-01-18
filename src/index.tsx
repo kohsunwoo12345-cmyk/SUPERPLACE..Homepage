@@ -25,7 +25,9 @@ app.use('/api/*', cors())
 app.use('/static/*', serveStatic({ root: './public' }))
 
 // Mount student management routes
-app.route('/', studentRoutes)
+// FIXME: student-routes.ts의 /api/students가 index.tsx의 /api/students보다 우선되어
+// teacher_classes 에러 발생. 임시로 주석 처리하고 index.tsx의 라우트만 사용
+// app.route('/', studentRoutes)
 
 // ========================================
 // API Routes
