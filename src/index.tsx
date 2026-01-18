@@ -27572,5 +27572,50 @@ app.get('/api/debug/my-permissions', async (c) => {
   }
 })
 
+// 🚀 초기 데이터 생성 API (반 자동 생성)
+app.post('/api/admin/init-sample-classes', async (c) => {
+  try {
+    const { userId } = await c.req.json()
+    
+    if (!userId) {
+      return c.json({ success: false, error: '사용자 ID가 필요합니다.' }, 400)
+    }
+    
+    console.log('[InitClasses] Creating sample classes for userId:', userId)
+    
+    const sampleClasses = [
+      { name: '초등 3학년 수학반', grade: '3학년', description: '초등학교 3학년 수학 수업' },
+      { name: '초등 4학년 수학반', grade: '4학년', description: '초등학교 4학년 수학 수업' },
+      { name: '초등 5학년 수학반', grade: '5학년', description: '초등학교 5학년 수학 수업' }
+    ]
+    
+    const created = []
+    
+    for (const cls of sampleClasses) {
+      const result = await c.env.DB.prepare(`
+        INSERT INTO classes (name, description, user_id, grade_level, max_students, status, created_at)
+        VALUES (?, ?, ?, ?, 20, 'active', datetime('now'))
+      `).bind(cls.name, cls.description, userId, cls.grade).run()
+      
+      created.push({
+        id: result.meta.last_row_id,
+        name: cls.name,
+        grade: cls.grade
+      })
+      
+      console.log('[InitClasses] Created class:', cls.name, 'with ID:', result.meta.last_row_id)
+    }
+    
+    return c.json({
+      success: true,
+      message: `${created.length}개의 샘플 반이 생성되었습니다.`,
+      classes: created
+    })
+  } catch (err) {
+    console.error('[InitClasses] Error:', err)
+    return c.json({ success: false, error: err.message }, 500)
+  }
+})
+
 export default app
 // Force rebuild Tue Jan 13 09:59:11 UTC 2026
