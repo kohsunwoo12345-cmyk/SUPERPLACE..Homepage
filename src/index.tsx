@@ -19108,6 +19108,29 @@ app.delete('/api/classes/:id', async (c) => {
   try {
     const classId = c.req.param('id')
     
+    // 사용자 ID 추출
+    let userId
+    try {
+      const userHeader = c.req.header('X-User-Data-Base64')
+      if (userHeader) {
+        const userData = JSON.parse(decodeURIComponent(escape(atob(userHeader))))
+        userId = userData.id
+      }
+    } catch (err) {
+      console.error('[DeleteClass] Failed to parse user header:', err)
+    }
+    
+    console.log('🗑️ [DeleteClass] Deleting class', classId, 'for user', userId)
+    
+    // 사용자 소유 확인
+    const classCheck = await c.env.DB.prepare('SELECT user_id FROM classes WHERE id = ?').bind(classId).first()
+    if (!classCheck) {
+      return c.json({ success: false, error: '반을 찾을 수 없습니다.' }, 404)
+    }
+    if (userId && classCheck.user_id !== parseInt(userId)) {
+      return c.json({ success: false, error: '이 반을 삭제할 권한이 없습니다.' }, 403)
+    }
+    
     // 학생들의 class_id를 NULL로 설정
     await c.env.DB.prepare(`
       UPDATE students SET class_id = NULL WHERE class_id = ?
@@ -19118,10 +19141,11 @@ app.delete('/api/classes/:id', async (c) => {
       DELETE FROM classes WHERE id = ?
     `).bind(classId).run()
     
+    console.log('✅ [DeleteClass] Class deleted successfully')
     return c.json({ success: true, message: '반이 삭제되었습니다.' })
   } catch (error) {
-    console.error('Delete class error:', error)
-    return c.json({ success: false, error: '반 삭제 중 오류가 발생했습니다.' }, 500)
+    console.error('❌ [DeleteClass] Error:', error)
+    return c.json({ success: false, error: '반 삭제 중 오류가 발생했습니다: ' + error.message }, 500)
   }
 })
 
