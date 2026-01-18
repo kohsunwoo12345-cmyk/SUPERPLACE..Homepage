@@ -409,11 +409,37 @@ async function loginAs(userId, userName) {
     }
 }
 
+// 사용자 삭제
+async function deleteUser(userId, userName) {
+    if (!confirm('⚠️ 경고\n\n' + userName + '님의 계정을 완전히 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없으며, 다음 데이터가 모두 삭제됩니다:\n- 사용자 기본 정보\n- 권한 정보\n- 발신번호 및 인증 요청\n- SMS 발송 내역\n- 랜딩페이지\n- 학생 정보\n- 입금 신청 내역')) return;
+    
+    // 한번 더 확인
+    if (!confirm('정말로 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.')) return;
+
+    try {
+        const response = await fetch('/api/admin/users/' + userId, {
+            method: 'DELETE'
+        });
+
+        const data = await response.json();
+        if (data.success) {
+            alert('✅ ' + userName + '님의 계정이 삭제되었습니다.');
+            location.reload();
+        } else {
+            alert('❌ 오류: ' + (data.error || '사용자 삭제 실패'));
+        }
+    } catch (err) {
+        console.error('Delete user error:', err);
+        alert('❌ 사용자 삭제 중 오류가 발생했습니다: ' + err.message);
+    }
+}
+
 // 전역으로 노출
 window.changePassword = changePassword;
 window.givePoints = givePoints;
 window.deductPoints = deductPoints;
 window.loginAs = loginAs;
+window.deleteUser = deleteUser;
 window.managePermissions = managePermissions;
 window.savePermissions = savePermissions;
 window.closeModal = closeModal;
@@ -449,5 +475,5 @@ window.testPermissionAPI = async function(userId, programKey) {
 };
 
 console.log('✅ All admin functions registered globally');
-console.log('Available functions:', Object.keys({changePassword, givePoints, deductPoints, loginAs, managePermissions, selectAllPermissions}));
+console.log('Available functions:', Object.keys({changePassword, givePoints, deductPoints, loginAs, deleteUser, managePermissions, selectAllPermissions}));
 console.log('💡 Test permission API: testPermissionAPI(userId, "search_volume")');

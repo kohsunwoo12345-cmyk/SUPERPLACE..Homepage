@@ -2701,6 +2701,40 @@ app.get('/api/admin/users', async (c) => {
   }
 })
 
+// 관리자 - 사용자 삭제
+app.delete('/api/admin/users/:id', async (c) => {
+  try {
+    const userId = c.req.param('id')
+    
+    // 관리자는 삭제할 수 없음
+    const user = await c.env.DB.prepare('SELECT role FROM users WHERE id = ?').bind(userId).first()
+    if (!user) {
+      return c.json({ success: false, error: '사용자를 찾을 수 없습니다.' }, 404)
+    }
+    if (user.role === 'admin') {
+      return c.json({ success: false, error: '관리자 계정은 삭제할 수 없습니다.' }, 403)
+    }
+    
+    // 관련 데이터 삭제 (외래 키 제약 조건 고려)
+    await c.env.DB.prepare('DELETE FROM user_permissions WHERE user_id = ?').bind(userId).run()
+    await c.env.DB.prepare('DELETE FROM user_programs WHERE user_id = ?').bind(userId).run()
+    await c.env.DB.prepare('DELETE FROM sender_ids WHERE user_id = ?').bind(userId).run()
+    await c.env.DB.prepare('DELETE FROM sender_verification_requests WHERE user_id = ?').bind(userId).run()
+    await c.env.DB.prepare('DELETE FROM sms_logs WHERE user_id = ?').bind(userId).run()
+    await c.env.DB.prepare('DELETE FROM landing_pages WHERE user_id = ?').bind(userId).run()
+    await c.env.DB.prepare('DELETE FROM students WHERE user_id = ?').bind(userId).run()
+    await c.env.DB.prepare('DELETE FROM deposit_requests WHERE user_id = ?').bind(userId).run()
+    
+    // 사용자 삭제
+    await c.env.DB.prepare('DELETE FROM users WHERE id = ?').bind(userId).run()
+    
+    return c.json({ success: true, message: '사용자가 삭제되었습니다.' })
+  } catch (err) {
+    console.error('Delete user error:', err)
+    return c.json({ success: false, error: '사용자 삭제 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
 // 관리자 - 프로그램 목록
 app.get('/api/admin/programs', async (c) => {
   try {
@@ -17407,10 +17441,26 @@ app.get('/admin/users', async (c) => {
 
         <!-- 메인 컨텐츠 -->
         <div class="max-w-7xl mx-auto px-6 py-8">
-            <div class="mb-8 flex justify-between items-center">
-                <div>
-                    <h1 class="text-3xl font-bold text-gray-900 mb-2">사용자 관리</h1>
-                    <p class="text-gray-600">전체 ${users?.results?.length || 0}명의 사용자</p>
+            <div class="mb-8">
+                <div class="flex justify-between items-center mb-4">
+                    <div>
+                        <h1 class="text-3xl font-bold text-gray-900 mb-2">사용자 관리</h1>
+                        <p class="text-gray-600">전체 <span id="totalUsers">${users?.results?.length || 0}</span>명의 사용자 (<span id="filteredUsers">${users?.results?.length || 0}</span>명 표시)</p>
+                    </div>
+                </div>
+                
+                <!-- 검색 바 -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+                    <div class="flex gap-4 items-center">
+                        <div class="flex-1">
+                            <input type="text" id="searchInput" placeholder="🔍 이름, 이메일, 전화번호, 학원명으로 검색..." 
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                onkeyup="filterUsers()">
+                        </div>
+                        <button onclick="clearSearch()" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition">
+                            초기화
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -17436,7 +17486,7 @@ app.get('/admin/users', async (c) => {
                                 // data 속성으로 전달 (HTML 안전)
                                 const userName = (user.name || '').replace(/"/g, '&quot;')
                                 return `
-                                <tr class="hover:bg-gray-50">
+                                <tr class="hover:bg-gray-50" data-user="${user.id}">
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${user.id}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${user.email}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${user.name}</td>
@@ -17470,6 +17520,9 @@ app.get('/admin/users', async (c) => {
                                                 <a href="/admin/users/${user.id}" class="px-3 py-1.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition text-xs font-medium inline-block" title="상세정보">
                                                     📋 상세
                                                 </a>
+                                                <button onclick="deleteUser(${user.id}, '${userName}')" class="px-3 py-1.5 bg-red-700 text-white rounded-lg hover:bg-red-800 transition text-xs font-medium" title="사용자 삭제">
+                                                    🗑️ 삭제
+                                                </button>
                                             </div>
                                         ` : '-'}
                                     </td>
@@ -17526,6 +17579,42 @@ app.get('/admin/users', async (c) => {
             </div>
         </div>
     </body>
+    <script>
+        // 사용자 검색 필터링
+        function filterUsers() {
+            const searchInput = document.getElementById('searchInput').value.toLowerCase().trim();
+            const rows = document.querySelectorAll('tbody tr[data-user]');
+            let visibleCount = 0;
+            
+            rows.forEach(row => {
+                const email = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+                const name = row.querySelector('td:nth-child(3)').textContent.toLowerCase();
+                const phone = row.querySelector('td:nth-child(4)').textContent.toLowerCase();
+                const academy = row.querySelector('td:nth-child(5)').textContent.toLowerCase();
+                
+                if (email.includes(searchInput) || name.includes(searchInput) || phone.includes(searchInput) || academy.includes(searchInput)) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+            
+            document.getElementById('filteredUsers').textContent = visibleCount;
+        }
+        
+        function clearSearch() {
+            document.getElementById('searchInput').value = '';
+            filterUsers();
+        }
+        
+        // 페이지 로드시 전체 사용자 수 설정
+        window.addEventListener('DOMContentLoaded', () => {
+            const rows = document.querySelectorAll('tbody tr[data-user]');
+            document.getElementById('totalUsers').textContent = rows.length;
+            document.getElementById('filteredUsers').textContent = rows.length;
+        });
+    </script>
     </html>
   `)
 })
