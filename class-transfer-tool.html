@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>반 소유권 완전 해결 도구</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 { font-size: 2em; margin-bottom: 10px; }
+        .header p { opacity: 0.9; }
+        .content { padding: 30px; }
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+        .section h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+        .button-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        button {
+            padding: 15px 25px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .btn-success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+        .btn-info {
+            background: linear-gradient(135deg, #2193b0 0%, #6dd5ed 100%);
+            color: white;
+        }
+        .btn-warning {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+        #output {
+            margin-top: 20px;
+            padding: 20px;
+            background: #282c34;
+            color: #abb2bf;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            max-height: 500px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .output-empty {
+            color: #5c6370;
+            font-style: italic;
+        }
+        .status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .status-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏫 반 소유권 완전 해결 도구</h1>
+            <p>관리자의 반을 kumetang@gmail.com으로 이전하거나 새로 생성합니다</p>
+        </div>
+        
+        <div class="content">
+            <div class="section">
+                <h2>📊 1단계: 현재 상태 진단</h2>
+                <p>현재 데이터베이스에 있는 모든 반과 소유자를 확인합니다.</p>
+                <div class="button-group">
+                    <button class="btn-info" onclick="checkAllClasses()">모든 반 조회</button>
+                    <button class="btn-info" onclick="checkAdminClasses()">관리자 반 확인</button>
+                    <button class="btn-info" onclick="checkKumetangClasses()">Kumetang 반 확인</button>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>🔄 2단계: 반 이전 (관리자 → Kumetang)</h2>
+                <p>관리자가 소유한 반을 kumetang@gmail.com으로 이전합니다.</p>
+                <div class="button-group">
+                    <button class="btn-primary" onclick="transferClasses()">반 이전 실행</button>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>➕ 3단계: 새 반 생성 (직접 생성)</h2>
+                <p>kumetang@gmail.com 계정으로 직접 반을 생성합니다.</p>
+                <div class="button-group">
+                    <button class="btn-success" onclick="createClassForKumetang()">Kumetang에게 반 생성</button>
+                    <button class="btn-success" onclick="createMultipleClasses()">여러 반 한번에 생성</button>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>✅ 4단계: 최종 검증</h2>
+                <p>모든 작업이 성공적으로 완료되었는지 확인합니다.</p>
+                <div class="button-group">
+                    <button class="btn-warning" onclick="fullDiagnosis()">전체 진단 실행</button>
+                    <button class="btn-warning" onclick="clearOutput()">출력 지우기</button>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>📝 실행 로그</h2>
+                <div id="output" class="output-empty">여기에 실행 결과가 표시됩니다...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://superplace-academy.pages.dev';
+        const output = document.getElementById('output');
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString('ko-KR');
+            const prefix = {
+                'info': '📝',
+                'success': '✅',
+                'error': '❌',
+                'warning': '⚠️'
+            }[type] || '📝';
+            
+            output.textContent += `[${timestamp}] ${prefix} ${message}\n`;
+            output.scrollTop = output.scrollHeight;
+            output.classList.remove('output-empty');
+        }
+
+        function clearOutput() {
+            output.textContent = '여기에 실행 결과가 표시됩니다...';
+            output.classList.add('output-empty');
+        }
+
+        async function checkAllClasses() {
+            log('모든 반 조회 중...', 'info');
+            try {
+                const response = await fetch(`${API_BASE}/api/admin/classes/all`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    log(`총 ${data.total}개의 반이 데이터베이스에 있습니다.`, 'success');
+                    
+                    if (data.classes && data.classes.length > 0) {
+                        data.classes.forEach(cls => {
+                            log(`  📚 ${cls.name} (ID: ${cls.id}) - 소유자: ${cls.owner_email || '없음'}`, 'info');
+                        });
+                    } else {
+                        log('  ⚠️ 데이터베이스에 반이 하나도 없습니다!', 'warning');
+                    }
+                } else {
+                    log(`오류: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                log(`API 호출 실패: ${error.message}`, 'error');
+            }
+        }
+
+        async function checkAdminClasses() {
+            log('관리자(userId=1) 반 확인 중...', 'info');
+            try {
+                const response = await fetch(`${API_BASE}/api/classes/list?userId=1&userType=director`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const count = data.classes?.length || 0;
+                    log(`관리자는 ${count}개의 반을 소유하고 있습니다.`, count > 0 ? 'success' : 'warning');
+                    
+                    if (data.classes && data.classes.length > 0) {
+                        data.classes.forEach(cls => {
+                            log(`  📚 ${cls.name} (ID: ${cls.id})`, 'info');
+                        });
+                    }
+                } else {
+                    log(`오류: ${data.error || data.warning}`, 'error');
+                }
+            } catch (error) {
+                log(`API 호출 실패: ${error.message}`, 'error');
+            }
+        }
+
+        async function checkKumetangClasses() {
+            log('kumetang@gmail.com (userId=7) 반 확인 중...', 'info');
+            try {
+                const response = await fetch(`${API_BASE}/api/classes/list?userId=7&userType=director`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const count = data.classes?.length || 0;
+                    log(`kumetang은 ${count}개의 반을 소유하고 있습니다.`, count > 0 ? 'success' : 'warning');
+                    
+                    if (data.classes && data.classes.length > 0) {
+                        data.classes.forEach(cls => {
+                            log(`  📚 ${cls.name} (ID: ${cls.id})`, 'info');
+                        });
+                    }
+                } else {
+                    log(`오류: ${data.error || data.warning}`, 'error');
+                }
+            } catch (error) {
+                log(`API 호출 실패: ${error.message}`, 'error');
+            }
+        }
+
+        async function transferClasses() {
+            log('='.repeat(50), 'info');
+            log('반 이전 작업 시작 (Admin → kumetang@gmail.com)', 'info');
+            log('='.repeat(50), 'info');
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/admin/transfer-classes`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        fromUserId: 1,
+                        toEmail: 'kumetang@gmail.com'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    log(`${data.message}`, 'success');
+                    log(`이전된 반 개수: ${data.transferred}개`, 'success');
+                    
+                    if (data.details && data.details.length > 0) {
+                        data.details.forEach(detail => {
+                            log(`  ✅ ${detail.name} (ID: ${detail.id}) → ${detail.to_email}`, 'success');
+                        });
+                    }
+                    
+                    alert(`성공! ${data.transferred}개의 반이 kumetang@gmail.com으로 이전되었습니다.`);
+                } else {
+                    log(`이전 실패: ${data.error}`, 'error');
+                    alert(`실패: ${data.error}`);
+                }
+            } catch (error) {
+                log(`API 호출 실패: ${error.message}`, 'error');
+                alert(`오류: ${error.message}`);
+            }
+        }
+
+        async function createClassForKumetang() {
+            const className = prompt('반 이름을 입력하세요:', '초등 5학년 수학반');
+            if (!className) return;
+            
+            log(`kumetang@gmail.com에게 "${className}" 반 생성 중...`, 'info');
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/admin/classes/create-for-user`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        targetEmail: 'kumetang@gmail.com',
+                        className: className,
+                        gradeLevel: '초등',
+                        subject: '수학',
+                        description: '관리자가 생성한 반'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    log(`${data.message}`, 'success');
+                    log(`반 ID: ${data.classId}`, 'success');
+                    log(`소유자: ${data.class.owner_email}`, 'success');
+                    alert(`성공! "${className}" 반이 생성되었습니다.`);
+                } else {
+                    log(`생성 실패: ${data.error}`, 'error');
+                    alert(`실패: ${data.error}`);
+                }
+            } catch (error) {
+                log(`API 호출 실패: ${error.message}`, 'error');
+                alert(`오류: ${error.message}`);
+            }
+        }
+
+        async function createMultipleClasses() {
+            log('여러 반 생성 중...', 'info');
+            
+            const classes = [
+                { name: '초등 5학년 수학반', grade: '초등 5학년', subject: '수학' },
+                { name: '초등 6학년 수학반', grade: '초등 6학년', subject: '수학' },
+                { name: '중등 1학년 영어반', grade: '중등 1학년', subject: '영어' }
+            ];
+            
+            let created = 0;
+            for (const cls of classes) {
+                try {
+                    const response = await fetch(`${API_BASE}/api/admin/classes/create-for-user`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            targetEmail: 'kumetang@gmail.com',
+                            className: cls.name,
+                            gradeLevel: cls.grade,
+                            subject: cls.subject,
+                            description: '자동 생성된 반'
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        log(`✅ ${cls.name} 생성 완료 (ID: ${data.classId})`, 'success');
+                        created++;
+                    } else {
+                        log(`❌ ${cls.name} 생성 실패: ${data.error}`, 'error');
+                    }
+                } catch (error) {
+                    log(`❌ ${cls.name} API 오류: ${error.message}`, 'error');
+                }
+                
+                // 각 요청 사이에 약간의 지연
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+            
+            log(`총 ${created}개의 반이 생성되었습니다.`, created > 0 ? 'success' : 'error');
+            alert(`${created}개의 반이 생성되었습니다.`);
+        }
+
+        async function fullDiagnosis() {
+            clearOutput();
+            log('='.repeat(60), 'info');
+            log('전체 진단 시작', 'info');
+            log('='.repeat(60), 'info');
+            
+            await checkAllClasses();
+            log('', 'info');
+            await checkAdminClasses();
+            log('', 'info');
+            await checkKumetangClasses();
+            log('', 'info');
+            log('='.repeat(60), 'info');
+            log('진단 완료', 'success');
+            log('='.repeat(60), 'info');
+        }
+
+        // 페이지 로드 시 자동 진단
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                log('페이지가 로드되었습니다.', 'success');
+                log('원하는 작업 버튼을 클릭하세요.', 'info');
+            }, 500);
+        });
+    </script>
+</body>
+</html>

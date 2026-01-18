@@ -126,19 +126,24 @@ async function loadClasses() {
 // 권한 모달용 반 목록 로드
 async function loadAvailableClasses() {
     try {
-        // academyId는 1로 고정 (모든 반이 academy_id = 1로 저장되어 있음)
-        const response = await fetch(`/api/classes?academyId=1`);
+        console.log('🔄 Loading available classes for user:', currentUser.id);
+        // user_id 기반으로 반 조회
+        const response = await fetch(`/api/classes/list?userId=${currentUser.id}&userType=director`);
         const data = await response.json();
+        
+        console.log('📚 Available classes API response:', data);
         
         if (data.success) {
             availableClasses = data.classes || [];
-            console.log('Available classes loaded:', availableClasses.length, 'classes');
+            console.log('✅ Available classes loaded:', availableClasses.length, 'classes');
+            console.log('📋 Classes:', availableClasses);
         } else {
-            console.error('Failed to load available classes:', data.error);
+            console.error('❌ Failed to load available classes:', data.error);
             availableClasses = [];
         }
     } catch (error) {
-        console.error('Load available classes error:', error);
+        console.error('❌ Load available classes error:', error);
+        console.error('Stack:', error.stack);
         availableClasses = [];
     }
 }
@@ -435,8 +440,8 @@ function createPermissionModal() {
                     value="${cls.id}"
                 >
                 <div class="ml-3 flex-1">
-                    <div class="font-medium text-gray-900">${cls.class_name}</div>
-                    <div class="text-xs text-gray-500">${cls.grade || '학년 미지정'} - 학생 ${cls.student_count || 0}명</div>
+                    <div class="font-medium text-gray-900">${cls.name || cls.class_name || '이름 없음'}</div>
+                    <div class="text-xs text-gray-500">${cls.grade_level || cls.grade || '학년 미지정'} - 학생 ${cls.student_count || 0}명</div>
                 </div>
             </label>
         `).join('')

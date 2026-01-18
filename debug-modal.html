@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>반 배정 디버그 테스트</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 모든 요소에 pointer-events 강제 적용 */
+        input[type="checkbox"] {
+            pointer-events: auto !important;
+            cursor: pointer !important;
+        }
+        label {
+            pointer-events: auto !important;
+            cursor: pointer !important;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-8">
+    <h1 class="text-2xl font-bold mb-4">반 배정 체크박스 테스트</h1>
+    
+    <div class="bg-white p-6 rounded-lg shadow-lg max-w-md">
+        <h2 class="font-bold mb-3">방법 1: 기본 스타일</h2>
+        <div class="grid grid-cols-1 gap-2 p-3 border border-gray-300 rounded-lg">
+            <label class="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                <input type="checkbox" class="w-4 h-4 cursor-pointer" onclick="console.log('체크박스1 클릭됨')">
+                <span class="text-sm">중1-A반</span>
+            </label>
+            <label class="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                <input type="checkbox" class="w-4 h-4 cursor-pointer" onclick="console.log('체크박스2 클릭됨')">
+                <span class="text-sm">중1-B반</span>
+            </label>
+        </div>
+    </div>
+
+    <div class="bg-white p-6 rounded-lg shadow-lg max-w-md mt-4">
+        <h2 class="font-bold mb-3">방법 2: pointer-events 강제</h2>
+        <div class="grid grid-cols-1 gap-2 p-3 border border-gray-300 rounded-lg" style="pointer-events: auto;">
+            <label class="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-2 rounded" style="pointer-events: auto;">
+                <input type="checkbox" class="w-4 h-4 cursor-pointer" style="pointer-events: auto;" onclick="console.log('체크박스3 클릭됨')">
+                <span class="text-sm">중2-A반</span>
+            </label>
+            <label class="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-2 rounded" style="pointer-events: auto;">
+                <input type="checkbox" class="w-4 h-4 cursor-pointer" style="pointer-events: auto;" onclick="console.log('체크박스4 클릭됨')">
+                <span class="text-sm">중2-B반</span>
+            </label>
+        </div>
+    </div>
+
+    <script>
+        console.log('페이지 로드됨');
+        document.querySelectorAll('input[type="checkbox"]').forEach((cb, idx) => {
+            console.log(`체크박스 ${idx + 1}:`, cb);
+            cb.addEventListener('click', (e) => {
+                console.log(`체크박스 ${idx + 1} 클릭 이벤트:`, e.target.checked);
+            });
+        });
+    </script>
+</body>
+</html>
