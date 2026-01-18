@@ -2694,6 +2694,73 @@ app.put('/api/admin/contacts/:id', async (c) => {
 
 // ==================== 관리자 API ====================
 
+// 관리자 - 반 소유권 수정 (마이그레이션)
+app.post('/api/admin/fix-class-ownership', async (c) => {
+  try {
+    const { email, targetUserId } = await c.req.json()
+    
+    if (!email && !targetUserId) {
+      return c.json({ success: false, error: '이메일 또는 대상 사용자 ID가 필요합니다.' }, 400)
+    }
+    
+    console.log('🔧 [FixClassOwnership] Request:', { email, targetUserId })
+    
+    // 이메일로 사용자 찾기
+    let userId = targetUserId
+    if (email && !userId) {
+      const user = await c.env.DB.prepare('SELECT id FROM users WHERE email = ?').bind(email).first()
+      if (!user) {
+        return c.json({ success: false, error: '사용자를 찾을 수 없습니다.' }, 404)
+      }
+      userId = user.id
+    }
+    
+    console.log('👤 [FixClassOwnership] Target user_id:', userId)
+    
+    // 해당 사용자의 반 찾기 (teacher_id로)
+    const classesAsTeacher = await c.env.DB.prepare(
+      'SELECT id, name, user_id, teacher_id FROM classes WHERE teacher_id = ?'
+    ).bind(userId).all()
+    
+    console.log('📚 [FixClassOwnership] Found', classesAsTeacher.results?.length || 0, 'classes as teacher')
+    
+    if (!classesAsTeacher.results || classesAsTeacher.results.length === 0) {
+      return c.json({ 
+        success: true, 
+        message: '수정할 반이 없습니다.',
+        updated: 0
+      })
+    }
+    
+    // user_id를 teacher_id와 같게 수정
+    let updated = 0
+    for (const cls of classesAsTeacher.results) {
+      if (cls.user_id !== cls.teacher_id) {
+        await c.env.DB.prepare(
+          'UPDATE classes SET user_id = ? WHERE id = ?'
+        ).bind(cls.teacher_id, cls.id).run()
+        updated++
+        console.log(`✅ [FixClassOwnership] Updated class ${cls.id} (${cls.name}): user_id ${cls.user_id} → ${cls.teacher_id}`)
+      }
+    }
+    
+    return c.json({ 
+      success: true, 
+      message: `${updated}개의 반 소유권이 수정되었습니다.`,
+      updated,
+      details: classesAsTeacher.results.map(c => ({
+        id: c.id,
+        name: c.name,
+        old_user_id: c.user_id,
+        new_user_id: c.teacher_id
+      }))
+    })
+  } catch (error) {
+    console.error('❌ [FixClassOwnership] Error:', error)
+    return c.json({ success: false, error: '반 소유권 수정 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
 // 관리자 - 사용자 목록
 app.get('/api/admin/users', async (c) => {
   try {
@@ -19164,28 +19231,30 @@ app.put('/api/classes/:id/assign-teacher', async (c) => {
 // 반 목록 조회 (학생 관리 시스템용)
 app.get('/api/classes', async (c) => {
   try {
-    // X-User-Data-Base64 헤더에서 academy_id 추출
-    let academyId = c.req.query('academyId')
+    // X-User-Data-Base64 헤더 또는 쿼리에서 user_id 추출
+    let userId = c.req.query('academyId') || c.req.query('userId')
     
     try {
       const userHeader = c.req.header('X-User-Data-Base64')
-      if (userHeader && !academyId) {
+      if (userHeader && !userId) {
         const userData = JSON.parse(decodeURIComponent(escape(atob(userHeader))))
-        academyId = userData.id || userData.academy_id
+        userId = userData.id
       }
     } catch (err) {
       console.error('[GetClasses] Failed to parse user header:', err)
     }
     
-    if (!academyId) {
-      return c.json({ success: false, error: '학원 ID가 필요합니다.' }, 400)
+    if (!userId) {
+      return c.json({ success: false, error: '사용자 ID가 필요합니다.' }, 400)
     }
+    
+    console.log('🔍 [GetClasses] Loading classes for user_id:', userId)
     
     const result = await c.env.DB.prepare(`
       SELECT 
         c.id,
-        c.class_name,
-        c.grade,
+        c.name as class_name,
+        c.grade_level as grade,
         c.description,
         c.schedule_days,
         c.start_time,
@@ -19194,14 +19263,16 @@ app.get('/api/classes', async (c) => {
         COUNT(s.id) as student_count
       FROM classes c
       LEFT JOIN students s ON c.id = s.class_id AND s.status = 'active'
-      WHERE c.academy_id = ?
+      WHERE c.user_id = ?
       GROUP BY c.id
       ORDER BY c.created_at DESC
-    `).bind(academyId).all()
+    `).bind(userId).all()
+    
+    console.log('✅ [GetClasses] Found', result.results?.length || 0, 'classes')
     
     return c.json({ success: true, classes: result.results || [] })
   } catch (error) {
-    console.error('Get classes error:', error)
+    console.error('❌ [GetClasses] Error:', error)
     return c.json({ success: false, error: '반 목록 조회 중 오류가 발생했습니다.' }, 500)
   }
 })
@@ -19209,35 +19280,42 @@ app.get('/api/classes', async (c) => {
 // 반 추가
 app.post('/api/classes', async (c) => {
   try {
-    let { academyId, className, grade, description, scheduleDays, startTime, endTime } = await c.req.json()
+    let { academyId, userId, className, grade, description, scheduleDays, startTime, endTime } = await c.req.json()
     
-    // X-User-Data-Base64 헤더에서 academy_id 추출
+    // academyId 또는 userId 사용 (호환성)
+    userId = userId || academyId
+    
+    // X-User-Data-Base64 헤더에서 user_id 추출
     try {
       const userHeader = c.req.header('X-User-Data-Base64')
-      if (userHeader && !academyId) {
+      if (userHeader && !userId) {
         const userData = JSON.parse(decodeURIComponent(escape(atob(userHeader))))
-        academyId = userData.id || userData.academy_id
+        userId = userData.id
       }
     } catch (err) {
       console.error('[CreateClass] Failed to parse user header:', err)
     }
     
-    if (!academyId) {
-      return c.json({ success: false, error: '학원 ID가 필요합니다.' }, 400)
+    if (!userId) {
+      return c.json({ success: false, error: '사용자 ID가 필요합니다.' }, 400)
     }
     
     if (!className) {
       return c.json({ success: false, error: '반 이름은 필수입니다.' }, 400)
     }
     
+    console.log('➕ [CreateClass] Creating class for user_id:', userId, 'name:', className)
+    
     const result = await c.env.DB.prepare(`
-      INSERT INTO classes (academy_id, class_name, grade, description, schedule_days, start_time, end_time, created_at)
+      INSERT INTO classes (user_id, name, grade_level, description, schedule_days, start_time, end_time, created_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))
-    `).bind(academyId || 1, className, grade || null, description || null, scheduleDays || null, startTime || null, endTime || null).run()
+    `).bind(userId, className, grade || null, description || null, scheduleDays || null, startTime || null, endTime || null).run()
+    
+    console.log('✅ [CreateClass] Class created with id:', result.meta.last_row_id)
     
     return c.json({ success: true, classId: result.meta.last_row_id, message: '반이 추가되었습니다.' })
   } catch (error) {
-    console.error('Create class error:', error)
+    console.error('❌ [CreateClass] Error:', error)
     return c.json({ success: false, error: '반 추가 중 오류가 발생했습니다.' }, 500)
   }
 })
