@@ -8081,7 +8081,7 @@ app.get('/dashboard', (c) => {
                 </div>
 
                 <!-- My Landing Pages Section -->
-                <div id="landingPagesSection" class="mb-12">
+                <div id="landingPagesSection" class="mb-12" style="display: none;">
                     <div class="flex justify-between items-center mb-6">
                         <h2 class="text-2xl font-bold text-gray-900">🚀 내 랜딩페이지</h2>
                         <a href="/tools/landing-builder" class="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all shadow-md hover:shadow-lg font-medium flex items-center space-x-2">
