@@ -369,133 +369,135 @@ export const studentsListPage = `
     </div>
 
     <!-- 학생 추가/수정 모달 -->
-    <div id="studentModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <h2 id="modalTitle" class="text-2xl font-bold mb-6 sticky top-0 bg-white z-10 pb-4 border-b -mx-8 px-8 -mt-8 pt-8">새 학생 등록</h2>
-            <form id="studentForm">
-                <input type="hidden" id="studentId">
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-2">
-                    <!-- 학생 기본 정보 -->
-                    <div class="col-span-2 border-b pb-4 mb-2">
-                        <h3 class="text-lg font-semibold text-gray-800">📋 학생 정보</h3>
-                    </div>
+    <div id="studentModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-hidden">
+        <div class="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] flex flex-col">
+            <h2 id="modalTitle" class="text-2xl font-bold px-8 pt-8 pb-4 border-b bg-white">새 학생 등록</h2>
+            <div class="overflow-y-auto px-8 py-6 flex-1">
+                <form id="studentForm">
+                    <input type="hidden" id="studentId">
                     
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">학생 이름 *</label>
-                        <input type="text" id="studentName" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="홍길동">
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">학생 연락처</label>
-                        <input type="tel" id="studentPhone" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="010-1234-5678" maxlength="13">
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">반 배정 (최대 3개)</label>
-                        <div id="classCheckboxes" class="grid grid-cols-1 gap-2 p-3 border border-gray-300 rounded-lg max-h-48 overflow-y-auto">
-                            <!-- 반 목록이 동적으로 로드됩니다 -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- 학생 기본 정보 -->
+                        <div class="col-span-2 border-b pb-4 mb-2">
+                            <h3 class="text-lg font-semibold text-gray-800">📋 학생 정보</h3>
                         </div>
-                        <input type="hidden" id="studentClasses">
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">학년 *</label>
-                        <select id="studentGrade" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                            <option value="">선택하세요</option>
-                            <option value="초1">초1</option>
-                            <option value="초2">초2</option>
-                            <option value="초3">초3</option>
-                            <option value="초4">초4</option>
-                            <option value="초5">초5</option>
-                            <option value="초6">초6</option>
-                            <option value="중1">중1</option>
-                            <option value="중2">중2</option>
-                            <option value="중3">중3</option>
-                            <option value="고1">고1</option>
-                            <option value="고2">고2</option>
-                            <option value="고3">고3</option>
-                        </select>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">수강 과목 *</label>
-                        <div id="subjectsCheckboxes" class="grid grid-cols-2 gap-2 p-3 border border-gray-300 rounded-lg">
-                            <label class="flex items-center space-x-2">
-                                <input type="checkbox" name="subject" value="영어" class="w-4 h-4 text-blue-600">
-                                <span class="text-sm">영어</span>
-                            </label>
-                            <label class="flex items-center space-x-2">
-                                <input type="checkbox" name="subject" value="수학" class="w-4 h-4 text-blue-600">
-                                <span class="text-sm">수학</span>
-                            </label>
-                            <label class="flex items-center space-x-2">
-                                <input type="checkbox" name="subject" value="과학" class="w-4 h-4 text-blue-600">
-                                <span class="text-sm">과학</span>
-                            </label>
-                            <label class="flex items-center space-x-2">
-                                <input type="checkbox" name="subject" value="국어" class="w-4 h-4 text-blue-600">
-                                <span class="text-sm">국어</span>
-                            </label>
-                            <label class="flex items-center space-x-2">
-                                <input type="checkbox" name="subject" value="프로그램1" class="w-4 h-4 text-blue-600">
-                                <span class="text-sm">프로그램1</span>
-                            </label>
-                            <label class="flex items-center space-x-2">
-                                <input type="checkbox" name="subject" value="프로그램2" class="w-4 h-4 text-blue-600">
-                                <span class="text-sm">프로그램2</span>
-                            </label>
-                            <label class="flex items-center space-x-2">
-                                <input type="checkbox" name="subject" value="프로그램3" class="w-4 h-4 text-blue-600">
-                                <span class="text-sm">프로그램3</span>
-                            </label>
-                            <label class="flex items-center space-x-2">
-                                <input type="checkbox" name="subject" value="프로그램4" class="w-4 h-4 text-blue-600">
-                                <span class="text-sm">프로그램4</span>
-                            </label>
-                            <label class="flex items-center space-x-2">
-                                <input type="checkbox" name="subject" value="프로그램5" class="w-4 h-4 text-blue-600">
-                                <span class="text-sm">프로그램5</span>
-                            </label>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">학생 이름 *</label>
+                            <input type="text" id="studentName" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="홍길동">
                         </div>
-                        <input type="hidden" id="studentSubjects" required>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">학생 연락처</label>
+                            <input type="tel" id="studentPhone" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="010-1234-5678" maxlength="13">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">반 배정 (최대 3개)</label>
+                            <div id="classCheckboxes" class="grid grid-cols-1 gap-2 p-3 border border-gray-300 rounded-lg max-h-48 overflow-y-auto bg-white">
+                                <!-- 반 목록이 동적으로 로드됩니다 -->
+                            </div>
+                            <input type="hidden" id="studentClasses">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">학년 *</label>
+                            <select id="studentGrade" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                <option value="">선택하세요</option>
+                                <option value="초1">초1</option>
+                                <option value="초2">초2</option>
+                                <option value="초3">초3</option>
+                                <option value="초4">초4</option>
+                                <option value="초5">초5</option>
+                                <option value="초6">초6</option>
+                                <option value="중1">중1</option>
+                                <option value="중2">중2</option>
+                                <option value="중3">중3</option>
+                                <option value="고1">고1</option>
+                                <option value="고2">고2</option>
+                                <option value="고3">고3</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">수강 과목 *</label>
+                            <div id="subjectsCheckboxes" class="grid grid-cols-2 gap-2 p-3 border border-gray-300 rounded-lg">
+                                <label class="flex items-center space-x-2 cursor-pointer">
+                                    <input type="checkbox" name="subject" value="영어" class="w-4 h-4 text-blue-600 cursor-pointer">
+                                    <span class="text-sm">영어</span>
+                                </label>
+                                <label class="flex items-center space-x-2 cursor-pointer">
+                                    <input type="checkbox" name="subject" value="수학" class="w-4 h-4 text-blue-600 cursor-pointer">
+                                    <span class="text-sm">수학</span>
+                                </label>
+                                <label class="flex items-center space-x-2 cursor-pointer">
+                                    <input type="checkbox" name="subject" value="과학" class="w-4 h-4 text-blue-600 cursor-pointer">
+                                    <span class="text-sm">과학</span>
+                                </label>
+                                <label class="flex items-center space-x-2 cursor-pointer">
+                                    <input type="checkbox" name="subject" value="국어" class="w-4 h-4 text-blue-600 cursor-pointer">
+                                    <span class="text-sm">국어</span>
+                                </label>
+                                <label class="flex items-center space-x-2 cursor-pointer">
+                                    <input type="checkbox" name="subject" value="프로그램1" class="w-4 h-4 text-blue-600 cursor-pointer">
+                                    <span class="text-sm">프로그램1</span>
+                                </label>
+                                <label class="flex items-center space-x-2 cursor-pointer">
+                                    <input type="checkbox" name="subject" value="프로그램2" class="w-4 h-4 text-blue-600 cursor-pointer">
+                                    <span class="text-sm">프로그램2</span>
+                                </label>
+                                <label class="flex items-center space-x-2 cursor-pointer">
+                                    <input type="checkbox" name="subject" value="프로그램3" class="w-4 h-4 text-blue-600 cursor-pointer">
+                                    <span class="text-sm">프로그램3</span>
+                                </label>
+                                <label class="flex items-center space-x-2 cursor-pointer">
+                                    <input type="checkbox" name="subject" value="프로그램4" class="w-4 h-4 text-blue-600 cursor-pointer">
+                                    <span class="text-sm">프로그램4</span>
+                                </label>
+                                <label class="flex items-center space-x-2 cursor-pointer">
+                                    <input type="checkbox" name="subject" value="프로그램5" class="w-4 h-4 text-blue-600 cursor-pointer">
+                                    <span class="text-sm">프로그램5</span>
+                                </label>
+                            </div>
+                            <input type="hidden" id="studentSubjects" required>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">등록일 *</label>
+                            <input type="date" id="enrollmentDate" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        
+                        <!-- 학부모 정보 -->
+                        <div class="col-span-2 border-b pb-4 mb-2 mt-4">
+                            <h3 class="text-lg font-semibold text-gray-800">👨‍👩‍👧 학부모 정보</h3>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">학부모 이름 *</label>
+                            <input type="text" id="parentName" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="홍길동">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">학부모 연락처 *</label>
+                            <input type="tel" id="parentPhone" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="010-1234-5678" maxlength="13">
+                        </div>
+                        
+                        <div class="col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">메모</label>
+                            <textarea id="studentMemo" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="특이사항이나 기타 메모"></textarea>
+                        </div>
                     </div>
                     
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">등록일 *</label>
-                        <input type="date" id="enrollmentDate" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                    <div class="flex space-x-3 mt-6">
+                        <button type="submit" class="flex-1 bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700">
+                            저장
+                        </button>
+                        <button type="button" onclick="hideModal()" class="flex-1 bg-gray-300 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-400">
+                            취소
+                        </button>
                     </div>
-                    
-                    <!-- 학부모 정보 -->
-                    <div class="col-span-2 border-b pb-4 mb-2 mt-4">
-                        <h3 class="text-lg font-semibold text-gray-800">👨‍👩‍👧 학부모 정보</h3>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">학부모 이름 *</label>
-                        <input type="text" id="parentName" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="홍길동">
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">학부모 연락처 *</label>
-                        <input type="tel" id="parentPhone" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="010-1234-5678" maxlength="13">
-                    </div>
-                    
-                    <div class="col-span-2">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">메모</label>
-                        <textarea id="studentMemo" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="특이사항이나 기타 메모"></textarea>
-                    </div>
-                </div>
-                
-                <div class="flex space-x-3 mt-6">
-                    <button type="submit" class="flex-1 bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700">
-                        저장
-                    </button>
-                    <button type="button" onclick="hideModal()" class="flex-1 bg-gray-300 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-400">
-                        취소
-                    </button>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
     </div>
 
@@ -724,9 +726,9 @@ export const studentsListPage = `
             
             // 모달 컨텐츠를 맨 위로 스크롤
             setTimeout(() => {
-                const modalContent = modal.querySelector('.bg-white.rounded-xl');
-                if (modalContent) {
-                    modalContent.scrollTop = 0;
+                const scrollableContent = modal.querySelector('.overflow-y-auto');
+                if (scrollableContent) {
+                    scrollableContent.scrollTop = 0;
                 }
             }, 10);
         }
@@ -776,9 +778,9 @@ export const studentsListPage = `
             
             // 모달 컨텐츠를 맨 위로 스크롤
             setTimeout(() => {
-                const modalContent = modal.querySelector('.bg-white.rounded-xl');
-                if (modalContent) {
-                    modalContent.scrollTop = 0;
+                const scrollableContent = modal.querySelector('.overflow-y-auto');
+                if (scrollableContent) {
+                    scrollableContent.scrollTop = 0;
                 }
             }, 10);
         }
