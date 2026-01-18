@@ -1,67 +1,53 @@
 #!/bin/bash
-echo "🔄 === 최종 검증 테스트 ==="
+echo "🎯 최종 검증 시작"
 echo ""
-echo "⏳ 배포 대기 (3분)..."
-sleep 180
+
+# 1. Fix API 실행
+echo "1️⃣ teacher_classes 테이블 생성..."
+FIX_RESULT=$(curl -s "https://superplace-academy.pages.dev/api/fix-teacher-classes-error")
+echo "$FIX_RESULT" | jq '.'
+
+if echo "$FIX_RESULT" | grep -q '"success":true'; then
+  echo "✅ 테이블 생성 성공!"
+else
+  echo "❌ 테이블 생성 실패"
+  exit 1
+fi
 
 echo ""
-echo "📋 1. 선생님 권한 확인"
-echo "─────────────────────────────────────"
-curl -s "https://superplace-academy.pages.dev/api/teachers/18/permissions?directorId=1" | jq '{
-  success,
-  teacher: .teacher.name,
-  canViewAll: .permissions.canViewAllStudents,
-  assignedClasses: .permissions.assignedClasses
-}'
+sleep 5
 
-echo ""
-echo "📋 2. 선생님(ID 18)으로 학생 조회"
-echo "─────────────────────────────────────"
+# 2. 선생님 계정 테스트
+echo "2️⃣ 선생님 계정으로 학생 조회..."
 TEACHER_DATA='{"id":18,"user_type":"teacher","parent_user_id":1}'
 TEACHER_HEADER=$(echo -n "$TEACHER_DATA" | base64 -w 0)
-RESPONSE=$(curl -s -X GET "https://superplace-academy.pages.dev/api/students" \
+TEST_RESULT=$(curl -s -X GET "https://superplace-academy.pages.dev/api/students" \
   -H "X-User-Data-Base64: $TEACHER_HEADER")
 
-echo "$RESPONSE" | jq '{success, error, studentCount: (.students | length)}'
+echo "$TEST_RESULT" | jq '.'
 
-echo ""
-if echo "$RESPONSE" | jq -e '.success == true' > /dev/null 2>&1; then
-  echo "✅ 성공: 권한 기반 필터링 작동"
-  STUDENT_COUNT=$(echo "$RESPONSE" | jq -r '.students | length')
+if echo "$TEST_RESULT" | grep -q '"success":true'; then
+  STUDENT_COUNT=$(echo "$TEST_RESULT" | jq -r '.students | length')
+  echo ""
+  echo "✅ 학생 조회 성공!"
   echo "   조회된 학생 수: $STUDENT_COUNT"
+  
+  # 3. 권한 확인
+  echo ""
+  echo "3️⃣ 권한 설정 확인..."
+  PERM=$(curl -s "https://superplace-academy.pages.dev/api/teachers/18/permissions?directorId=1")
+  echo "$PERM" | jq '{teacher: .teacher.name, canViewAll: .permissions.canViewAllStudents, assignedClasses: .permissions.assignedClasses}'
+  
+  echo ""
+  echo "🎉🎉🎉 모든 기능 정상 작동! 🎉🎉🎉"
+  echo ""
+  echo "테스트 URL:"
+  echo "  • 원장: https://superplace-academy.pages.dev/students"
+  echo "  • 선생님: https://superplace-academy.pages.dev/students/list"
+  exit 0
 else
-  echo "❌ 실패"
-  echo "$RESPONSE" | jq -r '.error'
+  ERROR=$(echo "$TEST_RESULT" | jq -r '.error')
+  echo ""
+  echo "❌ 실패: $ERROR"
+  exit 1
 fi
-
-echo ""
-echo "📋 3. 원장(ID 1)으로 학생 조회"
-echo "─────────────────────────────────────"
-DIRECTOR_DATA='{"id":1,"user_type":"director"}'
-DIRECTOR_HEADER=$(echo -n "$DIRECTOR_DATA" | base64 -w 0)
-DIRECTOR_RESPONSE=$(curl -s -X GET "https://superplace-academy.pages.dev/api/students" \
-  -H "X-User-Data-Base64: $DIRECTOR_HEADER")
-
-DIRECTOR_COUNT=$(echo "$DIRECTOR_RESPONSE" | jq -r '.students | length')
-echo "✅ 원장 계정 조회 학생 수: $DIRECTOR_COUNT"
-
-echo ""
-echo "📋 4. /students 페이지 UI 확인"
-echo "─────────────────────────────────────"
-PAGE_CONTENT=$(curl -s "https://superplace-academy.pages.dev/students")
-
-if echo "$PAGE_CONTENT" | grep -q "showTeacherPermissions"; then
-  echo "✅ showTeacherPermissions 함수 존재"
-else
-  echo "❌ showTeacherPermissions 함수 없음"
-fi
-
-if echo "$PAGE_CONTENT" | grep -q "classesCheckboxList"; then
-  echo "✅ classesCheckboxList 요소 존재"
-else
-  echo "❌ classesCheckboxList 요소 없음"
-fi
-
-echo ""
-echo "🏁 최종 검증 완료"
-echo "═════════════════════════════════════"

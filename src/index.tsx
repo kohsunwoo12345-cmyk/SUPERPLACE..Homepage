@@ -25333,7 +25333,13 @@ app.get('/academy-management', (c) => {
   `)
 })
 
+// Redirect /teachers to /students (all features are in /students page)
 app.get('/teachers', (c) => {
+  return c.redirect('/students')
+})
+
+// OLD /teachers page (temporarily disabled due to JS errors)
+app.get('/teachers-old', (c) => {
   return c.html(`
     <!DOCTYPE html>
     <html lang="ko">

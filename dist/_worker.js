@@ -20506,7 +20506,7 @@ ${l.director_name} 원장님의 승인을 기다려주세요.`,directorName:l.di
         <\/script>
     </body>
     </html>
-  `));d.get("/teachers",e=>e.html(`
+  `));d.get("/teachers",e=>e.redirect("/students"));d.get("/teachers-old",e=>e.html(`
     <!DOCTYPE html>
     <html lang="ko">
     <head>
