@@ -27480,5 +27480,52 @@ app.get('/api/debug/student-references/:studentId', async (c) => {
   }
 })
 
+// 디버깅 API: 현재 선생님의 저장된 권한 확인
+app.get('/api/debug/my-permissions', async (c) => {
+  try {
+    const user = JSON.parse(c.req.header('X-User-Data-Base64') ? decodeURIComponent(escape(atob(c.req.header('X-User-Data-Base64') || ''))) : '{"id":1}')
+    
+    console.log('🔍 [DebugPermissions] User ID:', user.id)
+    
+    // teacher_permissions 테이블에서 권한 조회
+    const permRows = await c.env.DB.prepare(
+      'SELECT permission_key, permission_value FROM teacher_permissions WHERE teacher_id = ?'
+    ).bind(user.id).all()
+    
+    console.log('🔍 [DebugPermissions] Found', permRows.results?.length || 0, 'permission rows')
+    
+    const permissions = {}
+    if (permRows.results) {
+      for (const row of permRows.results) {
+        const key = row.permission_key
+        const value = row.permission_value
+        
+        // 값 파싱
+        if (key === 'assignedClasses' && typeof value === 'string') {
+          try {
+            permissions[key] = JSON.parse(value)
+          } catch (e) {
+            permissions[key] = value
+          }
+        } else if (key === 'canViewAllStudents' || key === 'canWriteDailyReports') {
+          permissions[key] = value === '1' || value === 1 || value === true
+        } else {
+          permissions[key] = value
+        }
+      }
+    }
+    
+    return c.json({
+      success: true,
+      userId: user.id,
+      rawRows: permRows.results,
+      parsedPermissions: permissions
+    })
+  } catch (err) {
+    console.error('❌ [DebugPermissions] Error:', err)
+    return c.json({ success: false, error: err.message }, 500)
+  }
+})
+
 export default app
 // Force rebuild Tue Jan 13 09:59:11 UTC 2026
