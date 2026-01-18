@@ -12891,6 +12891,35 @@ app.get('/api/learning-reports/detail/:report_id', async (c) => {
   }
 })
 
+// 리포트 필드 업데이트 API
+app.put('/api/learning-reports/:report_id/update-field', async (c) => {
+  try {
+    const reportId = c.req.param('report_id')
+    const { field, value } = await c.req.json()
+    
+    const allowedFields = ['strengths', 'weaknesses', 'improvements', 'recommendations', 'next_month_goals', 'ai_analysis', 'parent_message']
+    
+    if (!allowedFields.includes(field)) {
+      return c.json({ success: false, error: '허용되지 않은 필드입니다.' }, 400)
+    }
+    
+    const report = await c.env.DB.prepare('SELECT id FROM learning_reports WHERE id = ?').bind(reportId).first()
+    
+    if (!report) {
+      return c.json({ success: false, error: '리포트를 찾을 수 없습니다.' }, 404)
+    }
+    
+    await c.env.DB.prepare(`UPDATE learning_reports SET ${field} = ?, updated_at = datetime('now') WHERE id = ?`).bind(value, reportId).run()
+    
+    console.log(`Report ${reportId} field ${field} updated`)
+    
+    return c.json({ success: true, message: '저장되었습니다.', field, value })
+  } catch (err) {
+    console.error('Update report field error:', err)
+    return c.json({ success: false, error: '저장 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
 // 프로필 수정 페이지
 app.get('/profile', (c) => {
   return c.html(`

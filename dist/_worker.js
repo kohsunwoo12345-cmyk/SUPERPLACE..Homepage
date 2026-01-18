@@ -11355,7 +11355,7 @@ ${I}
       FROM learning_reports lr
       JOIN students s ON lr.student_id = s.id
       WHERE lr.id = ?
-    `).bind(t).first();return s?e.json({success:!0,report:s}):e.json({success:!1,error:"리포트를 찾을 수 없습니다."},404)}catch(t){return console.error("Get report detail error:",t),e.json({success:!1,error:"리포트 조회 실패"},500)}});d.get("/profile",e=>e.html(`
+    `).bind(t).first();return s?e.json({success:!0,report:s}):e.json({success:!1,error:"리포트를 찾을 수 없습니다."},404)}catch(t){return console.error("Get report detail error:",t),e.json({success:!1,error:"리포트 조회 실패"},500)}});d.put("/api/learning-reports/:report_id/update-field",async e=>{try{const t=e.req.param("report_id"),{field:s,value:r}=await e.req.json();return["strengths","weaknesses","improvements","recommendations","next_month_goals","ai_analysis","parent_message"].includes(s)?await e.env.DB.prepare("SELECT id FROM learning_reports WHERE id = ?").bind(t).first()?(await e.env.DB.prepare(`UPDATE learning_reports SET ${s} = ?, updated_at = datetime('now') WHERE id = ?`).bind(r,t).run(),console.log(`Report ${t} field ${s} updated`),e.json({success:!0,message:"저장되었습니다.",field:s,value:r})):e.json({success:!1,error:"리포트를 찾을 수 없습니다."},404):e.json({success:!1,error:"허용되지 않은 필드입니다."},400)}catch(t){return console.error("Update report field error:",t),e.json({success:!1,error:"저장 중 오류가 발생했습니다."},500)}});d.get("/profile",e=>e.html(`
     <!DOCTYPE html>
     <html lang="ko">
     <head>
