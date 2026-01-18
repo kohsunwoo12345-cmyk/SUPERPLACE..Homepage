@@ -3629,6 +3629,7 @@ function generateLandingPageHTML(template_type: string, data: any): string {
     'academy-intro': generateAcademyIntroHTML,
     'program-promo': generateProgramPromoHTML,
     'event-promo': generateEventPromoHTML,
+    'parent-letter': generateParentLetterHTML,
     'student-report': generateStudentReportHTML,
     'admission-info': generateAdmissionInfoHTML,
     'academy-stats': generateAcademyStatsHTML,
@@ -3998,6 +3999,94 @@ function generateEventPromoHTML(data: any): string {
                     <p class="text-center text-gray-400 text-sm mt-6">⏰ 서두르세요! 조기 마감될 수 있습니다</p>
                 </div>
             </div>
+        </div>
+    </div>
+</body>
+</html>
+  `
+}
+
+// 가정통신문 페이지 템플릿
+function generateParentLetterHTML(data: any): string {
+  const { academyName, noticeTitle, noticeDate, noticeContent, keyPoints, contactInfo, staffName } = data
+  const keyPointsList = keyPoints ? keyPoints.split('\n').filter((p: string) => p.trim()) : []
+  
+  return `
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${noticeTitle} - ${academyName}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
+      * { font-family: 'Pretendard Variable', sans-serif; }
+      .notice-border { border-left: 4px solid #10b981; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-green-50 to-blue-50 min-h-screen py-8 px-4">
+    <div class="max-w-3xl mx-auto">
+        <!-- 헤더 -->
+        <div class="bg-white rounded-t-2xl p-8 shadow-lg">
+            <div class="text-center border-b-2 border-green-500 pb-6">
+                <div class="inline-block bg-green-100 px-6 py-2 rounded-full mb-4">
+                    <span class="text-green-800 font-bold text-sm">📧 가정통신문</span>
+                </div>
+                <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
+                    ${academyName}
+                </h1>
+                <p class="text-gray-600 text-lg">${noticeDate}</p>
+            </div>
+        </div>
+
+        <!-- 본문 -->
+        <div class="bg-white p-8 shadow-lg">
+            <div class="mb-8">
+                <h2 class="text-2xl md:text-3xl font-bold text-gray-900 mb-6 pb-3 border-b-2 border-gray-200">
+                    ${noticeTitle}
+                </h2>
+                <div class="text-lg text-gray-700 leading-relaxed whitespace-pre-wrap mb-8">
+                    ${noticeContent}
+                </div>
+            </div>
+
+            ${keyPointsList.length > 0 ? `
+            <div class="bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-6 mb-8 notice-border">
+                <h3 class="text-xl font-bold text-green-800 mb-4 flex items-center gap-2">
+                    <span class="text-2xl">📌</span>
+                    주요 안내사항
+                </h3>
+                <div class="space-y-3">
+                    ${keyPointsList.map((point: string) => `
+                        <div class="flex items-start gap-3 bg-white p-4 rounded-lg shadow-sm">
+                            <span class="text-green-600 font-bold text-lg flex-shrink-0">•</span>
+                            <span class="text-gray-800 leading-relaxed">${point}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+            ` : ''}
+
+            <!-- 문의처 -->
+            <div class="bg-gradient-to-r from-blue-500 to-green-500 rounded-xl p-6 text-white">
+                <div class="flex items-center justify-between flex-wrap gap-4">
+                    <div>
+                        <p class="font-bold text-lg mb-2">📞 문의하기</p>
+                        <p class="text-2xl font-bold">${contactInfo}</p>
+                        ${staffName ? `<p class="text-sm opacity-90 mt-1">${staffName}</p>` : ''}
+                    </div>
+                    <a href="tel:${contactInfo.replace(/[^0-9]/g, '')}" class="bg-white text-green-600 px-6 py-3 rounded-xl font-bold hover:shadow-lg transition transform hover:scale-105">
+                        전화하기
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 푸터 -->
+        <div class="bg-gray-100 rounded-b-2xl p-6 shadow-lg text-center">
+            <p class="text-gray-600 text-sm">항상 최선을 다하는 ${academyName}이 되겠습니다.</p>
+            <p class="text-gray-500 text-xs mt-2">감사합니다 🙏</p>
         </div>
     </div>
 </body>
@@ -10683,41 +10772,46 @@ app.get('/tools/landing-builder', (c) => {
                 <!-- 템플릿 선택 -->
                 <div class="bg-white rounded-xl p-8 border border-gray-200 mb-6">
                     <h2 class="text-2xl font-bold text-gray-900 mb-6">1️⃣ 템플릿 선택</h2>
-                    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <button onclick="selectTemplate('academy-intro', event)" class="template-btn p-6 border-2 border-gray-200 rounded-xl hover:border-purple-600 transition text-left">
-                            <div class="text-3xl mb-3">🏫</div>
-                            <div class="font-bold text-lg mb-2">학원 소개 페이지</div>
-                            <p class="text-sm text-gray-600">학원의 강점과 특징을 효과적으로 홍보</p>
+                    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <button onclick="selectTemplate('academy-intro', event)" class="template-btn group p-6 border-2 border-gray-200 rounded-xl hover:border-purple-500 hover:shadow-xl transition-all duration-300 text-left bg-white">
+                            <div class="text-4xl mb-3 group-hover:scale-110 transition-transform duration-300">🏫</div>
+                            <div class="font-bold text-lg mb-2 text-gray-900 group-hover:text-purple-600 transition-colors">학원 소개 페이지</div>
+                            <p class="text-sm text-gray-600 leading-relaxed">학원의 강점과 특징을 효과적으로 홍보</p>
                         </button>
-                        <button onclick="selectTemplate('program-promo', event)" class="template-btn p-6 border-2 border-gray-200 rounded-xl hover:border-purple-600 transition text-left">
-                            <div class="text-3xl mb-3">📚</div>
-                            <div class="font-bold text-lg mb-2">프로그램 홍보</div>
-                            <p class="text-sm text-gray-600">특정 프로그램 등록을 유도하는 페이지</p>
+                        <button onclick="selectTemplate('program-promo', event)" class="template-btn group p-6 border-2 border-gray-200 rounded-xl hover:border-blue-500 hover:shadow-xl transition-all duration-300 text-left bg-white">
+                            <div class="text-4xl mb-3 group-hover:scale-110 transition-transform duration-300">📚</div>
+                            <div class="font-bold text-lg mb-2 text-gray-900 group-hover:text-blue-600 transition-colors">프로그램 홍보</div>
+                            <p class="text-sm text-gray-600 leading-relaxed">특정 프로그램 등록을 유도하는 페이지</p>
                         </button>
-                        <button onclick="selectTemplate('event-promo', event)" class="template-btn p-6 border-2 border-gray-200 rounded-xl hover:border-purple-600 transition text-left">
-                            <div class="text-3xl mb-3">🎉</div>
-                            <div class="font-bold text-lg mb-2">이벤트 프로모션</div>
-                            <p class="text-sm text-gray-600">긴급감 있는 한정 이벤트 페이지</p>
+                        <button onclick="selectTemplate('event-promo', event)" class="template-btn group p-6 border-2 border-gray-200 rounded-xl hover:border-pink-500 hover:shadow-xl transition-all duration-300 text-left bg-white">
+                            <div class="text-4xl mb-3 group-hover:scale-110 transition-transform duration-300">🎉</div>
+                            <div class="font-bold text-lg mb-2 text-gray-900 group-hover:text-pink-600 transition-colors">이벤트 프로모션</div>
+                            <p class="text-sm text-gray-600 leading-relaxed">긴급감 있는 한정 이벤트 페이지</p>
                         </button>
-                        <button onclick="selectTemplate('student-report', event)" class="template-btn p-6 border-2 border-gray-200 rounded-xl hover:border-purple-600 transition text-left">
-                            <div class="text-3xl mb-3">📊</div>
-                            <div class="font-bold text-lg mb-2">학생 성과 리포트</div>
-                            <p class="text-sm text-gray-600">월간 학습 리포트 공유 페이지</p>
+                        <button onclick="selectTemplate('parent-letter', event)" class="template-btn group p-6 border-2 border-gray-200 rounded-xl hover:border-green-500 hover:shadow-xl transition-all duration-300 text-left bg-white">
+                            <div class="text-4xl mb-3 group-hover:scale-110 transition-transform duration-300">📧</div>
+                            <div class="font-bold text-lg mb-2 text-gray-900 group-hover:text-green-600 transition-colors">가정통신문</div>
+                            <p class="text-sm text-gray-600 leading-relaxed">학부모님께 전달하는 공지사항 페이지</p>
                         </button>
-                        <button onclick="selectTemplate('admission-info', event)" class="template-btn p-6 border-2 border-gray-200 rounded-xl hover:border-purple-600 transition text-left">
-                            <div class="text-3xl mb-3">🎓</div>
-                            <div class="font-bold text-lg mb-2">입학 설명회</div>
-                            <p class="text-sm text-gray-600">설명회 안내 및 참석 유도 페이지</p>
+                        <button onclick="selectTemplate('student-report', event)" class="template-btn group p-6 border-2 border-gray-200 rounded-xl hover:border-indigo-500 hover:shadow-xl transition-all duration-300 text-left bg-white">
+                            <div class="text-4xl mb-3 group-hover:scale-110 transition-transform duration-300">📊</div>
+                            <div class="font-bold text-lg mb-2 text-gray-900 group-hover:text-indigo-600 transition-colors">학생 성과 리포트</div>
+                            <p class="text-sm text-gray-600 leading-relaxed">월간 학습 리포트 공유 페이지</p>
                         </button>
-                        <button onclick="selectTemplate('academy-stats', event)" class="template-btn p-6 border-2 border-gray-200 rounded-xl hover:border-purple-600 transition text-left">
-                            <div class="text-3xl mb-3">📈</div>
-                            <div class="font-bold text-lg mb-2">학원 성과 통계</div>
-                            <p class="text-sm text-gray-600">실적과 성과를 수치로 보여주는 페이지</p>
+                        <button onclick="selectTemplate('admission-info', event)" class="template-btn group p-6 border-2 border-gray-200 rounded-xl hover:border-yellow-500 hover:shadow-xl transition-all duration-300 text-left bg-white">
+                            <div class="text-4xl mb-3 group-hover:scale-110 transition-transform duration-300">🎓</div>
+                            <div class="font-bold text-lg mb-2 text-gray-900 group-hover:text-yellow-600 transition-colors">입학 설명회</div>
+                            <p class="text-sm text-gray-600 leading-relaxed">설명회 안내 및 참석 유도 페이지</p>
                         </button>
-                        <button onclick="selectTemplate('teacher-intro', event)" class="template-btn p-6 border-2 border-gray-200 rounded-xl hover:border-purple-600 transition text-left">
-                            <div class="text-3xl mb-3">👨‍🏫</div>
-                            <div class="font-bold text-lg mb-2">선생님 소개</div>
-                            <p class="text-sm text-gray-600">강사진의 경력과 전문성을 소개</p>
+                        <button onclick="selectTemplate('academy-stats', event)" class="template-btn group p-6 border-2 border-gray-200 rounded-xl hover:border-red-500 hover:shadow-xl transition-all duration-300 text-left bg-white">
+                            <div class="text-4xl mb-3 group-hover:scale-110 transition-transform duration-300">📈</div>
+                            <div class="font-bold text-lg mb-2 text-gray-900 group-hover:text-red-600 transition-colors">학원 성과 통계</div>
+                            <p class="text-sm text-gray-600 leading-relaxed">실적과 성과를 수치로 보여주는 페이지</p>
+                        </button>
+                        <button onclick="selectTemplate('teacher-intro', event)" class="template-btn group p-6 border-2 border-gray-200 rounded-xl hover:border-teal-500 hover:shadow-xl transition-all duration-300 text-left bg-white">
+                            <div class="text-4xl mb-3 group-hover:scale-110 transition-transform duration-300">👨‍🏫</div>
+                            <div class="font-bold text-lg mb-2 text-gray-900 group-hover:text-teal-600 transition-colors">선생님 소개</div>
+                            <p class="text-sm text-gray-600 leading-relaxed">강사진의 경력과 전문성을 소개</p>
                         </button>
                     </div>
                 </div>
@@ -11034,6 +11128,39 @@ app.get('/tools/landing-builder', (c) => {
                         <div>
                             <label class="block text-sm font-medium text-gray-900 mb-2">신청 링크 또는 전화번호</label>
                             <input type="text" name="cta" placeholder="예: 010-1234-5678" class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                        </div>
+                    </div>
+                \`,
+                'parent-letter': \`
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 mb-2">학원명 *</label>
+                            <input type="text" name="academyName" required class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 mb-2">공지사항 제목 *</label>
+                            <input type="text" name="noticeTitle" placeholder="예: 2024년 겨울방학 특강 안내" required class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 mb-2">날짜 *</label>
+                            <input type="text" name="noticeDate" placeholder="예: 2024년 12월 20일" required class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 mb-2">공지 내용 *</label>
+                            <textarea name="noticeContent" rows="8" placeholder="안녕하세요, 학부모님.&#10;&#10;2024년 겨울방학을 맞이하여 특별 프로그램을 준비했습니다.&#10;&#10;아래 내용을 확인하시고 많은 참여 부탁드립니다.&#10;&#10;감사합니다." required class="w-full px-4 py-3 border border-gray-300 rounded-xl"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 mb-2">주요 안내사항 (1개당 한 줄)</label>
+                            <textarea name="keyPoints" rows="4" placeholder="일시: 2024년 12월 26일 ~ 2025년 1월 31일&#10;대상: 초등 3학년 ~ 중등 3학년&#10;과목: 수학, 영어, 국어&#10;신청 마감: 2024년 12월 24일" class="w-full px-4 py-3 border border-gray-300 rounded-xl"></textarea>
+                            <p class="text-xs text-gray-500 mt-1">💡 비워두면 표시되지 않습니다</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 mb-2">문의처 *</label>
+                            <input type="text" name="contactInfo" placeholder="예: 032-123-4567 또는 010-1234-5678" required class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 mb-2">담당자</label>
+                            <input type="text" name="staffName" placeholder="예: 교무팀 김선생님" class="w-full px-4 py-3 border border-gray-300 rounded-xl">
                         </div>
                     </div>
                 \`,
