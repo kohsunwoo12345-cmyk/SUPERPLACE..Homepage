@@ -21451,7 +21451,7 @@ ${l.director_name} 원장님의 승인을 기다려주세요.`,directorName:l.di
                     <form id="permissionsForm" class="space-y-6">
                         <input type="hidden" id="permissionsTeacherId">
                         
-                        <!-- 권한 선택 (라디오 버튼) -->
+                        <!-- 권한 선택 (라디오 버튼) - Updated 2026-01-18 -->
                         <div class="space-y-4">
                             <h4 class="font-semibold text-gray-900 text-lg mb-4">
                                 <i class="fas fa-shield-alt text-purple-600 mr-2"></i>접근 권한 선택
