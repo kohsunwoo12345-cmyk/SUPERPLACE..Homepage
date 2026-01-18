@@ -21147,11 +21147,8 @@ ${l.director_name} 원장님의 승인을 기다려주세요.`,directorName:l.di
                 document.getElementById('permissionsTeacherId').value = teacherId;
                 
                 try {
-                    // 반 목록 로드
-                    const userDataHeader = btoa(unescape(encodeURIComponent(JSON.stringify(currentUser))));
-                    const classesRes = await fetch('/api/classes', {
-                        headers: { 'X-User-Data-Base64': userDataHeader }
-                    });
+                    // 반 목록 로드 - /api/classes/list 엔드포인트 사용
+                    const classesRes = await fetch(\`/api/classes/list?userId=\${currentUser.id}&userType=director\`);
                     const classesData = await classesRes.json();
                     
                     console.log('[Teachers Page] Classes loaded:', classesData);
