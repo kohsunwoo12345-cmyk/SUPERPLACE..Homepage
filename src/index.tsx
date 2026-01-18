@@ -19063,15 +19063,15 @@ app.get('/api/classes/list', async (c) => {
           ORDER BY c.created_at DESC
         `
       } else {
-        // 원장님은 academy_id로 모든 반 조회 (user_id가 아니라 academy_id)
+        // 원장님은 user_id로 모든 반 조회
         query = `
-          SELECT c.id, c.class_name as name, c.grade as grade_level, c.description, 
+          SELECT c.id, c.name, c.grade_level, c.description, 
                  c.schedule_days, c.start_time, c.end_time, c.created_at,
                  t.name as teacher_name,
                  (SELECT COUNT(*) FROM students WHERE class_id = c.id AND status = 'active') as student_count
           FROM classes c
           LEFT JOIN users t ON c.teacher_id = t.id
-          WHERE c.academy_id = ?
+          WHERE c.user_id = ?
           ORDER BY c.created_at DESC
         `
       }
@@ -25626,50 +25626,66 @@ app.get('/students', (c) => {
                 document.getElementById('permissionsTeacherName').textContent = teacherName;
                 document.getElementById('permissionsTeacherId').value = teacherId;
                 
+                console.log('🔍 [ShowPermissions] Opening modal for teacher:', teacherId, teacherName);
+                console.log('🔍 [ShowPermissions] Current user:', currentUser);
+                
                 try {
-                    // 반 목록 로드 - /api/classes 엔드포인트 사용
-                    const classesRes = await fetch('/api/classes?academyId=1');
+                    // 반 목록 로드 - /api/classes/list 엔드포인트 사용
+                    const classesRes = await fetch(\`/api/classes/list?userId=\${currentUser.id}&userType=director\`);
                     const classesData = await classesRes.json();
                     
-                    console.log('✅ Classes API response:', classesData);
+                    console.log('📚 [ShowPermissions] Classes response:', classesData);
                     
                     if (classesData.success) {
                         const classList = document.getElementById('classesCheckboxList');
                         if (classesData.classes && classesData.classes.length > 0) {
-                            console.log('✅ Found ' + classesData.classes.length + ' classes');
+                            console.log('✅ [ShowPermissions] Found ' + classesData.classes.length + ' classes');
                             classList.innerHTML = classesData.classes.map(cls => \`
                                 <label class="flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer">
                                     <input type="checkbox" value="\${cls.id}" class="class-checkbox w-4 h-4 text-purple-600 rounded focus:ring-purple-500">
-                                    <span class="ml-2 text-sm text-gray-700">\${cls.class_name} \${cls.grade ? '(' + cls.grade + ')' : ''}</span>
+                                    <span class="ml-2 text-sm text-gray-700">\${cls.name || cls.class_name} \${cls.grade_level || cls.grade || ''}</span>
                                 </label>
                             \`).join('');
                         } else {
-                            console.warn('⚠️ No classes found');
+                            console.warn('⚠️ [ShowPermissions] No classes found');
                             classList.innerHTML = '<div class="text-center text-gray-500 py-4">등록된 반이 없습니다</div>';
                         }
                     } else {
-                        console.error('❌ Classes API failed:', classesData);
-                        document.getElementById('classesCheckboxList').innerHTML = '<div class="text-center text-red-500 py-4">반 목록 로드 실패</div>';
+                        console.error('❌ [ShowPermissions] Classes API failed:', classesData.error);
+                        document.getElementById('classesCheckboxList').innerHTML = '<div class="text-center text-red-500 py-4">반 목록 로드 실패: ' + (classesData.error || '알 수 없는 오류') + '</div>';
                     }
                     
                     // 선생님 권한 정보 로드
+                    console.log('🔐 [ShowPermissions] Loading permissions for teacher:', teacherId);
                     const permRes = await fetch(\`/api/teachers/\${teacherId}/permissions?directorId=\${currentUser.id}\`);
                     const permData = await permRes.json();
                     
+                    console.log('🔐 [ShowPermissions] Permissions response:', permData);
+                    
                     if (permData.success) {
                         // 권한 체크박스 설정
-                        document.getElementById('canViewAllStudents').checked = permData.permissions.canViewAllStudents || false;
-                        document.getElementById('canWriteDailyReports').checked = permData.permissions.canWriteDailyReports || false;
+                        document.getElementById('canViewAllStudents').checked = permData.permissions?.canViewAllStudents || false;
+                        document.getElementById('canWriteDailyReports').checked = permData.permissions?.canWriteDailyReports || false;
                         
                         // 배정된 반 체크
-                        const assignedClasses = permData.permissions.assignedClasses || [];
+                        const assignedClasses = permData.permissions?.assignedClasses || [];
+                        console.log('🔐 [ShowPermissions] Assigned classes:', assignedClasses);
+                        
                         document.querySelectorAll('.class-checkbox').forEach(checkbox => {
-                            checkbox.checked = assignedClasses.includes(parseInt(checkbox.value));
+                            const classId = parseInt(checkbox.value);
+                            checkbox.checked = assignedClasses.includes(classId);
+                            console.log('  - Class', classId, 'checked:', checkbox.checked);
                         });
+                    } else {
+                        console.error('❌ [ShowPermissions] Failed to load permissions:', permData.error);
+                        // 권한 로드 실패 시 기본값으로 설정
+                        document.getElementById('canViewAllStudents').checked = false;
+                        document.getElementById('canWriteDailyReports').checked = false;
                     }
                 } catch (error) {
-                    console.error('권한 로드 실패:', error);
-                    alert('권한 정보를 불러오는 중 오류가 발생했습니다.');
+                    console.error('❌ [ShowPermissions] Exception:', error);
+                    console.error('❌ [ShowPermissions] Stack:', error.stack);
+                    alert('권한 정보를 불러오는 중 오류가 발생했습니다: ' + error.message);
                 }
             }
             
