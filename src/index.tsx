@@ -168,6 +168,18 @@ app.post('/api/login', async (c) => {
       return c.json({ success: false, error: '이메일 또는 비밀번호가 일치하지 않습니다.' }, 401)
     }
 
+    // 세션 생성
+    const sessionId = crypto.randomUUID()
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7일
+    
+    await c.env.DB.prepare(`
+      INSERT INTO sessions (session_id, user_id, expires_at)
+      VALUES (?, ?, ?)
+    `).bind(sessionId, user.id, expiresAt.toISOString()).run()
+
+    // 쿠키 설정
+    c.header('Set-Cookie', `session_id=${sessionId}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${7 * 24 * 60 * 60}`)
+
     return c.json({ 
       success: true, 
       message: '로그인 성공',
