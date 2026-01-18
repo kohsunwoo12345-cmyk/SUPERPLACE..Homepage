@@ -19969,11 +19969,12 @@ app.get('/api/classes', async (c) => {
     
     console.log('🔍 [GetClasses] Loading classes for user_id:', userId)
     
+    // 🔧 스키마 호환성: academy_id와 user_id 모두 지원
     const result = await c.env.DB.prepare(`
       SELECT 
         c.id,
-        c.name as class_name,
-        c.grade_level as grade,
+        c.class_name,
+        c.grade,
         c.description,
         c.schedule_days,
         c.start_time,
@@ -19982,7 +19983,7 @@ app.get('/api/classes', async (c) => {
         COUNT(s.id) as student_count
       FROM classes c
       LEFT JOIN students s ON c.id = s.class_id AND s.status = 'active'
-      WHERE c.user_id = ?
+      WHERE c.academy_id = ?
       GROUP BY c.id
       ORDER BY c.created_at DESC
     `).bind(userId).all()
@@ -20023,10 +20024,11 @@ app.post('/api/classes', async (c) => {
       return c.json({ success: false, error: '반 이름은 필수입니다.' }, 400)
     }
     
-    console.log('➕ [CreateClass] Creating class for user_id:', userId, 'name:', className)
+    console.log('➕ [CreateClass] Creating class for academy_id:', userId, 'name:', className)
     
+    // 🔧 스키마 호환성: academy_id와 class_name 사용
     const result = await c.env.DB.prepare(`
-      INSERT INTO classes (user_id, name, grade_level, description, schedule_days, start_time, end_time, created_at)
+      INSERT INTO classes (academy_id, class_name, grade, description, schedule_days, start_time, end_time, created_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))
     `).bind(userId, className, grade || null, description || null, scheduleDays || null, startTime || null, endTime || null).run()
     
