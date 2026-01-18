@@ -12,7 +12,17 @@ const app = new Hono<{ Bindings: Bindings }>()
 // 인증 미들웨어
 const requireAuth = async (c: any, next: any) => {
   try {
-    const sessionId = c.req.cookie('session_id')
+    // 쿠키에서 session_id 추출
+    const cookieHeader = c.req.header('cookie')
+    let sessionId = null
+    
+    if (cookieHeader) {
+      const cookies = cookieHeader.split(';').map((cookie: string) => cookie.trim())
+      const sessionCookie = cookies.find((cookie: string) => cookie.startsWith('session_id='))
+      if (sessionCookie) {
+        sessionId = sessionCookie.split('=')[1]
+      }
+    }
     
     if (!sessionId) {
       return c.json({ error: '로그인이 필요합니다' }, 401)
@@ -30,7 +40,7 @@ const requireAuth = async (c: any, next: any) => {
     await next()
   } catch (error) {
     console.error('Auth middleware error:', error)
-    return c.json({ error: '인증 처리 중 오류가 발생했습니다' }, 500)
+    return c.json({ error: '인증 처리 중 오류가 발생했습니다: ' + (error as Error).message }, 500)
   }
 }
 

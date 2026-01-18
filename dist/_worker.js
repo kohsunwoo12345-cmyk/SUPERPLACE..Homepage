@@ -2246,9 +2246,9 @@ var _t=Object.defineProperty;var Ve=e=>{throw TypeError(e)};var kt=(e,t,s)=>t in
     <\/script>
 </body>
 </html>
-`,De={classesPage:bs,studentsListPage:vs,dailyRecordPage:hs,studentDetailPage:fs,coursesPage:ys},O=new Ye,H=async(e,t)=>{try{const s=e.req.cookie("session_id");if(!s)return e.json({error:"로그인이 필요합니다"},401);const r=await e.env.DB.prepare(`
+`,De={classesPage:bs,studentsListPage:vs,dailyRecordPage:hs,studentDetailPage:fs,coursesPage:ys},O=new Ye,H=async(e,t)=>{try{const s=e.req.header("cookie");let r=null;if(s){const o=s.split(";").map(l=>l.trim()).find(l=>l.startsWith("session_id="));o&&(r=o.split("=")[1])}if(!r)return e.json({error:"로그인이 필요합니다"},401);const a=await e.env.DB.prepare(`
       SELECT user_id FROM sessions WHERE session_id = ? AND expires_at > datetime('now')
-    `).bind(s).first();if(!r)return e.json({error:"세션이 만료되었습니다"},401);e.set("userId",r.user_id),await t()}catch(s){return console.error("Auth middleware error:",s),e.json({error:"인증 처리 중 오류가 발생했습니다"},500)}};O.get("/api/form-templates",H,async e=>{try{const t=e.get("userId"),s=await e.env.DB.prepare(`
+    `).bind(r).first();if(!a)return e.json({error:"세션이 만료되었습니다"},401);e.set("userId",a.user_id),await t()}catch(s){return console.error("Auth middleware error:",s),e.json({error:"인증 처리 중 오류가 발생했습니다: "+s.message},500)}};O.get("/api/form-templates",H,async e=>{try{const t=e.get("userId"),s=await e.env.DB.prepare(`
       SELECT * FROM form_templates 
       WHERE user_id = ? 
       ORDER BY created_at DESC
