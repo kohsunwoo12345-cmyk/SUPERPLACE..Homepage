@@ -27620,5 +27620,31 @@ app.post('/api/admin/init-sample-classes', async (c) => {
   }
 })
 
+// ==================== TEMPORARY FIX ====================
+// Create empty teacher_classes table to fix D1 error
+app.get('/api/fix-teacher-classes-error', async (c) => {
+  try {
+    // Create teacher_classes table (empty, unused, just to prevent error)
+    await c.env.DB.prepare(`
+      CREATE TABLE IF NOT EXISTS teacher_classes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        teacher_id INTEGER NOT NULL,
+        class_id INTEGER NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(teacher_id, class_id)
+      )
+    `).run()
+    
+    return c.json({ 
+      success: true, 
+      message: 'teacher_classes 테이블이 생성되었습니다 (임시 수정)',
+      note: '이 테이블은 사용되지 않지만 D1 에러를 방지합니다'
+    })
+  } catch (err) {
+    return c.json({ success: false, error: err.message }, 500)
+  }
+})
+// ==================== END TEMPORARY FIX ====================
+
 export default app
 // Force rebuild Tue Jan 13 09:59:11 UTC 2026
