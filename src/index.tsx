@@ -25724,7 +25724,9 @@ app.get('/teachers-old', (c) => {
             
                     countBadge.textContent = data.applications.length;
                     pendingCount.textContent = data.applications.length;
-                    container.innerHTML = data.applications.map(app => \`
+                    container.innerHTML = data.applications.map(app => {
+                        const escapedName = (app.name || '').replace(/'/g, "\\\\'');
+                        return \`
                         <div class="bg-yellow-50 border-2 border-yellow-200 rounded-xl p-6">
                             <div class="flex items-start justify-between mb-4">
                                 <div>
@@ -25738,15 +25740,16 @@ app.get('/teachers-old', (c) => {
                                 </span>
                             </div>
                             <div class="flex gap-2">
-                                <button onclick="approveApplication(\${app.id}, '\${app.name}')" class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                                <button onclick="approveApplication(\${app.id}, '\${escapedName}')" class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
                                     <i class="fas fa-check mr-2"></i>승인
                                 </button>
-                                <button onclick="rejectApplication(\${app.id}, '\${app.name}')" class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+                                <button onclick="rejectApplication(\${app.id}, '\${escapedName}')" class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
                                     <i class="fas fa-times mr-2"></i>거절
                                 </button>
                             </div>
                         </div>
-                    \`).join('');
+                        \`;
+                    }).join('');
                 } catch (error) {
                     console.error('승인 대기 목록 로딩 실패:', error);
                 }
@@ -25822,7 +25825,9 @@ app.get('/teachers-old', (c) => {
                     });
                     assignedCount.textContent = assignedCounter;
             
-                    container.innerHTML = data.teachers.map(teacher => \`
+                    container.innerHTML = data.teachers.map(teacher => {
+                        const escapedName = (teacher.name || '').replace(/'/g, "\\\\'");
+                        return \`
                         <div class="bg-white border rounded-xl p-6 hover:shadow-lg transition">
                             <div class="flex items-start justify-between">
                                 <div class="flex items-center gap-4">
@@ -25838,12 +25843,13 @@ app.get('/teachers-old', (c) => {
                                         </span>
                                     </div>
                                 </div>
-                                <button onclick="showTeacherPermissions(\${teacher.id}, '\${teacher.name}')" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                                <button onclick="showTeacherPermissions(\${teacher.id}, '\${escapedName}')" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
                                     <i class="fas fa-cog mr-2"></i>권한 설정
                                 </button>
                             </div>
                         </div>
-                    \`).join('');
+                        \`;
+                    }).join('');
                 } catch (error) {
                     console.error('선생님 목록 로딩 실패:', error);
                 }
@@ -26893,7 +26899,9 @@ app.get('/students', (c) => {
                         return;
                     }
 
-                    container.innerHTML = data.teachers.map(teacher => \`
+                    container.innerHTML = data.teachers.map(teacher => {
+                        const escapedName = (teacher.name || '').replace(/'/g, "\\\\'");
+                        return \`
                         <div class="bg-white border rounded-xl p-6 hover:shadow-lg transition">
                             <div class="flex items-start justify-between">
                                 <div class="flex items-center gap-4">
@@ -26909,12 +26917,13 @@ app.get('/students', (c) => {
                                         </span>
                                     </div>
                                 </div>
-                                <button onclick="showTeacherPermissions(\${teacher.id}, '\${teacher.name}')" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                                <button onclick="showTeacherPermissions(\${teacher.id}, '\${escapedName}')" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
                                     <i class="fas fa-cog mr-2"></i>권한 설정
                                 </button>
                             </div>
                         </div>
-                    \`).join('');
+                        \`;
+                    }).join('');
                 } catch (error) {
                     console.error('선생님 목록 로딩 실패:', error);
                 }
@@ -26937,7 +26946,9 @@ app.get('/students', (c) => {
 
                     if (countBadge) countBadge.textContent = data.applications.length;
                     if (container) {
-                        container.innerHTML = data.applications.map(app => \`
+                        container.innerHTML = data.applications.map(app => {
+                            const escapedName = (app.name || '').replace(/'/g, "\\\\'");
+                            return \`
                             <div class="bg-yellow-50 border-2 border-yellow-200 rounded-xl p-6">
                                 <div class="flex items-start justify-between mb-4">
                                     <div>
@@ -26951,15 +26962,16 @@ app.get('/students', (c) => {
                                     </span>
                                 </div>
                                 <div class="flex gap-2">
-                                    <button onclick="approveApplication(\${app.id}, '\${app.name}')" class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                                    <button onclick="approveApplication(\${app.id}, '\${escapedName}')" class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
                                         <i class="fas fa-check mr-2"></i>승인
                                     </button>
-                                    <button onclick="rejectApplication(\${app.id}, '\${app.name}')" class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+                                    <button onclick="rejectApplication(\${app.id}, '\${escapedName}')" class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
                                         <i class="fas fa-times mr-2"></i>거절
                                     </button>
                                 </div>
                             </div>
-                        \`).join('');
+                            \`;
+                        }).join('');
                     }
                 } catch (error) {
                     console.error('승인 대기 목록 로딩 실패:', error);
