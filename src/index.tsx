@@ -12350,14 +12350,14 @@ app.get('/api/students', async (c) => {
         console.log('👥 [GetStudents] Params:', params)
       } else {
         console.log('👥 [GetStudents] Has canViewAllStudents permission')
-        // 전체 학생 조회 권한이 있으면 user_id로 필터링 (원장님의 모든 학생)
-        query = `SELECT * FROM students WHERE user_id = ? AND status = 'active' AND id NOT IN (4) ORDER BY name`
+        // 전체 학생 조회 권한이 있으면 academy_id로 필터링 (원장님의 모든 학생)
+        query = `SELECT * FROM students WHERE academy_id = ? AND status = 'active' AND id NOT IN (4) ORDER BY name`
         params = [userInfo.parent_user_id || user.id]
       }
     } else {
       // 원장님인 경우 자신의 학원 학생 전체 조회
       console.log('👥 [GetStudents] Director mode, fetching all students')
-      query = `SELECT * FROM students WHERE user_id = ? AND status = 'active' AND id NOT IN (4) ORDER BY name`
+      query = `SELECT * FROM students WHERE academy_id = ? AND status = 'active' AND id NOT IN (4) ORDER BY name`
       params = [user.id]
     }
     
