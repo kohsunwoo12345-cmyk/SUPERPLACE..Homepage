@@ -25582,6 +25582,18 @@ app.get('/students', (c) => {
                     }
                 }
                 
+                // ✅ 랜딩페이지 섹션은 관리자가 권한을 부여한 경우에만 표시
+                const landingSection = document.getElementById('landingPagesSection');
+                if (landingSection) {
+                    if (hasFullAccess) {
+                        landingSection.style.display = 'block';
+                        console.log('✅ Showing: Landing pages section (full access)');
+                    } else {
+                        landingSection.style.display = 'none';
+                        console.log('✅ Hidden: Landing pages section (restricted)');
+                    }
+                }
+                
                 console.log('✅ Teacher restrictions applied. Full access:', hasFullAccess);
             }
 
