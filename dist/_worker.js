@@ -6994,7 +6994,7 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
                 </div>
 
                 <!-- My Landing Pages Section -->
-                <div id="landingPagesSection" class="mb-12">
+                <div id="landingPagesSection" class="mb-12" style="display: none;">
                     <div class="flex justify-between items-center mb-6">
                         <h2 class="text-2xl font-bold text-gray-900">🚀 내 랜딩페이지</h2>
                         <a href="/tools/landing-builder" class="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all shadow-md hover:shadow-lg font-medium flex items-center space-x-2">
@@ -20786,7 +20786,7 @@ ${l.director_name} 원장님의 승인을 기다려주세요.`,directorName:l.di
         <!-- 메인 컨텐츠 -->
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <!-- 대시보드 카드 그리드 -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            <div id="dashboardCardGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                 <!-- 선생님 관리 (원장님 전용) -->
                 <div id="teacherManagementCard" class="bg-white rounded-xl shadow-lg hover:shadow-xl transition cursor-pointer" onclick="toggleTeacherSection()">
                     <div class="bg-gradient-to-br from-purple-500 to-indigo-600 text-white p-6 rounded-t-xl">
@@ -21199,25 +21199,46 @@ ${l.director_name} 원장님의 승인을 기다려주세요.`,directorName:l.di
                     console.log('✅ Hidden: Teacher management card');
                 }
                 
-                // ✅ 권한이 없으면 모든 카드 숨김
+                // ✅ 권한이 없으면 모든 카드 숨기고 "권한 없음" 메시지 표시
                 if (!hasAnyPermission && !hasFullAccess) {
-                    console.log('❌ No permissions - hiding ALL cards');
+                    console.log('❌ No permissions - hiding ALL cards and showing no-permission message');
                     
-                    const classCard = document.querySelector('a[href="/students/classes"]');
-                    const studentCard = document.querySelector('a[href="/students/list"]');
-                    const courseCard = document.querySelector('a[href="/students/courses"]');
-                    const dailyCard = document.querySelector('a[href="/students/daily-record"]');
+                    // 모든 카드 요소 찾기
+                    const gridContainer = document.getElementById('dashboardCardGrid');
                     
-                    if (classCard) classCard.style.display = 'none';
-                    if (studentCard) studentCard.style.display = 'none';
-                    if (courseCard) courseCard.style.display = 'none';
-                    if (dailyCard) dailyCard.style.display = 'none';
-                    
-                    // 권한 없음 메시지 표시
-                    const gridContainer = document.querySelector('.grid.grid-cols-1.md\\:grid-cols-2.lg\\:grid-cols-3');
                     if (gridContainer) {
-                        gridContainer.innerHTML = '<div class="col-span-full text-center py-16"><div class="bg-yellow-50 border-2 border-yellow-200 rounded-xl p-8 max-w-md mx-auto"><i class="fas fa-lock text-5xl text-yellow-600 mb-4"></i><h3 class="text-xl font-bold text-gray-900 mb-2">권한이 필요합니다</h3><p class="text-gray-600">원장님이 권한을 부여하면 학생 관리 기능을 사용할 수 있습니다.</p></div></div>';
+                        // 기존 모든 카드 제거
+                        gridContainer.innerHTML = '';
+                        
+                        // 권한 없음 메시지 추가
+                        const noPermissionHTML = '<div class="col-span-full">' +
+                            '<div class="text-center py-20">' +
+                            '<div class="bg-yellow-50 border-2 border-yellow-200 rounded-2xl p-12 max-w-lg mx-auto shadow-lg">' +
+                            '<div class="mb-6">' +
+                            '<i class="fas fa-lock text-7xl text-yellow-600 mb-4"></i>' +
+                            '</div>' +
+                            '<h3 class="text-2xl font-bold text-gray-900 mb-4">' +
+                            '접근 권한이 필요합니다' +
+                            '</h3>' +
+                            '<p class="text-gray-600 text-lg mb-6 leading-relaxed">' +
+                            '원장님이 권한을 부여하면<br>' +
+                            '학생 관리 기능을 사용할 수 있습니다.' +
+                            '</p>' +
+                            '<div class="bg-white rounded-lg p-4 text-sm text-gray-500">' +
+                            '<i class="fas fa-info-circle mr-2"></i>' +
+                            '권한 문의는 원장님께 요청해주세요.' +
+                            '</div>' +
+                            '</div>' +
+                            '</div>' +
+                            '</div>';
+                        gridContainer.innerHTML = noPermissionHTML;
                         console.log('✅ Displayed: No permission message');
+                    }
+                    
+                    // 선생님 관리 섹션도 숨김
+                    const teacherSection = document.getElementById('teacherSection');
+                    if (teacherSection) {
+                        teacherSection.style.display = 'none';
                     }
                     
                     return; // 더 이상 처리하지 않음
