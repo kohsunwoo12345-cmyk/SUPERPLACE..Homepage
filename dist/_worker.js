@@ -4535,6 +4535,33 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
                     <p class="text-xl text-gray-600">학원에 맞는 맞춤 마케팅 전략을 상담해드립니다</p>
                 </div>
 
+                <!-- 카카오채널 문의 버튼 -->
+                <div class="mb-8">
+                    <a href="https://pf.kakao.com/_tnZzn/chat" target="_blank" rel="noopener noreferrer"
+                        class="block bg-gradient-to-r from-yellow-400 to-yellow-500 text-gray-900 rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all transform hover:-translate-y-1">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-4">
+                                <div class="w-16 h-16 bg-yellow-300 rounded-2xl flex items-center justify-center">
+                                    <svg class="w-10 h-10" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M12 3C6.5 3 2 6.58 2 11c0 2.95 2.03 5.53 5 6.74V22l4.5-3.5c.67.09 1.36.14 2.5.14 5.5 0 10-3.58 10-8s-4.5-8-10-8z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="text-xl font-bold mb-1">💬 카카오채널로 빠른 문의</h3>
+                                    <p class="text-sm text-gray-700">실시간 상담 가능 (평일 9:00-18:00)</p>
+                                </div>
+                            </div>
+                            <div class="text-2xl">→</div>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="text-center mb-8">
+                    <span class="inline-block px-4 py-2 bg-gray-100 rounded-full text-sm text-gray-600">
+                        또는 아래 양식으로 문의하세요
+                    </span>
+                </div>
+
                 <div class="bg-white rounded-2xl border border-gray-200 p-8 lg:p-12">
                     <form id="contactForm" class="space-y-6">
                         <div>
