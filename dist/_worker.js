@@ -21001,30 +21001,63 @@ ${l.director_name} 원장님의 승인을 기다려주세요.`,directorName:l.di
                     <form id="permissionsForm" class="space-y-6">
                         <input type="hidden" id="permissionsTeacherId">
                         
-                        <!-- 전체 학생 조회 권한 -->
-                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                            <label class="flex items-center cursor-pointer">
-                                <input type="checkbox" id="canViewAllStudents" class="w-5 h-5 text-purple-600 rounded focus:ring-purple-500">
-                                <div class="ml-3">
-                                    <span class="text-sm font-medium text-gray-900">전체 학생 조회 권한</span>
-                                    <p class="text-xs text-gray-600 mt-1">학원의 모든 학생 정보를 조회할 수 있습니다</p>
+                        <!-- 권한 선택 (라디오 버튼) -->
+                        <div class="space-y-4">
+                            <h4 class="font-semibold text-gray-900 text-lg mb-4">
+                                <i class="fas fa-shield-alt text-purple-600 mr-2"></i>접근 권한 선택
+                            </h4>
+                            
+                            <!-- 옵션 1: 모두 다 공개 -->
+                            <label class="block cursor-pointer">
+                                <div class="border-2 border-gray-200 rounded-xl p-5 hover:border-purple-400 transition-colors" id="allAccessOption">
+                                    <div class="flex items-start">
+                                        <input type="radio" name="accessLevel" value="all" id="accessLevelAll" class="mt-1 w-5 h-5 text-purple-600 focus:ring-purple-500">
+                                        <div class="ml-4 flex-1">
+                                            <div class="flex items-center mb-2">
+                                                <i class="fas fa-globe text-blue-600 mr-2 text-xl"></i>
+                                                <span class="text-base font-bold text-gray-900">모두 다 공개</span>
+                                            </div>
+                                            <p class="text-sm text-gray-600 leading-relaxed">
+                                                • 모든 학생 정보 조회<br>
+                                                • 모든 반 관리<br>
+                                                • 모든 과목 관리<br>
+                                                • 전체 일일 성과 작성<br>
+                                                • 랜딩페이지 접근
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </label>
+                            
+                            <!-- 옵션 2: 배정된 반만 공개 -->
+                            <label class="block cursor-pointer">
+                                <div class="border-2 border-gray-200 rounded-xl p-5 hover:border-purple-400 transition-colors" id="assignedOnlyOption">
+                                    <div class="flex items-start">
+                                        <input type="radio" name="accessLevel" value="assigned" id="accessLevelAssigned" class="mt-1 w-5 h-5 text-purple-600 focus:ring-purple-500">
+                                        <div class="ml-4 flex-1">
+                                            <div class="flex items-center mb-2">
+                                                <i class="fas fa-users text-green-600 mr-2 text-xl"></i>
+                                                <span class="text-base font-bold text-gray-900">배정된 반만 공개</span>
+                                            </div>
+                                            <p class="text-sm text-gray-600 leading-relaxed mb-3">
+                                                • 배정된 반의 학생만 조회<br>
+                                                • 배정된 반의 일일 성과만 작성<br>
+                                                • 반/과목 관리 불가<br>
+                                                • 랜딩페이지 접근 불가
+                                            </p>
+                                            <div class="bg-purple-50 border border-purple-200 rounded-lg p-3 mt-3">
+                                                <p class="text-xs text-purple-800 font-medium mb-2">
+                                                    <i class="fas fa-info-circle mr-1"></i>이 옵션을 선택하면 아래에서 반을 배정해주세요:
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </label>
                         </div>
                         
-                        <!-- 일일 성과 작성 권한 -->
-                        <div class="bg-green-50 border border-green-200 rounded-lg p-4">
-                            <label class="flex items-center cursor-pointer">
-                                <input type="checkbox" id="canWriteDailyReports" class="w-5 h-5 text-purple-600 rounded focus:ring-purple-500">
-                                <div class="ml-3">
-                                    <span class="text-sm font-medium text-gray-900">일일 성과 작성 권한</span>
-                                    <p class="text-xs text-gray-600 mt-1">배정된 반의 일일 성과를 작성할 수 있습니다</p>
-                                </div>
-                            </label>
-                        </div>
-                        
-                        <!-- 반 배정 -->
-                        <div class="border border-gray-200 rounded-lg p-4">
+                        <!-- 반 배정 (배정된 반만 공개 선택 시에만 활성화) -->
+                        <div id="classAssignmentSection" class="border border-gray-200 rounded-lg p-4 bg-gray-50" style="display: none;">
                             <h4 class="font-medium text-gray-900 mb-3">
                                 <i class="fas fa-chalkboard text-purple-600 mr-2"></i>반 배정
                             </h4>
@@ -21684,24 +21717,38 @@ ${l.director_name} 원장님의 승인을 기다려주세요.`,directorName:l.di
                     console.log('🔐 [ShowPermissions] Permissions response:', permData);
                     
                     if (permData.success) {
-                        // 권한 체크박스 설정
-                        document.getElementById('canViewAllStudents').checked = permData.permissions?.canViewAllStudents || false;
-                        document.getElementById('canWriteDailyReports').checked = permData.permissions?.canWriteDailyReports || false;
-                        
-                        // 배정된 반 체크
+                        const hasFullAccess = permData.permissions?.canViewAllStudents || false;
                         const assignedClasses = permData.permissions?.assignedClasses || [];
-                        console.log('🔐 [ShowPermissions] Assigned classes:', assignedClasses);
                         
-                        document.querySelectorAll('.class-checkbox').forEach(checkbox => {
-                            const classId = parseInt(checkbox.value);
-                            checkbox.checked = assignedClasses.includes(classId);
-                            console.log('  - Class', classId, 'checked:', checkbox.checked);
-                        });
+                        // 라디오 버튼 설정
+                        if (hasFullAccess) {
+                            document.getElementById('accessLevelAll').checked = true;
+                            document.getElementById('classAssignmentSection').style.display = 'none';
+                            // 옵션 강조
+                            document.getElementById('allAccessOption').classList.add('border-purple-500', 'bg-purple-50');
+                            document.getElementById('assignedOnlyOption').classList.remove('border-purple-500', 'bg-purple-50');
+                        } else if (assignedClasses.length > 0) {
+                            document.getElementById('accessLevelAssigned').checked = true;
+                            document.getElementById('classAssignmentSection').style.display = 'block';
+                            // 옵션 강조
+                            document.getElementById('assignedOnlyOption').classList.add('border-purple-500', 'bg-purple-50');
+                            document.getElementById('allAccessOption').classList.remove('border-purple-500', 'bg-purple-50');
+                            
+                            // 배정된 반 체크
+                            console.log('🔐 [ShowPermissions] Assigned classes:', assignedClasses);
+                            document.querySelectorAll('.class-checkbox').forEach(checkbox => {
+                                const classId = parseInt(checkbox.value);
+                                checkbox.checked = assignedClasses.includes(classId);
+                                console.log('  - Class', classId, 'checked:', checkbox.checked);
+                            });
+                        } else {
+                            // 권한 없음 - 기본값
+                            document.getElementById('accessLevelAll').checked = false;
+                            document.getElementById('accessLevelAssigned').checked = false;
+                            document.getElementById('classAssignmentSection').style.display = 'none';
+                        }
                     } else {
                         console.error('❌ [ShowPermissions] Failed to load permissions:', permData.error);
-                        // 권한 로드 실패 시 기본값으로 설정
-                        document.getElementById('canViewAllStudents').checked = false;
-                        document.getElementById('canWriteDailyReports').checked = false;
                     }
                 } catch (error) {
                     console.error('❌ [ShowPermissions] Exception:', error);
@@ -21710,9 +21757,41 @@ ${l.director_name} 원장님의 승인을 기다려주세요.`,directorName:l.di
                 }
             }
             
+            // 라디오 버튼 변경 시 반 배정 섹션 표시/숨김
+            document.addEventListener('DOMContentLoaded', function() {
+                const allAccessRadio = document.getElementById('accessLevelAll');
+                const assignedRadio = document.getElementById('accessLevelAssigned');
+                const classSection = document.getElementById('classAssignmentSection');
+                const allOption = document.getElementById('allAccessOption');
+                const assignedOption = document.getElementById('assignedOnlyOption');
+                
+                if (allAccessRadio) {
+                    allAccessRadio.addEventListener('change', function() {
+                        if (this.checked) {
+                            classSection.style.display = 'none';
+                            allOption.classList.add('border-purple-500', 'bg-purple-50');
+                            assignedOption.classList.remove('border-purple-500', 'bg-purple-50');
+                        }
+                    });
+                }
+                
+                if (assignedRadio) {
+                    assignedRadio.addEventListener('change', function() {
+                        if (this.checked) {
+                            classSection.style.display = 'block';
+                            assignedOption.classList.add('border-purple-500', 'bg-purple-50');
+                            allOption.classList.remove('border-purple-500', 'bg-purple-50');
+                        }
+                    });
+                }
+            });
+            
             function closePermissionsModal() {
                 document.getElementById('permissionsModal').classList.add('hidden');
                 document.getElementById('permissionsForm').reset();
+                document.getElementById('classAssignmentSection').style.display = 'none';
+                document.getElementById('allAccessOption').classList.remove('border-purple-500', 'bg-purple-50');
+                document.getElementById('assignedOnlyOption').classList.remove('border-purple-500', 'bg-purple-50');
             }
             
             // 권한 저장
@@ -21728,17 +21807,43 @@ ${l.director_name} 원장님의 승인을 기다려주세요.`,directorName:l.di
                 console.log('🔒 [SavePermissions] teacherName:', teacherName);
                 console.log('🔒 [SavePermissions] currentUser:', currentUser);
                 
-                // 체크된 반 ID 수집
-                const assignedClasses = Array.from(document.querySelectorAll('.class-checkbox:checked'))
-                    .map(cb => parseInt(cb.value));
+                // 라디오 버튼 값 확인
+                const accessLevel = document.querySelector('input[name="accessLevel"]:checked')?.value;
                 
-                const permissions = {
-                    canViewAllStudents: document.getElementById('canViewAllStudents').checked,
-                    canWriteDailyReports: document.getElementById('canWriteDailyReports').checked,
-                    assignedClasses: assignedClasses
-                };
+                if (!accessLevel) {
+                    alert('❌ 권한 레벨을 선택해주세요.');
+                    return;
+                }
                 
-                console.log('🔒 [SavePermissions] permissions:', permissions);
+                let permissions;
+                
+                if (accessLevel === 'all') {
+                    // 모두 다 공개
+                    permissions = {
+                        canViewAllStudents: true,
+                        canWriteDailyReports: true,
+                        assignedClasses: []  // 전체 접근이므로 빈 배열
+                    };
+                    console.log('🔒 [SavePermissions] Selected: 모두 다 공개');
+                } else {
+                    // 배정된 반만 공개
+                    const assignedClasses = Array.from(document.querySelectorAll('.class-checkbox:checked'))
+                        .map(cb => parseInt(cb.value));
+                    
+                    if (assignedClasses.length === 0) {
+                        alert('❌ 최소 1개 이상의 반을 배정해주세요.');
+                        return;
+                    }
+                    
+                    permissions = {
+                        canViewAllStudents: false,
+                        canWriteDailyReports: true,  // 배정된 반에 대해서는 일일 성과 작성 가능
+                        assignedClasses: assignedClasses
+                    };
+                    console.log('🔒 [SavePermissions] Selected: 배정된 반만 공개, classes:', assignedClasses);
+                }
+                
+                console.log('🔒 [SavePermissions] Final permissions:', permissions);
                 console.log('🔒 [SavePermissions] directorId:', currentUser?.id);
                 
                 if (!currentUser?.id) {
