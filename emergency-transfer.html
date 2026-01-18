@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚨 긴급: 24개 반 kumetang으로 이전</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            max-width: 700px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        .header h1 { font-size: 2.5em; margin-bottom: 10px; }
+        .header p { font-size: 1.2em; opacity: 0.9; }
+        .content { padding: 40px; }
+        .big-button {
+            width: 100%;
+            padding: 25px;
+            font-size: 22px;
+            font-weight: bold;
+            color: white;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            box-shadow: 0 10px 25px rgba(240, 147, 251, 0.4);
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+        .big-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(240, 147, 251, 0.6);
+        }
+        .big-button:active {
+            transform: translateY(-1px);
+        }
+        #log {
+            margin-top: 20px;
+            padding: 20px;
+            background: #282c34;
+            color: #61dafb;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.8;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .log-empty {
+            color: #5c6370;
+            font-style: italic;
+        }
+        .info {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        .success {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 20px;
+            margin-top: 20px;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚨 긴급 수정</h1>
+            <p>24개 반을 kumetang@gmail.com으로 이전</p>
+        </div>
+        
+        <div class="content">
+            <div class="info">
+                <strong>⚠️ 주의:</strong> 이 버튼을 누르면 데이터베이스의 <strong>모든 반</strong>이 kumetang@gmail.com 계정으로 이전됩니다.
+            </div>
+            
+            <button class="big-button" onclick="executeTransfer()">
+                🚀 지금 바로 이전하기
+            </button>
+            
+            <div id="log" class="log-empty">대기 중...</div>
+        </div>
+    </div>
+
+    <script>
+        const log = document.getElementById('log');
+
+        function addLog(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString('ko-KR');
+            const prefix = {
+                'info': '📝',
+                'success': '✅',
+                'error': '❌',
+                'warning': '⚠️'
+            }[type] || '📝';
+            
+            log.textContent += `[${timestamp}] ${prefix} ${message}\n`;
+            log.scrollTop = log.scrollHeight;
+            log.classList.remove('log-empty');
+        }
+
+        async function executeTransfer() {
+            log.textContent = '';
+            addLog('🚨 긴급 이전 작업 시작...', 'warning');
+            addLog('='.repeat(60), 'info');
+            
+            try {
+                // 1단계: 데이터베이스의 모든 반을 kumetang으로 이전
+                addLog('1단계: 모든 반을 kumetang@gmail.com으로 이전 중...', 'info');
+                
+                const transferResponse = await fetch('/api/admin/transfer-all-classes-to-user', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        toEmail: 'kumetang@gmail.com'
+                    })
+                });
+                
+                const transferResult = await transferResponse.json();
+                
+                if (transferResult.success) {
+                    addLog(`✅ 성공! ${transferResult.transferred}개의 반이 이전되었습니다!`, 'success');
+                    
+                    if (transferResult.details && transferResult.details.length > 0) {
+                        addLog('', 'info');
+                        addLog('📋 이전된 반 목록 (처음 10개):', 'info');
+                        transferResult.details.forEach((detail, idx) => {
+                            addLog(`   ${idx+1}. ${detail.name} (ID: ${detail.id})`, 'info');
+                        });
+                    }
+                    
+                    // 2단계: 검증
+                    addLog('', 'info');
+                    addLog('2단계: 이전 결과 검증 중...', 'info');
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    
+                    const verifyResponse = await fetch('/api/classes/list?userId=7&userType=director');
+                    const verifyResult = await verifyResponse.json();
+                    
+                    const finalCount = verifyResult.classes?.length || 0;
+                    addLog(`✅ kumetang의 최종 반 개수: ${finalCount}개`, 'success');
+                    
+                    if (verifyResult.classes && verifyResult.classes.length > 0) {
+                        verifyResult.classes.slice(0, 5).forEach((cls, idx) => {
+                            addLog(`   ${idx+1}. ${cls.name || cls.class_name} (ID: ${cls.id})`, 'info');
+                        });
+                        
+                        if (verifyResult.classes.length > 5) {
+                            addLog(`   ... 외 ${verifyResult.classes.length - 5}개`, 'info');
+                        }
+                    }
+                    
+                    addLog('', 'info');
+                    addLog('='.repeat(60), 'info');
+                    addLog('🎉🎉🎉 작업 완료! 🎉🎉🎉', 'success');
+                    addLog('='.repeat(60), 'info');
+                    
+                    // 성공 메시지 표시
+                    const content = document.querySelector('.content');
+                    const successDiv = document.createElement('div');
+                    successDiv.className = 'success';
+                    successDiv.innerHTML = `
+                        <h2>✅ 완료!</h2>
+                        <p style="margin-top: 10px;">${transferResult.transferred}개의 반이 kumetang@gmail.com으로 이전되었습니다!</p>
+                        <p style="margin-top: 10px; font-size: 16px;">3초 후 /students/classes 페이지로 이동합니다...</p>
+                    `;
+                    content.appendChild(successDiv);
+                    
+                    // 3초 후 페이지 이동
+                    setTimeout(() => {
+                        window.location.href = '/students/classes';
+                    }, 3000);
+                    
+                } else {
+                    addLog(`❌ 이전 실패: ${transferResult.error}`, 'error');
+                    
+                    if (transferResult.error && transferResult.error.includes('API')) {
+                        addLog('', 'warning');
+                        addLog('⚠️ 배포가 아직 완료되지 않았을 수 있습니다.', 'warning');
+                        addLog('💡 5분 후 다시 시도하거나, 페이지를 새로고침 해보세요.', 'warning');
+                    }
+                    
+                    alert(`❌ 실패: ${transferResult.error}`);
+                }
+                
+            } catch (error) {
+                addLog(`❌❌❌ 오류 발생: ${error.message}`, 'error');
+                addLog('', 'error');
+                addLog('💡 가능한 원인:', 'warning');
+                addLog('   1. 새 API가 아직 배포되지 않음 (5-10분 소요)', 'warning');
+                addLog('   2. 네트워크 연결 문제', 'warning');
+                addLog('', 'warning');
+                addLog('💡 해결 방법:', 'info');
+                addLog('   - 5분 후 페이지를 새로고침하고 다시 시도', 'info');
+                addLog('   - 또는 콘솔에서 수동 생성 스크립트 실행', 'info');
+                
+                alert(`❌ 오류: ${error.message}\n\n5-10분 후 다시 시도해주세요.`);
+            }
+        }
+    </script>
+</body>
+</html>
