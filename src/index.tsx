@@ -25587,8 +25587,14 @@ app.get('/students', (c) => {
             document.getElementById('permissionsForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 
+                console.log('🔒 [SavePermissions] Form submitted');
+                
                 const teacherId = document.getElementById('permissionsTeacherId').value;
                 const teacherName = document.getElementById('permissionsTeacherName').textContent;
+                
+                console.log('🔒 [SavePermissions] teacherId:', teacherId);
+                console.log('🔒 [SavePermissions] teacherName:', teacherName);
+                console.log('🔒 [SavePermissions] currentUser:', currentUser);
                 
                 // 체크된 반 ID 수집
                 const assignedClasses = Array.from(document.querySelectorAll('.class-checkbox:checked'))
@@ -25600,27 +25606,53 @@ app.get('/students', (c) => {
                     assignedClasses: assignedClasses
                 };
                 
+                console.log('🔒 [SavePermissions] permissions:', permissions);
+                console.log('🔒 [SavePermissions] directorId:', currentUser?.id);
+                
+                if (!currentUser?.id) {
+                    alert('❌ 로그인 정보를 찾을 수 없습니다. 다시 로그인해주세요.');
+                    return;
+                }
+                
+                if (!teacherId) {
+                    alert('❌ 선생님 ID를 찾을 수 없습니다.');
+                    return;
+                }
+                
                 try {
+                    console.log('🔒 [SavePermissions] Sending request to /api/teachers/' + teacherId + '/permissions');
+                    
+                    const requestBody = {
+                        directorId: currentUser.id,
+                        permissions: permissions
+                    };
+                    
+                    console.log('🔒 [SavePermissions] Request body:', JSON.stringify(requestBody, null, 2));
+                    
                     const res = await fetch(\`/api/teachers/\${teacherId}/permissions\`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            directorId: currentUser.id,
-                            permissions: permissions
-                        })
+                        body: JSON.stringify(requestBody)
                     });
                     
+                    console.log('🔒 [SavePermissions] Response status:', res.status);
+                    console.log('🔒 [SavePermissions] Response ok:', res.ok);
+                    
                     const data = await res.json();
+                    console.log('🔒 [SavePermissions] Response data:', data);
                     
                     if (data.success) {
-                        alert(\`\${teacherName} 선생님의 권한이 저장되었습니다!\`);
+                        alert(\`✅ \${teacherName} 선생님의 권한이 저장되었습니다!\`);
+                        console.log('✅ [SavePermissions] Success!');
                         closePermissionsModal();
                     } else {
-                        alert('권한 저장 실패: ' + data.error);
+                        alert('❌ 권한 저장 실패: ' + data.error);
+                        console.error('❌ [SavePermissions] Failed:', data.error);
                     }
                 } catch (error) {
-                    console.error('권한 저장 실패:', error);
-                    alert('권한 저장 중 오류가 발생했습니다.');
+                    console.error('❌ [SavePermissions] Exception:', error);
+                    console.error('❌ [SavePermissions] Stack:', error.stack);
+                    alert('❌ 권한 저장 중 오류가 발생했습니다: ' + error.message);
                 }
             });
 
