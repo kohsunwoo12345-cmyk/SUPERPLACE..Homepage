@@ -11614,23 +11614,68 @@ app.get('/api/students', async (c) => {
 // 학생 추가
 app.post('/api/students', async (c) => {
   try {
-    const { name, phone, grade, school, subjects, parent_name, parent_phone, notes } = await c.req.json()
+    const data = await c.req.json()
+    const { 
+      name, phone, grade, school, subjects, 
+      parent_name, parentName,
+      parent_phone, parentPhone,
+      notes, memo,
+      classId, class_id,
+      enrollmentDate, enrollment_date
+    } = data
+    
     const user = JSON.parse(c.req.header('X-User-Data-Base64') ? decodeURIComponent(escape(atob(c.req.header('X-User-Data-Base64') || ''))) : '{"id":1}')
     
+    // 필드명 통일 (camelCase와 snake_case 모두 지원)
+    const finalParentName = parentName || parent_name
+    const finalParentPhone = parentPhone || parent_phone
+    const finalNotes = memo || notes
+    const finalClassId = classId || class_id
+    const finalEnrollmentDate = enrollmentDate || enrollment_date
+    
     // 필수 항목 확인
-    if (!name || !grade || !parent_name || !parent_phone) {
-      return c.json({ success: false, error: '필수 항목을 입력해주세요.' }, 400)
+    if (!name || !grade || !finalParentName || !finalParentPhone) {
+      return c.json({ success: false, error: '필수 항목을 입력해주세요. (이름, 학년, 학부모 이름, 학부모 연락처)' }, 400)
     }
     
     const result = await c.env.DB.prepare(`
       INSERT INTO students (name, phone, grade, school, subjects, parent_name, parent_phone, academy_id, enrollment_date, notes, status)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, DATE('now'), ?, 'active')
-    `).bind(name, phone || null, grade, school || null, subjects || '', parent_name, parent_phone, user.id, notes || null).run()
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active')
+    `).bind(
+      name, 
+      phone || null, 
+      grade, 
+      school || null, 
+      subjects || '', 
+      finalParentName, 
+      finalParentPhone, 
+      user.id, 
+      finalEnrollmentDate || new Date().toISOString().split('T')[0],
+      finalNotes || null
+    ).run()
+    
+    // 반 배정이 있으면 처리
+    if (finalClassId) {
+      const studentId = result.meta.last_row_id
+      const classIds = typeof finalClassId === 'string' ? finalClassId.split(',') : [finalClassId]
+      
+      for (const cId of classIds) {
+        if (cId && cId.trim()) {
+          try {
+            await c.env.DB.prepare(`
+              UPDATE students SET class_id = ? WHERE id = ?
+            `).bind(parseInt(cId.trim()), studentId).run()
+          } catch (err) {
+            console.error('Class assignment error:', err)
+          }
+        }
+      }
+    }
     
     return c.json({ success: true, message: '학생이 추가되었습니다.', id: result.meta.last_row_id })
   } catch (err) {
     console.error('Add student error:', err)
-    return c.json({ success: false, error: '학생 추가 실패' }, 500)
+    return c.json({ success: false, error: `학생 추가 실패: ${err.message || err}` }, 500)
   }
 })
 
