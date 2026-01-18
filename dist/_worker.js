@@ -21232,20 +21232,20 @@ ${l.director_name} 원장님의 승인을 기다려주세요.`,directorName:l.di
                         if (verifyData.success && verifyData.permissions) {
                             const p = verifyData.permissions;
                             if (p.canViewAllStudents) {
-                                message += '📌 권한: 모두 다 공개
+                                message += '📌 권한: 모두 다 공개' + '
 ';
-                                message += '• 모든 학생 조회 가능
+                                message += '• 모든 학생 조회 가능' + '
 ';
-                                message += '• 모든 반/과목 관리 가능
+                                message += '• 모든 반/과목 관리 가능' + '
 ';
                                 message += '• 랜딩페이지 접근 가능';
                             } else {
-                                message += '📌 권한: 배정된 반만 공개
+                                message += '📌 권한: 배정된 반만 공개' + '
 ';
                                 if (p.assignedClasses && p.assignedClasses.length > 0) {
                                     message += \`• 배정된 반: \${p.assignedClasses.length}개
 \`;
-                                    message += '• 배정된 반의 학생만 조회
+                                    message += '• 배정된 반의 학생만 조회' + '
 ';
                                     message += '• 배정된 반의 일일 성과만 작성';
                                 } else {
@@ -22459,20 +22459,20 @@ ${l.director_name} 원장님의 승인을 기다려주세요.`,directorName:l.di
                         if (verifyData.success && verifyData.permissions) {
                             const p = verifyData.permissions;
                             if (p.canViewAllStudents) {
-                                message += '📌 권한: 모두 다 공개
+                                message += '📌 권한: 모두 다 공개' + '
 ';
-                                message += '• 모든 학생 조회 가능
+                                message += '• 모든 학생 조회 가능' + '
 ';
-                                message += '• 모든 반/과목 관리 가능
+                                message += '• 모든 반/과목 관리 가능' + '
 ';
                                 message += '• 랜딩페이지 접근 가능';
                             } else {
-                                message += '📌 권한: 배정된 반만 공개
+                                message += '📌 권한: 배정된 반만 공개' + '
 ';
                                 if (p.assignedClasses && p.assignedClasses.length > 0) {
                                     message += \`• 배정된 반: \${p.assignedClasses.length}개
 \`;
-                                    message += '• 배정된 반의 학생만 조회
+                                    message += '• 배정된 반의 학생만 조회' + '
 ';
                                     message += '• 배정된 반의 일일 성과만 작성';
                                 } else {

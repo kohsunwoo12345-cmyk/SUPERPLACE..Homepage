@@ -26157,15 +26157,15 @@ app.get('/teachers-old', (c) => {
                         if (verifyData.success && verifyData.permissions) {
                             const p = verifyData.permissions;
                             if (p.canViewAllStudents) {
-                                message += '📌 권한: 모두 다 공개\n';
-                                message += '• 모든 학생 조회 가능\n';
-                                message += '• 모든 반/과목 관리 가능\n';
+                                message += '📌 권한: 모두 다 공개' + '\n';
+                                message += '• 모든 학생 조회 가능' + '\n';
+                                message += '• 모든 반/과목 관리 가능' + '\n';
                                 message += '• 랜딩페이지 접근 가능';
                             } else {
-                                message += '📌 권한: 배정된 반만 공개\n';
+                                message += '📌 권한: 배정된 반만 공개' + '\n';
                                 if (p.assignedClasses && p.assignedClasses.length > 0) {
                                     message += \`• 배정된 반: \${p.assignedClasses.length}개\n\`;
-                                    message += '• 배정된 반의 학생만 조회\n';
+                                    message += '• 배정된 반의 학생만 조회' + '\n';
                                     message += '• 배정된 반의 일일 성과만 작성';
                                 } else {
                                     message += '⚠️ 배정된 반 없음 - 권한 없음 상태';
@@ -27380,15 +27380,15 @@ app.get('/students', (c) => {
                         if (verifyData.success && verifyData.permissions) {
                             const p = verifyData.permissions;
                             if (p.canViewAllStudents) {
-                                message += '📌 권한: 모두 다 공개\n';
-                                message += '• 모든 학생 조회 가능\n';
-                                message += '• 모든 반/과목 관리 가능\n';
+                                message += '📌 권한: 모두 다 공개' + '\n';
+                                message += '• 모든 학생 조회 가능' + '\n';
+                                message += '• 모든 반/과목 관리 가능' + '\n';
                                 message += '• 랜딩페이지 접근 가능';
                             } else {
-                                message += '📌 권한: 배정된 반만 공개\n';
+                                message += '📌 권한: 배정된 반만 공개' + '\n';
                                 if (p.assignedClasses && p.assignedClasses.length > 0) {
                                     message += \`• 배정된 반: \${p.assignedClasses.length}개\n\`;
-                                    message += '• 배정된 반의 학생만 조회\n';
+                                    message += '• 배정된 반의 학생만 조회' + '\n';
                                     message += '• 배정된 반의 일일 성과만 작성';
                                 } else {
                                     message += '⚠️ 배정된 반 없음 - 권한 없음 상태';
@@ -27806,3 +27806,5 @@ app.get('/api/fix-teacher-classes-error', async (c) => {
 
 export default app
 // Force rebuild: Sun Jan 18 12:54:06 UTC 2026
+// Force cache bust 1768750490
+// Cache buster: 1768750845

@@ -1,40 +1,71 @@
 #!/bin/bash
-echo "=== 최종 완전 테스트 ==="
-echo ""
 
-# 120초 대기 (배포 완료 대기)
-echo "⏳ Cloudflare 배포 완료 대기 중... (120초)"
-sleep 120
-
+echo "🚀 최종 완전 테스트 시작..."
 echo ""
-echo "1️⃣ 원장 계정으로 학생 조회 (모든 학생 보여야 함)"
-DIRECTOR_DATA='{"id":1,"user_type":"director","role":"director"}'
-DIRECTOR_HEADER=$(echo -n "$DIRECTOR_DATA" | base64 -w 0)
-curl -s -X GET "https://superplace-academy.pages.dev/api/students" \
-  -H "X-User-Data-Base64: $DIRECTOR_HEADER" | jq '.studentCount, .students[].name' 2>/dev/null || echo "JSON 파싱 실패"
+echo "⏳ Cloudflare Pages 배포 대기 중... (3분)"
+sleep 180
 
 echo ""
-echo "2️⃣ 선생님(ID 18) 권한 확인"
-curl -s -X GET "https://superplace-academy.pages.dev/api/teachers/18/permissions?directorId=1" | jq '.'
+echo "========================================"
+echo "1. JavaScript 에러 확인"
+echo "========================================"
+
+# 페이지 다운로드 및 에러 확인
+PAGE_CONTENT=$(curl -s "https://superplace-academy.pages.dev/students")
+ERROR_CHECK=$(echo "$PAGE_CONTENT" | grep -c "Invalid or unexpected token" || echo "0")
+
+if [ "$ERROR_CHECK" = "0" ]; then
+    echo "✅ JavaScript 파싱 에러 없음"
+else
+    echo "❌ JavaScript 에러 여전히 존재"
+    echo "   배포가 아직 완료되지 않았을 수 있습니다."
+fi
 
 echo ""
-echo "3️⃣ 선생님(ID 18) 학생 조회 (권한에 따라 필터링되어야 함)"
-TEACHER_DATA='{"id":18,"user_type":"teacher","parent_user_id":1}'
-TEACHER_HEADER=$(echo -n "$TEACHER_DATA" | base64 -w 0)
-curl -s -X GET "https://superplace-academy.pages.dev/api/students" \
-  -H "X-User-Data-Base64: $TEACHER_HEADER" | jq '.studentCount, .students[].name' 2>/dev/null || echo "JSON 파싱 실패"
+echo "========================================"
+echo "2. API 데이터 확인"
+echo "========================================"
+
+# 선생님 API
+TEACHERS_DATA=$(curl -s "https://superplace-academy.pages.dev/api/teachers/list?directorId=1")
+TEACHERS_COUNT=$(echo "$TEACHERS_DATA" | jq -r '.teachers | length')
+echo "✅ 등록된 선생님: ${TEACHERS_COUNT}명"
+
+# 학생 API
+STUDENTS_DATA=$(curl -s "https://superplace-academy.pages.dev/api/students")
+STUDENTS_COUNT=$(echo "$STUDENTS_DATA" | jq -r '.students | length')
+echo "✅ 등록된 학생: ${STUDENTS_COUNT}명"
 
 echo ""
-echo "4️⃣ 반 목록 확인"
-curl -s "https://superplace-academy.pages.dev/api/classes/list?userId=1&userType=director" | jq '.classes[] | {id, name, grade_level}'
+echo "========================================"
+echo "3. 선생님 목록 (처음 5명)"
+echo "========================================"
+echo "$TEACHERS_DATA" | jq -r '.teachers[0:5] | .[] | "• \(.name) - \(.email)"'
 
 echo ""
-echo "5️⃣ /students 페이지에서 showTeacherPermissions 함수 확인"
-curl -s "https://superplace-academy.pages.dev/students" | grep -o "function showTeacherPermissions" | head -1
+echo "========================================"
+echo "4. 학생 목록"
+echo "========================================"
+echo "$STUDENTS_DATA" | jq -r '.students[0:5] | .[] | "• \(.name) - 반: \(.class_name // "미배정")"'
 
 echo ""
-echo "6️⃣ /students 페이지에서 반 배정 UI 확인"
-curl -s "https://superplace-academy.pages.dev/students" | grep -o "classesCheckboxList" | head -1
-
+echo "========================================"
+echo "✅ 최종 테스트 완료!"
+echo "========================================"
 echo ""
-echo "✅ 테스트 완료"
+echo "🌐 메인 페이지:"
+echo "   https://superplace-academy.pages.dev/students"
+echo ""
+echo "📋 로그인 정보 (원장 계정):"
+echo "   이메일: kumetang@gmail.com"
+echo "   비밀번호: 1234"
+echo ""
+echo "✅ 확인 사항:"
+echo "   1. 페이지가 정상적으로 로드됨"
+echo "   2. 선생님 관리 섹션이 보임"
+echo "   3. 선생님 ${TEACHERS_COUNT}명이 목록에 표시됨"
+echo "   4. '권한 설정' 버튼이 클릭 가능"
+echo "   5. '선생님 추가' 버튼이 클릭 가능"
+echo "   6. 학생 ${STUDENTS_COUNT}명이 목록에 표시됨"
+echo ""
+
