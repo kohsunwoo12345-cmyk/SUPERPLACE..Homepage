@@ -137,15 +137,45 @@ studentRoutes.get('/api/students', async (c) => {
     
     // 선생님인 경우 배정받은 반의 학생만 조회
     if (userType === 'teacher' && userId) {
-      // teacher_classes 테이블에서 해당 선생님의 반 목록 조회
-      query = `
-        SELECT DISTINCT s.*, c.class_name
-        FROM students s
-        LEFT JOIN classes c ON s.class_id = c.id
-        INNER JOIN teacher_classes tc ON s.class_id = tc.class_id
-        WHERE s.academy_id = ? AND tc.teacher_id = ? AND (s.status = 'active' OR s.status IS NULL)
-      `
-      params.push(userId)
+      // teacher_permissions 테이블에서 해당 선생님의 권한 조회
+      const permRows = await DB.prepare(
+        'SELECT permission_key, permission_value FROM teacher_permissions WHERE teacher_id = ?'
+      ).bind(userId).all()
+      
+      let canViewAllStudents = false
+      let assignedClasses: number[] = []
+      
+      if (permRows.results) {
+        for (const row of permRows.results) {
+          if (row.permission_key === 'canViewAllStudents') {
+            canViewAllStudents = row.permission_value === '1' || row.permission_value === 1 || row.permission_value === true
+          } else if (row.permission_key === 'assignedClasses' && typeof row.permission_value === 'string') {
+            try {
+              assignedClasses = JSON.parse(row.permission_value)
+            } catch (e) {
+              console.error('[StudentRoutes] Failed to parse assignedClasses:', e)
+            }
+          }
+        }
+      }
+      
+      // 전체 조회 권한이 없으면 배정된 반만 조회
+      if (!canViewAllStudents) {
+        if (assignedClasses.length === 0) {
+          // 배정된 반이 없으면 빈 결과 반환
+          return c.json({ success: true, students: [] })
+        }
+        
+        const placeholders = assignedClasses.map(() => '?').join(',')
+        query = `
+          SELECT s.*, c.class_name
+          FROM students s
+          LEFT JOIN classes c ON s.class_id = c.id
+          WHERE s.academy_id = ? AND s.class_id IN (${placeholders}) AND (s.status = 'active' OR s.status IS NULL)
+        `
+        params.push(...assignedClasses)
+      }
+      // 전체 조회 권한이 있으면 모든 학생 조회 (기존 쿼리 유지)
     }
     
     if (classId) {
