@@ -126,12 +126,19 @@ export const classesPage = `
     </div>
 
     <script>
-        const academyId = 1;
+        // 현재 로그인한 사용자 정보 가져오기
+        const currentUser = JSON.parse(localStorage.getItem('user') || '{"id":1}');
+        const academyId = currentUser.id;
         let classes = [];
 
         async function loadClasses() {
             try {
-                const res = await fetch('/api/classes?academyId=' + academyId);
+                const userDataHeader = btoa(unescape(encodeURIComponent(JSON.stringify(currentUser))));
+                const res = await fetch('/api/classes', {
+                    headers: {
+                        'X-User-Data-Base64': userDataHeader
+                    }
+                });
                 const data = await res.json();
                 if (data.success) {
                     classes = data.classes;
@@ -493,7 +500,9 @@ export const studentsListPage = `
     </div>
 
     <script>
-        const academyId = 1;
+        // 현재 로그인한 사용자 정보 가져오기
+        const currentUser = JSON.parse(localStorage.getItem('user') || '{"id":1}');
+        const academyId = currentUser.id;
         let students = [];
         let allStudents = [];
         let classes = [];
@@ -518,7 +527,12 @@ export const studentsListPage = `
 
         async function loadClasses() {
             try {
-                const res = await fetch('/api/classes?academyId=' + academyId);
+                const userDataHeader = btoa(unescape(encodeURIComponent(JSON.stringify(currentUser))));
+                const res = await fetch('/api/classes', {
+                    headers: {
+                        'X-User-Data-Base64': userDataHeader
+                    }
+                });
                 const data = await res.json();
                 if (data.success) {
                     classes = data.classes;
@@ -1099,18 +1113,18 @@ export const dailyRecordPage = `
     </div>
 
     <script>
-        const academyId = 1;
+        // 로컬 스토리지에서 사용자 정보 가져오기
+        const currentUser = JSON.parse(localStorage.getItem('user') || '{"id":1}');
+        const academyId = currentUser.id;
+        const userId = currentUser.id;
+        const userType = currentUser.user_type || 'director'; // 기본값은 원장님
+        
         let currentDate = new Date();
         let selectedDate = new Date();
         let students = [];
         let classes = [];
         let records = [];
         let monthlyRecords = [];
-        
-        // 로컬 스토리지에서 사용자 정보 가져오기
-        const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-        const userId = currentUser.id;
-        const userType = currentUser.user_type || 'director'; // 기본값은 원장님
 
         // 슬라이더 값 표시
         document.getElementById('lessonUnderstanding').addEventListener('input', (e) => {
@@ -1193,7 +1207,12 @@ export const dailyRecordPage = `
 
         async function loadClasses() {
             try {
-                const res = await fetch('/api/classes?academyId=' + academyId);
+                const userDataHeader = btoa(unescape(encodeURIComponent(JSON.stringify(currentUser))));
+                const res = await fetch('/api/classes', {
+                    headers: {
+                        'X-User-Data-Base64': userDataHeader
+                    }
+                });
                 const data = await res.json();
                 if (data.success) {
                     classes = data.classes;
@@ -1687,8 +1706,10 @@ export const studentDetailPage = `
     </div>
 
     <script>
+        // 현재 로그인한 사용자 정보 가져오기
+        const currentUser = JSON.parse(localStorage.getItem('user') || '{"id":1}');
+        const academyId = currentUser.id;
         const studentId = window.location.pathname.split('/').pop();
-        const academyId = 1;
         let student = null;
         let stats = null;
         let records = [];

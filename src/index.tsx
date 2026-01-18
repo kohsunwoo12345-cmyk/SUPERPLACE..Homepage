@@ -18971,7 +18971,22 @@ app.put('/api/classes/:id/assign-teacher', async (c) => {
 // 반 목록 조회 (학생 관리 시스템용)
 app.get('/api/classes', async (c) => {
   try {
-    const academyId = c.req.query('academyId') || '1'
+    // X-User-Data-Base64 헤더에서 academy_id 추출
+    let academyId = c.req.query('academyId')
+    
+    try {
+      const userHeader = c.req.header('X-User-Data-Base64')
+      if (userHeader && !academyId) {
+        const userData = JSON.parse(decodeURIComponent(escape(atob(userHeader))))
+        academyId = userData.id || userData.academy_id
+      }
+    } catch (err) {
+      console.error('[GetClasses] Failed to parse user header:', err)
+    }
+    
+    if (!academyId) {
+      return c.json({ success: false, error: '학원 ID가 필요합니다.' }, 400)
+    }
     
     const result = await c.env.DB.prepare(`
       SELECT 
@@ -19001,7 +19016,22 @@ app.get('/api/classes', async (c) => {
 // 반 추가
 app.post('/api/classes', async (c) => {
   try {
-    const { academyId, className, grade, description, scheduleDays, startTime, endTime } = await c.req.json()
+    let { academyId, className, grade, description, scheduleDays, startTime, endTime } = await c.req.json()
+    
+    // X-User-Data-Base64 헤더에서 academy_id 추출
+    try {
+      const userHeader = c.req.header('X-User-Data-Base64')
+      if (userHeader && !academyId) {
+        const userData = JSON.parse(decodeURIComponent(escape(atob(userHeader))))
+        academyId = userData.id || userData.academy_id
+      }
+    } catch (err) {
+      console.error('[CreateClass] Failed to parse user header:', err)
+    }
+    
+    if (!academyId) {
+      return c.json({ success: false, error: '학원 ID가 필요합니다.' }, 400)
+    }
     
     if (!className) {
       return c.json({ success: false, error: '반 이름은 필수입니다.' }, 400)

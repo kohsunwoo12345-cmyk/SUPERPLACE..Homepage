@@ -206,12 +206,19 @@ var kt=Object.defineProperty;var Ye=e=>{throw TypeError(e)};var _t=(e,t,s)=>t in
     </div>
 
     <script>
-        const academyId = 1;
+        // 현재 로그인한 사용자 정보 가져오기
+        const currentUser = JSON.parse(localStorage.getItem('user') || '{"id":1}');
+        const academyId = currentUser.id;
         let classes = [];
 
         async function loadClasses() {
             try {
-                const res = await fetch('/api/classes?academyId=' + academyId);
+                const userDataHeader = btoa(unescape(encodeURIComponent(JSON.stringify(currentUser))));
+                const res = await fetch('/api/classes', {
+                    headers: {
+                        'X-User-Data-Base64': userDataHeader
+                    }
+                });
                 const data = await res.json();
                 if (data.success) {
                     classes = data.classes;
@@ -571,7 +578,9 @@ var kt=Object.defineProperty;var Ye=e=>{throw TypeError(e)};var _t=(e,t,s)=>t in
     </div>
 
     <script>
-        const academyId = 1;
+        // 현재 로그인한 사용자 정보 가져오기
+        const currentUser = JSON.parse(localStorage.getItem('user') || '{"id":1}');
+        const academyId = currentUser.id;
         let students = [];
         let allStudents = [];
         let classes = [];
@@ -596,7 +605,12 @@ var kt=Object.defineProperty;var Ye=e=>{throw TypeError(e)};var _t=(e,t,s)=>t in
 
         async function loadClasses() {
             try {
-                const res = await fetch('/api/classes?academyId=' + academyId);
+                const userDataHeader = btoa(unescape(encodeURIComponent(JSON.stringify(currentUser))));
+                const res = await fetch('/api/classes', {
+                    headers: {
+                        'X-User-Data-Base64': userDataHeader
+                    }
+                });
                 const data = await res.json();
                 if (data.success) {
                     classes = data.classes;
@@ -1175,18 +1189,18 @@ var kt=Object.defineProperty;var Ye=e=>{throw TypeError(e)};var _t=(e,t,s)=>t in
     </div>
 
     <script>
-        const academyId = 1;
+        // 로컬 스토리지에서 사용자 정보 가져오기
+        const currentUser = JSON.parse(localStorage.getItem('user') || '{"id":1}');
+        const academyId = currentUser.id;
+        const userId = currentUser.id;
+        const userType = currentUser.user_type || 'director'; // 기본값은 원장님
+        
         let currentDate = new Date();
         let selectedDate = new Date();
         let students = [];
         let classes = [];
         let records = [];
         let monthlyRecords = [];
-        
-        // 로컬 스토리지에서 사용자 정보 가져오기
-        const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-        const userId = currentUser.id;
-        const userType = currentUser.user_type || 'director'; // 기본값은 원장님
 
         // 슬라이더 값 표시
         document.getElementById('lessonUnderstanding').addEventListener('input', (e) => {
@@ -1269,7 +1283,12 @@ var kt=Object.defineProperty;var Ye=e=>{throw TypeError(e)};var _t=(e,t,s)=>t in
 
         async function loadClasses() {
             try {
-                const res = await fetch('/api/classes?academyId=' + academyId);
+                const userDataHeader = btoa(unescape(encodeURIComponent(JSON.stringify(currentUser))));
+                const res = await fetch('/api/classes', {
+                    headers: {
+                        'X-User-Data-Base64': userDataHeader
+                    }
+                });
                 const data = await res.json();
                 if (data.success) {
                     classes = data.classes;
@@ -1761,8 +1780,10 @@ var kt=Object.defineProperty;var Ye=e=>{throw TypeError(e)};var _t=(e,t,s)=>t in
     </div>
 
     <script>
+        // 현재 로그인한 사용자 정보 가져오기
+        const currentUser = JSON.parse(localStorage.getItem('user') || '{"id":1}');
+        const academyId = currentUser.id;
         const studentId = window.location.pathname.split('/').pop();
-        const academyId = 1;
         let student = null;
         let stats = null;
         let records = [];
@@ -15746,7 +15767,7 @@ ${l.director_name} 원장님의 승인을 기다려주세요.`,directorName:l.di
           LEFT JOIN users t ON c.teacher_id = t.id
           WHERE c.academy_id = ?
           ORDER BY c.created_at DESC
-        `;const a=await e.env.DB.prepare(r).bind(t).all();return e.json({success:!0,classes:a.results||[]})}catch(r){if(r.message&&r.message.includes("no such table"))return e.json({success:!0,classes:[]});throw r}}catch(t){return console.error("[ClassesList] Error:",t),console.error("[ClassesList] Error message:",t.message),e.json({success:!0,classes:[],warning:"반 목록을 불러올 수 없습니다. 먼저 반을 생성해주세요."})}});d.put("/api/classes/:id/assign-teacher",async e=>{try{const t=e.req.param("id"),{teacherId:s,userId:r}=await e.req.json(),a=await e.env.DB.prepare("SELECT user_id FROM classes WHERE id = ?").bind(t).first();return!a||a.user_id!==r?e.json({success:!1,error:"권한이 없습니다."},403):(await e.env.DB.prepare("UPDATE classes SET teacher_id = ?, updated_at = datetime('now') WHERE id = ?").bind(s,t).run(),e.json({success:!0,message:"선생님이 배정되었습니다."}))}catch(t){return console.error("Assign teacher error:",t),e.json({success:!1,error:"선생님 배정 중 오류가 발생했습니다."},500)}});d.get("/api/classes",async e=>{try{const t=e.req.query("academyId")||"1",s=await e.env.DB.prepare(`
+        `;const a=await e.env.DB.prepare(r).bind(t).all();return e.json({success:!0,classes:a.results||[]})}catch(r){if(r.message&&r.message.includes("no such table"))return e.json({success:!0,classes:[]});throw r}}catch(t){return console.error("[ClassesList] Error:",t),console.error("[ClassesList] Error message:",t.message),e.json({success:!0,classes:[],warning:"반 목록을 불러올 수 없습니다. 먼저 반을 생성해주세요."})}});d.put("/api/classes/:id/assign-teacher",async e=>{try{const t=e.req.param("id"),{teacherId:s,userId:r}=await e.req.json(),a=await e.env.DB.prepare("SELECT user_id FROM classes WHERE id = ?").bind(t).first();return!a||a.user_id!==r?e.json({success:!1,error:"권한이 없습니다."},403):(await e.env.DB.prepare("UPDATE classes SET teacher_id = ?, updated_at = datetime('now') WHERE id = ?").bind(s,t).run(),e.json({success:!0,message:"선생님이 배정되었습니다."}))}catch(t){return console.error("Assign teacher error:",t),e.json({success:!1,error:"선생님 배정 중 오류가 발생했습니다."},500)}});d.get("/api/classes",async e=>{try{let t=e.req.query("academyId");try{const r=e.req.header("X-User-Data-Base64");if(r&&!t){const a=JSON.parse(decodeURIComponent(escape(atob(r))));t=a.id||a.academy_id}}catch(r){console.error("[GetClasses] Failed to parse user header:",r)}if(!t)return e.json({success:!1,error:"학원 ID가 필요합니다."},400);const s=await e.env.DB.prepare(`
       SELECT 
         c.id,
         c.class_name,
@@ -15762,7 +15783,7 @@ ${l.director_name} 원장님의 승인을 기다려주세요.`,directorName:l.di
       WHERE c.academy_id = ?
       GROUP BY c.id
       ORDER BY c.created_at DESC
-    `).bind(t).all();return e.json({success:!0,classes:s.results||[]})}catch(t){return console.error("Get classes error:",t),e.json({success:!1,error:"반 목록 조회 중 오류가 발생했습니다."},500)}});d.post("/api/classes",async e=>{try{const{academyId:t,className:s,grade:r,description:a,scheduleDays:n,startTime:o,endTime:l}=await e.req.json();if(!s)return e.json({success:!1,error:"반 이름은 필수입니다."},400);const i=await e.env.DB.prepare(`
+    `).bind(t).all();return e.json({success:!0,classes:s.results||[]})}catch(t){return console.error("Get classes error:",t),e.json({success:!1,error:"반 목록 조회 중 오류가 발생했습니다."},500)}});d.post("/api/classes",async e=>{try{let{academyId:t,className:s,grade:r,description:a,scheduleDays:n,startTime:o,endTime:l}=await e.req.json();try{const c=e.req.header("X-User-Data-Base64");if(c&&!t){const p=JSON.parse(decodeURIComponent(escape(atob(c))));t=p.id||p.academy_id}}catch(c){console.error("[CreateClass] Failed to parse user header:",c)}if(!t)return e.json({success:!1,error:"학원 ID가 필요합니다."},400);if(!s)return e.json({success:!1,error:"반 이름은 필수입니다."},400);const i=await e.env.DB.prepare(`
       INSERT INTO classes (academy_id, class_name, grade, description, schedule_days, start_time, end_time, created_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))
     `).bind(t||1,s,r||null,a||null,n||null,o||null,l||null).run();return e.json({success:!0,classId:i.meta.last_row_id,message:"반이 추가되었습니다."})}catch(t){return console.error("Create class error:",t),e.json({success:!1,error:"반 추가 중 오류가 발생했습니다."},500)}});d.put("/api/classes/:id",async e=>{try{const t=e.req.param("id"),{className:s,grade:r,description:a,scheduleDays:n,startTime:o,endTime:l}=await e.req.json();return s?(await e.env.DB.prepare(`
