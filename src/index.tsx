@@ -11718,20 +11718,57 @@ app.delete('/api/students/:id', async (c) => {
       return c.json({ success: false, error: '학생 ID가 필요합니다.' }, 400)
     }
     
-    console.log('[DeleteStudent] Soft deleting student:', studentId)
+    // 🔒 보안 1단계: X-User-Data-Base64 헤더에서 academy_id 추출
+    let academyId
+    try {
+      const userHeader = c.req.header('X-User-Data-Base64')
+      if (userHeader) {
+        const userData = JSON.parse(decodeURIComponent(escape(atob(userHeader))))
+        academyId = userData.id || userData.academy_id
+      }
+    } catch (err) {
+      console.error('[DeleteStudent] Failed to parse user header:', err)
+    }
     
-    // Soft Delete: status를 'deleted'로 변경
-    const result = await c.env.DB.prepare(`
-      UPDATE students 
-      SET status = 'deleted', updated_at = CURRENT_TIMESTAMP
-      WHERE id = ?
-    `).bind(studentId).run()
+    if (!academyId) {
+      return c.json({ success: false, error: '학원 ID가 필요합니다.' }, 400)
+    }
     
-    if (result.meta.changes === 0) {
+    console.log('[DeleteStudent] Soft deleting student:', studentId, 'academy:', academyId)
+    
+    // 🔒 보안 2단계: 해당 학생이 현재 사용자의 학원 소속인지 확인
+    const studentCheck = await c.env.DB.prepare(`
+      SELECT id, academy_id FROM students WHERE id = ?
+    `).bind(studentId).first()
+    
+    if (!studentCheck) {
       return c.json({ 
         success: false, 
         error: '해당 학생을 찾을 수 없습니다.' 
       }, 404)
+    }
+    
+    if (studentCheck.academy_id !== academyId) {
+      console.error('[DeleteStudent] Security breach attempt:', {
+        studentId,
+        studentAcademyId: studentCheck.academy_id,
+        userAcademyId: academyId
+      })
+      return c.json({ success: false, error: '권한이 없습니다.' }, 403)
+    }
+    
+    // 🔒 보안 3단계: academy_id 조건 추가하여 이중 확인
+    const result = await c.env.DB.prepare(`
+      UPDATE students 
+      SET status = 'deleted', updated_at = CURRENT_TIMESTAMP
+      WHERE id = ? AND academy_id = ?
+    `).bind(studentId, academyId).run()
+    
+    if (result.meta.changes === 0) {
+      return c.json({ 
+        success: false, 
+        error: '학생 삭제에 실패했습니다.' 
+      }, 400)
     }
     
     console.log('[DeleteStudent] Successfully soft deleted student')
@@ -19086,15 +19123,54 @@ app.put('/api/classes/:id', async (c) => {
     const classId = c.req.param('id')
     const { className, grade, description, scheduleDays, startTime, endTime } = await c.req.json()
     
+    // 🔒 보안 1단계: X-User-Data-Base64 헤더에서 academy_id 추출
+    let academyId
+    try {
+      const userHeader = c.req.header('X-User-Data-Base64')
+      if (userHeader) {
+        const userData = JSON.parse(decodeURIComponent(escape(atob(userHeader))))
+        academyId = userData.id || userData.academy_id
+      }
+    } catch (err) {
+      console.error('[UpdateClass] Failed to parse user header:', err)
+    }
+    
+    if (!academyId) {
+      return c.json({ success: false, error: '학원 ID가 필요합니다.' }, 400)
+    }
+    
     if (!className) {
       return c.json({ success: false, error: '반 이름은 필수입니다.' }, 400)
     }
     
-    await c.env.DB.prepare(`
+    // 🔒 보안 2단계: 해당 반이 현재 사용자의 학원 소속인지 확인
+    const classCheck = await c.env.DB.prepare(`
+      SELECT id, academy_id FROM classes WHERE id = ?
+    `).bind(classId).first()
+    
+    if (!classCheck) {
+      return c.json({ success: false, error: '반을 찾을 수 없습니다.' }, 404)
+    }
+    
+    if (classCheck.academy_id !== academyId) {
+      console.error('[UpdateClass] Security breach attempt:', {
+        classId,
+        classAcademyId: classCheck.academy_id,
+        userAcademyId: academyId
+      })
+      return c.json({ success: false, error: '권한이 없습니다.' }, 403)
+    }
+    
+    // 🔒 보안 3단계: academy_id 조건 추가하여 이중 확인
+    const result = await c.env.DB.prepare(`
       UPDATE classes 
       SET class_name = ?, grade = ?, description = ?, schedule_days = ?, start_time = ?, end_time = ?
-      WHERE id = ?
-    `).bind(className, grade || null, description || null, scheduleDays || null, startTime || null, endTime || null, classId).run()
+      WHERE id = ? AND academy_id = ?
+    `).bind(className, grade || null, description || null, scheduleDays || null, startTime || null, endTime || null, classId, academyId).run()
+    
+    if (result.meta.changes === 0) {
+      return c.json({ success: false, error: '반 수정에 실패했습니다.' }, 400)
+    }
     
     return c.json({ success: true, message: '반이 수정되었습니다.' })
   } catch (error) {
@@ -19108,38 +19184,56 @@ app.delete('/api/classes/:id', async (c) => {
   try {
     const classId = c.req.param('id')
     
-    // 사용자 ID 추출
-    let userId
+    // 🔒 보안 1단계: X-User-Data-Base64 헤더에서 academy_id 추출
+    let academyId
     try {
       const userHeader = c.req.header('X-User-Data-Base64')
       if (userHeader) {
         const userData = JSON.parse(decodeURIComponent(escape(atob(userHeader))))
-        userId = userData.id
+        academyId = userData.id || userData.academy_id
       }
     } catch (err) {
       console.error('[DeleteClass] Failed to parse user header:', err)
     }
     
-    console.log('🗑️ [DeleteClass] Deleting class', classId, 'for user', userId)
+    if (!academyId) {
+      return c.json({ success: false, error: '학원 ID가 필요합니다.' }, 400)
+    }
     
-    // 사용자 소유 확인
-    const classCheck = await c.env.DB.prepare('SELECT user_id FROM classes WHERE id = ?').bind(classId).first()
+    console.log('🗑️ [DeleteClass] Deleting class', classId, 'for academy', academyId)
+    
+    // 🔒 보안 2단계: 해당 반이 현재 사용자의 학원 소속인지 확인
+    const classCheck = await c.env.DB.prepare(`
+      SELECT id, academy_id FROM classes WHERE id = ?
+    `).bind(classId).first()
+    
     if (!classCheck) {
       return c.json({ success: false, error: '반을 찾을 수 없습니다.' }, 404)
     }
-    if (userId && classCheck.user_id !== parseInt(userId)) {
+    
+    if (classCheck.academy_id !== academyId) {
+      console.error('[DeleteClass] Security breach attempt:', {
+        classId,
+        classAcademyId: classCheck.academy_id,
+        userAcademyId: academyId
+      })
       return c.json({ success: false, error: '이 반을 삭제할 권한이 없습니다.' }, 403)
     }
     
-    // 학생들의 class_id를 NULL로 설정
+    // 🔒 보안 3단계: academy_id 조건 추가하여 학생 업데이트
     await c.env.DB.prepare(`
-      UPDATE students SET class_id = NULL WHERE class_id = ?
-    `).bind(classId).run()
+      UPDATE students SET class_id = NULL 
+      WHERE class_id = ? AND academy_id = ?
+    `).bind(classId, academyId).run()
     
-    // 반 삭제
-    await c.env.DB.prepare(`
-      DELETE FROM classes WHERE id = ?
-    `).bind(classId).run()
+    // 🔒 보안 3단계: academy_id 조건 추가하여 반 삭제
+    const result = await c.env.DB.prepare(`
+      DELETE FROM classes WHERE id = ? AND academy_id = ?
+    `).bind(classId, academyId).run()
+    
+    if (result.meta.changes === 0) {
+      return c.json({ success: false, error: '반 삭제에 실패했습니다.' }, 400)
+    }
     
     console.log('✅ [DeleteClass] Class deleted successfully')
     return c.json({ success: true, message: '반이 삭제되었습니다.' })
