@@ -563,7 +563,44 @@ export const studentsListPage = `
         async function loadStudents() {
             try {
                 // 현재 사용자 정보 가져오기
-                const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+                let currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+                
+                // user_type이 없으면 role 사용 (하위 호환성)
+                if (!currentUser.user_type && currentUser.role) {
+                    currentUser.user_type = currentUser.role;
+                }
+                
+                // 선생님인데 permissions가 없으면 서버에서 조회
+                if ((currentUser.user_type === 'teacher' || currentUser.role === 'teacher') && !currentUser.permissions) {
+                    console.log('⚠️ Teacher without permissions detected, fetching...');
+                    
+                    try {
+                        const directorId = currentUser.parent_user_id || 1;
+                        const permRes = await fetch(\`/api/teachers/\${currentUser.id}/permissions?directorId=\${directorId}\`);
+                        const permData = await permRes.json();
+                        
+                        if (permData.success && permData.permissions) {
+                            currentUser.permissions = permData.permissions;
+                            localStorage.setItem('user', JSON.stringify(currentUser));
+                            console.log('✅ Permissions loaded and saved:', currentUser.permissions);
+                        } else {
+                            currentUser.permissions = {
+                                canViewAllStudents: false,
+                                canWriteDailyReports: false,
+                                assignedClasses: []
+                            };
+                            console.warn('⚠️ No permissions found, using restrictive defaults');
+                        }
+                    } catch (permError) {
+                        console.error('❌ Failed to load permissions:', permError);
+                        currentUser.permissions = {
+                            canViewAllStudents: false,
+                            canWriteDailyReports: false,
+                            assignedClasses: []
+                        };
+                    }
+                }
+                
                 const userDataHeader = btoa(unescape(encodeURIComponent(JSON.stringify(currentUser))));
                 
                 const classId = document.getElementById('classFilter').value;
@@ -1097,7 +1134,44 @@ export const dailyRecordPage = `
         async function loadStudents() {
             try {
                 // 현재 사용자 정보 가져오기
-                const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+                let currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+                
+                // user_type이 없으면 role 사용 (하위 호환성)
+                if (!currentUser.user_type && currentUser.role) {
+                    currentUser.user_type = currentUser.role;
+                }
+                
+                // 선생님인데 permissions가 없으면 서버에서 조회
+                if ((currentUser.user_type === 'teacher' || currentUser.role === 'teacher') && !currentUser.permissions) {
+                    console.log('⚠️ [Daily Record] Teacher without permissions detected, fetching...');
+                    
+                    try {
+                        const directorId = currentUser.parent_user_id || 1;
+                        const permRes = await fetch(\`/api/teachers/\${currentUser.id}/permissions?directorId=\${directorId}\`);
+                        const permData = await permRes.json();
+                        
+                        if (permData.success && permData.permissions) {
+                            currentUser.permissions = permData.permissions;
+                            localStorage.setItem('user', JSON.stringify(currentUser));
+                            console.log('✅ [Daily Record] Permissions loaded and saved:', currentUser.permissions);
+                        } else {
+                            currentUser.permissions = {
+                                canViewAllStudents: false,
+                                canWriteDailyReports: false,
+                                assignedClasses: []
+                            };
+                            console.warn('⚠️ [Daily Record] No permissions found, using restrictive defaults');
+                        }
+                    } catch (permError) {
+                        console.error('❌ [Daily Record] Failed to load permissions:', permError);
+                        currentUser.permissions = {
+                            canViewAllStudents: false,
+                            canWriteDailyReports: false,
+                            assignedClasses: []
+                        };
+                    }
+                }
+                
                 const userDataHeader = btoa(unescape(encodeURIComponent(JSON.stringify(currentUser))));
                 
                 const res = await fetch('/api/students', {

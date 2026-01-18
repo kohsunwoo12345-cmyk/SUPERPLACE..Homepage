@@ -24633,9 +24633,31 @@ app.get('/students', (c) => {
                     return;
                 }
                 
+                // user_type이 없으면 role을 사용 (하위 호환성)
+                if (!currentUser.user_type && currentUser.role) {
+                    currentUser.user_type = currentUser.role;
+                }
+                
                 // 선생님인 경우 권한 확인
-                if (currentUser.user_type === 'teacher') {
-                    await loadTeacherPermissions();
+                if (currentUser.user_type === 'teacher' || currentUser.role === 'teacher') {
+                    console.log('🔍 Teacher account detected, loading permissions...');
+                    
+                    // localStorage에 permissions가 없으면 서버에서 조회
+                    if (!currentUser.permissions) {
+                        console.log('⚠️ No permissions in localStorage, fetching from server...');
+                        await loadTeacherPermissions();
+                        
+                        // 조회한 권한을 localStorage에 저장
+                        if (userPermissions) {
+                            currentUser.permissions = userPermissions;
+                            localStorage.setItem('user', JSON.stringify(currentUser));
+                            console.log('✅ Permissions saved to localStorage');
+                        }
+                    } else {
+                        userPermissions = currentUser.permissions;
+                        console.log('✅ Using permissions from localStorage:', userPermissions);
+                    }
+                    
                     applyTeacherRestrictions();
                 }
                 
@@ -24645,20 +24667,38 @@ app.get('/students', (c) => {
             // 선생님 권한 로드
             async function loadTeacherPermissions() {
                 try {
-                    if (!currentUser.parent_user_id) {
-                        console.error('선생님 계정에 parent_user_id가 없습니다.');
-                        return;
+                    // parent_user_id가 없으면 원장 ID 조회
+                    let directorId = currentUser.parent_user_id;
+                    if (!directorId) {
+                        console.log('⚠️ No parent_user_id, trying to find director...');
+                        // 모든 원장의 ID를 1로 가정하거나, 현재 사용자의 academy 정보에서 가져오기
+                        // 임시로 1을 사용 (대부분의 경우 원장 ID가 1)
+                        directorId = 1;
                     }
                     
-                    const res = await fetch(\`/api/teachers/\${currentUser.id}/permissions?directorId=\${currentUser.parent_user_id}\`);
+                    console.log(\`🔍 Fetching permissions for teacher \${currentUser.id} from director \${directorId}\`);
+                    const res = await fetch(\`/api/teachers/\${currentUser.id}/permissions?directorId=\${directorId}\`);
                     const data = await res.json();
                     
                     if (data.success && data.permissions) {
                         userPermissions = data.permissions;
-                        console.log('✅ Teacher permissions loaded:', userPermissions);
+                        console.log('✅ Teacher permissions loaded from server:', userPermissions);
+                    } else {
+                        console.warn('⚠️ No permissions found, using defaults');
+                        userPermissions = {
+                            canViewAllStudents: false,
+                            canWriteDailyReports: false,
+                            assignedClasses: []
+                        };
                     }
                 } catch (error) {
-                    console.error('권한 로드 실패:', error);
+                    console.error('❌ 권한 로드 실패:', error);
+                    // 실패 시 기본 권한 (모두 제한)
+                    userPermissions = {
+                        canViewAllStudents: false,
+                        canWriteDailyReports: false,
+                        assignedClasses: []
+                    };
                 }
             }
 

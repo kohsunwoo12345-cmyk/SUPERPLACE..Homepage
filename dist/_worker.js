@@ -641,7 +641,44 @@ var kt=Object.defineProperty;var Ye=e=>{throw TypeError(e)};var It=(e,t,s)=>t in
         async function loadStudents() {
             try {
                 // 현재 사용자 정보 가져오기
-                const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+                let currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+                
+                // user_type이 없으면 role 사용 (하위 호환성)
+                if (!currentUser.user_type && currentUser.role) {
+                    currentUser.user_type = currentUser.role;
+                }
+                
+                // 선생님인데 permissions가 없으면 서버에서 조회
+                if ((currentUser.user_type === 'teacher' || currentUser.role === 'teacher') && !currentUser.permissions) {
+                    console.log('⚠️ Teacher without permissions detected, fetching...');
+                    
+                    try {
+                        const directorId = currentUser.parent_user_id || 1;
+                        const permRes = await fetch(\`/api/teachers/\${currentUser.id}/permissions?directorId=\${directorId}\`);
+                        const permData = await permRes.json();
+                        
+                        if (permData.success && permData.permissions) {
+                            currentUser.permissions = permData.permissions;
+                            localStorage.setItem('user', JSON.stringify(currentUser));
+                            console.log('✅ Permissions loaded and saved:', currentUser.permissions);
+                        } else {
+                            currentUser.permissions = {
+                                canViewAllStudents: false,
+                                canWriteDailyReports: false,
+                                assignedClasses: []
+                            };
+                            console.warn('⚠️ No permissions found, using restrictive defaults');
+                        }
+                    } catch (permError) {
+                        console.error('❌ Failed to load permissions:', permError);
+                        currentUser.permissions = {
+                            canViewAllStudents: false,
+                            canWriteDailyReports: false,
+                            assignedClasses: []
+                        };
+                    }
+                }
+                
                 const userDataHeader = btoa(unescape(encodeURIComponent(JSON.stringify(currentUser))));
                 
                 const classId = document.getElementById('classFilter').value;
@@ -1173,7 +1210,44 @@ var kt=Object.defineProperty;var Ye=e=>{throw TypeError(e)};var It=(e,t,s)=>t in
         async function loadStudents() {
             try {
                 // 현재 사용자 정보 가져오기
-                const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+                let currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+                
+                // user_type이 없으면 role 사용 (하위 호환성)
+                if (!currentUser.user_type && currentUser.role) {
+                    currentUser.user_type = currentUser.role;
+                }
+                
+                // 선생님인데 permissions가 없으면 서버에서 조회
+                if ((currentUser.user_type === 'teacher' || currentUser.role === 'teacher') && !currentUser.permissions) {
+                    console.log('⚠️ [Daily Record] Teacher without permissions detected, fetching...');
+                    
+                    try {
+                        const directorId = currentUser.parent_user_id || 1;
+                        const permRes = await fetch(\`/api/teachers/\${currentUser.id}/permissions?directorId=\${directorId}\`);
+                        const permData = await permRes.json();
+                        
+                        if (permData.success && permData.permissions) {
+                            currentUser.permissions = permData.permissions;
+                            localStorage.setItem('user', JSON.stringify(currentUser));
+                            console.log('✅ [Daily Record] Permissions loaded and saved:', currentUser.permissions);
+                        } else {
+                            currentUser.permissions = {
+                                canViewAllStudents: false,
+                                canWriteDailyReports: false,
+                                assignedClasses: []
+                            };
+                            console.warn('⚠️ [Daily Record] No permissions found, using restrictive defaults');
+                        }
+                    } catch (permError) {
+                        console.error('❌ [Daily Record] Failed to load permissions:', permError);
+                        currentUser.permissions = {
+                            canViewAllStudents: false,
+                            canWriteDailyReports: false,
+                            assignedClasses: []
+                        };
+                    }
+                }
+                
                 const userDataHeader = btoa(unescape(encodeURIComponent(JSON.stringify(currentUser))));
                 
                 const res = await fetch('/api/students', {
@@ -20622,9 +20696,31 @@ ${o.director_name} 원장님의 승인을 기다려주세요.`,directorName:o.di
                     return;
                 }
                 
+                // user_type이 없으면 role을 사용 (하위 호환성)
+                if (!currentUser.user_type && currentUser.role) {
+                    currentUser.user_type = currentUser.role;
+                }
+                
                 // 선생님인 경우 권한 확인
-                if (currentUser.user_type === 'teacher') {
-                    await loadTeacherPermissions();
+                if (currentUser.user_type === 'teacher' || currentUser.role === 'teacher') {
+                    console.log('🔍 Teacher account detected, loading permissions...');
+                    
+                    // localStorage에 permissions가 없으면 서버에서 조회
+                    if (!currentUser.permissions) {
+                        console.log('⚠️ No permissions in localStorage, fetching from server...');
+                        await loadTeacherPermissions();
+                        
+                        // 조회한 권한을 localStorage에 저장
+                        if (userPermissions) {
+                            currentUser.permissions = userPermissions;
+                            localStorage.setItem('user', JSON.stringify(currentUser));
+                            console.log('✅ Permissions saved to localStorage');
+                        }
+                    } else {
+                        userPermissions = currentUser.permissions;
+                        console.log('✅ Using permissions from localStorage:', userPermissions);
+                    }
+                    
                     applyTeacherRestrictions();
                 }
                 
@@ -20634,20 +20730,38 @@ ${o.director_name} 원장님의 승인을 기다려주세요.`,directorName:o.di
             // 선생님 권한 로드
             async function loadTeacherPermissions() {
                 try {
-                    if (!currentUser.parent_user_id) {
-                        console.error('선생님 계정에 parent_user_id가 없습니다.');
-                        return;
+                    // parent_user_id가 없으면 원장 ID 조회
+                    let directorId = currentUser.parent_user_id;
+                    if (!directorId) {
+                        console.log('⚠️ No parent_user_id, trying to find director...');
+                        // 모든 원장의 ID를 1로 가정하거나, 현재 사용자의 academy 정보에서 가져오기
+                        // 임시로 1을 사용 (대부분의 경우 원장 ID가 1)
+                        directorId = 1;
                     }
                     
-                    const res = await fetch(\`/api/teachers/\${currentUser.id}/permissions?directorId=\${currentUser.parent_user_id}\`);
+                    console.log(\`🔍 Fetching permissions for teacher \${currentUser.id} from director \${directorId}\`);
+                    const res = await fetch(\`/api/teachers/\${currentUser.id}/permissions?directorId=\${directorId}\`);
                     const data = await res.json();
                     
                     if (data.success && data.permissions) {
                         userPermissions = data.permissions;
-                        console.log('✅ Teacher permissions loaded:', userPermissions);
+                        console.log('✅ Teacher permissions loaded from server:', userPermissions);
+                    } else {
+                        console.warn('⚠️ No permissions found, using defaults');
+                        userPermissions = {
+                            canViewAllStudents: false,
+                            canWriteDailyReports: false,
+                            assignedClasses: []
+                        };
                     }
                 } catch (error) {
-                    console.error('권한 로드 실패:', error);
+                    console.error('❌ 권한 로드 실패:', error);
+                    // 실패 시 기본 권한 (모두 제한)
+                    userPermissions = {
+                        canViewAllStudents: false,
+                        canWriteDailyReports: false,
+                        assignedClasses: []
+                    };
                 }
             }
 
