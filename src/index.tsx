@@ -27858,7 +27858,76 @@ app.post('/api/admin/transfer-classes', async (c) => {
 // ========================================
 
 // 폼 템플릿 관리 페이지 (폼 빌더)
-app.get('/tools/form-builder', serveStatic({ path: './public/form-templates.html' }))
+app.get('/tools/form-builder', async (c) => {
+  return c.html(`<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>폼 템플릿 관리 - SUPERPLACE</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50">
+    <nav class="bg-white shadow-sm mb-6">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <h1 class="text-xl font-bold text-gray-900">폼 빌더</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="/tools/form-submissions" class="text-gray-600 hover:text-gray-900">신청 내역</a>
+                    <a href="/dashboard" class="text-gray-600 hover:text-gray-900">대시보드</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center mb-6">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-900">내 폼 템플릿</h2>
+                <p class="text-gray-600 mt-1">랜딩페이지에 사용할 커스텀 폼을 생성하고 관리하세요</p>
+            </div>
+            <button onclick="openCreateModal()" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">+ 새 템플릿 만들기</button>
+        </div>
+        <div id="templatesList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="col-span-full text-center py-12"><p class="text-gray-500">로딩 중...</p></div>
+        </div>
+    </div>
+    <div id="templateModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                <div class="p-6 border-b sticky top-0 bg-white z-10"><h3 class="text-xl font-bold">새 폼 템플릿 만들기</h3></div>
+                <form id="templateForm" class="p-6 space-y-6">
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">템플릿 이름 *</label>
+                        <input type="text" id="templateName" required class="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="예: 학원 설명회 신청서"></div>
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">설명</label>
+                        <textarea id="templateDescription" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-lg"></textarea></div>
+                    <div><div class="flex justify-between items-center mb-3"><h4 class="text-lg font-semibold">폼 필드</h4>
+                            <button type="button" onclick="addField()" class="text-blue-600 text-sm">+ 필드 추가</button></div>
+                        <div id="fieldsList" class="space-y-3"></div></div>
+                    <div class="flex justify-end space-x-3 pt-6 border-t">
+                        <button type="button" onclick="closeModal()" class="px-4 py-2 text-gray-700">취소</button>
+                        <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg">저장하기</button></div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script>
+        let currentFields=[{type:'text',name:'name',label:'이름',required:true,placeholder:'이름을 입력하세요'},{type:'tel',name:'phone',label:'전화번호',required:true,placeholder:'010-1234-5678'}];
+        document.addEventListener('DOMContentLoaded',function(){loadTemplates()});
+        async function loadTemplates(){try{const response=await fetch('/api/form-templates',{credentials:'include'});if(!response.ok){if(response.status===401){window.location.href='/login';return}throw new Error('템플릿을 불러올 수 없습니다')}const templates=await response.json();displayTemplates(templates)}catch(error){console.error('Error:',error);alert('템플릿을 불러오는데 실패했습니다')}}
+        function displayTemplates(templates){const container=document.getElementById('templatesList');if(templates.length===0){container.innerHTML='<div class="col-span-full text-center py-12"><p class="text-gray-500">템플릿이 없습니다</p></div>';return}container.innerHTML=templates.map(t=>{const fields=JSON.parse(t.fields);return\`<div class="bg-white rounded-lg shadow-sm border p-6"><h3 class="text-lg font-semibold mb-2">\${t.name}</h3><p class="text-sm text-gray-600 mb-4">\${fields.length}개 필드</p><div class="flex space-x-2"><button onclick="copyHTML(\${t.id})" class="flex-1 px-4 py-2 text-sm text-green-600 bg-green-50 rounded-lg">HTML 복사</button><button onclick="deleteTemplate(\${t.id})" class="px-4 py-2 text-sm text-red-600 bg-red-50 rounded-lg">삭제</button></div></div>\`}).join('')}
+        function openCreateModal(){renderFields();document.getElementById('templateModal').classList.remove('hidden')}
+        function closeModal(){document.getElementById('templateModal').classList.add('hidden');document.getElementById('templateForm').reset()}
+        function addField(){currentFields.push({type:'text',name:'field_'+Date.now(),label:'새 필드',required:false,placeholder:''});renderFields()}
+        function renderFields(){const container=document.getElementById('fieldsList');container.innerHTML=currentFields.map((f,i)=>\`<div class="border p-3 rounded"><div class="grid grid-cols-2 gap-2 mb-2"><input type="text" value="\${f.label}" onchange="currentFields[\${i}].label=this.value" class="px-2 py-1 text-sm border rounded" placeholder="레이블"><input type="text" value="\${f.name}" onchange="currentFields[\${i}].name=this.value" class="px-2 py-1 text-sm border rounded" placeholder="필드명"></div><div class="flex items-center justify-between"><select onchange="currentFields[\${i}].type=this.value" class="px-2 py-1 text-sm border rounded"><option value="text" \${f.type==='text'?'selected':''}>텍스트</option><option value="email" \${f.type==='email'?'selected':''}>이메일</option><option value="tel" \${f.type==='tel'?'selected':''}>전화번호</option><option value="textarea" \${f.type==='textarea'?'selected':''}>긴 텍스트</option></select><label class="text-sm"><input type="checkbox" \${f.required?'checked':''} onchange="currentFields[\${i}].required=this.checked"> 필수</label><button type="button" onclick="currentFields.splice(\${i},1);renderFields()" class="text-red-600 text-sm">삭제</button></div></div>\`).join('')}
+        document.getElementById('templateForm').addEventListener('submit',async function(e){e.preventDefault();try{const response=await fetch('/api/form-templates',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify({name:document.getElementById('templateName').value,description:document.getElementById('templateDescription').value,fields:JSON.stringify(currentFields),submit_button_text:'신청하기',success_message:'신청이 완료되었습니다!'})});if(!response.ok)throw new Error('저장 실패');alert('템플릿이 저장되었습니다!');closeModal();loadTemplates()}catch(error){alert('저장에 실패했습니다')}});
+        async function copyHTML(id){try{const response=await fetch(\`/api/form-templates/\${id}/html\`,{credentials:'include'});if(!response.ok)throw new Error('HTML 생성 실패');const data=await response.json();await navigator.clipboard.writeText(data.html);alert('HTML이 클립보드에 복사되었습니다!')}catch(error){alert('HTML 복사에 실패했습니다')}}
+        async function deleteTemplate(id){if(!confirm('정말 삭제하시겠습니까?'))return;try{const response=await fetch(\`/api/form-templates/\${id}\`,{method:'DELETE',credentials:'include'});if(!response.ok)throw new Error('삭제 실패');alert('삭제되었습니다');loadTemplates()}catch(error){alert('삭제에 실패했습니다')}}
+    </script>
+</body>
+</html>`)
+})
 
 // 폼 제출 내역 페이지
 app.get('/tools/form-submissions', serveStatic({ path: './public/form-submissions.html' }))
