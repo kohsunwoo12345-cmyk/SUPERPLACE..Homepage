@@ -22164,7 +22164,7 @@ ${l.director_name} 원장님의 승인을 기다려주세요.`,directorName:l.di
                     if (countBadge) countBadge.textContent = data.applications.length;
                     if (container) {
                         container.innerHTML = data.applications.map(app => {
-                            const escapedName = (app.name || '').replace(/'/g, "\\\\'");
+                            const escapedName = (app.name || '').replace(/'/g, "\\'");
                             return \`
                             <div class="bg-yellow-50 border-2 border-yellow-200 rounded-xl p-6">
                                 <div class="flex items-start justify-between mb-4">
