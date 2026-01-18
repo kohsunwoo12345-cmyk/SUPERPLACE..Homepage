@@ -20992,7 +20992,7 @@ ${l.director_name} 원장님의 승인을 기다려주세요.`,directorName:l.di
                     assignedCount.textContent = assignedCounter;
             
                     container.innerHTML = data.teachers.map(teacher => {
-                        const escapedName = (teacher.name || '').replace(/'/g, "\\\\'");
+                        const escapedName = (teacher.name || '').replace(/'/g, "\\'");
                         return \`
                         <div class="bg-white border rounded-xl p-6 hover:shadow-lg transition">
                             <div class="flex items-start justify-between">
@@ -22117,7 +22117,7 @@ ${l.director_name} 원장님의 승인을 기다려주세요.`,directorName:l.di
                     }
 
                     container.innerHTML = data.teachers.map(teacher => {
-                        const escapedName = (teacher.name || '').replace(/'/g, "\\\\'");
+                        const escapedName = (teacher.name || '').replace(/'/g, "\\'");
                         return \`
                         <div class="bg-white border rounded-xl p-6 hover:shadow-lg transition">
                             <div class="flex items-start justify-between">

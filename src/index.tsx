@@ -25826,7 +25826,7 @@ app.get('/teachers-old', (c) => {
                     assignedCount.textContent = assignedCounter;
             
                     container.innerHTML = data.teachers.map(teacher => {
-                        const escapedName = (teacher.name || '').replace(/'/g, "\\\\'");
+                        const escapedName = (teacher.name || '').replace(/'/g, "\\'");
                         return \`
                         <div class="bg-white border rounded-xl p-6 hover:shadow-lg transition">
                             <div class="flex items-start justify-between">
@@ -26947,7 +26947,7 @@ app.get('/students', (c) => {
                     }
 
                     container.innerHTML = data.teachers.map(teacher => {
-                        const escapedName = (teacher.name || '').replace(/'/g, "\\\\'");
+                        const escapedName = (teacher.name || '').replace(/'/g, "\\'");
                         return \`
                         <div class="bg-white border rounded-xl p-6 hover:shadow-lg transition">
                             <div class="flex items-start justify-between">
