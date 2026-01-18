@@ -2,7 +2,8 @@
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { serveStatic } from 'hono/cloudflare-workers'
-import studentRoutes from './student-routes'
+// FIXME: student-routes.ts temporarily disabled due to teacher_classes error
+// import studentRoutes from './student-routes'
 import studentPages from './student-pages'
 
 type Bindings = {
