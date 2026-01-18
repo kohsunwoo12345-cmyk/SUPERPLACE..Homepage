@@ -2761,6 +2761,78 @@ app.post('/api/admin/fix-class-ownership', async (c) => {
   }
 })
 
+// 관리자 - 반 소유권 이전 (관리자 → 특정 사용자)
+app.post('/api/admin/transfer-classes', async (c) => {
+  try {
+    const { fromUserId, toEmail } = await c.req.json()
+    
+    if (!fromUserId || !toEmail) {
+      return c.json({ success: false, error: 'fromUserId와 toEmail이 필요합니다.' }, 400)
+    }
+    
+    console.log('🔄 [TransferClasses] Transfer request:', { fromUserId, toEmail })
+    
+    // 대상 사용자 찾기
+    const toUser = await c.env.DB.prepare('SELECT id, email, name FROM users WHERE email = ?').bind(toEmail).first()
+    if (!toUser) {
+      return c.json({ success: false, error: '대상 사용자를 찾을 수 없습니다.' }, 404)
+    }
+    
+    console.log('👤 [TransferClasses] Target user:', toUser)
+    
+    // 원본 사용자의 반 찾기
+    const classes = await c.env.DB.prepare(
+      'SELECT id, name, user_id, teacher_id FROM classes WHERE user_id = ?'
+    ).bind(fromUserId).all()
+    
+    console.log('📚 [TransferClasses] Found', classes.results?.length || 0, 'classes to transfer')
+    
+    if (!classes.results || classes.results.length === 0) {
+      return c.json({ 
+        success: true, 
+        message: '이전할 반이 없습니다.',
+        transferred: 0
+      })
+    }
+    
+    // user_id를 대상 사용자로 변경
+    let transferred = 0
+    const details = []
+    
+    for (const cls of classes.results) {
+      await c.env.DB.prepare(
+        'UPDATE classes SET user_id = ? WHERE id = ?'
+      ).bind(toUser.id, cls.id).run()
+      
+      transferred++
+      details.push({
+        id: cls.id,
+        name: cls.name,
+        from_user_id: cls.user_id,
+        to_user_id: toUser.id,
+        to_email: toUser.email
+      })
+      
+      console.log(`✅ [TransferClasses] Transferred class ${cls.id} (${cls.name}): user_id ${cls.user_id} → ${toUser.id}`)
+    }
+    
+    return c.json({ 
+      success: true, 
+      message: `${transferred}개의 반이 ${toUser.email}로 이전되었습니다.`,
+      transferred,
+      target_user: {
+        id: toUser.id,
+        email: toUser.email,
+        name: toUser.name
+      },
+      details
+    })
+  } catch (error) {
+    console.error('❌ [TransferClasses] Error:', error)
+    return c.json({ success: false, error: '반 이전 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
 // 관리자 - 사용자 목록
 app.get('/api/admin/users', async (c) => {
   try {
