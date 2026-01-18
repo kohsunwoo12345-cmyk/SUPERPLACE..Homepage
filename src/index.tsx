@@ -5,6 +5,7 @@ import { serveStatic } from 'hono/cloudflare-workers'
 // FIXME: student-routes.ts temporarily disabled due to teacher_classes error
 // import studentRoutes from './student-routes'
 import studentPages from './student-pages'
+import formBuilderRoutes from './form-builder-routes'
 
 type Bindings = {
   DB: D1Database
@@ -29,6 +30,9 @@ app.use('/static/*', serveStatic({ root: './public' }))
 // FIXME: student-routes.ts의 /api/students가 index.tsx의 /api/students보다 우선되어
 // teacher_classes 에러 발생. 임시로 주석 처리하고 index.tsx의 라우트만 사용
 // app.route('/', studentRoutes)
+
+// Mount form builder routes (폼 템플릿 및 제출 관리)
+app.route('/', formBuilderRoutes)
 
 // ========================================
 // API Routes
