@@ -2796,6 +2796,66 @@ app.get('/api/admin/classes/all', async (c) => {
   }
 })
 
+// 관리자 - 특정 사용자에게 반 직접 생성 (관리자 전용)
+app.post('/api/admin/classes/create-for-user', async (c) => {
+  try {
+    const { targetEmail, className, gradeLevel, subject, description } = await c.req.json()
+    
+    if (!targetEmail || !className) {
+      return c.json({ success: false, error: 'targetEmail과 className이 필요합니다.' }, 400)
+    }
+    
+    console.log('🏫 [AdminCreateClass] Creating class for user:', targetEmail)
+    
+    // 대상 사용자 찾기
+    const targetUser = await c.env.DB.prepare(
+      'SELECT id, email, name FROM users WHERE email = ?'
+    ).bind(targetEmail).first()
+    
+    if (!targetUser) {
+      return c.json({ success: false, error: '대상 사용자를 찾을 수 없습니다.' }, 404)
+    }
+    
+    console.log('👤 [AdminCreateClass] Target user:', targetUser)
+    
+    // 반 생성
+    const result = await c.env.DB.prepare(`
+      INSERT INTO classes (name, description, user_id, grade_level, subject, max_students, status, created_at)
+      VALUES (?, ?, ?, ?, ?, 20, 'active', datetime('now'))
+    `).bind(
+      className,
+      description || null,
+      targetUser.id,
+      gradeLevel || null,
+      subject || null
+    ).run()
+    
+    const classId = result.meta.last_row_id
+    
+    console.log('✅ [AdminCreateClass] Class created:', { classId, name: className, owner: targetUser.email })
+    
+    return c.json({
+      success: true,
+      message: `${targetUser.email}에게 반이 생성되었습니다.`,
+      classId,
+      class: {
+        id: classId,
+        name: className,
+        owner_id: targetUser.id,
+        owner_email: targetUser.email,
+        owner_name: targetUser.name
+      }
+    })
+  } catch (error) {
+    console.error('❌ [AdminCreateClass] Error:', error)
+    return c.json({ 
+      success: false, 
+      error: '반 생성 중 오류가 발생했습니다.',
+      details: error.message 
+    }, 500)
+  }
+})
+
 app.post('/api/admin/transfer-classes', async (c) => {
   try {
     const { fromUserId, toEmail } = await c.req.json()
