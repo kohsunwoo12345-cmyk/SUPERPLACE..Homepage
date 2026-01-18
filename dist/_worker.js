@@ -447,10 +447,12 @@ var kt=Object.defineProperty;var Ye=e=>{throw TypeError(e)};var _t=(e,t,s)=>t in
     </div>
 
     <!-- 학생 추가/수정 모달 -->
-    <div id="studentModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" style="overflow: hidden;">
-        <div class="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] flex flex-col relative z-10" style="pointer-events: auto;">
-            <h2 id="modalTitle" class="text-2xl font-bold px-8 pt-8 pb-4 border-b bg-white">새 학생 등록</h2>
-            <div class="overflow-y-auto px-8 py-6 flex-1">
+    <div id="studentModal" class="hidden fixed inset-0 z-50">
+        <div class="fixed inset-0 bg-black bg-opacity-50" onclick="hideModal()"></div>
+        <div class="fixed inset-0 flex items-center justify-center p-4 pointer-events-none">
+            <div class="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] flex flex-col pointer-events-auto">
+                <h2 id="modalTitle" class="text-2xl font-bold px-8 pt-8 pb-4 border-b bg-white">새 학생 등록</h2>
+                <div class="overflow-y-auto px-8 py-6 flex-1">
                 <form id="studentForm">
                     <input type="hidden" id="studentId">
                     
@@ -472,7 +474,7 @@ var kt=Object.defineProperty;var Ye=e=>{throw TypeError(e)};var _t=(e,t,s)=>t in
                         
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">반 배정 (최대 3개)</label>
-                            <div id="classCheckboxes" class="grid grid-cols-1 gap-2 p-3 border border-gray-300 rounded-lg max-h-48 overflow-y-auto bg-white relative" style="pointer-events: auto; z-index: 1;">
+                            <div id="classCheckboxes" class="space-y-2 p-3 border border-gray-300 rounded-lg max-h-48 overflow-y-auto bg-white">
                                 <!-- 반 목록이 동적으로 로드됩니다 -->
                             </div>
                             <input type="hidden" id="studentClasses">
@@ -625,8 +627,8 @@ var kt=Object.defineProperty;var Ye=e=>{throw TypeError(e)};var _t=(e,t,s)=>t in
                     // 반 배정 체크박스 채우기
                     const classCheckboxes = document.getElementById('classCheckboxes');
                     classCheckboxes.innerHTML = classes.map(c => \`
-                        <label class="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-2 rounded" style="pointer-events: auto;">
-                            <input type="checkbox" name="classCheckbox" value="\${c.id}" class="w-4 h-4 text-blue-600 cursor-pointer" style="pointer-events: auto;">
+                        <label class="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded cursor-pointer">
+                            <input type="checkbox" name="classCheckbox" value="\${c.id}" class="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer">
                             <span class="text-sm">\${c.class_name}</span>
                         </label>
                     \`).join('');
