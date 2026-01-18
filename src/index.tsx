@@ -18793,34 +18793,77 @@ app.get('/api/teachers/:id/permissions', async (c) => {
     const teacherId = c.req.param('id')
     const directorId = c.req.query('directorId')
     
+    console.log('🔍 [GetPermissions] teacherId:', teacherId, 'directorId:', directorId)
+    
     if (!directorId) {
       return c.json({ success: false, error: '원장님 ID가 필요합니다.' }, 400)
     }
     
     // 선생님 정보 조회
     const teacher = await c.env.DB.prepare(
-      'SELECT id, name, email, permissions FROM users WHERE id = ? AND parent_user_id = ?'
-    ).bind(teacherId, directorId).first()
+      'SELECT id, name, email, user_type, parent_user_id FROM users WHERE id = ?'
+    ).bind(teacherId).first()
     
     if (!teacher) {
+      console.error('❌ [GetPermissions] Teacher not found:', teacherId)
       return c.json({ success: false, error: '선생님을 찾을 수 없습니다.' }, 404)
     }
     
-    // permissions가 없으면 기본값 사용
-    let permissions = {
+    console.log('✅ [GetPermissions] Teacher found:', teacher)
+    
+    // user_type이 teacher인지 확인
+    if (teacher.user_type !== 'teacher') {
+      return c.json({ success: false, error: '선생님 계정이 아닙니다.' }, 400)
+    }
+    
+    // parent_user_id가 directorId와 일치하는지 확인 (있는 경우만)
+    if (teacher.parent_user_id && teacher.parent_user_id !== parseInt(directorId)) {
+      console.error('❌ [GetPermissions] Permission denied:', teacher.parent_user_id, '!=', directorId)
+      return c.json({ success: false, error: '권한이 없습니다.' }, 403)
+    }
+    
+    // teacher_permissions 테이블에서 권한 조회
+    const rows = await c.env.DB.prepare(
+      'SELECT permission_key, permission_value FROM teacher_permissions WHERE teacher_id = ?'
+    ).bind(teacherId).all()
+    
+    console.log('📋 [GetPermissions] Found permission rows:', rows.results?.length || 0)
+    
+    // 기본 권한 객체
+    const permissions = {
       canViewAllStudents: false,
-      canEditAllStudents: false,
       canWriteDailyReports: false,
       assignedClasses: []
     }
     
-    if (teacher.permissions) {
-      try {
-        permissions = JSON.parse(teacher.permissions)
-      } catch (e) {
-        console.error('Failed to parse permissions:', e)
+    // 저장된 권한 적용
+    if (rows.results) {
+      for (const row of rows.results) {
+        const key = row.permission_key
+        const value = row.permission_value
+        
+        // JSON 문자열인 경우 파싱
+        if (key === 'assignedClasses' && typeof value === 'string') {
+          try {
+            permissions[key] = JSON.parse(value)
+            console.log('🔄 [GetPermissions] Parsed JSON:', key, '=', permissions[key])
+          } catch (e) {
+            console.error('❌ [GetPermissions] JSON parse error:', e)
+            permissions[key] = []
+          }
+        } else if (typeof value === 'string' && (value === '1' || value === '0')) {
+          permissions[key] = value === '1'
+        } else if (typeof value === 'number') {
+          permissions[key] = value === 1
+        } else {
+          permissions[key] = !!value
+        }
+        
+        console.log('➡️ [GetPermissions] Permission:', key, '=', permissions[key])
       }
     }
+    
+    console.log('✅ [GetPermissions] Final permissions:', permissions)
     
     return c.json({ 
       success: true, 
@@ -18832,7 +18875,8 @@ app.get('/api/teachers/:id/permissions', async (c) => {
       permissions
     })
   } catch (error) {
-    console.error('[GetPermissions] Error:', error)
+    console.error('❌ [GetPermissions] Error:', error)
+    console.error('❌ [GetPermissions] Stack:', error.stack)
     return c.json({ 
       success: false, 
       error: '권한 조회 중 오류가 발생했습니다.',
@@ -18882,7 +18926,7 @@ app.post('/api/teachers/:id/permissions', async (c) => {
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           teacher_id INTEGER NOT NULL,
           permission_key TEXT NOT NULL,
-          permission_value INTEGER DEFAULT 0,
+          permission_value TEXT,
           created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
           updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
           FOREIGN KEY (teacher_id) REFERENCES users(id),
@@ -18904,12 +18948,26 @@ app.post('/api/teachers/:id/permissions', async (c) => {
     // 새 권한 삽입
     if (permissions && typeof permissions === 'object') {
       for (const [key, value] of Object.entries(permissions)) {
+        let permissionValue: string | number = value
+        
+        // 배열인 경우 JSON 문자열로 변환
+        if (Array.isArray(value)) {
+          permissionValue = JSON.stringify(value)
+          console.log('🔄 [SaveTeacherPermissions] Converting array to JSON:', key, '=', permissionValue)
+        } else if (typeof value === 'boolean') {
+          permissionValue = value ? 1 : 0
+        } else if (typeof value === 'string') {
+          permissionValue = value
+        } else {
+          permissionValue = value ? 1 : 0
+        }
+        
         await c.env.DB.prepare(`
           INSERT INTO teacher_permissions (teacher_id, permission_key, permission_value, created_at, updated_at)
           VALUES (?, ?, ?, datetime('now'), datetime('now'))
-        `).bind(teacherId, key, value ? 1 : 0).run()
+        `).bind(teacherId, key, permissionValue).run()
         
-        console.log('➕ [SaveTeacherPermissions] Added permission:', key, '=', value)
+        console.log('➕ [SaveTeacherPermissions] Added permission:', key, '=', permissionValue)
       }
     }
     
@@ -19553,8 +19611,28 @@ app.get('/api/teachers/:id/permissions', async (c) => {
     const permissionsMap = {}
     if (permissions.results) {
       permissions.results.forEach(p => {
-        permissionsMap[p.permission_key] = p.permission_value === 1
-        console.log('  -', p.permission_key, '=', p.permission_value === 1)
+        const key = p.permission_key
+        const value = p.permission_value
+        
+        // JSON 문자열인 경우 파싱
+        if (key === 'assignedClasses' && typeof value === 'string') {
+          try {
+            permissionsMap[key] = JSON.parse(value)
+            console.log('  - [JSON]', key, '=', permissionsMap[key])
+          } catch (e) {
+            console.error('  - [JSON Parse Error]', key, e)
+            permissionsMap[key] = []
+          }
+        } else if (typeof value === 'string' && (value === '1' || value === '0')) {
+          permissionsMap[key] = value === '1'
+          console.log('  -', key, '=', permissionsMap[key])
+        } else if (typeof value === 'number') {
+          permissionsMap[key] = value === 1
+          console.log('  -', key, '=', permissionsMap[key])
+        } else {
+          permissionsMap[key] = !!value
+          console.log('  -', key, '=', permissionsMap[key])
+        }
       })
     }
     
@@ -19581,7 +19659,24 @@ app.get('/api/teachers/my-permissions', async (c) => {
     const permissionsMap = {}
     if (permissions.results) {
       permissions.results.forEach(p => {
-        permissionsMap[p.permission_key] = p.permission_value === 1
+        const key = p.permission_key
+        const value = p.permission_value
+        
+        // JSON 문자열인 경우 파싱
+        if (key === 'assignedClasses' && typeof value === 'string') {
+          try {
+            permissionsMap[key] = JSON.parse(value)
+          } catch (e) {
+            console.error('JSON Parse Error:', key, e)
+            permissionsMap[key] = []
+          }
+        } else if (typeof value === 'string' && (value === '1' || value === '0')) {
+          permissionsMap[key] = value === '1'
+        } else if (typeof value === 'number') {
+          permissionsMap[key] = value === 1
+        } else {
+          permissionsMap[key] = !!value
+        }
       })
     }
     
