@@ -27853,6 +27853,16 @@ app.post('/api/admin/transfer-classes', async (c) => {
   }
 })
 
+// ========================================
+// Form Builder Pages
+// ========================================
+
+// 폼 템플릿 관리 페이지 (/tools/landing-builder)
+app.get('/tools/landing-builder', serveStatic({ path: './public/form-templates.html' }))
+
+// 폼 제출 내역 페이지
+app.get('/tools/form-submissions', serveStatic({ path: './public/form-submissions.html' }))
+
 export default app
 // Force rebuild: Sun Jan 18 12:54:06 UTC 2026
 // Force cache bust 1768750490
