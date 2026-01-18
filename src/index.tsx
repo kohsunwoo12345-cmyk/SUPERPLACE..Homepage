@@ -2705,33 +2705,42 @@ app.get('/api/admin/users', async (c) => {
 app.delete('/api/admin/users/:id', async (c) => {
   try {
     const userId = c.req.param('id')
+    console.log('🗑️ Delete user request:', userId)
     
     // 관리자는 삭제할 수 없음
     const user = await c.env.DB.prepare('SELECT role FROM users WHERE id = ?').bind(userId).first()
     if (!user) {
+      console.error('❌ User not found:', userId)
       return c.json({ success: false, error: '사용자를 찾을 수 없습니다.' }, 404)
     }
     if (user.role === 'admin') {
+      console.error('❌ Cannot delete admin:', userId)
       return c.json({ success: false, error: '관리자 계정은 삭제할 수 없습니다.' }, 403)
     }
     
-    // 관련 데이터 삭제 (외래 키 제약 조건 고려)
-    await c.env.DB.prepare('DELETE FROM user_permissions WHERE user_id = ?').bind(userId).run()
-    await c.env.DB.prepare('DELETE FROM user_programs WHERE user_id = ?').bind(userId).run()
-    await c.env.DB.prepare('DELETE FROM sender_ids WHERE user_id = ?').bind(userId).run()
-    await c.env.DB.prepare('DELETE FROM sender_verification_requests WHERE user_id = ?').bind(userId).run()
-    await c.env.DB.prepare('DELETE FROM sms_logs WHERE user_id = ?').bind(userId).run()
-    await c.env.DB.prepare('DELETE FROM landing_pages WHERE user_id = ?').bind(userId).run()
-    await c.env.DB.prepare('DELETE FROM students WHERE user_id = ?').bind(userId).run()
-    await c.env.DB.prepare('DELETE FROM deposit_requests WHERE user_id = ?').bind(userId).run()
+    console.log('✅ User found, starting deletion:', userId)
+    
+    // 관련 데이터 삭제 (외래 키 제약 조건 고려) - 테이블이 존재하지 않아도 에러 무시
+    try { await c.env.DB.prepare('DELETE FROM user_permissions WHERE user_id = ?').bind(userId).run() } catch (e) { console.log('Skip user_permissions:', e.message) }
+    try { await c.env.DB.prepare('DELETE FROM user_programs WHERE user_id = ?').bind(userId).run() } catch (e) { console.log('Skip user_programs:', e.message) }
+    try { await c.env.DB.prepare('DELETE FROM sender_ids WHERE user_id = ?').bind(userId).run() } catch (e) { console.log('Skip sender_ids:', e.message) }
+    try { await c.env.DB.prepare('DELETE FROM sender_verification_requests WHERE user_id = ?').bind(userId).run() } catch (e) { console.log('Skip sender_verification_requests:', e.message) }
+    try { await c.env.DB.prepare('DELETE FROM sms_logs WHERE user_id = ?').bind(userId).run() } catch (e) { console.log('Skip sms_logs:', e.message) }
+    try { await c.env.DB.prepare('DELETE FROM landing_pages WHERE user_id = ?').bind(userId).run() } catch (e) { console.log('Skip landing_pages:', e.message) }
+    try { await c.env.DB.prepare('DELETE FROM students WHERE user_id = ?').bind(userId).run() } catch (e) { console.log('Skip students:', e.message) }
+    try { await c.env.DB.prepare('DELETE FROM deposit_requests WHERE user_id = ?').bind(userId).run() } catch (e) { console.log('Skip deposit_requests:', e.message) }
+    
+    console.log('✅ Related data deleted, deleting user:', userId)
     
     // 사용자 삭제
-    await c.env.DB.prepare('DELETE FROM users WHERE id = ?').bind(userId).run()
+    const deleteResult = await c.env.DB.prepare('DELETE FROM users WHERE id = ?').bind(userId).run()
+    console.log('✅ User deleted successfully:', userId, deleteResult)
     
     return c.json({ success: true, message: '사용자가 삭제되었습니다.' })
   } catch (err) {
-    console.error('Delete user error:', err)
-    return c.json({ success: false, error: '사용자 삭제 중 오류가 발생했습니다.' }, 500)
+    console.error('❌ Delete user error:', err)
+    console.error('Error details:', err.message, err.stack)
+    return c.json({ success: false, error: '사용자 삭제 실패: ' + err.message }, 500)
   }
 })
 
@@ -17422,7 +17431,7 @@ app.get('/admin/users', async (c) => {
     <body class="bg-gray-50">
         <!-- 헤더 -->
         <nav class="bg-white border-b border-gray-200 sticky top-0 z-50">
-            <div class="max-w-7xl mx-auto px-6 py-4">
+            <div class="max-w-full mx-auto px-6 py-4">
                 <div class="flex justify-between items-center">
                     <div class="flex items-center gap-8">
                         <a href="/admin" class="text-2xl font-bold text-purple-600">슈퍼플레이스 관리자</a>
@@ -17440,7 +17449,7 @@ app.get('/admin/users', async (c) => {
         </nav>
 
         <!-- 메인 컨텐츠 -->
-        <div class="max-w-7xl mx-auto px-6 py-8">
+        <div class="max-w-full mx-auto px-6 py-8">
             <div class="mb-8">
                 <div class="flex justify-between items-center mb-4">
                     <div>
@@ -17470,15 +17479,15 @@ app.get('/admin/users', async (c) => {
                     <table class="w-full">
                         <thead class="bg-gray-50 border-b border-gray-200">
                             <tr>
-                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">이메일</th>
-                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">이름</th>
-                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">전화번호</th>
-                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">학원명</th>
-                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">포인트</th>
-                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">권한</th>
-                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">가입일</th>
-                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">관리</th>
+                                <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
+                                <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">이메일</th>
+                                <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">이름</th>
+                                <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">전화번호</th>
+                                <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">학원명</th>
+                                <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">포인트</th>
+                                <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">권한</th>
+                                <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">가입일</th>
+                                <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">관리</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
@@ -17487,41 +17496,41 @@ app.get('/admin/users', async (c) => {
                                 const userName = (user.name || '').replace(/"/g, '&quot;')
                                 return `
                                 <tr class="hover:bg-gray-50" data-user="${user.id}">
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${user.id}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${user.email}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${user.name}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${user.phone || '-'}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${user.academy_name || '-'}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">${(user.points || 0).toLocaleString()}P</td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="px-3 py-1 text-xs font-medium rounded-full ${user.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-700'}">
-                                            ${user.role === 'admin' ? '관리자' : '일반회원'}
+                                    <td class="px-3 py-3 whitespace-nowrap text-xs text-gray-900">${user.id}</td>
+                                    <td class="px-3 py-3 whitespace-nowrap text-xs text-gray-900">${user.email}</td>
+                                    <td class="px-3 py-3 whitespace-nowrap text-xs font-medium text-gray-900">${user.name}</td>
+                                    <td class="px-3 py-3 whitespace-nowrap text-xs text-gray-600">${user.phone || '-'}</td>
+                                    <td class="px-3 py-3 whitespace-nowrap text-xs text-gray-600">${user.academy_name || '-'}</td>
+                                    <td class="px-3 py-3 whitespace-nowrap text-xs font-medium text-blue-600">${(user.points || 0).toLocaleString()}P</td>
+                                    <td class="px-3 py-3 whitespace-nowrap">
+                                        <span class="px-2 py-1 text-xs font-medium rounded-full ${user.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-700'}">
+                                            ${user.role === 'admin' ? '관리자' : '회원'}
                                         </span>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${new Date(user.created_at).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit' })}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                    <td class="px-3 py-3 whitespace-nowrap text-xs text-gray-600">${new Date(user.created_at).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit' })}</td>
+                                    <td class="px-3 py-3 whitespace-nowrap text-xs">
                                         ${user.role !== 'admin' ? `
-                                            <div class="flex gap-2 flex-wrap">
-                                                <button onclick="changePassword(${user.id}, '${userName}')" class="px-3 py-1.5 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition text-xs font-medium" title="비밀번호 변경">
-                                                    🔑 비밀번호
+                                            <div class="flex gap-1">
+                                                <button onclick="changePassword(${user.id}, '${userName}')" class="px-2 py-1 bg-orange-600 text-white rounded hover:bg-orange-700 text-xs" title="비밀번호">
+                                                    🔑
                                                 </button>
-                                                <button onclick="givePoints(${user.id}, '${userName}', ${user.points || 0})" class="px-3 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-xs font-medium" title="포인트 지급">
-                                                    💰 지급
+                                                <button onclick="givePoints(${user.id}, '${userName}', ${user.points || 0})" class="px-2 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-xs" title="포인트 지급">
+                                                    💰
                                                 </button>
-                                                <button onclick="deductPoints(${user.id}, '${userName}', ${user.points || 0})" class="px-3 py-1.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition text-xs font-medium" title="포인트 차감">
-                                                    ❌ 차감
+                                                <button onclick="deductPoints(${user.id}, '${userName}', ${user.points || 0})" class="px-2 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-xs" title="포인트 차감">
+                                                    ❌
                                                 </button>
-                                                <button onclick="loginAs(${user.id}, '${userName}')" class="px-3 py-1.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition text-xs font-medium" title="이 사용자로 로그인">
-                                                    👤 로그인
+                                                <button onclick="loginAs(${user.id}, '${userName}')" class="px-2 py-1 bg-purple-600 text-white rounded hover:bg-purple-700 text-xs" title="로그인">
+                                                    👤
                                                 </button>
-                                                <button onclick="managePermissions(${user.id}, '${userName}')" class="px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-xs font-medium" title="권한 관리">
-                                                    ⚙️ 권한
+                                                <button onclick="managePermissions(${user.id}, '${userName}')" class="px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-xs" title="권한">
+                                                    ⚙️
                                                 </button>
-                                                <a href="/admin/users/${user.id}" class="px-3 py-1.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition text-xs font-medium inline-block" title="상세정보">
-                                                    📋 상세
+                                                <a href="/admin/users/${user.id}" class="px-2 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700 text-xs inline-block" title="상세">
+                                                    📋
                                                 </a>
-                                                <button onclick="deleteUser(${user.id}, '${userName}')" class="px-3 py-1.5 bg-red-700 text-white rounded-lg hover:bg-red-800 transition text-xs font-medium" title="사용자 삭제">
-                                                    🗑️ 삭제
+                                                <button onclick="deleteUser(${user.id}, '${userName}')" class="px-2 py-1 bg-red-700 text-white rounded hover:bg-red-800 text-xs" title="삭제">
+                                                    🗑️
                                                 </button>
                                             </div>
                                         ` : '-'}

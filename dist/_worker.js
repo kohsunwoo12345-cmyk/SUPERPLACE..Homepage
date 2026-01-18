@@ -2808,7 +2808,7 @@ var kt=Object.defineProperty;var Ye=e=>{throw TypeError(e)};var _t=(e,t,s)=>t in
       SELECT id, email, name, role, points FROM users WHERE id = ?
     `).bind(t).first();return s?e.json({success:!0,message:"로그인 성공",user:{id:s.id,email:s.email,name:s.name,role:s.role,points:s.points}}):e.json({success:!1,error:"사용자를 찾을 수 없습니다."},404)}catch(t){return console.error("Login as user error:",t),e.json({success:!1,error:"로그인 중 오류가 발생했습니다."},500)}});d.get("/api/contacts",async e=>{try{const{results:t}=await e.env.DB.prepare(`
       SELECT * FROM contacts ORDER BY created_at DESC LIMIT 50
-    `).all();return e.json({success:!0,contacts:t})}catch(t){return console.error("Fetch contacts error:",t),e.json({success:!1,error:"문의 목록 조회 중 오류가 발생했습니다."},500)}});d.put("/api/admin/contacts/:id",async e=>{try{const t=e.req.param("id"),{status:s,reply_memo:r,handled_by:a}=await e.req.json();let n="UPDATE contacts SET ";const l=[],o=[];return s&&(l.push("status = ?"),o.push(s)),r!==void 0&&(l.push("reply_memo = ?"),o.push(r)),a&&(l.push("handled_by = ?, handled_at = CURRENT_TIMESTAMP"),o.push(a)),n+=l.join(", ")+" WHERE id = ?",o.push(t),await e.env.DB.prepare(n).bind(...o).run(),e.json({success:!0,message:"문의가 업데이트되었습니다."})}catch(t){return console.error("Update contact error:",t),e.json({success:!1,error:"문의 업데이트 실패"},500)}});d.get("/api/admin/users",async e=>{try{const{results:t}=await e.env.DB.prepare("SELECT id, email, name, phone, academy_name, role, created_at FROM users ORDER BY created_at DESC").all();return e.json({success:!0,users:t})}catch{return e.json({success:!1,error:"사용자 목록 조회 실패"},500)}});d.delete("/api/admin/users/:id",async e=>{try{const t=e.req.param("id"),s=await e.env.DB.prepare("SELECT role FROM users WHERE id = ?").bind(t).first();return s?s.role==="admin"?e.json({success:!1,error:"관리자 계정은 삭제할 수 없습니다."},403):(await e.env.DB.prepare("DELETE FROM user_permissions WHERE user_id = ?").bind(t).run(),await e.env.DB.prepare("DELETE FROM user_programs WHERE user_id = ?").bind(t).run(),await e.env.DB.prepare("DELETE FROM sender_ids WHERE user_id = ?").bind(t).run(),await e.env.DB.prepare("DELETE FROM sender_verification_requests WHERE user_id = ?").bind(t).run(),await e.env.DB.prepare("DELETE FROM sms_logs WHERE user_id = ?").bind(t).run(),await e.env.DB.prepare("DELETE FROM landing_pages WHERE user_id = ?").bind(t).run(),await e.env.DB.prepare("DELETE FROM students WHERE user_id = ?").bind(t).run(),await e.env.DB.prepare("DELETE FROM deposit_requests WHERE user_id = ?").bind(t).run(),await e.env.DB.prepare("DELETE FROM users WHERE id = ?").bind(t).run(),e.json({success:!0,message:"사용자가 삭제되었습니다."})):e.json({success:!1,error:"사용자를 찾을 수 없습니다."},404)}catch(t){return console.error("Delete user error:",t),e.json({success:!1,error:"사용자 삭제 중 오류가 발생했습니다."},500)}});d.get("/api/admin/programs",async e=>{try{const{results:t}=await e.env.DB.prepare("SELECT * FROM programs ORDER BY created_at DESC").all();return e.json({success:!0,programs:t})}catch(t){return console.error("Programs error:",t),e.json({success:!1,error:"프로그램 목록 조회 실패"},500)}});d.post("/api/admin/programs",async e=>{try{const{name:t,description:s,price:r,duration_days:a,max_students:n}=await e.req.json(),l=await e.env.DB.prepare(`
+    `).all();return e.json({success:!0,contacts:t})}catch(t){return console.error("Fetch contacts error:",t),e.json({success:!1,error:"문의 목록 조회 중 오류가 발생했습니다."},500)}});d.put("/api/admin/contacts/:id",async e=>{try{const t=e.req.param("id"),{status:s,reply_memo:r,handled_by:a}=await e.req.json();let n="UPDATE contacts SET ";const l=[],o=[];return s&&(l.push("status = ?"),o.push(s)),r!==void 0&&(l.push("reply_memo = ?"),o.push(r)),a&&(l.push("handled_by = ?, handled_at = CURRENT_TIMESTAMP"),o.push(a)),n+=l.join(", ")+" WHERE id = ?",o.push(t),await e.env.DB.prepare(n).bind(...o).run(),e.json({success:!0,message:"문의가 업데이트되었습니다."})}catch(t){return console.error("Update contact error:",t),e.json({success:!1,error:"문의 업데이트 실패"},500)}});d.get("/api/admin/users",async e=>{try{const{results:t}=await e.env.DB.prepare("SELECT id, email, name, phone, academy_name, role, created_at FROM users ORDER BY created_at DESC").all();return e.json({success:!0,users:t})}catch{return e.json({success:!1,error:"사용자 목록 조회 실패"},500)}});d.delete("/api/admin/users/:id",async e=>{try{const t=e.req.param("id");console.log("🗑️ Delete user request:",t);const s=await e.env.DB.prepare("SELECT role FROM users WHERE id = ?").bind(t).first();if(!s)return console.error("❌ User not found:",t),e.json({success:!1,error:"사용자를 찾을 수 없습니다."},404);if(s.role==="admin")return console.error("❌ Cannot delete admin:",t),e.json({success:!1,error:"관리자 계정은 삭제할 수 없습니다."},403);console.log("✅ User found, starting deletion:",t);try{await e.env.DB.prepare("DELETE FROM user_permissions WHERE user_id = ?").bind(t).run()}catch(a){console.log("Skip user_permissions:",a.message)}try{await e.env.DB.prepare("DELETE FROM user_programs WHERE user_id = ?").bind(t).run()}catch(a){console.log("Skip user_programs:",a.message)}try{await e.env.DB.prepare("DELETE FROM sender_ids WHERE user_id = ?").bind(t).run()}catch(a){console.log("Skip sender_ids:",a.message)}try{await e.env.DB.prepare("DELETE FROM sender_verification_requests WHERE user_id = ?").bind(t).run()}catch(a){console.log("Skip sender_verification_requests:",a.message)}try{await e.env.DB.prepare("DELETE FROM sms_logs WHERE user_id = ?").bind(t).run()}catch(a){console.log("Skip sms_logs:",a.message)}try{await e.env.DB.prepare("DELETE FROM landing_pages WHERE user_id = ?").bind(t).run()}catch(a){console.log("Skip landing_pages:",a.message)}try{await e.env.DB.prepare("DELETE FROM students WHERE user_id = ?").bind(t).run()}catch(a){console.log("Skip students:",a.message)}try{await e.env.DB.prepare("DELETE FROM deposit_requests WHERE user_id = ?").bind(t).run()}catch(a){console.log("Skip deposit_requests:",a.message)}console.log("✅ Related data deleted, deleting user:",t);const r=await e.env.DB.prepare("DELETE FROM users WHERE id = ?").bind(t).run();return console.log("✅ User deleted successfully:",t,r),e.json({success:!0,message:"사용자가 삭제되었습니다."})}catch(t){return console.error("❌ Delete user error:",t),console.error("Error details:",t.message,t.stack),e.json({success:!1,error:"사용자 삭제 실패: "+t.message},500)}});d.get("/api/admin/programs",async e=>{try{const{results:t}=await e.env.DB.prepare("SELECT * FROM programs ORDER BY created_at DESC").all();return e.json({success:!0,programs:t})}catch(t){return console.error("Programs error:",t),e.json({success:!1,error:"프로그램 목록 조회 실패"},500)}});d.post("/api/admin/programs",async e=>{try{const{name:t,description:s,price:r,duration_days:a,max_students:n}=await e.req.json(),l=await e.env.DB.prepare(`
       INSERT INTO programs (name, description, price, duration_days, max_students, status, is_active)
       VALUES (?, ?, ?, ?, ?, 'active', 1)
     `).bind(t,s||"",r||0,a||30,n||null).run();return e.json({success:!0,message:"프로그램이 추가되었습니다.",id:l.meta.last_row_id})}catch(t){return console.error("Add program error:",t),e.json({success:!1,error:"프로그램 추가 실패"},500)}});d.put("/api/admin/programs/:id",async e=>{try{const t=e.req.param("id"),{name:s,description:r,price:a,duration_days:n,max_students:l,status:o}=await e.req.json();return await e.env.DB.prepare(`
@@ -15229,7 +15229,7 @@ ${I}
     <body class="bg-gray-50">
         <!-- 헤더 -->
         <nav class="bg-white border-b border-gray-200 sticky top-0 z-50">
-            <div class="max-w-7xl mx-auto px-6 py-4">
+            <div class="max-w-full mx-auto px-6 py-4">
                 <div class="flex justify-between items-center">
                     <div class="flex items-center gap-8">
                         <a href="/admin" class="text-2xl font-bold text-purple-600">슈퍼플레이스 관리자</a>
@@ -15247,7 +15247,7 @@ ${I}
         </nav>
 
         <!-- 메인 컨텐츠 -->
-        <div class="max-w-7xl mx-auto px-6 py-8">
+        <div class="max-w-full mx-auto px-6 py-8">
             <div class="mb-8">
                 <div class="flex justify-between items-center mb-4">
                     <div>
@@ -15277,55 +15277,55 @@ ${I}
                     <table class="w-full">
                         <thead class="bg-gray-50 border-b border-gray-200">
                             <tr>
-                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">이메일</th>
-                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">이름</th>
-                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">전화번호</th>
-                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">학원명</th>
-                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">포인트</th>
-                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">권한</th>
-                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">가입일</th>
-                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">관리</th>
+                                <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
+                                <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">이메일</th>
+                                <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">이름</th>
+                                <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">전화번호</th>
+                                <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">학원명</th>
+                                <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">포인트</th>
+                                <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">권한</th>
+                                <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">가입일</th>
+                                <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">관리</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
                             ${((n=s==null?void 0:s.results)==null?void 0:n.map(l=>{const o=(l.name||"").replace(/"/g,"&quot;");return`
                                 <tr class="hover:bg-gray-50" data-user="${l.id}">
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${l.id}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${l.email}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${l.name}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${l.phone||"-"}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${l.academy_name||"-"}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">${(l.points||0).toLocaleString()}P</td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="px-3 py-1 text-xs font-medium rounded-full ${l.role==="admin"?"bg-purple-100 text-purple-700":"bg-gray-100 text-gray-700"}">
-                                            ${l.role==="admin"?"관리자":"일반회원"}
+                                    <td class="px-3 py-3 whitespace-nowrap text-xs text-gray-900">${l.id}</td>
+                                    <td class="px-3 py-3 whitespace-nowrap text-xs text-gray-900">${l.email}</td>
+                                    <td class="px-3 py-3 whitespace-nowrap text-xs font-medium text-gray-900">${l.name}</td>
+                                    <td class="px-3 py-3 whitespace-nowrap text-xs text-gray-600">${l.phone||"-"}</td>
+                                    <td class="px-3 py-3 whitespace-nowrap text-xs text-gray-600">${l.academy_name||"-"}</td>
+                                    <td class="px-3 py-3 whitespace-nowrap text-xs font-medium text-blue-600">${(l.points||0).toLocaleString()}P</td>
+                                    <td class="px-3 py-3 whitespace-nowrap">
+                                        <span class="px-2 py-1 text-xs font-medium rounded-full ${l.role==="admin"?"bg-purple-100 text-purple-700":"bg-gray-100 text-gray-700"}">
+                                            ${l.role==="admin"?"관리자":"회원"}
                                         </span>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${new Date(l.created_at).toLocaleString("ko-KR",{timeZone:"Asia/Seoul",year:"numeric",month:"2-digit",day:"2-digit"})}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                    <td class="px-3 py-3 whitespace-nowrap text-xs text-gray-600">${new Date(l.created_at).toLocaleString("ko-KR",{timeZone:"Asia/Seoul",year:"numeric",month:"2-digit",day:"2-digit"})}</td>
+                                    <td class="px-3 py-3 whitespace-nowrap text-xs">
                                         ${l.role!=="admin"?`
-                                            <div class="flex gap-2 flex-wrap">
-                                                <button onclick="changePassword(${l.id}, '${o}')" class="px-3 py-1.5 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition text-xs font-medium" title="비밀번호 변경">
-                                                    🔑 비밀번호
+                                            <div class="flex gap-1">
+                                                <button onclick="changePassword(${l.id}, '${o}')" class="px-2 py-1 bg-orange-600 text-white rounded hover:bg-orange-700 text-xs" title="비밀번호">
+                                                    🔑
                                                 </button>
-                                                <button onclick="givePoints(${l.id}, '${o}', ${l.points||0})" class="px-3 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-xs font-medium" title="포인트 지급">
-                                                    💰 지급
+                                                <button onclick="givePoints(${l.id}, '${o}', ${l.points||0})" class="px-2 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-xs" title="포인트 지급">
+                                                    💰
                                                 </button>
-                                                <button onclick="deductPoints(${l.id}, '${o}', ${l.points||0})" class="px-3 py-1.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition text-xs font-medium" title="포인트 차감">
-                                                    ❌ 차감
+                                                <button onclick="deductPoints(${l.id}, '${o}', ${l.points||0})" class="px-2 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-xs" title="포인트 차감">
+                                                    ❌
                                                 </button>
-                                                <button onclick="loginAs(${l.id}, '${o}')" class="px-3 py-1.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition text-xs font-medium" title="이 사용자로 로그인">
-                                                    👤 로그인
+                                                <button onclick="loginAs(${l.id}, '${o}')" class="px-2 py-1 bg-purple-600 text-white rounded hover:bg-purple-700 text-xs" title="로그인">
+                                                    👤
                                                 </button>
-                                                <button onclick="managePermissions(${l.id}, '${o}')" class="px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-xs font-medium" title="권한 관리">
-                                                    ⚙️ 권한
+                                                <button onclick="managePermissions(${l.id}, '${o}')" class="px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-xs" title="권한">
+                                                    ⚙️
                                                 </button>
-                                                <a href="/admin/users/${l.id}" class="px-3 py-1.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition text-xs font-medium inline-block" title="상세정보">
-                                                    📋 상세
+                                                <a href="/admin/users/${l.id}" class="px-2 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700 text-xs inline-block" title="상세">
+                                                    📋
                                                 </a>
-                                                <button onclick="deleteUser(${l.id}, '${o}')" class="px-3 py-1.5 bg-red-700 text-white rounded-lg hover:bg-red-800 transition text-xs font-medium" title="사용자 삭제">
-                                                    🗑️ 삭제
+                                                <button onclick="deleteUser(${l.id}, '${o}')" class="px-2 py-1 bg-red-700 text-white rounded hover:bg-red-800 text-xs" title="삭제">
+                                                    🗑️
                                                 </button>
                                             </div>
                                         `:"-"}
@@ -21438,4 +21438,3 @@ ${o.director_name} 원장님의 승인을 기다려주세요.`,directorName:o.di
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )
     `).run();try{await t.prepare("ALTER TABLE daily_records ADD COLUMN class_id INTEGER").run()}catch{console.log("class_id column already exists")}try{await t.prepare("ALTER TABLE daily_records ADD COLUMN lesson_concept TEXT").run()}catch{console.log("lesson_concept column already exists")}try{await t.prepare("ALTER TABLE daily_records ADD COLUMN lesson_understanding INTEGER").run()}catch{console.log("lesson_understanding column already exists")}try{await t.prepare("ALTER TABLE daily_records ADD COLUMN lesson_participation INTEGER").run()}catch{console.log("lesson_participation column already exists")}try{await t.prepare("ALTER TABLE daily_records ADD COLUMN lesson_achievement TEXT").run()}catch{console.log("lesson_achievement column already exists")}try{await t.prepare("ALTER TABLE daily_records ADD COLUMN homework_content TEXT").run()}catch{console.log("homework_content column already exists")}try{await t.prepare("ALTER TABLE daily_records ADD COLUMN homework_achievement TEXT").run()}catch{console.log("homework_achievement column already exists")}return await t.prepare("CREATE INDEX IF NOT EXISTS idx_students_academy_id ON students(academy_id)").run(),await t.prepare("CREATE INDEX IF NOT EXISTS idx_classes_academy_id ON classes(academy_id)").run(),await t.prepare("CREATE INDEX IF NOT EXISTS idx_courses_academy_id ON courses(academy_id)").run(),await t.prepare("CREATE INDEX IF NOT EXISTS idx_students_class_id ON students(class_id)").run(),await t.prepare("CREATE INDEX IF NOT EXISTS idx_daily_records_student_id ON daily_records(student_id)").run(),await t.prepare("CREATE INDEX IF NOT EXISTS idx_daily_records_date ON daily_records(record_date)").run(),e.json({success:!0,message:"학생 관리 테이블이 성공적으로 생성되었습니다! (students, classes, courses, daily_records)"})}catch(t){return e.json({success:!1,error:t.message},500)}});d.get("/api/debug/student-references/:studentId",async e=>{try{const t=e.req.param("studentId"),{DB:s}=e.env,r={},a=await s.prepare("SELECT COUNT(*) as count FROM daily_records WHERE student_id = ?").bind(t).first();r.daily_records=a;const n=await s.prepare("SELECT * FROM students WHERE id = ?").bind(t).first();return r.student=n,e.json({success:!0,studentId:t,references:r})}catch(t){return e.json({success:!1,error:t.message},500)}});const Ze=new ze,Ms=Object.assign({"/src/index.tsx":d});let Et=!1;for(const[,e]of Object.entries(Ms))e&&(Ze.all("*",t=>{let s;try{s=t.executionCtx}catch{}return e.fetch(t.req.raw,t.env,s)}),Ze.notFound(t=>{let s;try{s=t.executionCtx}catch{}return e.fetch(t.req.raw,t.env,s)}),Et=!0);if(!Et)throw new Error("Can't import modules from ['/src/index.ts','/src/index.tsx','/app/server.ts']");export{Ze as default};
-// Force deploy 20260118_055334
