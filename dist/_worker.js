@@ -21167,17 +21167,50 @@ ${l.director_name} 원장님의 승인을 기다려주세요.`,directorName:l.di
                 console.log('Current user:', currentUser);
                 console.log('User permissions:', userPermissions);
                 
-                // ✅ 선생님 관리 카드는 선생님에게만 숨김
+                // ✅ 권한 확인: assignedClasses가 비어있으면 권한 없음
+                const hasAnyPermission = userPermissions && 
+                                        userPermissions.assignedClasses && 
+                                        userPermissions.assignedClasses.length > 0;
+                
+                const hasFullAccess = userPermissions && userPermissions.canViewAllStudents === true;
+                
+                console.log('🔍 Permission check:');
+                console.log('   - hasAnyPermission (assigned classes):', hasAnyPermission);
+                console.log('   - hasFullAccess (canViewAllStudents):', hasFullAccess);
+                console.log('   - assignedClasses:', userPermissions.assignedClasses);
+                
+                // ✅ 선생님 관리 카드는 선생님에게 항상 숨김
                 const teacherCard = document.getElementById('teacherManagementCard');
                 if (teacherCard) {
                     teacherCard.style.display = 'none';
-                    console.log('✅ Hidden: Teacher management card (teacher account)');
+                    console.log('✅ Hidden: Teacher management card');
                 }
                 
-                // ✅ 반 관리와 과목 관리는 권한에 따라 표시/숨김
-                // canViewAllStudents가 명시적으로 true인 경우에만 표시
-                const hasFullAccess = userPermissions && userPermissions.canViewAllStudents === true;
+                // ✅ 권한이 없으면 모든 카드 숨김
+                if (!hasAnyPermission && !hasFullAccess) {
+                    console.log('❌ No permissions - hiding ALL cards');
+                    
+                    const classCard = document.querySelector('a[href="/students/classes"]');
+                    const studentCard = document.querySelector('a[href="/students/list"]');
+                    const courseCard = document.querySelector('a[href="/students/courses"]');
+                    const dailyCard = document.querySelector('a[href="/students/daily-record"]');
+                    
+                    if (classCard) classCard.style.display = 'none';
+                    if (studentCard) studentCard.style.display = 'none';
+                    if (courseCard) courseCard.style.display = 'none';
+                    if (dailyCard) dailyCard.style.display = 'none';
+                    
+                    // 권한 없음 메시지 표시
+                    const gridContainer = document.querySelector('.grid.grid-cols-1.md\\:grid-cols-2.lg\\:grid-cols-3');
+                    if (gridContainer) {
+                        gridContainer.innerHTML = '<div class="col-span-full text-center py-16"><div class="bg-yellow-50 border-2 border-yellow-200 rounded-xl p-8 max-w-md mx-auto"><i class="fas fa-lock text-5xl text-yellow-600 mb-4"></i><h3 class="text-xl font-bold text-gray-900 mb-2">권한이 필요합니다</h3><p class="text-gray-600">원장님이 권한을 부여하면 학생 관리 기능을 사용할 수 있습니다.</p></div></div>';
+                        console.log('✅ Displayed: No permission message');
+                    }
+                    
+                    return; // 더 이상 처리하지 않음
+                }
                 
+                // ✅ 반 관리와 과목 관리는 전체 권한이 있을 때만 표시
                 const classCard = document.querySelector('a[href="/students/classes"]');
                 if (classCard) {
                     if (hasFullAccess) {
@@ -21200,6 +21233,29 @@ ${l.director_name} 원장님의 승인을 기다려주세요.`,directorName:l.di
                     }
                 }
                 
+                // ✅ 학생 목록과 일일 성과는 권한이 있으면 표시 (배정된 반만)
+                const studentCard = document.querySelector('a[href="/students/list"]');
+                if (studentCard) {
+                    if (hasAnyPermission || hasFullAccess) {
+                        studentCard.style.display = 'block';
+                        console.log('✅ Showing: Student list (has permission)');
+                    } else {
+                        studentCard.style.display = 'none';
+                        console.log('✅ Hidden: Student list (no permission)');
+                    }
+                }
+                
+                const dailyCard = document.querySelector('a[href="/students/daily-record"]');
+                if (dailyCard) {
+                    if (hasAnyPermission || hasFullAccess) {
+                        dailyCard.style.display = 'block';
+                        console.log('✅ Showing: Daily records (has permission)');
+                    } else {
+                        dailyCard.style.display = 'none';
+                        console.log('✅ Hidden: Daily records (no permission)');
+                    }
+                }
+                
                 // ✅ 랜딩페이지 섹션은 관리자가 권한을 부여한 경우에만 표시
                 const landingSection = document.getElementById('landingPagesSection');
                 if (landingSection) {
@@ -21212,7 +21268,7 @@ ${l.director_name} 원장님의 승인을 기다려주세요.`,directorName:l.di
                     }
                 }
                 
-                console.log('✅ Teacher restrictions applied. Full access:', hasFullAccess);
+                console.log('✅ Teacher restrictions applied');
             }
 
             async function loadDashboard() {
