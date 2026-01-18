@@ -20133,6 +20133,7 @@ ${l.director_name} 원장님의 승인을 기다려주세요.`,directorName:l.di
         <style>
             @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
             * { font-family: 'Pretendard Variable', sans-serif; }
+            .gradient-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
         </style>
     </head>
     <body class="bg-gray-50">
@@ -20144,8 +20145,8 @@ ${l.director_name} 원장님의 승인을 기다려주세요.`,directorName:l.di
                         <h1 class="text-xl font-bold text-gray-900">👨‍🏫 선생님 관리</h1>
                     </div>
                     <div class="flex items-center space-x-4">
-                        <a href="/dashboard" class="text-gray-600 hover:text-gray-900">
-                            <i class="fas fa-home mr-2"></i>대시보드
+                        <a href="/" class="text-gray-600 hover:text-gray-900">
+                            <i class="fas fa-home mr-2"></i>홈
                         </a>
                         <a href="/students" class="text-gray-600 hover:text-gray-900">
                             <i class="fas fa-user-graduate mr-2"></i>학생 관리
@@ -20175,11 +20176,11 @@ ${l.director_name} 원장님의 승인을 기다려주세요.`,directorName:l.di
                 <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="text-sm text-gray-600 mb-1">반 배정 완료</p>
-                            <p class="text-3xl font-bold text-gray-900" id="assignedTeachers">0</p>
+                            <p class="text-sm text-gray-600 mb-1">승인 대기 중</p>
+                            <p class="text-3xl font-bold text-gray-900" id="pendingCount">0</p>
                         </div>
-                        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                            <i class="fas fa-check-circle text-blue-600 text-xl"></i>
+                        <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-clock text-yellow-600 text-xl"></i>
                         </div>
                     </div>
                 </div>
@@ -20187,123 +20188,198 @@ ${l.director_name} 원장님의 승인을 기다려주세요.`,directorName:l.di
                 <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="text-sm text-gray-600 mb-1">미배정</p>
-                            <p class="text-3xl font-bold text-gray-900" id="unassignedTeachers">0</p>
+                            <p class="text-sm text-gray-600 mb-1">담당 반 배정완료</p>
+                            <p class="text-3xl font-bold text-gray-900" id="assignedCount">0</p>
                         </div>
-                        <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-                            <i class="fas fa-exclamation-circle text-yellow-600 text-xl"></i>
+                        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-check-circle text-blue-600 text-xl"></i>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- 선생님 추가 버튼 -->
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold text-gray-900">선생님 목록</h2>
-                <button onclick="openAddTeacherModal()" class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition font-medium flex items-center space-x-2">
-                    <i class="fas fa-plus"></i>
-                    <span>선생님 추가</span>
-                </button>
+            <!-- 인증 코드 섹션 -->
+            <div class="bg-purple-50 border-2 border-purple-200 rounded-xl p-6 mb-8">
+                <h3 class="text-xl font-bold text-gray-900 mb-4">
+                    <i class="fas fa-key text-purple-600 mr-2"></i>학원 인증 코드
+                </h3>
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div>
+                        <p class="text-sm text-gray-600 mb-2">선생님에게 이 코드를 전달하세요</p>
+                        <span id="verificationCode" class="text-3xl font-mono font-bold text-purple-600 block mb-2">------</span>
+                        <a href="/signup?teacher=true" target="_blank" class="text-sm text-purple-600 hover:underline">
+                            <i class="fas fa-external-link-alt mr-1"></i>선생님 등록 페이지로 이동
+                        </a>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="copyVerificationCode()" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 whitespace-nowrap">
+                            <i class="fas fa-copy mr-2"></i>복사
+                        </button>
+                        <button onclick="regenerateVerificationCode()" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 whitespace-nowrap">
+                            <i class="fas fa-sync-alt mr-2"></i>재생성
+                        </button>
+                    </div>
+                </div>
             </div>
 
-            <!-- 선생님 목록 테이블 -->
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                <table class="w-full">
-                    <thead class="bg-gray-50 border-b border-gray-200">
-                        <tr>
-                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">이름</th>
-                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">이메일</th>
-                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">전화번호</th>
-                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">담당 반</th>
-                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">학생 수</th>
-                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">관리</th>
-                        </tr>
-                    </thead>
-                    <tbody id="teachersList" class="divide-y divide-gray-200">
-                        <tr>
-                            <td colspan="6" class="px-6 py-12 text-center text-gray-500">
-                                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto mb-4"></div>
-                                로딩 중...
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+            <!-- 승인 대기 중 섹션 -->
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-bold text-gray-900">
+                        <i class="fas fa-clock text-yellow-600 mr-2"></i>승인 대기 중
+                    </h3>
+                    <span id="pendingBadge" class="px-3 py-1 bg-yellow-500 text-white rounded-full text-sm font-bold">0</span>
+                </div>
+                <div id="pendingList" class="space-y-4">
+                    <div class="text-center text-gray-500 py-4">로딩 중...</div>
+                </div>
+            </div>
+
+            <!-- 등록된 선생님 섹션 -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-bold text-gray-900">
+                        <i class="fas fa-users text-green-600 mr-2"></i>등록된 선생님
+                    </h3>
+                    <button onclick="openAddTeacherModal()" class="px-6 py-3 gradient-purple text-white rounded-lg hover:opacity-90 font-semibold shadow-lg">
+                        <i class="fas fa-user-plus mr-2"></i>선생님 추가
+                    </button>
+                </div>
+                <div id="teachersList" class="space-y-4">
+                    <div class="text-center text-gray-500 py-4">로딩 중...</div>
+                </div>
             </div>
         </div>
 
         <!-- 선생님 추가 모달 -->
-        <div id="addTeacherModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 overflow-y-auto">
-            <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 my-8 max-h-[90vh] overflow-y-auto">
+        <div id="addTeacherModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl max-w-md w-full p-6">
                 <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-2xl font-bold text-gray-900">👨‍🏫 선생님 추가</h3>
+                    <h3 class="text-xl font-bold text-gray-900">
+                        <i class="fas fa-user-plus text-purple-600 mr-2"></i>선생님 추가
+                    </h3>
                     <button onclick="closeAddTeacherModal()" class="text-gray-400 hover:text-gray-600">
-                        <i class="fas fa-times text-xl"></i>
+                        <i class="fas fa-times text-2xl"></i>
                     </button>
                 </div>
-
-                <div class="space-y-4">
+                
+                <form id="addTeacherForm" class="space-y-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">이름 *</label>
-                        <input type="text" id="teacherName" placeholder="홍길동" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                        <label class="block text-sm font-medium text-gray-900 mb-2">
+                            이름 <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" name="name" required class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500" placeholder="김선생">
                     </div>
-
+                    
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">이메일 *</label>
-                        <input type="email" id="teacherEmail" placeholder="teacher@example.com" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                        <label class="block text-sm font-medium text-gray-900 mb-2">
+                            이메일 (회원 아이디) <span class="text-red-500">*</span>
+                        </label>
+                        <input type="email" name="email" required class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500" placeholder="teacher@example.com">
                     </div>
-
+                    
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">전화번호</label>
-                        <input type="tel" id="teacherPhone" placeholder="010-1234-5678" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                        <label class="block text-sm font-medium text-gray-900 mb-2">
+                            연락처 <span class="text-red-500">*</span>
+                        </label>
+                        <input type="tel" name="phone" required class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500" placeholder="010-0000-0000">
                     </div>
-
+                    
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">담당 반</label>
-                        <input type="text" id="teacherClass" placeholder="예: 초등 3학년 A반" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                        <label class="block text-sm font-medium text-gray-900 mb-2">
+                            초기 비밀번호 <span class="text-red-500">*</span>
+                        </label>
+                        <input type="password" name="password" required minlength="6" class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500" placeholder="최소 6자">
+                        <p class="text-xs text-gray-500 mt-1">선생님이 로그인 후 변경할 수 있습니다</p>
                     </div>
-
-                    <div class="flex gap-3 pt-4">
-                        <button onclick="closeAddTeacherModal()" class="flex-1 px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 font-medium">
-                            취소
-                        </button>
-                        <button onclick="submitAddTeacher()" class="flex-1 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium">
-                            추가하기
-                        </button>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-900 mb-2">
+                            담당 반 배정 (선택)
+                        </label>
+                        <select name="class_id" class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500">
+                            <option value="">나중에 배정</option>
+                            <!-- 반 목록이 여기에 동적으로 추가됩니다 -->
+                        </select>
                     </div>
-                </div>
+                    
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <p class="text-sm text-blue-800">
+                            <i class="fas fa-info-circle mr-2"></i>
+                            선생님 계정이 자동으로 생성되며, 이메일과 비밀번호로 로그인할 수 있습니다.
+                        </p>
+                    </div>
+                    
+                    <button type="submit" class="w-full gradient-purple text-white py-3 rounded-lg font-medium hover:opacity-90">
+                        <i class="fas fa-check mr-2"></i>선생님 추가하기
+                    </button>
+                </form>
             </div>
         </div>
 
-        <!-- 반 배정 모달 -->
-        <div id="assignClassModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 overflow-y-auto">
-            <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 my-8">
+        <!-- 권한 설정 모달 -->
+        <div id="permissionsModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
                 <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-2xl font-bold text-gray-900">📚 반 배정</h3>
-                    <button onclick="closeAssignClassModal()" class="text-gray-400 hover:text-gray-600">
-                        <i class="fas fa-times text-xl"></i>
+                    <h3 class="text-xl font-bold text-gray-900">
+                        <i class="fas fa-user-shield text-purple-600 mr-2"></i><span id="permissionsTeacherName"></span> 선생님 권한 설정
+                    </h3>
+                    <button onclick="closePermissionsModal()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-2xl"></i>
                     </button>
                 </div>
-
-                <div class="mb-4">
-                    <p class="text-gray-600">선생님: <span id="assignTeacherName" class="font-bold text-gray-900"></span></p>
-                </div>
-
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">담당 반 *</label>
-                        <input type="text" id="assignClassName" placeholder="예: 초등 3학년 A반" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                        <p class="text-xs text-gray-500 mt-1">학년과 반 정보를 입력하세요</p>
+                
+                <form id="permissionsForm" class="space-y-6">
+                    <input type="hidden" id="permissionsTeacherId">
+                    
+                    <!-- 전체 학생 조회 권한 -->
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <label class="flex items-center cursor-pointer">
+                            <input type="checkbox" id="canViewAllStudents" class="w-5 h-5 text-purple-600 rounded focus:ring-purple-500">
+                            <div class="ml-3">
+                                <span class="text-sm font-medium text-gray-900">전체 학생 조회 권한</span>
+                                <p class="text-xs text-gray-600 mt-1">학원의 모든 학생 정보를 조회할 수 있습니다</p>
+                            </div>
+                        </label>
                     </div>
-
-                    <div class="flex gap-3 pt-4">
-                        <button onclick="closeAssignClassModal()" class="flex-1 px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 font-medium">
-                            취소
+                    
+                    <!-- 일일 성과 작성 권한 -->
+                    <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                        <label class="flex items-center cursor-pointer">
+                            <input type="checkbox" id="canWriteDailyReports" class="w-5 h-5 text-purple-600 rounded focus:ring-purple-500">
+                            <div class="ml-3">
+                                <span class="text-sm font-medium text-gray-900">일일 성과 작성 권한</span>
+                                <p class="text-xs text-gray-600 mt-1">배정된 반의 일일 성과를 작성할 수 있습니다</p>
+                            </div>
+                        </label>
+                    </div>
+                    
+                    <!-- 반 배정 -->
+                    <div class="border border-gray-200 rounded-lg p-4">
+                        <h4 class="font-medium text-gray-900 mb-3">
+                            <i class="fas fa-chalkboard text-purple-600 mr-2"></i>반 배정
+                        </h4>
+                        <div id="classesCheckboxList" class="space-y-2 max-h-60 overflow-y-auto">
+                            <div class="text-center text-gray-500 py-4">로딩 중...</div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                        <p class="text-sm text-yellow-800">
+                            <i class="fas fa-exclamation-triangle mr-2"></i>
+                            권한 설정 후 선생님은 즉시 해당 기능을 사용할 수 있습니다.
+                        </p>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        <button type="button" onclick="closePermissionsModal()" class="flex-1 px-4 py-3 border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50">
+                            <i class="fas fa-times mr-2"></i>취소
                         </button>
-                        <button onclick="submitAssignClass()" class="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">
-                            배정하기
+                        <button type="submit" class="flex-1 gradient-purple text-white py-3 rounded-lg font-medium hover:opacity-90">
+                            <i class="fas fa-save mr-2"></i>저장
                         </button>
                     </div>
-                </div>
+                </form>
             </div>
         </div>
 
