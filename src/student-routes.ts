@@ -6,45 +6,9 @@ type Bindings = {
 
 const studentRoutes = new Hono<{ Bindings: Bindings }>()
 
-// 학년 자동 계산 함수
-function calculateCurrentGrade(entryYear: number, entryGrade: string): string {
-  const currentYear = new Date().getFullYear()
-  const yearsPassed = currentYear - entryYear
-  
-  // 학년 파싱 (예: "초1" -> { level: "초", grade: 1 })
-  const gradeMatch = entryGrade.match(/^(초|중|고)(\d)$/)
-  if (!gradeMatch) return entryGrade // 파싱 실패 시 원본 반환
-  
-  const [, level, gradeStr] = gradeMatch
-  let grade = parseInt(gradeStr)
-  let currentLevel = level
-  
-  // 연도만큼 학년 증가
-  grade += yearsPassed
-  
-  // 학년 진급 로직
-  if (currentLevel === '초' && grade > 6) {
-    currentLevel = '중'
-    grade = grade - 6
-  }
-  if (currentLevel === '중' && grade > 3) {
-    currentLevel = '고'
-    grade = grade - 3
-  }
-  if (currentLevel === '고' && grade > 3) {
-    return '졸업' // 고3 이후는 졸업
-  }
-  
-  return `${currentLevel}${grade}`
-}
-
-// 학생 데이터에 현재 학년 추가
+// 학생 데이터에 현재 학년 추가 (현재는 grade를 그대로 사용)
 function enrichStudentWithCurrentGrade(student: any) {
-  if (student.entry_year && student.entry_grade) {
-    student.current_grade = calculateCurrentGrade(student.entry_year, student.entry_grade)
-  } else {
-    student.current_grade = student.grade // entry 정보가 없으면 기존 grade 사용
-  }
+  student.current_grade = student.grade // 현재 학년은 grade 필드 사용
   return student
 }
 
@@ -53,13 +17,29 @@ function enrichStudentWithCurrentGrade(student: any) {
 // 반 목록 조회
 studentRoutes.get('/api/classes', async (c) => {
   const { DB } = c.env
-  const academyId = c.req.query('academyId') || '1'
+  
+  // X-User-Data-Base64 헤더에서 academyId 추출
+  let academyId = c.req.query('academyId')
+  
+  try {
+    const userHeader = c.req.header('X-User-Data-Base64')
+    if (userHeader) {
+      const userData = JSON.parse(decodeURIComponent(escape(atob(userHeader))))
+      academyId = academyId || userData.id || userData.academy_id
+    }
+  } catch (err) {
+    console.error('[StudentRoutes] Failed to parse user header:', err)
+  }
+  
+  if (!academyId) {
+    return c.json({ success: false, error: '학원 ID가 필요합니다.' }, 400)
+  }
   
   try {
     const result = await DB.prepare(`
       SELECT c.*, COUNT(s.id) as student_count
       FROM classes c
-      LEFT JOIN students s ON c.id = s.class_id
+      LEFT JOIN students s ON c.id = s.class_id AND (s.status = 'active' OR s.status IS NULL)
       WHERE c.academy_id = ?
       GROUP BY c.id
       ORDER BY c.created_at DESC
@@ -67,6 +47,7 @@ studentRoutes.get('/api/classes', async (c) => {
     
     return c.json({ success: true, classes: result.results })
   } catch (error) {
+    console.error('[StudentRoutes] Get classes error:', error)
     return c.json({ success: false, error: error.message }, 500)
   }
 })
@@ -125,10 +106,25 @@ studentRoutes.delete('/api/classes/:classId', async (c) => {
 // 학생 목록 조회 (권한 기반 필터링)
 studentRoutes.get('/api/students', async (c) => {
   const { DB } = c.env
-  const academyId = c.req.query('academyId') || '1'
+  
+  // X-User-Data-Base64 헤더에서 사용자 정보 추출
+  let academyId = c.req.query('academyId')
+  let userId: string | undefined
+  let userType: string | undefined
+  
+  try {
+    const userHeader = c.req.header('X-User-Data-Base64')
+    if (userHeader) {
+      const userData = JSON.parse(decodeURIComponent(escape(atob(userHeader))))
+      academyId = academyId || userData.id || userData.academy_id
+      userId = userData.id
+      userType = userData.user_type
+    }
+  } catch (err) {
+    console.error('[StudentRoutes] Failed to parse user header:', err)
+  }
+  
   const classId = c.req.query('classId')
-  const userId = c.req.query('userId') // 현재 로그인한 사용자 ID
-  const userType = c.req.query('userType') // 'director' 또는 'teacher'
   
   try {
     let query = `
@@ -200,33 +196,50 @@ studentRoutes.get('/api/students/:studentId', async (c) => {
 studentRoutes.post('/api/students', async (c) => {
   const { DB } = c.env
   const body = await c.req.json()
-  const { academyId, classId, name, phone, parentName, parentPhone, grade, subjects, enrollmentDate, memo } = body
+  let { academyId, classId, name, phone, parentName, parentPhone, grade, subjects, enrollmentDate, memo } = body
+  
+  // X-User-Data-Base64 헤더에서 academyId 추출
+  try {
+    const userHeader = c.req.header('X-User-Data-Base64')
+    if (userHeader && !academyId) {
+      const userData = JSON.parse(decodeURIComponent(escape(atob(userHeader))))
+      academyId = userData.id || userData.academy_id
+    }
+  } catch (err) {
+    console.error('[StudentRoutes] Failed to parse user header:', err)
+  }
   
   try {
-    // 등록일로부터 연도 추출
-    const entryYear = enrollmentDate ? new Date(enrollmentDate).getFullYear() : new Date().getFullYear()
+    // academy_id 필수 검증
+    if (!academyId) {
+      return c.json({ success: false, error: '학원 ID가 필요합니다.' }, 400)
+    }
+    
+    // 필수 필드 검증
+    if (!name || !grade || !parentName || !parentPhone) {
+      return c.json({ success: false, error: '필수 항목을 입력해주세요. (이름, 학년, 학부모 이름, 학부모 연락처)' }, 400)
+    }
     
     const result = await DB.prepare(`
-      INSERT INTO students (academy_id, class_id, name, phone, parent_name, parent_phone, grade, subjects, enrollment_date, notes, entry_year, entry_grade)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO students (academy_id, class_id, name, phone, parent_name, parent_phone, grade, subjects, enrollment_date, notes, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active')
     `).bind(
-      academyId || 1,
+      academyId,
       classId || null,
       name,
       phone || '',
       parentName,
       parentPhone,
       grade,
-      subjects,
-      enrollmentDate,
-      memo || '',
-      entryYear,
-      grade  // entry_grade는 등록 시 학년과 동일
+      subjects || '',
+      enrollmentDate || new Date().toISOString().split('T')[0],
+      memo || ''
     ).run()
     
     return c.json({ success: true, studentId: result.meta.last_row_id })
   } catch (error) {
-    return c.json({ success: false, error: error.message }, 500)
+    console.error('[StudentRoutes] Add student error:', error)
+    return c.json({ success: false, error: `학생 추가 실패: ${error.message || error}` }, 500)
   }
 })
 
@@ -274,7 +287,23 @@ studentRoutes.delete('/api/students/:studentId', async (c) => {
 // 과목 목록 조회
 studentRoutes.get('/api/courses', async (c) => {
   const { DB } = c.env
-  const academyId = c.req.query('academyId') || '1'
+  
+  // X-User-Data-Base64 헤더에서 academyId 추출
+  let academyId = c.req.query('academyId')
+  
+  try {
+    const userHeader = c.req.header('X-User-Data-Base64')
+    if (userHeader) {
+      const userData = JSON.parse(decodeURIComponent(escape(atob(userHeader))))
+      academyId = academyId || userData.id || userData.academy_id
+    }
+  } catch (err) {
+    console.error('[StudentRoutes] Failed to parse user header:', err)
+  }
+  
+  if (!academyId) {
+    return c.json({ success: false, error: '학원 ID가 필요합니다.' }, 400)
+  }
   
   try {
     const result = await DB.prepare(`
@@ -283,6 +312,7 @@ studentRoutes.get('/api/courses', async (c) => {
     
     return c.json({ success: true, courses: result.results })
   } catch (error) {
+    console.error('[StudentRoutes] Get courses error:', error)
     return c.json({ success: false, error: error.message }, 500)
   }
 })
