@@ -25818,7 +25818,7 @@ app.get('/teachers-old', (c) => {
                     countBadge.textContent = data.applications.length;
                     pendingCount.textContent = data.applications.length;
                     container.innerHTML = data.applications.map(app => {
-                        const escapedName = (app.name || '').replace(/'/g, "\\\\'');
+                        const escapedName = (app.name || '').replace(/'/g, "\\'");
                         return \`
                         <div class="bg-yellow-50 border-2 border-yellow-200 rounded-xl p-6">
                             <div class="flex items-start justify-between mb-4">
