@@ -16136,13 +16136,13 @@ ${l.director_name} 원장님의 승인을 기다려주세요.`,directorName:l.di
           WHERE c.teacher_id = ?
           ORDER BY c.created_at DESC
         `:r=`
-          SELECT c.id, c.name, c.grade_level, c.description, 
+          SELECT c.id, c.class_name as name, c.grade, c.description, 
                  c.schedule_days, c.start_time, c.end_time, c.created_at,
                  t.name as teacher_name,
                  (SELECT COUNT(*) FROM students WHERE class_id = c.id AND status = 'active') as student_count
           FROM classes c
           LEFT JOIN users t ON c.teacher_id = t.id
-          WHERE c.user_id = ?
+          WHERE c.academy_id = ?
           ORDER BY c.created_at DESC
         `;const a=await e.env.DB.prepare(r).bind(t).all();return e.json({success:!0,classes:a.results||[]})}catch(r){if(r.message&&r.message.includes("no such table"))return e.json({success:!0,classes:[]});throw r}}catch(t){return console.error("[ClassesList] Error:",t),console.error("[ClassesList] Error message:",t.message),e.json({success:!0,classes:[],warning:"반 목록을 불러올 수 없습니다. 먼저 반을 생성해주세요."})}});d.put("/api/classes/:id/assign-teacher",async e=>{try{const t=e.req.param("id"),{teacherId:s,userId:r}=await e.req.json(),a=await e.env.DB.prepare("SELECT user_id FROM classes WHERE id = ?").bind(t).first();return!a||a.user_id!==r?e.json({success:!1,error:"권한이 없습니다."},403):(await e.env.DB.prepare("UPDATE classes SET teacher_id = ?, updated_at = datetime('now') WHERE id = ?").bind(s,t).run(),e.json({success:!0,message:"선생님이 배정되었습니다."}))}catch(t){return console.error("Assign teacher error:",t),e.json({success:!1,error:"선생님 배정 중 오류가 발생했습니다."},500)}});d.get("/api/classes",async e=>{var t;try{let s=e.req.query("academyId")||e.req.query("userId");try{const a=e.req.header("X-User-Data-Base64");a&&!s&&(s=JSON.parse(decodeURIComponent(escape(atob(a)))).id)}catch(a){console.error("[GetClasses] Failed to parse user header:",a)}if(!s)return e.json({success:!1,error:"사용자 ID가 필요합니다."},400);console.log("🔍 [GetClasses] Loading classes for user_id:",s);const r=await e.env.DB.prepare(`
       SELECT 
@@ -16150,9 +16150,6 @@ ${l.director_name} 원장님의 승인을 기다려주세요.`,directorName:l.di
         c.class_name,
         c.grade,
         c.description,
-        c.schedule_days,
-        c.start_time,
-        c.end_time,
         c.created_at,
         COUNT(s.id) as student_count
       FROM classes c
@@ -16160,7 +16157,7 @@ ${l.director_name} 원장님의 승인을 기다려주세요.`,directorName:l.di
       WHERE c.academy_id = ?
       GROUP BY c.id
       ORDER BY c.created_at DESC
-    `).bind(s).all();return console.log("✅ [GetClasses] Found",((t=r.results)==null?void 0:t.length)||0,"classes"),e.json({success:!0,classes:r.results||[]})}catch(s){return console.error("❌ [GetClasses] Error:",s),e.json({success:!1,error:"반 목록 조회 중 오류가 발생했습니다."},500)}});d.post("/api/classes",async e=>{try{let{academyId:t,userId:s,className:r,grade:a,description:n,scheduleDays:o,startTime:l,endTime:i}=await e.req.json();s=s||t;try{const p=e.req.header("X-User-Data-Base64");p&&!s&&(s=JSON.parse(decodeURIComponent(escape(atob(p)))).id)}catch(p){console.error("[CreateClass] Failed to parse user header:",p)}if(!s)return e.json({success:!1,error:"사용자 ID가 필요합니다."},400);if(!r)return e.json({success:!1,error:"반 이름은 필수입니다."},400);console.log("➕ [CreateClass] Creating class for academy_id:",s,"name:",r);const c=await e.env.DB.prepare(`
+    `).bind(s).all();return console.log("✅ [GetClasses] Found",((t=r.results)==null?void 0:t.length)||0,"classes"),e.json({success:!0,classes:r.results||[]})}catch(s){return console.error("❌ [GetClasses] Error:",s),e.json({success:!1,error:"반 목록 조회 중 오류가 발생했습니다.",details:s.message},500)}});d.post("/api/classes",async e=>{try{let{academyId:t,userId:s,className:r,grade:a,description:n,scheduleDays:o,startTime:l,endTime:i}=await e.req.json();s=s||t;try{const p=e.req.header("X-User-Data-Base64");p&&!s&&(s=JSON.parse(decodeURIComponent(escape(atob(p)))).id)}catch(p){console.error("[CreateClass] Failed to parse user header:",p)}if(!s)return e.json({success:!1,error:"사용자 ID가 필요합니다."},400);if(!r)return e.json({success:!1,error:"반 이름은 필수입니다."},400);console.log("➕ [CreateClass] Creating class for academy_id:",s,"name:",r);const c=await e.env.DB.prepare(`
       INSERT INTO classes (academy_id, class_name, grade, description, schedule_days, start_time, end_time, created_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))
     `).bind(s,r,a||null,n||null,o||null,l||null,i||null).run();return console.log("✅ [CreateClass] Class created with id:",c.meta.last_row_id),e.json({success:!0,classId:c.meta.last_row_id,message:"반이 추가되었습니다."})}catch(t){return console.error("❌ [CreateClass] Error:",t),e.json({success:!1,error:"반 추가 중 오류가 발생했습니다."},500)}});d.put("/api/classes/:id",async e=>{try{const t=e.req.param("id"),{className:s,grade:r,description:a,scheduleDays:n,startTime:o,endTime:l}=await e.req.json();let i;try{const u=e.req.header("X-User-Data-Base64");if(u){const g=JSON.parse(decodeURIComponent(escape(atob(u))));i=g.id||g.academy_id}}catch(u){console.error("[UpdateClass] Failed to parse user header:",u)}if(!i)return e.json({success:!1,error:"학원 ID가 필요합니다."},400);if(!s)return e.json({success:!1,error:"반 이름은 필수입니다."},400);const c=await e.env.DB.prepare(`
@@ -22566,4 +22563,11 @@ ${l.director_name} 원장님의 승인을 기다려주세요.`,directorName:l.di
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         UNIQUE(teacher_id, class_id)
       )
-    `).run(),e.json({success:!0,message:"teacher_classes 테이블이 생성되었습니다 (임시 수정)",note:"이 테이블은 사용되지 않지만 D1 에러를 방지합니다"})}catch(t){return e.json({success:!1,error:t.message},500)}});const Je=new ht,Rs=Object.assign({"/src/index.tsx":d});let yt=!1;for(const[,e]of Object.entries(Rs))e&&(Je.all("*",t=>{let s;try{s=t.executionCtx}catch{}return e.fetch(t.req.raw,t.env,s)}),Je.notFound(t=>{let s;try{s=t.executionCtx}catch{}return e.fetch(t.req.raw,t.env,s)}),yt=!0);if(!yt)throw new Error("Can't import modules from ['/src/index.ts','/src/index.tsx','/app/server.ts']");export{Je as default};
+    `).run(),e.json({success:!0,message:"teacher_classes 테이블이 생성되었습니다 (임시 수정)",note:"이 테이블은 사용되지 않지만 D1 에러를 방지합니다"})}catch(t){return e.json({success:!1,error:t.message},500)}});d.get("/api/admin/get-user-classes",async e=>{try{const{DB:t}=e.env,s=e.req.query("email");if(!s)return e.json({success:!1,error:"Email parameter required"},400);const r=await t.prepare("SELECT id, email, name, academy_name FROM users WHERE email = ?").bind(s).first();if(!r)return e.json({success:!1,error:"User not found"},404);const a=await t.prepare(`
+      SELECT c.*, COUNT(s.id) as student_count
+      FROM classes c
+      LEFT JOIN students s ON c.id = s.class_id AND s.status = 'active'
+      WHERE c.academy_id = ?
+      GROUP BY c.id
+      ORDER BY c.class_name
+    `).bind(r.id).all();return e.json({success:!0,user:r,classes:a.results||[]})}catch(t){return e.json({success:!1,error:t.message},500)}});d.post("/api/admin/transfer-classes",async e=>{try{const{DB:t}=e.env,{fromEmail:s,toEmail:r,classIds:a}=await e.req.json();if(!s||!r||!a||!Array.isArray(a))return e.json({success:!1,error:"fromEmail, toEmail, and classIds array required"},400);const n=await t.prepare("SELECT id, email, name FROM users WHERE email = ?").bind(s).first(),o=await t.prepare("SELECT id, email, name FROM users WHERE email = ?").bind(r).first();if(!n||!o)return e.json({success:!1,error:n?"To user not found":"From user not found"},404);const l=[];for(const i of a){const c=await t.prepare("SELECT * FROM classes WHERE id = ? AND academy_id = ?").bind(i,n.id).first();c&&(await t.prepare("UPDATE classes SET academy_id = ? WHERE id = ?").bind(o.id,i).run(),await t.prepare("UPDATE students SET academy_id = ? WHERE class_id = ?").bind(o.id,i).run(),l.push({classId:i,className:c.class_name,studentCount:c.student_count||0}))}return e.json({success:!0,message:`${l.length}개 반 이전 완료`,transferred:l,from:{id:n.id,email:n.email,name:n.name},to:{id:o.id,email:o.email,name:o.name}})}catch(t){return e.json({success:!1,error:t.message},500)}});const Je=new ht,Rs=Object.assign({"/src/index.tsx":d});let yt=!1;for(const[,e]of Object.entries(Rs))e&&(Je.all("*",t=>{let s;try{s=t.executionCtx}catch{}return e.fetch(t.req.raw,t.env,s)}),Je.notFound(t=>{let s;try{s=t.executionCtx}catch{}return e.fetch(t.req.raw,t.env,s)}),yt=!0);if(!yt)throw new Error("Can't import modules from ['/src/index.ts','/src/index.tsx','/app/server.ts']");export{Je as default};

@@ -19886,15 +19886,15 @@ app.get('/api/classes/list', async (c) => {
           ORDER BY c.created_at DESC
         `
       } else {
-        // 원장님은 user_id로 모든 반 조회
+        // 원장님은 academy_id로 모든 반 조회
         query = `
-          SELECT c.id, c.name, c.grade_level, c.description, 
+          SELECT c.id, c.class_name as name, c.grade, c.description, 
                  c.schedule_days, c.start_time, c.end_time, c.created_at,
                  t.name as teacher_name,
                  (SELECT COUNT(*) FROM students WHERE class_id = c.id AND status = 'active') as student_count
           FROM classes c
           LEFT JOIN users t ON c.teacher_id = t.id
-          WHERE c.user_id = ?
+          WHERE c.academy_id = ?
           ORDER BY c.created_at DESC
         `
       }
@@ -19976,9 +19976,6 @@ app.get('/api/classes', async (c) => {
         c.class_name,
         c.grade,
         c.description,
-        c.schedule_days,
-        c.start_time,
-        c.end_time,
         c.created_at,
         COUNT(s.id) as student_count
       FROM classes c
@@ -19993,7 +19990,7 @@ app.get('/api/classes', async (c) => {
     return c.json({ success: true, classes: result.results || [] })
   } catch (error) {
     console.error('❌ [GetClasses] Error:', error)
-    return c.json({ success: false, error: '반 목록 조회 중 오류가 발생했습니다.' }, 500)
+    return c.json({ success: false, error: '반 목록 조회 중 오류가 발생했습니다.', details: error.message }, 500)
   }
 })
 
@@ -27759,6 +27756,110 @@ app.get('/api/fix-teacher-classes-error', async (c) => {
   }
 })
 // ==================== END TEMPORARY FIX ====================
+
+// 사용자 및 반 정보 조회 API
+app.get('/api/admin/get-user-classes', async (c) => {
+  try {
+    const { DB } = c.env
+    const email = c.req.query('email')
+    
+    if (!email) {
+      return c.json({ success: false, error: 'Email parameter required' }, 400)
+    }
+    
+    // 사용자 찾기
+    const user = await DB.prepare('SELECT id, email, name, academy_name FROM users WHERE email = ?')
+      .bind(email)
+      .first()
+    
+    if (!user) {
+      return c.json({ success: false, error: 'User not found' }, 404)
+    }
+    
+    // 해당 사용자의 반 목록 (academy_id 사용)
+    const classes = await DB.prepare(`
+      SELECT c.*, COUNT(s.id) as student_count
+      FROM classes c
+      LEFT JOIN students s ON c.id = s.class_id AND s.status = 'active'
+      WHERE c.academy_id = ?
+      GROUP BY c.id
+      ORDER BY c.class_name
+    `).bind(user.id).all()
+    
+    return c.json({
+      success: true,
+      user,
+      classes: classes.results || []
+    })
+  } catch (error: any) {
+    return c.json({ success: false, error: error.message }, 500)
+  }
+})
+
+// 반 소유권 이전 API
+app.post('/api/admin/transfer-classes', async (c) => {
+  try {
+    const { DB } = c.env
+    const { fromEmail, toEmail, classIds } = await c.req.json()
+    
+    if (!fromEmail || !toEmail || !classIds || !Array.isArray(classIds)) {
+      return c.json({ 
+        success: false, 
+        error: 'fromEmail, toEmail, and classIds array required' 
+      }, 400)
+    }
+    
+    // 두 사용자 찾기
+    const fromUser = await DB.prepare('SELECT id, email, name FROM users WHERE email = ?')
+      .bind(fromEmail).first()
+    const toUser = await DB.prepare('SELECT id, email, name FROM users WHERE email = ?')
+      .bind(toEmail).first()
+    
+    if (!fromUser || !toUser) {
+      return c.json({ 
+        success: false, 
+        error: !fromUser ? 'From user not found' : 'To user not found' 
+      }, 404)
+    }
+    
+    // 각 반의 소유권 이전
+    const transferred = []
+    for (const classId of classIds) {
+      // 반이 fromUser 소유인지 확인 (academy_id 사용)
+      const classInfo = await DB.prepare('SELECT * FROM classes WHERE id = ? AND academy_id = ?')
+        .bind(classId, fromUser.id)
+        .first()
+      
+      if (classInfo) {
+        // 소유권 이전
+        await DB.prepare('UPDATE classes SET academy_id = ? WHERE id = ?')
+          .bind(toUser.id, classId)
+          .run()
+        
+        // 해당 반의 학생들도 이전 (academy_id 사용)
+        await DB.prepare('UPDATE students SET academy_id = ? WHERE class_id = ?')
+          .bind(toUser.id, classId)
+          .run()
+        
+        transferred.push({
+          classId,
+          className: classInfo.class_name,
+          studentCount: classInfo.student_count || 0
+        })
+      }
+    }
+    
+    return c.json({
+      success: true,
+      message: `${transferred.length}개 반 이전 완료`,
+      transferred,
+      from: { id: fromUser.id, email: fromUser.email, name: fromUser.name },
+      to: { id: toUser.id, email: toUser.email, name: toUser.name }
+    })
+  } catch (error: any) {
+    return c.json({ success: false, error: error.message }, 500)
+  }
+})
 
 export default app
 // Force rebuild: Sun Jan 18 12:54:06 UTC 2026
