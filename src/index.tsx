@@ -2767,6 +2767,36 @@ app.get('/api/admin/classes/all', async (c) => {
   try {
     console.log('🔍 [AdminClasses] Fetching ALL classes from database')
     
+    // 먼저 classes 테이블의 스키마 확인
+    let schemaInfo
+    try {
+      schemaInfo = await c.env.DB.prepare(`
+        PRAGMA table_info(classes)
+      `).all()
+      console.log('📋 [AdminClasses] Table schema:', JSON.stringify(schemaInfo.results))
+    } catch (schemaError) {
+      console.error('⚠️ [AdminClasses] Schema check failed:', schemaError.message)
+    }
+    
+    // academy_id 또는 user_id 컬럼 확인
+    const hasUserId = schemaInfo?.results?.some(col => col.name === 'user_id')
+    const hasAcademyId = schemaInfo?.results?.some(col => col.name === 'academy_id')
+    const ownerColumn = hasUserId ? 'user_id' : (hasAcademyId ? 'academy_id' : null)
+    
+    console.log('🔍 [AdminClasses] Owner column:', ownerColumn)
+    
+    if (!ownerColumn) {
+      // 소유자 컬럼이 없으면 단순 조회
+      const classes = await c.env.DB.prepare(`SELECT * FROM classes ORDER BY created_at DESC`).all()
+      return c.json({ 
+        success: true, 
+        classes: classes.results || [],
+        total: classes.results?.length || 0,
+        note: '소유자 정보를 찾을 수 없습니다. classes 테이블에 user_id 또는 academy_id 컬럼이 필요합니다.'
+      })
+    }
+    
+    // 소유자 정보와 함께 조회
     const classes = await c.env.DB.prepare(`
       SELECT c.*, 
              u.email as owner_email, 
@@ -2774,7 +2804,7 @@ app.get('/api/admin/classes/all', async (c) => {
              t.email as teacher_email,
              t.name as teacher_name
       FROM classes c
-      LEFT JOIN users u ON c.user_id = u.id
+      LEFT JOIN users u ON c.${ownerColumn} = u.id
       LEFT JOIN users t ON c.teacher_id = t.id
       ORDER BY c.created_at DESC
     `).all()
@@ -2784,7 +2814,8 @@ app.get('/api/admin/classes/all', async (c) => {
     return c.json({ 
       success: true, 
       classes: classes.results || [],
-      total: classes.results?.length || 0
+      total: classes.results?.length || 0,
+      ownerColumn
     })
   } catch (error) {
     console.error('❌ [AdminClasses] Error:', error)
@@ -2818,9 +2849,17 @@ app.post('/api/admin/classes/create-for-user', async (c) => {
     
     console.log('👤 [AdminCreateClass] Target user:', targetUser)
     
-    // 반 생성
+    // 테이블 스키마 확인
+    const schemaInfo = await c.env.DB.prepare(`PRAGMA table_info(classes)`).all()
+    const hasUserId = schemaInfo.results?.some(col => col.name === 'user_id')
+    const hasAcademyId = schemaInfo.results?.some(col => col.name === 'academy_id')
+    const ownerColumn = hasUserId ? 'user_id' : (hasAcademyId ? 'academy_id' : 'user_id')
+    
+    console.log('🔍 [AdminCreateClass] Using owner column:', ownerColumn)
+    
+    // 반 생성 (동적 컬럼명 사용)
     const result = await c.env.DB.prepare(`
-      INSERT INTO classes (name, description, user_id, grade_level, subject, max_students, status, created_at)
+      INSERT INTO classes (name, description, ${ownerColumn}, grade_level, subject, max_students, status, created_at)
       VALUES (?, ?, ?, ?, ?, 20, 'active', datetime('now'))
     `).bind(
       className,
@@ -2874,9 +2913,17 @@ app.post('/api/admin/transfer-classes', async (c) => {
     
     console.log('👤 [TransferClasses] Target user:', toUser)
     
+    // 테이블 스키마 확인
+    const schemaInfo = await c.env.DB.prepare(`PRAGMA table_info(classes)`).all()
+    const hasUserId = schemaInfo.results?.some(col => col.name === 'user_id')
+    const hasAcademyId = schemaInfo.results?.some(col => col.name === 'academy_id')
+    const ownerColumn = hasUserId ? 'user_id' : (hasAcademyId ? 'academy_id' : 'user_id')
+    
+    console.log('🔍 [TransferClasses] Using owner column:', ownerColumn)
+    
     // 원본 사용자의 반 찾기
     const classes = await c.env.DB.prepare(
-      'SELECT id, name, user_id, teacher_id FROM classes WHERE user_id = ?'
+      `SELECT id, name, ${ownerColumn} as owner_id, teacher_id FROM classes WHERE ${ownerColumn} = ?`
     ).bind(fromUserId).all()
     
     console.log('📚 [TransferClasses] Found', classes.results?.length || 0, 'classes to transfer')
@@ -2889,25 +2936,25 @@ app.post('/api/admin/transfer-classes', async (c) => {
       })
     }
     
-    // user_id를 대상 사용자로 변경
+    // owner_id를 대상 사용자로 변경
     let transferred = 0
     const details = []
     
     for (const cls of classes.results) {
       await c.env.DB.prepare(
-        'UPDATE classes SET user_id = ? WHERE id = ?'
+        `UPDATE classes SET ${ownerColumn} = ? WHERE id = ?`
       ).bind(toUser.id, cls.id).run()
       
       transferred++
       details.push({
         id: cls.id,
         name: cls.name,
-        from_user_id: cls.user_id,
+        from_user_id: cls.owner_id,
         to_user_id: toUser.id,
         to_email: toUser.email
       })
       
-      console.log(`✅ [TransferClasses] Transferred class ${cls.id} (${cls.name}): user_id ${cls.user_id} → ${toUser.id}`)
+      console.log(`✅ [TransferClasses] Transferred class ${cls.id} (${cls.name}): ${ownerColumn} ${cls.owner_id} → ${toUser.id}`)
     }
     
     return c.json({ 
@@ -2923,7 +2970,7 @@ app.post('/api/admin/transfer-classes', async (c) => {
     })
   } catch (error) {
     console.error('❌ [TransferClasses] Error:', error)
-    return c.json({ success: false, error: '반 이전 중 오류가 발생했습니다.' }, 500)
+    return c.json({ success: false, error: '반 이전 중 오류가 발생했습니다.', details: error.message }, 500)
   }
 })
 
