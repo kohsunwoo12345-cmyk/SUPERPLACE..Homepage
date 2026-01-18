@@ -2977,6 +2977,97 @@ app.post('/api/admin/transfer-classes', async (c) => {
   }
 })
 
+// 관리자 - 모든 반을 특정 사용자로 이전 (긴급 수정용)
+app.post('/api/admin/transfer-all-classes-to-user', async (c) => {
+  try {
+    const { toEmail } = await c.req.json()
+    
+    if (!toEmail) {
+      return c.json({ success: false, error: 'toEmail이 필요합니다.' }, 400)
+    }
+    
+    console.log('🚨 [EmergencyTransfer] Transferring ALL classes to:', toEmail)
+    
+    // 대상 사용자 찾기
+    const toUser = await c.env.DB.prepare('SELECT id, email, name FROM users WHERE email = ?').bind(toEmail).first()
+    if (!toUser) {
+      return c.json({ success: false, error: '대상 사용자를 찾을 수 없습니다.' }, 404)
+    }
+    
+    console.log('👤 [EmergencyTransfer] Target user:', toUser)
+    
+    // 모든 반 조회
+    let allClasses
+    try {
+      allClasses = await c.env.DB.prepare('SELECT * FROM classes ORDER BY id').all()
+    } catch (e) {
+      return c.json({ success: false, error: 'classes 테이블을 찾을 수 없습니다: ' + e.message }, 500)
+    }
+    
+    console.log('📚 [EmergencyTransfer] Found', allClasses.results?.length || 0, 'total classes')
+    
+    if (!allClasses.results || allClasses.results.length === 0) {
+      return c.json({ 
+        success: true, 
+        message: '이전할 반이 없습니다.',
+        transferred: 0
+      })
+    }
+    
+    // academy_id 또는 user_id 컬럼 확인
+    const firstClass = allClasses.results[0]
+    const hasAcademyId = 'academy_id' in firstClass
+    const hasUserId = 'user_id' in firstClass
+    const ownerColumn = hasUserId ? 'user_id' : (hasAcademyId ? 'academy_id' : null)
+    
+    console.log('🔍 [EmergencyTransfer] Owner column:', ownerColumn)
+    
+    if (!ownerColumn) {
+      return c.json({ success: false, error: '소유자 컬럼(academy_id 또는 user_id)을 찾을 수 없습니다.' }, 500)
+    }
+    
+    // 모든 반을 대상 사용자로 변경
+    let transferred = 0
+    const details = []
+    
+    for (const cls of allClasses.results) {
+      try {
+        await c.env.DB.prepare(
+          `UPDATE classes SET ${ownerColumn} = ? WHERE id = ?`
+        ).bind(toUser.id, cls.id).run()
+        
+        transferred++
+        details.push({
+          id: cls.id,
+          name: cls.class_name || cls.name,
+          from_owner_id: cls[ownerColumn],
+          to_owner_id: toUser.id
+        })
+        
+        console.log(`✅ [EmergencyTransfer] Transferred class ${cls.id} (${cls.class_name || cls.name}): ${ownerColumn} ${cls[ownerColumn]} → ${toUser.id}`)
+      } catch (e) {
+        console.error(`❌ [EmergencyTransfer] Failed to transfer class ${cls.id}:`, e.message)
+      }
+    }
+    
+    return c.json({ 
+      success: true, 
+      message: `${transferred}개의 반이 ${toUser.email}로 이전되었습니다.`,
+      transferred,
+      total: allClasses.results.length,
+      target_user: {
+        id: toUser.id,
+        email: toUser.email,
+        name: toUser.name
+      },
+      details: details.slice(0, 10)  // 처음 10개만 반환
+    })
+  } catch (error) {
+    console.error('❌ [EmergencyTransfer] Error:', error)
+    return c.json({ success: false, error: '반 이전 중 오류가 발생했습니다: ' + error.message }, 500)
+  }
+})
+
 // 관리자 - 사용자 목록
 app.get('/api/admin/users', async (c) => {
   try {
