@@ -18847,54 +18847,84 @@ app.post('/api/teachers/:id/permissions', async (c) => {
     const teacherId = c.req.param('id')
     const { directorId, permissions } = await c.req.json()
     
+    console.log('📝 [SaveTeacherPermissions] teacherId:', teacherId, 'directorId:', directorId)
+    console.log('📝 [SaveTeacherPermissions] permissions:', permissions)
+    
     if (!directorId) {
       return c.json({ success: false, error: '원장님 ID가 필요합니다.' }, 400)
     }
     
     // 선생님 확인
     const teacher = await c.env.DB.prepare(
-      'SELECT id FROM users WHERE id = ? AND parent_user_id = ?'
-    ).bind(teacherId, directorId).first()
+      'SELECT id, user_type, parent_user_id FROM users WHERE id = ?'
+    ).bind(teacherId).first()
     
     if (!teacher) {
       return c.json({ success: false, error: '선생님을 찾을 수 없습니다.' }, 404)
     }
     
+    // user_type이 teacher인지 확인
+    if (teacher.user_type !== 'teacher') {
+      return c.json({ success: false, error: '선생님 계정이 아닙니다.' }, 400)
+    }
+    
+    // parent_user_id가 directorId와 일치하는지 확인
+    if (teacher.parent_user_id && teacher.parent_user_id !== parseInt(directorId)) {
+      return c.json({ success: false, error: '권한이 없습니다.' }, 403)
+    }
+    
+    console.log('✅ [SaveTeacherPermissions] Teacher verified:', teacher)
+    
+    // teacher_permissions 테이블이 없으면 생성
     try {
-      // permissions 업데이트
       await c.env.DB.prepare(`
-        UPDATE users 
-        SET permissions = ?
-        WHERE id = ?
-      `).bind(JSON.stringify(permissions), teacherId).run()
-    } catch (updateError) {
-      // permissions 컬럼이 없으면 추가
-      if (updateError.message && updateError.message.includes('no such column: permissions')) {
+        CREATE TABLE IF NOT EXISTS teacher_permissions (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          teacher_id INTEGER NOT NULL,
+          permission_key TEXT NOT NULL,
+          permission_value INTEGER DEFAULT 0,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (teacher_id) REFERENCES users(id),
+          UNIQUE(teacher_id, permission_key)
+        )
+      `).run()
+      console.log('✅ [SaveTeacherPermissions] Table ensured')
+    } catch (tableError) {
+      console.error('⚠️ [SaveTeacherPermissions] Table creation warning:', tableError.message)
+    }
+    
+    // 기존 권한 삭제
+    await c.env.DB.prepare(
+      'DELETE FROM teacher_permissions WHERE teacher_id = ?'
+    ).bind(teacherId).run()
+    
+    console.log('🗑️ [SaveTeacherPermissions] Old permissions deleted')
+    
+    // 새 권한 삽입
+    if (permissions && typeof permissions === 'object') {
+      for (const [key, value] of Object.entries(permissions)) {
         await c.env.DB.prepare(`
-          ALTER TABLE users ADD COLUMN permissions TEXT
-        `).run()
+          INSERT INTO teacher_permissions (teacher_id, permission_key, permission_value, created_at, updated_at)
+          VALUES (?, ?, ?, datetime('now'), datetime('now'))
+        `).bind(teacherId, key, value ? 1 : 0).run()
         
-        // 다시 업데이트 시도
-        await c.env.DB.prepare(`
-          UPDATE users 
-          SET permissions = ?
-          WHERE id = ?
-        `).bind(JSON.stringify(permissions), teacherId).run()
-      } else {
-        throw updateError
+        console.log('➕ [SaveTeacherPermissions] Added permission:', key, '=', value)
       }
     }
+    
+    console.log('✅ [SaveTeacherPermissions] All permissions saved successfully')
     
     return c.json({ 
       success: true, 
       message: '권한이 저장되었습니다.'
     })
   } catch (error) {
-    console.error('[SavePermissions] Error:', error)
+    console.error('❌ [SaveTeacherPermissions] Error:', error)
+    console.error('❌ [SaveTeacherPermissions] Stack:', error.stack)
     return c.json({ 
       success: false, 
-      error: '권한 저장 중 오류가 발생했습니다.',
-      details: error.message
+      error: '권한 저장 중 오류가 발생했습니다: ' + error.message
     }, 500)
   }
 })
@@ -19485,16 +19515,30 @@ app.get('/api/teachers/:id/permissions', async (c) => {
     const teacherId = c.req.param('id')
     const directorId = c.req.query('directorId')
     
+    console.log('🔍 [GetTeacherPermissions] teacherId:', teacherId, 'directorId:', directorId)
+    
     if (!directorId) {
       return c.json({ success: false, error: '원장님 ID가 필요합니다.' }, 400)
     }
     
     // 선생님이 해당 원장님 소속인지 확인
     const teacher = await c.env.DB.prepare(
-      'SELECT id, parent_user_id FROM users WHERE id = ? AND user_type = "teacher"'
+      'SELECT id, user_type, parent_user_id FROM users WHERE id = ?'
     ).bind(teacherId).first()
     
-    if (!teacher || teacher.parent_user_id !== parseInt(directorId)) {
+    if (!teacher) {
+      return c.json({ success: false, error: '선생님을 찾을 수 없습니다.' }, 404)
+    }
+    
+    console.log('✅ [GetTeacherPermissions] Teacher found:', teacher)
+    
+    // user_type이 teacher인지 확인
+    if (teacher.user_type !== 'teacher') {
+      return c.json({ success: false, error: '선생님 계정이 아닙니다.' }, 400)
+    }
+    
+    // parent_user_id가 있는 경우에만 검증 (없으면 모든 원장님이 접근 가능)
+    if (teacher.parent_user_id && teacher.parent_user_id !== parseInt(directorId)) {
       return c.json({ success: false, error: '권한이 없습니다.' }, 403)
     }
     
@@ -19503,17 +19547,20 @@ app.get('/api/teachers/:id/permissions', async (c) => {
       'SELECT permission_key, permission_value FROM teacher_permissions WHERE teacher_id = ?'
     ).bind(teacherId).all()
     
+    console.log('📋 [GetTeacherPermissions] Found', permissions.results?.length || 0, 'permissions')
+    
     // 권한을 객체로 변환
     const permissionsMap = {}
     if (permissions.results) {
       permissions.results.forEach(p => {
         permissionsMap[p.permission_key] = p.permission_value === 1
+        console.log('  -', p.permission_key, '=', p.permission_value === 1)
       })
     }
     
     return c.json({ success: true, permissions: permissionsMap })
   } catch (error) {
-    console.error('Get teacher permissions error:', error)
+    console.error('❌ [GetTeacherPermissions] Error:', error)
     return c.json({ success: false, error: '권한 조회 중 오류가 발생했습니다.' }, 500)
   }
 })
