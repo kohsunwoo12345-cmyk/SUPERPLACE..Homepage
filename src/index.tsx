@@ -24990,14 +24990,14 @@ app.get('/students', (c) => {
                 console.log('Current user:', currentUser);
                 console.log('User permissions:', userPermissions);
                 
-                // 선생님 관리 카드는 무조건 숨기기
+                // ✅ 선생님 관리 카드는 선생님에게만 숨김
                 const teacherCard = document.getElementById('teacherManagementCard');
                 if (teacherCard) {
                     teacherCard.style.display = 'none';
-                    console.log('✅ Hidden: Teacher management card');
+                    console.log('✅ Hidden: Teacher management card (teacher account)');
                 }
                 
-                // 기본적으로 반 관리와 과목 관리 숨기기
+                // ✅ 반 관리와 과목 관리는 권한에 따라 표시/숨김
                 // canViewAllStudents가 명시적으로 true인 경우에만 표시
                 const hasFullAccess = userPermissions && userPermissions.canViewAllStudents === true;
                 
