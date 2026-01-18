@@ -80,9 +80,11 @@ app.post('/api/signup', async (c) => {
     const hashedPassword = password // TODO: 실제 프로젝트에서는 해싱 필요
 
     // DB 저장 (academy_name 컬럼 포함)
+    // ✅ 기본값: role = 'director' (원장님)
+    // ✅ 선생님으로 등록하는 것은 원장님이 별도로 추가해야 함
     const result = await c.env.DB.prepare(`
       INSERT INTO users (email, password, name, phone, academy_name, role)
-      VALUES (?, ?, ?, ?, ?, 'member')
+      VALUES (?, ?, ?, ?, ?, 'director')
     `).bind(email, hashedPassword, name, phone, academy_name || '').run()
 
     return c.json({ 
@@ -486,9 +488,10 @@ app.post('/api/register', async (c) => {
     }
 
     // 사용자 생성
+    // ✅ 기본값: role = 'director' (원장님)
     const result = await c.env.DB.prepare(`
       INSERT INTO users (email, password, name, phone, academy_name, role, google_id, kakao_id, profile_image, social_provider)
-      VALUES (?, ?, ?, ?, ?, 'user', ?, ?, ?, ?)
+      VALUES (?, ?, ?, ?, ?, 'director', ?, ?, ?, ?)
     `).bind(
       email, 
       password || 'social_login_' + Date.now(), 
@@ -18190,9 +18193,10 @@ app.post('/api/teachers/applications/:id/approve', async (c) => {
       teacherId = existingUser.id
       
       // parent_user_id 업데이트 (학원 연결)
+      // ✅ role과 user_type 모두 'teacher'로 설정 (일관성)
       await c.env.DB.prepare(`
         UPDATE users 
-        SET parent_user_id = ?, academy_name = ?, user_type = 'teacher'
+        SET parent_user_id = ?, academy_name = ?, role = 'teacher'
         WHERE id = ?
       `).bind(directorId, director.academy_name, existingUser.id).run()
       
@@ -18204,10 +18208,10 @@ app.post('/api/teachers/applications/:id/approve', async (c) => {
       
       const userResult = await c.env.DB.prepare(`
         INSERT INTO users (
-          email, password, name, phone, role, user_type, 
+          email, password, name, phone, role, 
           parent_user_id, academy_name, created_at
         )
-        VALUES (?, ?, ?, ?, 'user', 'teacher', ?, ?, datetime('now'))
+        VALUES (?, ?, ?, ?, 'teacher', ?, ?, datetime('now'))
       `).bind(
         application.email,
         application.password,
@@ -24896,10 +24900,10 @@ app.get('/students', (c) => {
                     currentUser.user_type = currentUser.role;
                 }
                 
-                // 선생님 계정 감지 (role 또는 user_type이 'teacher'이거나, id가 1이 아닌 경우)
-                const isTeacher = currentUser.user_type === 'teacher' 
-                                || currentUser.role === 'teacher'
-                                || (currentUser.id !== 1 && !currentUser.academy_name); // id가 1이 아니고 academy_name이 없으면 선생님
+                // 선생님 계정 감지 (DB에 user_type='teacher'로 등록된 경우에만 선생님)
+                // ✅ 기본값 = 원장님 (모든 권한)
+                // ✅ 선생님으로 등록한 경우에만 제한된 권한
+                const isTeacher = currentUser.user_type === 'teacher' || currentUser.role === 'teacher';
                 
                 if (isTeacher) {
                     console.log('🔍 Teacher account detected!');

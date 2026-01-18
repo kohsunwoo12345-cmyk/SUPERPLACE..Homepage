@@ -2331,7 +2331,7 @@ var kt=Object.defineProperty;var Ye=e=>{throw TypeError(e)};var _t=(e,t,s)=>t in
       SELECT id FROM users WHERE email = ?
     `).bind(t).first())return e.json({success:!1,error:"이미 가입된 이메일입니다."},400);const i=s,c=await e.env.DB.prepare(`
       INSERT INTO users (email, password, name, phone, academy_name, role)
-      VALUES (?, ?, ?, ?, ?, 'member')
+      VALUES (?, ?, ?, ?, ?, 'director')
     `).bind(t,i,r,a,n||"").run();return e.json({success:!0,message:"회원가입이 완료되었습니다.",id:c.meta.last_row_id})}catch(t){return console.error("Signup error:",t),e.json({success:!1,error:"회원가입 중 오류가 발생했습니다."},500)}});d.get("/api/health",async e=>{try{if(!e.env.DB)return e.json({success:!1,error:"DB binding not found",env_keys:Object.keys(e.env)},500);const t=await e.env.DB.prepare("SELECT 1 as test").first(),s=await e.env.DB.prepare("PRAGMA table_info(users)").all();return e.json({success:!0,message:"DB connection is healthy",test_result:t,users_table_columns:s.results.map(r=>r.name)})}catch(t){return e.json({success:!1,error:t.message,stack:t.stack},500)}});d.post("/api/login",async e=>{try{if(!e.env.DB)return e.json({success:!1,error:"DB binding not configured. Please check Cloudflare Pages settings.",debug:{env_keys:Object.keys(e.env),has_db:!!e.env.DB}},500);const{email:t,password:s}=await e.req.json();if(!t||!s)return e.json({success:!1,error:"이메일과 비밀번호를 입력해주세요."},400);const r=await e.env.DB.prepare(`
       SELECT id, email, name, role, points, academy_name FROM users WHERE email = ? AND password = ?
     `).bind(t,s).first();return r?e.json({success:!0,message:"로그인 성공",user:{id:r.id,email:r.email,name:r.name,role:r.role,points:r.points||0,academy_name:r.academy_name||"",user_type:"director"}}):e.json({success:!1,error:"이메일 또는 비밀번호가 일치하지 않습니다."},401)}catch(t){return console.error("Login error:",t),console.error("Login error details:",{message:t.message,stack:t.stack,name:t.name}),e.json({success:!1,error:"로그인 중 오류가 발생했습니다.",debug:{error_message:t.message,error_name:t.name,has_db:!!e.env.DB}},500)}});d.post("/api/auth/google",async e=>{try{const{idToken:t,email:s,name:r,picture:a}=await e.req.json();if(!t||!s)return e.json({success:!1,error:"구글 인증 정보가 누락되었습니다."},400);let n=await e.env.DB.prepare(`
@@ -2364,7 +2364,7 @@ var kt=Object.defineProperty;var Ye=e=>{throw TypeError(e)};var _t=(e,t,s)=>t in
       SELECT id FROM users WHERE email = ?
     `).bind(t).first())return e.json({success:!1,error:"이미 등록된 이메일입니다."},400);const g=await e.env.DB.prepare(`
       INSERT INTO users (email, password, name, phone, academy_name, role, google_id, kakao_id, profile_image, social_provider)
-      VALUES (?, ?, ?, ?, ?, 'user', ?, ?, ?, ?)
+      VALUES (?, ?, ?, ?, ?, 'director', ?, ?, ?, ?)
     `).bind(t,s||"social_login_"+Date.now(),r,a||null,n||null,l||null,i||null,c||null,p||null).run();return e.json({success:!0,message:"회원가입이 완료되었습니다.",user:{id:g.meta.last_row_id,email:t,name:r}})}catch(t){return console.error("Register error:",t),e.json({success:!1,error:"회원가입 중 오류가 발생했습니다."},500)}});d.get("/api/user/permissions",async e=>{try{const t=e.req.query("userId");if(!t)return e.json({success:!1,error:"사용자 ID가 필요합니다."},400);const s=await e.env.DB.prepare("SELECT role FROM users WHERE id = ?").bind(t).first();if(s&&s.role==="admin")return e.json({success:!0,permissions:{search_volume:!0,sms:!0,landing_builder:!0,analytics:!0,all:!0}});const r=await e.env.DB.prepare(`
       SELECT program_key 
       FROM user_permissions 
@@ -15673,14 +15673,14 @@ ${l.director_name} 원장님의 승인을 기다려주세요.`,directorName:l.di
       ORDER BY applied_at DESC
     `).bind(n.email,a).all();return console.log("[GetApplications] Found applications:",((t=o.results)==null?void 0:t.length)||0),e.json({success:!0,applications:o.results||[],debug:{directorEmail:n.email,status:a,count:((s=o.results)==null?void 0:s.length)||0}})}catch(r){return console.error("Get applications error:",r),e.json({success:!1,error:"신청 목록 조회 중 오류가 발생했습니다."},500)}});d.post("/api/teachers/applications/:id/approve",async e=>{try{const t=e.req.param("id"),{directorId:s}=await e.req.json();if(!s)return e.json({success:!1,error:"원장님 ID가 필요합니다."},400);const r=await e.env.DB.prepare('SELECT * FROM teacher_applications WHERE id = ? AND status = "pending"').bind(t).first();if(!r)return e.json({success:!1,error:"신청을 찾을 수 없거나 이미 처리되었습니다."},404);const a=await e.env.DB.prepare("SELECT id, academy_name FROM users WHERE id = ?").bind(s).first();if(!a)return e.json({success:!1,error:"원장님 정보를 찾을 수 없습니다."},404);const n=await e.env.DB.prepare("SELECT id, email, name, user_type, parent_user_id FROM users WHERE email = ?").bind(r.email).first();let o;return n?(console.log("[ApproveTeacher] Existing user found, updating connection:",n),o=n.id,await e.env.DB.prepare(`
         UPDATE users 
-        SET parent_user_id = ?, academy_name = ?, user_type = 'teacher'
+        SET parent_user_id = ?, academy_name = ?, role = 'teacher'
         WHERE id = ?
       `).bind(s,a.academy_name,n.id).run(),console.log("[ApproveTeacher] User connected to academy")):(console.log("[ApproveTeacher] New user, creating account"),o=(await e.env.DB.prepare(`
         INSERT INTO users (
-          email, password, name, phone, role, user_type, 
+          email, password, name, phone, role, 
           parent_user_id, academy_name, created_at
         )
-        VALUES (?, ?, ?, ?, 'user', 'teacher', ?, ?, datetime('now'))
+        VALUES (?, ?, ?, ?, 'teacher', ?, ?, datetime('now'))
       `).bind(r.email,r.password,r.name,r.phone,s,a.academy_name).run()).meta.last_row_id),await e.env.DB.prepare(`
       UPDATE teacher_applications 
       SET status = 'approved', processed_at = datetime('now'), processed_by = ?
@@ -20835,10 +20835,10 @@ ${l.director_name} 원장님의 승인을 기다려주세요.`,directorName:l.di
                     currentUser.user_type = currentUser.role;
                 }
                 
-                // 선생님 계정 감지 (role 또는 user_type이 'teacher'이거나, id가 1이 아닌 경우)
-                const isTeacher = currentUser.user_type === 'teacher' 
-                                || currentUser.role === 'teacher'
-                                || (currentUser.id !== 1 && !currentUser.academy_name); // id가 1이 아니고 academy_name이 없으면 선생님
+                // 선생님 계정 감지 (DB에 user_type='teacher'로 등록된 경우에만 선생님)
+                // ✅ 기본값 = 원장님 (모든 권한)
+                // ✅ 선생님으로 등록한 경우에만 제한된 권한
+                const isTeacher = currentUser.user_type === 'teacher' || currentUser.role === 'teacher';
                 
                 if (isTeacher) {
                     console.log('🔍 Teacher account detected!');
