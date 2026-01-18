@@ -26461,7 +26461,10 @@ app.get('/students', (c) => {
             // 페이지 로드 시 권한 확인 및 UI 제한
             async function initializePage() {
                 if (!currentUser) {
-                    window.location.href = '/login';
+                    console.log('⚠️ No user logged in, showing public read-only view');
+                    // 비로그인 사용자를 위한 공개 읽기 전용 모드
+                    applyPublicViewRestrictions();
+                    await loadDashboard();
                     return;
                 }
                 
@@ -26516,6 +26519,50 @@ app.get('/students', (c) => {
                 }
                 
                 await loadDashboard();
+            }
+            
+            // 공개 읽기 전용 모드 제한 적용
+            function applyPublicViewRestrictions() {
+                console.log('🔒 Applying public read-only restrictions');
+                
+                // 모든 추가/수정/삭제 버튼 숨기기
+                const restrictedButtons = document.querySelectorAll(
+                    '[onclick*="add"], [onclick*="create"], [onclick*="edit"], [onclick*="delete"], ' +
+                    '[onclick*="update"], [onclick*="save"], [onclick*="remove"], ' +
+                    '.add-button, .edit-button, .delete-button, .save-button'
+                );
+                restrictedButtons.forEach(btn => {
+                    btn.style.display = 'none';
+                });
+                
+                // 선생님 관리 섹션 숨기기
+                const teacherSection = document.getElementById('teacherManagementSection');
+                if (teacherSection) {
+                    teacherSection.style.display = 'none';
+                }
+                
+                // 페이지 상단에 알림 표시
+                const mainContent = document.querySelector('body > nav + div');
+                if (mainContent) {
+                    const notice = document.createElement('div');
+                    notice.className = 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4';
+                    notice.innerHTML = \`
+                        <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-lg">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-info-circle text-blue-400 text-xl"></i>
+                                </div>
+                                <div class="ml-3 flex-1">
+                                    <p class="text-sm text-blue-700">
+                                        <strong>읽기 전용 모드</strong> - 데이터를 보기만 할 수 있습니다. 
+                                        <a href="/login" class="underline font-medium hover:text-blue-800">로그인</a>하여 전체 기능을 사용하세요.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    \`;
+                    mainContent.parentNode.insertBefore(notice, mainContent);
+                }
             }
 
             // 선생님 권한 로드
