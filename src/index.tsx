@@ -19875,29 +19875,15 @@ app.get('/api/classes/list', async (c) => {
     // classes 테이블이 없으면 빈 배열 반환
     try {
       let query = ''
-      if (userType === 'teacher') {
-        // 선생님은 자신이 담당하는 반만 조회
-        // teacher_id 기반으로 조회
-        query = `
-          SELECT c.*, 
-                 (SELECT COUNT(*) FROM students WHERE class_id = c.id AND status = 'active') as student_count
-          FROM classes c
-          WHERE c.teacher_id = ?
-          ORDER BY c.created_at DESC
-        `
-      } else {
-        // 원장님은 academy_id로 모든 반 조회
-        query = `
-          SELECT c.id, c.class_name as name, c.grade, c.description, 
-                 c.schedule_days, c.start_time, c.end_time, c.created_at,
-                 t.name as teacher_name,
-                 (SELECT COUNT(*) FROM students WHERE class_id = c.id AND status = 'active') as student_count
-          FROM classes c
-          LEFT JOIN users t ON c.teacher_id = t.id
-          WHERE c.academy_id = ?
-          ORDER BY c.created_at DESC
-        `
-      }
+      // 원장님은 academy_id로 모든 반 조회 (teacher_id 제거)
+      query = `
+        SELECT c.id, c.class_name as name, c.grade as grade_level, c.description, 
+               c.created_at,
+               (SELECT COUNT(*) FROM students WHERE class_id = c.id AND status = 'active') as student_count
+        FROM classes c
+        WHERE c.academy_id = ?
+        ORDER BY c.created_at DESC
+      `
       
       const classes = await c.env.DB.prepare(query).bind(userId).all()
       
@@ -19915,7 +19901,8 @@ app.get('/api/classes/list', async (c) => {
     return c.json({ 
       success: true,  // 에러여도 성공으로 처리하고 빈 배열 반환
       classes: [],
-      warning: '반 목록을 불러올 수 없습니다. 먼저 반을 생성해주세요.'
+      warning: '반 목록을 불러올 수 없습니다. 먼저 반을 생성해주세요.',
+      debug: error.message
     })
   }
 })
@@ -20105,11 +20092,12 @@ app.delete('/api/classes/:id', async (c) => {
   try {
     const classId = c.req.param('id')
     
-    // 🔒 보안 1단계: X-User-Data-Base64 헤더에서 academy_id 추출
-    let academyId
+    // 🔒 보안 1단계: X-User-Data-Base64 헤더 또는 쿼리에서 academy_id 추출
+    let academyId = c.req.query('academyId') || c.req.query('userId')
+    
     try {
       const userHeader = c.req.header('X-User-Data-Base64')
-      if (userHeader) {
+      if (userHeader && !academyId) {
         const userData = JSON.parse(decodeURIComponent(escape(atob(userHeader))))
         academyId = userData.id || userData.academy_id
       }
@@ -20132,7 +20120,7 @@ app.delete('/api/classes/:id', async (c) => {
       return c.json({ success: false, error: '반을 찾을 수 없습니다.' }, 404)
     }
     
-    if (classCheck.academy_id !== academyId) {
+    if (classCheck.academy_id !== parseInt(academyId)) {
       console.error('[DeleteClass] Security breach attempt:', {
         classId,
         classAcademyId: classCheck.academy_id,

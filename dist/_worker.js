@@ -16129,22 +16129,14 @@ ${l.director_name} 원장님의 승인을 기다려주세요.`,directorName:l.di
       `).run()}catch(c){console.error("Create classes table error:",c)}const i=await e.env.DB.prepare(`
       INSERT INTO classes (name, description, user_id, teacher_id, grade_level, subject, max_students, status, created_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, 'active', datetime('now'))
-    `).bind(t,s||null,r,a||null,n||null,o||null,l||20).run();return e.json({success:!0,classId:i.meta.last_row_id,message:"반이 생성되었습니다."})}catch(t){return console.error("Create class error:",t),e.json({success:!1,error:"반 생성 중 오류가 발생했습니다.",details:t.message},500)}});d.get("/api/classes/list",async e=>{try{const t=e.req.query("userId"),s=e.req.query("userType");if(!t)return e.json({success:!1,error:"사용자 ID가 필요합니다."},400);try{let r="";s==="teacher"?r=`
-          SELECT c.*, 
-                 (SELECT COUNT(*) FROM students WHERE class_id = c.id AND status = 'active') as student_count
-          FROM classes c
-          WHERE c.teacher_id = ?
-          ORDER BY c.created_at DESC
-        `:r=`
-          SELECT c.id, c.class_name as name, c.grade, c.description, 
-                 c.schedule_days, c.start_time, c.end_time, c.created_at,
-                 t.name as teacher_name,
-                 (SELECT COUNT(*) FROM students WHERE class_id = c.id AND status = 'active') as student_count
-          FROM classes c
-          LEFT JOIN users t ON c.teacher_id = t.id
-          WHERE c.academy_id = ?
-          ORDER BY c.created_at DESC
-        `;const a=await e.env.DB.prepare(r).bind(t).all();return e.json({success:!0,classes:a.results||[]})}catch(r){if(r.message&&r.message.includes("no such table"))return e.json({success:!0,classes:[]});throw r}}catch(t){return console.error("[ClassesList] Error:",t),console.error("[ClassesList] Error message:",t.message),e.json({success:!0,classes:[],warning:"반 목록을 불러올 수 없습니다. 먼저 반을 생성해주세요."})}});d.put("/api/classes/:id/assign-teacher",async e=>{try{const t=e.req.param("id"),{teacherId:s,userId:r}=await e.req.json(),a=await e.env.DB.prepare("SELECT user_id FROM classes WHERE id = ?").bind(t).first();return!a||a.user_id!==r?e.json({success:!1,error:"권한이 없습니다."},403):(await e.env.DB.prepare("UPDATE classes SET teacher_id = ?, updated_at = datetime('now') WHERE id = ?").bind(s,t).run(),e.json({success:!0,message:"선생님이 배정되었습니다."}))}catch(t){return console.error("Assign teacher error:",t),e.json({success:!1,error:"선생님 배정 중 오류가 발생했습니다."},500)}});d.get("/api/classes",async e=>{var t;try{let s=e.req.query("academyId")||e.req.query("userId");try{const a=e.req.header("X-User-Data-Base64");a&&!s&&(s=JSON.parse(decodeURIComponent(escape(atob(a)))).id)}catch(a){console.error("[GetClasses] Failed to parse user header:",a)}if(!s)return e.json({success:!1,error:"사용자 ID가 필요합니다."},400);console.log("🔍 [GetClasses] Loading classes for user_id:",s);const r=await e.env.DB.prepare(`
+    `).bind(t,s||null,r,a||null,n||null,o||null,l||20).run();return e.json({success:!0,classId:i.meta.last_row_id,message:"반이 생성되었습니다."})}catch(t){return console.error("Create class error:",t),e.json({success:!1,error:"반 생성 중 오류가 발생했습니다.",details:t.message},500)}});d.get("/api/classes/list",async e=>{try{const t=e.req.query("userId"),s=e.req.query("userType");if(!t)return e.json({success:!1,error:"사용자 ID가 필요합니다."},400);try{let r="";r=`
+        SELECT c.id, c.class_name as name, c.grade as grade_level, c.description, 
+               c.created_at,
+               (SELECT COUNT(*) FROM students WHERE class_id = c.id AND status = 'active') as student_count
+        FROM classes c
+        WHERE c.academy_id = ?
+        ORDER BY c.created_at DESC
+      `;const a=await e.env.DB.prepare(r).bind(t).all();return e.json({success:!0,classes:a.results||[]})}catch(r){if(r.message&&r.message.includes("no such table"))return e.json({success:!0,classes:[]});throw r}}catch(t){return console.error("[ClassesList] Error:",t),console.error("[ClassesList] Error message:",t.message),e.json({success:!0,classes:[],warning:"반 목록을 불러올 수 없습니다. 먼저 반을 생성해주세요.",debug:t.message})}});d.put("/api/classes/:id/assign-teacher",async e=>{try{const t=e.req.param("id"),{teacherId:s,userId:r}=await e.req.json(),a=await e.env.DB.prepare("SELECT user_id FROM classes WHERE id = ?").bind(t).first();return!a||a.user_id!==r?e.json({success:!1,error:"권한이 없습니다."},403):(await e.env.DB.prepare("UPDATE classes SET teacher_id = ?, updated_at = datetime('now') WHERE id = ?").bind(s,t).run(),e.json({success:!0,message:"선생님이 배정되었습니다."}))}catch(t){return console.error("Assign teacher error:",t),e.json({success:!1,error:"선생님 배정 중 오류가 발생했습니다."},500)}});d.get("/api/classes",async e=>{var t;try{let s=e.req.query("academyId")||e.req.query("userId");try{const a=e.req.header("X-User-Data-Base64");a&&!s&&(s=JSON.parse(decodeURIComponent(escape(atob(a)))).id)}catch(a){console.error("[GetClasses] Failed to parse user header:",a)}if(!s)return e.json({success:!1,error:"사용자 ID가 필요합니다."},400);console.log("🔍 [GetClasses] Loading classes for user_id:",s);const r=await e.env.DB.prepare(`
       SELECT 
         c.id,
         c.class_name,
@@ -16166,9 +16158,9 @@ ${l.director_name} 원장님의 승인을 기다려주세요.`,directorName:l.di
       UPDATE classes 
       SET class_name = ?, grade = ?, description = ?, schedule_days = ?, start_time = ?, end_time = ?
       WHERE id = ? AND academy_id = ?
-    `).bind(s,r||null,a||null,n||null,o||null,l||null,t,i).run()).meta.changes===0?e.json({success:!1,error:"반 수정에 실패했습니다."},400):e.json({success:!0,message:"반이 수정되었습니다."}):e.json({success:!1,error:"반을 찾을 수 없습니다."},404)}catch(t){return console.error("Update class error:",t),e.json({success:!1,error:"반 수정 중 오류가 발생했습니다."},500)}});d.delete("/api/classes/:id",async e=>{try{const t=e.req.param("id");let s;try{const n=e.req.header("X-User-Data-Base64");if(n){const o=JSON.parse(decodeURIComponent(escape(atob(n))));s=o.id||o.academy_id}}catch(n){console.error("[DeleteClass] Failed to parse user header:",n)}if(!s)return e.json({success:!1,error:"학원 ID가 필요합니다."},400);console.log("🗑️ [DeleteClass] Deleting class",t,"for academy",s);const r=await e.env.DB.prepare(`
+    `).bind(s,r||null,a||null,n||null,o||null,l||null,t,i).run()).meta.changes===0?e.json({success:!1,error:"반 수정에 실패했습니다."},400):e.json({success:!0,message:"반이 수정되었습니다."}):e.json({success:!1,error:"반을 찾을 수 없습니다."},404)}catch(t){return console.error("Update class error:",t),e.json({success:!1,error:"반 수정 중 오류가 발생했습니다."},500)}});d.delete("/api/classes/:id",async e=>{try{const t=e.req.param("id");let s=e.req.query("academyId")||e.req.query("userId");try{const n=e.req.header("X-User-Data-Base64");if(n&&!s){const o=JSON.parse(decodeURIComponent(escape(atob(n))));s=o.id||o.academy_id}}catch(n){console.error("[DeleteClass] Failed to parse user header:",n)}if(!s)return e.json({success:!1,error:"학원 ID가 필요합니다."},400);console.log("🗑️ [DeleteClass] Deleting class",t,"for academy",s);const r=await e.env.DB.prepare(`
       SELECT id, academy_id FROM classes WHERE id = ?
-    `).bind(t).first();return r?r.academy_id!==s?(console.error("[DeleteClass] Security breach attempt:",{classId:t,classAcademyId:r.academy_id,userAcademyId:s}),e.json({success:!1,error:"이 반을 삭제할 권한이 없습니다."},403)):(await e.env.DB.prepare(`
+    `).bind(t).first();return r?r.academy_id!==parseInt(s)?(console.error("[DeleteClass] Security breach attempt:",{classId:t,classAcademyId:r.academy_id,userAcademyId:s}),e.json({success:!1,error:"이 반을 삭제할 권한이 없습니다."},403)):(await e.env.DB.prepare(`
       UPDATE students SET class_id = NULL 
       WHERE class_id = ? AND academy_id = ?
     `).bind(t,s).run(),(await e.env.DB.prepare(`
