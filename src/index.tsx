@@ -11395,6 +11395,11 @@ app.get('/dashboard', (c) => {
                             console.log('[Dashboard] error:', usageData.error)
                             console.log('[Dashboard] ==========================================')
                             
+                            // 🔥 디버깅: API 응답 전체를 alert로 표시
+                            if (!usageData.success) {
+                                alert('[ERROR] API 응답 실패!\\n\\n' + JSON.stringify(usageData, null, 2))
+                            }
+                            
                             if (usageData.success) {
                                 const { limits, usage } = usageData
                                 
@@ -11409,6 +11414,13 @@ app.get('/dashboard', (c) => {
                                 console.log('[Dashboard] Landing Pages Used:', usage.landingPages)
                                 console.log('[Dashboard] Teachers Used:', usage.teachers)
                                 console.log('[Dashboard] =======================================')
+                                
+                                // 🔥 디버깅: 실제 데이터를 alert로 표시
+                                alert('[SUCCESS] 실제 데이터!\\n\\n' + 
+                                      '학생: ' + usage.students + ' / ' + limits.students + '\\n' +
+                                      'AI 리포트: ' + usage.aiReports + ' / ' + limits.aiReports + '\\n' +
+                                      '랜딩페이지: ' + usage.landingPages + ' / ' + limits.landingPages + '\\n' +
+                                      '선생님: ' + usage.teachers + ' / ' + limits.teachers)
                                 
                                 // 퍼센트 계산 및 색상 결정
                                 const calcUsage = (current, limit) => {
