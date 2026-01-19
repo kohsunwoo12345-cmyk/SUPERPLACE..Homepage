@@ -6592,8 +6592,23 @@ app.get('/api/usage/check', async (c) => {
       }, 403)
     }
 
-    // 사용량 조회
-    const usage = await c.env.DB.prepare(`
+    // 🔥 실제 데이터 조회: students 테이블에서 실제 학생 수 계산
+    const actualStudents = await c.env.DB.prepare(`
+      SELECT COUNT(*) as count FROM students WHERE academy_id = ?
+    `).bind(academyId).first()
+    
+    // 🔥 실제 데이터 조회: landing_pages 테이블에서 실제 랜딩페이지 수 계산
+    const actualLandingPages = await c.env.DB.prepare(`
+      SELECT COUNT(*) as count FROM landing_pages WHERE user_id = ?
+    `).bind(userId).first()
+    
+    // 🔥 실제 데이터 조회: teachers 테이블에서 실제 선생님 수 계산
+    const actualTeachers = await c.env.DB.prepare(`
+      SELECT COUNT(*) as count FROM teachers WHERE academy_id = ?
+    `).bind(academyId).first()
+
+    // 사용량 조회 (AI 리포트는 usage_tracking에서 조회)
+    let usage = await c.env.DB.prepare(`
       SELECT * FROM usage_tracking 
       WHERE academy_id = ? AND subscription_id = ?
     `).bind(academyId, subscription.id).first()
@@ -6601,31 +6616,55 @@ app.get('/api/usage/check', async (c) => {
     // 사용량 데이터가 없으면 생성
     if (!usage) {
       const now = new Date().toISOString().split('T')[0]
-      await c.env.DB.prepare(`
-        INSERT INTO usage_tracking (
-          academy_id, subscription_id, current_students,
-          ai_reports_used_this_month, landing_pages_created,
-          current_teachers, sms_sent_this_month,
-          last_ai_report_reset_date, last_sms_reset_date
-        ) VALUES (?, ?, 0, 0, 0, 0, 0, ?, ?)
-      `).bind(academyId, subscription.id, now, now).run()
+      try {
+        await c.env.DB.prepare(`
+          INSERT INTO usage_tracking (
+            academy_id, subscription_id, current_students,
+            ai_reports_used_this_month, landing_pages_created,
+            current_teachers, sms_sent_this_month,
+            last_ai_report_reset_date, last_sms_reset_date
+          ) VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?)
+        `).bind(
+          academyId, 
+          subscription.id, 
+          actualStudents?.count || 0,
+          0,  // AI 리포트는 처음엔 0
+          actualLandingPages?.count || 0,
+          actualTeachers?.count || 0,
+          now, 
+          now
+        ).run()
+        
+        // 새로 생성된 usage 조회
+        usage = await c.env.DB.prepare(`
+          SELECT * FROM usage_tracking 
+          WHERE academy_id = ? AND subscription_id = ?
+        `).bind(academyId, subscription.id).first()
+      } catch (insertErr) {
+        console.error('[Usage] Failed to create usage_tracking:', insertErr)
+      }
+    }
 
-      return c.json({
-        success: true,
-        limits: {
-          students: subscription.student_limit,
-          aiReports: subscription.ai_report_limit,
-          landingPages: subscription.landing_page_limit,
-          teachers: subscription.teacher_limit
-        },
-        usage: {
-          students: 0,
-          aiReports: 0,
-          landingPages: 0,
-          teachers: 0,
-          sms: 0
-        }
-      })
+    // 🔥 usage_tracking의 현재 값을 실제 값으로 업데이트
+    if (usage) {
+      try {
+        await c.env.DB.prepare(`
+          UPDATE usage_tracking 
+          SET current_students = ?, 
+              landing_pages_created = ?,
+              current_teachers = ?,
+              updated_at = CURRENT_TIMESTAMP
+          WHERE academy_id = ? AND subscription_id = ?
+        `).bind(
+          actualStudents?.count || 0,
+          actualLandingPages?.count || 0,
+          actualTeachers?.count || 0,
+          academyId, 
+          subscription.id
+        ).run()
+      } catch (updateErr) {
+        console.error('[Usage] Failed to update usage_tracking:', updateErr)
+      }
     }
 
     return c.json({
@@ -6637,11 +6676,11 @@ app.get('/api/usage/check', async (c) => {
         teachers: subscription.teacher_limit
       },
       usage: {
-        students: usage.current_students || 0,
-        aiReports: usage.ai_reports_used_this_month || 0,
-        landingPages: usage.landing_pages_created || 0,
-        teachers: usage.current_teachers || 0,
-        sms: usage.sms_sent_this_month || 0
+        students: actualStudents?.count || 0,
+        aiReports: usage?.ai_reports_used_this_month || 0,
+        landingPages: actualLandingPages?.count || 0,
+        teachers: actualTeachers?.count || 0,
+        sms: usage?.sms_sent_this_month || 0
       }
     })
   } catch (error) {
@@ -11100,13 +11139,30 @@ app.get('/dashboard', (c) => {
                     
                     if (hasSubscription) {
                         const sub = data.subscription
-                        const daysLeft = Math.ceil((new Date(sub.endDate) - new Date()) / (1000 * 60 * 60 * 24))
+                        
+                        // 날짜 계산
+                        const startDate = new Date(sub.startDate)
+                        const endDate = new Date(sub.endDate + 'T23:59:59+09:00')
+                        const today = new Date()
+                        const daysLeft = Math.max(0, Math.ceil((endDate - today) / (1000 * 60 * 60 * 24)))
+                        const totalDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24))
+                        const daysUsed = totalDays - daysLeft
+                        
+                        // 날짜 포맷팅
+                        const formatDate = (date) => {
+                            const year = date.getFullYear()
+                            const month = String(date.getMonth() + 1).padStart(2, '0')
+                            const day = String(date.getDate()).padStart(2, '0')
+                            return year + '년 ' + month + '월 ' + day + '일'
+                        }
                         
                         // 사용량 정보 가져오기
                         let usageHtml = ''
                         try {
                             const usageRes = await fetch('/api/usage/check')
                             const usageData = await usageRes.json()
+                            
+                            console.log('[Dashboard] Usage Data:', usageData)
                             
                             if (usageData.success) {
                                 const { limits, usage } = usageData
@@ -11152,7 +11208,7 @@ app.get('/dashboard', (c) => {
                                         '" style="width: ' + usage.percent + '%"></div>' +
                                         '</div>' +
                                         '<div class="flex justify-between items-center">' +
-                                        '<span class="text-xs text-gray-500">' + usage.percent.toFixed(0) + '% 사용</span>' +
+                                        '<span class="text-xs text-gray-500">' + usage.percent.toFixed(1) + '% 사용</span>' +
                                         '<span class="text-xs font-bold ' + 
                                         (usage.remaining === 0 ? 'text-red-600' : 'text-green-600') + '">' +
                                         '남은 개수: ' + usage.remaining + '개' +
@@ -11178,57 +11234,59 @@ app.get('/dashboard', (c) => {
                             console.error('[Usage] Error fetching usage:', usageErr)
                         }
                         
-                        statusDiv.innerHTML = \`
-                            <div class="bg-gradient-to-r from-purple-100 to-blue-100 border-2 border-purple-300 rounded-xl p-6">
-                                <div class="flex items-center justify-between flex-wrap gap-4">
-                                    <div class="flex-1">
-                                        <div class="flex items-center gap-4 mb-4">
-                                            <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-700 rounded-full flex items-center justify-center">
-                                                <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path>
-                                                </svg>
-                                            </div>
-                                            <div>
-                                                <div class="flex items-center gap-2 mb-1">
-                                                    <span class="text-lg font-bold text-gray-900">\${sub.planName}</span>
-                                                    <span class="px-3 py-1 bg-green-500 text-white text-xs font-bold rounded-full">활성</span>
-                                                </div>
-                                                <div class="text-sm text-gray-600">
-                                                    이용 기간: \${sub.startDate} ~ \${sub.endDate} (\${daysLeft}일 남음)
-                                                </div>
-                                            </div>
-                                        </div>
-                                        \${usageHtml}
-                                    </div>
-                                    <a href="/pricing" class="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition font-medium whitespace-nowrap">
-                                        플랜 변경
-                                    </a>
-                                </div>
-                            </div>
-                        \`
+                        statusDiv.innerHTML = 
+                            '<div class="bg-gradient-to-r from-purple-100 to-blue-100 border-2 border-purple-300 rounded-xl p-6">' +
+                                '<div class="flex items-center justify-between flex-wrap gap-4">' +
+                                    '<div class="flex-1">' +
+                                        '<div class="flex items-center gap-4 mb-4">' +
+                                            '<div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-700 rounded-full flex items-center justify-center">' +
+                                                '<svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">' +
+                                                    '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path>' +
+                                                '</svg>' +
+                                            '</div>' +
+                                            '<div>' +
+                                                '<div class="flex items-center gap-2 mb-1">' +
+                                                    '<span class="text-lg font-bold text-gray-900">' + sub.planName + '</span>' +
+                                                    '<span class="px-3 py-1 bg-green-500 text-white text-xs font-bold rounded-full">활성</span>' +
+                                                '</div>' +
+                                                '<div class="text-sm text-gray-700 font-medium mb-1">' +
+                                                    '📅 ' + formatDate(startDate) + ' ~ ' + formatDate(endDate) +
+                                                '</div>' +
+                                                '<div class="flex items-center gap-4 text-xs">' +
+                                                    '<span class="text-blue-600 font-bold">⏳ ' + daysLeft + '일 남음</span>' +
+                                                    '<span class="text-gray-500">총 ' + totalDays + '일 중 ' + daysUsed + '일 사용</span>' +
+                                                '</div>' +
+                                            '</div>' +
+                                        '</div>' +
+                                        usageHtml +
+                                    '</div>' +
+                                    '<a href="/pricing" class="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition font-medium whitespace-nowrap">' +
+                                        '플랜 변경' +
+                                    '</a>' +
+                                '</div>' +
+                            '</div>'
                     } else {
-                        statusDiv.innerHTML = \`
-                            <div class="bg-gradient-to-r from-orange-100 to-red-100 border-2 border-orange-300 rounded-xl p-6">
-                                <div class="flex items-center justify-between flex-wrap gap-4">
-                                    <div class="flex items-center gap-4">
-                                        <div class="w-16 h-16 bg-gradient-to-br from-orange-500 to-red-500 rounded-full flex items-center justify-center">
-                                            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-                                            </svg>
-                                        </div>
-                                        <div>
-                                            <div class="text-lg font-bold text-gray-900 mb-1">구독이 없습니다</div>
-                                            <div class="text-sm text-gray-600">
-                                                플랜을 구독하고 모든 기능을 이용하세요
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <a href="/pricing" class="bg-orange-600 text-white px-6 py-3 rounded-lg hover:bg-orange-700 transition font-medium whitespace-nowrap">
-                                        플랜 선택하기
-                                    </a>
-                                </div>
-                            </div>
-                        \`
+                        statusDiv.innerHTML = 
+                            '<div class="bg-gradient-to-r from-orange-100 to-red-100 border-2 border-orange-300 rounded-xl p-6">' +
+                                '<div class="flex items-center justify-between flex-wrap gap-4">' +
+                                    '<div class="flex items-center gap-4">' +
+                                        '<div class="w-16 h-16 bg-gradient-to-br from-orange-500 to-red-500 rounded-full flex items-center justify-center">' +
+                                            '<svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">' +
+                                                '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>' +
+                                            '</svg>' +
+                                        '</div>' +
+                                        '<div>' +
+                                            '<div class="text-lg font-bold text-gray-900 mb-1">구독이 없습니다</div>' +
+                                            '<div class="text-sm text-gray-600">' +
+                                                '플랜을 구독하고 모든 기능을 이용하세요' +
+                                            '</div>' +
+                                        '</div>' +
+                                    '</div>' +
+                                    '<a href="/pricing" class="bg-orange-600 text-white px-6 py-3 rounded-lg hover:bg-orange-700 transition font-medium whitespace-nowrap">' +
+                                        '플랜 선택하기' +
+                                    '</a>' +
+                                '</div>' +
+                            '</div>'
                     }
                 } catch (error) {
                     console.error('[Subscription Status] Error:', error)
