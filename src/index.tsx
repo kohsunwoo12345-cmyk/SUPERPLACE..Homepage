@@ -21122,6 +21122,9 @@ app.get('/admin/users', async (c) => {
                                                 <button onclick="managePermissions(${user.id}, '${userName}')" class="px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-xs" title="권한">
                                                     ⚙️
                                                 </button>
+                                                <button onclick="manageUsageLimits(${user.id}, '${userName}')" class="px-2 py-1 bg-teal-600 text-white rounded hover:bg-teal-700 text-xs" title="사용 한도">
+                                                    📊
+                                                </button>
                                                 <a href="/admin/users/${user.id}" class="px-2 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700 text-xs inline-block" title="상세">
                                                     📋
                                                 </a>
@@ -21183,8 +21186,230 @@ app.get('/admin/users', async (c) => {
                 </div>
             </div>
         </div>
+        
+        <!-- 사용 한도 관리 모달 -->
+        <div id="usageLimitsModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                <div class="p-6 border-b border-gray-200 sticky top-0 bg-white z-10">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-900">📊 사용 한도 관리</h2>
+                            <p id="usageModalUserName" class="text-gray-600 mt-1"></p>
+                        </div>
+                        <button onclick="closeUsageLimitsModal()" class="text-gray-400 hover:text-gray-600">
+                            <i class="fas fa-times text-2xl"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="p-6">
+                    <div id="usageLimitsContent">
+                        <div class="animate-pulse flex space-x-4">
+                            <div class="flex-1 space-y-4 py-1">
+                                <div class="h-4 bg-gray-200 rounded w-3/4"></div>
+                                <div class="space-y-2">
+                                    <div class="h-4 bg-gray-200 rounded"></div>
+                                    <div class="h-4 bg-gray-200 rounded w-5/6"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-6 border-t border-gray-200 bg-gray-50 sticky bottom-0 flex justify-end gap-3">
+                    <button onclick="closeUsageLimitsModal()" class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                        취소
+                    </button>
+                    <button onclick="saveUsageLimits()" class="px-6 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 font-medium">
+                        저장
+                    </button>
+                </div>
+            </div>
+        </div>
     </body>
     <script>
+        let currentUsageUserId = null;
+        
+        // 사용 한도 관리 모달 열기
+        async function manageUsageLimits(userId, userName) {
+            currentUsageUserId = userId;
+            document.getElementById('usageModalUserName').textContent = userName + '님의 사용 한도';
+            document.getElementById('usageLimitsModal').classList.remove('hidden');
+            
+            try {
+                const response = await fetch('/api/admin/usage/' + userId);
+                const data = await response.json();
+                
+                const content = document.getElementById('usageLimitsContent');
+                
+                if (!data.success || !data.hasSubscription) {
+                    content.innerHTML = '<div class="text-center py-12">' +
+                        '<div class="text-6xl mb-4">📭</div>' +
+                        '<p class="text-gray-600 text-lg mb-2">' + (data.message || '활성 구독이 없습니다') + '</p>' +
+                        '<p class="text-sm text-gray-500">구독을 활성화한 후 사용 한도를 관리할 수 있습니다.</p>' +
+                        '</div>';
+                    return;
+                }
+                
+                const sub = data.subscription;
+                const use = data.usage;
+                
+                const studentPercent = Math.min((use.currentStudents / sub.studentLimit) * 100, 100);
+                const reportPercent = Math.min((use.aiReportsUsed / sub.aiReportLimit) * 100, 100);
+                const landingPercent = Math.min((use.landingPagesCreated / sub.landingPageLimit) * 100, 100);
+                const teacherPercent = Math.min((use.currentTeachers / sub.teacherLimit) * 100, 100);
+                
+                content.innerHTML = '<div class="space-y-6">' +
+                    '<!-- 플랜 정보 -->' +
+                    '<div class="bg-gradient-to-br from-teal-50 to-cyan-50 rounded-xl p-4 border border-teal-200">' +
+                    '<div class="flex justify-between items-start">' +
+                    '<div>' +
+                    '<h4 class="text-lg font-bold text-gray-900">' + sub.planName + '</h4>' +
+                    '<p class="text-sm text-gray-600 mt-1">' + sub.startDate + ' ~ ' + sub.endDate + '</p>' +
+                    '</div>' +
+                    '<span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">활성</span>' +
+                    '</div>' +
+                    '</div>' +
+                    '<!-- 사용량 & 한도 조절 -->' +
+                    '<div class="grid grid-cols-1 md:grid-cols-2 gap-4">' +
+                    '<!-- 학생 수 -->' +
+                    '<div class="border-2 border-blue-200 rounded-lg p-4 bg-blue-50">' +
+                    '<div class="flex items-center justify-between mb-3">' +
+                    '<span class="text-sm font-semibold text-gray-800">👥 학생 수</span>' +
+                    '<span class="text-sm font-bold ' + (use.currentStudents >= sub.studentLimit ? 'text-red-600' : 'text-blue-600') + '">' +
+                    use.currentStudents + ' / ' + sub.studentLimit +
+                    '</span>' +
+                    '</div>' +
+                    '<div class="w-full bg-gray-200 rounded-full h-2 mb-3">' +
+                    '<div class="bg-blue-600 h-2 rounded-full transition-all" style="width: ' + studentPercent + '%"></div>' +
+                    '</div>' +
+                    '<div>' +
+                    '<label class="text-xs font-medium text-gray-700 mb-1 block">한도 설정:</label>' +
+                    '<input type="number" id="studentLimit" value="' + sub.studentLimit + '" min="0" ' +
+                    'class="w-full px-3 py-2 text-sm border-2 border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">' +
+                    '</div>' +
+                    '</div>' +
+                    '<!-- AI 리포트 -->' +
+                    '<div class="border-2 border-green-200 rounded-lg p-4 bg-green-50">' +
+                    '<div class="flex items-center justify-between mb-3">' +
+                    '<span class="text-sm font-semibold text-gray-800">📊 AI 리포트</span>' +
+                    '<span class="text-sm font-bold ' + (use.aiReportsUsed >= sub.aiReportLimit ? 'text-red-600' : 'text-green-600') + '">' +
+                    use.aiReportsUsed + ' / ' + sub.aiReportLimit +
+                    '</span>' +
+                    '</div>' +
+                    '<div class="w-full bg-gray-200 rounded-full h-2 mb-3">' +
+                    '<div class="bg-green-600 h-2 rounded-full transition-all" style="width: ' + reportPercent + '%"></div>' +
+                    '</div>' +
+                    '<div>' +
+                    '<label class="text-xs font-medium text-gray-700 mb-1 block">한도 설정:</label>' +
+                    '<input type="number" id="aiReportLimit" value="' + sub.aiReportLimit + '" min="0" ' +
+                    'class="w-full px-3 py-2 text-sm border-2 border-green-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">' +
+                    '</div>' +
+                    '</div>' +
+                    '<!-- 랜딩페이지 -->' +
+                    '<div class="border-2 border-purple-200 rounded-lg p-4 bg-purple-50">' +
+                    '<div class="flex items-center justify-between mb-3">' +
+                    '<span class="text-sm font-semibold text-gray-800">🎨 랜딩페이지</span>' +
+                    '<span class="text-sm font-bold ' + (use.landingPagesCreated >= sub.landingPageLimit ? 'text-red-600' : 'text-purple-600') + '">' +
+                    use.landingPagesCreated + ' / ' + sub.landingPageLimit +
+                    '</span>' +
+                    '</div>' +
+                    '<div class="w-full bg-gray-200 rounded-full h-2 mb-3">' +
+                    '<div class="bg-purple-600 h-2 rounded-full transition-all" style="width: ' + landingPercent + '%"></div>' +
+                    '</div>' +
+                    '<div>' +
+                    '<label class="text-xs font-medium text-gray-700 mb-1 block">한도 설정:</label>' +
+                    '<input type="number" id="landingPageLimit" value="' + sub.landingPageLimit + '" min="0" ' +
+                    'class="w-full px-3 py-2 text-sm border-2 border-purple-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500">' +
+                    '</div>' +
+                    '</div>' +
+                    '<!-- 선생님 계정 -->' +
+                    '<div class="border-2 border-orange-200 rounded-lg p-4 bg-orange-50">' +
+                    '<div class="flex items-center justify-between mb-3">' +
+                    '<span class="text-sm font-semibold text-gray-800">👨‍🏫 선생님</span>' +
+                    '<span class="text-sm font-bold ' + (use.currentTeachers >= sub.teacherLimit ? 'text-red-600' : 'text-orange-600') + '">' +
+                    use.currentTeachers + ' / ' + sub.teacherLimit +
+                    '</span>' +
+                    '</div>' +
+                    '<div class="w-full bg-gray-200 rounded-full h-2 mb-3">' +
+                    '<div class="bg-orange-600 h-2 rounded-full transition-all" style="width: ' + teacherPercent + '%"></div>' +
+                    '</div>' +
+                    '<div>' +
+                    '<label class="text-xs font-medium text-gray-700 mb-1 block">한도 설정:</label>' +
+                    '<input type="number" id="teacherLimit" value="' + sub.teacherLimit + '" min="0" ' +
+                    'class="w-full px-3 py-2 text-sm border-2 border-orange-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500">' +
+                    '</div>' +
+                    '</div>' +
+                    '</div>' +
+                    '<div class="bg-blue-50 border border-blue-200 rounded-lg p-4">' +
+                    '<p class="text-sm text-blue-800">' +
+                    '<i class="fas fa-info-circle mr-2"></i>' +
+                    '<strong>안내:</strong> 한도를 변경하면 즉시 적용되며, 사용자는 새로운 한도까지 기능을 이용할 수 있습니다.' +
+                    '</p>' +
+                    '</div>' +
+                    '</div>';
+            } catch (error) {
+                console.error('Failed to load usage limits:', error);
+                document.getElementById('usageLimitsContent').innerHTML =
+                    '<div class="text-center py-12 text-red-500">' +
+                    '<div class="text-6xl mb-4">⚠️</div>' +
+                    '<p class="text-lg">정보를 불러오는데 실패했습니다</p>' +
+                    '<p class="text-sm mt-2">' + error.message + '</p>' +
+                    '</div>';
+            }
+        }
+        
+        // 사용 한도 저장
+        async function saveUsageLimits() {
+            const studentLimit = parseInt(document.getElementById('studentLimit')?.value);
+            const aiReportLimit = parseInt(document.getElementById('aiReportLimit')?.value);
+            const landingPageLimit = parseInt(document.getElementById('landingPageLimit')?.value);
+            const teacherLimit = parseInt(document.getElementById('teacherLimit')?.value);
+            
+            if (!studentLimit || !aiReportLimit || !landingPageLimit || !teacherLimit) {
+                alert('❌ 모든 한도를 올바르게 입력해주세요');
+                return;
+            }
+            
+            if (studentLimit < 0 || aiReportLimit < 0 || landingPageLimit < 0 || teacherLimit < 0) {
+                alert('❌ 한도는 0 이상이어야 합니다');
+                return;
+            }
+            
+            if (confirm('정말 사용 한도를 변경하시겠습니까?\\n\\n학생: ' + studentLimit + '\\nAI 리포트: ' + aiReportLimit + '\\n랜딩페이지: ' + landingPageLimit + '\\n선생님: ' + teacherLimit)) {
+                try {
+                    const response = await fetch('/api/admin/usage/' + currentUsageUserId + '/update-limits', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            studentLimit,
+                            aiReportLimit,
+                            landingPageLimit,
+                            teacherLimit
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        alert('✅ 사용 한도가 성공적으로 업데이트되었습니다!');
+                        closeUsageLimitsModal();
+                    } else {
+                        alert('❌ 업데이트 실패: ' + (data.error || '알 수 없는 오류'));
+                    }
+                } catch (error) {
+                    console.error('Update error:', error);
+                    alert('❌ 네트워크 오류가 발생했습니다');
+                }
+            }
+        }
+        
+        // 사용 한도 모달 닫기
+        function closeUsageLimitsModal() {
+            document.getElementById('usageLimitsModal').classList.add('hidden');
+            currentUsageUserId = null;
+        }
+        
         // 사용자 검색 필터링
         function filterUsers() {
             const searchInput = document.getElementById('searchInput').value.toLowerCase().trim();
