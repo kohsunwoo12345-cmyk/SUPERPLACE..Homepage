@@ -20216,19 +20216,26 @@ app.post('/api/classes', async (c) => {
   try {
     let { academyId, userId, className, grade, description, scheduleDays, startTime, endTime } = await c.req.json()
     
+    console.log('➕ [CreateClass] Received payload:', { academyId, userId, className })
+    
     // academyId 또는 userId 사용 (호환성)
     userId = userId || academyId
     
     // X-User-Data-Base64 헤더에서 user_id 추출
-    try {
-      const userHeader = c.req.header('X-User-Data-Base64')
-      if (userHeader && !userId) {
+    const userHeader = c.req.header('X-User-Data-Base64')
+    console.log('➕ [CreateClass] Header present:', !!userHeader)
+    
+    if (userHeader && !userId) {
+      try {
         const userData = JSON.parse(decodeURIComponent(escape(atob(userHeader))))
         userId = userData.id
+        console.log('➕ [CreateClass] Extracted userId from header:', userId)
+      } catch (err) {
+        console.error('[CreateClass] Failed to parse user header:', err)
       }
-    } catch (err) {
-      console.error('[CreateClass] Failed to parse user header:', err)
     }
+    
+    console.log('➕ [CreateClass] Final userId:', userId)
     
     if (!userId) {
       return c.json({ success: false, error: '사용자 ID가 필요합니다.' }, 400)
@@ -20251,7 +20258,8 @@ app.post('/api/classes', async (c) => {
     return c.json({ success: true, classId: result.meta.last_row_id, message: '반이 추가되었습니다.' })
   } catch (error) {
     console.error('❌ [CreateClass] Error:', error)
-    return c.json({ success: false, error: '반 추가 중 오류가 발생했습니다.' }, 500)
+    console.error('❌ [CreateClass] Error stack:', error.stack)
+    return c.json({ success: false, error: '반 추가 중 오류가 발생했습니다.', details: error.message }, 500)
   }
 })
 
@@ -20261,19 +20269,25 @@ app.put('/api/classes/:id', async (c) => {
     const classId = c.req.param('id')
     const { className, grade, description, scheduleDays, startTime, endTime } = await c.req.json()
     
+    console.log('🔧 [UpdateClass] Received classId:', classId, 'className:', className)
+    
     // 🔒 보안 1단계: X-User-Data-Base64 헤더에서 academy_id 추출
     let academyId
-    try {
-      const userHeader = c.req.header('X-User-Data-Base64')
-      if (userHeader) {
+    const userHeader = c.req.header('X-User-Data-Base64')
+    console.log('🔧 [UpdateClass] Header present:', !!userHeader)
+    
+    if (userHeader) {
+      try {
         const userData = JSON.parse(decodeURIComponent(escape(atob(userHeader))))
         academyId = userData.id || userData.academy_id
+        console.log('🔧 [UpdateClass] Extracted academyId:', academyId)
+      } catch (err) {
+        console.error('[UpdateClass] Failed to parse user header:', err)
       }
-    } catch (err) {
-      console.error('[UpdateClass] Failed to parse user header:', err)
     }
     
     if (!academyId) {
+      console.error('🔧 [UpdateClass] No academyId found')
       return c.json({ success: false, error: '학원 ID가 필요합니다.' }, 400)
     }
     
@@ -20282,9 +20296,7 @@ app.put('/api/classes/:id', async (c) => {
     }
     
     // 🔒 보안 2단계: 해당 반이 현재 사용자의 학원 소속인지 확인
-    const classCheck = await c.env.DB.prepare(`
-      SELECT id, academy_id FROM classes WHERE id = ?
-    `).bind(classId).first()
+    const classCheck = await c.env.DB.prepare('SELECT id, academy_id FROM classes WHERE id = ?').bind(classId).first()
     
     if (!classCheck) {
       return c.json({ success: false, error: '반을 찾을 수 없습니다.' }, 404)
@@ -20300,11 +20312,7 @@ app.put('/api/classes/:id', async (c) => {
     }
     
     // 🔒 보안 3단계: academy_id 조건 추가하여 이중 확인
-    const result = await c.env.DB.prepare(`
-      UPDATE classes 
-      SET class_name = ?, grade = ?, description = ?, schedule_days = ?, start_time = ?, end_time = ?
-      WHERE id = ? AND academy_id = ?
-    `).bind(className, grade || null, description || null, scheduleDays || null, startTime || null, endTime || null, classId, academyId).run()
+    const result = await c.env.DB.prepare('UPDATE classes SET class_name = ?, grade = ?, description = ?, schedule_days = ?, start_time = ?, end_time = ? WHERE id = ? AND academy_id = ?').bind(className, grade || null, description || null, scheduleDays || null, startTime || null, endTime || null, classId, academyId).run()
     
     if (result.meta.changes === 0) {
       return c.json({ success: false, error: '반 수정에 실패했습니다.' }, 400)
