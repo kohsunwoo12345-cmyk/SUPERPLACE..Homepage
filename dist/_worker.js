@@ -1,4 +1,4 @@
-var Bt=Object.defineProperty;var tt=e=>{throw TypeError(e)};var Mt=(e,t,s)=>t in e?Bt(e,t,{enumerable:!0,configurable:!0,writable:!0,value:s}):e[t]=s;var w=(e,t,s)=>Mt(e,typeof t!="symbol"?t+"":t,s),Ye=(e,t,s)=>t.has(e)||tt("Cannot "+s);var g=(e,t,s)=>(Ye(e,t,"read from private field"),s?s.call(e):t.get(e)),T=(e,t,s)=>t.has(e)?tt("Cannot add the same private member more than once"):t instanceof WeakSet?t.add(e):t.set(e,s),f=(e,t,s,r)=>(Ye(e,t,"write to private field"),r?r.call(e,s):t.set(e,s),s),D=(e,t,s)=>(Ye(e,t,"access private method"),s);var st=(e,t,s,r)=>({set _(a){f(e,t,a,s)},get _(){return g(e,t,r)}});var rt=(e,t,s)=>(r,a)=>{let n=-1;return o(0);async function o(l){if(l<=n)throw new Error("next() called multiple times");n=l;let i,c=!1,p;if(e[l]?(p=e[l][0][0],r.req.routeIndex=l):p=l===e.length&&a||void 0,p)try{i=await p(r,()=>o(l+1))}catch(u){if(u instanceof Error&&t)r.error=u,i=await t(u,r),c=!0;else throw u}else r.finalized===!1&&s&&(i=await s(r));return i&&(r.finalized===!1||c)&&(r.res=i),r}},Nt=Symbol(),At=async(e,t=Object.create(null))=>{const{all:s=!1,dot:r=!1}=t,n=(e instanceof ht?e.raw.headers:e.headers).get("Content-Type");return n!=null&&n.startsWith("multipart/form-data")||n!=null&&n.startsWith("application/x-www-form-urlencoded")?Ot(e,{all:s,dot:r}):{}};async function Ot(e,t){const s=await e.formData();return s?Ut(s,t):{}}function Ut(e,t){const s=Object.create(null);return e.forEach((r,a)=>{t.all||a.endsWith("[]")?Pt(s,a,r):s[a]=r}),t.dot&&Object.entries(s).forEach(([r,a])=>{r.includes(".")&&(Ft(s,r,a),delete s[r])}),s}var Pt=(e,t,s)=>{e[t]!==void 0?Array.isArray(e[t])?e[t].push(s):e[t]=[e[t],s]:t.endsWith("[]")?e[t]=[s]:e[t]=s},Ft=(e,t,s)=>{let r=e;const a=t.split(".");a.forEach((n,o)=>{o===a.length-1?r[n]=s:((!r[n]||typeof r[n]!="object"||Array.isArray(r[n])||r[n]instanceof File)&&(r[n]=Object.create(null)),r=r[n])})},gt=e=>{const t=e.split("/");return t[0]===""&&t.shift(),t},$t=e=>{const{groups:t,path:s}=qt(e),r=gt(s);return Ht(r,t)},qt=e=>{const t=[];return e=e.replace(/\{[^}]+\}/g,(s,r)=>{const a=`@${r}`;return t.push([a,s]),a}),{groups:t,path:e}},Ht=(e,t)=>{for(let s=t.length-1;s>=0;s--){const[r]=t[s];for(let a=e.length-1;a>=0;a--)if(e[a].includes(r)){e[a]=e[a].replace(r,t[s][1]);break}}return e},Pe={},Wt=(e,t)=>{if(e==="*")return"*";const s=e.match(/^\:([^\{\}]+)(?:\{(.+)\})?$/);if(s){const r=`${e}#${t}`;return Pe[r]||(s[2]?Pe[r]=t&&t[0]!==":"&&t[0]!=="*"?[r,s[1],new RegExp(`^${s[2]}(?=/${t})`)]:[e,s[1],new RegExp(`^${s[2]}$`)]:Pe[r]=[e,s[1],!0]),Pe[r]}return null},ze=(e,t)=>{try{return t(e)}catch{return e.replace(/(?:%[0-9A-Fa-f]{2})+/g,s=>{try{return t(s)}catch{return s}})}},Gt=e=>ze(e,decodeURI),xt=e=>{const t=e.url,s=t.indexOf("/",t.indexOf(":")+4);let r=s;for(;r<t.length;r++){const a=t.charCodeAt(r);if(a===37){const n=t.indexOf("?",r),o=t.slice(s,n===-1?void 0:n);return Gt(o.includes("%25")?o.replace(/%25/g,"%2525"):o)}else if(a===63)break}return t.slice(s,r)},zt=e=>{const t=xt(e);return t.length>1&&t.at(-1)==="/"?t.slice(0,-1):t},he=(e,t,...s)=>(s.length&&(t=he(t,...s)),`${(e==null?void 0:e[0])==="/"?"":"/"}${e}${t==="/"?"":`${(e==null?void 0:e.at(-1))==="/"?"":"/"}${(t==null?void 0:t[0])==="/"?t.slice(1):t}`}`),bt=e=>{if(e.charCodeAt(e.length-1)!==63||!e.includes(":"))return null;const t=e.split("/"),s=[];let r="";return t.forEach(a=>{if(a!==""&&!/\:/.test(a))r+="/"+a;else if(/\:/.test(a))if(/\?/.test(a)){s.length===0&&r===""?s.push("/"):s.push(r);const n=a.replace("?","");r+="/"+n,s.push(r)}else r+="/"+a}),s.filter((a,n,o)=>o.indexOf(a)===n)},Ve=e=>/[%+]/.test(e)?(e.indexOf("+")!==-1&&(e=e.replace(/\+/g," ")),e.indexOf("%")!==-1?ze(e,Qe):e):e,vt=(e,t,s)=>{let r;if(!s&&t&&!/[%+]/.test(t)){let o=e.indexOf("?",8);if(o===-1)return;for(e.startsWith(t,o+1)||(o=e.indexOf(`&${t}`,o+1));o!==-1;){const l=e.charCodeAt(o+t.length+1);if(l===61){const i=o+t.length+2,c=e.indexOf("&",i);return Ve(e.slice(i,c===-1?void 0:c))}else if(l==38||isNaN(l))return"";o=e.indexOf(`&${t}`,o+1)}if(r=/[%+]/.test(e),!r)return}const a={};r??(r=/[%+]/.test(e));let n=e.indexOf("?",8);for(;n!==-1;){const o=e.indexOf("&",n+1);let l=e.indexOf("=",n);l>o&&o!==-1&&(l=-1);let i=e.slice(n+1,l===-1?o===-1?void 0:o:l);if(r&&(i=Ve(i)),n=o,i==="")continue;let c;l===-1?c="":(c=e.slice(l+1,o===-1?void 0:o),r&&(c=Ve(c))),s?(a[i]&&Array.isArray(a[i])||(a[i]=[]),a[i].push(c)):a[i]??(a[i]=c)}return t?a[t]:a},Yt=vt,Vt=(e,t)=>vt(e,t,!0),Qe=decodeURIComponent,at=e=>ze(e,Qe),we,H,ee,ft,yt,Ze,te,it,ht=(it=class{constructor(e,t="/",s=[[]]){T(this,ee);w(this,"raw");T(this,we);T(this,H);w(this,"routeIndex",0);w(this,"path");w(this,"bodyCache",{});T(this,te,e=>{const{bodyCache:t,raw:s}=this,r=t[e];if(r)return r;const a=Object.keys(t)[0];return a?t[a].then(n=>(a==="json"&&(n=JSON.stringify(n)),new Response(n)[e]())):t[e]=s[e]()});this.raw=e,this.path=t,f(this,H,s),f(this,we,{})}param(e){return e?D(this,ee,ft).call(this,e):D(this,ee,yt).call(this)}query(e){return Yt(this.url,e)}queries(e){return Vt(this.url,e)}header(e){if(e)return this.raw.headers.get(e)??void 0;const t={};return this.raw.headers.forEach((s,r)=>{t[r]=s}),t}async parseBody(e){var t;return(t=this.bodyCache).parsedBody??(t.parsedBody=await At(this,e))}json(){return g(this,te).call(this,"text").then(e=>JSON.parse(e))}text(){return g(this,te).call(this,"text")}arrayBuffer(){return g(this,te).call(this,"arrayBuffer")}blob(){return g(this,te).call(this,"blob")}formData(){return g(this,te).call(this,"formData")}addValidatedData(e,t){g(this,we)[e]=t}valid(e){return g(this,we)[e]}get url(){return this.raw.url}get method(){return this.raw.method}get[Nt](){return g(this,H)}get matchedRoutes(){return g(this,H)[0].map(([[,e]])=>e)}get routePath(){return g(this,H)[0].map(([[,e]])=>e)[this.routeIndex].path}},we=new WeakMap,H=new WeakMap,ee=new WeakSet,ft=function(e){const t=g(this,H)[0][this.routeIndex][1][e],s=D(this,ee,Ze).call(this,t);return s&&/\%/.test(s)?at(s):s},yt=function(){const e={},t=Object.keys(g(this,H)[0][this.routeIndex][1]);for(const s of t){const r=D(this,ee,Ze).call(this,g(this,H)[0][this.routeIndex][1][s]);r!==void 0&&(e[s]=/\%/.test(r)?at(r):r)}return e},Ze=function(e){return g(this,H)[1]?g(this,H)[1][e]:e},te=new WeakMap,it),Xt={Stringify:1},wt=async(e,t,s,r,a)=>{typeof e=="object"&&!(e instanceof String)&&(e instanceof Promise||(e=e.toString()),e instanceof Promise&&(e=await e));const n=e.callbacks;return n!=null&&n.length?(a?a[0]+=e:a=[e],Promise.all(n.map(l=>l({phase:t,buffer:a,context:r}))).then(l=>Promise.all(l.filter(Boolean).map(i=>wt(i,t,!1,r,a))).then(()=>a[0]))):Promise.resolve(e)},Jt="text/plain; charset=UTF-8",Xe=(e,t)=>({"Content-Type":e,...t}),je,Le,J,Ee,K,F,Be,_e,Te,ce,Me,Ne,se,fe,dt,Kt=(dt=class{constructor(e,t){T(this,se);T(this,je);T(this,Le);w(this,"env",{});T(this,J);w(this,"finalized",!1);w(this,"error");T(this,Ee);T(this,K);T(this,F);T(this,Be);T(this,_e);T(this,Te);T(this,ce);T(this,Me);T(this,Ne);w(this,"render",(...e)=>(g(this,_e)??f(this,_e,t=>this.html(t)),g(this,_e).call(this,...e)));w(this,"setLayout",e=>f(this,Be,e));w(this,"getLayout",()=>g(this,Be));w(this,"setRenderer",e=>{f(this,_e,e)});w(this,"header",(e,t,s)=>{this.finalized&&f(this,F,new Response(g(this,F).body,g(this,F)));const r=g(this,F)?g(this,F).headers:g(this,ce)??f(this,ce,new Headers);t===void 0?r.delete(e):s!=null&&s.append?r.append(e,t):r.set(e,t)});w(this,"status",e=>{f(this,Ee,e)});w(this,"set",(e,t)=>{g(this,J)??f(this,J,new Map),g(this,J).set(e,t)});w(this,"get",e=>g(this,J)?g(this,J).get(e):void 0);w(this,"newResponse",(...e)=>D(this,se,fe).call(this,...e));w(this,"body",(e,t,s)=>D(this,se,fe).call(this,e,t,s));w(this,"text",(e,t,s)=>!g(this,ce)&&!g(this,Ee)&&!t&&!s&&!this.finalized?new Response(e):D(this,se,fe).call(this,e,t,Xe(Jt,s)));w(this,"json",(e,t,s)=>D(this,se,fe).call(this,JSON.stringify(e),t,Xe("application/json",s)));w(this,"html",(e,t,s)=>{const r=a=>D(this,se,fe).call(this,a,t,Xe("text/html; charset=UTF-8",s));return typeof e=="object"?wt(e,Xt.Stringify,!1,{}).then(r):r(e)});w(this,"redirect",(e,t)=>{const s=String(e);return this.header("Location",/[^\x00-\xFF]/.test(s)?encodeURI(s):s),this.newResponse(null,t??302)});w(this,"notFound",()=>(g(this,Te)??f(this,Te,()=>new Response),g(this,Te).call(this,this)));f(this,je,e),t&&(f(this,K,t.executionCtx),this.env=t.env,f(this,Te,t.notFoundHandler),f(this,Ne,t.path),f(this,Me,t.matchResult))}get req(){return g(this,Le)??f(this,Le,new ht(g(this,je),g(this,Ne),g(this,Me))),g(this,Le)}get event(){if(g(this,K)&&"respondWith"in g(this,K))return g(this,K);throw Error("This context has no FetchEvent")}get executionCtx(){if(g(this,K))return g(this,K);throw Error("This context has no ExecutionContext")}get res(){return g(this,F)||f(this,F,new Response(null,{headers:g(this,ce)??f(this,ce,new Headers)}))}set res(e){if(g(this,F)&&e){e=new Response(e.body,e);for(const[t,s]of g(this,F).headers.entries())if(t!=="content-type")if(t==="set-cookie"){const r=g(this,F).headers.getSetCookie();e.headers.delete("set-cookie");for(const a of r)e.headers.append("set-cookie",a)}else e.headers.set(t,s)}f(this,F,e),this.finalized=!0}get var(){return g(this,J)?Object.fromEntries(g(this,J)):{}}},je=new WeakMap,Le=new WeakMap,J=new WeakMap,Ee=new WeakMap,K=new WeakMap,F=new WeakMap,Be=new WeakMap,_e=new WeakMap,Te=new WeakMap,ce=new WeakMap,Me=new WeakMap,Ne=new WeakMap,se=new WeakSet,fe=function(e,t,s){const r=g(this,F)?new Headers(g(this,F).headers):g(this,ce)??new Headers;if(typeof t=="object"&&"headers"in t){const n=t.headers instanceof Headers?t.headers:new Headers(t.headers);for(const[o,l]of n)o.toLowerCase()==="set-cookie"?r.append(o,l):r.set(o,l)}if(s)for(const[n,o]of Object.entries(s))if(typeof o=="string")r.set(n,o);else{r.delete(n);for(const l of o)r.append(n,l)}const a=typeof t=="number"?t:(t==null?void 0:t.status)??g(this,Ee);return new Response(e,{status:a,headers:r})},dt),N="ALL",Zt="all",Qt=["get","post","put","delete","options","patch"],Et="Can not add a route since the matcher is already built.",_t=class extends Error{},es="__COMPOSED_HANDLER",ts=e=>e.text("404 Not Found",404),nt=(e,t)=>{if("getResponse"in e){const s=e.getResponse();return t.newResponse(s.body,s)}return console.error(e),t.text("Internal Server Error",500)},W,A,Tt,G,ie,Fe,$e,Ie,ss=(Ie=class{constructor(t={}){T(this,A);w(this,"get");w(this,"post");w(this,"put");w(this,"delete");w(this,"options");w(this,"patch");w(this,"all");w(this,"on");w(this,"use");w(this,"router");w(this,"getPath");w(this,"_basePath","/");T(this,W,"/");w(this,"routes",[]);T(this,G,ts);w(this,"errorHandler",nt);w(this,"onError",t=>(this.errorHandler=t,this));w(this,"notFound",t=>(f(this,G,t),this));w(this,"fetch",(t,...s)=>D(this,A,$e).call(this,t,s[1],s[0],t.method));w(this,"request",(t,s,r,a)=>t instanceof Request?this.fetch(s?new Request(t,s):t,r,a):(t=t.toString(),this.fetch(new Request(/^https?:\/\//.test(t)?t:`http://localhost${he("/",t)}`,s),r,a)));w(this,"fire",()=>{addEventListener("fetch",t=>{t.respondWith(D(this,A,$e).call(this,t.request,t,void 0,t.request.method))})});[...Qt,Zt].forEach(n=>{this[n]=(o,...l)=>(typeof o=="string"?f(this,W,o):D(this,A,ie).call(this,n,g(this,W),o),l.forEach(i=>{D(this,A,ie).call(this,n,g(this,W),i)}),this)}),this.on=(n,o,...l)=>{for(const i of[o].flat()){f(this,W,i);for(const c of[n].flat())l.map(p=>{D(this,A,ie).call(this,c.toUpperCase(),g(this,W),p)})}return this},this.use=(n,...o)=>(typeof n=="string"?f(this,W,n):(f(this,W,"*"),o.unshift(n)),o.forEach(l=>{D(this,A,ie).call(this,N,g(this,W),l)}),this);const{strict:r,...a}=t;Object.assign(this,a),this.getPath=r??!0?t.getPath??xt:zt}route(t,s){const r=this.basePath(t);return s.routes.map(a=>{var o;let n;s.errorHandler===nt?n=a.handler:(n=async(l,i)=>(await rt([],s.errorHandler)(l,()=>a.handler(l,i))).res,n[es]=a.handler),D(o=r,A,ie).call(o,a.method,a.path,n)}),this}basePath(t){const s=D(this,A,Tt).call(this);return s._basePath=he(this._basePath,t),s}mount(t,s,r){let a,n;r&&(typeof r=="function"?n=r:(n=r.optionHandler,r.replaceRequest===!1?a=i=>i:a=r.replaceRequest));const o=n?i=>{const c=n(i);return Array.isArray(c)?c:[c]}:i=>{let c;try{c=i.executionCtx}catch{}return[i.env,c]};a||(a=(()=>{const i=he(this._basePath,t),c=i==="/"?0:i.length;return p=>{const u=new URL(p.url);return u.pathname=u.pathname.slice(c)||"/",new Request(u,p)}})());const l=async(i,c)=>{const p=await s(a(i.req.raw),...o(i));if(p)return p;await c()};return D(this,A,ie).call(this,N,he(t,"*"),l),this}},W=new WeakMap,A=new WeakSet,Tt=function(){const t=new Ie({router:this.router,getPath:this.getPath});return t.errorHandler=this.errorHandler,f(t,G,g(this,G)),t.routes=this.routes,t},G=new WeakMap,ie=function(t,s,r){t=t.toUpperCase(),s=he(this._basePath,s);const a={basePath:this._basePath,path:s,method:t,handler:r};this.router.add(t,s,[r,a]),this.routes.push(a)},Fe=function(t,s){if(t instanceof Error)return this.errorHandler(t,s);throw t},$e=function(t,s,r,a){if(a==="HEAD")return(async()=>new Response(null,await D(this,A,$e).call(this,t,s,r,"GET")))();const n=this.getPath(t,{env:r}),o=this.router.match(a,n),l=new Kt(t,{path:n,matchResult:o,env:r,executionCtx:s,notFoundHandler:g(this,G)});if(o[0].length===1){let c;try{c=o[0][0][0][0](l,async()=>{l.res=await g(this,G).call(this,l)})}catch(p){return D(this,A,Fe).call(this,p,l)}return c instanceof Promise?c.then(p=>p||(l.finalized?l.res:g(this,G).call(this,l))).catch(p=>D(this,A,Fe).call(this,p,l)):c??g(this,G).call(this,l)}const i=rt(o[0],this.errorHandler,g(this,G));return(async()=>{try{const c=await i(l);if(!c.finalized)throw new Error("Context is not finalized. Did you forget to return a Response object or `await next()`?");return c.res}catch(c){return D(this,A,Fe).call(this,c,l)}})()},Ie),It=[];function rs(e,t){const s=this.buildAllMatchers(),r=((a,n)=>{const o=s[a]||s[N],l=o[2][n];if(l)return l;const i=n.match(o[0]);if(!i)return[[],It];const c=i.indexOf("",1);return[o[1][c],i]});return this.match=r,r(e,t)}var He="[^/]+",Ce=".*",Re="(?:|/.*)",ye=Symbol(),as=new Set(".\\+*[^]$()");function ns(e,t){return e.length===1?t.length===1?e<t?-1:1:-1:t.length===1||e===Ce||e===Re?1:t===Ce||t===Re?-1:e===He?1:t===He?-1:e.length===t.length?e<t?-1:1:t.length-e.length}var pe,ue,z,xe,os=(xe=class{constructor(){T(this,pe);T(this,ue);T(this,z,Object.create(null))}insert(t,s,r,a,n){if(t.length===0){if(g(this,pe)!==void 0)throw ye;if(n)return;f(this,pe,s);return}const[o,...l]=t,i=o==="*"?l.length===0?["","",Ce]:["","",He]:o==="/*"?["","",Re]:o.match(/^\:([^\{\}]+)(?:\{(.+)\})?$/);let c;if(i){const p=i[1];let u=i[2]||He;if(p&&i[2]&&(u===".*"||(u=u.replace(/^\((?!\?:)(?=[^)]+\)$)/,"(?:"),/\((?!\?:)/.test(u))))throw ye;if(c=g(this,z)[u],!c){if(Object.keys(g(this,z)).some(m=>m!==Ce&&m!==Re))throw ye;if(n)return;c=g(this,z)[u]=new xe,p!==""&&f(c,ue,a.varIndex++)}!n&&p!==""&&r.push([p,g(c,ue)])}else if(c=g(this,z)[o],!c){if(Object.keys(g(this,z)).some(p=>p.length>1&&p!==Ce&&p!==Re))throw ye;if(n)return;c=g(this,z)[o]=new xe}c.insert(l,s,r,a,n)}buildRegExpStr(){const s=Object.keys(g(this,z)).sort(ns).map(r=>{const a=g(this,z)[r];return(typeof g(a,ue)=="number"?`(${r})@${g(a,ue)}`:as.has(r)?`\\${r}`:r)+a.buildRegExpStr()});return typeof g(this,pe)=="number"&&s.unshift(`#${g(this,pe)}`),s.length===0?"":s.length===1?s[0]:"(?:"+s.join("|")+")"}},pe=new WeakMap,ue=new WeakMap,z=new WeakMap,xe),We,Ae,ct,ls=(ct=class{constructor(){T(this,We,{varIndex:0});T(this,Ae,new os)}insert(e,t,s){const r=[],a=[];for(let o=0;;){let l=!1;if(e=e.replace(/\{[^}]+\}/g,i=>{const c=`@\\${o}`;return a[o]=[c,i],o++,l=!0,c}),!l)break}const n=e.match(/(?::[^\/]+)|(?:\/\*$)|./g)||[];for(let o=a.length-1;o>=0;o--){const[l]=a[o];for(let i=n.length-1;i>=0;i--)if(n[i].indexOf(l)!==-1){n[i]=n[i].replace(l,a[o][1]);break}}return g(this,Ae).insert(n,t,r,g(this,We),s),r}buildRegExp(){let e=g(this,Ae).buildRegExpStr();if(e==="")return[/^$/,[],[]];let t=0;const s=[],r=[];return e=e.replace(/#(\d+)|@(\d+)|\.\*\$/g,(a,n,o)=>n!==void 0?(s[++t]=Number(n),"$()"):(o!==void 0&&(r[Number(o)]=++t),"")),[new RegExp(`^${e}`),s,r]}},We=new WeakMap,Ae=new WeakMap,ct),is=[/^$/,[],Object.create(null)],qe=Object.create(null);function kt(e){return qe[e]??(qe[e]=new RegExp(e==="*"?"":`^${e.replace(/\/\*$|([.\\+*[^\]$()])/g,(t,s)=>s?`\\${s}`:"(?:|/.*)")}$`))}function ds(){qe=Object.create(null)}function cs(e){var c;const t=new ls,s=[];if(e.length===0)return is;const r=e.map(p=>[!/\*|\/:/.test(p[0]),...p]).sort(([p,u],[m,x])=>p?1:m?-1:u.length-x.length),a=Object.create(null);for(let p=0,u=-1,m=r.length;p<m;p++){const[x,b,h]=r[p];x?a[b]=[h.map(([y])=>[y,Object.create(null)]),It]:u++;let v;try{v=t.insert(b,u,x)}catch(y){throw y===ye?new _t(b):y}x||(s[u]=h.map(([y,E])=>{const k=Object.create(null);for(E-=1;E>=0;E--){const[I,S]=v[E];k[I]=S}return[y,k]}))}const[n,o,l]=t.buildRegExp();for(let p=0,u=s.length;p<u;p++)for(let m=0,x=s[p].length;m<x;m++){const b=(c=s[p][m])==null?void 0:c[1];if(!b)continue;const h=Object.keys(b);for(let v=0,y=h.length;v<y;v++)b[h[v]]=l[b[h[v]]]}const i=[];for(const p in o)i[p]=s[o[p]];return[n,i,a]}function ve(e,t){if(e){for(const s of Object.keys(e).sort((r,a)=>a.length-r.length))if(kt(s).test(t))return[...e[s]]}}var re,ae,Ge,St,pt,ps=(pt=class{constructor(){T(this,Ge);w(this,"name","RegExpRouter");T(this,re);T(this,ae);w(this,"match",rs);f(this,re,{[N]:Object.create(null)}),f(this,ae,{[N]:Object.create(null)})}add(e,t,s){var l;const r=g(this,re),a=g(this,ae);if(!r||!a)throw new Error(Et);r[e]||[r,a].forEach(i=>{i[e]=Object.create(null),Object.keys(i[N]).forEach(c=>{i[e][c]=[...i[N][c]]})}),t==="/*"&&(t="*");const n=(t.match(/\/:/g)||[]).length;if(/\*$/.test(t)){const i=kt(t);e===N?Object.keys(r).forEach(c=>{var p;(p=r[c])[t]||(p[t]=ve(r[c],t)||ve(r[N],t)||[])}):(l=r[e])[t]||(l[t]=ve(r[e],t)||ve(r[N],t)||[]),Object.keys(r).forEach(c=>{(e===N||e===c)&&Object.keys(r[c]).forEach(p=>{i.test(p)&&r[c][p].push([s,n])})}),Object.keys(a).forEach(c=>{(e===N||e===c)&&Object.keys(a[c]).forEach(p=>i.test(p)&&a[c][p].push([s,n]))});return}const o=bt(t)||[t];for(let i=0,c=o.length;i<c;i++){const p=o[i];Object.keys(a).forEach(u=>{var m;(e===N||e===u)&&((m=a[u])[p]||(m[p]=[...ve(r[u],p)||ve(r[N],p)||[]]),a[u][p].push([s,n-c+i+1]))})}}buildAllMatchers(){const e=Object.create(null);return Object.keys(g(this,ae)).concat(Object.keys(g(this,re))).forEach(t=>{e[t]||(e[t]=D(this,Ge,St).call(this,t))}),f(this,re,f(this,ae,void 0)),ds(),e}},re=new WeakMap,ae=new WeakMap,Ge=new WeakSet,St=function(e){const t=[];let s=e===N;return[g(this,re),g(this,ae)].forEach(r=>{const a=r[e]?Object.keys(r[e]).map(n=>[n,r[e][n]]):[];a.length!==0?(s||(s=!0),t.push(...a)):e!==N&&t.push(...Object.keys(r[N]).map(n=>[n,r[N][n]]))}),s?cs(t):null},pt),ne,Z,ut,us=(ut=class{constructor(e){w(this,"name","SmartRouter");T(this,ne,[]);T(this,Z,[]);f(this,ne,e.routers)}add(e,t,s){if(!g(this,Z))throw new Error(Et);g(this,Z).push([e,t,s])}match(e,t){if(!g(this,Z))throw new Error("Fatal error");const s=g(this,ne),r=g(this,Z),a=s.length;let n=0,o;for(;n<a;n++){const l=s[n];try{for(let i=0,c=r.length;i<c;i++)l.add(...r[i]);o=l.match(e,t)}catch(i){if(i instanceof _t)continue;throw i}this.match=l.match.bind(l),f(this,ne,[l]),f(this,Z,void 0);break}if(n===a)throw new Error("Fatal error");return this.name=`SmartRouter + ${this.activeRouter.name}`,o}get activeRouter(){if(g(this,Z)||g(this,ne).length!==1)throw new Error("No active router has been determined yet.");return g(this,ne)[0]}},ne=new WeakMap,Z=new WeakMap,ut),De=Object.create(null),oe,U,me,ke,O,Q,de,Se,ms=(Se=class{constructor(t,s,r){T(this,Q);T(this,oe);T(this,U);T(this,me);T(this,ke,0);T(this,O,De);if(f(this,U,r||Object.create(null)),f(this,oe,[]),t&&s){const a=Object.create(null);a[t]={handler:s,possibleKeys:[],score:0},f(this,oe,[a])}f(this,me,[])}insert(t,s,r){f(this,ke,++st(this,ke)._);let a=this;const n=$t(s),o=[];for(let l=0,i=n.length;l<i;l++){const c=n[l],p=n[l+1],u=Wt(c,p),m=Array.isArray(u)?u[0]:c;if(m in g(a,U)){a=g(a,U)[m],u&&o.push(u[1]);continue}g(a,U)[m]=new Se,u&&(g(a,me).push(u),o.push(u[1])),a=g(a,U)[m]}return g(a,oe).push({[t]:{handler:r,possibleKeys:o.filter((l,i,c)=>c.indexOf(l)===i),score:g(this,ke)}}),a}search(t,s){var i;const r=[];f(this,O,De);let n=[this];const o=gt(s),l=[];for(let c=0,p=o.length;c<p;c++){const u=o[c],m=c===p-1,x=[];for(let b=0,h=n.length;b<h;b++){const v=n[b],y=g(v,U)[u];y&&(f(y,O,g(v,O)),m?(g(y,U)["*"]&&r.push(...D(this,Q,de).call(this,g(y,U)["*"],t,g(v,O))),r.push(...D(this,Q,de).call(this,y,t,g(v,O)))):x.push(y));for(let E=0,k=g(v,me).length;E<k;E++){const I=g(v,me)[E],S=g(v,O)===De?{}:{...g(v,O)};if(I==="*"){const M=g(v,U)["*"];M&&(r.push(...D(this,Q,de).call(this,M,t,g(v,O))),f(M,O,S),x.push(M));continue}const[C,j,B]=I;if(!u&&!(B instanceof RegExp))continue;const L=g(v,U)[C],le=o.slice(c).join("/");if(B instanceof RegExp){const M=B.exec(le);if(M){if(S[j]=M[0],r.push(...D(this,Q,de).call(this,L,t,g(v,O),S)),Object.keys(g(L,U)).length){f(L,O,S);const V=((i=M[0].match(/\//))==null?void 0:i.length)??0;(l[V]||(l[V]=[])).push(L)}continue}}(B===!0||B.test(u))&&(S[j]=u,m?(r.push(...D(this,Q,de).call(this,L,t,S,g(v,O))),g(L,U)["*"]&&r.push(...D(this,Q,de).call(this,g(L,U)["*"],t,S,g(v,O)))):(f(L,O,S),x.push(L)))}}n=x.concat(l.shift()??[])}return r.length>1&&r.sort((c,p)=>c.score-p.score),[r.map(({handler:c,params:p})=>[c,p])]}},oe=new WeakMap,U=new WeakMap,me=new WeakMap,ke=new WeakMap,O=new WeakMap,Q=new WeakSet,de=function(t,s,r,a){const n=[];for(let o=0,l=g(t,oe).length;o<l;o++){const i=g(t,oe)[o],c=i[s]||i[N],p={};if(c!==void 0&&(c.params=Object.create(null),n.push(c),r!==De||a&&a!==De))for(let u=0,m=c.possibleKeys.length;u<m;u++){const x=c.possibleKeys[u],b=p[c.score];c.params[x]=a!=null&&a[x]&&!b?a[x]:r[x]??(a==null?void 0:a[x]),p[c.score]=!0}}return n},Se),ge,mt,gs=(mt=class{constructor(){w(this,"name","TrieRouter");T(this,ge);f(this,ge,new ms)}add(e,t,s){const r=bt(t);if(r){for(let a=0,n=r.length;a<n;a++)g(this,ge).insert(e,r[a],s);return}g(this,ge).insert(e,t,s)}match(e,t){return g(this,ge).search(e,t)}},ge=new WeakMap,mt),et=class extends ss{constructor(e={}){super(e),this.router=e.router??new us({routers:[new ps,new gs]})}},xs=e=>{const s={...{origin:"*",allowMethods:["GET","HEAD","PUT","POST","DELETE","PATCH"],allowHeaders:[],exposeHeaders:[]},...e},r=(n=>typeof n=="string"?n==="*"?()=>n:o=>n===o?o:null:typeof n=="function"?n:o=>n.includes(o)?o:null)(s.origin),a=(n=>typeof n=="function"?n:Array.isArray(n)?()=>n:()=>[])(s.allowMethods);return async function(o,l){var p;function i(u,m){o.res.headers.set(u,m)}const c=await r(o.req.header("origin")||"",o);if(c&&i("Access-Control-Allow-Origin",c),s.credentials&&i("Access-Control-Allow-Credentials","true"),(p=s.exposeHeaders)!=null&&p.length&&i("Access-Control-Expose-Headers",s.exposeHeaders.join(",")),o.req.method==="OPTIONS"){s.origin!=="*"&&i("Vary","Origin"),s.maxAge!=null&&i("Access-Control-Max-Age",s.maxAge.toString());const u=await a(o.req.header("origin")||"",o);u.length&&i("Access-Control-Allow-Methods",u.join(","));let m=s.allowHeaders;if(!(m!=null&&m.length)){const x=o.req.header("Access-Control-Request-Headers");x&&(m=x.split(/\s*,\s*/))}return m!=null&&m.length&&(i("Access-Control-Allow-Headers",m.join(",")),o.res.headers.append("Vary","Access-Control-Request-Headers")),o.res.headers.delete("Content-Length"),o.res.headers.delete("Content-Type"),new Response(null,{headers:o.res.headers,status:204,statusText:"No Content"})}await l(),s.origin!=="*"&&o.header("Vary","Origin",{append:!0})}},bs=/^[\w!#$%&'*.^`|~+-]+$/,vs=/^[ !#-:<-[\]-~]*$/,hs=(e,t)=>{if(e.indexOf(t)===-1)return{};const s=e.trim().split(";"),r={};for(let a of s){a=a.trim();const n=a.indexOf("=");if(n===-1)continue;const o=a.substring(0,n).trim();if(t!==o||!bs.test(o))continue;let l=a.substring(n+1).trim();if(l.startsWith('"')&&l.endsWith('"')&&(l=l.slice(1,-1)),vs.test(l)){r[o]=l.indexOf("%")!==-1?ze(l,Qe):l;break}}return r},X=(e,t,s)=>{const r=e.req.raw.headers.get("Cookie");{if(!r)return;let a=t;return hs(r,a)[a]}},fs=/^\s*(?:text\/(?!event-stream(?:[;\s]|$))[^;\s]+|application\/(?:javascript|json|xml|xml-dtd|ecmascript|dart|postscript|rtf|tar|toml|vnd\.dart|vnd\.ms-fontobject|vnd\.ms-opentype|wasm|x-httpd-php|x-javascript|x-ns-proxy-autoconfig|x-sh|x-tar|x-virtualbox-hdd|x-virtualbox-ova|x-virtualbox-ovf|x-virtualbox-vbox|x-virtualbox-vdi|x-virtualbox-vhd|x-virtualbox-vmdk|x-www-form-urlencoded)|font\/(?:otf|ttf)|image\/(?:bmp|vnd\.adobe\.photoshop|vnd\.microsoft\.icon|vnd\.ms-dds|x-icon|x-ms-bmp)|message\/rfc822|model\/gltf-binary|x-shader\/x-fragment|x-shader\/x-vertex|[^;\s]+?\+(?:json|text|xml|yaml))(?:[;\s]|$)/i,ot=(e,t=ws)=>{const s=/\.([a-zA-Z0-9]+?)$/,r=e.match(s);if(!r)return;let a=t[r[1]];return a&&a.startsWith("text")&&(a+="; charset=utf-8"),a},ys={aac:"audio/aac",avi:"video/x-msvideo",avif:"image/avif",av1:"video/av1",bin:"application/octet-stream",bmp:"image/bmp",css:"text/css",csv:"text/csv",eot:"application/vnd.ms-fontobject",epub:"application/epub+zip",gif:"image/gif",gz:"application/gzip",htm:"text/html",html:"text/html",ico:"image/x-icon",ics:"text/calendar",jpeg:"image/jpeg",jpg:"image/jpeg",js:"text/javascript",json:"application/json",jsonld:"application/ld+json",map:"application/json",mid:"audio/x-midi",midi:"audio/x-midi",mjs:"text/javascript",mp3:"audio/mpeg",mp4:"video/mp4",mpeg:"video/mpeg",oga:"audio/ogg",ogv:"video/ogg",ogx:"application/ogg",opus:"audio/opus",otf:"font/otf",pdf:"application/pdf",png:"image/png",rtf:"application/rtf",svg:"image/svg+xml",tif:"image/tiff",tiff:"image/tiff",ts:"video/mp2t",ttf:"font/ttf",txt:"text/plain",wasm:"application/wasm",webm:"video/webm",weba:"audio/webm",webmanifest:"application/manifest+json",webp:"image/webp",woff:"font/woff",woff2:"font/woff2",xhtml:"application/xhtml+xml",xml:"application/xml",zip:"application/zip","3gp":"video/3gpp","3g2":"video/3gpp2",gltf:"model/gltf+json",glb:"model/gltf-binary"},ws=ys,Es=(...e)=>{let t=e.filter(a=>a!=="").join("/");t=t.replace(new RegExp("(?<=\\/)\\/+","g"),"");const s=t.split("/"),r=[];for(const a of s)a===".."&&r.length>0&&r.at(-1)!==".."?r.pop():a!=="."&&r.push(a);return r.join("/")||"."},Dt={br:".br",zstd:".zst",gzip:".gz"},_s=Object.keys(Dt),Ts="index.html",Is=e=>{const t=e.root??"./",s=e.path,r=e.join??Es;return async(a,n)=>{var p,u,m,x;if(a.finalized)return n();let o;if(e.path)o=e.path;else try{if(o=decodeURIComponent(a.req.path),/(?:^|[\/\\])\.\.(?:$|[\/\\])/.test(o))throw new Error}catch{return await((p=e.onNotFound)==null?void 0:p.call(e,a.req.path,a)),n()}let l=r(t,!s&&e.rewriteRequestPath?e.rewriteRequestPath(o):o);e.isDir&&await e.isDir(l)&&(l=r(l,Ts));const i=e.getContent;let c=await i(l,a);if(c instanceof Response)return a.newResponse(c.body,c);if(c){const b=e.mimes&&ot(l,e.mimes)||ot(l);if(a.header("Content-Type",b||"application/octet-stream"),e.precompressed&&(!b||fs.test(b))){const h=new Set((u=a.req.header("Accept-Encoding"))==null?void 0:u.split(",").map(v=>v.trim()));for(const v of _s){if(!h.has(v))continue;const y=await i(l+Dt[v],a);if(y){c=y,a.header("Content-Encoding",v),a.header("Vary","Accept-Encoding",{append:!0});break}}}return await((m=e.onFound)==null?void 0:m.call(e,l,a)),a.body(c)}await((x=e.onNotFound)==null?void 0:x.call(e,l,a)),await n()}},ks=async(e,t)=>{let s;t&&t.manifest?typeof t.manifest=="string"?s=JSON.parse(t.manifest):s=t.manifest:typeof __STATIC_CONTENT_MANIFEST=="string"?s=JSON.parse(__STATIC_CONTENT_MANIFEST):s=__STATIC_CONTENT_MANIFEST;let r;t&&t.namespace?r=t.namespace:r=__STATIC_CONTENT;const a=s[e]||e;if(!a)return null;const n=await r.get(a,{type:"stream"});return n||null},Ss=e=>async function(s,r){return Is({...e,getContent:async n=>ks(n,{manifest:e.manifest,namespace:e.namespace?e.namespace:s.env?s.env.__STATIC_CONTENT:void 0})})(s,r)},Ds=e=>Ss(e);const Cs=`
+var Bt=Object.defineProperty;var tt=e=>{throw TypeError(e)};var Mt=(e,t,s)=>t in e?Bt(e,t,{enumerable:!0,configurable:!0,writable:!0,value:s}):e[t]=s;var w=(e,t,s)=>Mt(e,typeof t!="symbol"?t+"":t,s),Ye=(e,t,s)=>t.has(e)||tt("Cannot "+s);var g=(e,t,s)=>(Ye(e,t,"read from private field"),s?s.call(e):t.get(e)),T=(e,t,s)=>t.has(e)?tt("Cannot add the same private member more than once"):t instanceof WeakSet?t.add(e):t.set(e,s),f=(e,t,s,r)=>(Ye(e,t,"write to private field"),r?r.call(e,s):t.set(e,s),s),D=(e,t,s)=>(Ye(e,t,"access private method"),s);var st=(e,t,s,r)=>({set _(a){f(e,t,a,s)},get _(){return g(e,t,r)}});var rt=(e,t,s)=>(r,a)=>{let n=-1;return o(0);async function o(l){if(l<=n)throw new Error("next() called multiple times");n=l;let i,c=!1,p;if(e[l]?(p=e[l][0][0],r.req.routeIndex=l):p=l===e.length&&a||void 0,p)try{i=await p(r,()=>o(l+1))}catch(u){if(u instanceof Error&&t)r.error=u,i=await t(u,r),c=!0;else throw u}else r.finalized===!1&&s&&(i=await s(r));return i&&(r.finalized===!1||c)&&(r.res=i),r}},Nt=Symbol(),Ot=async(e,t=Object.create(null))=>{const{all:s=!1,dot:r=!1}=t,n=(e instanceof ht?e.raw.headers:e.headers).get("Content-Type");return n!=null&&n.startsWith("multipart/form-data")||n!=null&&n.startsWith("application/x-www-form-urlencoded")?At(e,{all:s,dot:r}):{}};async function At(e,t){const s=await e.formData();return s?Ut(s,t):{}}function Ut(e,t){const s=Object.create(null);return e.forEach((r,a)=>{t.all||a.endsWith("[]")?Pt(s,a,r):s[a]=r}),t.dot&&Object.entries(s).forEach(([r,a])=>{r.includes(".")&&(Ft(s,r,a),delete s[r])}),s}var Pt=(e,t,s)=>{e[t]!==void 0?Array.isArray(e[t])?e[t].push(s):e[t]=[e[t],s]:t.endsWith("[]")?e[t]=[s]:e[t]=s},Ft=(e,t,s)=>{let r=e;const a=t.split(".");a.forEach((n,o)=>{o===a.length-1?r[n]=s:((!r[n]||typeof r[n]!="object"||Array.isArray(r[n])||r[n]instanceof File)&&(r[n]=Object.create(null)),r=r[n])})},gt=e=>{const t=e.split("/");return t[0]===""&&t.shift(),t},$t=e=>{const{groups:t,path:s}=qt(e),r=gt(s);return Ht(r,t)},qt=e=>{const t=[];return e=e.replace(/\{[^}]+\}/g,(s,r)=>{const a=`@${r}`;return t.push([a,s]),a}),{groups:t,path:e}},Ht=(e,t)=>{for(let s=t.length-1;s>=0;s--){const[r]=t[s];for(let a=e.length-1;a>=0;a--)if(e[a].includes(r)){e[a]=e[a].replace(r,t[s][1]);break}}return e},Pe={},Wt=(e,t)=>{if(e==="*")return"*";const s=e.match(/^\:([^\{\}]+)(?:\{(.+)\})?$/);if(s){const r=`${e}#${t}`;return Pe[r]||(s[2]?Pe[r]=t&&t[0]!==":"&&t[0]!=="*"?[r,s[1],new RegExp(`^${s[2]}(?=/${t})`)]:[e,s[1],new RegExp(`^${s[2]}$`)]:Pe[r]=[e,s[1],!0]),Pe[r]}return null},ze=(e,t)=>{try{return t(e)}catch{return e.replace(/(?:%[0-9A-Fa-f]{2})+/g,s=>{try{return t(s)}catch{return s}})}},Gt=e=>ze(e,decodeURI),xt=e=>{const t=e.url,s=t.indexOf("/",t.indexOf(":")+4);let r=s;for(;r<t.length;r++){const a=t.charCodeAt(r);if(a===37){const n=t.indexOf("?",r),o=t.slice(s,n===-1?void 0:n);return Gt(o.includes("%25")?o.replace(/%25/g,"%2525"):o)}else if(a===63)break}return t.slice(s,r)},zt=e=>{const t=xt(e);return t.length>1&&t.at(-1)==="/"?t.slice(0,-1):t},he=(e,t,...s)=>(s.length&&(t=he(t,...s)),`${(e==null?void 0:e[0])==="/"?"":"/"}${e}${t==="/"?"":`${(e==null?void 0:e.at(-1))==="/"?"":"/"}${(t==null?void 0:t[0])==="/"?t.slice(1):t}`}`),bt=e=>{if(e.charCodeAt(e.length-1)!==63||!e.includes(":"))return null;const t=e.split("/"),s=[];let r="";return t.forEach(a=>{if(a!==""&&!/\:/.test(a))r+="/"+a;else if(/\:/.test(a))if(/\?/.test(a)){s.length===0&&r===""?s.push("/"):s.push(r);const n=a.replace("?","");r+="/"+n,s.push(r)}else r+="/"+a}),s.filter((a,n,o)=>o.indexOf(a)===n)},Ve=e=>/[%+]/.test(e)?(e.indexOf("+")!==-1&&(e=e.replace(/\+/g," ")),e.indexOf("%")!==-1?ze(e,Qe):e):e,vt=(e,t,s)=>{let r;if(!s&&t&&!/[%+]/.test(t)){let o=e.indexOf("?",8);if(o===-1)return;for(e.startsWith(t,o+1)||(o=e.indexOf(`&${t}`,o+1));o!==-1;){const l=e.charCodeAt(o+t.length+1);if(l===61){const i=o+t.length+2,c=e.indexOf("&",i);return Ve(e.slice(i,c===-1?void 0:c))}else if(l==38||isNaN(l))return"";o=e.indexOf(`&${t}`,o+1)}if(r=/[%+]/.test(e),!r)return}const a={};r??(r=/[%+]/.test(e));let n=e.indexOf("?",8);for(;n!==-1;){const o=e.indexOf("&",n+1);let l=e.indexOf("=",n);l>o&&o!==-1&&(l=-1);let i=e.slice(n+1,l===-1?o===-1?void 0:o:l);if(r&&(i=Ve(i)),n=o,i==="")continue;let c;l===-1?c="":(c=e.slice(l+1,o===-1?void 0:o),r&&(c=Ve(c))),s?(a[i]&&Array.isArray(a[i])||(a[i]=[]),a[i].push(c)):a[i]??(a[i]=c)}return t?a[t]:a},Yt=vt,Vt=(e,t)=>vt(e,t,!0),Qe=decodeURIComponent,at=e=>ze(e,Qe),we,H,ee,ft,yt,Ze,te,it,ht=(it=class{constructor(e,t="/",s=[[]]){T(this,ee);w(this,"raw");T(this,we);T(this,H);w(this,"routeIndex",0);w(this,"path");w(this,"bodyCache",{});T(this,te,e=>{const{bodyCache:t,raw:s}=this,r=t[e];if(r)return r;const a=Object.keys(t)[0];return a?t[a].then(n=>(a==="json"&&(n=JSON.stringify(n)),new Response(n)[e]())):t[e]=s[e]()});this.raw=e,this.path=t,f(this,H,s),f(this,we,{})}param(e){return e?D(this,ee,ft).call(this,e):D(this,ee,yt).call(this)}query(e){return Yt(this.url,e)}queries(e){return Vt(this.url,e)}header(e){if(e)return this.raw.headers.get(e)??void 0;const t={};return this.raw.headers.forEach((s,r)=>{t[r]=s}),t}async parseBody(e){var t;return(t=this.bodyCache).parsedBody??(t.parsedBody=await Ot(this,e))}json(){return g(this,te).call(this,"text").then(e=>JSON.parse(e))}text(){return g(this,te).call(this,"text")}arrayBuffer(){return g(this,te).call(this,"arrayBuffer")}blob(){return g(this,te).call(this,"blob")}formData(){return g(this,te).call(this,"formData")}addValidatedData(e,t){g(this,we)[e]=t}valid(e){return g(this,we)[e]}get url(){return this.raw.url}get method(){return this.raw.method}get[Nt](){return g(this,H)}get matchedRoutes(){return g(this,H)[0].map(([[,e]])=>e)}get routePath(){return g(this,H)[0].map(([[,e]])=>e)[this.routeIndex].path}},we=new WeakMap,H=new WeakMap,ee=new WeakSet,ft=function(e){const t=g(this,H)[0][this.routeIndex][1][e],s=D(this,ee,Ze).call(this,t);return s&&/\%/.test(s)?at(s):s},yt=function(){const e={},t=Object.keys(g(this,H)[0][this.routeIndex][1]);for(const s of t){const r=D(this,ee,Ze).call(this,g(this,H)[0][this.routeIndex][1][s]);r!==void 0&&(e[s]=/\%/.test(r)?at(r):r)}return e},Ze=function(e){return g(this,H)[1]?g(this,H)[1][e]:e},te=new WeakMap,it),Xt={Stringify:1},wt=async(e,t,s,r,a)=>{typeof e=="object"&&!(e instanceof String)&&(e instanceof Promise||(e=e.toString()),e instanceof Promise&&(e=await e));const n=e.callbacks;return n!=null&&n.length?(a?a[0]+=e:a=[e],Promise.all(n.map(l=>l({phase:t,buffer:a,context:r}))).then(l=>Promise.all(l.filter(Boolean).map(i=>wt(i,t,!1,r,a))).then(()=>a[0]))):Promise.resolve(e)},Jt="text/plain; charset=UTF-8",Xe=(e,t)=>({"Content-Type":e,...t}),je,Le,J,Ee,K,F,Be,_e,Te,ce,Me,Ne,se,fe,dt,Kt=(dt=class{constructor(e,t){T(this,se);T(this,je);T(this,Le);w(this,"env",{});T(this,J);w(this,"finalized",!1);w(this,"error");T(this,Ee);T(this,K);T(this,F);T(this,Be);T(this,_e);T(this,Te);T(this,ce);T(this,Me);T(this,Ne);w(this,"render",(...e)=>(g(this,_e)??f(this,_e,t=>this.html(t)),g(this,_e).call(this,...e)));w(this,"setLayout",e=>f(this,Be,e));w(this,"getLayout",()=>g(this,Be));w(this,"setRenderer",e=>{f(this,_e,e)});w(this,"header",(e,t,s)=>{this.finalized&&f(this,F,new Response(g(this,F).body,g(this,F)));const r=g(this,F)?g(this,F).headers:g(this,ce)??f(this,ce,new Headers);t===void 0?r.delete(e):s!=null&&s.append?r.append(e,t):r.set(e,t)});w(this,"status",e=>{f(this,Ee,e)});w(this,"set",(e,t)=>{g(this,J)??f(this,J,new Map),g(this,J).set(e,t)});w(this,"get",e=>g(this,J)?g(this,J).get(e):void 0);w(this,"newResponse",(...e)=>D(this,se,fe).call(this,...e));w(this,"body",(e,t,s)=>D(this,se,fe).call(this,e,t,s));w(this,"text",(e,t,s)=>!g(this,ce)&&!g(this,Ee)&&!t&&!s&&!this.finalized?new Response(e):D(this,se,fe).call(this,e,t,Xe(Jt,s)));w(this,"json",(e,t,s)=>D(this,se,fe).call(this,JSON.stringify(e),t,Xe("application/json",s)));w(this,"html",(e,t,s)=>{const r=a=>D(this,se,fe).call(this,a,t,Xe("text/html; charset=UTF-8",s));return typeof e=="object"?wt(e,Xt.Stringify,!1,{}).then(r):r(e)});w(this,"redirect",(e,t)=>{const s=String(e);return this.header("Location",/[^\x00-\xFF]/.test(s)?encodeURI(s):s),this.newResponse(null,t??302)});w(this,"notFound",()=>(g(this,Te)??f(this,Te,()=>new Response),g(this,Te).call(this,this)));f(this,je,e),t&&(f(this,K,t.executionCtx),this.env=t.env,f(this,Te,t.notFoundHandler),f(this,Ne,t.path),f(this,Me,t.matchResult))}get req(){return g(this,Le)??f(this,Le,new ht(g(this,je),g(this,Ne),g(this,Me))),g(this,Le)}get event(){if(g(this,K)&&"respondWith"in g(this,K))return g(this,K);throw Error("This context has no FetchEvent")}get executionCtx(){if(g(this,K))return g(this,K);throw Error("This context has no ExecutionContext")}get res(){return g(this,F)||f(this,F,new Response(null,{headers:g(this,ce)??f(this,ce,new Headers)}))}set res(e){if(g(this,F)&&e){e=new Response(e.body,e);for(const[t,s]of g(this,F).headers.entries())if(t!=="content-type")if(t==="set-cookie"){const r=g(this,F).headers.getSetCookie();e.headers.delete("set-cookie");for(const a of r)e.headers.append("set-cookie",a)}else e.headers.set(t,s)}f(this,F,e),this.finalized=!0}get var(){return g(this,J)?Object.fromEntries(g(this,J)):{}}},je=new WeakMap,Le=new WeakMap,J=new WeakMap,Ee=new WeakMap,K=new WeakMap,F=new WeakMap,Be=new WeakMap,_e=new WeakMap,Te=new WeakMap,ce=new WeakMap,Me=new WeakMap,Ne=new WeakMap,se=new WeakSet,fe=function(e,t,s){const r=g(this,F)?new Headers(g(this,F).headers):g(this,ce)??new Headers;if(typeof t=="object"&&"headers"in t){const n=t.headers instanceof Headers?t.headers:new Headers(t.headers);for(const[o,l]of n)o.toLowerCase()==="set-cookie"?r.append(o,l):r.set(o,l)}if(s)for(const[n,o]of Object.entries(s))if(typeof o=="string")r.set(n,o);else{r.delete(n);for(const l of o)r.append(n,l)}const a=typeof t=="number"?t:(t==null?void 0:t.status)??g(this,Ee);return new Response(e,{status:a,headers:r})},dt),N="ALL",Zt="all",Qt=["get","post","put","delete","options","patch"],Et="Can not add a route since the matcher is already built.",_t=class extends Error{},es="__COMPOSED_HANDLER",ts=e=>e.text("404 Not Found",404),nt=(e,t)=>{if("getResponse"in e){const s=e.getResponse();return t.newResponse(s.body,s)}return console.error(e),t.text("Internal Server Error",500)},W,O,Tt,G,ie,Fe,$e,ke,ss=(ke=class{constructor(t={}){T(this,O);w(this,"get");w(this,"post");w(this,"put");w(this,"delete");w(this,"options");w(this,"patch");w(this,"all");w(this,"on");w(this,"use");w(this,"router");w(this,"getPath");w(this,"_basePath","/");T(this,W,"/");w(this,"routes",[]);T(this,G,ts);w(this,"errorHandler",nt);w(this,"onError",t=>(this.errorHandler=t,this));w(this,"notFound",t=>(f(this,G,t),this));w(this,"fetch",(t,...s)=>D(this,O,$e).call(this,t,s[1],s[0],t.method));w(this,"request",(t,s,r,a)=>t instanceof Request?this.fetch(s?new Request(t,s):t,r,a):(t=t.toString(),this.fetch(new Request(/^https?:\/\//.test(t)?t:`http://localhost${he("/",t)}`,s),r,a)));w(this,"fire",()=>{addEventListener("fetch",t=>{t.respondWith(D(this,O,$e).call(this,t.request,t,void 0,t.request.method))})});[...Qt,Zt].forEach(n=>{this[n]=(o,...l)=>(typeof o=="string"?f(this,W,o):D(this,O,ie).call(this,n,g(this,W),o),l.forEach(i=>{D(this,O,ie).call(this,n,g(this,W),i)}),this)}),this.on=(n,o,...l)=>{for(const i of[o].flat()){f(this,W,i);for(const c of[n].flat())l.map(p=>{D(this,O,ie).call(this,c.toUpperCase(),g(this,W),p)})}return this},this.use=(n,...o)=>(typeof n=="string"?f(this,W,n):(f(this,W,"*"),o.unshift(n)),o.forEach(l=>{D(this,O,ie).call(this,N,g(this,W),l)}),this);const{strict:r,...a}=t;Object.assign(this,a),this.getPath=r??!0?t.getPath??xt:zt}route(t,s){const r=this.basePath(t);return s.routes.map(a=>{var o;let n;s.errorHandler===nt?n=a.handler:(n=async(l,i)=>(await rt([],s.errorHandler)(l,()=>a.handler(l,i))).res,n[es]=a.handler),D(o=r,O,ie).call(o,a.method,a.path,n)}),this}basePath(t){const s=D(this,O,Tt).call(this);return s._basePath=he(this._basePath,t),s}mount(t,s,r){let a,n;r&&(typeof r=="function"?n=r:(n=r.optionHandler,r.replaceRequest===!1?a=i=>i:a=r.replaceRequest));const o=n?i=>{const c=n(i);return Array.isArray(c)?c:[c]}:i=>{let c;try{c=i.executionCtx}catch{}return[i.env,c]};a||(a=(()=>{const i=he(this._basePath,t),c=i==="/"?0:i.length;return p=>{const u=new URL(p.url);return u.pathname=u.pathname.slice(c)||"/",new Request(u,p)}})());const l=async(i,c)=>{const p=await s(a(i.req.raw),...o(i));if(p)return p;await c()};return D(this,O,ie).call(this,N,he(t,"*"),l),this}},W=new WeakMap,O=new WeakSet,Tt=function(){const t=new ke({router:this.router,getPath:this.getPath});return t.errorHandler=this.errorHandler,f(t,G,g(this,G)),t.routes=this.routes,t},G=new WeakMap,ie=function(t,s,r){t=t.toUpperCase(),s=he(this._basePath,s);const a={basePath:this._basePath,path:s,method:t,handler:r};this.router.add(t,s,[r,a]),this.routes.push(a)},Fe=function(t,s){if(t instanceof Error)return this.errorHandler(t,s);throw t},$e=function(t,s,r,a){if(a==="HEAD")return(async()=>new Response(null,await D(this,O,$e).call(this,t,s,r,"GET")))();const n=this.getPath(t,{env:r}),o=this.router.match(a,n),l=new Kt(t,{path:n,matchResult:o,env:r,executionCtx:s,notFoundHandler:g(this,G)});if(o[0].length===1){let c;try{c=o[0][0][0][0](l,async()=>{l.res=await g(this,G).call(this,l)})}catch(p){return D(this,O,Fe).call(this,p,l)}return c instanceof Promise?c.then(p=>p||(l.finalized?l.res:g(this,G).call(this,l))).catch(p=>D(this,O,Fe).call(this,p,l)):c??g(this,G).call(this,l)}const i=rt(o[0],this.errorHandler,g(this,G));return(async()=>{try{const c=await i(l);if(!c.finalized)throw new Error("Context is not finalized. Did you forget to return a Response object or `await next()`?");return c.res}catch(c){return D(this,O,Fe).call(this,c,l)}})()},ke),kt=[];function rs(e,t){const s=this.buildAllMatchers(),r=((a,n)=>{const o=s[a]||s[N],l=o[2][n];if(l)return l;const i=n.match(o[0]);if(!i)return[[],kt];const c=i.indexOf("",1);return[o[1][c],i]});return this.match=r,r(e,t)}var He="[^/]+",Ce=".*",Re="(?:|/.*)",ye=Symbol(),as=new Set(".\\+*[^]$()");function ns(e,t){return e.length===1?t.length===1?e<t?-1:1:-1:t.length===1||e===Ce||e===Re?1:t===Ce||t===Re?-1:e===He?1:t===He?-1:e.length===t.length?e<t?-1:1:t.length-e.length}var pe,ue,z,xe,os=(xe=class{constructor(){T(this,pe);T(this,ue);T(this,z,Object.create(null))}insert(t,s,r,a,n){if(t.length===0){if(g(this,pe)!==void 0)throw ye;if(n)return;f(this,pe,s);return}const[o,...l]=t,i=o==="*"?l.length===0?["","",Ce]:["","",He]:o==="/*"?["","",Re]:o.match(/^\:([^\{\}]+)(?:\{(.+)\})?$/);let c;if(i){const p=i[1];let u=i[2]||He;if(p&&i[2]&&(u===".*"||(u=u.replace(/^\((?!\?:)(?=[^)]+\)$)/,"(?:"),/\((?!\?:)/.test(u))))throw ye;if(c=g(this,z)[u],!c){if(Object.keys(g(this,z)).some(m=>m!==Ce&&m!==Re))throw ye;if(n)return;c=g(this,z)[u]=new xe,p!==""&&f(c,ue,a.varIndex++)}!n&&p!==""&&r.push([p,g(c,ue)])}else if(c=g(this,z)[o],!c){if(Object.keys(g(this,z)).some(p=>p.length>1&&p!==Ce&&p!==Re))throw ye;if(n)return;c=g(this,z)[o]=new xe}c.insert(l,s,r,a,n)}buildRegExpStr(){const s=Object.keys(g(this,z)).sort(ns).map(r=>{const a=g(this,z)[r];return(typeof g(a,ue)=="number"?`(${r})@${g(a,ue)}`:as.has(r)?`\\${r}`:r)+a.buildRegExpStr()});return typeof g(this,pe)=="number"&&s.unshift(`#${g(this,pe)}`),s.length===0?"":s.length===1?s[0]:"(?:"+s.join("|")+")"}},pe=new WeakMap,ue=new WeakMap,z=new WeakMap,xe),We,Oe,ct,ls=(ct=class{constructor(){T(this,We,{varIndex:0});T(this,Oe,new os)}insert(e,t,s){const r=[],a=[];for(let o=0;;){let l=!1;if(e=e.replace(/\{[^}]+\}/g,i=>{const c=`@\\${o}`;return a[o]=[c,i],o++,l=!0,c}),!l)break}const n=e.match(/(?::[^\/]+)|(?:\/\*$)|./g)||[];for(let o=a.length-1;o>=0;o--){const[l]=a[o];for(let i=n.length-1;i>=0;i--)if(n[i].indexOf(l)!==-1){n[i]=n[i].replace(l,a[o][1]);break}}return g(this,Oe).insert(n,t,r,g(this,We),s),r}buildRegExp(){let e=g(this,Oe).buildRegExpStr();if(e==="")return[/^$/,[],[]];let t=0;const s=[],r=[];return e=e.replace(/#(\d+)|@(\d+)|\.\*\$/g,(a,n,o)=>n!==void 0?(s[++t]=Number(n),"$()"):(o!==void 0&&(r[Number(o)]=++t),"")),[new RegExp(`^${e}`),s,r]}},We=new WeakMap,Oe=new WeakMap,ct),is=[/^$/,[],Object.create(null)],qe=Object.create(null);function It(e){return qe[e]??(qe[e]=new RegExp(e==="*"?"":`^${e.replace(/\/\*$|([.\\+*[^\]$()])/g,(t,s)=>s?`\\${s}`:"(?:|/.*)")}$`))}function ds(){qe=Object.create(null)}function cs(e){var c;const t=new ls,s=[];if(e.length===0)return is;const r=e.map(p=>[!/\*|\/:/.test(p[0]),...p]).sort(([p,u],[m,x])=>p?1:m?-1:u.length-x.length),a=Object.create(null);for(let p=0,u=-1,m=r.length;p<m;p++){const[x,b,h]=r[p];x?a[b]=[h.map(([y])=>[y,Object.create(null)]),kt]:u++;let v;try{v=t.insert(b,u,x)}catch(y){throw y===ye?new _t(b):y}x||(s[u]=h.map(([y,E])=>{const I=Object.create(null);for(E-=1;E>=0;E--){const[k,S]=v[E];I[k]=S}return[y,I]}))}const[n,o,l]=t.buildRegExp();for(let p=0,u=s.length;p<u;p++)for(let m=0,x=s[p].length;m<x;m++){const b=(c=s[p][m])==null?void 0:c[1];if(!b)continue;const h=Object.keys(b);for(let v=0,y=h.length;v<y;v++)b[h[v]]=l[b[h[v]]]}const i=[];for(const p in o)i[p]=s[o[p]];return[n,i,a]}function ve(e,t){if(e){for(const s of Object.keys(e).sort((r,a)=>a.length-r.length))if(It(s).test(t))return[...e[s]]}}var re,ae,Ge,St,pt,ps=(pt=class{constructor(){T(this,Ge);w(this,"name","RegExpRouter");T(this,re);T(this,ae);w(this,"match",rs);f(this,re,{[N]:Object.create(null)}),f(this,ae,{[N]:Object.create(null)})}add(e,t,s){var l;const r=g(this,re),a=g(this,ae);if(!r||!a)throw new Error(Et);r[e]||[r,a].forEach(i=>{i[e]=Object.create(null),Object.keys(i[N]).forEach(c=>{i[e][c]=[...i[N][c]]})}),t==="/*"&&(t="*");const n=(t.match(/\/:/g)||[]).length;if(/\*$/.test(t)){const i=It(t);e===N?Object.keys(r).forEach(c=>{var p;(p=r[c])[t]||(p[t]=ve(r[c],t)||ve(r[N],t)||[])}):(l=r[e])[t]||(l[t]=ve(r[e],t)||ve(r[N],t)||[]),Object.keys(r).forEach(c=>{(e===N||e===c)&&Object.keys(r[c]).forEach(p=>{i.test(p)&&r[c][p].push([s,n])})}),Object.keys(a).forEach(c=>{(e===N||e===c)&&Object.keys(a[c]).forEach(p=>i.test(p)&&a[c][p].push([s,n]))});return}const o=bt(t)||[t];for(let i=0,c=o.length;i<c;i++){const p=o[i];Object.keys(a).forEach(u=>{var m;(e===N||e===u)&&((m=a[u])[p]||(m[p]=[...ve(r[u],p)||ve(r[N],p)||[]]),a[u][p].push([s,n-c+i+1]))})}}buildAllMatchers(){const e=Object.create(null);return Object.keys(g(this,ae)).concat(Object.keys(g(this,re))).forEach(t=>{e[t]||(e[t]=D(this,Ge,St).call(this,t))}),f(this,re,f(this,ae,void 0)),ds(),e}},re=new WeakMap,ae=new WeakMap,Ge=new WeakSet,St=function(e){const t=[];let s=e===N;return[g(this,re),g(this,ae)].forEach(r=>{const a=r[e]?Object.keys(r[e]).map(n=>[n,r[e][n]]):[];a.length!==0?(s||(s=!0),t.push(...a)):e!==N&&t.push(...Object.keys(r[N]).map(n=>[n,r[N][n]]))}),s?cs(t):null},pt),ne,Z,ut,us=(ut=class{constructor(e){w(this,"name","SmartRouter");T(this,ne,[]);T(this,Z,[]);f(this,ne,e.routers)}add(e,t,s){if(!g(this,Z))throw new Error(Et);g(this,Z).push([e,t,s])}match(e,t){if(!g(this,Z))throw new Error("Fatal error");const s=g(this,ne),r=g(this,Z),a=s.length;let n=0,o;for(;n<a;n++){const l=s[n];try{for(let i=0,c=r.length;i<c;i++)l.add(...r[i]);o=l.match(e,t)}catch(i){if(i instanceof _t)continue;throw i}this.match=l.match.bind(l),f(this,ne,[l]),f(this,Z,void 0);break}if(n===a)throw new Error("Fatal error");return this.name=`SmartRouter + ${this.activeRouter.name}`,o}get activeRouter(){if(g(this,Z)||g(this,ne).length!==1)throw new Error("No active router has been determined yet.");return g(this,ne)[0]}},ne=new WeakMap,Z=new WeakMap,ut),De=Object.create(null),oe,U,me,Ie,A,Q,de,Se,ms=(Se=class{constructor(t,s,r){T(this,Q);T(this,oe);T(this,U);T(this,me);T(this,Ie,0);T(this,A,De);if(f(this,U,r||Object.create(null)),f(this,oe,[]),t&&s){const a=Object.create(null);a[t]={handler:s,possibleKeys:[],score:0},f(this,oe,[a])}f(this,me,[])}insert(t,s,r){f(this,Ie,++st(this,Ie)._);let a=this;const n=$t(s),o=[];for(let l=0,i=n.length;l<i;l++){const c=n[l],p=n[l+1],u=Wt(c,p),m=Array.isArray(u)?u[0]:c;if(m in g(a,U)){a=g(a,U)[m],u&&o.push(u[1]);continue}g(a,U)[m]=new Se,u&&(g(a,me).push(u),o.push(u[1])),a=g(a,U)[m]}return g(a,oe).push({[t]:{handler:r,possibleKeys:o.filter((l,i,c)=>c.indexOf(l)===i),score:g(this,Ie)}}),a}search(t,s){var i;const r=[];f(this,A,De);let n=[this];const o=gt(s),l=[];for(let c=0,p=o.length;c<p;c++){const u=o[c],m=c===p-1,x=[];for(let b=0,h=n.length;b<h;b++){const v=n[b],y=g(v,U)[u];y&&(f(y,A,g(v,A)),m?(g(y,U)["*"]&&r.push(...D(this,Q,de).call(this,g(y,U)["*"],t,g(v,A))),r.push(...D(this,Q,de).call(this,y,t,g(v,A)))):x.push(y));for(let E=0,I=g(v,me).length;E<I;E++){const k=g(v,me)[E],S=g(v,A)===De?{}:{...g(v,A)};if(k==="*"){const M=g(v,U)["*"];M&&(r.push(...D(this,Q,de).call(this,M,t,g(v,A))),f(M,A,S),x.push(M));continue}const[C,j,B]=k;if(!u&&!(B instanceof RegExp))continue;const L=g(v,U)[C],le=o.slice(c).join("/");if(B instanceof RegExp){const M=B.exec(le);if(M){if(S[j]=M[0],r.push(...D(this,Q,de).call(this,L,t,g(v,A),S)),Object.keys(g(L,U)).length){f(L,A,S);const V=((i=M[0].match(/\//))==null?void 0:i.length)??0;(l[V]||(l[V]=[])).push(L)}continue}}(B===!0||B.test(u))&&(S[j]=u,m?(r.push(...D(this,Q,de).call(this,L,t,S,g(v,A))),g(L,U)["*"]&&r.push(...D(this,Q,de).call(this,g(L,U)["*"],t,S,g(v,A)))):(f(L,A,S),x.push(L)))}}n=x.concat(l.shift()??[])}return r.length>1&&r.sort((c,p)=>c.score-p.score),[r.map(({handler:c,params:p})=>[c,p])]}},oe=new WeakMap,U=new WeakMap,me=new WeakMap,Ie=new WeakMap,A=new WeakMap,Q=new WeakSet,de=function(t,s,r,a){const n=[];for(let o=0,l=g(t,oe).length;o<l;o++){const i=g(t,oe)[o],c=i[s]||i[N],p={};if(c!==void 0&&(c.params=Object.create(null),n.push(c),r!==De||a&&a!==De))for(let u=0,m=c.possibleKeys.length;u<m;u++){const x=c.possibleKeys[u],b=p[c.score];c.params[x]=a!=null&&a[x]&&!b?a[x]:r[x]??(a==null?void 0:a[x]),p[c.score]=!0}}return n},Se),ge,mt,gs=(mt=class{constructor(){w(this,"name","TrieRouter");T(this,ge);f(this,ge,new ms)}add(e,t,s){const r=bt(t);if(r){for(let a=0,n=r.length;a<n;a++)g(this,ge).insert(e,r[a],s);return}g(this,ge).insert(e,t,s)}match(e,t){return g(this,ge).search(e,t)}},ge=new WeakMap,mt),et=class extends ss{constructor(e={}){super(e),this.router=e.router??new us({routers:[new ps,new gs]})}},xs=e=>{const s={...{origin:"*",allowMethods:["GET","HEAD","PUT","POST","DELETE","PATCH"],allowHeaders:[],exposeHeaders:[]},...e},r=(n=>typeof n=="string"?n==="*"?()=>n:o=>n===o?o:null:typeof n=="function"?n:o=>n.includes(o)?o:null)(s.origin),a=(n=>typeof n=="function"?n:Array.isArray(n)?()=>n:()=>[])(s.allowMethods);return async function(o,l){var p;function i(u,m){o.res.headers.set(u,m)}const c=await r(o.req.header("origin")||"",o);if(c&&i("Access-Control-Allow-Origin",c),s.credentials&&i("Access-Control-Allow-Credentials","true"),(p=s.exposeHeaders)!=null&&p.length&&i("Access-Control-Expose-Headers",s.exposeHeaders.join(",")),o.req.method==="OPTIONS"){s.origin!=="*"&&i("Vary","Origin"),s.maxAge!=null&&i("Access-Control-Max-Age",s.maxAge.toString());const u=await a(o.req.header("origin")||"",o);u.length&&i("Access-Control-Allow-Methods",u.join(","));let m=s.allowHeaders;if(!(m!=null&&m.length)){const x=o.req.header("Access-Control-Request-Headers");x&&(m=x.split(/\s*,\s*/))}return m!=null&&m.length&&(i("Access-Control-Allow-Headers",m.join(",")),o.res.headers.append("Vary","Access-Control-Request-Headers")),o.res.headers.delete("Content-Length"),o.res.headers.delete("Content-Type"),new Response(null,{headers:o.res.headers,status:204,statusText:"No Content"})}await l(),s.origin!=="*"&&o.header("Vary","Origin",{append:!0})}},bs=/^[\w!#$%&'*.^`|~+-]+$/,vs=/^[ !#-:<-[\]-~]*$/,hs=(e,t)=>{if(e.indexOf(t)===-1)return{};const s=e.trim().split(";"),r={};for(let a of s){a=a.trim();const n=a.indexOf("=");if(n===-1)continue;const o=a.substring(0,n).trim();if(t!==o||!bs.test(o))continue;let l=a.substring(n+1).trim();if(l.startsWith('"')&&l.endsWith('"')&&(l=l.slice(1,-1)),vs.test(l)){r[o]=l.indexOf("%")!==-1?ze(l,Qe):l;break}}return r},X=(e,t,s)=>{const r=e.req.raw.headers.get("Cookie");{if(!r)return;let a=t;return hs(r,a)[a]}},fs=/^\s*(?:text\/(?!event-stream(?:[;\s]|$))[^;\s]+|application\/(?:javascript|json|xml|xml-dtd|ecmascript|dart|postscript|rtf|tar|toml|vnd\.dart|vnd\.ms-fontobject|vnd\.ms-opentype|wasm|x-httpd-php|x-javascript|x-ns-proxy-autoconfig|x-sh|x-tar|x-virtualbox-hdd|x-virtualbox-ova|x-virtualbox-ovf|x-virtualbox-vbox|x-virtualbox-vdi|x-virtualbox-vhd|x-virtualbox-vmdk|x-www-form-urlencoded)|font\/(?:otf|ttf)|image\/(?:bmp|vnd\.adobe\.photoshop|vnd\.microsoft\.icon|vnd\.ms-dds|x-icon|x-ms-bmp)|message\/rfc822|model\/gltf-binary|x-shader\/x-fragment|x-shader\/x-vertex|[^;\s]+?\+(?:json|text|xml|yaml))(?:[;\s]|$)/i,ot=(e,t=ws)=>{const s=/\.([a-zA-Z0-9]+?)$/,r=e.match(s);if(!r)return;let a=t[r[1]];return a&&a.startsWith("text")&&(a+="; charset=utf-8"),a},ys={aac:"audio/aac",avi:"video/x-msvideo",avif:"image/avif",av1:"video/av1",bin:"application/octet-stream",bmp:"image/bmp",css:"text/css",csv:"text/csv",eot:"application/vnd.ms-fontobject",epub:"application/epub+zip",gif:"image/gif",gz:"application/gzip",htm:"text/html",html:"text/html",ico:"image/x-icon",ics:"text/calendar",jpeg:"image/jpeg",jpg:"image/jpeg",js:"text/javascript",json:"application/json",jsonld:"application/ld+json",map:"application/json",mid:"audio/x-midi",midi:"audio/x-midi",mjs:"text/javascript",mp3:"audio/mpeg",mp4:"video/mp4",mpeg:"video/mpeg",oga:"audio/ogg",ogv:"video/ogg",ogx:"application/ogg",opus:"audio/opus",otf:"font/otf",pdf:"application/pdf",png:"image/png",rtf:"application/rtf",svg:"image/svg+xml",tif:"image/tiff",tiff:"image/tiff",ts:"video/mp2t",ttf:"font/ttf",txt:"text/plain",wasm:"application/wasm",webm:"video/webm",weba:"audio/webm",webmanifest:"application/manifest+json",webp:"image/webp",woff:"font/woff",woff2:"font/woff2",xhtml:"application/xhtml+xml",xml:"application/xml",zip:"application/zip","3gp":"video/3gpp","3g2":"video/3gpp2",gltf:"model/gltf+json",glb:"model/gltf-binary"},ws=ys,Es=(...e)=>{let t=e.filter(a=>a!=="").join("/");t=t.replace(new RegExp("(?<=\\/)\\/+","g"),"");const s=t.split("/"),r=[];for(const a of s)a===".."&&r.length>0&&r.at(-1)!==".."?r.pop():a!=="."&&r.push(a);return r.join("/")||"."},Dt={br:".br",zstd:".zst",gzip:".gz"},_s=Object.keys(Dt),Ts="index.html",ks=e=>{const t=e.root??"./",s=e.path,r=e.join??Es;return async(a,n)=>{var p,u,m,x;if(a.finalized)return n();let o;if(e.path)o=e.path;else try{if(o=decodeURIComponent(a.req.path),/(?:^|[\/\\])\.\.(?:$|[\/\\])/.test(o))throw new Error}catch{return await((p=e.onNotFound)==null?void 0:p.call(e,a.req.path,a)),n()}let l=r(t,!s&&e.rewriteRequestPath?e.rewriteRequestPath(o):o);e.isDir&&await e.isDir(l)&&(l=r(l,Ts));const i=e.getContent;let c=await i(l,a);if(c instanceof Response)return a.newResponse(c.body,c);if(c){const b=e.mimes&&ot(l,e.mimes)||ot(l);if(a.header("Content-Type",b||"application/octet-stream"),e.precompressed&&(!b||fs.test(b))){const h=new Set((u=a.req.header("Accept-Encoding"))==null?void 0:u.split(",").map(v=>v.trim()));for(const v of _s){if(!h.has(v))continue;const y=await i(l+Dt[v],a);if(y){c=y,a.header("Content-Encoding",v),a.header("Vary","Accept-Encoding",{append:!0});break}}}return await((m=e.onFound)==null?void 0:m.call(e,l,a)),a.body(c)}await((x=e.onNotFound)==null?void 0:x.call(e,l,a)),await n()}},Is=async(e,t)=>{let s;t&&t.manifest?typeof t.manifest=="string"?s=JSON.parse(t.manifest):s=t.manifest:typeof __STATIC_CONTENT_MANIFEST=="string"?s=JSON.parse(__STATIC_CONTENT_MANIFEST):s=__STATIC_CONTENT_MANIFEST;let r;t&&t.namespace?r=t.namespace:r=__STATIC_CONTENT;const a=s[e]||e;if(!a)return null;const n=await r.get(a,{type:"stream"});return n||null},Ss=e=>async function(s,r){return ks({...e,getContent:async n=>Is(n,{manifest:e.manifest,namespace:e.namespace?e.namespace:s.env?s.env.__STATIC_CONTENT:void 0})})(s,r)},Ds=e=>Ss(e);const Cs=`
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -2589,7 +2589,7 @@ var Bt=Object.defineProperty;var tt=e=>{throw TypeError(e)};var Mt=(e,t,s)=>t in
     <\/script>
 </body>
 </html>
-`,Oe={classesPage:Cs,studentsListPage:Rs,dailyRecordPage:js,studentDetailPage:Ls,coursesPage:Bs},$=new et,Y=async(e,t)=>{try{const s=e.req.header("cookie");let r=null;if(s){const o=s.split(";").map(l=>l.trim()).find(l=>l.startsWith("session_id="));o&&(r=o.split("=")[1])}if(!r)return e.json({error:"로그인이 필요합니다"},401);const a=await e.env.DB.prepare(`
+`,Ae={classesPage:Cs,studentsListPage:Rs,dailyRecordPage:js,studentDetailPage:Ls,coursesPage:Bs},$=new et,Y=async(e,t)=>{try{const s=e.req.header("cookie");let r=null;if(s){const o=s.split(";").map(l=>l.trim()).find(l=>l.startsWith("session_id="));o&&(r=o.split("=")[1])}if(!r)return e.json({error:"로그인이 필요합니다"},401);const a=await e.env.DB.prepare(`
       SELECT user_id FROM sessions WHERE session_id = ? AND expires_at > datetime('now')
     `).bind(r).first();if(!a)return e.json({error:"세션이 만료되었습니다"},401);e.set("userId",a.user_id),await t()}catch(s){return console.error("Auth middleware error:",s),e.json({error:"인증 처리 중 오류가 발생했습니다: "+s.message},500)}};$.get("/api/form-templates",Y,async e=>{try{const t=e.get("userId"),s=await e.env.DB.prepare(`
       SELECT * FROM form_templates 
@@ -2965,10 +2965,10 @@ var Bt=Object.defineProperty;var tt=e=>{throw TypeError(e)};var Mt=(e,t,s)=>t in
       SELECT phone_number FROM sender_ids WHERE id = ? AND user_id = ? AND status = 'verified'
     `).bind(r,s).first();if(!h)return await e.env.DB.prepare(`
         UPDATE users SET balance = ? WHERE id = ?
-      `).bind(x,s).run(),e.json({success:!1,error:"인증된 발신번호를 찾을 수 없습니다."},404);const v=e.env.ALIGO_API_KEY||"4bbi3l27pb5qh11tkujl578bttz6vb5j",y=e.env.ALIGO_USER_ID||"wangholy";console.log("Aligo ENV Check:",{hasApiKey:!!e.env.ALIGO_API_KEY,hasUserId:!!e.env.ALIGO_USER_ID,apiKeyLength:(t=e.env.ALIGO_API_KEY)==null?void 0:t.length,userId:e.env.ALIGO_USER_ID});const E=new URLSearchParams;E.append("key",v),E.append("user_id",y),E.append("sender",h.phone_number),E.append("receiver",a.map(S=>S.phone).join(",")),E.append("msg",n),E.append("msg_type",c),o&&(E.append("rdate",o.split("T")[0].replace(/-/g,"")),E.append("rtime",o.split("T")[1].substring(0,5).replace(":","")));const I=await(await fetch("https://apis.aligo.in/send/",{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:E})).json();if(I.result_code==="1"){const S=await e.env.DB.prepare(`
+      `).bind(x,s).run(),e.json({success:!1,error:"인증된 발신번호를 찾을 수 없습니다."},404);const v=e.env.ALIGO_API_KEY||"4bbi3l27pb5qh11tkujl578bttz6vb5j",y=e.env.ALIGO_USER_ID||"wangholy";console.log("Aligo ENV Check:",{hasApiKey:!!e.env.ALIGO_API_KEY,hasUserId:!!e.env.ALIGO_USER_ID,apiKeyLength:(t=e.env.ALIGO_API_KEY)==null?void 0:t.length,userId:e.env.ALIGO_USER_ID});const E=new URLSearchParams;E.append("key",v),E.append("user_id",y),E.append("sender",h.phone_number),E.append("receiver",a.map(S=>S.phone).join(",")),E.append("msg",n),E.append("msg_type",c),o&&(E.append("rdate",o.split("T")[0].replace(/-/g,"")),E.append("rtime",o.split("T")[1].substring(0,5).replace(":","")));const k=await(await fetch("https://apis.aligo.in/send/",{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:E})).json();if(k.result_code==="1"){const S=await e.env.DB.prepare(`
         INSERT INTO sms_logs (user_id, sender_id, sender_number, receiver_number, message_type, message_content, byte_size, point_cost, status, alligo_response, alligo_msg_id, reserve_time, sent_at)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'success', ?, ?, ?, CURRENT_TIMESTAMP)
-      `).bind(s,r,h.phone_number,a.map(C=>C.phone).join(","),c,n,i,m,JSON.stringify(I),I.msg_id||null,o||null).run();for(const C of a){const j=n.replace(/#{이름}/g,C.name||"");await e.env.DB.prepare(`
+      `).bind(s,r,h.phone_number,a.map(C=>C.phone).join(","),c,n,i,m,JSON.stringify(k),k.msg_id||null,o||null).run();for(const C of a){const j=n.replace(/#{이름}/g,C.name||"");await e.env.DB.prepare(`
           INSERT INTO sms_recipients (sms_log_id, receiver_number, receiver_name, message_content, status, sent_at)
           VALUES (?, ?, ?, ?, 'success', CURRENT_TIMESTAMP)
         `).bind(S.meta.last_row_id,C.phone,C.name||null,j).run()}return e.json({success:!0,message:"문자 발송이 완료되었습니다.",sentCount:a.length,totalCost:m,remainingBalance:b})}else return await e.env.DB.prepare(`
@@ -2979,7 +2979,7 @@ var Bt=Object.defineProperty;var tt=e=>{throw TypeError(e)};var Mt=(e,t,s)=>t in
       `).bind(s,m,b,x,"SMS 발송 실패로 인한 환불").run(),await e.env.DB.prepare(`
         INSERT INTO sms_logs (user_id, sender_id, sender_number, receiver_number, message_type, message_content, byte_size, point_cost, status, alligo_response)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'failed', ?)
-      `).bind(s,r,h.phone_number,a.map(S=>S.phone).join(","),c,n,i,m,JSON.stringify(I)).run(),e.json({success:!1,error:I.message||"문자 발송에 실패했습니다.",aligoError:I},400)}catch(s){return console.error("SMS send error:",s),e.json({success:!1,error:"문자 발송 중 오류가 발생했습니다."},500)}});d.get("/api/sms/logs",async e=>{try{const t=e.req.query("userId"),s=parseInt(e.req.query("page")||"1"),r=parseInt(e.req.query("limit")||"20"),a=(s-1)*r;if(!t)return e.json({success:!1,error:"사용자 ID가 필요합니다."},400);const n=await e.env.DB.prepare(`
+      `).bind(s,r,h.phone_number,a.map(S=>S.phone).join(","),c,n,i,m,JSON.stringify(k)).run(),e.json({success:!1,error:k.message||"문자 발송에 실패했습니다.",aligoError:k},400)}catch(s){return console.error("SMS send error:",s),e.json({success:!1,error:"문자 발송 중 오류가 발생했습니다."},500)}});d.get("/api/sms/logs",async e=>{try{const t=e.req.query("userId"),s=parseInt(e.req.query("page")||"1"),r=parseInt(e.req.query("limit")||"20"),a=(s-1)*r;if(!t)return e.json({success:!1,error:"사용자 ID가 필요합니다."},400);const n=await e.env.DB.prepare(`
       SELECT 
         sms_logs.*,
         sender_ids.phone_number as sender_phone
@@ -3031,22 +3031,22 @@ var Bt=Object.defineProperty;var tt=e=>{throw TypeError(e)};var Mt=(e,t,s)=>t in
     `).bind(b,t).run(),await e.env.DB.prepare(`
       INSERT INTO point_transactions (user_id, transaction_type, amount, balance_before, balance_after, description)
       VALUES (?, 'kakao_cost', ?, ?, ?, ?)
-    `).bind(t,-u,x,b,`카카오 알림톡 ${a.length}건 발송`).run(),console.log("Points deducted:",x,"->",b);try{const h=e.env.ALIGO_API_KEY,v=e.env.ALIGO_USER_ID;if(!h||!v)throw new Error("알리고 API 키가 설정되지 않았습니다.");const y=a.map(j=>{var B;return{rcv:j.phone.replace(/-/g,""),rcv_name:j.name||"",emtitle_1:((B=j.variables)==null?void 0:B.title)||"",message:i.template_content}}),E={apikey:h,userid:v,senderkey:s,tpl_code:r,sender:s,receiver_1:y[0].rcv,recvname_1:y[0].rcv_name,subject_1:y[0].emtitle_1,message_1:y[0].message,failover:n||"Y",fsubject_1:o||"카카오톡 알림",fmessage_1:o||i.template_content};if(l){const j=new Date(l);E.rdate=j.toISOString().split("T")[0].replace(/-/g,""),E.rtime=j.toTimeString().split(" ")[0].replace(/:/g,"").substring(0,4)}const I=await(await fetch("https://kakaoapi.aligo.in/akv10/alimtalk/send/",{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams(E)})).json();console.log("Aligo kakao response:",I);const C=(await e.env.DB.prepare(`
+    `).bind(t,-u,x,b,`카카오 알림톡 ${a.length}건 발송`).run(),console.log("Points deducted:",x,"->",b);try{const h=e.env.ALIGO_API_KEY,v=e.env.ALIGO_USER_ID;if(!h||!v)throw new Error("알리고 API 키가 설정되지 않았습니다.");const y=a.map(j=>{var B;return{rcv:j.phone.replace(/-/g,""),rcv_name:j.name||"",emtitle_1:((B=j.variables)==null?void 0:B.title)||"",message:i.template_content}}),E={apikey:h,userid:v,senderkey:s,tpl_code:r,sender:s,receiver_1:y[0].rcv,recvname_1:y[0].rcv_name,subject_1:y[0].emtitle_1,message_1:y[0].message,failover:n||"Y",fsubject_1:o||"카카오톡 알림",fmessage_1:o||i.template_content};if(l){const j=new Date(l);E.rdate=j.toISOString().split("T")[0].replace(/-/g,""),E.rtime=j.toTimeString().split(" ")[0].replace(/:/g,"").substring(0,4)}const k=await(await fetch("https://kakaoapi.aligo.in/akv10/alimtalk/send/",{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams(E)})).json();console.log("Aligo kakao response:",k);const C=(await e.env.DB.prepare(`
         INSERT INTO kakao_logs (
           user_id, sender_key, template_code, receiver_phone, receiver_name, 
           message, buttons_json, fail_over, fail_over_sms, 
           status, result_code, result_message, msg_id, cost, reserved_date, sent_at
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
-      `).bind(t,s,r,a[0].phone,a[0].name,i.template_content,i.buttons_json,n||"Y",o,I.result_code===1?"success":"failed",I.result_code||0,I.message||"",I.msg_id||"",u,l||null).run()).meta.last_row_id;for(const j of a)await e.env.DB.prepare(`
+      `).bind(t,s,r,a[0].phone,a[0].name,i.template_content,i.buttons_json,n||"Y",o,k.result_code===1?"success":"failed",k.result_code||0,k.message||"",k.msg_id||"",u,l||null).run()).meta.last_row_id;for(const j of a)await e.env.DB.prepare(`
           INSERT INTO kakao_recipients (
             kakao_log_id, receiver_phone, receiver_name, status, sent_at
           ) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
-        `).bind(C,j.phone,j.name,I.result_code===1?"success":"pending").run();return I.result_code===1?e.json({success:!0,message:`카카오 알림톡 ${a.length}건이 발송되었습니다.`,balance:b,cost:u,msgId:I.msg_id}):(await e.env.DB.prepare(`
+        `).bind(C,j.phone,j.name,k.result_code===1?"success":"pending").run();return k.result_code===1?e.json({success:!0,message:`카카오 알림톡 ${a.length}건이 발송되었습니다.`,balance:b,cost:u,msgId:k.msg_id}):(await e.env.DB.prepare(`
           UPDATE users SET balance = ? WHERE id = ?
         `).bind(x,t).run(),await e.env.DB.prepare(`
           INSERT INTO point_transactions (user_id, transaction_type, amount, balance_before, balance_after, description)
           VALUES (?, 'refund', ?, ?, ?, ?)
-        `).bind(t,u,b,x,"카카오 알림톡 발송 실패로 인한 환불").run(),e.json({success:!1,error:I.message||"알림톡 발송 실패",aligoError:I},500))}catch(h){return console.error("Aligo kakao API error:",h),await e.env.DB.prepare(`
+        `).bind(t,u,b,x,"카카오 알림톡 발송 실패로 인한 환불").run(),e.json({success:!1,error:k.message||"알림톡 발송 실패",aligoError:k},500))}catch(h){return console.error("Aligo kakao API error:",h),await e.env.DB.prepare(`
         UPDATE users SET balance = ? WHERE id = ?
       `).bind(x,t).run(),await e.env.DB.prepare(`
         INSERT INTO point_transactions (user_id, transaction_type, amount, balance_before, balance_after, description)
@@ -3354,15 +3354,15 @@ var Bt=Object.defineProperty;var tt=e=>{throw TypeError(e)};var Mt=(e,t,s)=>t in
 
 생성된 랜딩페이지: ${b}개 / 한도: ${h}개
 
-더 많은 랜딩페이지를 생성하시려면 상위 플랜으로 업그레이드해주세요.`},403);const v=Math.random().toString(36).substring(2,10),y=Ms(s,r),E=`${e.req.header("origin")||"https://example.com"}/landing/${v}`,k=`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(E)}`,S=await e.env.DB.prepare(`
+더 많은 랜딩페이지를 생성하시려면 상위 플랜으로 업그레이드해주세요.`},403);const v=Math.random().toString(36).substring(2,10),y=Ms(s,r),E=`${e.req.header("origin")||"https://example.com"}/landing/${v}`,I=`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(E)}`,S=await e.env.DB.prepare(`
       INSERT INTO landing_pages (user_id, slug, title, template_type, content_json, html_content, qr_code_url, thumbnail_url, og_title, og_description, folder_id, status)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active')
-    `).bind(c.id,v,t,s,JSON.stringify(r),y,k,a||null,n||null,o||null,l||null).run();return await e.env.DB.prepare(`
+    `).bind(c.id,v,t,s,JSON.stringify(r),y,I,a||null,n||null,o||null,l||null).run();return await e.env.DB.prepare(`
       UPDATE usage_tracking 
       SET landing_pages_created = landing_pages_created + 1, 
           updated_at = CURRENT_TIMESTAMP
       WHERE subscription_id = ?
-    `).bind(m.id).run(),console.log("✅ Landing page created and usage incremented:",b+1,"/",h),e.json({success:!0,message:"랜딩페이지가 생성되었습니다.",slug:v,url:`/landing/${v}`,usage:{current:b+1,limit:h},qrCodeUrl:k,id:S.meta.last_row_id})}catch(t){return console.error("Landing page creation error:",t),e.json({success:!1,error:"랜딩페이지 생성 실패: "+error.message},500)}});d.get("/api/landing/my-pages",async e=>{try{const t=e.req.query("userId"),s=e.req.query("folderId");let r="SELECT id, slug, title, template_type, view_count, status, folder_id, created_at FROM landing_pages WHERE user_id = ?",a=[t];s?(r+=" AND folder_id = ?",a.push(s)):(s===null||s==="null")&&(r+=" AND folder_id IS NULL"),r+=" ORDER BY created_at DESC";const{results:n}=await e.env.DB.prepare(r).bind(...a).all();return e.json({success:!0,pages:n})}catch(t){return console.error("목록 조회 실패:",t),e.json({success:!1,error:"목록 조회 실패"},500)}});d.get("/api/landing/folders",async e=>{try{const t=e.req.query("userId"),s="SELECT id, name, created_at FROM landing_folders WHERE user_id = ? ORDER BY created_at DESC",{results:r}=await e.env.DB.prepare(s).bind(t).all(),a=await Promise.all(r.map(async l=>{const c=await e.env.DB.prepare("SELECT COUNT(*) as count FROM landing_pages WHERE folder_id = ?").bind(l.id).first();return{...l,page_count:c.count||0}})),o=await e.env.DB.prepare("SELECT COUNT(*) as count FROM landing_pages WHERE user_id = ?").bind(t).first();return e.json({success:!0,folders:a,totalPages:o.count||0})}catch(t){return console.error("폴더 목록 조회 실패:",t),e.json({success:!1,error:"폴더 목록 조회 실패"},500)}});d.post("/api/landing/folders",async e=>{try{const{userId:t,name:s,description:r}=await e.req.json();if(!s||!s.trim())return e.json({success:!1,error:"폴더 이름을 입력하세요."},400);const n=await e.env.DB.prepare("INSERT INTO landing_folders (user_id, name, description) VALUES (?, ?, ?)").bind(t,s.trim(),r||null).run();return e.json({success:!0,folderId:n.meta.last_row_id,message:"폴더가 생성되었습니다."})}catch(t){return console.error("폴더 생성 실패:",t),e.json({success:!1,error:"폴더 생성 실패"},500)}});d.put("/api/landing/folders/:id",async e=>{try{const t=e.req.param("id"),{name:s,description:r}=await e.req.json();return!s||!s.trim()?e.json({success:!1,error:"폴더 이름을 입력하세요."},400):(await e.env.DB.prepare("UPDATE landing_folders SET name = ?, description = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?").bind(s.trim(),r||null,t).run(),e.json({success:!0,message:"폴더가 수정되었습니다."}))}catch(t){return console.error("폴더 수정 실패:",t),e.json({success:!1,error:"폴더 수정 실패"},500)}});d.delete("/api/landing/folders/:id",async e=>{try{const t=e.req.param("id"),s=e.req.query("userId");return await e.env.DB.prepare("UPDATE landing_pages SET folder_id = NULL WHERE folder_id = ?").bind(t).run(),await e.env.DB.prepare("DELETE FROM landing_folders WHERE id = ? AND user_id = ?").bind(t,s).run(),e.json({success:!0,message:"폴더가 삭제되었습니다."})}catch(t){return console.error("폴더 삭제 실패:",t),e.json({success:!1,error:"폴더 삭제 실패"},500)}});d.put("/api/landing/move-to-folder",async e=>{try{const{pageId:t,folderId:s}=await e.req.json();return await e.env.DB.prepare("UPDATE landing_pages SET folder_id = ? WHERE id = ?").bind(s,t).run(),e.json({success:!0,message:"폴더로 이동되었습니다."})}catch(t){return console.error("폴더 이동 실패:",t),e.json({success:!1,error:"폴더 이동 실패"},500)}});d.get("/api/landing/:slug",async e=>{try{const t=e.req.param("slug"),r=await e.env.DB.prepare("SELECT * FROM landing_pages WHERE slug = ? AND status = ?").bind(t,"active").first();return r?(await e.env.DB.prepare("UPDATE landing_pages SET view_count = view_count + 1 WHERE slug = ?").bind(t).run(),await e.env.DB.prepare("INSERT INTO landing_page_views (landing_page_id, user_agent, referrer) VALUES (?, ?, ?)").bind(r.id,e.req.header("user-agent")||"",e.req.header("referer")||"").run(),e.json({success:!0,page:r})):e.json({success:!1,error:"페이지를 찾을 수 없습니다."},404)}catch{return e.json({success:!1,error:"페이지 조회 실패"},500)}});d.get("/api/landing/stats/summary",async e=>{try{const t=e.req.header("X-User-Data"),s=t?JSON.parse(t):{id:1},r=await e.env.DB.prepare("SELECT COUNT(*) as count FROM landing_pages WHERE user_id = ?").bind(s.id).first(),a=await e.env.DB.prepare("SELECT SUM(view_count) as total FROM landing_pages WHERE user_id = ?").bind(s.id).first(),n=await e.env.DB.prepare("SELECT id, title, slug, view_count FROM landing_pages WHERE user_id = ? ORDER BY view_count DESC LIMIT 5").bind(s.id).all();return e.json({success:!0,stats:{totalPages:(r==null?void 0:r.count)||0,totalViews:(a==null?void 0:a.total)||0,topPages:n.results||[]}})}catch{return e.json({success:!1,error:"통계 조회 실패"},500)}});d.delete("/api/landing/:id",async e=>{try{const t=e.req.param("id"),s=e.req.query("userId"),r=e.req.header("X-User-Data");let a;if(s)a={id:parseInt(s)};else if(r)a=JSON.parse(r);else return e.json({success:!1,error:"사용자 인증 정보가 없습니다."},401);console.log("Deleting landing page:",{id:t,userId:a.id});const n=await e.env.DB.prepare("DELETE FROM landing_pages WHERE id = ? AND user_id = ?").bind(t,a.id).run();return console.log("Delete result:",n),n.meta.changes===0?e.json({success:!1,error:"삭제할 페이지를 찾을 수 없거나 권한이 없습니다."},404):e.json({success:!0,message:"삭제되었습니다."})}catch(t){return console.error("Landing page delete error:",t),e.json({success:!1,error:t.message||"삭제 실패"},500)}});function Ms(e,t){const s={"academy-intro":Ns,"program-promo":As,"event-promo":Os,"parent-letter":Us,"student-report":Ps,"admission-info":Fs,"academy-stats":$s,"teacher-intro":qs};return(s[e]||s["academy-intro"])(t)}function Ns(e){const{academyName:t,location:s,features:r,specialties:a,contact:n}=e;return`
+    `).bind(m.id).run(),console.log("✅ Landing page created and usage incremented:",b+1,"/",h),e.json({success:!0,message:"랜딩페이지가 생성되었습니다.",slug:v,url:`/landing/${v}`,usage:{current:b+1,limit:h},qrCodeUrl:I,id:S.meta.last_row_id})}catch(t){return console.error("Landing page creation error:",t),e.json({success:!1,error:"랜딩페이지 생성 실패: "+error.message},500)}});d.get("/api/landing/my-pages",async e=>{try{const t=e.req.query("userId"),s=e.req.query("folderId");let r="SELECT id, slug, title, template_type, view_count, status, folder_id, created_at FROM landing_pages WHERE user_id = ?",a=[t];s?(r+=" AND folder_id = ?",a.push(s)):(s===null||s==="null")&&(r+=" AND folder_id IS NULL"),r+=" ORDER BY created_at DESC";const{results:n}=await e.env.DB.prepare(r).bind(...a).all();return e.json({success:!0,pages:n})}catch(t){return console.error("목록 조회 실패:",t),e.json({success:!1,error:"목록 조회 실패"},500)}});d.get("/api/landing/folders",async e=>{try{const t=e.req.query("userId"),s="SELECT id, name, created_at FROM landing_folders WHERE user_id = ? ORDER BY created_at DESC",{results:r}=await e.env.DB.prepare(s).bind(t).all(),a=await Promise.all(r.map(async l=>{const c=await e.env.DB.prepare("SELECT COUNT(*) as count FROM landing_pages WHERE folder_id = ?").bind(l.id).first();return{...l,page_count:c.count||0}})),o=await e.env.DB.prepare("SELECT COUNT(*) as count FROM landing_pages WHERE user_id = ?").bind(t).first();return e.json({success:!0,folders:a,totalPages:o.count||0})}catch(t){return console.error("폴더 목록 조회 실패:",t),e.json({success:!1,error:"폴더 목록 조회 실패"},500)}});d.post("/api/landing/folders",async e=>{try{const{userId:t,name:s,description:r}=await e.req.json();if(!s||!s.trim())return e.json({success:!1,error:"폴더 이름을 입력하세요."},400);const n=await e.env.DB.prepare("INSERT INTO landing_folders (user_id, name, description) VALUES (?, ?, ?)").bind(t,s.trim(),r||null).run();return e.json({success:!0,folderId:n.meta.last_row_id,message:"폴더가 생성되었습니다."})}catch(t){return console.error("폴더 생성 실패:",t),e.json({success:!1,error:"폴더 생성 실패"},500)}});d.put("/api/landing/folders/:id",async e=>{try{const t=e.req.param("id"),{name:s,description:r}=await e.req.json();return!s||!s.trim()?e.json({success:!1,error:"폴더 이름을 입력하세요."},400):(await e.env.DB.prepare("UPDATE landing_folders SET name = ?, description = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?").bind(s.trim(),r||null,t).run(),e.json({success:!0,message:"폴더가 수정되었습니다."}))}catch(t){return console.error("폴더 수정 실패:",t),e.json({success:!1,error:"폴더 수정 실패"},500)}});d.delete("/api/landing/folders/:id",async e=>{try{const t=e.req.param("id"),s=e.req.query("userId");return await e.env.DB.prepare("UPDATE landing_pages SET folder_id = NULL WHERE folder_id = ?").bind(t).run(),await e.env.DB.prepare("DELETE FROM landing_folders WHERE id = ? AND user_id = ?").bind(t,s).run(),e.json({success:!0,message:"폴더가 삭제되었습니다."})}catch(t){return console.error("폴더 삭제 실패:",t),e.json({success:!1,error:"폴더 삭제 실패"},500)}});d.put("/api/landing/move-to-folder",async e=>{try{const{pageId:t,folderId:s}=await e.req.json();return await e.env.DB.prepare("UPDATE landing_pages SET folder_id = ? WHERE id = ?").bind(s,t).run(),e.json({success:!0,message:"폴더로 이동되었습니다."})}catch(t){return console.error("폴더 이동 실패:",t),e.json({success:!1,error:"폴더 이동 실패"},500)}});d.get("/api/landing/:slug",async e=>{try{const t=e.req.param("slug"),r=await e.env.DB.prepare("SELECT * FROM landing_pages WHERE slug = ? AND status = ?").bind(t,"active").first();return r?(await e.env.DB.prepare("UPDATE landing_pages SET view_count = view_count + 1 WHERE slug = ?").bind(t).run(),await e.env.DB.prepare("INSERT INTO landing_page_views (landing_page_id, user_agent, referrer) VALUES (?, ?, ?)").bind(r.id,e.req.header("user-agent")||"",e.req.header("referer")||"").run(),e.json({success:!0,page:r})):e.json({success:!1,error:"페이지를 찾을 수 없습니다."},404)}catch{return e.json({success:!1,error:"페이지 조회 실패"},500)}});d.get("/api/landing/stats/summary",async e=>{try{const t=e.req.header("X-User-Data"),s=t?JSON.parse(t):{id:1},r=await e.env.DB.prepare("SELECT COUNT(*) as count FROM landing_pages WHERE user_id = ?").bind(s.id).first(),a=await e.env.DB.prepare("SELECT SUM(view_count) as total FROM landing_pages WHERE user_id = ?").bind(s.id).first(),n=await e.env.DB.prepare("SELECT id, title, slug, view_count FROM landing_pages WHERE user_id = ? ORDER BY view_count DESC LIMIT 5").bind(s.id).all();return e.json({success:!0,stats:{totalPages:(r==null?void 0:r.count)||0,totalViews:(a==null?void 0:a.total)||0,topPages:n.results||[]}})}catch{return e.json({success:!1,error:"통계 조회 실패"},500)}});d.delete("/api/landing/:id",async e=>{try{const t=e.req.param("id"),s=e.req.query("userId"),r=e.req.header("X-User-Data");let a;if(s)a={id:parseInt(s)};else if(r)a=JSON.parse(r);else return e.json({success:!1,error:"사용자 인증 정보가 없습니다."},401);console.log("Deleting landing page:",{id:t,userId:a.id});const n=await e.env.DB.prepare("DELETE FROM landing_pages WHERE id = ? AND user_id = ?").bind(t,a.id).run();return console.log("Delete result:",n),n.meta.changes===0?e.json({success:!1,error:"삭제할 페이지를 찾을 수 없거나 권한이 없습니다."},404):e.json({success:!0,message:"삭제되었습니다."})}catch(t){return console.error("Landing page delete error:",t),e.json({success:!1,error:t.message||"삭제 실패"},500)}});function Ms(e,t){const s={"academy-intro":Ns,"program-promo":Os,"event-promo":As,"parent-letter":Us,"student-report":Ps,"admission-info":Fs,"academy-stats":$s,"teacher-intro":qs};return(s[e]||s["academy-intro"])(t)}function Ns(e){const{academyName:t,location:s,features:r,specialties:a,contact:n}=e;return`
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -3606,7 +3606,7 @@ var Bt=Object.defineProperty;var tt=e=>{throw TypeError(e)};var Mt=(e,t,s)=>t in
     </footer>
 </body>
 </html>
-  `}function As(e){const{programName:t,target:s,features:r,price:a,duration:n,cta:o}=e;return`
+  `}function Os(e){const{programName:t,target:s,features:r,price:a,duration:n,cta:o}=e;return`
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -3657,7 +3657,7 @@ var Bt=Object.defineProperty;var tt=e=>{throw TypeError(e)};var Mt=(e,t,s)=>t in
     </div>
 </body>
 </html>
-  `}function Os(e){const{eventName:t,period:s,benefits:r,urgency:a,cta:n}=e;return`
+  `}function As(e){const{eventName:t,period:s,benefits:r,urgency:a,cta:n}=e;return`
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -5404,7 +5404,30 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
       UPDATE usage_tracking 
       SET landing_pages_created = landing_pages_created + 1, updated_at = CURRENT_TIMESTAMP
       WHERE academy_id = ? AND subscription_id = ?
-    `).bind(r,a.id).run(),e.json({success:!0,message:"랜딩페이지 사용량이 증가했습니다"})):e.json({success:!1,error:"활성 구독이 없습니다"},403)}catch(t){return e.json({success:!1,error:t.message},500)}});d.post("/api/usage/increment-teachers",async e=>{try{const t=X(e,"session_id");if(!t)return e.json({success:!1,error:"Not authenticated"},401);const r=JSON.parse(t).id,a=await e.env.DB.prepare(`
+    `).bind(r,a.id).run(),e.json({success:!0,message:"랜딩페이지 사용량이 증가했습니다"})):e.json({success:!1,error:"활성 구독이 없습니다"},403)}catch(t){return e.json({success:!1,error:t.message},500)}});d.post("/api/bank-transfer/request",async e=>{try{const{userId:t,userName:s,userEmail:r,userPhone:a,planName:n,amount:o,note:l}=await e.req.json();if(!t||!s||!r||!a||!n||!o)return e.json({success:!1,error:"필수 정보를 모두 입력해주세요."},400);const i=await e.env.DB.prepare(`
+      INSERT INTO bank_transfer_requests 
+      (user_id, user_name, user_email, user_phone, plan_name, amount, note, status, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', CURRENT_TIMESTAMP)
+    `).bind(t,s,r,a,n,o,l||null).run();return e.json({success:!0,message:"계좌이체 신청이 완료되었습니다.",requestId:i.meta.last_row_id})}catch(t){return console.error("계좌이체 신청 실패:",t),e.json({success:!1,error:"신청 처리 중 오류가 발생했습니다."},500)}});d.get("/api/bank-transfer/requests",async e=>{try{if(e.req.query("adminEmail")!=="admin@superplace.co.kr")return e.json({success:!1,error:"관리자 권한이 필요합니다."},403);const s=await e.env.DB.prepare(`
+      SELECT * FROM bank_transfer_requests
+      ORDER BY 
+        CASE status
+          WHEN 'pending' THEN 1
+          WHEN 'approved' THEN 2
+          WHEN 'rejected' THEN 3
+        END,
+        created_at DESC
+    `).all();return e.json({success:!0,requests:s.results||[]})}catch(t){return console.error("신청 목록 조회 실패:",t),e.json({success:!1,error:"목록 조회 중 오류가 발생했습니다."},500)}});d.post("/api/bank-transfer/approve",async e=>{try{const{requestId:t,adminEmail:s}=await e.req.json();return s!=="admin@superplace.co.kr"?e.json({success:!1,error:"관리자 권한이 필요합니다."},403):await e.env.DB.prepare(`
+      SELECT * FROM bank_transfer_requests WHERE id = ?
+    `).bind(t).first()?(await e.env.DB.prepare(`
+      UPDATE bank_transfer_requests
+      SET status = 'approved', approved_at = CURRENT_TIMESTAMP, approved_by = ?
+      WHERE id = ?
+    `).bind(s,t).run(),e.json({success:!0,message:"계좌이체가 승인되었습니다."})):e.json({success:!1,error:"신청 정보를 찾을 수 없습니다."},404)}catch(t){return console.error("승인 처리 실패:",t),e.json({success:!1,error:"승인 처리 중 오류가 발생했습니다."},500)}});d.post("/api/bank-transfer/reject",async e=>{try{const{requestId:t,adminEmail:s,reason:r}=await e.req.json();return s!=="admin@superplace.co.kr"?e.json({success:!1,error:"관리자 권한이 필요합니다."},403):(await e.env.DB.prepare(`
+      UPDATE bank_transfer_requests
+      SET status = 'rejected', rejected_at = CURRENT_TIMESTAMP, rejected_by = ?, rejection_reason = ?
+      WHERE id = ?
+    `).bind(s,r||null,t).run(),e.json({success:!0,message:"계좌이체 신청이 거절되었습니다."}))}catch(t){return console.error("거절 처리 실패:",t),e.json({success:!1,error:"거절 처리 중 오류가 발생했습니다."},500)}});d.post("/api/usage/increment-teachers",async e=>{try{const t=X(e,"session_id");if(!t)return e.json({success:!1,error:"Not authenticated"},401);const r=JSON.parse(t).id,a=await e.env.DB.prepare(`
       SELECT * FROM subscriptions 
       WHERE academy_id = ? AND status = 'active'
       ORDER BY created_at DESC LIMIT 1
@@ -12838,7 +12861,212 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
         <\/script>
     </body>
     </html>
-  `));d.get("/about",e=>e.html(`
+  `));d.get("/payment/bank-transfer",e=>(e.req.query("plan"),e.req.query("amount"),e.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>계좌이체 신청 - 우리는 슈퍼플레이스다</title>
+        <script src="https://cdn.tailwindcss.com"><\/script>
+        <style>
+          @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
+          * { font-family: 'Pretendard Variable', sans-serif; }
+        </style>
+    </head>
+    <body class="bg-gradient-to-br from-blue-50 via-white to-purple-50">
+        <nav class="fixed w-full top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-200">
+            <div class="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
+                <a href="/" class="text-xl font-bold text-gray-900">우리는 슈퍼플레이스다</a>
+                <div class="flex gap-6">
+                    <a href="/pricing" class="text-gray-600 hover:text-purple-600">← 요금제</a>
+                    <a href="/dashboard" class="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-full hover:shadow-lg transition">대시보드</a>
+                </div>
+            </div>
+        </nav>
+
+        <div class="pt-32 pb-24 px-6">
+            <div class="max-w-4xl mx-auto">
+                <div class="text-center mb-12">
+                    <h1 class="text-4xl font-bold text-gray-900 mb-4">💰 계좌이체 신청</h1>
+                    <p class="text-lg text-gray-600">아래 계좌로 입금 후 신청서를 제출해주세요</p>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-8 mb-12">
+                    <!-- 계좌 정보 -->
+                    <div class="bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl p-8 text-white shadow-2xl">
+                        <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
+                            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                            </svg>
+                            입금 계좌
+                        </h2>
+                        <div class="space-y-4">
+                            <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4">
+                                <p class="text-sm text-blue-100 mb-1">은행</p>
+                                <p class="text-2xl font-bold">하나은행</p>
+                            </div>
+                            <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4">
+                                <p class="text-sm text-blue-100 mb-1">계좌번호</p>
+                                <p class="text-2xl font-bold font-mono">746-910023-17004</p>
+                                <button onclick="copyAccount()" class="mt-2 text-sm bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition">
+                                    📋 계좌번호 복사
+                                </button>
+                            </div>
+                            <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4">
+                                <p class="text-sm text-blue-100 mb-1">예금주</p>
+                                <p class="text-lg font-bold">주식회사 우리는슈퍼플레이스다</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 신청 정보 -->
+                    <div class="bg-white rounded-2xl p-8 border-2 border-gray-200 shadow-lg">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-6">신청 정보</h2>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">선택 플랜</label>
+                                <input type="text" id="planName" readonly 
+                                       class="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl font-bold text-purple-600">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">결제 금액</label>
+                                <input type="text" id="amount" readonly 
+                                       class="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl font-bold text-2xl text-gray-900">
+                            </div>
+                            <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
+                                <p class="text-sm text-yellow-800">
+                                    <strong>💡 안내사항</strong><br>
+                                    입금자명을 신청서의 이름과 동일하게 입금해주세요
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 신청서 작성 -->
+                <div class="bg-white rounded-2xl p-8 border-2 border-gray-200 shadow-lg">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6">신청서 작성</h2>
+                    <form id="transferForm" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 mb-2">이름 (입금자명) *</label>
+                            <input type="text" id="userName" required
+                                   class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                   placeholder="홍길동">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 mb-2">이메일 *</label>
+                            <input type="email" id="userEmail" required
+                                   class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                   placeholder="email@example.com">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 mb-2">연락처 *</label>
+                            <input type="tel" id="userPhone" required
+                                   class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                   placeholder="010-1234-5678">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 mb-2">입금 예정일 *</label>
+                            <input type="date" id="depositDate" required
+                                   class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 mb-2">메모 (선택)</label>
+                            <textarea id="note" rows="3"
+                                      class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                                      placeholder="추가 요청사항이 있으시면 입력해주세요"></textarea>
+                        </div>
+                        <div class="flex items-start gap-3 p-4 bg-blue-50 rounded-xl">
+                            <input type="checkbox" id="agreeTerms" required class="w-5 h-5 mt-1">
+                            <label for="agreeTerms" class="text-sm text-gray-700">
+                                입금 정보와 신청 내용이 정확함을 확인하였으며, 입금 후 승인까지 영업일 기준 1-2일 소요될 수 있음을 동의합니다.
+                            </label>
+                        </div>
+                        <button type="submit" 
+                                class="w-full py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-bold text-lg hover:shadow-2xl hover:from-blue-700 hover:to-purple-700 transition-all">
+                            💰 계좌이체 신청하기
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <script>
+        const urlParams = new URLSearchParams(window.location.search)
+        const planName = urlParams.get('plan') || '플랜'
+        const amount = parseInt(urlParams.get('amount') || '0')
+        
+        document.getElementById('planName').value = planName
+        document.getElementById('amount').value = '₩' + amount.toLocaleString()
+
+        // 사용자 정보 자동 입력
+        const user = JSON.parse(localStorage.getItem('user') || 'null')
+        if (user) {
+            if (user.name) document.getElementById('userName').value = user.name
+            if (user.email) document.getElementById('userEmail').value = user.email
+            if (user.phone) document.getElementById('userPhone').value = user.phone
+        }
+
+        // 오늘 날짜 설정
+        const today = new Date().toISOString().split('T')[0]
+        document.getElementById('depositDate').value = today
+        document.getElementById('depositDate').min = today
+
+        function copyAccount() {
+            navigator.clipboard.writeText('746-910023-17004').then(() => {
+                alert('✅ 계좌번호가 복사되었습니다!')
+            }).catch(err => {
+                alert('복사 실패: ' + err)
+            })
+        }
+
+        document.getElementById('transferForm').addEventListener('submit', async (e) => {
+            e.preventDefault()
+            
+            if (!user || !user.id) {
+                alert('로그인이 필요합니다.')
+                window.location.href = '/login'
+                return
+            }
+
+            const userName = document.getElementById('userName').value
+            const userEmail = document.getElementById('userEmail').value
+            const userPhone = document.getElementById('userPhone').value
+            const depositDate = document.getElementById('depositDate').value
+            const note = document.getElementById('note').value
+
+            try {
+                const response = await fetch('/api/bank-transfer/request', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId: user.id,
+                        userName,
+                        userEmail,
+                        userPhone,
+                        planName,
+                        amount,
+                        note: note + ' (입금예정일: ' + depositDate + ')'
+                    })
+                })
+
+                const result = await response.json()
+                
+                if (result.success) {
+                    alert('✅ 계좌이체 신청이 완료되었습니다!\\n\\n관리자 승인 후 서비스가 활성화됩니다.\\n승인까지 영업일 기준 1-2일 소요될 수 있습니다.')
+                    window.location.href = '/dashboard'
+                } else {
+                    alert('❌ 신청 실패: ' + result.error)
+                }
+            } catch (err) {
+                alert('❌ 오류가 발생했습니다: ' + err.message)
+            }
+        })
+        <\/script>
+    </body>
+    </html>
+  `)));d.get("/about",e=>e.html(`
     <!DOCTYPE html>
     <html lang="ko">
     <head>
@@ -13195,7 +13423,7 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
     `).all();return e.json({success:!0,stats:{today:(t==null?void 0:t.count)||0,thisMonth:(s==null?void 0:s.count)||0,byStatus:r.results||[]}})}catch(t){return console.error("Get SMS stats error:",t),e.json({success:!1,error:"통계 조회 실패"},500)}});d.get("/api/students/:id/stats",async e=>{try{const t=e.req.param("id"),s=e.req.query("startDate"),r=e.req.query("endDate");if(!t)return e.json({success:!1,error:"학생 ID가 필요합니다."},400);try{const a=await e.env.DB.prepare("SELECT COUNT(*) as total_records, AVG(CASE WHEN attendance = '출석' THEN 1 ELSE 0 END) * 100 as attendance_rate, AVG(understanding_level) as avg_understanding, AVG(homework_completion) as avg_homework FROM daily_records WHERE student_id = ? AND date BETWEEN ? AND ?").bind(t,s||"2020-01-01",r||"2099-12-31").first();return e.json({success:!0,stats:a||{total_records:0,attendance_rate:0,avg_understanding:0,avg_homework:0}})}catch(a){return console.error("[GetStudentStats] DB Error:",a),e.json({success:!0,stats:{total_records:0,attendance_rate:0,avg_understanding:0,avg_homework:0}})}}catch(t){return console.error("[GetStudentStats] Error:",t),e.json({success:!0,stats:{total_records:0,attendance_rate:0,avg_understanding:0,avg_homework:0}})}});d.get("/api/students/:id",async e=>{try{const t=e.req.param("id");if(!t)return e.json({success:!1,error:"학생 ID가 필요합니다."},400);const s=await e.env.DB.prepare("SELECT s.*, c.class_name FROM students s LEFT JOIN classes c ON s.class_id = c.id WHERE s.id = ? AND s.status = 'active'").bind(t).first();return s?e.json({success:!0,student:s}):e.json({success:!1,error:"학생을 찾을 수 없습니다."},404)}catch(t){return console.error("[GetStudentDetail] Error:",t),e.json({success:!1,error:"학생 정보를 가져오는 중 오류가 발생했습니다."},500)}});d.get("/api/students",async e=>{var t,s;console.log(`
 👥 [GetStudents] ==========================================`),console.log("👥 [GetStudents] Request started");try{if(!e.env.DB)return console.error("❌ [GetStudents] FATAL: DB not available"),e.json({success:!1,error:"DB 연결 실패"},500);console.log("✅ [GetStudents] DB connection OK");let r;try{const n=e.req.header("X-User-Data-Base64");if(n){const o=JSON.parse(decodeURIComponent(escape(atob(n))));r=o.id||o.academy_id,console.log("👥 [GetStudents] Got userId from header:",r)}}catch{console.log("⚠️  [GetStudents] Header parse failed, trying session")}if(!r){const n=(s=(t=e.req.header("cookie"))==null?void 0:t.match(/session_id=([^;]+)/))==null?void 0:s[1];if(n){const o=await e.env.DB.prepare("SELECT user_id FROM sessions WHERE session_id = ? AND expires_at > datetime('now')").bind(n).first();r=o==null?void 0:o.user_id,console.log("👥 [GetStudents] Got userId from session:",r)}}if(!r)return console.error("❌ [GetStudents] No userId"),e.json({success:!1,error:"로그인이 필요합니다."},401);console.log("👥 [GetStudents] Final userId:",r);let a=[];try{console.log("👥 [GetStudents] Try 1: WHERE academy_id =",r),a=(await e.env.DB.prepare("SELECT * FROM students WHERE academy_id = ? AND status = 'active' ORDER BY id DESC").bind(r).all()).results||[],console.log("✅ [GetStudents] SUCCESS! Found",a.length,"students")}catch(n){console.log("⚠️  [GetStudents] Try 1 failed:",n.message);try{console.log("👥 [GetStudents] Try 2: All active students"),a=(await e.env.DB.prepare("SELECT * FROM students WHERE status = 'active' ORDER BY id DESC LIMIT 1000").all()).results||[],console.log("✅ [GetStudents] Found",a.length,"active students")}catch(o){console.log("⚠️  [GetStudents] Try 2 failed:",o.message);try{console.log("👥 [GetStudents] Try 3: All students (no filter)"),a=(await e.env.DB.prepare("SELECT * FROM students ORDER BY id DESC LIMIT 1000").all()).results||[],console.log("✅ [GetStudents] Found",a.length,"total students")}catch(l){throw console.error("❌ [GetStudents] ALL queries failed!"),l}}}return console.log("✅ [GetStudents] Returning",a.length,"students"),console.log(`👥 [GetStudents] ==========================================
 `),e.json({success:!0,students:a})}catch(r){return console.error("❌ [GetStudents] FATAL ERROR:",r),console.error("❌ [GetStudents] Message:",r.message),console.error("❌ [GetStudents] Stack:",r.stack),console.log(`👥 [GetStudents] ==========================================
-`),e.json({success:!1,error:"학생 목록 조회 실패: "+r.message},500)}});d.post("/api/students",async e=>{try{if(console.log("➕ [AddStudent] ==================== START ===================="),!e.env.DB)return console.error("❌ [AddStudent] DB not available"),e.json({success:!1,error:"데이터베이스 연결 실패"},500);console.log("✅ [AddStudent] DB connected");const t=await e.req.json();console.log("➕ [AddStudent] Received data:",JSON.stringify(t,null,2));const{name:s,phone:r,grade:a,subjects:n,school:o,parent_name:l,parentName:i,parent_phone:c,parentPhone:p,notes:u,memo:m,classId:x,class_id:b,enrollmentDate:h,enrollment_date:v,academyId:y}=t;let E=y||t.academyId;try{const P=e.req.header("X-User-Data-Base64");if(P&&!E){const be=JSON.parse(decodeURIComponent(escape(atob(P))));E=be.id||be.academy_id,console.log("➕ [AddStudent] Academy ID from header:",E)}}catch(P){console.error("➕ [AddStudent] Header parse error:",P)}const k=i||l,I=p||c,S=m||u,C=x||b,j=h||v||new Date().toISOString().split("T")[0];if(console.log("➕ [AddStudent] Final values:",{name:s,grade:a,finalParentName:k,finalParentPhone:I,finalAcademyId:E,finalClassId:C}),!s||!a||!k||!I)return e.json({success:!1,error:"필수 항목을 입력해주세요. (이름, 학년, 학부모 이름, 학부모 연락처)"},400);if(!E)return e.json({success:!1,error:"학원 ID가 필요합니다."},400);console.log("🔍 [AddStudent] Checking student limit...");const B=await e.env.DB.prepare(`
+`),e.json({success:!1,error:"학생 목록 조회 실패: "+r.message},500)}});d.post("/api/students",async e=>{try{if(console.log("➕ [AddStudent] ==================== START ===================="),!e.env.DB)return console.error("❌ [AddStudent] DB not available"),e.json({success:!1,error:"데이터베이스 연결 실패"},500);console.log("✅ [AddStudent] DB connected");const t=await e.req.json();console.log("➕ [AddStudent] Received data:",JSON.stringify(t,null,2));const{name:s,phone:r,grade:a,subjects:n,school:o,parent_name:l,parentName:i,parent_phone:c,parentPhone:p,notes:u,memo:m,classId:x,class_id:b,enrollmentDate:h,enrollment_date:v,academyId:y}=t;let E=y||t.academyId;try{const P=e.req.header("X-User-Data-Base64");if(P&&!E){const be=JSON.parse(decodeURIComponent(escape(atob(P))));E=be.id||be.academy_id,console.log("➕ [AddStudent] Academy ID from header:",E)}}catch(P){console.error("➕ [AddStudent] Header parse error:",P)}const I=i||l,k=p||c,S=m||u,C=x||b,j=h||v||new Date().toISOString().split("T")[0];if(console.log("➕ [AddStudent] Final values:",{name:s,grade:a,finalParentName:I,finalParentPhone:k,finalAcademyId:E,finalClassId:C}),!s||!a||!I||!k)return e.json({success:!1,error:"필수 항목을 입력해주세요. (이름, 학년, 학부모 이름, 학부모 연락처)"},400);if(!E)return e.json({success:!1,error:"학원 ID가 필요합니다."},400);console.log("🔍 [AddStudent] Checking student limit...");const B=await e.env.DB.prepare(`
       SELECT * FROM subscriptions 
       WHERE academy_id = ? AND status = 'active'
       ORDER BY created_at DESC LIMIT 1
@@ -13212,18 +13440,18 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
           academy_id, class_id, notes, status, created_at
         )
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', datetime('now'))
-      `).bind(s,r||null,a,n||"",o||null,k,I,E,C||null,S||null).run()}catch(P){console.error("➕ [AddStudent] First attempt failed:",P.message);try{M=await e.env.DB.prepare(`
+      `).bind(s,r||null,a,n||"",o||null,I,k,E,C||null,S||null).run()}catch(P){console.error("➕ [AddStudent] First attempt failed:",P.message);try{M=await e.env.DB.prepare(`
           INSERT INTO students (
             name, phone, grade, subjects, school, parent_name, parent_phone, 
             academy_id, enrollment_date, notes, status, class_id
           )
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', ?)
-        `).bind(s,r||null,a,n||"",o||null,k,I,E,j,S||null,C||null).run()}catch(be){if(console.error("➕ [AddStudent] Second attempt failed:",be.message),M=await e.env.DB.prepare(`
+        `).bind(s,r||null,a,n||"",o||null,I,k,E,j,S||null,C||null).run()}catch(be){if(console.error("➕ [AddStudent] Second attempt failed:",be.message),M=await e.env.DB.prepare(`
           INSERT INTO students (
             name, grade, parent_name, parent_phone, academy_id, status
           )
           VALUES (?, ?, ?, ?, ?, 'active')
-        `).bind(s,a,k,I,E).run(),C&&M.meta.last_row_id)try{await e.env.DB.prepare("UPDATE students SET class_id = ? WHERE id = ?").bind(C,M.meta.last_row_id).run()}catch(Ue){console.error("➕ [AddStudent] Class ID update failed:",Ue.message)}}}const V=M.meta.last_row_id;console.log("✅ [AddStudent] Success! Student ID:",V),console.log("✅ [AddStudent] Changes:",M.meta.changes);try{const P=await e.env.DB.prepare("SELECT id, name, grade, academy_id FROM students WHERE id = ?").bind(V).first();console.log("✅ [AddStudent] Verified student:",P)}catch(P){console.error("⚠️ [AddStudent] Verification failed:",P.message)}console.log("➕ [AddStudent] ==================== END ====================");try{await e.env.DB.prepare(`
+        `).bind(s,a,I,k,E).run(),C&&M.meta.last_row_id)try{await e.env.DB.prepare("UPDATE students SET class_id = ? WHERE id = ?").bind(C,M.meta.last_row_id).run()}catch(Ue){console.error("➕ [AddStudent] Class ID update failed:",Ue.message)}}}const V=M.meta.last_row_id;console.log("✅ [AddStudent] Success! Student ID:",V),console.log("✅ [AddStudent] Changes:",M.meta.changes);try{const P=await e.env.DB.prepare("SELECT id, name, grade, academy_id FROM students WHERE id = ?").bind(V).first();console.log("✅ [AddStudent] Verified student:",P)}catch(P){console.error("⚠️ [AddStudent] Verification failed:",P.message)}console.log("➕ [AddStudent] ==================== END ====================");try{await e.env.DB.prepare(`
         UPDATE usage_tracking 
         SET current_students = current_students + 1, updated_at = CURRENT_TIMESTAMP
         WHERE academy_id = ? AND subscription_id = ?
@@ -14440,14 +14668,14 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
 
 데이터를 먼저 입력한 후 리포트를 생성해주세요.`},400);console.log("✅ [GenerateReport] Data found - proceeding with report generation");let h=null,v=0,y=0,E="none";if(u.length>0)v=u.reduce((_,R)=>_+(R.count||0),0),y=((t=u.find(_=>_.status==="present"))==null?void 0:t.count)||0,h=v>0?(y/v*100).toFixed(1):0,E="attendance";else if(x.length>0){const _=x.filter(R=>R.attendance);v=_.length,y=_.filter(R=>R.attendance==="출석").length,v>0&&(h=(y/v*100).toFixed(1),E="daily_records")}if(h===null)return console.error("❌ [GenerateReport] No attendance data available"),e.json({success:!1,error:`${a}에 출석 데이터가 없습니다.
 
-출석 데이터를 먼저 입력한 후 리포트를 생성해주세요.`},400);console.log("📊 [GenerateReport] Attendance rate:",h+"%","(source:",E+")");let k=null,I="none";if(p.length>0)k=(p.reduce((_,R)=>_+R.score/R.max_score*100,0)/p.length).toFixed(1),I="grades";else if(x.length>0){const _=x.filter(q=>q.lesson_understanding).map(q=>parseFloat(q.lesson_understanding)),R=x.filter(q=>q.lesson_participation).map(q=>parseFloat(q.lesson_participation));if(_.length>0||R.length>0){const q=[..._,...R];k=(q.reduce((jt,Lt)=>jt+Lt,0)/q.length*10).toFixed(1),I="daily_records"}}if(k===null)return console.error("❌ [GenerateReport] No score data available"),e.json({success:!1,error:`${a}에 성적/학습 데이터가 없습니다.
+출석 데이터를 먼저 입력한 후 리포트를 생성해주세요.`},400);console.log("📊 [GenerateReport] Attendance rate:",h+"%","(source:",E+")");let I=null,k="none";if(p.length>0)I=(p.reduce((_,R)=>_+R.score/R.max_score*100,0)/p.length).toFixed(1),k="grades";else if(x.length>0){const _=x.filter(q=>q.lesson_understanding).map(q=>parseFloat(q.lesson_understanding)),R=x.filter(q=>q.lesson_participation).map(q=>parseFloat(q.lesson_participation));if(_.length>0||R.length>0){const q=[..._,...R];I=(q.reduce((jt,Lt)=>jt+Lt,0)/q.length*10).toFixed(1),k="daily_records"}}if(I===null)return console.error("❌ [GenerateReport] No score data available"),e.json({success:!1,error:`${a}에 성적/학습 데이터가 없습니다.
 
-성적 데이터 또는 일일 성과 기록을 먼저 입력한 후 리포트를 생성해주세요.`},400);console.log("📊 [GenerateReport] Average score:",k,"(source:",I+")");let S="평가 불가";h>=95&&k>=85?S="매우 우수":h>=90&&k>=80?S="우수":h>=80&&k>=70?S="양호":S="개선 필요";let C="";const j=p.length>0?p.reduce((_,R)=>R.score/R.max_score>_.score/_.max_score?R:_):null;j?C=j.subject+" 과목에서 "+(j.score/j.max_score*100).toFixed(1)+"점으로 우수한 성적을 보였습니다. 꾸준한 노력이 돋보입니다.":x.length>0&&x.filter(_=>_.lesson_participation).length>0?C="수업 참여도가 평균 "+(x.filter(R=>R.lesson_participation).reduce((R,q)=>R+parseFloat(q.lesson_participation),0)/x.filter(R=>R.lesson_participation).length).toFixed(1)+"점으로 적극적인 학습 태도를 보이고 있습니다.":C="현재 기간의 성적 데이터가 부족하여 강점을 파악하기 어렵습니다. 지속적인 학습 활동 기록이 필요합니다.";let B="";const L=p.length>0?p.reduce((_,R)=>R.score/R.max_score<_.score/_.max_score?R:_):null;L&&L.score/L.max_score*100<75?B=L.subject+" 과목에서 "+(L.score/L.max_score*100).toFixed(1)+"점으로 보완이 필요합니다.":x.length>0&&x.filter(_=>_.homework_status==="미완료").length>0?B="과제 완성률이 낮습니다. 복습 시간을 늘려 과제를 완료하는 습관을 기르면 좋겠습니다.":B="전반적으로 균형잡힌 학습을 하고 있습니다.";const le=h<90?"출석률 개선이 필요합니다. 규칙적인 수업 참여가 성적 향상의 기본입니다.":k<80?"기본 개념 복습에 더 많은 시간을 투자하면 좋겠습니다.":"현재 학습 패턴을 유지하면서 심화 학습으로 나아가면 좋겠습니다.",M=k>=85?"상위권 유지를 위해 심화 문제 풀이를 추천합니다. 경시대회 준비도 고려해볼 만합니다.":k>=75?"기본기 강화와 함께 문제 풀이 속도를 높이는 연습이 필요합니다.":"개념 이해를 위한 1:1 보충 수업을 추천합니다. 기초부터 차근차근 다져가면 충분히 성적이 오를 수 있습니다.",V=k>=85?"현재 평균 "+k+"점 수준을 유지하면서, "+((L==null?void 0:L.subject)||"취약 과목")+"에서 5점 이상 향상 목표":"평균 점수 "+k+"점에서 "+Math.min(100,parseFloat(k)+10).toFixed(0)+"점으로 향상, 출석률 "+h+"%에서 95% 이상 달성",P=o.name+" 학생은 이번 달 평균 "+k+"점의 성적을 기록했으며, 출석률은 "+h+"%입니다. "+(S==="매우 우수"||S==="우수"?"전반적으로 성실하게 학업에 임하고 있으며, 지속적인 성장이 기대됩니다.":"학습 태도와 출석 관리에 더 많은 관심이 필요합니다.")+(j?" 특히 "+j.subject+" 과목에서 강점을 보이고 있습니다.":"")+" 꾸준한 노력으로 더욱 발전할 수 있습니다.",be=`학부모님, 안녕하세요.
+성적 데이터 또는 일일 성과 기록을 먼저 입력한 후 리포트를 생성해주세요.`},400);console.log("📊 [GenerateReport] Average score:",I,"(source:",k+")");let S="평가 불가";h>=95&&I>=85?S="매우 우수":h>=90&&I>=80?S="우수":h>=80&&I>=70?S="양호":S="개선 필요";let C="";const j=p.length>0?p.reduce((_,R)=>R.score/R.max_score>_.score/_.max_score?R:_):null;j?C=j.subject+" 과목에서 "+(j.score/j.max_score*100).toFixed(1)+"점으로 우수한 성적을 보였습니다. 꾸준한 노력이 돋보입니다.":x.length>0&&x.filter(_=>_.lesson_participation).length>0?C="수업 참여도가 평균 "+(x.filter(R=>R.lesson_participation).reduce((R,q)=>R+parseFloat(q.lesson_participation),0)/x.filter(R=>R.lesson_participation).length).toFixed(1)+"점으로 적극적인 학습 태도를 보이고 있습니다.":C="현재 기간의 성적 데이터가 부족하여 강점을 파악하기 어렵습니다. 지속적인 학습 활동 기록이 필요합니다.";let B="";const L=p.length>0?p.reduce((_,R)=>R.score/R.max_score<_.score/_.max_score?R:_):null;L&&L.score/L.max_score*100<75?B=L.subject+" 과목에서 "+(L.score/L.max_score*100).toFixed(1)+"점으로 보완이 필요합니다.":x.length>0&&x.filter(_=>_.homework_status==="미완료").length>0?B="과제 완성률이 낮습니다. 복습 시간을 늘려 과제를 완료하는 습관을 기르면 좋겠습니다.":B="전반적으로 균형잡힌 학습을 하고 있습니다.";const le=h<90?"출석률 개선이 필요합니다. 규칙적인 수업 참여가 성적 향상의 기본입니다.":I<80?"기본 개념 복습에 더 많은 시간을 투자하면 좋겠습니다.":"현재 학습 패턴을 유지하면서 심화 학습으로 나아가면 좋겠습니다.",M=I>=85?"상위권 유지를 위해 심화 문제 풀이를 추천합니다. 경시대회 준비도 고려해볼 만합니다.":I>=75?"기본기 강화와 함께 문제 풀이 속도를 높이는 연습이 필요합니다.":"개념 이해를 위한 1:1 보충 수업을 추천합니다. 기초부터 차근차근 다져가면 충분히 성적이 오를 수 있습니다.",V=I>=85?"현재 평균 "+I+"점 수준을 유지하면서, "+((L==null?void 0:L.subject)||"취약 과목")+"에서 5점 이상 향상 목표":"평균 점수 "+I+"점에서 "+Math.min(100,parseFloat(I)+10).toFixed(0)+"점으로 향상, 출석률 "+h+"%에서 95% 이상 달성",P=o.name+" 학생은 이번 달 평균 "+I+"점의 성적을 기록했으며, 출석률은 "+h+"%입니다. "+(S==="매우 우수"||S==="우수"?"전반적으로 성실하게 학업에 임하고 있으며, 지속적인 성장이 기대됩니다.":"학습 태도와 출석 관리에 더 많은 관심이 필요합니다.")+(j?" 특히 "+j.subject+" 과목에서 강점을 보이고 있습니다.":"")+" 꾸준한 노력으로 더욱 발전할 수 있습니다.",be=`학부모님, 안녕하세요.
 
 ${o.name} 학생의 ${a} 학습 분석 리포트를 전달드립니다.
 
 📊 이번 달 성과
-- 평균 점수: ${k}점
+- 평균 점수: ${I}점
 - 출석률: ${h}%
 - 학습 태도: ${S}
 
@@ -14469,11 +14697,11 @@ ${M}
       INSERT INTO learning_reports 
       (student_id, report_month, overall_score, study_attitude, strengths, weaknesses, improvements, recommendations, next_month_goals, ai_analysis, parent_message, folder_id)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).bind(r,a,k,S,C,B,le,M,V,P,be,n||null).run();console.log("✅ [GenerateReport] Report saved successfully, ID:",Ue.meta.last_row_id);try{await e.env.DB.prepare(`
+    `).bind(r,a,I,S,C,B,le,M,V,P,be,n||null).run();console.log("✅ [GenerateReport] Report saved successfully, ID:",Ue.meta.last_row_id);try{await e.env.DB.prepare(`
         UPDATE usage_tracking 
         SET ai_reports_used_this_month = ai_reports_used_this_month + 1, updated_at = CURRENT_TIMESTAMP
         WHERE academy_id = ? AND subscription_id = ?
-      `).bind(o.academy_id,l.id).run(),console.log("📈 [GenerateReport] Usage incremented successfully")}catch(_){console.error("⚠️ [GenerateReport] Failed to increment usage:",_)}return e.json({success:!0,message:"AI 학습 분석 리포트가 생성되었습니다.",report_id:Ue.meta.last_row_id,preview:{overall_score:k,attendance_rate:h,study_attitude:S}})}catch(r){return console.error("❌ [GenerateReport] Fatal error:",r),console.error("❌ [GenerateReport] Error message:",r.message),console.error("❌ [GenerateReport] Error stack:",r.stack),e.json({success:!1,error:"AI 리포트 생성 실패: "+r.message},500)}});d.get("/api/learning-reports/detail/:report_id",async e=>{try{const t=e.req.param("report_id"),s=await e.env.DB.prepare(`
+      `).bind(o.academy_id,l.id).run(),console.log("📈 [GenerateReport] Usage incremented successfully")}catch(_){console.error("⚠️ [GenerateReport] Failed to increment usage:",_)}return e.json({success:!0,message:"AI 학습 분석 리포트가 생성되었습니다.",report_id:Ue.meta.last_row_id,preview:{overall_score:I,attendance_rate:h,study_attitude:S}})}catch(r){return console.error("❌ [GenerateReport] Fatal error:",r),console.error("❌ [GenerateReport] Error message:",r.message),console.error("❌ [GenerateReport] Error stack:",r.stack),e.json({success:!1,error:"AI 리포트 생성 실패: "+r.message},500)}});d.get("/api/learning-reports/detail/:report_id",async e=>{try{const t=e.req.param("report_id"),s=await e.env.DB.prepare(`
       SELECT lr.*, s.name as student_name, s.parent_name, s.parent_phone
       FROM learning_reports lr
       JOIN students s ON lr.student_id = s.id
@@ -19084,7 +19312,7 @@ ${l.director_name} 원장님의 승인을 기다려주세요.`,directorName:l.di
       WHERE id = ?
     `).bind(s,r||"원장님에 의해 거부됨",t).run(),e.json({success:!0,message:`${a.name} 선생님의 등록 신청이 거부되었습니다.`})):e.json({success:!1,error:"신청을 찾을 수 없거나 이미 처리되었습니다."},404)}catch(t){return console.error("Reject application error:",t),e.json({success:!1,error:"거부 처리 중 오류가 발생했습니다."},500)}});d.post("/api/teachers/add",async e=>{try{try{await e.env.DB.prepare(`
         ALTER TABLE users ADD COLUMN assigned_class TEXT
-      `).run(),console.log("[Migration] assigned_class column added to users table")}catch{console.log("[Migration] assigned_class column already exists or migration skipped")}const{name:t,email:s,phone:r,assigned_class:a,user_id:n,directorId:o,password:l}=await e.req.json(),i=n||o;if(!i||!t||!s)return e.json({success:!1,error:"필수 정보를 모두 입력해주세요."},400);const c=await e.env.DB.prepare("SELECT id, academy_id FROM users WHERE id = ?").bind(i).first();let p=c==null?void 0:c.academy_id;if(!p){p=i;try{await e.env.DB.prepare("UPDATE users SET academy_id = ? WHERE id = ?").bind(p,i).run(),console.log("🔧 [AddTeacher] Auto-set academy_id for director:",i)}catch(I){console.error("Failed to set academy_id:",I)}}const u=await e.env.DB.prepare(`
+      `).run(),console.log("[Migration] assigned_class column added to users table")}catch{console.log("[Migration] assigned_class column already exists or migration skipped")}const{name:t,email:s,phone:r,assigned_class:a,user_id:n,directorId:o,password:l}=await e.req.json(),i=n||o;if(!i||!t||!s)return e.json({success:!1,error:"필수 정보를 모두 입력해주세요."},400);const c=await e.env.DB.prepare("SELECT id, academy_id FROM users WHERE id = ?").bind(i).first();let p=c==null?void 0:c.academy_id;if(!p){p=i;try{await e.env.DB.prepare("UPDATE users SET academy_id = ? WHERE id = ?").bind(p,i).run(),console.log("🔧 [AddTeacher] Auto-set academy_id for director:",i)}catch(k){console.error("Failed to set academy_id:",k)}}const u=await e.env.DB.prepare(`
       SELECT id, teacher_limit 
       FROM subscriptions 
       WHERE academy_id = ?
@@ -22987,6 +23215,211 @@ ${l.director_name} 원장님의 승인을 기다려주세요.`,directorName:l.di
         <\/script>
     </body>
     </html>
+  `)});d.get("/admin/bank-transfers",async e=>{var r,a;const{env:t}=e,s=await t.DB.prepare(`
+    SELECT * FROM bank_transfer_requests
+    ORDER BY 
+      CASE status
+        WHEN 'pending' THEN 1
+        WHEN 'approved' THEN 2
+        WHEN 'rejected' THEN 3
+      END,
+      created_at DESC
+    LIMIT 100
+  `).all();return e.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>계좌이체 관리 - 슈퍼플레이스 관리자</title>
+        <script src="https://cdn.tailwindcss.com"><\/script>
+        <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    </head>
+    <body class="bg-gray-50">
+        <nav class="bg-white border-b border-gray-200">
+            <div class="max-w-7xl mx-auto px-6 py-4">
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center gap-8">
+                        <a href="/admin/dashboard" class="text-2xl font-bold text-purple-600">슈퍼플레이스 관리자</a>
+                        <div class="flex gap-4">
+                            <a href="/admin/dashboard" class="text-gray-600 hover:text-purple-600">대시보드</a>
+                            <a href="/admin/users" class="text-gray-600 hover:text-purple-600">사용자</a>
+                            <a href="/admin/contacts" class="text-gray-600 hover:text-purple-600">문의</a>
+                            <a href="/admin/deposits" class="text-gray-600 hover:text-purple-600">포인트 입금</a>
+                            <a href="/admin/bank-transfers" class="text-purple-600 font-semibold">계좌이체</a>
+                        </div>
+                    </div>
+                    <button onclick="logout()" class="text-gray-600 hover:text-red-600">
+                        <i class="fas fa-sign-out-alt mr-2"></i>로그아웃
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <div class="max-w-7xl mx-auto px-6 py-8">
+            <div class="flex justify-between items-center mb-8">
+                <h1 class="text-3xl font-bold text-gray-900">💰 계좌이체 신청 관리</h1>
+                <div class="text-sm text-gray-600">
+                    총 <span class="font-bold text-purple-600">${((r=s.results)==null?void 0:r.length)||0}</span>건
+                </div>
+            </div>
+
+            <!-- 통계 카드 -->
+            <div class="grid md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-white rounded-xl p-6 shadow-md border-l-4 border-yellow-500">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-600 text-sm mb-1">대기중</p>
+                            <p class="text-3xl font-bold text-yellow-600" id="pendingCount">0</p>
+                        </div>
+                        <div class="w-14 h-14 bg-yellow-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-clock text-yellow-600 text-2xl"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl p-6 shadow-md border-l-4 border-green-500">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-600 text-sm mb-1">승인완료</p>
+                            <p class="text-3xl font-bold text-green-600" id="approvedCount">0</p>
+                        </div>
+                        <div class="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-check-circle text-green-600 text-2xl"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl p-6 shadow-md border-l-4 border-red-500">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-600 text-sm mb-1">거절</p>
+                            <p class="text-3xl font-bold text-red-600" id="rejectedCount">0</p>
+                        </div>
+                        <div class="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-times-circle text-red-600 text-2xl"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 신청 목록 -->
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                <table class="w-full">
+                    <thead class="bg-gray-50 border-b">
+                        <tr>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">신청ID</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">신청자</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">플랜</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">금액</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">연락처</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">신청일시</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">상태</th>
+                            <th class="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase">관리</th>
+                        </tr>
+                    </thead>
+                    <tbody id="transferList">
+                        ${((a=s.results)==null?void 0:a.map(n=>{const o=n.status==="pending"?'<span class="px-3 py-1 bg-yellow-100 text-yellow-800 text-xs font-semibold rounded-full">대기중</span>':n.status==="approved"?'<span class="px-3 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-full">승인완료</span>':'<span class="px-3 py-1 bg-red-100 text-red-800 text-xs font-semibold rounded-full">거절</span>',l=n.status==="pending"?'<button onclick="approve('+n.id+')" class="px-3 py-1.5 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 mr-2"><i class="fas fa-check mr-1"></i>승인</button><button onclick="reject('+n.id+')" class="px-3 py-1.5 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700"><i class="fas fa-times mr-1"></i>거절</button>':'<span class="text-gray-400 text-sm">완료</span>';return`
+                            <tr class="border-b hover:bg-gray-50">
+                              <td class="px-6 py-4 text-sm text-gray-900 font-mono">#${n.id}</td>
+                              <td class="px-6 py-4">
+                                <div class="text-sm font-medium text-gray-900">${n.user_name}</div>
+                                <div class="text-xs text-gray-500">${n.user_email}</div>
+                              </td>
+                              <td class="px-6 py-4 text-sm text-gray-900">${n.plan_name}</td>
+                              <td class="px-6 py-4 text-sm font-bold text-purple-600">₩${parseInt(n.amount).toLocaleString()}</td>
+                              <td class="px-6 py-4 text-sm text-gray-600">${n.user_phone}</td>
+                              <td class="px-6 py-4 text-sm text-gray-600">${new Date(n.created_at).toLocaleString("ko-KR")}</td>
+                              <td class="px-6 py-4">${o}</td>
+                              <td class="px-6 py-4 text-center">${l}</td>
+                            </tr>
+                          `}).join(""))||'<tr><td colspan="8" class="px-6 py-12 text-center text-gray-500">신청 내역이 없습니다</td></tr>'}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <script>
+        function logout() {
+            localStorage.removeItem('user')
+            window.location.href = '/'
+        }
+
+        // 통계 업데이트
+        function updateStats() {
+            const rows = document.querySelectorAll('#transferList tr')
+            let pending = 0, approved = 0, rejected = 0
+            
+            rows.forEach(row => {
+                const status = row.querySelector('span[class*="bg-"]')?.textContent?.trim()
+                if (status === '대기중') pending++
+                else if (status === '승인완료') approved++
+                else if (status === '거절') rejected++
+            })
+            
+            document.getElementById('pendingCount').textContent = pending
+            document.getElementById('approvedCount').textContent = approved
+            document.getElementById('rejectedCount').textContent = rejected
+        }
+
+        updateStats()
+
+        async function approve(id) {
+            if (!confirm('이 신청을 승인하시겠습니까?\\n승인 시 해당 사용자의 구독이 활성화됩니다.')) {
+                return
+            }
+
+            try {
+                const response = await fetch('/api/bank-transfer/approve', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        requestId: id,
+                        adminEmail: 'admin@superplace.co.kr'
+                    })
+                })
+
+                const result = await response.json()
+                
+                if (result.success) {
+                    alert('✅ 승인되었습니다!')
+                    location.reload()
+                } else {
+                    alert('❌ 승인 실패: ' + result.error)
+                }
+            } catch (err) {
+                alert('❌ 오류: ' + err.message)
+            }
+        }
+
+        async function reject(id) {
+            const reason = prompt('거절 사유를 입력해주세요:')
+            if (!reason) return
+
+            try {
+                const response = await fetch('/api/bank-transfer/reject', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        requestId: id,
+                        adminEmail: 'admin@superplace.co.kr',
+                        reason
+                    })
+                })
+
+                const result = await response.json()
+                
+                if (result.success) {
+                    alert('✅ 거절 처리되었습니다.')
+                    location.reload()
+                } else {
+                    alert('❌ 처리 실패: ' + result.error)
+                }
+            } catch (err) {
+                alert('❌ 오류: ' + err.message)
+            }
+        }
+        <\/script>
+    </body>
+    </html>
   `)});d.get("/admin/sender/verification",e=>e.html(`
     <!DOCTYPE html>
     <html lang="ko">
@@ -25806,7 +26239,7 @@ ${l.director_name} 원장님의 승인을 기다려주세요.`,directorName:l.di
         <\/script>
     </body>
     </html>
-  `));d.get("/students/classes",e=>e.html(Oe.classesPage));d.get("/students/list",e=>e.html(Oe.studentsListPage));d.get("/students/daily-record",e=>e.html(Oe.dailyRecordPage));d.get("/students/courses",e=>e.html(Oe.coursesPage));d.get("/students/detail/:studentId",e=>e.html(Oe.studentDetailPage));d.get("/api/init-student-tables",async e=>{try{const{DB:t}=e.env;await t.prepare(`
+  `));d.get("/students/classes",e=>e.html(Ae.classesPage));d.get("/students/list",e=>e.html(Ae.studentsListPage));d.get("/students/daily-record",e=>e.html(Ae.dailyRecordPage));d.get("/students/courses",e=>e.html(Ae.coursesPage));d.get("/students/detail/:studentId",e=>e.html(Ae.studentDetailPage));d.get("/api/init-student-tables",async e=>{try{const{DB:t}=e.env;await t.prepare(`
       CREATE TABLE IF NOT EXISTS students (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         academy_id INTEGER DEFAULT 1,

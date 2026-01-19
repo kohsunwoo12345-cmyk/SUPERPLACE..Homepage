@@ -7201,6 +7201,133 @@ app.post('/api/usage/increment-landing-pages', async (c) => {
   }
 })
 
+// ========================================
+// 계좌이체 결제 API
+// ========================================
+
+// 계좌이체 신청
+app.post('/api/bank-transfer/request', async (c) => {
+  try {
+    const { userId, userName, userEmail, userPhone, planName, amount, note } = await c.req.json()
+    
+    if (!userId || !userName || !userEmail || !userPhone || !planName || !amount) {
+      return c.json({ success: false, error: '필수 정보를 모두 입력해주세요.' }, 400)
+    }
+
+    const result = await c.env.DB.prepare(`
+      INSERT INTO bank_transfer_requests 
+      (user_id, user_name, user_email, user_phone, plan_name, amount, note, status, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', CURRENT_TIMESTAMP)
+    `).bind(userId, userName, userEmail, userPhone, planName, amount, note || null).run()
+
+    return c.json({
+      success: true,
+      message: '계좌이체 신청이 완료되었습니다.',
+      requestId: result.meta.last_row_id
+    })
+  } catch (error) {
+    console.error('계좌이체 신청 실패:', error)
+    return c.json({ success: false, error: '신청 처리 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
+// 관리자: 계좌이체 신청 목록 조회
+app.get('/api/bank-transfer/requests', async (c) => {
+  try {
+    const adminEmail = c.req.query('adminEmail')
+    
+    // 관리자 권한 체크
+    if (adminEmail !== 'admin@superplace.co.kr') {
+      return c.json({ success: false, error: '관리자 권한이 필요합니다.' }, 403)
+    }
+
+    const requests = await c.env.DB.prepare(`
+      SELECT * FROM bank_transfer_requests
+      ORDER BY 
+        CASE status
+          WHEN 'pending' THEN 1
+          WHEN 'approved' THEN 2
+          WHEN 'rejected' THEN 3
+        END,
+        created_at DESC
+    `).all()
+
+    return c.json({
+      success: true,
+      requests: requests.results || []
+    })
+  } catch (error) {
+    console.error('신청 목록 조회 실패:', error)
+    return c.json({ success: false, error: '목록 조회 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
+// 관리자: 계좌이체 승인
+app.post('/api/bank-transfer/approve', async (c) => {
+  try {
+    const { requestId, adminEmail } = await c.req.json()
+    
+    // 관리자 권한 체크
+    if (adminEmail !== 'admin@superplace.co.kr') {
+      return c.json({ success: false, error: '관리자 권한이 필요합니다.' }, 403)
+    }
+
+    // 신청 정보 조회
+    const request = await c.env.DB.prepare(`
+      SELECT * FROM bank_transfer_requests WHERE id = ?
+    `).bind(requestId).first()
+
+    if (!request) {
+      return c.json({ success: false, error: '신청 정보를 찾을 수 없습니다.' }, 404)
+    }
+
+    // 신청 상태 업데이트
+    await c.env.DB.prepare(`
+      UPDATE bank_transfer_requests
+      SET status = 'approved', approved_at = CURRENT_TIMESTAMP, approved_by = ?
+      WHERE id = ?
+    `).bind(adminEmail, requestId).run()
+
+    // TODO: 실제 구독 생성 로직 추가
+    // subscriptions 테이블에 새 구독 추가
+    // usage_tracking 테이블에 사용량 트래킹 추가
+
+    return c.json({
+      success: true,
+      message: '계좌이체가 승인되었습니다.'
+    })
+  } catch (error) {
+    console.error('승인 처리 실패:', error)
+    return c.json({ success: false, error: '승인 처리 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
+// 관리자: 계좌이체 거절
+app.post('/api/bank-transfer/reject', async (c) => {
+  try {
+    const { requestId, adminEmail, reason } = await c.req.json()
+    
+    // 관리자 권한 체크
+    if (adminEmail !== 'admin@superplace.co.kr') {
+      return c.json({ success: false, error: '관리자 권한이 필요합니다.' }, 403)
+    }
+
+    await c.env.DB.prepare(`
+      UPDATE bank_transfer_requests
+      SET status = 'rejected', rejected_at = CURRENT_TIMESTAMP, rejected_by = ?, rejection_reason = ?
+      WHERE id = ?
+    `).bind(adminEmail, reason || null, requestId).run()
+
+    return c.json({
+      success: true,
+      message: '계좌이체 신청이 거절되었습니다.'
+    })
+  } catch (error) {
+    console.error('거절 처리 실패:', error)
+    return c.json({ success: false, error: '거절 처리 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
 // 사용량 증가 API (선생님 추가 시)
 app.post('/api/usage/increment-teachers', async (c) => {
   try {
@@ -14967,6 +15094,219 @@ app.get('/tools/landing-folders', (c) => {
             localStorage.removeItem('user');
             window.location.href = '/';
         }
+        </script>
+    </body>
+    </html>
+  `)
+})
+
+// 계좌이체 신청 페이지
+app.get('/payment/bank-transfer', (c) => {
+  const planName = c.req.query('plan') || ''
+  const amount = c.req.query('amount') || '0'
+  
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>계좌이체 신청 - 우리는 슈퍼플레이스다</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <style>
+          @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
+          * { font-family: 'Pretendard Variable', sans-serif; }
+        </style>
+    </head>
+    <body class="bg-gradient-to-br from-blue-50 via-white to-purple-50">
+        <nav class="fixed w-full top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-200">
+            <div class="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
+                <a href="/" class="text-xl font-bold text-gray-900">우리는 슈퍼플레이스다</a>
+                <div class="flex gap-6">
+                    <a href="/pricing" class="text-gray-600 hover:text-purple-600">← 요금제</a>
+                    <a href="/dashboard" class="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-full hover:shadow-lg transition">대시보드</a>
+                </div>
+            </div>
+        </nav>
+
+        <div class="pt-32 pb-24 px-6">
+            <div class="max-w-4xl mx-auto">
+                <div class="text-center mb-12">
+                    <h1 class="text-4xl font-bold text-gray-900 mb-4">💰 계좌이체 신청</h1>
+                    <p class="text-lg text-gray-600">아래 계좌로 입금 후 신청서를 제출해주세요</p>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-8 mb-12">
+                    <!-- 계좌 정보 -->
+                    <div class="bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl p-8 text-white shadow-2xl">
+                        <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
+                            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                            </svg>
+                            입금 계좌
+                        </h2>
+                        <div class="space-y-4">
+                            <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4">
+                                <p class="text-sm text-blue-100 mb-1">은행</p>
+                                <p class="text-2xl font-bold">하나은행</p>
+                            </div>
+                            <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4">
+                                <p class="text-sm text-blue-100 mb-1">계좌번호</p>
+                                <p class="text-2xl font-bold font-mono">746-910023-17004</p>
+                                <button onclick="copyAccount()" class="mt-2 text-sm bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition">
+                                    📋 계좌번호 복사
+                                </button>
+                            </div>
+                            <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4">
+                                <p class="text-sm text-blue-100 mb-1">예금주</p>
+                                <p class="text-lg font-bold">주식회사 우리는슈퍼플레이스다</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 신청 정보 -->
+                    <div class="bg-white rounded-2xl p-8 border-2 border-gray-200 shadow-lg">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-6">신청 정보</h2>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">선택 플랜</label>
+                                <input type="text" id="planName" readonly 
+                                       class="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl font-bold text-purple-600">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">결제 금액</label>
+                                <input type="text" id="amount" readonly 
+                                       class="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl font-bold text-2xl text-gray-900">
+                            </div>
+                            <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
+                                <p class="text-sm text-yellow-800">
+                                    <strong>💡 안내사항</strong><br>
+                                    입금자명을 신청서의 이름과 동일하게 입금해주세요
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 신청서 작성 -->
+                <div class="bg-white rounded-2xl p-8 border-2 border-gray-200 shadow-lg">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6">신청서 작성</h2>
+                    <form id="transferForm" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 mb-2">이름 (입금자명) *</label>
+                            <input type="text" id="userName" required
+                                   class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                   placeholder="홍길동">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 mb-2">이메일 *</label>
+                            <input type="email" id="userEmail" required
+                                   class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                   placeholder="email@example.com">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 mb-2">연락처 *</label>
+                            <input type="tel" id="userPhone" required
+                                   class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                   placeholder="010-1234-5678">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 mb-2">입금 예정일 *</label>
+                            <input type="date" id="depositDate" required
+                                   class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 mb-2">메모 (선택)</label>
+                            <textarea id="note" rows="3"
+                                      class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                                      placeholder="추가 요청사항이 있으시면 입력해주세요"></textarea>
+                        </div>
+                        <div class="flex items-start gap-3 p-4 bg-blue-50 rounded-xl">
+                            <input type="checkbox" id="agreeTerms" required class="w-5 h-5 mt-1">
+                            <label for="agreeTerms" class="text-sm text-gray-700">
+                                입금 정보와 신청 내용이 정확함을 확인하였으며, 입금 후 승인까지 영업일 기준 1-2일 소요될 수 있음을 동의합니다.
+                            </label>
+                        </div>
+                        <button type="submit" 
+                                class="w-full py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-bold text-lg hover:shadow-2xl hover:from-blue-700 hover:to-purple-700 transition-all">
+                            💰 계좌이체 신청하기
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <script>
+        const urlParams = new URLSearchParams(window.location.search)
+        const planName = urlParams.get('plan') || '플랜'
+        const amount = parseInt(urlParams.get('amount') || '0')
+        
+        document.getElementById('planName').value = planName
+        document.getElementById('amount').value = '₩' + amount.toLocaleString()
+
+        // 사용자 정보 자동 입력
+        const user = JSON.parse(localStorage.getItem('user') || 'null')
+        if (user) {
+            if (user.name) document.getElementById('userName').value = user.name
+            if (user.email) document.getElementById('userEmail').value = user.email
+            if (user.phone) document.getElementById('userPhone').value = user.phone
+        }
+
+        // 오늘 날짜 설정
+        const today = new Date().toISOString().split('T')[0]
+        document.getElementById('depositDate').value = today
+        document.getElementById('depositDate').min = today
+
+        function copyAccount() {
+            navigator.clipboard.writeText('746-910023-17004').then(() => {
+                alert('✅ 계좌번호가 복사되었습니다!')
+            }).catch(err => {
+                alert('복사 실패: ' + err)
+            })
+        }
+
+        document.getElementById('transferForm').addEventListener('submit', async (e) => {
+            e.preventDefault()
+            
+            if (!user || !user.id) {
+                alert('로그인이 필요합니다.')
+                window.location.href = '/login'
+                return
+            }
+
+            const userName = document.getElementById('userName').value
+            const userEmail = document.getElementById('userEmail').value
+            const userPhone = document.getElementById('userPhone').value
+            const depositDate = document.getElementById('depositDate').value
+            const note = document.getElementById('note').value
+
+            try {
+                const response = await fetch('/api/bank-transfer/request', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId: user.id,
+                        userName,
+                        userEmail,
+                        userPhone,
+                        planName,
+                        amount,
+                        note: note + ' (입금예정일: ' + depositDate + ')'
+                    })
+                })
+
+                const result = await response.json()
+                
+                if (result.success) {
+                    alert('✅ 계좌이체 신청이 완료되었습니다!\\n\\n관리자 승인 후 서비스가 활성화됩니다.\\n승인까지 영업일 기준 1-2일 소요될 수 있습니다.')
+                    window.location.href = '/dashboard'
+                } else {
+                    alert('❌ 신청 실패: ' + result.error)
+                }
+            } catch (err) {
+                alert('❌ 오류가 발생했습니다: ' + err.message)
+            }
+        })
         </script>
     </body>
     </html>
@@ -29528,6 +29868,238 @@ app.get('/admin/deposits', async (c) => {
                     window.location.href = '/';
                 }
             }
+        </script>
+    </body>
+    </html>
+  `)
+})
+
+// 관리자: 계좌이체 신청 관리
+app.get('/admin/bank-transfers', async (c) => {
+  const { env } = c
+  
+  // 계좌이체 신청 목록 조회
+  const transfers = await env.DB.prepare(`
+    SELECT * FROM bank_transfer_requests
+    ORDER BY 
+      CASE status
+        WHEN 'pending' THEN 1
+        WHEN 'approved' THEN 2
+        WHEN 'rejected' THEN 3
+      END,
+      created_at DESC
+    LIMIT 100
+  `).all()
+  
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>계좌이체 관리 - 슈퍼플레이스 관리자</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    </head>
+    <body class="bg-gray-50">
+        <nav class="bg-white border-b border-gray-200">
+            <div class="max-w-7xl mx-auto px-6 py-4">
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center gap-8">
+                        <a href="/admin/dashboard" class="text-2xl font-bold text-purple-600">슈퍼플레이스 관리자</a>
+                        <div class="flex gap-4">
+                            <a href="/admin/dashboard" class="text-gray-600 hover:text-purple-600">대시보드</a>
+                            <a href="/admin/users" class="text-gray-600 hover:text-purple-600">사용자</a>
+                            <a href="/admin/contacts" class="text-gray-600 hover:text-purple-600">문의</a>
+                            <a href="/admin/deposits" class="text-gray-600 hover:text-purple-600">포인트 입금</a>
+                            <a href="/admin/bank-transfers" class="text-purple-600 font-semibold">계좌이체</a>
+                        </div>
+                    </div>
+                    <button onclick="logout()" class="text-gray-600 hover:text-red-600">
+                        <i class="fas fa-sign-out-alt mr-2"></i>로그아웃
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <div class="max-w-7xl mx-auto px-6 py-8">
+            <div class="flex justify-between items-center mb-8">
+                <h1 class="text-3xl font-bold text-gray-900">💰 계좌이체 신청 관리</h1>
+                <div class="text-sm text-gray-600">
+                    총 <span class="font-bold text-purple-600">${transfers.results?.length || 0}</span>건
+                </div>
+            </div>
+
+            <!-- 통계 카드 -->
+            <div class="grid md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-white rounded-xl p-6 shadow-md border-l-4 border-yellow-500">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-600 text-sm mb-1">대기중</p>
+                            <p class="text-3xl font-bold text-yellow-600" id="pendingCount">0</p>
+                        </div>
+                        <div class="w-14 h-14 bg-yellow-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-clock text-yellow-600 text-2xl"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl p-6 shadow-md border-l-4 border-green-500">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-600 text-sm mb-1">승인완료</p>
+                            <p class="text-3xl font-bold text-green-600" id="approvedCount">0</p>
+                        </div>
+                        <div class="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-check-circle text-green-600 text-2xl"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl p-6 shadow-md border-l-4 border-red-500">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-600 text-sm mb-1">거절</p>
+                            <p class="text-3xl font-bold text-red-600" id="rejectedCount">0</p>
+                        </div>
+                        <div class="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-times-circle text-red-600 text-2xl"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 신청 목록 -->
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                <table class="w-full">
+                    <thead class="bg-gray-50 border-b">
+                        <tr>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">신청ID</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">신청자</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">플랜</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">금액</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">연락처</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">신청일시</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">상태</th>
+                            <th class="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase">관리</th>
+                        </tr>
+                    </thead>
+                    <tbody id="transferList">
+                        ${transfers.results?.map((t: any) => {
+                          const statusBadge = t.status === 'pending' 
+                            ? '<span class="px-3 py-1 bg-yellow-100 text-yellow-800 text-xs font-semibold rounded-full">대기중</span>'
+                            : t.status === 'approved'
+                            ? '<span class="px-3 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-full">승인완료</span>'
+                            : '<span class="px-3 py-1 bg-red-100 text-red-800 text-xs font-semibold rounded-full">거절</span>'
+                          
+                          const actionButtons = t.status === 'pending'
+                            ? '<button onclick="approve(' + t.id + ')" class="px-3 py-1.5 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 mr-2">' +
+                                '<i class="fas fa-check mr-1"></i>승인' +
+                               '</button>' +
+                               '<button onclick="reject(' + t.id + ')" class="px-3 py-1.5 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700">' +
+                                '<i class="fas fa-times mr-1"></i>거절' +
+                               '</button>'
+                            : '<span class="text-gray-400 text-sm">완료</span>'
+                          
+                          return `
+                            <tr class="border-b hover:bg-gray-50">
+                              <td class="px-6 py-4 text-sm text-gray-900 font-mono">#${t.id}</td>
+                              <td class="px-6 py-4">
+                                <div class="text-sm font-medium text-gray-900">${t.user_name}</div>
+                                <div class="text-xs text-gray-500">${t.user_email}</div>
+                              </td>
+                              <td class="px-6 py-4 text-sm text-gray-900">${t.plan_name}</td>
+                              <td class="px-6 py-4 text-sm font-bold text-purple-600">₩${parseInt(t.amount).toLocaleString()}</td>
+                              <td class="px-6 py-4 text-sm text-gray-600">${t.user_phone}</td>
+                              <td class="px-6 py-4 text-sm text-gray-600">${new Date(t.created_at).toLocaleString('ko-KR')}</td>
+                              <td class="px-6 py-4">${statusBadge}</td>
+                              <td class="px-6 py-4 text-center">${actionButtons}</td>
+                            </tr>
+                          `
+                        }).join('') || '<tr><td colspan="8" class="px-6 py-12 text-center text-gray-500">신청 내역이 없습니다</td></tr>'}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <script>
+        function logout() {
+            localStorage.removeItem('user')
+            window.location.href = '/'
+        }
+
+        // 통계 업데이트
+        function updateStats() {
+            const rows = document.querySelectorAll('#transferList tr')
+            let pending = 0, approved = 0, rejected = 0
+            
+            rows.forEach(row => {
+                const status = row.querySelector('span[class*="bg-"]')?.textContent?.trim()
+                if (status === '대기중') pending++
+                else if (status === '승인완료') approved++
+                else if (status === '거절') rejected++
+            })
+            
+            document.getElementById('pendingCount').textContent = pending
+            document.getElementById('approvedCount').textContent = approved
+            document.getElementById('rejectedCount').textContent = rejected
+        }
+
+        updateStats()
+
+        async function approve(id) {
+            if (!confirm('이 신청을 승인하시겠습니까?\\n승인 시 해당 사용자의 구독이 활성화됩니다.')) {
+                return
+            }
+
+            try {
+                const response = await fetch('/api/bank-transfer/approve', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        requestId: id,
+                        adminEmail: 'admin@superplace.co.kr'
+                    })
+                })
+
+                const result = await response.json()
+                
+                if (result.success) {
+                    alert('✅ 승인되었습니다!')
+                    location.reload()
+                } else {
+                    alert('❌ 승인 실패: ' + result.error)
+                }
+            } catch (err) {
+                alert('❌ 오류: ' + err.message)
+            }
+        }
+
+        async function reject(id) {
+            const reason = prompt('거절 사유를 입력해주세요:')
+            if (!reason) return
+
+            try {
+                const response = await fetch('/api/bank-transfer/reject', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        requestId: id,
+                        adminEmail: 'admin@superplace.co.kr',
+                        reason
+                    })
+                })
+
+                const result = await response.json()
+                
+                if (result.success) {
+                    alert('✅ 거절 처리되었습니다.')
+                    location.reload()
+                } else {
+                    alert('❌ 처리 실패: ' + result.error)
+                }
+            } catch (err) {
+                alert('❌ 오류: ' + err.message)
+            }
+        }
         </script>
     </body>
     </html>
