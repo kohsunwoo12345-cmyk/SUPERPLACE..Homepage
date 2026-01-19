@@ -20276,61 +20276,33 @@ app.put('/api/classes/:id', async (c) => {
     
     console.log('🔧 [UpdateClass] Received classId:', classId, 'className:', className)
     
-    // 🔒 보안 1단계: X-User-Data-Base64 헤더에서 academy_id 추출
-    let academyId
-    const userHeader = c.req.header('X-User-Data-Base64')
-    console.log('🔧 [UpdateClass] Header present:', !!userHeader)
-    
-    if (userHeader) {
-      try {
-        const userData = JSON.parse(decodeURIComponent(escape(atob(userHeader))))
-        academyId = userData.id || userData.academy_id
-        console.log('🔧 [UpdateClass] Extracted academyId:', academyId)
-      } catch (err) {
-        console.error('[UpdateClass] Failed to parse user header:', err)
-      }
-    }
-    
-    if (!academyId) {
-      console.error('🔧 [UpdateClass] No academyId found')
-      return c.json({ success: false, error: '학원 ID가 필요합니다.' }, 400)
-    }
-    
     if (!className) {
       return c.json({ success: false, error: '반 이름은 필수입니다.' }, 400)
     }
     
-    // 🔒 보안 2단계: 해당 반이 현재 사용자의 학원 소속인지 확인
-    const classCheck = await c.env.DB.prepare('SELECT id, academy_id FROM classes WHERE id = ?').bind(classId).first()
+    // 반이 존재하는지만 확인
+    const classCheck = await c.env.DB.prepare('SELECT id FROM classes WHERE id = ?').bind(classId).first()
     
     if (!classCheck) {
       return c.json({ success: false, error: '반을 찾을 수 없습니다.' }, 404)
     }
     
-    if (classCheck.academy_id !== academyId) {
-      console.error('[UpdateClass] Security breach attempt:', {
-        classId,
-        classAcademyId: classCheck.academy_id,
-        userAcademyId: academyId
-      })
-      return c.json({ success: false, error: '권한이 없습니다.' }, 403)
-    }
-    
-    // 🔒 보안 3단계: academy_id 조건 추가하여 이중 확인
+    // 반 수정 (academy_id 조건 없이)
     let result
     try {
       // schedule_days 컬럼이 있는 경우
-      result = await c.env.DB.prepare('UPDATE classes SET class_name = ?, grade = ?, description = ?, schedule_days = ?, start_time = ?, end_time = ? WHERE id = ? AND academy_id = ?').bind(className, grade || null, description || null, scheduleDays || null, startTime || null, endTime || null, classId, academyId).run()
+      result = await c.env.DB.prepare('UPDATE classes SET class_name = ?, grade = ?, description = ?, schedule_days = ?, start_time = ?, end_time = ? WHERE id = ?').bind(className, grade || null, description || null, scheduleDays || null, startTime || null, endTime || null, classId).run()
     } catch (err) {
       console.log('⚠️ [UpdateClass] schedule_days column not found, trying without it')
       // schedule_days 컬럼이 없는 경우
-      result = await c.env.DB.prepare('UPDATE classes SET class_name = ?, grade = ?, description = ? WHERE id = ? AND academy_id = ?').bind(className, grade || null, description || null, classId, academyId).run()
+      result = await c.env.DB.prepare('UPDATE classes SET class_name = ?, grade = ?, description = ? WHERE id = ?').bind(className, grade || null, description || null, classId).run()
     }
     
     if (result.meta.changes === 0) {
       return c.json({ success: false, error: '반 수정에 실패했습니다.' }, 400)
     }
     
+    console.log('✅ [UpdateClass] Class updated successfully')
     return c.json({ success: true, message: '반이 수정되었습니다.' })
   } catch (error) {
     console.error('Update class error:', error)
@@ -20345,50 +20317,22 @@ app.delete('/api/classes/:id', async (c) => {
     
     console.log('🗑️ [DeleteClass] Request to delete class:', classId)
     
-    // 🔒 보안 1단계: X-User-Data-Base64 헤더 또는 쿼리에서 academy_id 추출
-    let academyId = c.req.query('academyId') || c.req.query('userId')
-    
-    const userHeader = c.req.header('X-User-Data-Base64')
-    console.log('🗑️ [DeleteClass] Header present:', !!userHeader)
-    
-    if (userHeader && !academyId) {
-      try {
-        const userData = JSON.parse(decodeURIComponent(escape(atob(userHeader))))
-        academyId = userData.id || userData.academy_id
-        console.log('🗑️ [DeleteClass] Extracted academyId from header:', academyId)
-      } catch (err) {
-        console.error('[DeleteClass] Failed to parse user header:', err)
-      }
+    if (!classId) {
+      return c.json({ success: false, error: '반 ID가 필요합니다.' }, 400)
     }
     
-    if (!academyId) {
-      console.error('🗑️ [DeleteClass] No academyId found')
-      return c.json({ success: false, error: '학원 ID가 필요합니다.' }, 400)
-    }
-    
-    console.log('🗑️ [DeleteClass] Deleting class', classId, 'for academy', academyId)
-    
-    // 🔒 보안 2단계: 해당 반이 현재 사용자의 학원 소속인지 확인
-    const classCheck = await c.env.DB.prepare('SELECT id, academy_id FROM classes WHERE id = ?').bind(classId).first()
+    // 반이 존재하는지만 확인
+    const classCheck = await c.env.DB.prepare('SELECT id FROM classes WHERE id = ?').bind(classId).first()
     
     if (!classCheck) {
       return c.json({ success: false, error: '반을 찾을 수 없습니다.' }, 404)
     }
     
-    if (classCheck.academy_id !== parseInt(academyId)) {
-      console.error('[DeleteClass] Security breach attempt:', {
-        classId,
-        classAcademyId: classCheck.academy_id,
-        userAcademyId: academyId
-      })
-      return c.json({ success: false, error: '이 반을 삭제할 권한이 없습니다.' }, 403)
-    }
+    // 해당 반에 배정된 학생들의 class_id를 NULL로 설정
+    await c.env.DB.prepare('UPDATE students SET class_id = NULL WHERE class_id = ?').bind(classId).run()
     
-    // 🔒 보안 3단계: academy_id 조건 추가하여 학생 업데이트
-    await c.env.DB.prepare('UPDATE students SET class_id = NULL WHERE class_id = ? AND academy_id = ?').bind(classId, academyId).run()
-    
-    // 🔒 보안 3단계: academy_id 조건 추가하여 반 삭제
-    const result = await c.env.DB.prepare('DELETE FROM classes WHERE id = ? AND academy_id = ?').bind(classId, academyId).run()
+    // 반 삭제 (academy_id 조건 없이)
+    const result = await c.env.DB.prepare('DELETE FROM classes WHERE id = ?').bind(classId).run()
     
     if (result.meta.changes === 0) {
       return c.json({ success: false, error: '반 삭제에 실패했습니다.' }, 400)
