@@ -6645,9 +6645,9 @@ app.get('/api/usage/check', async (c) => {
       SELECT COUNT(*) as count FROM landing_pages WHERE user_id = ?
     `).bind(userId).first()
     
-    // 🔥 실제 데이터 조회: teachers 테이블에서 실제 선생님 수 계산
+    // 🔥 실제 데이터 조회: teacher_applications 테이블에서 실제 선생님 수 계산
     const actualTeachers = await c.env.DB.prepare(`
-      SELECT COUNT(*) as count FROM teachers WHERE academy_id = ?
+      SELECT COUNT(*) as count FROM teacher_applications WHERE academy_id = ?
     `).bind(academyId).first()
 
     // 사용량 조회 (AI 리포트는 usage_tracking에서 조회)
@@ -32159,22 +32159,43 @@ app.get('/api/debug/user/:userId/subscription', async (c) => {
     // 🔥 실제 테이블 데이터 조회
     let actualData = {}
     try {
-      const students = await c.env.DB.prepare(`
-        SELECT COUNT(*) as count FROM students WHERE academy_id = ?
-      `).bind(user.academy_id || user.id).first()
+      // students 테이블 확인
+      let studentsCount = 0
+      try {
+        const students = await c.env.DB.prepare(`
+          SELECT COUNT(*) as count FROM students WHERE academy_id = ?
+        `).bind(user.academy_id || user.id).first()
+        studentsCount = students?.count || 0
+      } catch (e) {
+        studentsCount = 'table_not_found'
+      }
       
-      const landingPages = await c.env.DB.prepare(`
-        SELECT COUNT(*) as count FROM landing_pages WHERE user_id = ?
-      `).bind(userId).first()
+      // landing_pages 테이블 확인
+      let landingPagesCount = 0
+      try {
+        const landingPages = await c.env.DB.prepare(`
+          SELECT COUNT(*) as count FROM landing_pages WHERE user_id = ?
+        `).bind(userId).first()
+        landingPagesCount = landingPages?.count || 0
+      } catch (e) {
+        landingPagesCount = 'table_not_found'
+      }
       
-      const teachers = await c.env.DB.prepare(`
-        SELECT COUNT(*) as count FROM teachers WHERE academy_id = ?
-      `).bind(user.academy_id || user.id).first()
+      // teacher_applications 테이블 확인 (teachers 대신)
+      let teachersCount = 0
+      try {
+        const teachers = await c.env.DB.prepare(`
+          SELECT COUNT(*) as count FROM teacher_applications WHERE academy_id = ?
+        `).bind(user.academy_id || user.id).first()
+        teachersCount = teachers?.count || 0
+      } catch (e) {
+        teachersCount = 'table_not_found'
+      }
       
       actualData = {
-        students: students?.count || 0,
-        landingPages: landingPages?.count || 0,
-        teachers: teachers?.count || 0
+        students: studentsCount,
+        landingPages: landingPagesCount,
+        teachers: teachersCount
       }
     } catch (err) {
       actualData = { error: err.message }

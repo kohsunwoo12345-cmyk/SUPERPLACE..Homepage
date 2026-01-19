@@ -5272,7 +5272,7 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
     `).bind(n).first(),i=await e.env.DB.prepare(`
       SELECT COUNT(*) as count FROM landing_pages WHERE user_id = ?
     `).bind(r).first(),d=await e.env.DB.prepare(`
-      SELECT COUNT(*) as count FROM teachers WHERE academy_id = ?
+      SELECT COUNT(*) as count FROM teacher_applications WHERE academy_id = ?
     `).bind(n).first();let p=await e.env.DB.prepare(`
       SELECT * FROM usage_tracking 
       WHERE academy_id = ? AND subscription_id = ?
@@ -25317,10 +25317,10 @@ ${l.director_name} 원장님의 승인을 기다려주세요.`,directorName:l.di
       ORDER BY created_at DESC LIMIT 1
     `).bind(s.academy_id||s.id).first(),o=await e.env.DB.prepare(`
       SELECT * FROM usage_tracking WHERE academy_id = ? ORDER BY updated_at DESC LIMIT 1
-    `).bind(s.academy_id||s.id).first();let l={};try{const i=await e.env.DB.prepare(`
-        SELECT COUNT(*) as count FROM students WHERE academy_id = ?
-      `).bind(s.academy_id||s.id).first(),d=await e.env.DB.prepare(`
-        SELECT COUNT(*) as count FROM landing_pages WHERE user_id = ?
-      `).bind(t).first(),p=await e.env.DB.prepare(`
-        SELECT COUNT(*) as count FROM teachers WHERE academy_id = ?
-      `).bind(s.academy_id||s.id).first();l={students:(i==null?void 0:i.count)||0,landingPages:(d==null?void 0:d.count)||0,teachers:(p==null?void 0:p.count)||0}}catch(i){l={error:i.message}}return e.json({user:s,subscriptions:{all:r.results,active:a,admin:n},usageTracking:o,actualData:l,debug:{academyIdUsedForQuery:s.academy_id||s.id,totalSubscriptions:r.results.length}})}catch(t){return e.json({error:t.message},500)}});const lt=new et,Ys=Object.assign({"/src/index.tsx":c});let Rt=!1;for(const[,e]of Object.entries(Ys))e&&(lt.all("*",t=>{let s;try{s=t.executionCtx}catch{}return e.fetch(t.req.raw,t.env,s)}),lt.notFound(t=>{let s;try{s=t.executionCtx}catch{}return e.fetch(t.req.raw,t.env,s)}),Rt=!0);if(!Rt)throw new Error("Can't import modules from ['/src/index.ts','/src/index.tsx','/app/server.ts']");export{lt as default};
+    `).bind(s.academy_id||s.id).first();let l={};try{let i=0;try{const u=await e.env.DB.prepare(`
+          SELECT COUNT(*) as count FROM students WHERE academy_id = ?
+        `).bind(s.academy_id||s.id).first();i=(u==null?void 0:u.count)||0}catch{i="table_not_found"}let d=0;try{const u=await e.env.DB.prepare(`
+          SELECT COUNT(*) as count FROM landing_pages WHERE user_id = ?
+        `).bind(t).first();d=(u==null?void 0:u.count)||0}catch{d="table_not_found"}let p=0;try{const u=await e.env.DB.prepare(`
+          SELECT COUNT(*) as count FROM teacher_applications WHERE academy_id = ?
+        `).bind(s.academy_id||s.id).first();p=(u==null?void 0:u.count)||0}catch{p="table_not_found"}l={students:i,landingPages:d,teachers:p}}catch(i){l={error:i.message}}return e.json({user:s,subscriptions:{all:r.results,active:a,admin:n},usageTracking:o,actualData:l,debug:{academyIdUsedForQuery:s.academy_id||s.id,totalSubscriptions:r.results.length}})}catch(t){return e.json({error:t.message},500)}});const lt=new et,Ys=Object.assign({"/src/index.tsx":c});let Rt=!1;for(const[,e]of Object.entries(Ys))e&&(lt.all("*",t=>{let s;try{s=t.executionCtx}catch{}return e.fetch(t.req.raw,t.env,s)}),lt.notFound(t=>{let s;try{s=t.executionCtx}catch{}return e.fetch(t.req.raw,t.env,s)}),Rt=!0);if(!Rt)throw new Error("Can't import modules from ['/src/index.ts','/src/index.tsx','/app/server.ts']");export{lt as default};
