@@ -6460,9 +6460,12 @@ app.get('/api/subscriptions/status', async (c) => {
       })
     }
 
-    // 구독 만료 확인
-    const today = new Date().toISOString().split('T')[0]
-    const isExpired = today > subscription.subscription_end_date
+    // 구독 만료 확인 (한국 시간 기준, 종료일 23:59:59까지 사용 가능)
+    const now = new Date()
+    const koreaTime = new Date(now.getTime() + (9 * 60 * 60 * 1000)) // UTC+9
+    const koreaDateStr = koreaTime.toISOString().split('T')[0]
+    const endDateTime = new Date(subscription.subscription_end_date + 'T23:59:59+09:00')
+    const isExpired = koreaTime > endDateTime
 
     if (isExpired) {
       // 구독 만료 처리
@@ -7008,9 +7011,16 @@ app.post('/api/admin/usage/:userId/update-limits', async (c) => {
         }, 500)
       }
     } else {
-      // 새 구독 생성
-      const today = new Date().toISOString().split('T')[0]
-      const oneMonthLater = new Date(new Date().setMonth(new Date().getMonth() + 1)).toISOString().split('T')[0]
+      // 새 구독 생성 (한국 시간 기준, 종료일은 한 달 후 전날 23:59:59)
+      const now = new Date()
+      const koreaTime = new Date(now.getTime() + (9 * 60 * 60 * 1000)) // UTC+9
+      const today = koreaTime.toISOString().split('T')[0]
+      
+      // 한 달 후 계산
+      const nextMonth = new Date(koreaTime)
+      nextMonth.setMonth(nextMonth.getMonth() + 1)
+      nextMonth.setDate(nextMonth.getDate() - 1) // 전날까지 (예: 1/20 구매 → 2/19까지)
+      const oneMonthLater = nextMonth.toISOString().split('T')[0]
       
       const newSubResult = await c.env.DB.prepare(`
         INSERT INTO subscriptions (
@@ -10516,6 +10526,30 @@ app.get('/dashboard', (c) => {
             </div>
         </nav>
 
+        <!-- 구독 경고 배너 (일반 사용자 전용) -->
+        <div id="subscriptionWarningBanner" class="hidden fixed top-20 left-0 right-0 z-40 bg-gradient-to-r from-red-500 to-orange-500 text-white shadow-lg">
+            <div class="max-w-7xl mx-auto px-6 py-4">
+                <div class="flex items-center justify-between flex-wrap gap-4">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center flex-shrink-0">
+                            <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="font-bold text-lg mb-1">⚠️ 구독 플랜이 없습니다</div>
+                            <div class="text-sm text-white text-opacity-90">
+                                모든 기능을 사용하려면 플랜을 구독해주세요. 지금 구독하고 학원 마케팅을 시작하세요!
+                            </div>
+                        </div>
+                    </div>
+                    <a href="/pricing" class="bg-white text-red-600 px-6 py-3 rounded-lg hover:bg-gray-100 transition font-bold shadow-lg whitespace-nowrap">
+                        플랜 선택하기 →
+                    </a>
+                </div>
+            </div>
+        </div>
+
         <div class="pt-32 pb-24 px-6">
             <div class="max-w-7xl mx-auto">
                 <div class="mb-10">
@@ -10994,9 +11028,25 @@ app.get('/dashboard', (c) => {
                     const data = await response.json()
                     
                     const statusDiv = document.getElementById('subscriptionStatusMain')
+                    const warningBanner = document.getElementById('subscriptionWarningBanner')
+                    
                     if (!statusDiv) {
                         console.error('subscriptionStatusMain element not found')
                         return
+                    }
+                    
+                    // 구독 여부 확인
+                    const hasSubscription = data.success && data.hasSubscription
+                    const isAdminPlan = hasSubscription && data.subscription && data.subscription.planName === '관리자 설정 플랜'
+                    
+                    // 관리자 설정 플랜이 아니고 구독이 없으면 경고 배너 표시
+                    if (!hasSubscription && warningBanner) {
+                        warningBanner.classList.remove('hidden')
+                        // 배너 높이만큼 컨텐츠 영역을 아래로 밀기
+                        document.querySelector('.pt-32').classList.remove('pt-32')
+                        document.querySelector('.pb-24').classList.add('pt-48')
+                    } else if (warningBanner) {
+                        warningBanner.classList.add('hidden')
                     }
                     
                     if (data.success && data.hasSubscription) {
@@ -24946,8 +24996,17 @@ app.post('/api/payment/verify', async (c) => {
     
     // 실제 운영 환경에서는 아임포트 API로 결제 정보를 검증해야 합니다
     const subscriptionId = 'SUB_' + Date.now()
-    const startDate = new Date().toISOString()
-    const endDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+    
+    // 한국 시간 기준으로 날짜 계산 (종료일은 한 달 후 전날 23:59:59)
+    const now = new Date()
+    const koreaTime = new Date(now.getTime() + (9 * 60 * 60 * 1000)) // UTC+9
+    const startDate = koreaTime.toISOString().split('T')[0]
+    
+    // 한 달 후 계산
+    const nextMonth = new Date(koreaTime)
+    nextMonth.setMonth(nextMonth.getMonth() + 1)
+    nextMonth.setDate(nextMonth.getDate() - 1) // 전날까지 (예: 1/20 구매 → 2/19까지)
+    const endDate = nextMonth.toISOString().split('T')[0]
     
     await DB.prepare(`
       INSERT INTO subscriptions (id, user_id, plan_type, amount, start_date, end_date, status, merchant_uid, imp_uid, created_at)
