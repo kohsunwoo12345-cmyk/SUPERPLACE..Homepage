@@ -14307,13 +14307,29 @@ app.post('/api/report-folders', async (c) => {
   try {
     const { academyId, folderName, description, color } = await c.req.json()
     
+    console.log('📁 [CreateFolder] Creating folder')
+    console.log('📁 [CreateFolder] academyId:', academyId)
+    console.log('📁 [CreateFolder] folderName:', folderName)
+    console.log('📁 [CreateFolder] description:', description)
+    console.log('📁 [CreateFolder] color:', color)
+    
+    if (!academyId || !folderName) {
+      console.error('❌ [CreateFolder] Missing required fields')
+      return c.json({ success: false, error: '학원 ID와 폴더 이름이 필요합니다.' }, 400)
+    }
+    
     const result = await c.env.DB.prepare(`
       INSERT INTO report_folders (academy_id, folder_name, description, color)
       VALUES (?, ?, ?, ?)
     `).bind(academyId, folderName, description || '', color || '#6366f1').run()
     
+    console.log('✅ [CreateFolder] Folder created successfully, ID:', result.meta.last_row_id)
+    
     return c.json({ success: true, folderId: result.meta.last_row_id })
   } catch (error) {
+    console.error('❌ [CreateFolder] Error:', error)
+    console.error('❌ [CreateFolder] Error message:', error.message)
+    console.error('❌ [CreateFolder] Error stack:', error.stack)
     return c.json({ success: false, error: error.message }, 500)
   }
 })

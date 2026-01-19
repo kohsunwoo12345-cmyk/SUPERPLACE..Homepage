@@ -12502,10 +12502,10 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
         SELECT * FROM report_folders
         WHERE academy_id = ?
         ORDER BY created_at DESC
-      `).bind(t).all();return e.json({success:!0,folders:s.results||[]})}catch(s){return console.warn("⚠️ report_folders table not found:",s.message),e.json({success:!0,folders:[]})}}catch(t){return console.error("❌ Get report folders error:",t),e.json({success:!1,error:t.message},500)}});d.post("/api/report-folders",async e=>{try{const{academyId:t,folderName:s,description:r,color:a}=await e.req.json(),o=await e.env.DB.prepare(`
+      `).bind(t).all();return e.json({success:!0,folders:s.results||[]})}catch(s){return console.warn("⚠️ report_folders table not found:",s.message),e.json({success:!0,folders:[]})}}catch(t){return console.error("❌ Get report folders error:",t),e.json({success:!1,error:t.message},500)}});d.post("/api/report-folders",async e=>{try{const{academyId:t,folderName:s,description:r,color:a}=await e.req.json();if(console.log("📁 [CreateFolder] Creating folder"),console.log("📁 [CreateFolder] academyId:",t),console.log("📁 [CreateFolder] folderName:",s),console.log("📁 [CreateFolder] description:",r),console.log("📁 [CreateFolder] color:",a),!t||!s)return console.error("❌ [CreateFolder] Missing required fields"),e.json({success:!1,error:"학원 ID와 폴더 이름이 필요합니다."},400);const o=await e.env.DB.prepare(`
       INSERT INTO report_folders (academy_id, folder_name, description, color)
       VALUES (?, ?, ?, ?)
-    `).bind(t,s,r||"",a||"#6366f1").run();return e.json({success:!0,folderId:o.meta.last_row_id})}catch(t){return e.json({success:!1,error:t.message},500)}});d.delete("/api/report-folders/:folderId",async e=>{try{const t=e.req.param("folderId");return await e.env.DB.prepare(`
+    `).bind(t,s,r||"",a||"#6366f1").run();return console.log("✅ [CreateFolder] Folder created successfully, ID:",o.meta.last_row_id),e.json({success:!0,folderId:o.meta.last_row_id})}catch(t){return console.error("❌ [CreateFolder] Error:",t),console.error("❌ [CreateFolder] Error message:",t.message),console.error("❌ [CreateFolder] Error stack:",t.stack),e.json({success:!1,error:t.message},500)}});d.delete("/api/report-folders/:folderId",async e=>{try{const t=e.req.param("folderId");return await e.env.DB.prepare(`
       UPDATE learning_reports SET folder_id = NULL WHERE folder_id = ?
     `).bind(t).run(),await e.env.DB.prepare(`
       DELETE FROM report_folders WHERE id = ?
