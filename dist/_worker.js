@@ -11019,23 +11019,7 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active')
     `).bind(s,r||null,a,o||null,n||"",k,P,w.id,N||new Date().toISOString().split("T")[0],I||null).run();if(T){const A=C.meta.last_row_id,S=typeof T=="string"?T.split(","):[T];for(const R of S)if(R&&R.trim())try{await e.env.DB.prepare(`
               UPDATE students SET class_id = ? WHERE id = ?
-            `).bind(parseInt(R.trim()),A).run()}catch(W){console.error("Class assignment error:",W)}}return e.json({success:!0,message:"학생이 추가되었습니다.",id:C.meta.last_row_id})}catch(t){return console.error("Add student error:",t),e.json({success:!1,error:`학생 추가 실패: ${t.message||t}`},500)}});d.get("/api/students/:id",async e=>{try{const t=e.req.param("id");if(!t)return e.json({success:!1,error:"학생 ID가 필요합니다."},400);const s=await e.env.DB.prepare(`
-      SELECT 
-        s.*,
-        c.class_name
-      FROM students s
-      LEFT JOIN classes c ON s.class_id = c.id
-      WHERE s.id = ? AND s.status = 'active'
-    `).bind(t).first();return s?e.json({success:!0,student:s}):e.json({success:!1,error:"학생을 찾을 수 없습니다."},404)}catch(t){return console.error("[GetStudentDetail] Error:",t),e.json({success:!1,error:"학생 정보를 가져오는 중 오류가 발생했습니다."},500)}});d.get("/api/students/:id/stats",async e=>{try{const t=e.req.param("id"),s=e.req.query("startDate"),r=e.req.query("endDate");if(!t)return e.json({success:!1,error:"학생 ID가 필요합니다."},400);const a=await e.env.DB.prepare(`
-      SELECT 
-        COUNT(*) as total_records,
-        AVG(CASE WHEN attendance = '출석' THEN 1 ELSE 0 END) * 100 as attendance_rate,
-        AVG(understanding_level) as avg_understanding,
-        AVG(homework_completion) as avg_homework
-      FROM daily_records
-      WHERE student_id = ?
-        AND date BETWEEN ? AND ?
-    `).bind(t,s||"2020-01-01",r||"2099-12-31").first();return e.json({success:!0,stats:a||{total_records:0,attendance_rate:0,avg_understanding:0,avg_homework:0}})}catch(t){return console.error("[GetStudentStats] Error:",t),e.json({success:!1,error:"통계를 가져오는 중 오류가 발생했습니다."},500)}});d.delete("/api/students/:id",async e=>{try{const t=e.req.param("id");if(!t)return e.json({success:!1,error:"학생 ID가 필요합니다."},400);let s;try{const o=e.req.header("X-User-Data-Base64");if(o){const n=JSON.parse(decodeURIComponent(escape(atob(o))));s=n.id||n.academy_id}}catch(o){console.error("[DeleteStudent] Failed to parse user header:",o)}if(!s)return e.json({success:!1,error:"학원 ID가 필요합니다."},400);console.log("[DeleteStudent] Soft deleting student:",t,"academy:",s);const r=await e.env.DB.prepare(`
+            `).bind(parseInt(R.trim()),A).run()}catch(W){console.error("Class assignment error:",W)}}return e.json({success:!0,message:"학생이 추가되었습니다.",id:C.meta.last_row_id})}catch(t){return console.error("Add student error:",t),e.json({success:!1,error:`학생 추가 실패: ${t.message||t}`},500)}});d.get("/api/students/:id",async e=>{try{const t=e.req.param("id");if(!t)return e.json({success:!1,error:"학생 ID가 필요합니다."},400);const s=await e.env.DB.prepare("SELECT s.*, c.class_name FROM students s LEFT JOIN classes c ON s.class_id = c.id WHERE s.id = ? AND s.status = 'active'").bind(t).first();return s?e.json({success:!0,student:s}):e.json({success:!1,error:"학생을 찾을 수 없습니다."},404)}catch(t){return console.error("[GetStudentDetail] Error:",t),e.json({success:!1,error:"학생 정보를 가져오는 중 오류가 발생했습니다."},500)}});d.get("/api/students/:id/stats",async e=>{try{const t=e.req.param("id"),s=e.req.query("startDate"),r=e.req.query("endDate");if(!t)return e.json({success:!1,error:"학생 ID가 필요합니다."},400);const a=await e.env.DB.prepare("SELECT COUNT(*) as total_records, AVG(CASE WHEN attendance = '출석' THEN 1 ELSE 0 END) * 100 as attendance_rate, AVG(understanding_level) as avg_understanding, AVG(homework_completion) as avg_homework FROM daily_records WHERE student_id = ? AND date BETWEEN ? AND ?").bind(t,s||"2020-01-01",r||"2099-12-31").first();return e.json({success:!0,stats:a||{total_records:0,attendance_rate:0,avg_understanding:0,avg_homework:0}})}catch(t){return console.error("[GetStudentStats] Error:",t),e.json({success:!1,error:"통계를 가져오는 중 오류가 발생했습니다."},500)}});d.delete("/api/students/:id",async e=>{try{const t=e.req.param("id");if(!t)return e.json({success:!1,error:"학생 ID가 필요합니다."},400);let s;try{const o=e.req.header("X-User-Data-Base64");if(o){const n=JSON.parse(decodeURIComponent(escape(atob(o))));s=n.id||n.academy_id}}catch(o){console.error("[DeleteStudent] Failed to parse user header:",o)}if(!s)return e.json({success:!1,error:"학원 ID가 필요합니다."},400);console.log("[DeleteStudent] Soft deleting student:",t,"academy:",s);const r=await e.env.DB.prepare(`
       SELECT id, academy_id FROM students WHERE id = ?
     `).bind(t).first();return r?r.academy_id!==s?(console.error("[DeleteStudent] Security breach attempt:",{studentId:t,studentAcademyId:r.academy_id,userAcademyId:s}),e.json({success:!1,error:"권한이 없습니다."},403)):(await e.env.DB.prepare(`
       UPDATE students 

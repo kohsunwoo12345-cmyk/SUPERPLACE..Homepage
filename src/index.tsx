@@ -12685,14 +12685,7 @@ app.get('/api/students/:id', async (c) => {
     }
     
     // 학생 정보와 반 정보를 함께 조회
-    const student = await c.env.DB.prepare(`
-      SELECT 
-        s.*,
-        c.class_name
-      FROM students s
-      LEFT JOIN classes c ON s.class_id = c.id
-      WHERE s.id = ? AND s.status = 'active'
-    `).bind(studentId).first()
+    const student = await c.env.DB.prepare('SELECT s.*, c.class_name FROM students s LEFT JOIN classes c ON s.class_id = c.id WHERE s.id = ? AND s.status = \'active\'').bind(studentId).first()
     
     if (!student) {
       return c.json({ 
@@ -12726,16 +12719,7 @@ app.get('/api/students/:id/stats', async (c) => {
     }
     
     // daily_records 테이블에서 통계 계산
-    const stats = await c.env.DB.prepare(`
-      SELECT 
-        COUNT(*) as total_records,
-        AVG(CASE WHEN attendance = '출석' THEN 1 ELSE 0 END) * 100 as attendance_rate,
-        AVG(understanding_level) as avg_understanding,
-        AVG(homework_completion) as avg_homework
-      FROM daily_records
-      WHERE student_id = ?
-        AND date BETWEEN ? AND ?
-    `).bind(studentId, startDate || '2020-01-01', endDate || '2099-12-31').first()
+    const stats = await c.env.DB.prepare('SELECT COUNT(*) as total_records, AVG(CASE WHEN attendance = \'출석\' THEN 1 ELSE 0 END) * 100 as attendance_rate, AVG(understanding_level) as avg_understanding, AVG(homework_completion) as avg_homework FROM daily_records WHERE student_id = ? AND date BETWEEN ? AND ?').bind(studentId, startDate || '2020-01-01', endDate || '2099-12-31').first()
     
     return c.json({ 
       success: true, 
