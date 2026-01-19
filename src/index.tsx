@@ -1156,9 +1156,18 @@ app.get('/api/db/migrate', async (c) => {
     
     // Migration 2: Set default academy_id for users without it
     try {
+      // First, try to update all users with NULL or 0 academy_id
       const updateResult = await c.env.DB.prepare(`UPDATE users SET academy_id = id WHERE academy_id IS NULL OR academy_id = 0`).run()
-      console.log('✅ [Migration] Set default academy_id for users:', updateResult.meta.changes)
-      results.push('✅ Updated ' + updateResult.meta.changes + ' users with academy_id')
+      console.log('✅ [Migration] Set default academy_id for users (NULL/0):', updateResult.meta.changes)
+      results.push('✅ Updated ' + updateResult.meta.changes + ' users with academy_id from NULL/0')
+      
+      // Also ensure ALL users have academy_id (even if not NULL)
+      const updateResult2 = await c.env.DB.prepare(`UPDATE users SET academy_id = id WHERE academy_id IS NULL`).run()
+      console.log('✅ [Migration] Double-check academy_id for users:', updateResult2.meta.changes)
+      
+      // Count users with academy_id
+      const countResult = await c.env.DB.prepare(`SELECT COUNT(*) as count FROM users WHERE academy_id IS NOT NULL AND academy_id > 0`).first()
+      results.push('✅ Total users with academy_id: ' + (countResult?.count || 0))
     } catch (e) {
       console.log('ℹ️ [Migration] Failed to set default academy_id:', e.message)
       results.push('ℹ️ Update users: ' + e.message.substring(0, 50))
@@ -3551,15 +3560,30 @@ app.post('/api/landing/create', async (c) => {
     }
     
     // 🔥 랜딩페이지 생성 한도 체크
+    // First, get the user's academy_id and ensure it exists
+    const userRecord = await c.env.DB.prepare(`SELECT id, academy_id FROM users WHERE id = ?`).bind(user.id).first()
+    
+    let academyIdToUse = userRecord?.academy_id
+    if (!academyIdToUse) {
+      // If user doesn't have academy_id, set it to user.id
+      academyIdToUse = user.id
+      try {
+        await c.env.DB.prepare(`UPDATE users SET academy_id = ? WHERE id = ?`).bind(academyIdToUse, user.id).run()
+        console.log('🔧 [Landing] Auto-set academy_id for user:', user.id)
+      } catch (e) {
+        console.error('Failed to set academy_id:', e)
+      }
+    }
+    
     const activeSubscription = await c.env.DB.prepare(`
       SELECT id, landing_page_limit 
       FROM subscriptions 
-      WHERE academy_id = (SELECT academy_id FROM users WHERE id = ?) 
+      WHERE academy_id = ?
         AND status = 'active' 
         AND subscription_end_date >= date('now')
       ORDER BY created_at DESC 
       LIMIT 1
-    `).bind(user.id).first()
+    `).bind(academyIdToUse).first()
     
     if (!activeSubscription) {
       return c.json({ 
@@ -22368,15 +22392,30 @@ app.post('/api/teachers/add', async (c) => {
     }
     
     // 🔥 선생님 추가 한도 체크
+    // First, get the user's academy_id and ensure it exists
+    const directorRecord = await c.env.DB.prepare(`SELECT id, academy_id FROM users WHERE id = ?`).bind(userId).first()
+    
+    let academyIdToUse = directorRecord?.academy_id
+    if (!academyIdToUse) {
+      // If user doesn't have academy_id, set it to userId
+      academyIdToUse = userId
+      try {
+        await c.env.DB.prepare(`UPDATE users SET academy_id = ? WHERE id = ?`).bind(academyIdToUse, userId).run()
+        console.log('🔧 [AddTeacher] Auto-set academy_id for director:', userId)
+      } catch (e) {
+        console.error('Failed to set academy_id:', e)
+      }
+    }
+    
     const activeSubscription = await c.env.DB.prepare(`
       SELECT id, teacher_limit 
       FROM subscriptions 
-      WHERE academy_id = (SELECT academy_id FROM users WHERE id = ?) 
+      WHERE academy_id = ?
         AND status = 'active' 
         AND subscription_end_date >= date('now')
       ORDER BY created_at DESC 
       LIMIT 1
-    `).bind(userId).first()
+    `).bind(academyIdToUse).first()
     
     if (!activeSubscription) {
       return c.json({ 
