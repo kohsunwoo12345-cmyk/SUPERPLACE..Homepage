@@ -5485,7 +5485,8 @@ app.get('/', (c) => {
             z-index: 100;
           }
           
-          .nav-menu-wrapper:hover .mega-menu {
+          .nav-menu-wrapper:hover .mega-menu,
+          .mega-menu:hover {
             display: block;
             animation: fadeInDown 0.3s ease-out;
           }
@@ -5513,6 +5514,16 @@ app.get('/', (c) => {
             padding-bottom: 8px;
             border-bottom: 2px solid #e5e7eb;
             white-space: nowrap;
+            cursor: pointer;
+          }
+          
+          .menu-column-title a {
+            color: #7c3aed;
+            text-decoration: none;
+          }
+          
+          .menu-column-title a:hover {
+            color: #6d28d9;
           }
           
           .menu-column a {

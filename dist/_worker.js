@@ -4434,7 +4434,8 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
             z-index: 100;
           }
           
-          .nav-menu-wrapper:hover .mega-menu {
+          .nav-menu-wrapper:hover .mega-menu,
+          .mega-menu:hover {
             display: block;
             animation: fadeInDown 0.3s ease-out;
           }
@@ -4462,6 +4463,16 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
             padding-bottom: 8px;
             border-bottom: 2px solid #e5e7eb;
             white-space: nowrap;
+            cursor: pointer;
+          }
+          
+          .menu-column-title a {
+            color: #7c3aed;
+            text-decoration: none;
+          }
+          
+          .menu-column-title a:hover {
+            color: #6d28d9;
           }
           
           .menu-column a {
