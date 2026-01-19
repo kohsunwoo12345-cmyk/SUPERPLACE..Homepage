@@ -11284,45 +11284,45 @@ app.get('/dashboard', (c) => {
                                 const teacherUsage = calcUsage(usage.teachers || 0, limits.teachers || 0)
                                 
                                 const renderUsageCard = (icon, title, usage) => {
-                                    return '<div class="bg-white rounded-xl p-4 shadow-sm border-2 ' + 
-                                        (usage.color === 'red' ? 'border-red-300' : 
-                                         usage.color === 'orange' ? 'border-orange-300' :
-                                         usage.color === 'yellow' ? 'border-yellow-300' : 'border-blue-200') + '">' +
-                                        '<div class="flex items-center justify-between mb-2">' +
-                                        '<div class="flex items-center gap-2">' +
-                                        '<span class="text-2xl">' + icon + '</span>' +
-                                        '<span class="text-sm font-semibold text-gray-700">' + title + '</span>' +
-                                        '</div>' +
-                                        '<span class="text-xs font-bold ' + 
+                                    return '<div class="bg-white rounded-2xl p-6 shadow-lg border-2 ' + 
+                                        (usage.color === 'red' ? 'border-red-300 bg-red-50' : 
+                                         usage.color === 'orange' ? 'border-orange-300 bg-orange-50' :
+                                         usage.color === 'yellow' ? 'border-yellow-300 bg-yellow-50' : 'border-blue-200 bg-blue-50') + '">' +
+                                        '<div class="flex items-center gap-3 mb-4">' +
+                                        '<span class="text-4xl">' + icon + '</span>' +
+                                        '<div class="flex-1">' +
+                                        '<h4 class="text-base font-bold text-gray-900">' + title + '</h4>' +
+                                        '<p class="text-2xl font-bold mt-1 ' + 
                                         (usage.color === 'red' ? 'text-red-600' : 
                                          usage.color === 'orange' ? 'text-orange-600' :
                                          usage.color === 'yellow' ? 'text-yellow-600' : 'text-blue-600') + '">' +
-                                        usage.current + ' / ' + usage.limit +
-                                        '</span>' +
+                                        usage.current.toLocaleString() + ' / ' + usage.limit.toLocaleString() +
+                                        '</p>' +
                                         '</div>' +
-                                        '<div class="w-full bg-gray-200 rounded-full h-3 mb-2 overflow-hidden">' +
-                                        '<div class="h-3 rounded-full transition-all ' + 
-                                        (usage.color === 'red' ? 'bg-gradient-to-r from-red-500 to-red-600' : 
-                                         usage.color === 'orange' ? 'bg-gradient-to-r from-orange-500 to-orange-600' :
-                                         usage.color === 'yellow' ? 'bg-gradient-to-r from-yellow-500 to-yellow-600' : 'bg-gradient-to-r from-blue-500 to-blue-600') + 
-                                        '" style="width: ' + usage.percent + '%"></div>' +
+                                        '</div>' +
+                                        '<div class="w-full bg-gray-300 rounded-full h-4 mb-3 overflow-hidden">' +
+                                        '<div class="h-4 rounded-full transition-all duration-500 ' + 
+                                        (usage.color === 'red' ? 'bg-gradient-to-r from-red-500 to-red-700' : 
+                                         usage.color === 'orange' ? 'bg-gradient-to-r from-orange-500 to-orange-700' :
+                                         usage.color === 'yellow' ? 'bg-gradient-to-r from-yellow-500 to-yellow-700' : 'bg-gradient-to-r from-blue-500 to-blue-700') + 
+                                        '" style="width: ' + Math.min(usage.percent, 100) + '%"></div>' +
                                         '</div>' +
                                         '<div class="flex justify-between items-center">' +
-                                        '<span class="text-xs text-gray-500">' + usage.percent.toFixed(1) + '% 사용</span>' +
-                                        '<span class="text-xs font-bold ' + 
-                                        (usage.remaining === 0 ? 'text-red-600' : 'text-green-600') + '">' +
-                                        '남은 개수: ' + usage.remaining + '개' +
+                                        '<span class="text-sm font-semibold text-gray-700">' + usage.percent.toFixed(1) + '% 사용 중</span>' +
+                                        '<span class="text-sm font-bold px-3 py-1 rounded-full ' + 
+                                        (usage.remaining === 0 ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700') + '">' +
+                                        '남음: ' + usage.remaining.toLocaleString() + '개' +
                                         '</span>' +
                                         '</div>' +
                                         '</div>'
                                 }
                                 
                                 usageHtml = '<div class="mt-6 pt-6 border-t-2 border-purple-200">' +
-                                    '<div class="flex items-center justify-between mb-4">' +
-                                    '<h3 class="text-lg font-bold text-gray-900">📊 실시간 사용량</h3>' +
-                                    '<span class="text-xs text-gray-500">자동 업데이트됨</span>' +
+                                    '<div class="flex items-center justify-between mb-6">' +
+                                    '<h3 class="text-xl font-bold text-gray-900">📊 실시간 사용량</h3>' +
+                                    '<span class="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">자동 업데이트됨</span>' +
                                     '</div>' +
-                                    '<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">' +
+                                    '<div class="grid grid-cols-1 md:grid-cols-2 gap-6">' +
                                     renderUsageCard('👥', '학생', studentUsage) +
                                     renderUsageCard('📊', 'AI 리포트', reportUsage) +
                                     renderUsageCard('🎨', '랜딩페이지', landingUsage) +
