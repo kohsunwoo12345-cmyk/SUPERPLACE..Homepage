@@ -10677,29 +10677,69 @@ app.get('/dashboard', (c) => {
                             
                             if (usageData.success) {
                                 const { limits, usage } = usageData
-                                usageHtml = \`
-                                    <div class="mt-4 pt-4 border-t border-purple-200">
-                                        <div class="text-sm font-semibold text-gray-700 mb-2">📊 사용량</div>
-                                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                                            <div class="bg-white/50 rounded-lg p-2">
-                                                <div class="text-xs text-gray-600">학생</div>
-                                                <div class="text-sm font-bold text-gray-900">\${usage.students} / \${limits.students}</div>
-                                            </div>
-                                            <div class="bg-white/50 rounded-lg p-2">
-                                                <div class="text-xs text-gray-600">AI 리포트</div>
-                                                <div class="text-sm font-bold text-gray-900">\${usage.aiReports} / \${limits.aiReports}</div>
-                                            </div>
-                                            <div class="bg-white/50 rounded-lg p-2">
-                                                <div class="text-xs text-gray-600">랜딩페이지</div>
-                                                <div class="text-sm font-bold text-gray-900">\${usage.landingPages} / \${limits.landingPages}</div>
-                                            </div>
-                                            <div class="bg-white/50 rounded-lg p-2">
-                                                <div class="text-xs text-gray-600">선생님</div>
-                                                <div class="text-sm font-bold text-gray-900">\${usage.teachers} / \${limits.teachers}</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                \`
+                                
+                                // 퍼센트 계산 및 색상 결정
+                                const calcUsage = (current, limit) => {
+                                    const percent = limit > 0 ? Math.min((current / limit) * 100, 100) : 0
+                                    const remaining = Math.max(limit - current, 0)
+                                    let color = 'blue'
+                                    if (percent >= 100) color = 'red'
+                                    else if (percent >= 80) color = 'orange'
+                                    else if (percent >= 60) color = 'yellow'
+                                    return { percent, remaining, color, current, limit }
+                                }
+                                
+                                const studentUsage = calcUsage(usage.students || 0, limits.students || 0)
+                                const reportUsage = calcUsage(usage.aiReports || 0, limits.aiReports || 0)
+                                const landingUsage = calcUsage(usage.landingPages || 0, limits.landingPages || 0)
+                                const teacherUsage = calcUsage(usage.teachers || 0, limits.teachers || 0)
+                                
+                                const renderUsageCard = (icon, title, usage) => {
+                                    return '<div class="bg-white rounded-xl p-4 shadow-sm border-2 ' + 
+                                        (usage.color === 'red' ? 'border-red-300' : 
+                                         usage.color === 'orange' ? 'border-orange-300' :
+                                         usage.color === 'yellow' ? 'border-yellow-300' : 'border-blue-200') + '">' +
+                                        '<div class="flex items-center justify-between mb-2">' +
+                                        '<div class="flex items-center gap-2">' +
+                                        '<span class="text-2xl">' + icon + '</span>' +
+                                        '<span class="text-sm font-semibold text-gray-700">' + title + '</span>' +
+                                        '</div>' +
+                                        '<span class="text-xs font-bold ' + 
+                                        (usage.color === 'red' ? 'text-red-600' : 
+                                         usage.color === 'orange' ? 'text-orange-600' :
+                                         usage.color === 'yellow' ? 'text-yellow-600' : 'text-blue-600') + '">' +
+                                        usage.current + ' / ' + usage.limit +
+                                        '</span>' +
+                                        '</div>' +
+                                        '<div class="w-full bg-gray-200 rounded-full h-3 mb-2 overflow-hidden">' +
+                                        '<div class="h-3 rounded-full transition-all ' + 
+                                        (usage.color === 'red' ? 'bg-gradient-to-r from-red-500 to-red-600' : 
+                                         usage.color === 'orange' ? 'bg-gradient-to-r from-orange-500 to-orange-600' :
+                                         usage.color === 'yellow' ? 'bg-gradient-to-r from-yellow-500 to-yellow-600' : 'bg-gradient-to-r from-blue-500 to-blue-600') + 
+                                        '" style="width: ' + usage.percent + '%"></div>' +
+                                        '</div>' +
+                                        '<div class="flex justify-between items-center">' +
+                                        '<span class="text-xs text-gray-500">' + usage.percent.toFixed(0) + '% 사용</span>' +
+                                        '<span class="text-xs font-bold ' + 
+                                        (usage.remaining === 0 ? 'text-red-600' : 'text-green-600') + '">' +
+                                        '남은 개수: ' + usage.remaining + '개' +
+                                        '</span>' +
+                                        '</div>' +
+                                        '</div>'
+                                }
+                                
+                                usageHtml = '<div class="mt-6 pt-6 border-t-2 border-purple-200">' +
+                                    '<div class="flex items-center justify-between mb-4">' +
+                                    '<h3 class="text-lg font-bold text-gray-900">📊 실시간 사용량</h3>' +
+                                    '<span class="text-xs text-gray-500">자동 업데이트됨</span>' +
+                                    '</div>' +
+                                    '<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">' +
+                                    renderUsageCard('👥', '학생', studentUsage) +
+                                    renderUsageCard('📊', 'AI 리포트', reportUsage) +
+                                    renderUsageCard('🎨', '랜딩페이지', landingUsage) +
+                                    renderUsageCard('👨‍🏫', '선생님', teacherUsage) +
+                                    '</div>' +
+                                    '</div>'
                             }
                         } catch (usageErr) {
                             console.error('[Usage] Error fetching usage:', usageErr)
@@ -10722,9 +10762,6 @@ app.get('/dashboard', (c) => {
                                                 </div>
                                                 <div class="text-sm text-gray-600">
                                                     이용 기간: \${sub.startDate} ~ \${sub.endDate} (\${daysLeft}일 남음)
-                                                </div>
-                                                <div class="text-xs text-gray-500 mt-1">
-                                                    학생 \${sub.studentLimit}명 • AI 리포트 \${sub.aiReportLimit}개/월 • 랜딩페이지 \${sub.landingPageLimit}개 • 선생님 \${sub.teacherLimit}명
                                                 </div>
                                             </div>
                                         </div>
