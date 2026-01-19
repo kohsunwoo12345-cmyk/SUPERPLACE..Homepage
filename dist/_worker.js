@@ -876,8 +876,20 @@ var _t=Object.defineProperty;var Ve=e=>{throw TypeError(e)};var kt=(e,t,s)=>t in
             if (!confirm(\`"\${studentName}" 학생을 삭제하시겠습니까?\\n\\n⚠️ 모든 성과 기록도 함께 삭제됩니다.\`)) return;
 
             try {
-                const res = await fetch('/api/students/' + studentId, { method: 'DELETE' });
+                console.log('🗑️ [DeleteStudent] Deleting student:', studentId);
+                const userDataHeader = btoa(unescape(encodeURIComponent(JSON.stringify(currentUser))));
+                
+                const res = await fetch('/api/students/' + studentId, { 
+                    method: 'DELETE',
+                    headers: {
+                        'X-User-Data-Base64': userDataHeader
+                    }
+                });
+                
+                console.log('🗑️ [DeleteStudent] Response status:', res.status);
                 const data = await res.json();
+                console.log('🗑️ [DeleteStudent] Response data:', data);
+                
                 if (data.success) {
                     alert('학생이 삭제되었습니다.');
                     loadStudents();
@@ -885,6 +897,7 @@ var _t=Object.defineProperty;var Ve=e=>{throw TypeError(e)};var kt=(e,t,s)=>t in
                     alert('삭제 실패: ' + data.error);
                 }
             } catch (error) {
+                console.error('🗑️ [DeleteStudent] Error:', error);
                 alert('삭제 중 오류가 발생했습니다.');
             }
         }
