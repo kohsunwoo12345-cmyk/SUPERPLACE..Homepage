@@ -12718,7 +12718,7 @@ app.post('/api/students', async (c) => {
     console.log('➕ [AddStudent] Received data:', JSON.stringify(data, null, 2))
     
     const { 
-      name, phone, grade, subjects, 
+      name, phone, grade, subjects, school,
       parent_name, parentName,
       parent_phone, parentPhone,
       notes, memo,
@@ -12776,15 +12776,16 @@ app.post('/api/students', async (c) => {
       // 먼저 기본 컬럼만으로 시도
       result = await c.env.DB.prepare(`
         INSERT INTO students (
-          name, phone, grade, subjects, parent_name, parent_phone, 
+          name, phone, grade, subjects, school, parent_name, parent_phone, 
           academy_id, class_id, notes, status, created_at
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', datetime('now'))
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', datetime('now'))
       `).bind(
         name, 
         phone || null, 
         grade, 
         subjects || '', 
+        school || null,
         finalParentName, 
         finalParentPhone, 
         finalAcademyId, 
@@ -12798,15 +12799,16 @@ app.post('/api/students', async (c) => {
       try {
         result = await c.env.DB.prepare(`
           INSERT INTO students (
-            name, phone, grade, subjects, parent_name, parent_phone, 
+            name, phone, grade, subjects, school, parent_name, parent_phone, 
             academy_id, enrollment_date, notes, status, class_id
           )
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', ?)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', ?)
         `).bind(
           name, 
           phone || null, 
           grade, 
           subjects || '', 
+          school || null,
           finalParentName, 
           finalParentPhone, 
           finalAcademyId, 
@@ -12817,7 +12819,7 @@ app.post('/api/students', async (c) => {
       } catch (err2) {
         console.error('➕ [AddStudent] Second attempt failed:', err2.message)
         
-        // 가장 최소한의 컬럼만 사용
+        // 가장 최소한의 컬럼만 사용 (school 제외)
         result = await c.env.DB.prepare(`
           INSERT INTO students (
             name, grade, parent_name, parent_phone, academy_id, status
@@ -12979,6 +12981,81 @@ app.delete('/api/students/:id', async (c) => {
     return c.json({ 
       success: false, 
       error: '학생 삭제 중 오류가 발생했습니다.'
+    }, 500)
+  }
+})
+
+// 학생 정보 수정
+app.put('/api/students/:id', async (c) => {
+  try {
+    const studentId = c.req.param('id')
+    const data = await c.req.json()
+    
+    console.log('✏️ [UpdateStudent] Updating student:', studentId)
+    console.log('✏️ [UpdateStudent] Data:', data)
+    
+    const { 
+      name, phone, grade, subjects, school,
+      parentName, parentPhone,
+      classId, enrollmentDate, memo
+    } = data
+    
+    // 필수 항목 확인
+    if (!name || !grade || !parentName || !parentPhone) {
+      return c.json({ 
+        success: false, 
+        error: '필수 항목을 입력해주세요. (이름, 학년, 학부모 이름, 학부모 연락처)' 
+      }, 400)
+    }
+    
+    // UPDATE 쿼리 (가능한 모든 필드 업데이트)
+    try {
+      const result = await c.env.DB.prepare(`
+        UPDATE students 
+        SET name = ?, phone = ?, grade = ?, subjects = ?, school = ?,
+            parent_name = ?, parent_phone = ?, class_id = ?, 
+            enrollment_date = ?, notes = ?
+        WHERE id = ?
+      `).bind(
+        name,
+        phone || null,
+        grade,
+        subjects || '',
+        school || null,
+        parentName,
+        parentPhone,
+        classId || null,
+        enrollmentDate || null,
+        memo || null,
+        studentId
+      ).run()
+      
+      console.log('✅ [UpdateStudent] Updated rows:', result.meta.changes)
+      
+      if (result.meta.changes === 0) {
+        return c.json({ success: false, error: '학생을 찾을 수 없습니다.' }, 404)
+      }
+      
+      return c.json({ 
+        success: true, 
+        message: '학생 정보가 수정되었습니다.',
+        id: studentId
+      })
+      
+    } catch (err) {
+      console.error('❌ [UpdateStudent] Error:', err)
+      return c.json({ 
+        success: false, 
+        error: '학생 정보 수정 중 오류가 발생했습니다.',
+        details: err.message 
+      }, 500)
+    }
+    
+  } catch (error) {
+    console.error('❌ [UpdateStudent] Fatal error:', error)
+    return c.json({ 
+      success: false, 
+      error: '학생 정보 수정 중 오류가 발생했습니다.' 
     }, 500)
   }
 })

@@ -481,6 +481,11 @@ export const studentsListPage = `
                         </div>
                         
                         <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">학교</label>
+                            <input type="text" id="studentSchool" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="예: 서울초등학교">
+                        </div>
+                        
+                        <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">반 배정 (최대 3개)</label>
                             <div id="classCheckboxes" class="space-y-2 p-3 border border-gray-300 rounded-lg max-h-48 overflow-y-auto bg-white">
                                 <!-- 반 목록이 동적으로 로드됩니다 -->
@@ -841,6 +846,7 @@ export const studentsListPage = `
             document.getElementById('studentId').value = student.id;
             document.getElementById('studentName').value = student.name;
             document.getElementById('studentPhone').value = student.phone || '';
+            document.getElementById('studentSchool').value = student.school || '';
             document.getElementById('studentGrade').value = student.grade;
             document.getElementById('enrollmentDate').value = student.enrollment_date;
             document.getElementById('parentName').value = student.parent_name;
@@ -977,6 +983,7 @@ export const studentsListPage = `
                 classId: selectedClasses.length > 0 ? selectedClasses.join(',') : null,
                 name: document.getElementById('studentName').value,
                 phone: document.getElementById('studentPhone').value,
+                school: document.getElementById('studentSchool').value,
                 parentName: document.getElementById('parentName').value,
                 parentPhone: document.getElementById('parentPhone').value,
                 grade: document.getElementById('studentGrade').value,
@@ -1923,6 +1930,10 @@ export const studentDetailPage = `
                                 <p id="studentGrade" class="font-semibold text-lg"></p>
                             </div>
                             <div>
+                                <span class="opacity-80">학교</span>
+                                <p id="studentSchoolDetail" class="font-semibold text-lg"></p>
+                            </div>
+                            <div>
                                 <span class="opacity-80">반</span>
                                 <p id="studentClass" class="font-semibold text-lg"></p>
                             </div>
@@ -2072,6 +2083,7 @@ export const studentDetailPage = `
             document.getElementById('studentInitial').textContent = student.name.charAt(0);
             document.getElementById('studentName').textContent = student.name;
             document.getElementById('studentGrade').textContent = student.grade;
+            document.getElementById('studentSchoolDetail').textContent = student.school || '미등록';
             document.getElementById('studentClass').textContent = student.class_name || '미배정';
             document.getElementById('studentSubjects').textContent = student.subjects;
             document.getElementById('enrollmentDate').textContent = student.enrollment_date;
