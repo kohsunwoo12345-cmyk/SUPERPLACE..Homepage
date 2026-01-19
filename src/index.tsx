@@ -11217,13 +11217,22 @@ app.get('/dashboard', (c) => {
                         // 사용량 정보 가져오기
                         let usageHtml = ''
                         try {
-                            const usageRes = await fetch('/api/usage/check')
-                            const usageData = await usageRes.json()
+                            console.log('[Dashboard] Fetching usage data...')
+                            const usageRes = await fetch('/api/usage/check', {
+                                method: 'GET',
+                                credentials: 'include',
+                                cache: 'no-cache'
+                            })
+                            console.log('[Dashboard] Usage API status:', usageRes.status)
                             
+                            const usageData = await usageRes.json()
                             console.log('[Dashboard] Usage Data:', usageData)
                             
                             if (usageData.success) {
                                 const { limits, usage } = usageData
+                                
+                                console.log('[Dashboard] Limits:', limits)
+                                console.log('[Dashboard] Usage:', usage)
                                 
                                 // 퍼센트 계산 및 색상 결정
                                 const calcUsage = (current, limit) => {
@@ -11287,9 +11296,17 @@ app.get('/dashboard', (c) => {
                                     renderUsageCard('👨‍🏫', '선생님', teacherUsage) +
                                     '</div>' +
                                     '</div>'
+                            } else {
+                                console.error('[Dashboard] Usage API returned success=false:', usageData)
+                                usageHtml = '<div class="mt-6 pt-6 border-t-2 border-red-200">' +
+                                    '<div class="text-sm text-red-600">사용량 데이터를 불러올 수 없습니다: ' + (usageData.error || '알 수 없는 오류') + '</div>' +
+                                    '</div>'
                             }
                         } catch (usageErr) {
                             console.error('[Usage] Error fetching usage:', usageErr)
+                            usageHtml = '<div class="mt-6 pt-6 border-t-2 border-red-200">' +
+                                '<div class="text-sm text-red-600">사용량 데이터 로딩 실패: ' + usageErr.message + '</div>' +
+                                '</div>'
                         }
                         
                         statusDiv.innerHTML = 
