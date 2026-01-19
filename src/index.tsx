@@ -26751,7 +26751,7 @@ app.get('/students', (c) => {
             // 로그인 사용자 정보 확인
             const userStr = localStorage.getItem('user');
             let currentUser = null;
-            let academyId = 1; // 기본값 (로그인 시 덮어씌워짐)
+            let academyId = 1; // 기본값 (로그인하지 않은 경우)
             let userPermissions = {
                 canViewAllStudents: false,
                 canWriteDailyReports: false,
@@ -26760,9 +26760,11 @@ app.get('/students', (c) => {
             
             if (userStr) {
                 currentUser = JSON.parse(userStr);
-                academyId = currentUser.id; // 로그인한 사용자의 ID를 academyId로 사용
-                console.log('Current user:', currentUser);
-                console.log('Academy ID:', academyId);
+                academyId = currentUser.id; // ⭐ 로그인한 사용자의 ID를 academyId로 사용
+                console.log('✅ Current user:', currentUser);
+                console.log('✅ Academy ID:', academyId);
+            } else {
+                console.warn('⚠️ Not logged in - using default academyId');
             }
 
             // 페이지 로드 시 권한 확인 및 UI 제한
