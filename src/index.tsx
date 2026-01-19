@@ -5465,12 +5465,12 @@ app.get('/', (c) => {
             text-wrap: balance;
           }
           
-          /* 드롭다운 메뉴 스타일 */
-          .dropdown {
-            position: static;
+          /* 전체 메가 메뉴 스타일 */
+          .nav-menu-container {
+            position: relative;
           }
           
-          .dropdown-menu {
+          .mega-menu {
             position: absolute;
             top: 100%;
             left: 0;
@@ -5482,38 +5482,47 @@ app.get('/', (c) => {
             z-index: 100;
           }
           
-          .dropdown:hover .dropdown-menu {
+          .nav-menu-container:hover .mega-menu {
             display: block;
             animation: fadeInDown 0.3s ease-out;
           }
           
-          .dropdown-menu-inner {
+          .mega-menu-inner {
             max-width: 1280px;
             margin: 0 auto;
-            padding: 32px 48px;
+            padding: 40px 48px;
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 16px;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 32px;
           }
           
-          .dropdown-menu a {
+          .menu-column {
+            display: flex;
+            flex-direction: column;
+          }
+          
+          .menu-column-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #7c3aed;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e5e7eb;
+          }
+          
+          .menu-column a {
             display: block;
-            padding: 16px 24px;
+            padding: 10px 0;
             color: #374151;
             text-decoration: none;
-            transition: all 0.25s;
-            border-radius: 12px;
-            font-size: 15px;
+            transition: all 0.2s;
+            font-size: 14px;
             font-weight: 500;
-            border: 1px solid transparent;
           }
           
-          .dropdown-menu a:hover {
-            background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(124, 58, 237, 0.3);
-            border-color: #7c3aed;
+          .menu-column a:hover {
+            color: #7c3aed;
+            padding-left: 8px;
           }
           
           @keyframes fadeInDown {
@@ -5537,79 +5546,67 @@ app.get('/', (c) => {
                         <img src="/static/images/logo.png" alt="SUPER PLACE" class="h-10" onerror="this.style.display='none'">
                         <span class="text-xl font-bold text-gray-900">우리는 슈퍼플레이스다</span>
                     </div>
-                    <div class="hidden md:flex items-center space-x-10">
-                        <!-- 홈 드롭다운 -->
-                        <div class="dropdown">
-                            <a href="/" class="text-gray-700 hover:text-purple-600 font-medium transition">홈</a>
-                            <div class="dropdown-menu">
-                                <div class="dropdown-menu-inner">
-                                    <a href="/">🏠 메인 홈</a>
-                                    <a href="/about">ℹ️ 회사 소개</a>
-                                    <a href="/dashboard">📊 대시보드</a>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="hidden md:flex items-center space-x-10 nav-menu-container">
+                        <a href="/" class="text-gray-700 hover:text-purple-600 font-medium transition">홈</a>
+                        <a href="/programs" class="text-gray-700 hover:text-purple-600 font-medium transition">교육 프로그램</a>
+                        <a href="/pricing" class="text-gray-700 hover:text-purple-600 font-medium transition">요금제</a>
+                        <a href="/success" class="text-gray-700 hover:text-purple-600 font-medium transition">성공 사례</a>
+                        <a href="/contact" class="text-gray-700 hover:text-purple-600 font-medium transition">문의하기</a>
+                        <a href="https://kohsunwoo12345-cmyk.github.io/SUPERPLACE.Home.store/" target="_blank" class="text-gray-700 hover:text-purple-600 font-medium transition">AI 봇 쇼핑몰</a>
                         
-                        <!-- 교육 프로그램 드롭다운 -->
-                        <div class="dropdown">
-                            <a href="/programs" class="text-gray-700 hover:text-purple-600 font-medium transition">교육 프로그램</a>
-                            <div class="dropdown-menu">
-                                <div class="dropdown-menu-inner">
-                                    <a href="/tools/landing-page-builder">📄 랜딩페이지 생성기</a>
-                                    <a href="/tools/sms-sender">📱 문자 발송</a>
-                                    <a href="/tools/student-management">👨‍🎓 학생 관리</a>
-                                    <a href="/tools/ai-learning-report">📊 학습 분석 리포트</a>
+                        <!-- 전체 메가 메뉴 -->
+                        <div class="mega-menu">
+                            <div class="mega-menu-inner">
+                                <!-- 홈 -->
+                                <div class="menu-column">
+                                    <div class="menu-column-title">홈</div>
+                                    <a href="/">메인 홈</a>
+                                    <a href="/about">회사 소개</a>
+                                    <a href="/dashboard">대시보드</a>
                                 </div>
-                            </div>
-                        </div>
-                        
-                        <!-- 요금제 드롭다운 -->
-                        <div class="dropdown">
-                            <a href="/pricing" class="text-gray-700 hover:text-purple-600 font-medium transition">요금제</a>
-                            <div class="dropdown-menu">
-                                <div class="dropdown-menu-inner">
-                                    <a href="/pricing/starter">💼 스타터 플랜</a>
-                                    <a href="/pricing/basic">🎯 베이직 플랜</a>
-                                    <a href="/pricing/pro">⭐ 프로 플랜</a>
-                                    <a href="/pricing/business">🏢 비즈니스 플랜</a>
-                                    <a href="/pricing/premium">💎 프리미엄 플랜</a>
-                                    <a href="/pricing/enterprise">🏆 엔터프라이즈 플랜</a>
+                                
+                                <!-- 교육 프로그램 -->
+                                <div class="menu-column">
+                                    <div class="menu-column-title">교육 프로그램</div>
+                                    <a href="/tools/landing-page-builder">랜딩페이지 생성기</a>
+                                    <a href="/tools/sms-sender">문자 발송</a>
+                                    <a href="/tools/student-management">학생 관리</a>
+                                    <a href="/tools/ai-learning-report">학습 분석 리포트</a>
                                 </div>
-                            </div>
-                        </div>
-                        
-                        <!-- 성공 사례 드롭다운 -->
-                        <div class="dropdown">
-                            <a href="/success" class="text-gray-700 hover:text-purple-600 font-medium transition">성공 사례</a>
-                            <div class="dropdown-menu">
-                                <div class="dropdown-menu-inner">
-                                    <a href="/success">✨ 전체 사례</a>
-                                    <a href="/success/academy">🏫 학원 성공 사례</a>
-                                    <a href="/success/teacher">👨‍🏫 교사 성공 사례</a>
+                                
+                                <!-- 요금제 -->
+                                <div class="menu-column">
+                                    <div class="menu-column-title">요금제</div>
+                                    <a href="/pricing/starter">스타터 플랜</a>
+                                    <a href="/pricing/basic">베이직 플랜</a>
+                                    <a href="/pricing/pro">프로 플랜</a>
+                                    <a href="/pricing/business">비즈니스 플랜</a>
+                                    <a href="/pricing/premium">프리미엄 플랜</a>
+                                    <a href="/pricing/enterprise">엔터프라이즈 플랜</a>
                                 </div>
-                            </div>
-                        </div>
-                        
-                        <!-- 문의하기 드롭다운 -->
-                        <div class="dropdown">
-                            <a href="/contact" class="text-gray-700 hover:text-purple-600 font-medium transition">문의하기</a>
-                            <div class="dropdown-menu">
-                                <div class="dropdown-menu-inner">
-                                    <a href="/contact">✉️ 일반 문의</a>
-                                    <a href="/contact/support">🛠️ 기술 지원</a>
-                                    <a href="/contact/sales">💼 영업 문의</a>
+                                
+                                <!-- 성공 사례 -->
+                                <div class="menu-column">
+                                    <div class="menu-column-title">성공 사례</div>
+                                    <a href="/success">전체 사례</a>
+                                    <a href="/success/academy">학원 성공 사례</a>
+                                    <a href="/success/teacher">교사 성공 사례</a>
                                 </div>
-                            </div>
-                        </div>
-                        
-                        <!-- AI 봇 쇼핑몰 드롭다운 -->
-                        <div class="dropdown">
-                            <a href="https://kohsunwoo12345-cmyk.github.io/SUPERPLACE.Home.store/" target="_blank" class="text-gray-700 hover:text-purple-600 font-medium transition">AI 봇 쇼핑몰</a>
-                            <div class="dropdown-menu">
-                                <div class="dropdown-menu-inner">
-                                    <a href="https://kohsunwoo12345-cmyk.github.io/SUPERPLACE.Home.store/" target="_blank">🛒 쇼핑몰 홈</a>
-                                    <a href="https://kohsunwoo12345-cmyk.github.io/SUPERPLACE.Home.store/products" target="_blank">📦 상품 목록</a>
-                                    <a href="https://kohsunwoo12345-cmyk.github.io/SUPERPLACE.Home.store/cart" target="_blank">🛍️ 장바구니</a>
+                                
+                                <!-- 문의하기 -->
+                                <div class="menu-column">
+                                    <div class="menu-column-title">문의하기</div>
+                                    <a href="/contact">일반 문의</a>
+                                    <a href="/contact/support">기술 지원</a>
+                                    <a href="/contact/sales">영업 문의</a>
+                                </div>
+                                
+                                <!-- AI 봇 쇼핑몰 -->
+                                <div class="menu-column">
+                                    <div class="menu-column-title">AI 봇 쇼핑몰</div>
+                                    <a href="https://kohsunwoo12345-cmyk.github.io/SUPERPLACE.Home.store/" target="_blank">쇼핑몰 홈</a>
+                                    <a href="https://kohsunwoo12345-cmyk.github.io/SUPERPLACE.Home.store/products" target="_blank">상품 목록</a>
+                                    <a href="https://kohsunwoo12345-cmyk.github.io/SUPERPLACE.Home.store/cart" target="_blank">장바구니</a>
                                 </div>
                             </div>
                         </div>
