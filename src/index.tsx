@@ -5150,6 +5150,11 @@ ${keywords ? keywords.split(',').map(k => k.trim()).join(', ') : topic}과 관�
 // ========================================
 
 // Main page
+// Favicon route - prevent 404
+app.get('/favicon.ico', (c) => {
+  return c.body(null, 204)
+})
+
 app.get('/', (c) => {
   return c.html(`
     <!DOCTYPE html>
@@ -24680,27 +24685,68 @@ app.post('/api/admin/init-payment-tables', async (c) => {
   try {
     const { DB } = c.env
     
+    // Drop old subscriptions table if exists (for migration)
+    try {
+      await DB.prepare(`DROP TABLE IF EXISTS old_subscriptions`).run()
+      await DB.prepare(`ALTER TABLE subscriptions RENAME TO old_subscriptions`).run()
+    } catch (e) {
+      // Table doesn't exist or already migrated
+    }
+    
+    // Create new subscriptions table with correct schema
     await DB.prepare(`
       CREATE TABLE IF NOT EXISTS subscriptions (
-        id TEXT PRIMARY KEY,
-        user_id INTEGER NOT NULL,
-        plan_type TEXT NOT NULL,
-        amount INTEGER NOT NULL,
-        start_date TEXT NOT NULL,
-        end_date TEXT NOT NULL,
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        academy_id INTEGER NOT NULL,
+        plan_name TEXT NOT NULL,
+        plan_price INTEGER NOT NULL DEFAULT 0,
+        student_limit INTEGER NOT NULL DEFAULT 30,
+        ai_report_limit INTEGER NOT NULL DEFAULT 30,
+        landing_page_limit INTEGER NOT NULL DEFAULT 40,
+        teacher_limit INTEGER NOT NULL DEFAULT 2,
+        subscription_start_date TEXT NOT NULL,
+        subscription_end_date TEXT NOT NULL,
         status TEXT DEFAULT 'active',
+        payment_method TEXT,
         merchant_uid TEXT,
         imp_uid TEXT,
-        created_at TEXT NOT NULL,
-        updated_at TEXT,
-        FOREIGN KEY (user_id) REFERENCES users(id)
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (academy_id) REFERENCES academies(id)
+      )
+    `).run()
+    
+    // Create academies table
+    await DB.prepare(`
+      CREATE TABLE IF NOT EXISTS academies (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        academy_name TEXT NOT NULL,
+        owner_id INTEGER NOT NULL,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (owner_id) REFERENCES users(id)
+      )
+    `).run()
+    
+    // Create usage_tracking table
+    await DB.prepare(`
+      CREATE TABLE IF NOT EXISTS usage_tracking (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        academy_id INTEGER NOT NULL,
+        subscription_id INTEGER NOT NULL,
+        current_students INTEGER DEFAULT 0,
+        ai_reports_used_this_month INTEGER DEFAULT 0,
+        landing_pages_created INTEGER DEFAULT 0,
+        current_teachers INTEGER DEFAULT 0,
+        updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (academy_id) REFERENCES academies(id),
+        FOREIGN KEY (subscription_id) REFERENCES subscriptions(id)
       )
     `).run()
     
     await DB.prepare(`
       CREATE TABLE IF NOT EXISTS payments (
         id TEXT PRIMARY KEY,
-        subscription_id TEXT NOT NULL,
+        subscription_id INTEGER NOT NULL,
         user_id INTEGER NOT NULL,
         amount INTEGER NOT NULL,
         payment_method TEXT NOT NULL,
@@ -24713,18 +24759,149 @@ app.post('/api/admin/init-payment-tables', async (c) => {
       )
     `).run()
     
-    await DB.prepare(`CREATE INDEX IF NOT EXISTS idx_subscriptions_user_id ON subscriptions(user_id)`).run()
+    // Create indexes
+    await DB.prepare(`CREATE INDEX IF NOT EXISTS idx_subscriptions_academy_id ON subscriptions(academy_id)`).run()
     await DB.prepare(`CREATE INDEX IF NOT EXISTS idx_subscriptions_status ON subscriptions(status)`).run()
+    await DB.prepare(`CREATE INDEX IF NOT EXISTS idx_academies_owner_id ON academies(owner_id)`).run()
+    await DB.prepare(`CREATE INDEX IF NOT EXISTS idx_usage_tracking_academy_id ON usage_tracking(academy_id)`).run()
+    await DB.prepare(`CREATE INDEX IF NOT EXISTS idx_usage_tracking_subscription_id ON usage_tracking(subscription_id)`).run()
     await DB.prepare(`CREATE INDEX IF NOT EXISTS idx_payments_user_id ON payments(user_id)`).run()
     await DB.prepare(`CREATE INDEX IF NOT EXISTS idx_payments_subscription_id ON payments(subscription_id)`).run()
     
+    // Add academy_id column to users if not exists
+    try {
+      await DB.prepare(`ALTER TABLE users ADD COLUMN academy_id INTEGER`).run()
+    } catch (e) {
+      // Column already exists
+    }
+    
     return c.json({
       success: true,
-      message: '결제 관련 테이블이 성공적으로 생성되었습니다 (subscriptions, payments)'
+      message: '결제 관련 테이블이 성공적으로 생성되었습니다 (subscriptions, payments, academies, usage_tracking)'
     })
   } catch (error: any) {
     console.error('Init payment tables error:', error)
     return c.json({ success: false, error: error.message }, 500)
+  }
+})
+
+// Database migration endpoint - run this to fix academy_id issues
+app.post('/api/admin/migrate-database', async (c) => {
+  try {
+    const { DB } = c.env
+    const migrations = []
+    
+    // 1. Add academy_id to users table if not exists
+    try {
+      await DB.prepare(`ALTER TABLE users ADD COLUMN academy_id INTEGER`).run()
+      migrations.push('Added academy_id column to users table')
+    } catch (e) {
+      migrations.push('users.academy_id already exists')
+    }
+    
+    // 2. Create academies table if not exists
+    try {
+      await DB.prepare(`
+        CREATE TABLE IF NOT EXISTS academies (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          academy_name TEXT NOT NULL,
+          owner_id INTEGER NOT NULL,
+          created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (owner_id) REFERENCES users(id)
+        )
+      `).run()
+      migrations.push('Created academies table')
+    } catch (e) {
+      migrations.push('academies table already exists')
+    }
+    
+    // 3. Create new subscriptions table
+    try {
+      await DB.prepare(`DROP TABLE IF EXISTS subscriptions_backup`).run()
+      await DB.prepare(`ALTER TABLE subscriptions RENAME TO subscriptions_backup`).run()
+      migrations.push('Backed up old subscriptions table')
+    } catch (e) {
+      migrations.push('No old subscriptions table to backup')
+    }
+    
+    try {
+      await DB.prepare(`
+        CREATE TABLE IF NOT EXISTS subscriptions (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          academy_id INTEGER NOT NULL,
+          plan_name TEXT NOT NULL,
+          plan_price INTEGER NOT NULL DEFAULT 0,
+          student_limit INTEGER NOT NULL DEFAULT 30,
+          ai_report_limit INTEGER NOT NULL DEFAULT 30,
+          landing_page_limit INTEGER NOT NULL DEFAULT 40,
+          teacher_limit INTEGER NOT NULL DEFAULT 2,
+          subscription_start_date TEXT NOT NULL,
+          subscription_end_date TEXT NOT NULL,
+          status TEXT DEFAULT 'active',
+          payment_method TEXT,
+          merchant_uid TEXT,
+          imp_uid TEXT,
+          created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+          updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (academy_id) REFERENCES academies(id)
+        )
+      `).run()
+      migrations.push('Created new subscriptions table with academy_id')
+    } catch (e: any) {
+      migrations.push('Subscriptions table creation: ' + e.message)
+    }
+    
+    // 4. Create usage_tracking table
+    try {
+      await DB.prepare(`
+        CREATE TABLE IF NOT EXISTS usage_tracking (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          academy_id INTEGER NOT NULL,
+          subscription_id INTEGER NOT NULL,
+          current_students INTEGER DEFAULT 0,
+          ai_reports_used_this_month INTEGER DEFAULT 0,
+          landing_pages_created INTEGER DEFAULT 0,
+          current_teachers INTEGER DEFAULT 0,
+          updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (academy_id) REFERENCES academies(id),
+          FOREIGN KEY (subscription_id) REFERENCES subscriptions(id)
+        )
+      `).run()
+      migrations.push('Created usage_tracking table')
+    } catch (e: any) {
+      migrations.push('usage_tracking table: ' + e.message)
+    }
+    
+    // 5. Create indexes
+    const indexes = [
+      'CREATE INDEX IF NOT EXISTS idx_subscriptions_academy_id ON subscriptions(academy_id)',
+      'CREATE INDEX IF NOT EXISTS idx_subscriptions_status ON subscriptions(status)',
+      'CREATE INDEX IF NOT EXISTS idx_academies_owner_id ON academies(owner_id)',
+      'CREATE INDEX IF NOT EXISTS idx_usage_tracking_academy_id ON usage_tracking(academy_id)',
+      'CREATE INDEX IF NOT EXISTS idx_usage_tracking_subscription_id ON usage_tracking(subscription_id)'
+    ]
+    
+    for (const indexSql of indexes) {
+      try {
+        await DB.prepare(indexSql).run()
+      } catch (e) {
+        // Index already exists
+      }
+    }
+    migrations.push('Created/verified all indexes')
+    
+    return c.json({
+      success: true,
+      message: '데이터베이스 마이그레이션이 완료되었습니다',
+      migrations
+    })
+  } catch (error: any) {
+    console.error('Database migration error:', error)
+    return c.json({ 
+      success: false, 
+      error: error.message,
+      stack: error.stack 
+    }, 500)
   }
 })
 
