@@ -269,11 +269,18 @@ var _t=Object.defineProperty;var Ve=e=>{throw TypeError(e)};var kt=(e,t,s)=>t in
                 endTime: document.getElementById('endTime').value
             };
 
+            console.log('📤 Submitting class:', payload);
+            console.log('📤 currentUser:', currentUser);
+            console.log('📤 academyId:', academyId);
+
             try {
                 const url = classId ? '/api/classes/' + classId : '/api/classes';
                 const method = classId ? 'PUT' : 'POST';
                 
                 const userDataHeader = btoa(unescape(encodeURIComponent(JSON.stringify(currentUser))));
+                console.log('📤 Sending request to:', url, 'method:', method);
+                console.log('📤 Header length:', userDataHeader.length);
+                
                 const res = await fetch(url, {
                     method,
                     headers: { 
@@ -283,15 +290,22 @@ var _t=Object.defineProperty;var Ve=e=>{throw TypeError(e)};var kt=(e,t,s)=>t in
                     body: JSON.stringify(payload)
                 });
 
+                console.log('📥 Response status:', res.status);
                 const data = await res.json();
+                console.log('📥 Response data:', data);
+                
                 if (data.success) {
                     alert(classId ? '반이 수정되었습니다.' : '새 반이 추가되었습니다.');
                     hideModal();
                     loadClasses();
                 } else {
                     alert('저장 실패: ' + data.error);
+                    if (data.details) {
+                        console.error('Error details:', data.details);
+                    }
                 }
             } catch (error) {
+                console.error('❌ Request error:', error);
                 alert('저장 중 오류가 발생했습니다.');
             }
         });
