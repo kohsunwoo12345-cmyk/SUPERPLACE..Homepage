@@ -12509,6 +12509,72 @@ app.get('/api/sms/stats', async (c) => {
 })
 
 // 학생 관리 API
+
+// GET /api/students/:id/stats - 학생 통계 조회 (가장 구체적인 라우트 먼저)
+app.get('/api/students/:id/stats', async (c) => {
+  try {
+    const studentId = c.req.param('id')
+    const startDate = c.req.query('startDate')
+    const endDate = c.req.query('endDate')
+    
+    if (!studentId) {
+      return c.json({ success: false, error: '학생 ID가 필요합니다.' }, 400)
+    }
+    
+    // daily_records 테이블에서 통계 계산
+    const stats = await c.env.DB.prepare('SELECT COUNT(*) as total_records, AVG(CASE WHEN attendance = \'출석\' THEN 1 ELSE 0 END) * 100 as attendance_rate, AVG(understanding_level) as avg_understanding, AVG(homework_completion) as avg_homework FROM daily_records WHERE student_id = ? AND date BETWEEN ? AND ?').bind(studentId, startDate || '2020-01-01', endDate || '2099-12-31').first()
+    
+    return c.json({ 
+      success: true, 
+      stats: stats || {
+        total_records: 0,
+        attendance_rate: 0,
+        avg_understanding: 0,
+        avg_homework: 0
+      }
+    })
+  } catch (error) {
+    console.error('[GetStudentStats] Error:', error)
+    return c.json({ 
+      success: false, 
+      error: '통계를 가져오는 중 오류가 발생했습니다.'
+    }, 500)
+  }
+})
+
+// GET /api/students/:id - 학생 상세 정보 조회
+app.get('/api/students/:id', async (c) => {
+  try {
+    const studentId = c.req.param('id')
+    
+    if (!studentId) {
+      return c.json({ success: false, error: '학생 ID가 필요합니다.' }, 400)
+    }
+    
+    // 학생 정보와 반 정보를 함께 조회
+    const student = await c.env.DB.prepare('SELECT s.*, c.class_name FROM students s LEFT JOIN classes c ON s.class_id = c.id WHERE s.id = ? AND s.status = \'active\'').bind(studentId).first()
+    
+    if (!student) {
+      return c.json({ 
+        success: false, 
+        error: '학생을 찾을 수 없습니다.' 
+      }, 404)
+    }
+    
+    return c.json({ 
+      success: true, 
+      student: student 
+    })
+  } catch (error) {
+    console.error('[GetStudentDetail] Error:', error)
+    return c.json({ 
+      success: false, 
+      error: '학생 정보를 가져오는 중 오류가 발생했습니다.'
+    }, 500)
+  }
+})
+
+// GET /api/students - 학생 목록 조회 (매개변수 없는 라우트는 나중에)
 app.get('/api/students', async (c) => {
   try {
     const user = JSON.parse(c.req.header('X-User-Data-Base64') ? decodeURIComponent(escape(atob(c.req.header('X-User-Data-Base64') || ''))) : '{"id":1}')
@@ -12675,69 +12741,7 @@ app.post('/api/students', async (c) => {
   }
 })
 
-// GET /api/students/:id - 학생 상세 정보 조회 (v2)
-app.get('/api/students/:id', async (c) => {
-  try {
-    const studentId = c.req.param('id')
-    
-    if (!studentId) {
-      return c.json({ success: false, error: '학생 ID가 필요합니다.' }, 400)
-    }
-    
-    // 학생 정보와 반 정보를 함께 조회
-    const student = await c.env.DB.prepare('SELECT s.*, c.class_name FROM students s LEFT JOIN classes c ON s.class_id = c.id WHERE s.id = ? AND s.status = \'active\'').bind(studentId).first()
-    
-    if (!student) {
-      return c.json({ 
-        success: false, 
-        error: '학생을 찾을 수 없습니다.' 
-      }, 404)
-    }
-    
-    return c.json({ 
-      success: true, 
-      student: student 
-    })
-  } catch (error) {
-    console.error('[GetStudentDetail] Error:', error)
-    return c.json({ 
-      success: false, 
-      error: '학생 정보를 가져오는 중 오류가 발생했습니다.'
-    }, 500)
-  }
-})
 
-// GET /api/students/:id/stats - 학생 통계 조회
-app.get('/api/students/:id/stats', async (c) => {
-  try {
-    const studentId = c.req.param('id')
-    const startDate = c.req.query('startDate')
-    const endDate = c.req.query('endDate')
-    
-    if (!studentId) {
-      return c.json({ success: false, error: '학생 ID가 필요합니다.' }, 400)
-    }
-    
-    // daily_records 테이블에서 통계 계산
-    const stats = await c.env.DB.prepare('SELECT COUNT(*) as total_records, AVG(CASE WHEN attendance = \'출석\' THEN 1 ELSE 0 END) * 100 as attendance_rate, AVG(understanding_level) as avg_understanding, AVG(homework_completion) as avg_homework FROM daily_records WHERE student_id = ? AND date BETWEEN ? AND ?').bind(studentId, startDate || '2020-01-01', endDate || '2099-12-31').first()
-    
-    return c.json({ 
-      success: true, 
-      stats: stats || {
-        total_records: 0,
-        attendance_rate: 0,
-        avg_understanding: 0,
-        avg_homework: 0
-      }
-    })
-  } catch (error) {
-    console.error('[GetStudentStats] Error:', error)
-    return c.json({ 
-      success: false, 
-      error: '통계를 가져오는 중 오류가 발생했습니다.'
-    }, 500)
-  }
-})
 
 // DELETE /api/students/:id - 학생 삭제 (Soft Delete)
 app.delete('/api/students/:id', async (c) => {
