@@ -13493,7 +13493,12 @@ app.get('/tools/ai-learning-report', (c) => {
                         \`;
                         loadReportsForStudent(studentId);
                     } else {
-                        resultDiv.innerHTML = \`<div class="p-4 bg-red-50 text-red-600 rounded-xl">\${data.error}</div>\`;
+                        resultDiv.innerHTML = \`
+                            <div class="p-6 bg-red-50 border-2 border-red-200 rounded-xl">
+                                <div class="text-red-600 font-bold text-lg mb-3">❌ AI 리포트 생성 실패</div>
+                                <div class="text-gray-700 whitespace-pre-line">\${data.error}</div>
+                            </div>
+                        \`;
                     }
                 } catch (err) {
                     console.error('리포트 생성 실패:', err);
@@ -13530,6 +13535,14 @@ app.get('/tools/ai-learning-report', (c) => {
                                 </div>
                             </div>
                         \`).join('');
+                    } else {
+                        listDiv.innerHTML = \`
+                            <div class="text-center py-12 bg-gray-50 rounded-xl">
+                                <div class="text-6xl mb-4">📋</div>
+                                <div class="text-xl font-bold text-gray-900 mb-2">생성된 리포트가 없습니다</div>
+                                <div class="text-gray-600">학생과 리포트 월을 선택한 후 '리포트 생성하기' 버튼을 눌러주세요.</div>
+                            </div>
+                        \`;
                     }
                 } catch (err) {
                     console.error('리포트 목록 로드 실패:', err);
@@ -14334,34 +14347,58 @@ app.post('/api/learning-reports/generate', async (c) => {
       console.warn('⚠️ [GenerateReport] Daily records table not found or error:', err.message)
     }
     
+    // 데이터 존재 여부 확인
+    const hasData = grades.length > 0 || attendance.length > 0 || dailyRecords.length > 0
+    
+    if (!hasData) {
+      console.warn('⚠️ [GenerateReport] No data available for this period')
+      return c.json({ 
+        success: false, 
+        error: `${report_month}에 해당하는 데이터가 없습니다.\n\n다음을 확인해주세요:\n1. 성적 데이터가 입력되었는지\n2. 출석 데이터가 입력되었는지\n3. 일일 성과 기록이 있는지\n\n데이터를 먼저 입력한 후 리포트를 생성해주세요.` 
+      }, 400)
+    }
+    
+    console.log('✅ [GenerateReport] Data found - proceeding with report generation')
+    
     // 출석률 계산
-    let attendanceRate = 0
+    let attendanceRate = null
     let totalAttendance = 0
     let presentCount = 0
+    let attendanceSource = 'none'
     
     if (attendance.length > 0) {
       totalAttendance = attendance.reduce((sum, a) => sum + (a.count || 0), 0)
       presentCount = attendance.find(a => a.status === 'present')?.count || 0
       attendanceRate = totalAttendance > 0 ? (presentCount / totalAttendance * 100).toFixed(1) : 0
+      attendanceSource = 'attendance'
     } else if (dailyRecords.length > 0) {
       // 일일 성과 기록에서 출석 데이터 추출
       const attendanceData = dailyRecords.filter(r => r.attendance)
       totalAttendance = attendanceData.length
       presentCount = attendanceData.filter(r => r.attendance === '출석').length
-      attendanceRate = totalAttendance > 0 ? (presentCount / totalAttendance * 100).toFixed(1) : 90
-    } else {
-      // 데이터가 없으면 기본값
-      attendanceRate = 90
-      totalAttendance = 20
-      presentCount = 18
+      if (totalAttendance > 0) {
+        attendanceRate = (presentCount / totalAttendance * 100).toFixed(1)
+        attendanceSource = 'daily_records'
+      }
     }
     
-    console.log('📊 [GenerateReport] Attendance rate:', attendanceRate + '%')
+    if (attendanceRate === null) {
+      console.error('❌ [GenerateReport] No attendance data available')
+      return c.json({ 
+        success: false, 
+        error: `${report_month}에 출석 데이터가 없습니다.\n\n출석 데이터를 먼저 입력한 후 리포트를 생성해주세요.` 
+      }, 400)
+    }
+    
+    console.log('📊 [GenerateReport] Attendance rate:', attendanceRate + '%', '(source:', attendanceSource + ')')
     
     // 평균 점수 계산
-    let avgScore = 0
+    let avgScore = null
+    let scoreSource = 'none'
+    
     if (grades.length > 0) {
       avgScore = (grades.reduce((sum, g) => sum + (g.score / g.max_score * 100), 0) / grades.length).toFixed(1)
+      scoreSource = 'grades'
     } else if (dailyRecords.length > 0) {
       // 일일 성과에서 이해도, 참여도 평균
       const understandingScores = dailyRecords.filter(r => r.lesson_understanding).map(r => parseFloat(r.lesson_understanding))
@@ -14370,21 +14407,26 @@ app.post('/api/learning-reports/generate', async (c) => {
       if (understandingScores.length > 0 || participationScores.length > 0) {
         const allScores = [...understandingScores, ...participationScores]
         avgScore = (allScores.reduce((sum, s) => sum + s, 0) / allScores.length * 10).toFixed(1)
-      } else {
-        avgScore = 80
+        scoreSource = 'daily_records'
       }
-    } else {
-      // 데이터가 없으면 기본값
-      avgScore = 80
     }
     
-    console.log('📊 [GenerateReport] Average score:', avgScore)
+    if (avgScore === null) {
+      console.error('❌ [GenerateReport] No score data available')
+      return c.json({ 
+        success: false, 
+        error: `${report_month}에 성적/학습 데이터가 없습니다.\n\n성적 데이터 또는 일일 성과 기록을 먼저 입력한 후 리포트를 생성해주세요.` 
+      }, 400)
+    }
+    
+    console.log('📊 [GenerateReport] Average score:', avgScore, '(source:', scoreSource + ')')
     
     // 학습 태도 판단
-    let studyAttitude = '양호'
+    let studyAttitude = '평가 불가'
     if (attendanceRate >= 95 && avgScore >= 85) studyAttitude = '매우 우수'
     else if (attendanceRate >= 90 && avgScore >= 80) studyAttitude = '우수'
-    else if (attendanceRate < 85 || avgScore < 70) studyAttitude = '개선 필요'
+    else if (attendanceRate >= 80 && avgScore >= 70) studyAttitude = '양호'
+    else studyAttitude = '개선 필요'
     
     // 강점 분석
     let strengths = ''
@@ -14394,13 +14436,11 @@ app.post('/api/learning-reports/generate', async (c) => {
     
     if (topSubject) {
       strengths = topSubject.subject + ' 과목에서 ' + (topSubject.score / topSubject.max_score * 100).toFixed(1) + '점으로 우수한 성적을 보였습니다. 꾸준한 노력이 돋보입니다.'
-    } else if (dailyRecords.length > 0) {
-      const avgParticipation = dailyRecords.filter(r => r.lesson_participation).length > 0
-        ? (dailyRecords.filter(r => r.lesson_participation).reduce((sum, r) => sum + parseFloat(r.lesson_participation), 0) / dailyRecords.filter(r => r.lesson_participation).length).toFixed(1)
-        : 0
-      strengths = '수업 참여도가 ' + avgParticipation + '점으로 높으며, 적극적인 학습 태도를 보이고 있습니다.'
+    } else if (dailyRecords.length > 0 && dailyRecords.filter(r => r.lesson_participation).length > 0) {
+      const avgParticipation = (dailyRecords.filter(r => r.lesson_participation).reduce((sum, r) => sum + parseFloat(r.lesson_participation), 0) / dailyRecords.filter(r => r.lesson_participation).length).toFixed(1)
+      strengths = '수업 참여도가 평균 ' + avgParticipation + '점으로 적극적인 학습 태도를 보이고 있습니다.'
     } else {
-      strengths = '기본기가 탄탄하며, 수업 참여도가 높습니다.'
+      strengths = '현재 기간의 성적 데이터가 부족하여 강점을 파악하기 어렵습니다. 지속적인 학습 활동 기록이 필요합니다.'
     }
     
     // 약점 분석
