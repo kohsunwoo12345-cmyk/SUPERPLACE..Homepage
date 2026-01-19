@@ -6650,13 +6650,21 @@ app.get('/api/subscriptions/status', async (c) => {
 // 사용량 조회 API
 app.get('/api/usage/check', async (c) => {
   try {
-    const session = getCookie(c, 'session_id')
-    if (!session) {
+    const sessionId = getCookie(c, 'session_id')
+    if (!sessionId) {
       return c.json({ success: false, error: 'Not authenticated' }, 401)
     }
 
-    const sessionData = JSON.parse(session)
-    const userId = sessionData.id
+    // 세션에서 user_id 조회
+    const session = await c.env.DB.prepare(`
+      SELECT user_id FROM sessions WHERE session_id = ? AND expires_at > datetime('now')
+    `).bind(sessionId).first()
+    
+    if (!session) {
+      return c.json({ success: false, error: 'Session expired or invalid' }, 401)
+    }
+    
+    const userId = session.user_id
     
     // 사용자의 academy_id 조회
     const user = await c.env.DB.prepare(`SELECT id, academy_id FROM users WHERE id = ?`).bind(userId).first()
