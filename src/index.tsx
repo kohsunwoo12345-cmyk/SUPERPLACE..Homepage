@@ -25261,20 +25261,18 @@ app.post('/api/admin/migrate-database', async (c) => {
       await DB.prepare(`
         CREATE TABLE IF NOT EXISTS usage_tracking (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
-          academy_id INTEGER NOT NULL,
-          subscription_id INTEGER NOT NULL,
+          academy_id INTEGER,
+          subscription_id INTEGER,
           current_students INTEGER DEFAULT 0,
           ai_reports_used_this_month INTEGER DEFAULT 0,
           landing_pages_created INTEGER DEFAULT 0,
           current_teachers INTEGER DEFAULT 0,
-          updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
-          FOREIGN KEY (academy_id) REFERENCES academies(id),
-          FOREIGN KEY (subscription_id) REFERENCES subscriptions(id)
+          updated_at TEXT DEFAULT CURRENT_TIMESTAMP
         )
       `).run()
-      migrations.push('Created usage_tracking table')
+      migrations.push('✅ Created usage_tracking table (no FK constraints)')
     } catch (e: any) {
-      migrations.push('usage_tracking table: ' + e.message)
+      migrations.push('ℹ️ usage_tracking table: ' + e.message)
     }
     
     // 5. Create indexes
