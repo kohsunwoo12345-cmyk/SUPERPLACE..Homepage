@@ -3434,7 +3434,7 @@ app.post('/api/landing/create', async (c) => {
     if (currentPages >= pageLimit) {
       return c.json({ 
         success: false, 
-        error: `랜딩페이지 생성 한도에 도달했습니다 (${currentPages}/${pageLimit}). 상위 플랜으로 업그레이드해주세요.` 
+        error: `⛔ 사용 한도가 모두 소진되었습니다.\n\n생성된 랜딩페이지: ${currentPages}개 / 한도: ${pageLimit}개\n\n더 많은 랜딩페이지를 생성하시려면 상위 플랜으로 업그레이드해주세요.` 
       }, 403)
     }
     
@@ -14393,7 +14393,7 @@ app.post('/api/students', async (c) => {
     if (currentStudents >= subscription.student_limit) {
       return c.json({ 
         success: false, 
-        error: `학생 수 한도에 도달했습니다 (${currentStudents}/${subscription.student_limit}). 상위 플랜으로 업그레이드해주세요.` 
+        error: `⛔ 사용 한도가 모두 소진되었습니다.\n\n현재 학생 수: ${currentStudents}명 / 한도: ${subscription.student_limit}명\n\n더 많은 학생을 등록하시려면 상위 플랜으로 업그레이드해주세요.` 
       }, 403)
     }
     console.log(`✅ [AddStudent] Limit check passed: ${currentStudents}/${subscription.student_limit}`)
@@ -16077,7 +16077,7 @@ app.post('/api/learning-reports/generate', async (c) => {
     if (currentReports >= subscription.ai_report_limit) {
       return c.json({ 
         success: false, 
-        error: `AI 리포트 월간 한도에 도달했습니다 (${currentReports}/${subscription.ai_report_limit}). 상위 플랜으로 업그레이드해주세요.` 
+        error: `⛔ 사용 한도가 모두 소진되었습니다.\n\n이번 달 AI 리포트 생성 수: ${currentReports}개 / 한도: ${subscription.ai_report_limit}개\n\n더 많은 리포트를 생성하시려면 상위 플랜으로 업그레이드하거나 다음 달을 기다려주세요.` 
       }, 403)
     }
     console.log(`✅ [GenerateReport] Limit check passed: ${currentReports}/${subscription.ai_report_limit}`)
@@ -22141,7 +22141,7 @@ app.post('/api/teachers/add', async (c) => {
     if (currentTeachers >= teacherLimit) {
       return c.json({ 
         success: false, 
-        error: `선생님 계정 한도에 도달했습니다 (${currentTeachers}/${teacherLimit}). 상위 플랜으로 업그레이드해주세요.` 
+        error: `⛔ 사용 한도가 모두 소진되었습니다.\n\n현재 선생님 계정 수: ${currentTeachers}명 / 한도: ${teacherLimit}명\n\n더 많은 선생님을 추가하시려면 상위 플랜으로 업그레이드해주세요.` 
       }, 403)
     }
     

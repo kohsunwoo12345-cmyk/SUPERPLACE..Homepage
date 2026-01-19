@@ -3308,7 +3308,11 @@ var Bt=Object.defineProperty;var Qe=e=>{throw TypeError(e)};var Lt=(e,t,s)=>t in
       SELECT landing_pages_created 
       FROM usage_tracking 
       WHERE subscription_id = ?
-    `).bind(p.id).first(),g=(u==null?void 0:u.landing_pages_created)||0,x=p.landing_page_limit;if(g>=x)return e.json({success:!1,error:`랜딩페이지 생성 한도에 도달했습니다 (${g}/${x}). 상위 플랜으로 업그레이드해주세요.`},403);const b=Math.random().toString(36).substring(2,10),v=js(s,r),h=`${e.req.header("origin")||"https://example.com"}/landing/${b}`,w=`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(h)}`,T=await e.env.DB.prepare(`
+    `).bind(p.id).first(),g=(u==null?void 0:u.landing_pages_created)||0,x=p.landing_page_limit;if(g>=x)return e.json({success:!1,error:`⛔ 사용 한도가 모두 소진되었습니다.
+
+생성된 랜딩페이지: ${g}개 / 한도: ${x}개
+
+더 많은 랜딩페이지를 생성하시려면 상위 플랜으로 업그레이드해주세요.`},403);const b=Math.random().toString(36).substring(2,10),v=js(s,r),h=`${e.req.header("origin")||"https://example.com"}/landing/${b}`,w=`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(h)}`,T=await e.env.DB.prepare(`
       INSERT INTO landing_pages (user_id, slug, title, template_type, content_json, html_content, qr_code_url, thumbnail_url, og_title, og_description, folder_id, status)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active')
     `).bind(c.id,b,t,s,JSON.stringify(r),v,w,a||null,n||null,o||null,l||null).run();return await e.env.DB.prepare(`
@@ -12247,7 +12251,11 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
     `).bind(E).first();if(!L)return e.json({success:!1,error:"활성 구독이 없습니다. 요금제를 구매해주세요."},403);const R=await e.env.DB.prepare(`
       SELECT * FROM usage_tracking 
       WHERE academy_id = ? AND subscription_id = ?
-    `).bind(E,L.id).first(),oe=(R==null?void 0:R.current_students)||0;if(oe>=L.student_limit)return e.json({success:!1,error:`학생 수 한도에 도달했습니다 (${oe}/${L.student_limit}). 상위 플랜으로 업그레이드해주세요.`},403);console.log(`✅ [AddStudent] Limit check passed: ${oe}/${L.student_limit}`);let M;try{M=await e.env.DB.prepare(`
+    `).bind(E,L.id).first(),oe=(R==null?void 0:R.current_students)||0;if(oe>=L.student_limit)return e.json({success:!1,error:`⛔ 사용 한도가 모두 소진되었습니다.
+
+현재 학생 수: ${oe}명 / 한도: ${L.student_limit}명
+
+더 많은 학생을 등록하시려면 상위 플랜으로 업그레이드해주세요.`},403);console.log(`✅ [AddStudent] Limit check passed: ${oe}/${L.student_limit}`);let M;try{M=await e.env.DB.prepare(`
         INSERT INTO students (
           name, phone, grade, subjects, school, parent_name, parent_phone, 
           academy_id, class_id, notes, status, created_at
@@ -13446,7 +13454,11 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
     `).bind(o.academy_id).first();if(!l)return e.json({success:!1,error:"활성 구독이 없습니다. 요금제를 구매해주세요."},403);const i=await e.env.DB.prepare(`
       SELECT * FROM usage_tracking 
       WHERE academy_id = ? AND subscription_id = ?
-    `).bind(o.academy_id,l.id).first(),c=(i==null?void 0:i.ai_reports_used_this_month)||0;if(c>=l.ai_report_limit)return e.json({success:!1,error:`AI 리포트 월간 한도에 도달했습니다 (${c}/${l.ai_report_limit}). 상위 플랜으로 업그레이드해주세요.`},403);console.log(`✅ [GenerateReport] Limit check passed: ${c}/${l.ai_report_limit}`);let p=[];try{p=(await e.env.DB.prepare(`
+    `).bind(o.academy_id,l.id).first(),c=(i==null?void 0:i.ai_reports_used_this_month)||0;if(c>=l.ai_report_limit)return e.json({success:!1,error:`⛔ 사용 한도가 모두 소진되었습니다.
+
+이번 달 AI 리포트 생성 수: ${c}개 / 한도: ${l.ai_report_limit}개
+
+더 많은 리포트를 생성하시려면 상위 플랜으로 업그레이드하거나 다음 달을 기다려주세요.`},403);console.log(`✅ [GenerateReport] Limit check passed: ${c}/${l.ai_report_limit}`);let p=[];try{p=(await e.env.DB.prepare(`
         SELECT * FROM grades 
         WHERE student_id = ? 
         AND strftime('%Y-%m', test_date) = ?
@@ -18104,7 +18116,11 @@ ${l.director_name} 원장님의 승인을 기다려주세요.`,directorName:l.di
       SELECT current_teachers 
       FROM usage_tracking 
       WHERE subscription_id = ?
-    `).bind(c.id).first(),u=(p==null?void 0:p.current_teachers)||0,g=c.teacher_limit;if(u>=g)return e.json({success:!1,error:`선생님 계정 한도에 도달했습니다 (${u}/${g}). 상위 플랜으로 업그레이드해주세요.`},403);const x=await e.env.DB.prepare("SELECT id, academy_name, email FROM users WHERE id = ?").bind(i).first();if(!x)return e.json({success:!1,error:"원장님 정보를 찾을 수 없습니다."},404);const b=await e.env.DB.prepare("SELECT id, name, user_type, parent_user_id FROM users WHERE email = ?").bind(s).first();let v;if(b)return console.log("[AddTeacher] Existing user found, connecting to academy:",b),b.parent_user_id===parseInt(i)?e.json({success:!1,error:"이미 이 학원의 선생님입니다."},400):(v=b.id,await e.env.DB.prepare(`
+    `).bind(c.id).first(),u=(p==null?void 0:p.current_teachers)||0,g=c.teacher_limit;if(u>=g)return e.json({success:!1,error:`⛔ 사용 한도가 모두 소진되었습니다.
+
+현재 선생님 계정 수: ${u}명 / 한도: ${g}명
+
+더 많은 선생님을 추가하시려면 상위 플랜으로 업그레이드해주세요.`},403);const x=await e.env.DB.prepare("SELECT id, academy_name, email FROM users WHERE id = ?").bind(i).first();if(!x)return e.json({success:!1,error:"원장님 정보를 찾을 수 없습니다."},404);const b=await e.env.DB.prepare("SELECT id, name, user_type, parent_user_id FROM users WHERE email = ?").bind(s).first();let v;if(b)return console.log("[AddTeacher] Existing user found, connecting to academy:",b),b.parent_user_id===parseInt(i)?e.json({success:!1,error:"이미 이 학원의 선생님입니다."},400):(v=b.id,await e.env.DB.prepare(`
         UPDATE users 
         SET parent_user_id = ?, academy_name = ?, user_type = 'teacher', assigned_class = ?, updated_at = datetime('now')
         WHERE id = ?
