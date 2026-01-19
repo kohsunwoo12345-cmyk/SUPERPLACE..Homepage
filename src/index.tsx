@@ -29981,22 +29981,35 @@ app.get('/admin/deposits', async (c) => {
 
 // 관리자: 계좌이체 신청 관리
 app.get('/admin/bank-transfers', async (c) => {
-  const { env } = c
-  
-  // 계좌이체 신청 목록 조회
-  const transfers = await env.DB.prepare(`
-    SELECT * FROM bank_transfer_requests
-    ORDER BY 
-      CASE status
-        WHEN 'pending' THEN 1
-        WHEN 'approved' THEN 2
-        WHEN 'rejected' THEN 3
-      END,
-      created_at DESC
-    LIMIT 100
-  `).all()
-  
-  return c.html(`
+  try {
+    const { env } = c
+    
+    // DB가 없으면 에러
+    if (!env.DB) {
+      return c.html(`
+        <!DOCTYPE html>
+        <html><body>
+          <h1>Database Error</h1>
+          <p>데이터베이스가 초기화되지 않았습니다.</p>
+          <a href="/api/admin/init-payment-tables">데이터베이스 초기화하기</a>
+        </body></html>
+      `)
+    }
+    
+    // 계좌이체 신청 목록 조회
+    const transfers = await env.DB.prepare(`
+      SELECT * FROM bank_transfer_requests
+      ORDER BY 
+        CASE status
+          WHEN 'pending' THEN 1
+          WHEN 'approved' THEN 2
+          WHEN 'rejected' THEN 3
+        END,
+        created_at DESC
+      LIMIT 100
+    `).all()
+    
+    return c.html(`
     <!DOCTYPE html>
     <html lang="ko">
     <head>
@@ -30209,6 +30222,35 @@ app.get('/admin/bank-transfers', async (c) => {
     </body>
     </html>
   `)
+  } catch (error) {
+    console.error('Admin bank transfers page error:', error)
+    return c.html(`
+      <!DOCTYPE html>
+      <html lang="ko">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>오류 - 슈퍼플레이스</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+      </head>
+      <body class="bg-gray-50 flex items-center justify-center min-h-screen">
+        <div class="bg-white p-8 rounded-xl shadow-lg max-w-md">
+          <h1 class="text-2xl font-bold text-red-600 mb-4">⚠️ 오류 발생</h1>
+          <p class="text-gray-700 mb-4">계좌이체 관리 페이지를 불러오는 중 오류가 발생했습니다.</p>
+          <p class="text-sm text-gray-600 mb-6">오류: ${(error as Error).message}</p>
+          <div class="space-y-3">
+            <a href="/api/admin/init-payment-tables" class="block w-full text-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+              데이터베이스 초기화하기
+            </a>
+            <a href="/admin/dashboard" class="block w-full text-center px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">
+              대시보드로 돌아가기
+            </a>
+          </div>
+        </div>
+      </body>
+      </html>
+    `, 500)
+  }
 })
 
 app.get('/admin/sender/verification', (c) => {
