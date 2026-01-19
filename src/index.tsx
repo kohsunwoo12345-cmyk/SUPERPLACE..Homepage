@@ -10452,27 +10452,66 @@ app.get('/dashboard', (c) => {
                         const sub = data.subscription
                         const daysLeft = Math.ceil((new Date(sub.endDate) - new Date()) / (1000 * 60 * 60 * 24))
                         
+                        // 사용량 정보 가져오기
+                        let usageHtml = ''
+                        try {
+                            const usageRes = await fetch('/api/usage/check')
+                            const usageData = await usageRes.json()
+                            
+                            if (usageData.success) {
+                                const { limits, usage } = usageData
+                                usageHtml = \`
+                                    <div class="mt-4 pt-4 border-t border-purple-200">
+                                        <div class="text-sm font-semibold text-gray-700 mb-2">📊 사용량</div>
+                                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                            <div class="bg-white/50 rounded-lg p-2">
+                                                <div class="text-xs text-gray-600">학생</div>
+                                                <div class="text-sm font-bold text-gray-900">\${usage.students} / \${limits.students}</div>
+                                            </div>
+                                            <div class="bg-white/50 rounded-lg p-2">
+                                                <div class="text-xs text-gray-600">AI 리포트</div>
+                                                <div class="text-sm font-bold text-gray-900">\${usage.aiReports} / \${limits.aiReports}</div>
+                                            </div>
+                                            <div class="bg-white/50 rounded-lg p-2">
+                                                <div class="text-xs text-gray-600">랜딩페이지</div>
+                                                <div class="text-sm font-bold text-gray-900">\${usage.landingPages} / \${limits.landingPages}</div>
+                                            </div>
+                                            <div class="bg-white/50 rounded-lg p-2">
+                                                <div class="text-xs text-gray-600">선생님</div>
+                                                <div class="text-sm font-bold text-gray-900">\${usage.teachers} / \${limits.teachers}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                \`
+                            }
+                        } catch (usageErr) {
+                            console.error('[Usage] Error fetching usage:', usageErr)
+                        }
+                        
                         statusDiv.innerHTML = \`
                             <div class="bg-gradient-to-r from-purple-100 to-blue-100 border-2 border-purple-300 rounded-xl p-6">
                                 <div class="flex items-center justify-between flex-wrap gap-4">
-                                    <div class="flex items-center gap-4">
-                                        <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-700 rounded-full flex items-center justify-center">
-                                            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path>
-                                            </svg>
+                                    <div class="flex-1">
+                                        <div class="flex items-center gap-4 mb-4">
+                                            <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-700 rounded-full flex items-center justify-center">
+                                                <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path>
+                                                </svg>
+                                            </div>
+                                            <div>
+                                                <div class="flex items-center gap-2 mb-1">
+                                                    <span class="text-lg font-bold text-gray-900">\${sub.planName}</span>
+                                                    <span class="px-3 py-1 bg-green-500 text-white text-xs font-bold rounded-full">활성</span>
+                                                </div>
+                                                <div class="text-sm text-gray-600">
+                                                    이용 기간: \${sub.startDate} ~ \${sub.endDate} (\${daysLeft}일 남음)
+                                                </div>
+                                                <div class="text-xs text-gray-500 mt-1">
+                                                    학생 \${sub.studentLimit}명 • AI 리포트 \${sub.aiReportLimit}개/월 • 랜딩페이지 \${sub.landingPageLimit}개 • 선생님 \${sub.teacherLimit}명
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <div class="flex items-center gap-2 mb-1">
-                                                <span class="text-lg font-bold text-gray-900">\${sub.planName}</span>
-                                                <span class="px-3 py-1 bg-green-500 text-white text-xs font-bold rounded-full">활성</span>
-                                            </div>
-                                            <div class="text-sm text-gray-600">
-                                                이용 기간: \${sub.startDate} ~ \${sub.endDate} (\${daysLeft}일 남음)
-                                            </div>
-                                            <div class="text-xs text-gray-500 mt-1">
-                                                학생 \${sub.studentLimit}명 • AI 리포트 \${sub.aiReportLimit}개/월 • 랜딩페이지 \${sub.landingPageLimit}개 • 선생님 \${sub.teacherLimit}명
-                                            </div>
-                                        </div>
+                                        \${usageHtml}
                                     </div>
                                     <a href="/pricing" class="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition font-medium whitespace-nowrap">
                                         플랜 변경
@@ -14113,6 +14152,35 @@ app.post('/api/students', async (c) => {
       return c.json({ success: false, error: '학원 ID가 필요합니다.' }, 400)
     }
     
+    // ✅ 학생 수 한도 체크
+    console.log('🔍 [AddStudent] Checking student limit...')
+    const subscription = await c.env.DB.prepare(`
+      SELECT * FROM subscriptions 
+      WHERE academy_id = ? AND status = 'active'
+      ORDER BY created_at DESC LIMIT 1
+    `).bind(finalAcademyId).first()
+
+    if (!subscription) {
+      return c.json({ 
+        success: false, 
+        error: '활성 구독이 없습니다. 요금제를 구매해주세요.' 
+      }, 403)
+    }
+
+    const usage = await c.env.DB.prepare(`
+      SELECT * FROM usage_tracking 
+      WHERE academy_id = ? AND subscription_id = ?
+    `).bind(finalAcademyId, subscription.id).first()
+
+    const currentStudents = usage?.current_students || 0
+    if (currentStudents >= subscription.student_limit) {
+      return c.json({ 
+        success: false, 
+        error: `학생 수 한도에 도달했습니다 (${currentStudents}/${subscription.student_limit}). 상위 플랜으로 업그레이드해주세요.` 
+      }, 403)
+    }
+    console.log(`✅ [AddStudent] Limit check passed: ${currentStudents}/${subscription.student_limit}`)
+    
     // 가장 기본적인 컬럼만 사용 (enrollment_date 대신 created_at 사용)
     let result
     try {
@@ -14204,6 +14272,18 @@ app.post('/api/students', async (c) => {
     }
     
     console.log('➕ [AddStudent] ==================== END ====================')
+    
+    // ✅ 사용량 증가
+    try {
+      await c.env.DB.prepare(`
+        UPDATE usage_tracking 
+        SET current_students = current_students + 1, updated_at = CURRENT_TIMESTAMP
+        WHERE academy_id = ? AND subscription_id = ?
+      `).bind(finalAcademyId, subscription.id).run()
+      console.log('📈 [AddStudent] Usage incremented successfully')
+    } catch (usageErr) {
+      console.error('⚠️ [AddStudent] Failed to increment usage:', usageErr)
+    }
     
     return c.json({ 
       success: true, 
@@ -15756,6 +15836,35 @@ app.post('/api/learning-reports/generate', async (c) => {
     
     console.log('✅ [GenerateReport] Student found:', student.name)
     
+    // ✅ AI 리포트 월간 한도 체크
+    console.log('🔍 [GenerateReport] Checking AI report limit...')
+    const subscription = await c.env.DB.prepare(`
+      SELECT * FROM subscriptions 
+      WHERE academy_id = ? AND status = 'active'
+      ORDER BY created_at DESC LIMIT 1
+    `).bind(student.academy_id).first()
+
+    if (!subscription) {
+      return c.json({ 
+        success: false, 
+        error: '활성 구독이 없습니다. 요금제를 구매해주세요.' 
+      }, 403)
+    }
+
+    const usage = await c.env.DB.prepare(`
+      SELECT * FROM usage_tracking 
+      WHERE academy_id = ? AND subscription_id = ?
+    `).bind(student.academy_id, subscription.id).first()
+
+    const currentReports = usage?.ai_reports_used_this_month || 0
+    if (currentReports >= subscription.ai_report_limit) {
+      return c.json({ 
+        success: false, 
+        error: `AI 리포트 월간 한도에 도달했습니다 (${currentReports}/${subscription.ai_report_limit}). 상위 플랜으로 업그레이드해주세요.` 
+      }, 403)
+    }
+    console.log(`✅ [GenerateReport] Limit check passed: ${currentReports}/${subscription.ai_report_limit}`)
+    
     // 성적 데이터 조회 (테이블이 없을 경우 대비)
     let grades = []
     try {
@@ -16004,6 +16113,18 @@ ${recommendations}
     ).run()
     
     console.log('✅ [GenerateReport] Report saved successfully, ID:', result.meta.last_row_id)
+    
+    // ✅ 사용량 증가
+    try {
+      await c.env.DB.prepare(`
+        UPDATE usage_tracking 
+        SET ai_reports_used_this_month = ai_reports_used_this_month + 1, updated_at = CURRENT_TIMESTAMP
+        WHERE academy_id = ? AND subscription_id = ?
+      `).bind(student.academy_id, subscription.id).run()
+      console.log('📈 [GenerateReport] Usage incremented successfully')
+    } catch (usageErr) {
+      console.error('⚠️ [GenerateReport] Failed to increment usage:', usageErr)
+    }
     
     return c.json({ 
       success: true, 
