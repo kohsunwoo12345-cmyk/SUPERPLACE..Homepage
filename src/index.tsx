@@ -6692,6 +6692,78 @@ app.get('/api/subscriptions/status', async (c) => {
   }
 })
 
+// ==================== 구독 만료 자동 처리 API ====================
+
+// 🔥 Cron Job: 만료된 모든 구독 자동 비활성화
+app.get('/api/subscriptions/check-expired', async (c) => {
+  try {
+    console.log('[Subscription Cron] Starting expired subscription check...')
+    
+    // 현재 한국 시간 기준으로 오늘 날짜
+    const now = new Date()
+    const koreaTime = new Date(now.getTime() + (9 * 60 * 60 * 1000)) // UTC+9
+    const todayKorea = koreaTime.toISOString().split('T')[0]
+    
+    console.log('[Subscription Cron] Today (Korea Time):', todayKorea)
+    
+    // 만료된 구독 찾기 (subscription_end_date가 오늘보다 이전인 active 구독)
+    const expiredSubscriptions = await c.env.DB.prepare(`
+      SELECT id, academy_id, plan_name, subscription_end_date 
+      FROM subscriptions 
+      WHERE status = 'active' 
+        AND subscription_end_date < ?
+    `).bind(todayKorea).all()
+    
+    console.log('[Subscription Cron] Found', expiredSubscriptions.results.length, 'expired subscriptions')
+    
+    if (expiredSubscriptions.results.length === 0) {
+      return c.json({ 
+        success: true, 
+        message: 'No expired subscriptions found',
+        expiredCount: 0 
+      })
+    }
+    
+    // 각 만료된 구독을 비활성화
+    let expiredCount = 0
+    for (const sub of expiredSubscriptions.results) {
+      try {
+        await c.env.DB.prepare(`
+          UPDATE subscriptions 
+          SET status = 'expired', updated_at = CURRENT_TIMESTAMP
+          WHERE id = ?
+        `).bind(sub.id).run()
+        
+        console.log('[Subscription Cron] Expired subscription:', {
+          id: sub.id,
+          academy_id: sub.academy_id,
+          plan_name: sub.plan_name,
+          end_date: sub.subscription_end_date
+        })
+        
+        expiredCount++
+      } catch (err) {
+        console.error('[Subscription Cron] Failed to expire subscription', sub.id, ':', err.message)
+      }
+    }
+    
+    return c.json({ 
+      success: true, 
+      message: `Successfully expired ${expiredCount} subscriptions`,
+      expiredCount,
+      expiredSubscriptions: expiredSubscriptions.results.map(s => ({
+        id: s.id,
+        academy_id: s.academy_id,
+        plan_name: s.plan_name,
+        end_date: s.subscription_end_date
+      }))
+    })
+  } catch (error) {
+    console.error('[Subscription Cron] Error:', error)
+    return c.json({ success: false, error: error.message }, 500)
+  }
+})
+
 // ==================== 사용량 한도 체크 API ====================
 
 // 사용량 조회 API
@@ -6752,6 +6824,33 @@ app.get('/api/usage/check', async (c) => {
       return c.json({ 
         success: false, 
         error: '활성 구독이 없습니다' 
+      }, 403)
+    }
+
+    // 🔥 구독 만료 자동 체크 (한국 시간 기준)
+    const now = new Date()
+    const koreaTime = new Date(now.getTime() + (9 * 60 * 60 * 1000)) // UTC+9
+    const endDateTime = new Date(subscription.subscription_end_date + 'T23:59:59+09:00')
+    const isExpired = koreaTime > endDateTime
+    
+    if (isExpired) {
+      console.log('[Usage Check] Subscription expired, updating status:', {
+        subscriptionId: subscription.id,
+        endDate: subscription.subscription_end_date
+      })
+      
+      // 구독 만료 처리
+      await c.env.DB.prepare(`
+        UPDATE subscriptions 
+        SET status = 'expired', updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+      `).bind(subscription.id).run()
+      
+      return c.json({ 
+        success: false, 
+        error: '구독이 만료되었습니다',
+        expired: true,
+        endDate: subscription.subscription_end_date
       }, 403)
     }
 
