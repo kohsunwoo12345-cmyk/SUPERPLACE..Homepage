@@ -6394,13 +6394,23 @@ app.post('/api/payments/complete', async (c) => {
 app.get('/api/subscriptions/status', async (c) => {
   try {
     // 세션에서 사용자 정보 가져오기
-    const session = getCookie(c, 'user_session')
-    if (!session) {
+    const sessionId = getCookie(c, 'session_id')
+    if (!sessionId) {
+      console.log('[Subscription Status] No session_id cookie found')
       return c.json({ success: false, error: 'Not authenticated' }, 401)
     }
+    
+    // 세션에서 사용자 ID 조회
+    const session = await c.env.DB.prepare(`
+      SELECT user_id FROM sessions WHERE session_id = ? AND expires_at > datetime('now')
+    `).bind(sessionId).first()
+    
+    if (!session) {
+      console.log('[Subscription Status] Session not found or expired')
+      return c.json({ success: false, error: 'Session expired' }, 401)
+    }
 
-    const sessionData = JSON.parse(session)
-    const userId = sessionData.id
+    const userId = session.user_id
     
     console.log('[Subscription Status] userId:', userId)
     
@@ -6522,7 +6532,7 @@ app.get('/api/subscriptions/status', async (c) => {
 // 사용량 조회 API
 app.get('/api/usage/check', async (c) => {
   try {
-    const session = getCookie(c, 'user_session')
+    const session = getCookie(c, 'session_id')
     if (!session) {
       return c.json({ success: false, error: 'Not authenticated' }, 401)
     }
@@ -6629,7 +6639,7 @@ app.get('/api/usage/check', async (c) => {
 // 학생 추가 전 한도 체크
 app.post('/api/usage/check-student-limit', async (c) => {
   try {
-    const session = getCookie(c, 'user_session')
+    const session = getCookie(c, 'session_id')
     if (!session) {
       return c.json({ success: false, error: 'Not authenticated' }, 401)
     }
@@ -6673,7 +6683,7 @@ app.post('/api/usage/check-student-limit', async (c) => {
 // AI 리포트 생성 전 한도 체크
 app.post('/api/usage/check-ai-report-limit', async (c) => {
   try {
-    const session = getCookie(c, 'user_session')
+    const session = getCookie(c, 'session_id')
     if (!session) {
       return c.json({ success: false, error: 'Not authenticated' }, 401)
     }
@@ -6717,7 +6727,7 @@ app.post('/api/usage/check-ai-report-limit', async (c) => {
 // 랜딩페이지 생성 전 한도 체크
 app.post('/api/usage/check-landing-page-limit', async (c) => {
   try {
-    const session = getCookie(c, 'user_session')
+    const session = getCookie(c, 'session_id')
     if (!session) {
       return c.json({ success: false, error: 'Not authenticated' }, 401)
     }
@@ -6761,7 +6771,7 @@ app.post('/api/usage/check-landing-page-limit', async (c) => {
 // 선생님 추가 전 한도 체크
 app.post('/api/usage/check-teacher-limit', async (c) => {
   try {
-    const session = getCookie(c, 'user_session')
+    const session = getCookie(c, 'session_id')
     if (!session) {
       return c.json({ success: false, error: 'Not authenticated' }, 401)
     }
@@ -6805,7 +6815,7 @@ app.post('/api/usage/check-teacher-limit', async (c) => {
 // 사용량 증가 API (학생 추가 시)
 app.post('/api/usage/increment-students', async (c) => {
   try {
-    const session = getCookie(c, 'user_session')
+    const session = getCookie(c, 'session_id')
     if (!session) {
       return c.json({ success: false, error: 'Not authenticated' }, 401)
     }
@@ -6838,7 +6848,7 @@ app.post('/api/usage/increment-students', async (c) => {
 // 사용량 증가 API (AI 리포트 생성 시)
 app.post('/api/usage/increment-ai-reports', async (c) => {
   try {
-    const session = getCookie(c, 'user_session')
+    const session = getCookie(c, 'session_id')
     if (!session) {
       return c.json({ success: false, error: 'Not authenticated' }, 401)
     }
@@ -6871,7 +6881,7 @@ app.post('/api/usage/increment-ai-reports', async (c) => {
 // 사용량 증가 API (랜딩페이지 생성 시)
 app.post('/api/usage/increment-landing-pages', async (c) => {
   try {
-    const session = getCookie(c, 'user_session')
+    const session = getCookie(c, 'session_id')
     if (!session) {
       return c.json({ success: false, error: 'Not authenticated' }, 401)
     }
@@ -6904,7 +6914,7 @@ app.post('/api/usage/increment-landing-pages', async (c) => {
 // 사용량 증가 API (선생님 추가 시)
 app.post('/api/usage/increment-teachers', async (c) => {
   try {
-    const session = getCookie(c, 'user_session')
+    const session = getCookie(c, 'session_id')
     if (!session) {
       return c.json({ success: false, error: 'Not authenticated' }, 401)
     }

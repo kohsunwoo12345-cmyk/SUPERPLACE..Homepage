@@ -5186,7 +5186,9 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
         current_teachers, sms_sent_this_month,
         last_ai_report_reset_date, last_sms_reset_date
       ) VALUES (?, ?, 0, 0, 0, 0, 0, ?, ?)
-    `).bind(a,p.meta.last_row_id,i,i).run();return console.log("[Payment Complete] Usage tracking initialized:",{usageId:u.meta.last_row_id}),e.json({success:!0,subscription:{id:p.meta.last_row_id,planName:o.name,startDate:i,endDate:c}})}catch(t){return console.error("[Payment Complete] Error:",t),e.json({success:!1,error:t.message},500)}});d.get("/api/subscriptions/status",async e=>{try{const t=X(e,"user_session");if(!t)return e.json({success:!1,error:"Not authenticated"},401);const r=JSON.parse(t).id;console.log("[Subscription Status] userId:",r);const a=await e.env.DB.prepare("SELECT id, academy_id FROM users WHERE id = ?").bind(r).first();console.log("[Subscription Status] user:",a);let n=a.id;if((a==null?void 0:a.academy_id)!==a.id){console.log(`[Subscription Status] Fixing academy_id from ${a==null?void 0:a.academy_id} to ${a.id}`);try{await e.env.DB.prepare("UPDATE users SET academy_id = ? WHERE id = ?").bind(n,r).run()}catch(m){console.error("[Subscription Status] Failed to update academy_id:",m)}}console.log("[Subscription Status] Using academy_id:",n);const o=await e.env.DB.prepare(`
+    `).bind(a,p.meta.last_row_id,i,i).run();return console.log("[Payment Complete] Usage tracking initialized:",{usageId:u.meta.last_row_id}),e.json({success:!0,subscription:{id:p.meta.last_row_id,planName:o.name,startDate:i,endDate:c}})}catch(t){return console.error("[Payment Complete] Error:",t),e.json({success:!1,error:t.message},500)}});d.get("/api/subscriptions/status",async e=>{try{const t=X(e,"session_id");if(!t)return console.log("[Subscription Status] No session_id cookie found"),e.json({success:!1,error:"Not authenticated"},401);const s=await e.env.DB.prepare(`
+      SELECT user_id FROM sessions WHERE session_id = ? AND expires_at > datetime('now')
+    `).bind(t).first();if(!s)return console.log("[Subscription Status] Session not found or expired"),e.json({success:!1,error:"Session expired"},401);const r=s.user_id;console.log("[Subscription Status] userId:",r);const a=await e.env.DB.prepare("SELECT id, academy_id FROM users WHERE id = ?").bind(r).first();console.log("[Subscription Status] user:",a);let n=a.id;if((a==null?void 0:a.academy_id)!==a.id){console.log(`[Subscription Status] Fixing academy_id from ${a==null?void 0:a.academy_id} to ${a.id}`);try{await e.env.DB.prepare("UPDATE users SET academy_id = ? WHERE id = ?").bind(n,r).run()}catch(m){console.error("[Subscription Status] Failed to update academy_id:",m)}}console.log("[Subscription Status] Using academy_id:",n);const o=await e.env.DB.prepare(`
       SELECT * FROM subscriptions 
       WHERE academy_id = ? AND status = 'active'
       ORDER BY created_at DESC
@@ -5200,7 +5202,7 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
         UPDATE subscriptions 
         SET status = 'expired', updated_at = CURRENT_TIMESTAMP
         WHERE id = ?
-      `).bind(o.id).run(),e.json({success:!0,hasSubscription:!1,message:"구독이 만료되었습니다"})):e.json({success:!0,hasSubscription:!0,subscription:{id:o.id,planName:o.plan_name,startDate:o.subscription_start_date,endDate:o.subscription_end_date,studentLimit:o.student_limit,aiReportLimit:o.ai_report_limit,landingPageLimit:o.landing_page_limit,teacherLimit:o.teacher_limit}})}catch(t){return console.error("[Subscription Status] Error:",t),e.json({success:!1,error:t.message},500)}});d.get("/api/usage/check",async e=>{try{const t=X(e,"user_session");if(!t)return e.json({success:!1,error:"Not authenticated"},401);const r=JSON.parse(t).id,a=await e.env.DB.prepare("SELECT id, academy_id FROM users WHERE id = ?").bind(r).first();let n=a.id;if((a==null?void 0:a.academy_id)!==a.id)try{await e.env.DB.prepare("UPDATE users SET academy_id = ? WHERE id = ?").bind(n,r).run(),console.log("[Usage Check] Fixed academy_id to:",r)}catch(i){console.error("[Usage Check] Failed to update academy_id:",i)}let o=await e.env.DB.prepare(`
+      `).bind(o.id).run(),e.json({success:!0,hasSubscription:!1,message:"구독이 만료되었습니다"})):e.json({success:!0,hasSubscription:!0,subscription:{id:o.id,planName:o.plan_name,startDate:o.subscription_start_date,endDate:o.subscription_end_date,studentLimit:o.student_limit,aiReportLimit:o.ai_report_limit,landingPageLimit:o.landing_page_limit,teacherLimit:o.teacher_limit}})}catch(t){return console.error("[Subscription Status] Error:",t),e.json({success:!1,error:t.message},500)}});d.get("/api/usage/check",async e=>{try{const t=X(e,"session_id");if(!t)return e.json({success:!1,error:"Not authenticated"},401);const r=JSON.parse(t).id,a=await e.env.DB.prepare("SELECT id, academy_id FROM users WHERE id = ?").bind(r).first();let n=a.id;if((a==null?void 0:a.academy_id)!==a.id)try{await e.env.DB.prepare("UPDATE users SET academy_id = ? WHERE id = ?").bind(n,r).run(),console.log("[Usage Check] Fixed academy_id to:",r)}catch(i){console.error("[Usage Check] Failed to update academy_id:",i)}let o=await e.env.DB.prepare(`
       SELECT * FROM subscriptions 
       WHERE academy_id = ? AND status = 'active'
       ORDER BY created_at DESC LIMIT 1
@@ -5218,35 +5220,35 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
           current_teachers, sms_sent_this_month,
           last_ai_report_reset_date, last_sms_reset_date
         ) VALUES (?, ?, 0, 0, 0, 0, 0, ?, ?)
-      `).bind(n,o.id,i,i).run(),e.json({success:!0,limits:{students:o.student_limit,aiReports:o.ai_report_limit,landingPages:o.landing_page_limit,teachers:o.teacher_limit},usage:{students:0,aiReports:0,landingPages:0,teachers:0,sms:0}})}return e.json({success:!0,limits:{students:o.student_limit,aiReports:o.ai_report_limit,landingPages:o.landing_page_limit,teachers:o.teacher_limit},usage:{students:l.current_students||0,aiReports:l.ai_reports_used_this_month||0,landingPages:l.landing_pages_created||0,teachers:l.current_teachers||0,sms:l.sms_sent_this_month||0}})}catch(t){return console.error("[Usage Check] Error:",t),e.json({success:!1,error:t.message},500)}});d.post("/api/usage/check-student-limit",async e=>{try{const t=X(e,"user_session");if(!t)return e.json({success:!1,error:"Not authenticated"},401);const r=JSON.parse(t).id,a=await e.env.DB.prepare(`
+      `).bind(n,o.id,i,i).run(),e.json({success:!0,limits:{students:o.student_limit,aiReports:o.ai_report_limit,landingPages:o.landing_page_limit,teachers:o.teacher_limit},usage:{students:0,aiReports:0,landingPages:0,teachers:0,sms:0}})}return e.json({success:!0,limits:{students:o.student_limit,aiReports:o.ai_report_limit,landingPages:o.landing_page_limit,teachers:o.teacher_limit},usage:{students:l.current_students||0,aiReports:l.ai_reports_used_this_month||0,landingPages:l.landing_pages_created||0,teachers:l.current_teachers||0,sms:l.sms_sent_this_month||0}})}catch(t){return console.error("[Usage Check] Error:",t),e.json({success:!1,error:t.message},500)}});d.post("/api/usage/check-student-limit",async e=>{try{const t=X(e,"session_id");if(!t)return e.json({success:!1,error:"Not authenticated"},401);const r=JSON.parse(t).id,a=await e.env.DB.prepare(`
       SELECT * FROM subscriptions 
       WHERE academy_id = ? AND status = 'active'
       ORDER BY created_at DESC LIMIT 1
     `).bind(r).first();if(!a)return e.json({success:!1,error:"활성 구독이 없습니다"},403);const n=await e.env.DB.prepare(`
       SELECT * FROM usage_tracking 
       WHERE academy_id = ? AND subscription_id = ?
-    `).bind(r,a.id).first(),o=(n==null?void 0:n.current_students)||0,l=o<a.student_limit;return e.json({success:!0,canAdd:l,current:o,limit:a.student_limit,message:l?"학생을 추가할 수 있습니다":"학생 수 한도에 도달했습니다"})}catch(t){return e.json({success:!1,error:t.message},500)}});d.post("/api/usage/check-ai-report-limit",async e=>{try{const t=X(e,"user_session");if(!t)return e.json({success:!1,error:"Not authenticated"},401);const r=JSON.parse(t).id,a=await e.env.DB.prepare(`
+    `).bind(r,a.id).first(),o=(n==null?void 0:n.current_students)||0,l=o<a.student_limit;return e.json({success:!0,canAdd:l,current:o,limit:a.student_limit,message:l?"학생을 추가할 수 있습니다":"학생 수 한도에 도달했습니다"})}catch(t){return e.json({success:!1,error:t.message},500)}});d.post("/api/usage/check-ai-report-limit",async e=>{try{const t=X(e,"session_id");if(!t)return e.json({success:!1,error:"Not authenticated"},401);const r=JSON.parse(t).id,a=await e.env.DB.prepare(`
       SELECT * FROM subscriptions 
       WHERE academy_id = ? AND status = 'active'
       ORDER BY created_at DESC LIMIT 1
     `).bind(r).first();if(!a)return e.json({success:!1,error:"활성 구독이 없습니다"},403);const n=await e.env.DB.prepare(`
       SELECT * FROM usage_tracking 
       WHERE academy_id = ? AND subscription_id = ?
-    `).bind(r,a.id).first(),o=(n==null?void 0:n.ai_reports_used_this_month)||0,l=o<a.ai_report_limit;return e.json({success:!0,canCreate:l,current:o,limit:a.ai_report_limit,message:l?"AI 리포트를 생성할 수 있습니다":"AI 리포트 월간 한도에 도달했습니다"})}catch(t){return e.json({success:!1,error:t.message},500)}});d.post("/api/usage/check-landing-page-limit",async e=>{try{const t=X(e,"user_session");if(!t)return e.json({success:!1,error:"Not authenticated"},401);const r=JSON.parse(t).id,a=await e.env.DB.prepare(`
+    `).bind(r,a.id).first(),o=(n==null?void 0:n.ai_reports_used_this_month)||0,l=o<a.ai_report_limit;return e.json({success:!0,canCreate:l,current:o,limit:a.ai_report_limit,message:l?"AI 리포트를 생성할 수 있습니다":"AI 리포트 월간 한도에 도달했습니다"})}catch(t){return e.json({success:!1,error:t.message},500)}});d.post("/api/usage/check-landing-page-limit",async e=>{try{const t=X(e,"session_id");if(!t)return e.json({success:!1,error:"Not authenticated"},401);const r=JSON.parse(t).id,a=await e.env.DB.prepare(`
       SELECT * FROM subscriptions 
       WHERE academy_id = ? AND status = 'active'
       ORDER BY created_at DESC LIMIT 1
     `).bind(r).first();if(!a)return e.json({success:!1,error:"활성 구독이 없습니다"},403);const n=await e.env.DB.prepare(`
       SELECT * FROM usage_tracking 
       WHERE academy_id = ? AND subscription_id = ?
-    `).bind(r,a.id).first(),o=(n==null?void 0:n.landing_pages_created)||0,l=o<a.landing_page_limit;return e.json({success:!0,canCreate:l,current:o,limit:a.landing_page_limit,message:l?"랜딩페이지를 생성할 수 있습니다":"랜딩페이지 한도에 도달했습니다"})}catch(t){return e.json({success:!1,error:t.message},500)}});d.post("/api/usage/check-teacher-limit",async e=>{try{const t=X(e,"user_session");if(!t)return e.json({success:!1,error:"Not authenticated"},401);const r=JSON.parse(t).id,a=await e.env.DB.prepare(`
+    `).bind(r,a.id).first(),o=(n==null?void 0:n.landing_pages_created)||0,l=o<a.landing_page_limit;return e.json({success:!0,canCreate:l,current:o,limit:a.landing_page_limit,message:l?"랜딩페이지를 생성할 수 있습니다":"랜딩페이지 한도에 도달했습니다"})}catch(t){return e.json({success:!1,error:t.message},500)}});d.post("/api/usage/check-teacher-limit",async e=>{try{const t=X(e,"session_id");if(!t)return e.json({success:!1,error:"Not authenticated"},401);const r=JSON.parse(t).id,a=await e.env.DB.prepare(`
       SELECT * FROM subscriptions 
       WHERE academy_id = ? AND status = 'active'
       ORDER BY created_at DESC LIMIT 1
     `).bind(r).first();if(!a)return e.json({success:!1,error:"활성 구독이 없습니다"},403);const n=await e.env.DB.prepare(`
       SELECT * FROM usage_tracking 
       WHERE academy_id = ? AND subscription_id = ?
-    `).bind(r,a.id).first(),o=(n==null?void 0:n.current_teachers)||0,l=o<a.teacher_limit;return e.json({success:!0,canAdd:l,current:o,limit:a.teacher_limit,message:l?"선생님을 추가할 수 있습니다":"선생님 계정 한도에 도달했습니다"})}catch(t){return e.json({success:!1,error:t.message},500)}});d.post("/api/usage/increment-students",async e=>{try{const t=X(e,"user_session");if(!t)return e.json({success:!1,error:"Not authenticated"},401);const r=JSON.parse(t).id,a=await e.env.DB.prepare(`
+    `).bind(r,a.id).first(),o=(n==null?void 0:n.current_teachers)||0,l=o<a.teacher_limit;return e.json({success:!0,canAdd:l,current:o,limit:a.teacher_limit,message:l?"선생님을 추가할 수 있습니다":"선생님 계정 한도에 도달했습니다"})}catch(t){return e.json({success:!1,error:t.message},500)}});d.post("/api/usage/increment-students",async e=>{try{const t=X(e,"session_id");if(!t)return e.json({success:!1,error:"Not authenticated"},401);const r=JSON.parse(t).id,a=await e.env.DB.prepare(`
       SELECT * FROM subscriptions 
       WHERE academy_id = ? AND status = 'active'
       ORDER BY created_at DESC LIMIT 1
@@ -5254,7 +5256,7 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
       UPDATE usage_tracking 
       SET current_students = current_students + 1, updated_at = CURRENT_TIMESTAMP
       WHERE academy_id = ? AND subscription_id = ?
-    `).bind(r,a.id).run(),e.json({success:!0,message:"학생 수가 증가했습니다"})):e.json({success:!1,error:"활성 구독이 없습니다"},403)}catch(t){return e.json({success:!1,error:t.message},500)}});d.post("/api/usage/increment-ai-reports",async e=>{try{const t=X(e,"user_session");if(!t)return e.json({success:!1,error:"Not authenticated"},401);const r=JSON.parse(t).id,a=await e.env.DB.prepare(`
+    `).bind(r,a.id).run(),e.json({success:!0,message:"학생 수가 증가했습니다"})):e.json({success:!1,error:"활성 구독이 없습니다"},403)}catch(t){return e.json({success:!1,error:t.message},500)}});d.post("/api/usage/increment-ai-reports",async e=>{try{const t=X(e,"session_id");if(!t)return e.json({success:!1,error:"Not authenticated"},401);const r=JSON.parse(t).id,a=await e.env.DB.prepare(`
       SELECT * FROM subscriptions 
       WHERE academy_id = ? AND status = 'active'
       ORDER BY created_at DESC LIMIT 1
@@ -5262,7 +5264,7 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
       UPDATE usage_tracking 
       SET ai_reports_used_this_month = ai_reports_used_this_month + 1, updated_at = CURRENT_TIMESTAMP
       WHERE academy_id = ? AND subscription_id = ?
-    `).bind(r,a.id).run(),e.json({success:!0,message:"AI 리포트 사용량이 증가했습니다"})):e.json({success:!1,error:"활성 구독이 없습니다"},403)}catch(t){return e.json({success:!1,error:t.message},500)}});d.post("/api/usage/increment-landing-pages",async e=>{try{const t=X(e,"user_session");if(!t)return e.json({success:!1,error:"Not authenticated"},401);const r=JSON.parse(t).id,a=await e.env.DB.prepare(`
+    `).bind(r,a.id).run(),e.json({success:!0,message:"AI 리포트 사용량이 증가했습니다"})):e.json({success:!1,error:"활성 구독이 없습니다"},403)}catch(t){return e.json({success:!1,error:t.message},500)}});d.post("/api/usage/increment-landing-pages",async e=>{try{const t=X(e,"session_id");if(!t)return e.json({success:!1,error:"Not authenticated"},401);const r=JSON.parse(t).id,a=await e.env.DB.prepare(`
       SELECT * FROM subscriptions 
       WHERE academy_id = ? AND status = 'active'
       ORDER BY created_at DESC LIMIT 1
@@ -5270,7 +5272,7 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
       UPDATE usage_tracking 
       SET landing_pages_created = landing_pages_created + 1, updated_at = CURRENT_TIMESTAMP
       WHERE academy_id = ? AND subscription_id = ?
-    `).bind(r,a.id).run(),e.json({success:!0,message:"랜딩페이지 사용량이 증가했습니다"})):e.json({success:!1,error:"활성 구독이 없습니다"},403)}catch(t){return e.json({success:!1,error:t.message},500)}});d.post("/api/usage/increment-teachers",async e=>{try{const t=X(e,"user_session");if(!t)return e.json({success:!1,error:"Not authenticated"},401);const r=JSON.parse(t).id,a=await e.env.DB.prepare(`
+    `).bind(r,a.id).run(),e.json({success:!0,message:"랜딩페이지 사용량이 증가했습니다"})):e.json({success:!1,error:"활성 구독이 없습니다"},403)}catch(t){return e.json({success:!1,error:t.message},500)}});d.post("/api/usage/increment-teachers",async e=>{try{const t=X(e,"session_id");if(!t)return e.json({success:!1,error:"Not authenticated"},401);const r=JSON.parse(t).id,a=await e.env.DB.prepare(`
       SELECT * FROM subscriptions 
       WHERE academy_id = ? AND status = 'active'
       ORDER BY created_at DESC LIMIT 1
