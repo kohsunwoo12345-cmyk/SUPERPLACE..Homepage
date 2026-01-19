@@ -3404,6 +3404,40 @@ app.post('/api/landing/create', async (c) => {
       }
     }
     
+    // 🔥 랜딩페이지 생성 한도 체크
+    const activeSubscription = await c.env.DB.prepare(`
+      SELECT id, landing_page_limit 
+      FROM subscriptions 
+      WHERE academy_id = (SELECT academy_id FROM users WHERE id = ?) 
+        AND status = 'active' 
+        AND subscription_end_date >= date('now')
+      ORDER BY created_at DESC 
+      LIMIT 1
+    `).bind(user.id).first()
+    
+    if (!activeSubscription) {
+      return c.json({ 
+        success: false, 
+        error: '활성화된 구독이 없습니다. 플랜을 구매해주세요.' 
+      }, 403)
+    }
+    
+    const usage = await c.env.DB.prepare(`
+      SELECT landing_pages_created 
+      FROM usage_tracking 
+      WHERE subscription_id = ?
+    `).bind(activeSubscription.id).first()
+    
+    const currentPages = usage?.landing_pages_created || 0
+    const pageLimit = activeSubscription.landing_page_limit
+    
+    if (currentPages >= pageLimit) {
+      return c.json({ 
+        success: false, 
+        error: `랜딩페이지 생성 한도에 도달했습니다 (${currentPages}/${pageLimit}). 상위 플랜으로 업그레이드해주세요.` 
+      }, 403)
+    }
+    
     // 고유 slug 생성 (랜덤 8자리)
     const slug = Math.random().toString(36).substring(2, 10)
     
@@ -3423,11 +3457,25 @@ app.post('/api/landing/create', async (c) => {
       .bind(user.id, slug, title, template_type, JSON.stringify(input_data), htmlContent, qrCodeUrl, thumbnail_url || null, og_title || null, og_description || null, folder_id || null)
       .run()
     
+    // 🔥 사용량 증가
+    await c.env.DB.prepare(`
+      UPDATE usage_tracking 
+      SET landing_pages_created = landing_pages_created + 1, 
+          updated_at = CURRENT_TIMESTAMP
+      WHERE subscription_id = ?
+    `).bind(activeSubscription.id).run()
+    
+    console.log('✅ Landing page created and usage incremented:', currentPages + 1, '/', pageLimit)
+    
     return c.json({ 
       success: true, 
       message: '랜딩페이지가 생성되었습니다.',
       slug,
       url: `/landing/${slug}`,
+      usage: {
+        current: currentPages + 1,
+        limit: pageLimit
+      },
       qrCodeUrl,
       id: result.meta.last_row_id
     })
@@ -21617,6 +21665,40 @@ app.post('/api/teachers/add', async (c) => {
       return c.json({ success: false, error: '필수 정보를 모두 입력해주세요.' }, 400)
     }
     
+    // 🔥 선생님 추가 한도 체크
+    const activeSubscription = await c.env.DB.prepare(`
+      SELECT id, teacher_limit 
+      FROM subscriptions 
+      WHERE academy_id = (SELECT academy_id FROM users WHERE id = ?) 
+        AND status = 'active' 
+        AND subscription_end_date >= date('now')
+      ORDER BY created_at DESC 
+      LIMIT 1
+    `).bind(userId).first()
+    
+    if (!activeSubscription) {
+      return c.json({ 
+        success: false, 
+        error: '활성화된 구독이 없습니다. 플랜을 구매해주세요.' 
+      }, 403)
+    }
+    
+    const usage = await c.env.DB.prepare(`
+      SELECT current_teachers 
+      FROM usage_tracking 
+      WHERE subscription_id = ?
+    `).bind(activeSubscription.id).first()
+    
+    const currentTeachers = usage?.current_teachers || 0
+    const teacherLimit = activeSubscription.teacher_limit
+    
+    if (currentTeachers >= teacherLimit) {
+      return c.json({ 
+        success: false, 
+        error: `선생님 계정 한도에 도달했습니다 (${currentTeachers}/${teacherLimit}). 상위 플랜으로 업그레이드해주세요.` 
+      }, 403)
+    }
+    
     // 원장님 정보 조회
     const director = await c.env.DB.prepare(
       'SELECT id, academy_name, email FROM users WHERE id = ?'
@@ -21651,11 +21733,25 @@ app.post('/api/teachers/add', async (c) => {
         WHERE id = ?
       `).bind(userId, director.academy_name, assigned_class || null, existingUser.id).run()
       
+      // 🔥 사용량 증가
+      await c.env.DB.prepare(`
+        UPDATE usage_tracking 
+        SET current_teachers = current_teachers + 1, 
+            updated_at = CURRENT_TIMESTAMP
+        WHERE subscription_id = ?
+      `).bind(activeSubscription.id).run()
+      
+      console.log('✅ Existing teacher connected and usage incremented:', currentTeachers + 1, '/', teacherLimit)
+      
       return c.json({ 
         success: true, 
         teacherId: teacherId,
         message: `${existingUser.name || name} 선생님이 이 학원에 연결되었습니다.`,
-        isExistingUser: true
+        isExistingUser: true,
+        usage: {
+          current: currentTeachers + 1,
+          limit: teacherLimit
+        }
       })
     }
     
@@ -21679,11 +21775,25 @@ app.post('/api/teachers/add', async (c) => {
     
     teacherId = result.meta.last_row_id
     
+    // 🔥 사용량 증가
+    await c.env.DB.prepare(`
+      UPDATE usage_tracking 
+      SET current_teachers = current_teachers + 1, 
+          updated_at = CURRENT_TIMESTAMP
+      WHERE subscription_id = ?
+    `).bind(activeSubscription.id).run()
+    
+    console.log('✅ Teacher added and usage incremented:', currentTeachers + 1, '/', teacherLimit)
+    
     return c.json({ 
       success: true, 
       teacherId: teacherId,
       message: `${name} 선생님이 추가되었습니다.`,
-      isExistingUser: false
+      isExistingUser: false,
+      usage: {
+        current: currentTeachers + 1,
+        limit: teacherLimit
+      }
     })
   } catch (error) {
     console.error('Add teacher error:', error)
