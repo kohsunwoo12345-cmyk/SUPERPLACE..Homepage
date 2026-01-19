@@ -1,21 +1,12 @@
-name = "superplace-fixed"
-compatibility_date = "2025-12-18"
-pages_build_output_dir = "dist"
+name = "superplace-academy"
+compatibility_date = "2024-01-01"
 
-[build]
-command = ""
+[env.production]
+account_id = "117379ce5c9d9af026b16c9cf21b10d5"
+workers_dev = false
+route = "superplace-academy.pages.dev/*"
 
-# D1 Database Bindings
-[[d1_databases]]
+[[env.production.d1_databases]]
 binding = "DB"
-database_name = "webapp-production"
-database_id = "8c106540-21b4-4fa9-8879-c4956e459ca1"
-
-# R2 Bucket Bindings
-[[r2_buckets]]
-binding = "R2"
-bucket_name = "superplace-documents"
-
-[vars]
-ALIGO_API_KEY = "4bbi3l27pb5qh11tkujl578bttz6vb5j"
-ALIGO_USER_ID = "wangholy"
+database_name = "superplace-db"
+database_id = "your-database-id"

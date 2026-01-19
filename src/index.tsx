@@ -3397,7 +3397,7 @@ app.post('/api/landing/create', async (c) => {
     let user = { id: 1 }
     if (userHeaderBase64) {
       try {
-        const userDataStr = decodeURIComponent(escape(atob(userHeaderBase64)))
+        const userDataStr = atob(userHeaderBase64)
         user = JSON.parse(userDataStr)
       } catch (e) {
         console.warn('Failed to decode user data:', e)
@@ -12696,67 +12696,95 @@ app.get('/api/students', async (c) => {
 app.post('/api/students', async (c) => {
   try {
     const data = await c.req.json()
+    console.log('➕ [AddStudent] Received data:', data)
+    
     const { 
-      name, phone, grade, school, subjects, 
+      name, phone, grade, subjects, 
       parent_name, parentName,
       parent_phone, parentPhone,
       notes, memo,
       classId, class_id,
-      enrollmentDate, enrollment_date
+      enrollmentDate, enrollment_date,
+      academyId
     } = data
     
-    const user = JSON.parse(c.req.header('X-User-Data-Base64') ? decodeURIComponent(escape(atob(c.req.header('X-User-Data-Base64') || ''))) : '{"id":1}')
+    // academyId 결정
+    let finalAcademyId = academyId || data.academyId
+    
+    // 헤더에서 사용자 정보 추출
+    try {
+      const userHeader = c.req.header('X-User-Data-Base64')
+      if (userHeader && !finalAcademyId) {
+        const userData = JSON.parse(atob(userHeader))
+        finalAcademyId = userData.id || userData.academy_id
+        console.log('➕ [AddStudent] Academy ID from header:', finalAcademyId)
+      }
+    } catch (err) {
+      console.error('➕ [AddStudent] Header parse error:', err)
+    }
     
     // 필드명 통일 (camelCase와 snake_case 모두 지원)
     const finalParentName = parentName || parent_name
     const finalParentPhone = parentPhone || parent_phone
     const finalNotes = memo || notes
     const finalClassId = classId || class_id
-    const finalEnrollmentDate = enrollmentDate || enrollment_date
+    const finalEnrollmentDate = enrollmentDate || enrollment_date || new Date().toISOString().split('T')[0]
+    
+    console.log('➕ [AddStudent] Final values:', {
+      name,
+      grade,
+      finalParentName,
+      finalParentPhone,
+      finalAcademyId,
+      finalClassId
+    })
     
     // 필수 항목 확인
     if (!name || !grade || !finalParentName || !finalParentPhone) {
-      return c.json({ success: false, error: '필수 항목을 입력해주세요. (이름, 학년, 학부모 이름, 학부모 연락처)' }, 400)
+      return c.json({ 
+        success: false, 
+        error: '필수 항목을 입력해주세요. (이름, 학년, 학부모 이름, 학부모 연락처)' 
+      }, 400)
     }
     
+    if (!finalAcademyId) {
+      return c.json({ success: false, error: '학원 ID가 필요합니다.' }, 400)
+    }
+    
+    // school 컬럼 제거, class_id 포함
     const result = await c.env.DB.prepare(`
-      INSERT INTO students (name, phone, grade, school, subjects, parent_name, parent_phone, academy_id, enrollment_date, notes, status)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active')
+      INSERT INTO students (
+        name, phone, grade, subjects, parent_name, parent_phone, 
+        academy_id, enrollment_date, notes, status, class_id
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', ?)
     `).bind(
       name, 
       phone || null, 
       grade, 
-      school || null, 
       subjects || '', 
       finalParentName, 
       finalParentPhone, 
-      user.id, 
-      finalEnrollmentDate || new Date().toISOString().split('T')[0],
-      finalNotes || null
+      finalAcademyId, 
+      finalEnrollmentDate,
+      finalNotes || null,
+      finalClassId || null
     ).run()
     
-    // 반 배정이 있으면 처리
-    if (finalClassId) {
-      const studentId = result.meta.last_row_id
-      const classIds = typeof finalClassId === 'string' ? finalClassId.split(',') : [finalClassId]
-      
-      for (const cId of classIds) {
-        if (cId && cId.trim()) {
-          try {
-            await c.env.DB.prepare(`
-              UPDATE students SET class_id = ? WHERE id = ?
-            `).bind(parseInt(cId.trim()), studentId).run()
-          } catch (err) {
-            console.error('Class assignment error:', err)
-          }
-        }
-      }
-    }
+    console.log('➕ [AddStudent] Success! Student ID:', result.meta.last_row_id)
     
-    return c.json({ success: true, message: '학생이 추가되었습니다.', id: result.meta.last_row_id })
+    return c.json({ 
+      success: true, 
+      message: '학생이 추가되었습니다.', 
+      id: result.meta.last_row_id 
+    })
   } catch (err) {
-    console.error('Add student error:', err)
-    return c.json({ success: false, error: `학생 추가 실패: ${err.message || err}` }, 500)
+    console.error('➕ [AddStudent] Error:', err)
+    console.error('➕ [AddStudent] Stack:', err.stack)
+    return c.json({ 
+      success: false, 
+      error: `학생 추가 실패: ${err.message || err}` 
+    }, 500)
   }
 })
 
@@ -20203,7 +20231,7 @@ app.get('/api/classes', async (c) => {
     try {
       const userHeader = c.req.header('X-User-Data-Base64')
       if (userHeader && !userId) {
-        const userData = JSON.parse(decodeURIComponent(escape(atob(userHeader))))
+        const userData = JSON.parse(atob(userHeader))
         userId = userData.id
       }
     } catch (err) {
@@ -20257,7 +20285,7 @@ app.post('/api/classes', async (c) => {
     
     if (userHeader && !userId) {
       try {
-        const userData = JSON.parse(decodeURIComponent(escape(atob(userHeader))))
+        const userData = JSON.parse(atob(userHeader))
         userId = userData.id
         console.log('➕ [CreateClass] Extracted userId from header:', userId)
       } catch (err) {
