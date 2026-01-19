@@ -7273,13 +7273,80 @@ app.post('/api/bank-transfer/approve', async (c) => {
     }
 
     // 신청 정보 조회
-    const request = await c.env.DB.prepare(`
+    const request: any = await c.env.DB.prepare(`
       SELECT * FROM bank_transfer_requests WHERE id = ?
     `).bind(requestId).first()
 
     if (!request) {
       return c.json({ success: false, error: '신청 정보를 찾을 수 없습니다.' }, 404)
     }
+
+    if (request.status === 'approved') {
+      return c.json({ success: false, error: '이미 승인된 신청입니다.' }, 400)
+    }
+
+    // 플랜별 한도 설정
+    const planLimits: any = {
+      '스타터 플랜': { student: 30, ai_report: 30, landing_page: 40, teacher: 2, price: 55000 },
+      '베이직 플랜': { student: 50, ai_report: 50, landing_page: 70, teacher: 3, price: 77000 },
+      '프로 플랜': { student: 100, ai_report: 100, landing_page: 140, teacher: 6, price: 147000 },
+      '비즈니스 플랜': { student: 300, ai_report: 600, landing_page: 550, teacher: 10, price: 297000 },
+      '프리미엄 플랜': { student: 500, ai_report: 1000, landing_page: 900, teacher: 15, price: 440000 },
+      '엔터프라이즈 플랜': { student: 1000, ai_report: 3000, landing_page: 2000, teacher: 20, price: 750000 }
+    }
+
+    const limits = planLimits[request.plan_name] || planLimits['스타터 플랜']
+
+    // 사용자의 academy_id 확인 (없으면 생성)
+    let academy: any = await c.env.DB.prepare(`
+      SELECT id FROM academies WHERE owner_id = ?
+    `).bind(request.user_id).first()
+
+    if (!academy) {
+      // 학원 생성
+      const academyResult = await c.env.DB.prepare(`
+        INSERT INTO academies (academy_name, owner_id, created_at)
+        VALUES (?, ?, CURRENT_TIMESTAMP)
+      `).bind(request.user_name + ' 학원', request.user_id).run()
+      
+      academy = { id: academyResult.meta.last_row_id }
+    }
+
+    const academyId = academy.id
+
+    // 구독 시작일과 종료일 계산 (1개월)
+    const startDate = new Date()
+    const endDate = new Date()
+    endDate.setMonth(endDate.getMonth() + 1)
+
+    // 구독 생성
+    const subscriptionResult = await c.env.DB.prepare(`
+      INSERT INTO subscriptions (
+        academy_id, plan_name, plan_price, student_limit, ai_report_limit, 
+        landing_page_limit, teacher_limit, subscription_start_date, 
+        subscription_end_date, status, payment_method, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', 'bank_transfer', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+    `).bind(
+      academyId,
+      request.plan_name,
+      limits.price,
+      limits.student,
+      limits.ai_report,
+      limits.landing_page,
+      limits.teacher,
+      startDate.toISOString(),
+      endDate.toISOString()
+    ).run()
+
+    const subscriptionId = subscriptionResult.meta.last_row_id
+
+    // usage_tracking 생성
+    await c.env.DB.prepare(`
+      INSERT INTO usage_tracking (
+        academy_id, subscription_id, current_students, ai_reports_used_this_month,
+        landing_pages_created, current_teachers, updated_at
+      ) VALUES (?, ?, 0, 0, 0, 0, CURRENT_TIMESTAMP)
+    `).bind(academyId, subscriptionId).run()
 
     // 신청 상태 업데이트
     await c.env.DB.prepare(`
@@ -7288,17 +7355,15 @@ app.post('/api/bank-transfer/approve', async (c) => {
       WHERE id = ?
     `).bind(adminEmail, requestId).run()
 
-    // TODO: 실제 구독 생성 로직 추가
-    // subscriptions 테이블에 새 구독 추가
-    // usage_tracking 테이블에 사용량 트래킹 추가
-
     return c.json({
       success: true,
-      message: '계좌이체가 승인되었습니다.'
+      message: '계좌이체가 승인되고 구독이 활성화되었습니다.',
+      subscription_id: subscriptionId,
+      academy_id: academyId
     })
   } catch (error) {
     console.error('승인 처리 실패:', error)
-    return c.json({ success: false, error: '승인 처리 중 오류가 발생했습니다.' }, 500)
+    return c.json({ success: false, error: '승인 처리 중 오류가 발생했습니다: ' + (error as Error).message }, 500)
   }
 })
 
@@ -26554,6 +26619,28 @@ app.post('/api/admin/init-payment-tables', async (c) => {
         updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (academy_id) REFERENCES academies(id),
         FOREIGN KEY (subscription_id) REFERENCES subscriptions(id)
+      )
+    `).run()
+    
+    // Create bank_transfer_requests table
+    await DB.prepare(`
+      CREATE TABLE IF NOT EXISTS bank_transfer_requests (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        user_name TEXT NOT NULL,
+        user_email TEXT NOT NULL,
+        user_phone TEXT NOT NULL,
+        plan_name TEXT NOT NULL,
+        amount INTEGER NOT NULL,
+        note TEXT,
+        status TEXT DEFAULT 'pending',
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        approved_at TEXT,
+        approved_by TEXT,
+        rejected_at TEXT,
+        rejected_by TEXT,
+        rejection_reason TEXT,
+        FOREIGN KEY (user_id) REFERENCES users(id)
       )
     `).run()
     
