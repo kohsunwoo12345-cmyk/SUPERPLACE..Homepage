@@ -1,6 +1,7 @@
 // SUPERPLACE Academy - Complete Restructure 2026
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
+import { getCookie } from 'hono/cookie'
 import { serveStatic } from 'hono/cloudflare-workers'
 // FIXME: student-routes.ts temporarily disabled due to teacher_classes error
 // import studentRoutes from './student-routes'
