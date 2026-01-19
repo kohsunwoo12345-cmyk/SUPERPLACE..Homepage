@@ -10897,6 +10897,89 @@ app.get('/dashboard', (c) => {
                     </div>
                 </div>
 
+                <!-- Landing Page Builder Section -->
+                <div id="landingSection" class="mb-12" style="display: none;">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-gray-900">🎨 랜딩페이지 생성기</h2>
+                        <a href="/tools/landing-builder" class="bg-gradient-to-r from-purple-600 to-purple-700 text-white px-6 py-3 rounded-lg hover:from-purple-700 hover:to-purple-800 transition-all shadow-md hover:shadow-lg font-medium flex items-center space-x-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                            </svg>
+                            <span>새로 만들기</span>
+                        </a>
+                    </div>
+                    <div class="grid md:grid-cols-4 gap-6">
+                        <a href="/tools/landing-builder" class="block bg-white rounded-xl p-6 border-2 border-gray-200 hover:border-purple-500 hover:shadow-lg transition-all">
+                            <div class="flex items-center gap-3 mb-3">
+                                <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center">
+                                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-gray-900">페이지 생성</h3>
+                                    <p class="text-sm text-gray-500">AI 자동 생성</p>
+                                </div>
+                            </div>
+                            <p class="text-sm text-gray-600 leading-relaxed">
+                                AI가 자동으로 전문적인 랜딩페이지를 생성합니다
+                            </p>
+                        </a>
+
+                        <a href="/tools/landing-manager" class="block bg-white rounded-xl p-6 border-2 border-gray-200 hover:border-blue-500 hover:shadow-lg transition-all">
+                            <div class="flex items-center gap-3 mb-3">
+                                <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+                                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-gray-900">내 페이지</h3>
+                                    <p class="text-sm text-gray-500"><span id="landingPagesCount">0</span>개</p>
+                                </div>
+                            </div>
+                            <p class="text-sm text-gray-600 leading-relaxed">
+                                생성한 랜딩페이지를 보고 관리하세요
+                            </p>
+                        </a>
+
+                        <a href="/tools/landing-folders" class="block bg-white rounded-xl p-6 border-2 border-gray-200 hover:border-green-500 hover:shadow-lg transition-all">
+                            <div class="flex items-center gap-3 mb-3">
+                                <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-lg flex items-center justify-center">
+                                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-gray-900">폴더 관리</h3>
+                                    <p class="text-sm text-gray-500"><span id="landingFoldersCount">0</span>개</p>
+                                </div>
+                            </div>
+                            <p class="text-sm text-gray-600 leading-relaxed">
+                                페이지를 폴더로 정리하고 체계적으로 관리하세요
+                            </p>
+                        </a>
+
+                        <div class="block bg-white rounded-xl p-6 border-2 border-gray-200 hover:border-orange-500 hover:shadow-lg transition-all">
+                            <div class="flex items-center gap-3 mb-3">
+                                <div class="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center">
+                                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-gray-900">총 조회수</h3>
+                                    <p class="text-sm text-gray-500"><span id="landingViewsCount">0</span>회</p>
+                                </div>
+                            </div>
+                            <p class="text-sm text-gray-600 leading-relaxed">
+                                모든 랜딩페이지의 누적 방문자 수를 확인하세요
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- My Landing Pages Section -->
                 <div id="landingPagesSection" class="mb-12" style="display: none;">
                     <div class="flex justify-between items-center mb-6">
@@ -11749,6 +11832,17 @@ app.get('/dashboard', (c) => {
                         const container = document.getElementById('landingPagesList')
                         
                         if (data.success && data.pages && data.pages.length > 0) {
+                            // 통계 업데이트
+                            const totalPages = data.pages.length
+                            const totalViews = data.pages.reduce((sum, page) => sum + (page.view_count || 0), 0)
+                            
+                            // 페이지 수 업데이트
+                            const pagesCountEl = document.getElementById('landingPagesCount')
+                            if (pagesCountEl) pagesCountEl.textContent = totalPages
+                            
+                            // 조회수 업데이트
+                            const viewsCountEl = document.getElementById('landingViewsCount')
+                            if (viewsCountEl) viewsCountEl.textContent = totalViews.toLocaleString()
                             
                             // 최근 4개만 표시 (2x2 그리드)
                             const recentPages = data.pages.slice(0, 4)
@@ -13335,9 +13429,11 @@ app.get('/tools/landing-builder', (c) => {
                     const pages = pagesResult.pages || [];
                     document.getElementById('totalPagesCount').textContent = pages.length;
                     
-                    // 총 조회수 계산
-                    const totalViews = pages.reduce((sum, page) => sum + (page.views || 0), 0);
+                    // 총 조회수 계산 (view_count 컬럼 사용)
+                    const totalViews = pages.reduce((sum, page) => sum + (page.view_count || 0), 0);
                     document.getElementById('totalViewsCount').textContent = totalViews.toLocaleString();
+                    
+                    console.log('통계 로드 완료 - 페이지:', pages.length, '총 조회수:', totalViews);
                 }
                 
                 // 폴더 목록 로드
@@ -14377,7 +14473,7 @@ app.get('/tools/landing-folders', (c) => {
                 </div>
 
                 <!-- 통계 카드 -->
-                <div class="grid md:grid-cols-3 gap-6 mb-8">
+                <div class="grid md:grid-cols-4 gap-6 mb-8">
                     <div class="bg-white rounded-xl p-6 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
                         <div class="flex items-center justify-between">
                             <div>
@@ -14397,6 +14493,17 @@ app.get('/tools/landing-folders', (c) => {
                             </div>
                             <div class="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center">
                                 <span class="text-3xl">📄</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl p-6 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-600 mb-1">총 조회수</p>
+                                <p class="text-3xl font-bold text-gray-900"><span id="totalViews">-</span></p>
+                            </div>
+                            <div class="w-14 h-14 bg-green-100 rounded-xl flex items-center justify-center">
+                                <span class="text-3xl">👁️</span>
                             </div>
                         </div>
                     </div>
@@ -14519,6 +14626,12 @@ app.get('/tools/landing-folders', (c) => {
         function updateStats() {
             document.getElementById('totalFolders').textContent = allFolders.length;
             document.getElementById('totalPages').textContent = allPages.length;
+            
+            // 총 조회수 계산
+            const totalViews = allPages.reduce((sum, page) => sum + (page.view_count || 0), 0);
+            document.getElementById('totalViews').textContent = totalViews.toLocaleString();
+            
+            // 미분류 페이지
             const uncategorized = allPages.filter(p => !p.folder_id).length;
             document.getElementById('uncategorizedPages').textContent = uncategorized;
         }
@@ -14540,6 +14653,7 @@ app.get('/tools/landing-folders', (c) => {
 
             const foldersHtml = allFolders.map(folder => {
                 const pagesInFolder = allPages.filter(p => p.folder_id === folder.id).length;
+                const viewsInFolder = allPages.filter(p => p.folder_id === folder.id).reduce((sum, page) => sum + (page.view_count || 0), 0);
                 const lastUpdated = folder.updated_at ? new Date(folder.updated_at).toLocaleDateString('ko-KR') : '-';
                 
                 return \`
@@ -14565,10 +14679,14 @@ app.get('/tools/landing-folders', (c) => {
                                 </button>
                             </div>
                         </div>
-                        <div class="grid grid-cols-3 gap-4 pt-4 border-t border-gray-200">
+                        <div class="grid grid-cols-4 gap-4 pt-4 border-t border-gray-200">
                             <div class="text-center">
                                 <p class="text-sm text-gray-600">페이지</p>
                                 <p class="text-2xl font-bold text-purple-600">\${pagesInFolder}</p>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-sm text-gray-600">조회수</p>
+                                <p class="text-2xl font-bold text-green-600">\${viewsInFolder.toLocaleString()}</p>
                             </div>
                             <div class="text-center">
                                 <p class="text-sm text-gray-600">생성일</p>
