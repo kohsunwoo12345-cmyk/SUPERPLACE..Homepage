@@ -11571,6 +11571,11 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
                 loadFolders();
                 loadStudents();
                 setDefaultMonth();
+                
+                // 리포트 월 변경 시 학생 목록 다시 로드
+                document.getElementById('reportMonth').addEventListener('change', () => {
+                    loadStudents();
+                });
             });
 
             // 폴더 목록 로드
@@ -11744,12 +11749,35 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
                     select.innerHTML = '<option value="">학생을 선택하세요</option>';
                     
                     if (data.success && data.students) {
-                        data.students.forEach(student => {
-                            const option = document.createElement('option');
-                            option.value = student.id;
-                            option.textContent = \`\${student.name} (\${student.grade})\`;
-                            select.appendChild(option);
-                        });
+                        // 각 학생의 데이터 존재 여부 확인
+                        const reportMonth = document.getElementById('reportMonth').value || new Date().toISOString().slice(0, 7);
+                        
+                        for (const student of data.students) {
+                            try {
+                                const dataCheckResponse = await fetch(\`/api/students/has-data/\${student.id}?month=\${reportMonth}\`);
+                                const dataCheck = await dataCheckResponse.json();
+                                
+                                const option = document.createElement('option');
+                                option.value = student.id;
+                                
+                                if (dataCheck.hasData) {
+                                    option.textContent = \`\${student.name} (\${student.grade})\`;
+                                } else {
+                                    option.textContent = \`\${student.name} (\${student.grade}) - 데이터 없음\`;
+                                    option.disabled = true;
+                                    option.style.color = '#999';
+                                }
+                                
+                                select.appendChild(option);
+                            } catch (err) {
+                                console.warn('데이터 확인 실패:', student.id, err);
+                                // 에러 발생 시 일단 추가
+                                const option = document.createElement('option');
+                                option.value = student.id;
+                                option.textContent = \`\${student.name} (\${student.grade})\`;
+                                select.appendChild(option);
+                            }
+                        }
                     }
                 } catch (err) {
                     console.error('학생 목록 로드 실패:', err);
@@ -12484,7 +12512,16 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
         <\/script>
     </body>
     </html>
-  `));d.get("/api/learning-reports/:student_id",async e=>{try{const t=e.req.param("student_id"),{results:s}=await e.env.DB.prepare(`
+  `));d.get("/api/students/has-data/:student_id",async e=>{try{const t=e.req.param("student_id"),s=e.req.query("month")||new Date().toISOString().slice(0,7);let r=!1,a=!1,o=!1;try{const l=await e.env.DB.prepare(`
+        SELECT COUNT(*) as count FROM grades 
+        WHERE student_id = ? AND strftime('%Y-%m', test_date) = ?
+      `).bind(t,s).first();r=l&&l.count>0}catch(l){console.warn("Grades table not found:",l.message)}try{const l=await e.env.DB.prepare(`
+        SELECT COUNT(*) as count FROM attendance 
+        WHERE student_id = ? AND strftime('%Y-%m', attendance_date) = ?
+      `).bind(t,s).first();a=l&&l.count>0}catch(l){console.warn("Attendance table not found:",l.message)}try{const l=await e.env.DB.prepare(`
+        SELECT COUNT(*) as count FROM daily_records 
+        WHERE student_id = ? AND strftime('%Y-%m', record_date) = ?
+      `).bind(t,s).first();o=l&&l.count>0}catch(l){console.warn("Daily records table not found:",l.message)}const n=r||a||o;return e.json({success:!0,hasData:n,details:{hasGrades:r,hasAttendance:a,hasDailyRecords:o}})}catch(t){return console.error("Check student data error:",t),e.json({success:!1,error:"데이터 확인 실패",hasData:!1},500)}});d.get("/api/learning-reports/:student_id",async e=>{try{const t=e.req.param("student_id"),{results:s}=await e.env.DB.prepare(`
       SELECT * FROM learning_reports 
       WHERE student_id = ? 
       ORDER BY report_month DESC
@@ -12566,14 +12603,14 @@ ${j}
       FROM learning_reports lr
       JOIN students s ON lr.student_id = s.id
       WHERE lr.id = ?
-    `).bind(t).first();return s?e.json({success:!0,report:s}):e.json({success:!1,error:"리포트를 찾을 수 없습니다."},404)}catch(t){return console.error("Get report detail error:",t),e.json({success:!1,error:"리포트 조회 실패"},500)}});d.put("/api/learning-reports/:report_id/update-field",async e=>{try{const t=e.req.param("report_id"),{field:s,value:r}=await e.req.json();return["strengths","weaknesses","improvements","recommendations","next_month_goals","ai_analysis","parent_message","study_attitude"].includes(s)?await e.env.DB.prepare("SELECT id FROM learning_reports WHERE id = ?").bind(t).first()?(await e.env.DB.prepare(`UPDATE learning_reports SET ${s} = ?, updated_at = datetime('now') WHERE id = ?`).bind(r,t).run(),console.log(`Report ${t} field ${s} updated`),e.json({success:!0,message:"저장되었습니다.",field:s,value:r})):e.json({success:!1,error:"리포트를 찾을 수 없습니다."},404):e.json({success:!1,error:"허용되지 않은 필드입니다."},400)}catch(t){return console.error("Update report field error:",t),e.json({success:!1,error:"저장 중 오류가 발생했습니다."},500)}});d.put("/api/learning-reports/:report_id",async e=>{try{const t=e.req.param("report_id"),s=await e.req.json();if(console.log("✏️ [UpdateReport] Updating report:",t),console.log("✏️ [UpdateReport] Data:",s),!await e.env.DB.prepare("SELECT id FROM learning_reports WHERE id = ?").bind(t).first())return e.json({success:!1,error:"리포트를 찾을 수 없습니다."},404);const{overall_score:a,study_attitude:o,strengths:n,weaknesses:l,improvements:i,recommendations:c,next_month_goals:p,ai_analysis:u,parent_message:g}=s;return await e.env.DB.prepare(`
+    `).bind(t).first();return s?e.json({success:!0,report:s}):e.json({success:!1,error:"리포트를 찾을 수 없습니다."},404)}catch(t){return console.error("Get report detail error:",t),e.json({success:!1,error:"리포트 조회 실패"},500)}});d.put("/api/learning-reports/:report_id/update-field",async e=>{try{const t=e.req.param("report_id"),{field:s,value:r}=await e.req.json();return["strengths","weaknesses","improvements","recommendations","next_month_goals","ai_analysis","parent_message","study_attitude"].includes(s)?await e.env.DB.prepare("SELECT id FROM learning_reports WHERE id = ?").bind(t).first()?(await e.env.DB.prepare(`UPDATE learning_reports SET ${s} = ?, updated_at = datetime('now') WHERE id = ?`).bind(r,t).run(),console.log(`Report ${t} field ${s} updated`),e.json({success:!0,message:"저장되었습니다.",field:s,value:r})):e.json({success:!1,error:"리포트를 찾을 수 없습니다."},404):e.json({success:!1,error:"허용되지 않은 필드입니다."},400)}catch(t){return console.error("Update report field error:",t),e.json({success:!1,error:"저장 중 오류가 발생했습니다."},500)}});d.put("/api/learning-reports/:report_id",async e=>{try{const t=e.req.param("report_id"),s=await e.req.json();if(console.log("✏️ [UpdateReport] Updating report:",t),console.log("✏️ [UpdateReport] Data:",JSON.stringify(s)),!await e.env.DB.prepare("SELECT id FROM learning_reports WHERE id = ?").bind(t).first())return console.error("❌ [UpdateReport] Report not found:",t),e.json({success:!1,error:"리포트를 찾을 수 없습니다."},404);console.log("✅ [UpdateReport] Report found:",t);const{overall_score:a,study_attitude:o,strengths:n,weaknesses:l,improvements:i,recommendations:c,next_month_goals:p,ai_analysis:u,parent_message:g}=s;if(a===void 0||!o)return console.error("❌ [UpdateReport] Missing required fields"),e.json({success:!1,error:"필수 필드가 누락되었습니다."},400);console.log("✏️ [UpdateReport] Executing UPDATE query...");const x=await e.env.DB.prepare(`
       UPDATE learning_reports 
       SET overall_score = ?, study_attitude = ?, strengths = ?, 
           weaknesses = ?, improvements = ?, recommendations = ?, 
           next_month_goals = ?, ai_analysis = ?, parent_message = ?,
           updated_at = datetime('now')
       WHERE id = ?
-    `).bind(a,o,n,l,i,c,p,u,g,t).run(),console.log("✅ [UpdateReport] Report updated successfully"),e.json({success:!0,message:"리포트가 수정되었습니다."})}catch(t){return console.error("❌ [UpdateReport] Error:",t),e.json({success:!1,error:"리포트 수정 중 오류가 발생했습니다."},500)}});d.get("/profile",e=>e.html(`
+    `).bind(a,o,n,l,i,c,p,u,g,t).run();return console.log("✅ [UpdateReport] UPDATE result:",JSON.stringify(x.meta)),console.log("✅ [UpdateReport] Report updated successfully"),e.json({success:!0,message:"리포트가 수정되었습니다."})}catch(t){return console.error("❌ [UpdateReport] Fatal error:",t),console.error("❌ [UpdateReport] Error message:",t.message),console.error("❌ [UpdateReport] Error stack:",t.stack),e.json({success:!1,error:"리포트 수정 중 오류가 발생했습니다.",details:t.message},500)}});d.get("/profile",e=>e.html(`
     <!DOCTYPE html>
     <html lang="ko">
     <head>

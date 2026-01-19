@@ -13249,6 +13249,11 @@ app.get('/tools/ai-learning-report', (c) => {
                 loadFolders();
                 loadStudents();
                 setDefaultMonth();
+                
+                // 리포트 월 변경 시 학생 목록 다시 로드
+                document.getElementById('reportMonth').addEventListener('change', () => {
+                    loadStudents();
+                });
             });
 
             // 폴더 목록 로드
@@ -13422,12 +13427,35 @@ app.get('/tools/ai-learning-report', (c) => {
                     select.innerHTML = '<option value="">학생을 선택하세요</option>';
                     
                     if (data.success && data.students) {
-                        data.students.forEach(student => {
-                            const option = document.createElement('option');
-                            option.value = student.id;
-                            option.textContent = \`\${student.name} (\${student.grade})\`;
-                            select.appendChild(option);
-                        });
+                        // 각 학생의 데이터 존재 여부 확인
+                        const reportMonth = document.getElementById('reportMonth').value || new Date().toISOString().slice(0, 7);
+                        
+                        for (const student of data.students) {
+                            try {
+                                const dataCheckResponse = await fetch(\`/api/students/has-data/\${student.id}?month=\${reportMonth}\`);
+                                const dataCheck = await dataCheckResponse.json();
+                                
+                                const option = document.createElement('option');
+                                option.value = student.id;
+                                
+                                if (dataCheck.hasData) {
+                                    option.textContent = \`\${student.name} (\${student.grade})\`;
+                                } else {
+                                    option.textContent = \`\${student.name} (\${student.grade}) - 데이터 없음\`;
+                                    option.disabled = true;
+                                    option.style.color = '#999';
+                                }
+                                
+                                select.appendChild(option);
+                            } catch (err) {
+                                console.warn('데이터 확인 실패:', student.id, err);
+                                // 에러 발생 시 일단 추가
+                                const option = document.createElement('option');
+                                option.value = student.id;
+                                option.textContent = \`\${student.name} (\${student.grade})\`;
+                                select.appendChild(option);
+                            }
+                        }
                     }
                 } catch (err) {
                     console.error('학생 목록 로드 실패:', err);
@@ -14177,6 +14205,66 @@ app.get('/tools/dashboard-analytics', (c) => {
 
 // AI 학습 분석 리포트 API
 
+// 학생별 데이터 존재 여부 확인
+app.get('/api/students/has-data/:student_id', async (c) => {
+  try {
+    const studentId = c.req.param('student_id')
+    const month = c.req.query('month') || new Date().toISOString().slice(0, 7)
+    
+    let hasGrades = false
+    let hasAttendance = false
+    let hasDailyRecords = false
+    
+    // 성적 데이터 확인
+    try {
+      const gradesResult = await c.env.DB.prepare(`
+        SELECT COUNT(*) as count FROM grades 
+        WHERE student_id = ? AND strftime('%Y-%m', test_date) = ?
+      `).bind(studentId, month).first()
+      hasGrades = gradesResult && gradesResult.count > 0
+    } catch (err) {
+      console.warn('Grades table not found:', err.message)
+    }
+    
+    // 출석 데이터 확인
+    try {
+      const attendanceResult = await c.env.DB.prepare(`
+        SELECT COUNT(*) as count FROM attendance 
+        WHERE student_id = ? AND strftime('%Y-%m', attendance_date) = ?
+      `).bind(studentId, month).first()
+      hasAttendance = attendanceResult && attendanceResult.count > 0
+    } catch (err) {
+      console.warn('Attendance table not found:', err.message)
+    }
+    
+    // 일일 성과 기록 확인
+    try {
+      const dailyResult = await c.env.DB.prepare(`
+        SELECT COUNT(*) as count FROM daily_records 
+        WHERE student_id = ? AND strftime('%Y-%m', record_date) = ?
+      `).bind(studentId, month).first()
+      hasDailyRecords = dailyResult && dailyResult.count > 0
+    } catch (err) {
+      console.warn('Daily records table not found:', err.message)
+    }
+    
+    const hasData = hasGrades || hasAttendance || hasDailyRecords
+    
+    return c.json({ 
+      success: true, 
+      hasData,
+      details: {
+        hasGrades,
+        hasAttendance,
+        hasDailyRecords
+      }
+    })
+  } catch (err) {
+    console.error('Check student data error:', err)
+    return c.json({ success: false, error: '데이터 확인 실패', hasData: false }, 500)
+  }
+})
+
 // 학생별 리포트 목록 조회
 app.get('/api/learning-reports/:student_id', async (c) => {
   try {
@@ -14614,13 +14702,17 @@ app.put('/api/learning-reports/:report_id', async (c) => {
     const data = await c.req.json()
     
     console.log('✏️ [UpdateReport] Updating report:', reportId)
-    console.log('✏️ [UpdateReport] Data:', data)
+    console.log('✏️ [UpdateReport] Data:', JSON.stringify(data))
     
+    // 리포트 존재 확인
     const report = await c.env.DB.prepare('SELECT id FROM learning_reports WHERE id = ?').bind(reportId).first()
     
     if (!report) {
+      console.error('❌ [UpdateReport] Report not found:', reportId)
       return c.json({ success: false, error: '리포트를 찾을 수 없습니다.' }, 404)
     }
+    
+    console.log('✅ [UpdateReport] Report found:', reportId)
     
     const { 
       overall_score, study_attitude, strengths, weaknesses, 
@@ -14628,7 +14720,15 @@ app.put('/api/learning-reports/:report_id', async (c) => {
       ai_analysis, parent_message 
     } = data
     
-    await c.env.DB.prepare(`
+    // 필수 필드 검증
+    if (overall_score === undefined || !study_attitude) {
+      console.error('❌ [UpdateReport] Missing required fields')
+      return c.json({ success: false, error: '필수 필드가 누락되었습니다.' }, 400)
+    }
+    
+    console.log('✏️ [UpdateReport] Executing UPDATE query...')
+    
+    const result = await c.env.DB.prepare(`
       UPDATE learning_reports 
       SET overall_score = ?, study_attitude = ?, strengths = ?, 
           weaknesses = ?, improvements = ?, recommendations = ?, 
@@ -14648,12 +14748,19 @@ app.put('/api/learning-reports/:report_id', async (c) => {
       reportId
     ).run()
     
+    console.log('✅ [UpdateReport] UPDATE result:', JSON.stringify(result.meta))
     console.log('✅ [UpdateReport] Report updated successfully')
     
     return c.json({ success: true, message: '리포트가 수정되었습니다.' })
   } catch (err) {
-    console.error('❌ [UpdateReport] Error:', err)
-    return c.json({ success: false, error: '리포트 수정 중 오류가 발생했습니다.' }, 500)
+    console.error('❌ [UpdateReport] Fatal error:', err)
+    console.error('❌ [UpdateReport] Error message:', err.message)
+    console.error('❌ [UpdateReport] Error stack:', err.stack)
+    return c.json({ 
+      success: false, 
+      error: '리포트 수정 중 오류가 발생했습니다.',
+      details: err.message 
+    }, 500)
   }
 })
 
