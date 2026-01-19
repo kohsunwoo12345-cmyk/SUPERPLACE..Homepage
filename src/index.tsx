@@ -5473,45 +5473,55 @@ app.get('/', (c) => {
           .dropdown-menu {
             position: absolute;
             top: 100%;
-            left: 0;
+            left: 50%;
+            transform: translateX(-50%);
             display: none;
             background: white;
-            border: 1px solid #e5e7eb;
-            border-radius: 12px;
-            box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.1);
-            min-width: 200px;
-            padding: 8px 0;
-            margin-top: 8px;
+            border: 2px solid #e5e7eb;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px -8px rgba(0, 0, 0, 0.15);
+            min-width: 280px;
+            padding: 16px;
+            margin-top: 12px;
             z-index: 100;
           }
           
           .dropdown:hover .dropdown-menu {
             display: block;
-            animation: fadeInDown 0.2s ease-out;
+            animation: fadeInDown 0.3s ease-out;
           }
           
           .dropdown-menu a {
             display: block;
-            padding: 12px 20px;
+            padding: 14px 20px;
             color: #374151;
             text-decoration: none;
-            transition: all 0.2s;
+            transition: all 0.25s;
+            border-radius: 10px;
+            margin-bottom: 4px;
+            font-size: 15px;
+            font-weight: 500;
+          }
+          
+          .dropdown-menu a:last-child {
+            margin-bottom: 0;
           }
           
           .dropdown-menu a:hover {
-            background: #f3f4f6;
-            color: #7c3aed;
-            padding-left: 24px;
+            background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+            color: white;
+            transform: translateX(4px);
+            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
           }
           
           @keyframes fadeInDown {
             from {
               opacity: 0;
-              transform: translateY(-10px);
+              transform: translateX(-50%) translateY(-10px);
             }
             to {
               opacity: 1;
-              transform: translateY(0);
+              transform: translateX(-50%) translateY(0);
             }
           }
         </style>
@@ -5554,6 +5564,9 @@ app.get('/', (c) => {
                         
                         <a href="/success" class="text-gray-700 hover:text-purple-600 font-medium transition">성공 사례</a>
                         <a href="/contact" class="text-gray-700 hover:text-purple-600 font-medium transition">문의하기</a>
+                        <a href="https://kohsunwoo12345-cmyk.github.io/SUPERPLACE.Home.store/" target="_blank" class="text-gray-700 hover:text-purple-600 font-medium transition flex items-center gap-1">
+                            🤖 AI 봇 쇼핑몰
+                        </a>
                         <!-- 로그인 전 -->
                         <a href="/signup?teacher=true" id="teacherRegisterBtn" class="text-purple-600 hover:text-purple-700 font-semibold border border-purple-600 px-5 py-2.5 rounded-full hover:bg-purple-50 transition-all">
                             선생님 등록
@@ -5593,6 +5606,7 @@ app.get('/', (c) => {
                     <a href="/pricing" class="block px-4 py-3 text-gray-700 hover:bg-purple-50 rounded-xl transition">요금제</a>
                     <a href="/success" class="block px-4 py-3 text-gray-700 hover:bg-purple-50 rounded-xl transition">성공 사례</a>
                     <a href="/contact" class="block px-4 py-3 text-gray-700 hover:bg-purple-50 rounded-xl transition">문의하기</a>
+                    <a href="https://kohsunwoo12345-cmyk.github.io/SUPERPLACE.Home.store/" target="_blank" class="block px-4 py-3 text-gray-700 hover:bg-purple-50 rounded-xl transition">🤖 AI 봇 쇼핑몰</a>
                     <a href="/teachers/register" class="block px-4 py-3 text-purple-600 border border-purple-600 bg-white hover:bg-purple-50 rounded-xl text-center font-semibold">선생님 등록</a>
                     <a href="/login" class="block px-4 py-3 gradient-purple text-white rounded-xl text-center font-medium">로그인</a>
                 </div>
