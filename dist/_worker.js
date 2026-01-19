@@ -5284,7 +5284,7 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
       SELECT id FROM subscriptions 
       WHERE academy_id = ? AND plan_name = '관리자 설정 플랜'
       ORDER BY created_at DESC LIMIT 1
-    `).bind(c).first(),u=new Date,m=new Date(u.getTime()+540*60*1e3),x=m.toISOString().split("T")[0],b=new Date(m);b.setMonth(b.getMonth()+l),b.setDate(b.getDate()-1);const h=b.toISOString().split("T")[0];if(console.log(`[Admin] Subscription period: ${x} to ${h} (${l} months)`),p)console.log("[Admin] Updating existing admin subscription:",p.id),await e.env.DB.prepare(`
+    `).bind(c).first(),u=new Date,m=new Date(u.getTime()+540*60*1e3),x=m.toISOString().split("T")[0],b=new Date(m);b.setMonth(b.getMonth()+l),b.setDate(b.getDate()-1);const h=b.toISOString().split("T")[0];if(console.log(`[Admin] Subscription period: ${x} to ${h} (${l} months)`),p){console.log("[Admin] Updating existing admin subscription:",p.id),await e.env.DB.prepare(`
         UPDATE subscriptions 
         SET student_limit = ?, 
             ai_report_limit = ?, 
@@ -5295,17 +5295,17 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
             status = 'active',
             updated_at = CURRENT_TIMESTAMP
         WHERE id = ?
-      `).bind(s,r,a,n,x,h,p.id).run(),await e.env.DB.prepare(`
-        SELECT id FROM usage_tracking WHERE academy_id = ? AND subscription_id = ?
-      `).bind(c,p.id).first()||(console.log("[Admin] Creating missing usage_tracking for existing subscription"),await e.env.DB.prepare(`
-          INSERT INTO usage_tracking (
-            academy_id, subscription_id,
-            current_students, ai_reports_used_this_month, 
-            landing_pages_created, current_teachers,
-            created_at, updated_at
-          )
-          VALUES (?, ?, 0, 0, 0, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-        `).bind(c,p.id).run()),console.log("✅ [Admin] Existing admin subscription updated");else{console.log("[Admin] Creating new admin subscription for academy_id:",c);const y=(await e.env.DB.prepare(`
+      `).bind(s,r,a,n,x,h,p.id).run();try{await e.env.DB.prepare(`
+          SELECT id FROM usage_tracking WHERE academy_id = ? AND subscription_id = ?
+        `).bind(c,p.id).first()||(console.log("[Admin] Creating missing usage_tracking for existing subscription"),await e.env.DB.prepare(`
+            INSERT INTO usage_tracking (
+              academy_id, subscription_id,
+              current_students, ai_reports_used_this_month, 
+              landing_pages_created, current_teachers,
+              created_at, updated_at
+            )
+            VALUES (?, ?, 0, 0, 0, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+          `).bind(c,p.id).run())}catch(v){console.warn("[Admin] Failed to create usage_tracking (may already exist):",v.message)}console.log("✅ [Admin] Existing admin subscription updated")}else{console.log("[Admin] Creating new admin subscription for academy_id:",c);const y=(await e.env.DB.prepare(`
         INSERT INTO subscriptions (
           academy_id, plan_name, plan_price, 
           student_limit, ai_report_limit, landing_page_limit, teacher_limit,
@@ -5313,15 +5313,15 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
           merchant_uid, created_at
         )
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
-      `).bind(c,"관리자 설정 플랜",0,s,r,a,n,x,h,"active","admin","admin_"+t+"_"+Date.now()).run()).meta.last_row_id;await e.env.DB.prepare(`
-        INSERT INTO usage_tracking (
-          academy_id, subscription_id,
-          current_students, ai_reports_used_this_month, 
-          landing_pages_created, current_teachers,
-          created_at, updated_at
-        )
-        VALUES (?, ?, 0, 0, 0, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-      `).bind(c,y).run(),console.log("✅ [Admin] New admin subscription created with usage_tracking")}return e.json({success:!0,message:"사용 한도가 업데이트되었습니다",limits:{studentLimit:s,aiReportLimit:r,landingPageLimit:a,teacherLimit:n}})}catch(t){return console.error("[Admin] Update limits error:",t),e.json({success:!1,error:t.message},500)}});d.get("/api/admin/usage/:userId",async e=>{try{const t=e.req.param("userId"),s=await e.env.DB.prepare("SELECT id, academy_id, name, academy_name FROM users WHERE id = ?").bind(t).first();if(!s)return e.json({success:!1,hasSubscription:!1,message:"사용자를 찾을 수 없습니다"});let r=s.academy_id;if(!r){r=s.id;try{await e.env.DB.prepare(`
+      `).bind(c,"관리자 설정 플랜",0,s,r,a,n,x,h,"active","admin","admin_"+t+"_"+Date.now()).run()).meta.last_row_id;try{await e.env.DB.prepare(`
+          INSERT INTO usage_tracking (
+            academy_id, subscription_id,
+            current_students, ai_reports_used_this_month, 
+            landing_pages_created, current_teachers,
+            created_at, updated_at
+          )
+          VALUES (?, ?, 0, 0, 0, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+        `).bind(c,y).run(),console.log("✅ [Admin] New admin subscription created with usage_tracking")}catch(E){console.warn("[Admin] Failed to create usage_tracking:",E.message),console.log("✅ [Admin] New admin subscription created (usage_tracking will be auto-created on first use)")}}return e.json({success:!0,message:"사용 한도가 업데이트되었습니다",limits:{studentLimit:s,aiReportLimit:r,landingPageLimit:a,teacherLimit:n}})}catch(t){return console.error("[Admin] Update limits error:",t),e.json({success:!1,error:t.message},500)}});d.get("/api/admin/usage/:userId",async e=>{try{const t=e.req.param("userId"),s=await e.env.DB.prepare("SELECT id, academy_id, name, academy_name FROM users WHERE id = ?").bind(t).first();if(!s)return e.json({success:!1,hasSubscription:!1,message:"사용자를 찾을 수 없습니다"});let r=s.academy_id;if(!r){r=s.id;try{await e.env.DB.prepare(`
           UPDATE users SET academy_id = ? WHERE id = ?
         `).bind(r,s.id).run(),console.log("[Admin] Auto-created academy_id:",r)}catch(o){console.error("[Admin] Failed to set academy_id:",o)}}let a=null;try{a=await e.env.DB.prepare(`
         SELECT * FROM subscriptions 

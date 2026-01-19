@@ -7001,21 +7001,26 @@ app.post('/api/admin/usage/:userId/update-limits', async (c) => {
       `).bind(studentLimit, aiReportLimit, landingPageLimit, teacherLimit, today, subscriptionEndDate, existingSubscription.id).run()
       
       // usage_tracking도 확인하고 없으면 생성
-      const existingUsage = await c.env.DB.prepare(`
-        SELECT id FROM usage_tracking WHERE academy_id = ? AND subscription_id = ?
-      `).bind(academyId, existingSubscription.id).first()
-      
-      if (!existingUsage) {
-        console.log('[Admin] Creating missing usage_tracking for existing subscription')
-        await c.env.DB.prepare(`
-          INSERT INTO usage_tracking (
-            academy_id, subscription_id,
-            current_students, ai_reports_used_this_month, 
-            landing_pages_created, current_teachers,
-            created_at, updated_at
-          )
-          VALUES (?, ?, 0, 0, 0, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-        `).bind(academyId, existingSubscription.id).run()
+      try {
+        const existingUsage = await c.env.DB.prepare(`
+          SELECT id FROM usage_tracking WHERE academy_id = ? AND subscription_id = ?
+        `).bind(academyId, existingSubscription.id).first()
+        
+        if (!existingUsage) {
+          console.log('[Admin] Creating missing usage_tracking for existing subscription')
+          await c.env.DB.prepare(`
+            INSERT INTO usage_tracking (
+              academy_id, subscription_id,
+              current_students, ai_reports_used_this_month, 
+              landing_pages_created, current_teachers,
+              created_at, updated_at
+            )
+            VALUES (?, ?, 0, 0, 0, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+          `).bind(academyId, existingSubscription.id).run()
+        }
+      } catch (usageError) {
+        console.warn('[Admin] Failed to create usage_tracking (may already exist):', usageError.message)
+        // Continue anyway - usage_tracking is not critical for subscription limits
       }
       
       console.log('✅ [Admin] Existing admin subscription updated')
@@ -7041,17 +7046,21 @@ app.post('/api/admin/usage/:userId/update-limits', async (c) => {
       const newSubId = newSubResult.meta.last_row_id
       
       // usage_tracking 생성
-      await c.env.DB.prepare(`
-        INSERT INTO usage_tracking (
-          academy_id, subscription_id,
-          current_students, ai_reports_used_this_month, 
-          landing_pages_created, current_teachers,
-          created_at, updated_at
-        )
-        VALUES (?, ?, 0, 0, 0, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-      `).bind(academyId, newSubId).run()
-      
-      console.log('✅ [Admin] New admin subscription created with usage_tracking')
+      try {
+        await c.env.DB.prepare(`
+          INSERT INTO usage_tracking (
+            academy_id, subscription_id,
+            current_students, ai_reports_used_this_month, 
+            landing_pages_created, current_teachers,
+            created_at, updated_at
+          )
+          VALUES (?, ?, 0, 0, 0, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+        `).bind(academyId, newSubId).run()
+        console.log('✅ [Admin] New admin subscription created with usage_tracking')
+      } catch (usageError) {
+        console.warn('[Admin] Failed to create usage_tracking:', usageError.message)
+        console.log('✅ [Admin] New admin subscription created (usage_tracking will be auto-created on first use)')
+      }
     }
     
     return c.json({ 
