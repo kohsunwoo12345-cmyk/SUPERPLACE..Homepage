@@ -270,7 +270,8 @@ export const classesPage = `
             try {
                 // currentUser가 없으면 기본값 사용
                 const userToSend = currentUser || { id: academyId };
-                const userDataHeader = btoa(JSON.stringify(userToSend));
+                // UTF-8 안전한 Base64 인코딩
+                const userDataHeader = btoa(unescape(encodeURIComponent(JSON.stringify(userToSend))));
                 
                 console.log('🗑️ Sending DELETE request...');
                 console.log('🗑️ URL:', '/api/classes/' + classId);
