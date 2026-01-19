@@ -147,7 +147,7 @@ export const classesPage = `
         async function loadClasses() {
             try {
                 console.log('📡 Loading classes for academy:', academyId);
-                const userDataHeader = btoa(unescape(encodeURIComponent(JSON.stringify(currentUser))));
+                const userDataHeader = btoa(JSON.stringify(currentUser));
                 console.log('🔐 Auth header length:', userDataHeader.length);
                 
                 const res = await fetch('/api/classes', {
@@ -270,7 +270,7 @@ export const classesPage = `
             try {
                 // currentUser가 없으면 기본값 사용
                 const userToSend = currentUser || { id: academyId };
-                const userDataHeader = btoa(unescape(encodeURIComponent(JSON.stringify(userToSend))));
+                const userDataHeader = btoa(JSON.stringify(userToSend));
                 
                 console.log('🗑️ Sending DELETE request...');
                 console.log('🗑️ URL:', '/api/classes/' + classId);
@@ -342,7 +342,7 @@ export const classesPage = `
                 const url = classId ? '/api/classes/' + classId : '/api/classes';
                 const method = classId ? 'PUT' : 'POST';
                 
-                const userDataHeader = btoa(unescape(encodeURIComponent(JSON.stringify(currentUser))));
+                const userDataHeader = btoa(JSON.stringify(currentUser));
                 console.log('📤 Sending request to:', url, 'method:', method);
                 console.log('📤 Header length:', userDataHeader.length);
                 
@@ -620,7 +620,7 @@ export const studentsListPage = `
 
         async function loadClasses() {
             try {
-                const userDataHeader = btoa(unescape(encodeURIComponent(JSON.stringify(currentUser))));
+                const userDataHeader = btoa(JSON.stringify(currentUser));
                 const res = await fetch('/api/classes', {
                     headers: {
                         'X-User-Data-Base64': userDataHeader
@@ -708,7 +708,7 @@ export const studentsListPage = `
                     }
                 }
                 
-                const userDataHeader = btoa(unescape(encodeURIComponent(JSON.stringify(currentUser))));
+                const userDataHeader = btoa(JSON.stringify(currentUser));
                 
                 const classId = document.getElementById('classFilter').value;
                 let url = '/api/students';
@@ -899,7 +899,8 @@ export const studentsListPage = `
                     return;
                 }
                 
-                const userDataHeader = btoa(unescape(encodeURIComponent(JSON.stringify(currentUser))));
+                // Base64 인코딩 - 다른 API와 동일한 방식 사용
+                const userDataHeader = btoa(JSON.stringify(currentUser));
                 console.log('🗑️ [DeleteStudent] User Data Header length:', userDataHeader.length);
                 console.log('🗑️ [DeleteStudent] First 50 chars:', userDataHeader.substring(0, 50));
                 
@@ -1334,7 +1335,7 @@ export const dailyRecordPage = `
                     }
                 }
                 
-                const userDataHeader = btoa(unescape(encodeURIComponent(JSON.stringify(currentUser))));
+                const userDataHeader = btoa(JSON.stringify(currentUser));
                 
                 const res = await fetch('/api/students', {
                     headers: {
@@ -1355,7 +1356,7 @@ export const dailyRecordPage = `
 
         async function loadClasses() {
             try {
-                const userDataHeader = btoa(unescape(encodeURIComponent(JSON.stringify(currentUser))));
+                const userDataHeader = btoa(JSON.stringify(currentUser));
                 const res = await fetch('/api/classes', {
                     headers: {
                         'X-User-Data-Base64': userDataHeader

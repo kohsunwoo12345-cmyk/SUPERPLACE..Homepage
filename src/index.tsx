@@ -12786,16 +12786,12 @@ app.delete('/api/students/:id', async (c) => {
         return c.json({ success: false, error: '인증 정보가 필요합니다. 다시 로그인해주세요.' }, 401)
       }
       
-      // Base64 디코딩
+      // Base64 디코딩 - 다른 API와 동일한 방식 사용
       const decoded = atob(userHeader)
       console.log('[DeleteStudent] 🔓 Decoded length:', decoded.length)
       
-      // URI 디코딩
-      const unescaped = decodeURIComponent(escape(decoded))
-      console.log('[DeleteStudent] 🔓 Unescaped length:', unescaped.length)
-      
       // JSON 파싱
-      userData = JSON.parse(unescaped)
+      userData = JSON.parse(decoded)
       console.log('[DeleteStudent] 👤 Parsed user data:', {
         id: userData.id,
         academy_id: userData.academy_id,
