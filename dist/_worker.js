@@ -9099,7 +9099,7 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
                 </div>
 
                 <!-- Content Grid -->
-                <div class="grid lg:grid-cols-2 gap-8">
+                <div class="space-y-8">
                     <!-- Subscription Status & Usage -->
                     <div id="subscriptionStatusMain" class="bg-white rounded-2xl p-8 border border-gray-200">
                         <h2 class="text-2xl font-bold text-gray-900 mb-6">📊 구독 및 사용 현황</h2>
@@ -9290,13 +9290,26 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
                             console.log('[Dashboard] Usage API status:', usageRes.status)
                             
                             const usageData = await usageRes.json()
-                            console.log('[Dashboard] Usage Data:', usageData)
+                            console.log('[Dashboard] ========== USAGE API RESPONSE ==========')
+                            console.log('[Dashboard] Full Response:', JSON.stringify(usageData, null, 2))
+                            console.log('[Dashboard] success:', usageData.success)
+                            console.log('[Dashboard] error:', usageData.error)
+                            console.log('[Dashboard] ==========================================')
                             
                             if (usageData.success) {
                                 const { limits, usage } = usageData
                                 
-                                console.log('[Dashboard] Limits:', limits)
-                                console.log('[Dashboard] Usage:', usage)
+                                console.log('[Dashboard] ========== LIMITS ==========')
+                                console.log('[Dashboard] Students Limit:', limits.students)
+                                console.log('[Dashboard] AI Reports Limit:', limits.aiReports)
+                                console.log('[Dashboard] Landing Pages Limit:', limits.landingPages)
+                                console.log('[Dashboard] Teachers Limit:', limits.teachers)
+                                console.log('[Dashboard] ========== USAGE ==========')
+                                console.log('[Dashboard] Students Used:', usage.students)
+                                console.log('[Dashboard] AI Reports Used:', usage.aiReports)
+                                console.log('[Dashboard] Landing Pages Used:', usage.landingPages)
+                                console.log('[Dashboard] Teachers Used:', usage.teachers)
+                                console.log('[Dashboard] =======================================')
                                 
                                 // 퍼센트 계산 및 색상 결정
                                 const calcUsage = (current, limit) => {
