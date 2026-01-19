@@ -27056,18 +27056,24 @@ app.get('/students', (c) => {
                         // 배정된 반만 표시
                         document.getElementById('totalClasses').textContent = userPermissions.assignedClasses.length;
                     } else {
-                        const classesRes = await fetch('/api/classes?academyId=' + academyId);
+                        const userDataHeader = currentUser ? btoa(unescape(encodeURIComponent(JSON.stringify(currentUser)))) : btoa(JSON.stringify({id: academyId}));
+                        const classesRes = await fetch('/api/classes', {
+                            headers: {
+                                'X-User-Data-Base64': userDataHeader
+                            }
+                        });
                         const classesData = await classesRes.json();
+                        console.log('📊 Classes data:', classesData);
                         if (classesData.success) {
                             document.getElementById('totalClasses').textContent = classesData.classes.length;
                         }
                     }
 
                     // 학생 수 (API가 자동으로 권한 필터링함)
-                    const userDataHeader = btoa(unescape(encodeURIComponent(JSON.stringify(currentUser))));
+                    const studentsUserDataHeader = currentUser ? btoa(unescape(encodeURIComponent(JSON.stringify(currentUser)))) : btoa(JSON.stringify({id: academyId}));
                     const studentsRes = await fetch('/api/students', {
                         headers: {
-                            'X-User-Data-Base64': userDataHeader
+                            'X-User-Data-Base64': studentsUserDataHeader
                         }
                     });
                     const studentsData = await studentsRes.json();

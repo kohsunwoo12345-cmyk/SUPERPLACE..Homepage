@@ -239,29 +239,54 @@ export const classesPage = `
             if (!confirm(\`"\${className}" 반을 삭제하시겠습니까?\\n\\n⚠️ 이 반의 학생들은 반 배정이 해제됩니다.\`)) return;
 
             console.log('🗑️ Deleting class:', classId);
+            console.log('🗑️ currentUser:', currentUser);
+            console.log('🗑️ academyId:', academyId);
 
             try {
-                const userDataHeader = btoa(unescape(encodeURIComponent(JSON.stringify(currentUser))));
+                // currentUser가 없으면 기본값 사용
+                const userToSend = currentUser || { id: academyId };
+                const userDataHeader = btoa(unescape(encodeURIComponent(JSON.stringify(userToSend))));
+                
+                console.log('🗑️ Sending DELETE request...');
+                console.log('🗑️ URL:', '/api/classes/' + classId);
+                console.log('🗑️ Header length:', userDataHeader.length);
+                
                 const res = await fetch('/api/classes/' + classId, { 
                     method: 'DELETE',
                     headers: {
+                        'Content-Type': 'application/json',
                         'X-User-Data-Base64': userDataHeader
                     }
                 });
                 
                 console.log('🗑️ Delete response status:', res.status);
-                const data = await res.json();
+                console.log('🗑️ Delete response headers:', [...res.headers.entries()]);
+                
+                const responseText = await res.text();
+                console.log('🗑️ Delete response text:', responseText);
+                
+                let data;
+                try {
+                    data = JSON.parse(responseText);
+                } catch (e) {
+                    console.error('🗑️ Failed to parse response:', e);
+                    alert('삭제 실패: 서버 응답을 파싱할 수 없습니다.');
+                    return;
+                }
+                
                 console.log('🗑️ Delete response data:', data);
                 
                 if (data.success) {
                     alert('반이 삭제되었습니다.');
-                    loadClasses();
+                    await loadClasses();
                 } else {
-                    alert('삭제 실패: ' + data.error);
+                    alert('삭제 실패: ' + (data.error || '알 수 없는 오류'));
+                    console.error('🗑️ Delete failed:', data);
                 }
             } catch (error) {
                 console.error('🗑️ Delete error:', error);
-                alert('삭제 중 오류가 발생했습니다.');
+                console.error('🗑️ Error stack:', error.stack);
+                alert('삭제 중 오류가 발생했습니다: ' + error.message);
             }
         }
 
