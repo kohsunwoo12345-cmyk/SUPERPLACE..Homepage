@@ -3776,14 +3776,14 @@ app.get('/api/landing/folders', async (c) => {
 // 폴더 생성
 app.post('/api/landing/folders', async (c) => {
   try {
-    const { userId, name } = await c.req.json()
+    const { userId, name, description } = await c.req.json()
     
     if (!name || !name.trim()) {
       return c.json({ success: false, error: '폴더 이름을 입력하세요.' }, 400)
     }
     
-    const query = 'INSERT INTO landing_folders (user_id, name) VALUES (?, ?)'
-    const result = await c.env.DB.prepare(query).bind(userId, name.trim()).run()
+    const query = 'INSERT INTO landing_folders (user_id, name, description) VALUES (?, ?, ?)'
+    const result = await c.env.DB.prepare(query).bind(userId, name.trim(), description || null).run()
     
     return c.json({ 
       success: true, 
@@ -3793,6 +3793,53 @@ app.post('/api/landing/folders', async (c) => {
   } catch (err) {
     console.error('폴더 생성 실패:', err)
     return c.json({ success: false, error: '폴더 생성 실패' }, 500)
+  }
+})
+
+// 폴더 수정
+app.put('/api/landing/folders/:id', async (c) => {
+  try {
+    const folderId = c.req.param('id')
+    const { name, description } = await c.req.json()
+    
+    if (!name || !name.trim()) {
+      return c.json({ success: false, error: '폴더 이름을 입력하세요.' }, 400)
+    }
+    
+    const query = 'UPDATE landing_folders SET name = ?, description = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?'
+    await c.env.DB.prepare(query).bind(name.trim(), description || null, folderId).run()
+    
+    return c.json({ 
+      success: true, 
+      message: '폴더가 수정되었습니다.' 
+    })
+  } catch (err) {
+    console.error('폴더 수정 실패:', err)
+    return c.json({ success: false, error: '폴더 수정 실패' }, 500)
+  }
+})
+
+// 폴더 삭제
+app.delete('/api/landing/folders/:id', async (c) => {
+  try {
+    const folderId = c.req.param('id')
+    const userId = c.req.query('userId')
+    
+    // 폴더에 있는 페이지들의 folder_id를 NULL로 변경
+    await c.env.DB.prepare('UPDATE landing_pages SET folder_id = NULL WHERE folder_id = ?')
+      .bind(folderId).run()
+    
+    // 폴더 삭제
+    await c.env.DB.prepare('DELETE FROM landing_folders WHERE id = ? AND user_id = ?')
+      .bind(folderId, userId).run()
+    
+    return c.json({ 
+      success: true, 
+      message: '폴더가 삭제되었습니다.' 
+    })
+  } catch (err) {
+    console.error('폴더 삭제 실패:', err)
+    return c.json({ success: false, error: '폴더 삭제 실패' }, 500)
   }
 })
 
@@ -13027,9 +13074,56 @@ app.get('/tools/landing-builder', (c) => {
 
         <div class="pt-24 pb-12 px-6">
             <div class="max-w-4xl mx-auto">
-                <div class="mb-8">
-                    <h1 class="text-4xl font-bold text-gray-900 mb-3">🎨 AI 랜딩페이지 생성기</h1>
-                    <p class="text-lg text-gray-600">간단한 정보만 입력하면 완성된 랜딩페이지를 만들어드립니다</p>
+                <div class="mb-8 flex justify-between items-start">
+                    <div>
+                        <h1 class="text-4xl font-bold text-gray-900 mb-3">🎨 AI 랜딩페이지 생성기</h1>
+                        <p class="text-lg text-gray-600">간단한 정보만 입력하면 완성된 랜딩페이지를 만들어드립니다</p>
+                    </div>
+                    <div class="flex gap-3">
+                        <a href="/tools/landing-manager" class="px-6 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-all duration-200 font-medium shadow-lg hover:shadow-xl whitespace-nowrap">
+                            📁 내 페이지 보기
+                        </a>
+                        <a href="/tools/landing-folders" class="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all duration-200 font-medium shadow-lg hover:shadow-xl whitespace-nowrap">
+                            🗂️ 폴더 관리
+                        </a>
+                    </div>
+                </div>
+
+                <!-- 통계 카드 -->
+                <div class="grid md:grid-cols-3 gap-4 mb-8">
+                    <div class="bg-white rounded-xl p-6 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+                                <span class="text-2xl">📄</span>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-600">생성한 페이지</p>
+                                <p class="text-2xl font-bold text-gray-900"><span id="totalPagesCount">-</span>개</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl p-6 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                                <span class="text-2xl">📁</span>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-600">폴더 수</p>
+                                <p class="text-2xl font-bold text-gray-900"><span id="totalFoldersCount">-</span>개</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl p-6 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+                                <span class="text-2xl">👁️</span>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-600">총 조회수</p>
+                                <p class="text-2xl font-bold text-gray-900"><span id="totalViewsCount">-</span></p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- 템플릿 선택 -->
@@ -13207,11 +13301,46 @@ app.get('/tools/landing-builder', (c) => {
             user = JSON.parse(userData);
             // 사용자 폴더 목록 로드
             loadUserFolders();
+            // 통계 로드
+            loadStats();
         } else {
             // 로그인 없이도 테스트 가능하도록 기본 사용자 설정
             user = { id: 1, name: '게스트' };
             console.warn('로그인하지 않았습니다. 게스트 모드로 사용합니다.');
             loadUserFolders();
+            loadStats();
+        }
+
+        // 통계 로드
+        async function loadStats() {
+            try {
+                // 페이지 목록 로드
+                const pagesResponse = await fetch('/api/landing/my-pages?userId=' + user.id);
+                const pagesResult = await pagesResponse.json();
+                
+                if (pagesResult.success) {
+                    const pages = pagesResult.pages || [];
+                    document.getElementById('totalPagesCount').textContent = pages.length;
+                    
+                    // 총 조회수 계산
+                    const totalViews = pages.reduce((sum, page) => sum + (page.views || 0), 0);
+                    document.getElementById('totalViewsCount').textContent = totalViews.toLocaleString();
+                }
+                
+                // 폴더 목록 로드
+                const foldersResponse = await fetch('/api/landing/folders?userId=' + user.id);
+                const foldersResult = await foldersResponse.json();
+                
+                if (foldersResult.success) {
+                    const folders = foldersResult.folders || [];
+                    document.getElementById('totalFoldersCount').textContent = folders.length;
+                }
+            } catch (err) {
+                console.error('통계 로드 실패:', err);
+                document.getElementById('totalPagesCount').textContent = '0';
+                document.getElementById('totalFoldersCount').textContent = '0';
+                document.getElementById('totalViewsCount').textContent = '0';
+            }
         }
 
         // 사용자 폴더 목록 로드
@@ -14185,6 +14314,390 @@ app.get('/tools/landing-manager', (c) => {
                 console.error('Delete error:', err);
                 alert('오류가 발생했습니다: ' + err.message);
             }
+        }
+        </script>
+    </body>
+    </html>
+  `)
+})
+
+// 폴더 관리 페이지
+app.get('/tools/landing-folders', (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>폴더 관리 - 우리는 슈퍼플레이스다</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <style>
+          @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
+          * { font-family: 'Pretendard Variable', sans-serif; }
+        </style>
+    </head>
+    <body class="bg-gray-50">
+        <nav class="fixed w-full top-0 z-50 bg-white border-b border-gray-100">
+            <div class="max-w-7xl mx-auto px-6">
+                <div class="flex justify-between items-center h-16">
+                    <span class="text-xl font-bold text-gray-900">📁 폴더 관리</span>
+                    <div class="flex gap-4">
+                        <a href="/dashboard" class="text-gray-600 hover:text-purple-600">대시보드</a>
+                        <a href="/tools/landing-builder" class="text-gray-600 hover:text-purple-600">새로 만들기</a>
+                        <a href="/tools/landing-manager" class="text-gray-600 hover:text-purple-600">내 랜딩페이지</a>
+                        <button onclick="logout()" class="text-gray-600 hover:text-red-600">로그아웃</button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <div class="pt-24 pb-12 px-6">
+            <div class="max-w-6xl mx-auto">
+                <div class="mb-8 flex justify-between items-start">
+                    <div>
+                        <h1 class="text-3xl font-bold text-gray-900 mb-2">🗂️ 폴더 관리</h1>
+                        <p class="text-gray-600">랜딩페이지를 폴더별로 정리하세요</p>
+                    </div>
+                    <button onclick="openNewFolderModal()" class="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl hover:from-purple-700 hover:to-blue-700 font-medium shadow-lg hover:shadow-xl transition-all duration-200">
+                        + 새 폴더 만들기
+                    </button>
+                </div>
+
+                <!-- 통계 카드 -->
+                <div class="grid md:grid-cols-3 gap-6 mb-8">
+                    <div class="bg-white rounded-xl p-6 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-600 mb-1">전체 폴더</p>
+                                <p class="text-3xl font-bold text-gray-900"><span id="totalFolders">-</span></p>
+                            </div>
+                            <div class="w-14 h-14 bg-purple-100 rounded-xl flex items-center justify-center">
+                                <span class="text-3xl">📁</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl p-6 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-600 mb-1">전체 페이지</p>
+                                <p class="text-3xl font-bold text-gray-900"><span id="totalPages">-</span></p>
+                            </div>
+                            <div class="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center">
+                                <span class="text-3xl">📄</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl p-6 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-600 mb-1">미분류 페이지</p>
+                                <p class="text-3xl font-bold text-gray-900"><span id="uncategorizedPages">-</span></p>
+                            </div>
+                            <div class="w-14 h-14 bg-gray-100 rounded-xl flex items-center justify-center">
+                                <span class="text-3xl">📋</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 폴더 목록 -->
+                <div class="bg-white rounded-xl border border-gray-200 p-8">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6">폴더 목록</h2>
+                    <div id="foldersList" class="space-y-4">
+                        <div class="text-center py-12 text-gray-500">로딩중...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 새 폴더 만들기 모달 -->
+        <div id="newFolderModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">새 폴더 만들기</h2>
+                <input type="text" id="newFolderName" placeholder="폴더 이름 입력 (예: 학부모용, 신규생용)" 
+                       class="w-full px-4 py-3 border border-gray-300 rounded-xl mb-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                <textarea id="newFolderDescription" placeholder="폴더 설명 (선택사항)" 
+                          class="w-full px-4 py-3 border border-gray-300 rounded-xl mb-6 resize-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" rows="3"></textarea>
+                <div class="flex gap-3">
+                    <button onclick="closeNewFolderModal()" class="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors">
+                        취소
+                    </button>
+                    <button onclick="createNewFolder()" class="flex-1 px-4 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl hover:from-purple-700 hover:to-blue-700 transition-all shadow-md hover:shadow-lg">
+                        생성
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 폴더 수정 모달 -->
+        <div id="editFolderModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">폴더 수정</h2>
+                <input type="hidden" id="editFolderId">
+                <input type="text" id="editFolderName" placeholder="폴더 이름" 
+                       class="w-full px-4 py-3 border border-gray-300 rounded-xl mb-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                <textarea id="editFolderDescription" placeholder="폴더 설명" 
+                          class="w-full px-4 py-3 border border-gray-300 rounded-xl mb-6 resize-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" rows="3"></textarea>
+                <div class="flex gap-3">
+                    <button onclick="closeEditFolderModal()" class="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors">
+                        취소
+                    </button>
+                    <button onclick="updateFolder()" class="flex-1 px-4 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl hover:from-purple-700 hover:to-blue-700 transition-all shadow-md hover:shadow-lg">
+                        수정
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <script>
+        let user = null;
+        let allFolders = [];
+        let allPages = [];
+
+        // 로그인 확인
+        const userData = localStorage.getItem('user');
+        if (!userData) {
+            alert('로그인이 필요합니다.');
+            window.location.href = '/login';
+        } else {
+            user = JSON.parse(userData);
+            loadData();
+        }
+
+        async function loadData() {
+            await loadFolders();
+            await loadPages();
+            updateStats();
+            renderFolders();
+        }
+
+        async function loadFolders() {
+            try {
+                const response = await fetch('/api/landing/folders?userId=' + user.id);
+                const result = await response.json();
+                
+                if (result.success) {
+                    allFolders = result.folders || [];
+                } else {
+                    allFolders = [];
+                }
+            } catch (err) {
+                console.error('Failed to load folders:', err);
+                allFolders = [];
+            }
+        }
+
+        async function loadPages() {
+            try {
+                const response = await fetch('/api/landing/my-pages?userId=' + user.id);
+                const result = await response.json();
+                
+                if (result.success) {
+                    allPages = result.pages || [];
+                } else {
+                    allPages = [];
+                }
+            } catch (err) {
+                console.error('Failed to load pages:', err);
+                allPages = [];
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('totalFolders').textContent = allFolders.length;
+            document.getElementById('totalPages').textContent = allPages.length;
+            const uncategorized = allPages.filter(p => !p.folder_id).length;
+            document.getElementById('uncategorizedPages').textContent = uncategorized;
+        }
+
+        function renderFolders() {
+            const container = document.getElementById('foldersList');
+            
+            if (allFolders.length === 0) {
+                container.innerHTML = 
+                    '<div class="text-center py-12">' +
+                        '<div class="text-6xl mb-4">📁</div>' +
+                        '<p class="text-gray-600 mb-4">아직 생성된 폴더가 없습니다</p>' +
+                        '<button onclick="openNewFolderModal()" class="px-6 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-colors">' +
+                            '첫 폴더 만들기' +
+                        '</button>' +
+                    '</div>';
+                return;
+            }
+
+            const foldersHtml = allFolders.map(folder => {
+                const pagesInFolder = allPages.filter(p => p.folder_id === folder.id).length;
+                const lastUpdated = folder.updated_at ? new Date(folder.updated_at).toLocaleDateString('ko-KR') : '-';
+                
+                return \`
+                    <div class="border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-all duration-200 bg-gradient-to-br from-white to-gray-50">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-blue-500 rounded-xl flex items-center justify-center shadow-md">
+                                    <span class="text-2xl">📁</span>
+                                </div>
+                                <div>
+                                    <h3 class="text-xl font-bold text-gray-900">\${folder.name}</h3>
+                                    \${folder.description ? '<p class="text-sm text-gray-600 mt-1">' + folder.description + '</p>' : ''}
+                                </div>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="openEditFolderModal(\${folder.id}, '\${folder.name}', '\${folder.description || ''}')" 
+                                        class="px-3 py-2 text-sm bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors">
+                                    ✏️ 수정
+                                </button>
+                                <button onclick="deleteFolder(\${folder.id})" 
+                                        class="px-3 py-2 text-sm bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors">
+                                    🗑️ 삭제
+                                </button>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-4 pt-4 border-t border-gray-200">
+                            <div class="text-center">
+                                <p class="text-sm text-gray-600">페이지</p>
+                                <p class="text-2xl font-bold text-purple-600">\${pagesInFolder}</p>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-sm text-gray-600">생성일</p>
+                                <p class="text-sm font-medium text-gray-900">\${new Date(folder.created_at).toLocaleDateString('ko-KR')}</p>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-sm text-gray-600">최종 수정</p>
+                                <p class="text-sm font-medium text-gray-900">\${lastUpdated}</p>
+                            </div>
+                        </div>
+                        <div class="mt-4 pt-4 border-t border-gray-200">
+                            <a href="/tools/landing-manager" class="block text-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
+                                📄 폴더 내 페이지 보기
+                            </a>
+                        </div>
+                    </div>
+                \`;
+            }).join('');
+
+            container.innerHTML = foldersHtml;
+        }
+
+        // 새 폴더 만들기 모달
+        function openNewFolderModal() {
+            document.getElementById('newFolderName').value = '';
+            document.getElementById('newFolderDescription').value = '';
+            document.getElementById('newFolderModal').classList.remove('hidden');
+        }
+
+        function closeNewFolderModal() {
+            document.getElementById('newFolderModal').classList.add('hidden');
+        }
+
+        async function createNewFolder() {
+            const name = document.getElementById('newFolderName').value.trim();
+            const description = document.getElementById('newFolderDescription').value.trim();
+            
+            if (!name) {
+                alert('폴더 이름을 입력해주세요.');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/landing/folders', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        userId: user.id, 
+                        name,
+                        description: description || null
+                    })
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('폴더가 생성되었습니다!');
+                    closeNewFolderModal();
+                    loadData();
+                } else {
+                    alert('폴더 생성 실패: ' + result.error);
+                }
+            } catch (err) {
+                alert('오류가 발생했습니다: ' + err.message);
+            }
+        }
+
+        // 폴더 수정 모달
+        function openEditFolderModal(id, name, description) {
+            document.getElementById('editFolderId').value = id;
+            document.getElementById('editFolderName').value = name;
+            document.getElementById('editFolderDescription').value = description;
+            document.getElementById('editFolderModal').classList.remove('hidden');
+        }
+
+        function closeEditFolderModal() {
+            document.getElementById('editFolderModal').classList.add('hidden');
+        }
+
+        async function updateFolder() {
+            const id = document.getElementById('editFolderId').value;
+            const name = document.getElementById('editFolderName').value.trim();
+            const description = document.getElementById('editFolderDescription').value.trim();
+            
+            if (!name) {
+                alert('폴더 이름을 입력해주세요.');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/landing/folders/' + id, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, description: description || null })
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('폴더가 수정되었습니다!');
+                    closeEditFolderModal();
+                    loadData();
+                } else {
+                    alert('폴더 수정 실패: ' + result.error);
+                }
+            } catch (err) {
+                alert('오류가 발생했습니다: ' + err.message);
+            }
+        }
+
+        async function deleteFolder(id) {
+            const folder = allFolders.find(f => f.id === id);
+            const pagesInFolder = allPages.filter(p => p.folder_id === id).length;
+            
+            if (pagesInFolder > 0) {
+                if (!confirm(\`이 폴더에는 \${pagesInFolder}개의 페이지가 있습니다.\\n폴더를 삭제하면 페이지들은 미분류 상태가 됩니다.\\n정말 삭제하시겠습니까?\`)) {
+                    return;
+                }
+            } else {
+                if (!confirm('폴더를 삭제하시겠습니까?')) {
+                    return;
+                }
+            }
+
+            try {
+                const response = await fetch('/api/landing/folders/' + id + '?userId=' + user.id, {
+                    method: 'DELETE'
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('폴더가 삭제되었습니다.');
+                    loadData();
+                } else {
+                    alert('폴더 삭제 실패: ' + result.error);
+                }
+            } catch (err) {
+                alert('오류가 발생했습니다: ' + err.message);
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('user');
+            window.location.href = '/';
         }
         </script>
     </body>
