@@ -8592,9 +8592,6 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
                 <div class="mb-10">
                     <h1 class="text-4xl font-bold text-gray-900 mb-2">안녕하세요, <span id="userNameDisplay"></span>님!</h1>
                     <p class="text-xl text-gray-600">학원 마케팅 현황을 확인하세요</p>
-                    
-                    <!-- 구독 상태 표시 -->
-                    <div id="subscriptionStatus" class="mt-6"></div>
                 </div>
 
                 <!-- Stats Grid -->
@@ -8945,48 +8942,12 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
 
                 <!-- Content Grid -->
                 <div class="grid lg:grid-cols-2 gap-8">
-                    <!-- My Programs -->
-                    <div class="bg-white rounded-2xl p-8 border border-gray-200">
-                        <h2 class="text-2xl font-bold text-gray-900 mb-6">수강 중인 프로그램</h2>
-                        <div class="space-y-4">
-                            <div class="p-5 bg-purple-50 rounded-xl border border-purple-100">
-                                <div class="flex justify-between items-start mb-3">
-                                    <div>
-                                        <div class="font-bold text-gray-900 mb-1">네이버 플레이스 상위노출</div>
-                                        <div class="text-sm text-gray-600">진행률 90%</div>
-                                    </div>
-                                    <span class="px-3 py-1 bg-purple-600 text-white text-xs rounded-full">진행중</span>
-                                </div>
-                                <div class="w-full bg-purple-200 rounded-full h-2">
-                                    <div class="bg-purple-600 h-2 rounded-full" style="width: 90%"></div>
-                                </div>
-                            </div>
-
-                            <div class="p-5 bg-orange-50 rounded-xl border border-orange-100">
-                                <div class="flex justify-between items-start mb-3">
-                                    <div>
-                                        <div class="font-bold text-gray-900 mb-1">블로그 상위노출</div>
-                                        <div class="text-sm text-gray-600">진행률 75%</div>
-                                    </div>
-                                    <span class="px-3 py-1 bg-orange-500 text-white text-xs rounded-full">진행중</span>
-                                </div>
-                                <div class="w-full bg-orange-200 rounded-full h-2">
-                                    <div class="bg-orange-500 h-2 rounded-full" style="width: 75%"></div>
-                                </div>
-                            </div>
-
-                            <div class="p-5 bg-purple-50 rounded-xl border border-purple-100">
-                                <div class="flex justify-between items-start mb-3">
-                                    <div>
-                                        <div class="font-bold text-gray-900 mb-1">퍼널 마케팅</div>
-                                        <div class="text-sm text-gray-600">진행률 60%</div>
-                                    </div>
-                                    <span class="px-3 py-1 bg-purple-600 text-white text-xs rounded-full">진행중</span>
-                                </div>
-                                <div class="w-full bg-purple-200 rounded-full h-2">
-                                    <div class="bg-purple-600 h-2 rounded-full" style="width: 60%"></div>
-                                </div>
-                            </div>
+                    <!-- Subscription Status & Usage -->
+                    <div id="subscriptionStatusMain" class="bg-white rounded-2xl p-8 border border-gray-200">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-6">📊 구독 및 사용 현황</h2>
+                        <div class="text-center py-12">
+                            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+                            <p class="text-gray-500">구독 정보를 불러오는 중...</p>
                         </div>
                     </div>
 
@@ -9103,7 +9064,11 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
                     const response = await fetch('/api/subscriptions/status')
                     const data = await response.json()
                     
-                    const statusDiv = document.getElementById('subscriptionStatus')
+                    const statusDiv = document.getElementById('subscriptionStatusMain')
+                    if (!statusDiv) {
+                        console.error('subscriptionStatusMain element not found')
+                        return
+                    }
                     
                     if (data.success && data.hasSubscription) {
                         const sub = data.subscription
