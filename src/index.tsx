@@ -11643,6 +11643,7 @@ app.get('/dashboard', (c) => {
             checkUserPermissions()
             loadUserPoints()
             loadMyLandingPages()
+            loadLandingFolders()
             loadStudentCount()
             loadTeacherCount()
             
@@ -11650,12 +11651,16 @@ app.get('/dashboard', (c) => {
             setInterval(() => {
                 loadStudentCount()
                 loadTeacherCount()
+                loadMyLandingPages()
+                loadLandingFolders()
             }, 30000) // 30초
             
             // 페이지가 다시 포커스를 받을 때 갱신
             window.addEventListener('focus', () => {
                 loadStudentCount()
                 loadTeacherCount()
+                loadMyLandingPages()
+                loadLandingFolders()
             })
             
             // 다른 탭에서 변경사항이 있을 때 갱신 (storage 이벤트)
@@ -11805,14 +11810,21 @@ app.get('/dashboard', (c) => {
                         if (landingSection) {
                             if (!permissions.landing_builder) {
                                 landingSection.style.display = 'none'
+                                console.log('❌ landing_builder 권한 없음 - 랜딩페이지 섹션 숨김')
+                            } else {
+                                landingSection.style.display = 'block'
+                                console.log('✅ landing_builder 권한 있음 - 랜딩페이지 섹션 표시')
                             }
                         }
                         
                         // landing_builder 도구 카드도 숨김
                         const landingBuilderCard = document.querySelector('a[href="/tools/landing-builder"]')
-                        if (landingBuilderCard) {
-                            if (!permissions.landing_builder) {
+                        if (landingBuilderCard && landingBuilderCard.closest('.grid')) {
+                            // 대시보드 외부의 landing-builder 링크만 체크
+                            const isInDashboardSection = landingBuilderCard.closest('#landingSection')
+                            if (!isInDashboardSection && !permissions.landing_builder) {
                                 landingBuilderCard.style.display = 'none'
+                                console.log('❌ landing_builder 권한 없음 - 외부 카드 숨김')
                             }
                         }
                     }
@@ -11877,7 +11889,13 @@ app.get('/dashboard', (c) => {
                                 '</div>'
                             }).join('')
                         } else {
-                            // 랜딩페이지가 없을 때 안내 메시지 표시
+                            // 랜딩페이지가 없을 때 안내 메시지 표시 및 통계 초기화
+                            const pagesCountEl = document.getElementById('landingPagesCount')
+                            if (pagesCountEl) pagesCountEl.textContent = '0'
+                            
+                            const viewsCountEl = document.getElementById('landingViewsCount')
+                            if (viewsCountEl) viewsCountEl.textContent = '0'
+                            
                             container.innerHTML = '<div class="col-span-2 text-center py-12 text-gray-500">' +
                                 '<p class="mb-4">아직 생성한 랜딩페이지가 없습니다</p>' +
                                 '<a href="/tools/landing-builder" class="inline-block px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition">' +
@@ -11891,6 +11909,26 @@ app.get('/dashboard', (c) => {
                         if (container) {
                             container.innerHTML = '<div class="col-span-2 text-center py-12 text-red-500">로딩 실패</div>'
                         }
+                    }
+                }
+            }
+
+            // 랜딩페이지 폴더 수 로드
+            async function loadLandingFolders() {
+                const user = JSON.parse(localStorage.getItem('user'))
+                if (user && user.id) {
+                    try {
+                        const response = await fetch('/api/landing/folders?userId=' + user.id)
+                        const data = await response.json()
+                        
+                        if (data.success && data.folders) {
+                            const foldersCountEl = document.getElementById('landingFoldersCount')
+                            if (foldersCountEl) {
+                                foldersCountEl.textContent = data.folders.length
+                            }
+                        }
+                    } catch (err) {
+                        console.error('폴더 수 로드 실패:', err)
                     }
                 }
             }
