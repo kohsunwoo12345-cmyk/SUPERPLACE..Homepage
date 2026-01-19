@@ -6615,6 +6615,115 @@ app.post('/api/usage/increment-teachers', async (c) => {
   }
 })
 
+// 🔥 관리자: 사용자 사용 한도 수정 API
+app.post('/api/admin/usage/:userId/update-limits', async (c) => {
+  try {
+    const userId = c.req.param('userId')
+    const { studentLimit, aiReportLimit, landingPageLimit, teacherLimit } = await c.req.json()
+    
+    console.log('[Admin] Updating usage limits for user:', userId)
+    
+    // 사용자의 academy_id 조회
+    const user = await c.env.DB.prepare('SELECT id, academy_id FROM users WHERE id = ?').bind(userId).first()
+    
+    if (!user || !user.academy_id) {
+      return c.json({ success: false, error: '사용자 또는 학원 정보를 찾을 수 없습니다' }, 404)
+    }
+    
+    // 활성 구독 조회
+    const subscription = await c.env.DB.prepare(`
+      SELECT id FROM subscriptions 
+      WHERE academy_id = ? AND status = 'active'
+      ORDER BY created_at DESC LIMIT 1
+    `).bind(user.academy_id).first()
+    
+    if (!subscription) {
+      return c.json({ success: false, error: '활성 구독이 없습니다' }, 404)
+    }
+    
+    // 구독의 한도 업데이트
+    await c.env.DB.prepare(`
+      UPDATE subscriptions 
+      SET student_limit = ?, 
+          ai_report_limit = ?, 
+          landing_page_limit = ?, 
+          teacher_limit = ?
+      WHERE id = ?
+    `).bind(studentLimit, aiReportLimit, landingPageLimit, teacherLimit, subscription.id).run()
+    
+    console.log('✅ [Admin] Usage limits updated successfully')
+    
+    return c.json({ 
+      success: true, 
+      message: '사용 한도가 업데이트되었습니다',
+      limits: {
+        studentLimit,
+        aiReportLimit,
+        landingPageLimit,
+        teacherLimit
+      }
+    })
+  } catch (error) {
+    console.error('[Admin] Update limits error:', error)
+    return c.json({ success: false, error: error.message }, 500)
+  }
+})
+
+// 🔥 관리자: 사용자 구독 정보 조회 API
+app.get('/api/admin/usage/:userId', async (c) => {
+  try {
+    const userId = c.req.param('userId')
+    
+    // 사용자의 academy_id 조회
+    const user = await c.env.DB.prepare('SELECT id, academy_id FROM users WHERE id = ?').bind(userId).first()
+    
+    if (!user || !user.academy_id) {
+      return c.json({ success: false, hasSubscription: false, message: '학원 정보가 없습니다' })
+    }
+    
+    // 활성 구독 조회
+    const subscription = await c.env.DB.prepare(`
+      SELECT * FROM subscriptions 
+      WHERE academy_id = ? AND status = 'active'
+      ORDER BY created_at DESC LIMIT 1
+    `).bind(user.academy_id).first()
+    
+    if (!subscription) {
+      return c.json({ success: true, hasSubscription: false, message: '활성 구독이 없습니다' })
+    }
+    
+    // 사용량 조회
+    const usage = await c.env.DB.prepare(`
+      SELECT * FROM usage_tracking 
+      WHERE subscription_id = ?
+    `).bind(subscription.id).first()
+    
+    return c.json({
+      success: true,
+      hasSubscription: true,
+      subscription: {
+        id: subscription.id,
+        planName: subscription.plan_name,
+        startDate: subscription.subscription_start_date,
+        endDate: subscription.subscription_end_date,
+        studentLimit: subscription.student_limit,
+        aiReportLimit: subscription.ai_report_limit,
+        landingPageLimit: subscription.landing_page_limit,
+        teacherLimit: subscription.teacher_limit
+      },
+      usage: {
+        currentStudents: usage?.current_students || 0,
+        aiReportsUsed: usage?.ai_reports_used_this_month || 0,
+        landingPagesCreated: usage?.landing_pages_created || 0,
+        currentTeachers: usage?.current_teachers || 0
+      }
+    })
+  } catch (error) {
+    console.error('[Admin] Get usage error:', error)
+    return c.json({ success: false, error: error.message }, 500)
+  }
+})
+
 // ==================== 플랜별 구매 페이지 ====================
 
 // 스타터 플랜 구매 페이지
@@ -23538,6 +23647,22 @@ app.get('/admin/users/:id', async (c) => {
 
                   <!-- 오른쪽: 상세 정보 -->
                   <div class="lg:col-span-2 space-y-6">
+                      <!-- 구독 & 사용량 정보 -->
+                      <div id="subscriptionInfo" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 info-card">
+                          <h3 class="text-lg font-bold text-gray-900 mb-4">📊 구독 & 사용량 정보</h3>
+                          <div id="subscriptionContent">
+                              <div class="animate-pulse flex space-x-4">
+                                  <div class="flex-1 space-y-4 py-1">
+                                      <div class="h-4 bg-gray-200 rounded w-3/4"></div>
+                                      <div class="space-y-2">
+                                          <div class="h-4 bg-gray-200 rounded"></div>
+                                          <div class="h-4 bg-gray-200 rounded w-5/6"></div>
+                                      </div>
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+
                       <!-- 활성화된 권한 -->
                       <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 info-card">
                           <h3 class="text-lg font-bold text-gray-900 mb-4">⚙️ 활성화된 권한</h3>
@@ -23576,6 +23701,186 @@ app.get('/admin/users/:id', async (c) => {
 
           <script src="/static/admin-users.js"></script>
           <script>
+              const userId = ${user.id};
+              
+              // 구독 & 사용량 정보 로드
+              async function loadSubscriptionInfo() {
+                  try {
+                      const response = await fetch(\`/api/admin/usage/\${userId}\`);
+                      const data = await response.json();
+                      
+                      const content = document.getElementById('subscriptionContent');
+                      
+                      if (!data.success || !data.hasSubscription) {
+                          content.innerHTML = \`
+                              <div class="text-center py-8">
+                                  <p class="text-gray-500 mb-4">\${data.message || '활성 구독이 없습니다'}</p>
+                                  <a href="/pricing" class="inline-block px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
+                                      플랜 선택하기
+                                  </a>
+                              </div>
+                          \`;
+                          return;
+                      }
+                      
+                      const { subscription, usage } = data;
+                      
+                      content.innerHTML = \`
+                          <div class="space-y-6">
+                              <!-- 플랜 정보 -->
+                              <div class="bg-gradient-to-br from-purple-50 to-blue-50 rounded-xl p-4">
+                                  <div class="flex justify-between items-start mb-3">
+                                      <div>
+                                          <h4 class="text-lg font-bold text-gray-900">\${subscription.planName}</h4>
+                                          <p class="text-sm text-gray-600 mt-1">
+                                              \${subscription.startDate} ~ \${subscription.endDate}
+                                          </p>
+                                      </div>
+                                      <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
+                                          활성
+                                      </span>
+                                  </div>
+                              </div>
+                              
+                              <!-- 사용량 & 한도 조절 -->
+                              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                  <!-- 학생 수 -->
+                                  <div class="border border-gray-200 rounded-lg p-4">
+                                      <div class="flex items-center justify-between mb-2">
+                                          <span class="text-sm font-medium text-gray-700">👥 학생 수</span>
+                                          <span class="text-sm font-bold \${usage.currentStudents >= subscription.studentLimit ? 'text-red-600' : 'text-blue-600'}">
+                                              \${usage.currentStudents} / \${subscription.studentLimit}
+                                          </span>
+                                      </div>
+                                      <div class="w-full bg-gray-200 rounded-full h-2">
+                                          <div class="bg-blue-600 h-2 rounded-full transition-all" style="width: \${Math.min((usage.currentStudents / subscription.studentLimit) * 100, 100)}%"></div>
+                                      </div>
+                                      <div class="mt-2">
+                                          <label class="text-xs text-gray-500">한도 설정:</label>
+                                          <input type="number" id="studentLimit" value="\${subscription.studentLimit}" 
+                                              class="w-full mt-1 px-3 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-purple-500">
+                                      </div>
+                                  </div>
+                                  
+                                  <!-- AI 리포트 -->
+                                  <div class="border border-gray-200 rounded-lg p-4">
+                                      <div class="flex items-center justify-between mb-2">
+                                          <span class="text-sm font-medium text-gray-700">📊 AI 리포트</span>
+                                          <span class="text-sm font-bold \${usage.aiReportsUsed >= subscription.aiReportLimit ? 'text-red-600' : 'text-green-600'}">
+                                              \${usage.aiReportsUsed} / \${subscription.aiReportLimit}
+                                          </span>
+                                      </div>
+                                      <div class="w-full bg-gray-200 rounded-full h-2">
+                                          <div class="bg-green-600 h-2 rounded-full transition-all" style="width: \${Math.min((usage.aiReportsUsed / subscription.aiReportLimit) * 100, 100)}%"></div>
+                                      </div>
+                                      <div class="mt-2">
+                                          <label class="text-xs text-gray-500">한도 설정:</label>
+                                          <input type="number" id="aiReportLimit" value="\${subscription.aiReportLimit}" 
+                                              class="w-full mt-1 px-3 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-purple-500">
+                                      </div>
+                                  </div>
+                                  
+                                  <!-- 랜딩페이지 -->
+                                  <div class="border border-gray-200 rounded-lg p-4">
+                                      <div class="flex items-center justify-between mb-2">
+                                          <span class="text-sm font-medium text-gray-700">🎨 랜딩페이지</span>
+                                          <span class="text-sm font-bold \${usage.landingPagesCreated >= subscription.landingPageLimit ? 'text-red-600' : 'text-purple-600'}">
+                                              \${usage.landingPagesCreated} / \${subscription.landingPageLimit}
+                                          </span>
+                                      </div>
+                                      <div class="w-full bg-gray-200 rounded-full h-2">
+                                          <div class="bg-purple-600 h-2 rounded-full transition-all" style="width: \${Math.min((usage.landingPagesCreated / subscription.landingPageLimit) * 100, 100)}%"></div>
+                                      </div>
+                                      <div class="mt-2">
+                                          <label class="text-xs text-gray-500">한도 설정:</label>
+                                          <input type="number" id="landingPageLimit" value="\${subscription.landingPageLimit}" 
+                                              class="w-full mt-1 px-3 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-purple-500">
+                                      </div>
+                                  </div>
+                                  
+                                  <!-- 선생님 계정 -->
+                                  <div class="border border-gray-200 rounded-lg p-4">
+                                      <div class="flex items-center justify-between mb-2">
+                                          <span class="text-sm font-medium text-gray-700">👨‍🏫 선생님</span>
+                                          <span class="text-sm font-bold \${usage.currentTeachers >= subscription.teacherLimit ? 'text-red-600' : 'text-orange-600'}">
+                                              \${usage.currentTeachers} / \${subscription.teacherLimit}
+                                          </span>
+                                      </div>
+                                      <div class="w-full bg-gray-200 rounded-full h-2">
+                                          <div class="bg-orange-600 h-2 rounded-full transition-all" style="width: \${Math.min((usage.currentTeachers / subscription.teacherLimit) * 100, 100)}%"></div>
+                                      </div>
+                                      <div class="mt-2">
+                                          <label class="text-xs text-gray-500">한도 설정:</label>
+                                          <input type="number" id="teacherLimit" value="\${subscription.teacherLimit}" 
+                                              class="w-full mt-1 px-3 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-purple-500">
+                                      </div>
+                                  </div>
+                              </div>
+                              
+                              <!-- 저장 버튼 -->
+                              <div class="flex justify-end gap-3 pt-4 border-t">
+                                  <button onclick="loadSubscriptionInfo()" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm font-medium">
+                                      취소
+                                  </button>
+                                  <button onclick="updateLimits()" class="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 text-sm font-medium">
+                                      한도 저장
+                                  </button>
+                              </div>
+                          </div>
+                      \`;
+                  } catch (error) {
+                      console.error('Failed to load subscription info:', error);
+                      document.getElementById('subscriptionContent').innerHTML = \`
+                          <div class="text-center py-8 text-red-500">
+                              <p>정보를 불러오는데 실패했습니다</p>
+                          </div>
+                      \`;
+                  }
+              }
+              
+              // 한도 업데이트
+              async function updateLimits() {
+                  const studentLimit = parseInt(document.getElementById('studentLimit').value);
+                  const aiReportLimit = parseInt(document.getElementById('aiReportLimit').value);
+                  const landingPageLimit = parseInt(document.getElementById('landingPageLimit').value);
+                  const teacherLimit = parseInt(document.getElementById('teacherLimit').value);
+                  
+                  if (!studentLimit || !aiReportLimit || !landingPageLimit || !teacherLimit) {
+                      alert('모든 한도를 올바르게 입력해주세요');
+                      return;
+                  }
+                  
+                  if (confirm('정말 사용 한도를 변경하시겠습니까?')) {
+                      try {
+                          const response = await fetch(\`/api/admin/usage/\${userId}/update-limits\`, {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({
+                                  studentLimit,
+                                  aiReportLimit,
+                                  landingPageLimit,
+                                  teacherLimit
+                              })
+                          });
+                          
+                          const data = await response.json();
+                          
+                          if (data.success) {
+                              alert('✅ 사용 한도가 업데이트되었습니다!');
+                              loadSubscriptionInfo();
+                          } else {
+                              alert('❌ 업데이트 실패: ' + (data.error || '알 수 없는 오류'));
+                          }
+                      } catch (error) {
+                          console.error('Update error:', error);
+                          alert('❌ 네트워크 오류가 발생했습니다');
+                      }
+                  }
+              }
+              
+              // 페이지 로드 시 구독 정보 로드
+              window.addEventListener('DOMContentLoaded', loadSubscriptionInfo);
+              
               function logout() {
                   if (confirm('로그아웃 하시겠습니까?')) {
                       localStorage.removeItem('user');
