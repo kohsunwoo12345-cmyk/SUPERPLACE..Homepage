@@ -5082,66 +5082,107 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
         <!-- Pricing Cards -->
         <section class="pb-24 px-6">
             <div class="max-w-7xl mx-auto">
-                <div class="grid md:grid-cols-3 gap-8 lg:gap-10">
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                     
-                    <!-- 베이직 플랜 -->
-                    <div class="pricing-card bg-white rounded-3xl p-8 lg:p-10 border-2 border-gray-200 hover:border-purple-300 hover:shadow-2xl">
+                    <!-- 스타터 플랜 -->
+                    <div class="pricing-card bg-white rounded-3xl p-8 border-2 border-gray-200 hover:border-purple-300 hover:shadow-2xl">
                         <div class="mb-6">
                             <div class="inline-block px-4 py-2 bg-gray-100 rounded-full text-gray-700 text-sm font-semibold mb-4">
-                                베이직
+                                스타터
                             </div>
                             <div class="flex items-end gap-2 mb-2">
-                                <span class="text-5xl font-bold text-gray-900">₩99,000</span>
+                                <span class="text-5xl font-bold text-gray-900">₩55,000</span>
                                 <span class="text-gray-600 mb-2">/월</span>
                             </div>
                             <p class="text-gray-600">소규모 학원을 위한 기본 플랜</p>
                         </div>
                         
-                        <div class="space-y-4 mb-8">
+                        <div class="space-y-3 mb-8">
                             <div class="flex items-start gap-3">
-                                <svg class="check-icon w-6 h-6 text-green-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="check-icon w-5 h-5 text-green-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
                                 </svg>
-                                <span class="text-gray-700">학생 관리 (최대 50명)</span>
+                                <span class="text-gray-700">학생 최대 30명</span>
                             </div>
                             <div class="flex items-start gap-3">
-                                <svg class="check-icon w-6 h-6 text-green-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="check-icon w-5 h-5 text-green-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
                                 </svg>
-                                <span class="text-gray-700">반 관리 (최대 5개)</span>
+                                <span class="text-gray-700">AI 리포트 월 30개</span>
                             </div>
                             <div class="flex items-start gap-3">
-                                <svg class="check-icon w-6 h-6 text-green-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="check-icon w-5 h-5 text-green-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
                                 </svg>
-                                <span class="text-gray-700">일일 성과 기록</span>
+                                <span class="text-gray-700">랜딩페이지 40개</span>
                             </div>
                             <div class="flex items-start gap-3">
-                                <svg class="check-icon w-6 h-6 text-green-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="check-icon w-5 h-5 text-green-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
                                 </svg>
-                                <span class="text-gray-700">기본 마케팅 교육 자료</span>
-                            </div>
-                            <div class="flex items-start gap-3">
-                                <svg class="check-icon w-6 h-6 text-green-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
-                                </svg>
-                                <span class="text-gray-700">이메일 지원</span>
+                                <span class="text-gray-700">선생님 계정 2명</span>
                             </div>
                         </div>
                         
                         <button 
-                            onclick="startPayment('basic', 99000, '베이직 플랜')"
+                            onclick="startPayment('starter', 55000, '스타터 플랜')"
                             class="w-full py-4 bg-gray-900 text-white rounded-xl font-bold hover:bg-gray-800 transition-all hover:shadow-lg">
                             구매하기
                         </button>
                     </div>
 
+                    <!-- 베이직 플랜 -->
+                    <div class="pricing-card bg-white rounded-3xl p-8 border-2 border-blue-200 hover:border-blue-400 hover:shadow-2xl">
+                        <div class="mb-6">
+                            <div class="inline-block px-4 py-2 bg-blue-100 rounded-full text-blue-700 text-sm font-semibold mb-4">
+                                베이직
+                            </div>
+                            <div class="flex items-end gap-2 mb-2">
+                                <span class="text-5xl font-bold text-gray-900">₩77,000</span>
+                                <span class="text-gray-600 mb-2">/월</span>
+                            </div>
+                            <p class="text-gray-600">성장하는 학원을 위한 플랜</p>
+                        </div>
+                        
+                        <div class="space-y-3 mb-8">
+                            <div class="flex items-start gap-3">
+                                <svg class="check-icon w-5 h-5 text-green-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                <span class="text-gray-700">학생 최대 50명</span>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <svg class="check-icon w-5 h-5 text-green-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                <span class="text-gray-700">AI 리포트 월 50개</span>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <svg class="check-icon w-5 h-5 text-green-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                <span class="text-gray-700">랜딩페이지 70개</span>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <svg class="check-icon w-5 h-5 text-green-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                <span class="text-gray-700">선생님 계정 4명</span>
+                            </div>
+                        </div>
+                        
+                        <button 
+                            onclick="startPayment('basic', 77000, '베이직 플랜')"
+                            class="w-full py-4 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all hover:shadow-lg">
+                            구매하기
+                        </button>
+                    </div>
+
                     <!-- 프로 플랜 (추천) -->
-                    <div class="pricing-card bg-gradient-to-br from-purple-600 to-purple-700 rounded-3xl p-8 lg:p-10 border-2 border-purple-500 hover:shadow-2xl relative transform md:scale-105">
+                    <div class="pricing-card bg-gradient-to-br from-purple-600 to-purple-700 rounded-3xl p-8 border-2 border-purple-500 hover:shadow-2xl relative">
                         <div class="absolute -top-4 left-1/2 transform -translate-x-1/2">
                             <div class="bg-orange-500 text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg">
-                                ⭐ 가장 인기있는 플랜
+                                ⭐ 가장 인기
                             </div>
                         </div>
                         
@@ -5150,131 +5191,189 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
                                 프로
                             </div>
                             <div class="flex items-end gap-2 mb-2">
-                                <span class="text-5xl font-bold text-white">₩199,000</span>
+                                <span class="text-5xl font-bold text-white">₩147,000</span>
                                 <span class="text-purple-100 mb-2">/월</span>
                             </div>
-                            <p class="text-purple-100">중대형 학원을 위한 프리미엄 플랜</p>
+                            <p class="text-purple-100">중형 학원을 위한 프리미엄 플랜</p>
                         </div>
                         
-                        <div class="space-y-4 mb-8">
+                        <div class="space-y-3 mb-8">
                             <div class="flex items-start gap-3">
-                                <svg class="check-icon w-6 h-6 text-green-300 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="check-icon w-5 h-5 text-green-300 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
                                 </svg>
-                                <span class="text-white font-medium">학생 관리 (최대 200명)</span>
+                                <span class="text-white font-medium">학생 최대 100명</span>
                             </div>
                             <div class="flex items-start gap-3">
-                                <svg class="check-icon w-6 h-6 text-green-300 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="check-icon w-5 h-5 text-green-300 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
                                 </svg>
-                                <span class="text-white font-medium">반 관리 (무제한)</span>
+                                <span class="text-white font-medium">AI 리포트 월 100개</span>
                             </div>
                             <div class="flex items-start gap-3">
-                                <svg class="check-icon w-6 h-6 text-green-300 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="check-icon w-5 h-5 text-green-300 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
                                 </svg>
-                                <span class="text-white font-medium">AI 학습 성과 분석 리포트</span>
+                                <span class="text-white font-medium">랜딩페이지 140개</span>
                             </div>
                             <div class="flex items-start gap-3">
-                                <svg class="check-icon w-6 h-6 text-green-300 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="check-icon w-5 h-5 text-green-300 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
                                 </svg>
-                                <span class="text-white font-medium">랜딩페이지 제작 (최대 10개)</span>
-                            </div>
-                            <div class="flex items-start gap-3">
-                                <svg class="check-icon w-6 h-6 text-green-300 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
-                                </svg>
-                                <span class="text-white font-medium">네이버 플레이스 최적화 가이드</span>
-                            </div>
-                            <div class="flex items-start gap-3">
-                                <svg class="check-icon w-6 h-6 text-green-300 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
-                                </svg>
-                                <span class="text-white font-medium">선생님 계정 (최대 5명)</span>
-                            </div>
-                            <div class="flex items-start gap-3">
-                                <svg class="check-icon w-6 h-6 text-green-300 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
-                                </svg>
-                                <span class="text-white font-medium">우선 고객지원 (24시간 이내)</span>
+                                <span class="text-white font-medium">선생님 계정 6명</span>
                             </div>
                         </div>
                         
                         <button 
-                            onclick="startPayment('pro', 199000, '프로 플랜')"
+                            onclick="startPayment('pro', 147000, '프로 플랜')"
                             class="w-full py-4 bg-white text-purple-600 rounded-xl font-bold hover:bg-purple-50 transition-all hover:shadow-lg">
                             구매하기
                         </button>
                     </div>
 
-                    <!-- 엔터프라이즈 플랜 -->
-                    <div class="pricing-card bg-white rounded-3xl p-8 lg:p-10 border-2 border-orange-200 hover:border-orange-400 hover:shadow-2xl">
+                    <!-- 비즈니스 플랜 -->
+                    <div class="pricing-card bg-white rounded-3xl p-8 border-2 border-indigo-200 hover:border-indigo-400 hover:shadow-2xl">
                         <div class="mb-6">
-                            <div class="inline-block px-4 py-2 bg-orange-100 rounded-full text-orange-700 text-sm font-semibold mb-4">
-                                엔터프라이즈
+                            <div class="inline-block px-4 py-2 bg-indigo-100 rounded-full text-indigo-700 text-sm font-semibold mb-4">
+                                비즈니스
                             </div>
                             <div class="flex items-end gap-2 mb-2">
-                                <span class="text-5xl font-bold text-gray-900">₩399,000</span>
+                                <span class="text-5xl font-bold text-gray-900">₩297,000</span>
                                 <span class="text-gray-600 mb-2">/월</span>
                             </div>
-                            <p class="text-gray-600">대형 학원 & 프랜차이즈를 위한 완전한 솔루션</p>
+                            <p class="text-gray-600">대형 학원을 위한 완전한 솔루션</p>
                         </div>
                         
-                        <div class="space-y-4 mb-8">
+                        <div class="space-y-3 mb-8">
                             <div class="flex items-start gap-3">
-                                <svg class="check-icon w-6 h-6 text-green-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="check-icon w-5 h-5 text-green-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
                                 </svg>
-                                <span class="text-gray-700 font-medium">학생 관리 (무제한)</span>
+                                <span class="text-gray-700 font-medium">학생 최대 300명</span>
                             </div>
                             <div class="flex items-start gap-3">
-                                <svg class="check-icon w-6 h-6 text-green-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="check-icon w-5 h-5 text-green-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
                                 </svg>
-                                <span class="text-gray-700 font-medium">반 관리 (무제한)</span>
+                                <span class="text-gray-700 font-medium">AI 리포트 월 600개</span>
                             </div>
                             <div class="flex items-start gap-3">
-                                <svg class="check-icon w-6 h-6 text-green-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="check-icon w-5 h-5 text-green-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
                                 </svg>
-                                <span class="text-gray-700 font-medium">AI 맞춤형 마케팅 컨설팅</span>
+                                <span class="text-gray-700 font-medium">랜딩페이지 550개</span>
                             </div>
                             <div class="flex items-start gap-3">
-                                <svg class="check-icon w-6 h-6 text-green-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="check-icon w-5 h-5 text-green-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
                                 </svg>
-                                <span class="text-gray-700 font-medium">랜딩페이지 제작 (무제한)</span>
-                            </div>
-                            <div class="flex items-start gap-3">
-                                <svg class="check-icon w-6 h-6 text-green-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
-                                </svg>
-                                <span class="text-gray-700 font-medium">전용 마케팅 매니저 배정</span>
-                            </div>
-                            <div class="flex items-start gap-3">
-                                <svg class="check-icon w-6 h-6 text-green-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
-                                </svg>
-                                <span class="text-gray-700 font-medium">선생님 계정 (무제한)</span>
-                            </div>
-                            <div class="flex items-start gap-3">
-                                <svg class="check-icon w-6 h-6 text-green-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
-                                </svg>
-                                <span class="text-gray-700 font-medium">프랜차이즈 멀티 지점 관리</span>
-                            </div>
-                            <div class="flex items-start gap-3">
-                                <svg class="check-icon w-6 h-6 text-green-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
-                                </svg>
-                                <span class="text-gray-700 font-medium">24/7 전화 지원</span>
+                                <span class="text-gray-700 font-medium">선생님 계정 10명</span>
                             </div>
                         </div>
                         
                         <button 
-                            onclick="startPayment('enterprise', 399000, '엔터프라이즈 플랜')"
-                            class="w-full py-4 gradient-orange text-white rounded-xl font-bold hover:shadow-lg transition-all">
+                            onclick="startPayment('business', 297000, '비즈니스 플랜')"
+                            class="w-full py-4 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-all hover:shadow-lg">
+                            구매하기
+                        </button>
+                    </div>
+
+                    <!-- 프리미엄 플랜 -->
+                    <div class="pricing-card bg-white rounded-3xl p-8 border-2 border-orange-200 hover:border-orange-400 hover:shadow-2xl">
+                        <div class="mb-6">
+                            <div class="inline-block px-4 py-2 bg-orange-100 rounded-full text-orange-700 text-sm font-semibold mb-4">
+                                프리미엄
+                            </div>
+                            <div class="flex items-end gap-2 mb-2">
+                                <span class="text-5xl font-bold text-gray-900">₩440,000</span>
+                                <span class="text-gray-600 mb-2">/월</span>
+                            </div>
+                            <p class="text-gray-600">대규모 학원 최적화 솔루션</p>
+                        </div>
+                        
+                        <div class="space-y-3 mb-8">
+                            <div class="flex items-start gap-3">
+                                <svg class="check-icon w-5 h-5 text-green-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                <span class="text-gray-700 font-medium">학생 최대 500명</span>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <svg class="check-icon w-5 h-5 text-green-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                <span class="text-gray-700 font-medium">AI 리포트 월 1,000개</span>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <svg class="check-icon w-5 h-5 text-green-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                <span class="text-gray-700 font-medium">랜딩페이지 900개</span>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <svg class="check-icon w-5 h-5 text-green-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                <span class="text-gray-700 font-medium">선생님 계정 15명</span>
+                            </div>
+                        </div>
+                        
+                        <button 
+                            onclick="startPayment('premium', 440000, '프리미엄 플랜')"
+                            class="w-full py-4 bg-orange-600 text-white rounded-xl font-bold hover:bg-orange-700 transition-all hover:shadow-lg">
+                            구매하기
+                        </button>
+                    </div>
+
+                    <!-- 엔터프라이즈 플랜 -->
+                    <div class="pricing-card bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl p-8 border-2 border-gray-700 hover:shadow-2xl">
+                        <div class="mb-6">
+                            <div class="inline-block px-4 py-2 bg-white/10 rounded-full text-white text-sm font-semibold mb-4">
+                                엔터프라이즈
+                            </div>
+                            <div class="flex items-end gap-2 mb-2">
+                                <span class="text-5xl font-bold text-white">₩750,000</span>
+                                <span class="text-gray-300 mb-2">/월</span>
+                            </div>
+                            <p class="text-gray-300">프랜차이즈 & 대형 학원 그룹</p>
+                        </div>
+                        
+                        <div class="space-y-3 mb-8">
+                            <div class="flex items-start gap-3">
+                                <svg class="check-icon w-5 h-5 text-green-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                <span class="text-white font-medium">학생 최대 1,000명</span>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <svg class="check-icon w-5 h-5 text-green-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                <span class="text-white font-medium">AI 리포트 월 3,000개</span>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <svg class="check-icon w-5 h-5 text-green-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                <span class="text-white font-medium">랜딩페이지 2,000개</span>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <svg class="check-icon w-5 h-5 text-green-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                <span class="text-white font-medium">선생님 계정 20명</span>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <svg class="check-icon w-5 h-5 text-green-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                <span class="text-white font-medium">전담 매니저 배정</span>
+                            </div>
+                        </div>
+                        
+                        <button 
+                            onclick="startPayment('enterprise', 750000, '엔터프라이즈 플랜')"
+                            class="w-full py-4 bg-white text-gray-900 rounded-xl font-bold hover:bg-gray-100 transition-all hover:shadow-lg">
                             구매하기
                         </button>
                     </div>
