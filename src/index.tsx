@@ -31881,6 +31881,62 @@ app.get('/test-deployment', async (c) => {
   return c.text('Deployment successful! Timestamp: ' + Date.now())
 })
 
+// 🔍 디버그: 사용자 구독 정보 상세 조회
+app.get('/api/debug/user/:userId/subscription', async (c) => {
+  try {
+    const userId = c.req.param('userId')
+    
+    // 사용자 정보
+    const user = await c.env.DB.prepare(`
+      SELECT id, email, name, academy_id, academy_name FROM users WHERE id = ?
+    `).bind(userId).first()
+    
+    if (!user) {
+      return c.json({ error: 'User not found' }, 404)
+    }
+    
+    // 모든 구독 조회 (academy_id 기준)
+    const subscriptionsByAcademy = await c.env.DB.prepare(`
+      SELECT * FROM subscriptions WHERE academy_id = ? ORDER BY created_at DESC
+    `).bind(user.academy_id || user.id).all()
+    
+    // 활성 구독만
+    const activeSubscription = await c.env.DB.prepare(`
+      SELECT * FROM subscriptions 
+      WHERE academy_id = ? AND status = 'active'
+      ORDER BY created_at DESC LIMIT 1
+    `).bind(user.academy_id || user.id).first()
+    
+    // 관리자 설정 플랜
+    const adminSubscription = await c.env.DB.prepare(`
+      SELECT * FROM subscriptions 
+      WHERE academy_id = ? AND plan_name = '관리자 설정 플랜'
+      ORDER BY created_at DESC LIMIT 1
+    `).bind(user.academy_id || user.id).first()
+    
+    // usage_tracking 정보
+    const usageTracking = await c.env.DB.prepare(`
+      SELECT * FROM usage_tracking WHERE academy_id = ? ORDER BY updated_at DESC LIMIT 1
+    `).bind(user.academy_id || user.id).first()
+    
+    return c.json({
+      user: user,
+      subscriptions: {
+        all: subscriptionsByAcademy.results,
+        active: activeSubscription,
+        admin: adminSubscription
+      },
+      usageTracking: usageTracking,
+      debug: {
+        academyIdUsedForQuery: user.academy_id || user.id,
+        totalSubscriptions: subscriptionsByAcademy.results.length
+      }
+    })
+  } catch (error) {
+    return c.json({ error: error.message }, 500)
+  }
+})
+
 export default app
 // Force rebuild: Sun Jan 18 18:13:00 UTC 2026
 // Cache buster: 1768763600
