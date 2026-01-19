@@ -6064,6 +6064,453 @@ app.get('/api/subscriptions/status', async (c) => {
   }
 })
 
+// ==================== 플랜별 구매 페이지 ====================
+
+// 스타터 플랜 구매 페이지
+app.get('/pricing/starter', (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>스타터 플랜 구매 - 우리는 슈퍼플레이스다</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script src="https://cdn.iamport.kr/v1/iamport.js"></script>
+        <style>
+          @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
+          * {
+            font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+          }
+          .gradient-purple {
+            background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+          }
+        </style>
+    </head>
+    <body class="bg-gradient-to-br from-gray-50 via-white to-purple-50">
+        <!-- Navigation -->
+        <nav class="fixed w-full top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-200">
+            <div class="max-w-7xl mx-auto px-6 lg:px-8">
+                <div class="flex justify-between items-center h-20">
+                    <a href="/" class="flex items-center space-x-3">
+                        <span class="text-xl font-bold text-gray-900">우리는 슈퍼플레이스다</span>
+                    </a>
+                    <div class="flex items-center space-x-6">
+                        <a href="/pricing" class="text-gray-600 hover:text-purple-600 transition">← 요금제로 돌아가기</a>
+                        <a href="/dashboard" class="gradient-purple text-white px-6 py-2.5 rounded-full font-medium hover:shadow-lg transition">대시보드</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <div class="pt-32 pb-24 px-6">
+            <div class="max-w-6xl mx-auto">
+                <div class="grid lg:grid-cols-2 gap-12">
+                    <!-- 왼쪽: 플랜 정보 -->
+                    <div>
+                        <div class="inline-block px-4 py-2 bg-gray-100 rounded-full text-gray-700 text-sm font-semibold mb-4">
+                            스타터 플랜
+                        </div>
+                        <h1 class="text-5xl font-bold text-gray-900 mb-4">
+                            소규모 학원을 위한<br>
+                            <span class="text-purple-600">시작 플랜</span>
+                        </h1>
+                        <div class="flex items-end gap-3 mb-8">
+                            <span class="text-6xl font-bold text-gray-900">₩55,000</span>
+                            <span class="text-2xl text-gray-600 mb-2">/월</span>
+                        </div>
+
+                        <div class="bg-white rounded-2xl p-8 border-2 border-gray-200 mb-8">
+                            <h3 class="text-xl font-bold text-gray-900 mb-6">포함된 기능</h3>
+                            <div class="space-y-4">
+                                <div class="flex items-start gap-3">
+                                    <div class="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                        <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <div class="font-semibold text-gray-900">학생 최대 30명</div>
+                                        <div class="text-sm text-gray-600">소규모 학원에 최적화</div>
+                                    </div>
+                                </div>
+                                <div class="flex items-start gap-3">
+                                    <div class="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                        <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <div class="font-semibold text-gray-900">AI 학습 리포트 월 30개</div>
+                                        <div class="text-sm text-gray-600">학생별 맞춤 분석 리포트</div>
+                                    </div>
+                                </div>
+                                <div class="flex items-start gap-3">
+                                    <div class="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                        <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <div class="font-semibold text-gray-900">랜딩페이지 40개</div>
+                                        <div class="text-sm text-gray-600">전문 마케팅 페이지 제작</div>
+                                    </div>
+                                </div>
+                                <div class="flex items-start gap-3">
+                                    <div class="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                        <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <div class="font-semibold text-gray-900">선생님 계정 2명</div>
+                                        <div class="text-sm text-gray-600">다중 사용자 관리</div>
+                                    </div>
+                                </div>
+                                <div class="flex items-start gap-3">
+                                    <div class="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                        <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <div class="font-semibold text-gray-900">일일 성과 기록</div>
+                                        <div class="text-sm text-gray-600">학생 일일 학습 현황 관리</div>
+                                    </div>
+                                </div>
+                                <div class="flex items-start gap-3">
+                                    <div class="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                        <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <div class="font-semibold text-gray-900">기본 마케팅 자료</div>
+                                        <div class="text-sm text-gray-600">템플릿 제공</div>
+                                    </div>
+                                </div>
+                                <div class="flex items-start gap-3">
+                                    <div class="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                        <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <div class="font-semibold text-gray-900">이메일 지원</div>
+                                        <div class="text-sm text-gray-600">업무시간 내 지원</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-blue-50 border-2 border-blue-200 rounded-xl p-6">
+                            <div class="flex items-start gap-3">
+                                <svg class="w-6 h-6 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <div class="text-sm text-gray-700">
+                                    <strong>이용 기간:</strong> 결제일로부터 1개월<br>
+                                    <strong>자동 갱신:</strong> 없음 (재구매 필요)<br>
+                                    <strong>환불 정책:</strong> 7일 이내 100% 환불
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 오른쪽: 결제 폼 -->
+                    <div>
+                        <div class="bg-white rounded-2xl p-8 border-2 border-gray-200 shadow-xl sticky top-32">
+                            <h2 class="text-2xl font-bold text-gray-900 mb-6">결제 정보</h2>
+                            
+                            <div class="mb-6">
+                                <div class="flex justify-between items-center py-4 border-b border-gray-200">
+                                    <span class="text-gray-700">스타터 플랜 (월간)</span>
+                                    <span class="font-bold text-gray-900">₩55,000</span>
+                                </div>
+                                <div class="flex justify-between items-center py-4 border-b border-gray-200">
+                                    <span class="text-gray-700">VAT (10%)</span>
+                                    <span class="font-bold text-gray-900">₩5,500</span>
+                                </div>
+                                <div class="flex justify-between items-center py-4">
+                                    <span class="text-lg font-bold text-gray-900">총 결제금액</span>
+                                    <span class="text-2xl font-bold text-purple-600">₩60,500</span>
+                                </div>
+                            </div>
+
+                            <div class="space-y-4 mb-6">
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">이름</label>
+                                    <input type="text" id="buyerName" class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none" placeholder="홍길동">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">이메일</label>
+                                    <input type="email" id="buyerEmail" class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none" placeholder="example@email.com">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">연락처</label>
+                                    <input type="tel" id="buyerPhone" class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none" placeholder="010-1234-5678">
+                                </div>
+                            </div>
+
+                            <div class="mb-6">
+                                <label class="flex items-start gap-3">
+                                    <input type="checkbox" id="agreeTerms" class="mt-1 w-5 h-5 text-purple-600 border-gray-300 rounded focus:ring-purple-500">
+                                    <span class="text-sm text-gray-700">
+                                        <a href="/terms" class="text-purple-600 hover:underline">이용약관</a> 및 
+                                        <a href="/privacy" class="text-purple-600 hover:underline">개인정보처리방침</a>에 동의합니다.
+                                    </span>
+                                </label>
+                            </div>
+
+                            <button onclick="processPayment()" class="w-full py-4 gradient-purple text-white rounded-xl font-bold text-lg hover:shadow-2xl transition-all">
+                                ₩60,500 결제하기
+                            </button>
+
+                            <div class="mt-6 text-center text-sm text-gray-500">
+                                <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                                </svg>
+                                안전한 결제 시스템으로 보호됩니다
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            // 아임포트 초기화 (나중에 실제 가맹점 코드로 변경)
+            IMP.init('imp00000000');
+
+            // 로그인 체크 및 사용자 정보 자동 입력
+            const user = JSON.parse(localStorage.getItem('user') || 'null');
+            if (user) {
+                document.getElementById('buyerName').value = user.name || '';
+                document.getElementById('buyerEmail').value = user.email || '';
+                document.getElementById('buyerPhone').value = user.phone || '';
+            }
+
+            function processPayment() {
+                const name = document.getElementById('buyerName').value;
+                const email = document.getElementById('buyerEmail').value;
+                const phone = document.getElementById('buyerPhone').value;
+                const agreeTerms = document.getElementById('agreeTerms').checked;
+
+                if (!name || !email || !phone) {
+                    alert('모든 정보를 입력해주세요.');
+                    return;
+                }
+
+                if (!agreeTerms) {
+                    alert('이용약관 및 개인정보처리방침에 동의해주세요.');
+                    return;
+                }
+
+                if (!user) {
+                    alert('로그인이 필요한 서비스입니다.');
+                    window.location.href = '/login';
+                    return;
+                }
+
+                // merchant_uid 생성
+                const merchantUid = \`academy_\${user.id}_starter_\${new Date().getTime()}\`;
+
+                console.log('[Payment] Starting payment:', { plan: 'starter', amount: 60500, merchantUid });
+
+                IMP.request_pay({
+                    pg: 'html5_inicis',
+                    pay_method: 'card',
+                    merchant_uid: merchantUid,
+                    name: '스타터 플랜 (월간)',
+                    amount: 60500,
+                    buyer_email: email,
+                    buyer_name: name,
+                    buyer_tel: phone,
+                    buyer_addr: '',
+                    buyer_postcode: ''
+                }, async function(rsp) {
+                    if (rsp.success) {
+                        console.log('[Payment] Payment success:', { imp_uid: rsp.imp_uid, merchant_uid: rsp.merchant_uid });
+                        
+                        try {
+                            const response = await fetch('/api/payments/complete', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({
+                                    imp_uid: rsp.imp_uid,
+                                    merchant_uid: rsp.merchant_uid
+                                })
+                            });
+
+                            const result = await response.json();
+                            
+                            if (result.success) {
+                                const sub = result.subscription;
+                                alert(\`결제가 완료되었습니다!\\n\\n플랜: \${sub.planName}\\n이용 기간: \${sub.startDate} ~ \${sub.endDate}\\n\\n대시보드로 이동합니다.\`);
+                                window.location.href = '/dashboard';
+                            } else {
+                                alert('결제 처리에 실패했습니다: ' + result.error);
+                            }
+                        } catch (error) {
+                            console.error('[Payment] Error:', error);
+                            alert('결제 처리 중 오류가 발생했습니다.');
+                        }
+                    } else {
+                        console.error('[Payment] Payment failed:', rsp.error_msg);
+                        alert('결제에 실패했습니다: ' + rsp.error_msg);
+                    }
+                });
+            }
+        </script>
+    </body>
+    </html>
+  `)
+})
+
+// 베이직 플랜 구매 페이지
+app.get('/pricing/basic', (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>베이직 플랜 구매 - 우리는 슈퍼플레이스다</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script src="https://cdn.iamport.kr/v1/iamport.js"></script>
+        <style>
+          @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
+          * { font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
+          .gradient-purple { background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%); }
+          .gradient-blue { background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%); }
+        </style>
+    </head>
+    <body class="bg-gradient-to-br from-blue-50 via-white to-purple-50">
+        <nav class="fixed w-full top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-200">
+            <div class="max-w-7xl mx-auto px-6 lg:px-8">
+                <div class="flex justify-between items-center h-20">
+                    <a href="/" class="flex items-center space-x-3">
+                        <span class="text-xl font-bold text-gray-900">우리는 슈퍼플레이스다</span>
+                    </a>
+                    <div class="flex items-center space-x-6">
+                        <a href="/pricing" class="text-gray-600 hover:text-purple-600 transition">← 요금제로 돌아가기</a>
+                        <a href="/dashboard" class="gradient-purple text-white px-6 py-2.5 rounded-full font-medium hover:shadow-lg transition">대시보드</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <div class="pt-32 pb-24 px-6">
+            <div class="max-w-6xl mx-auto">
+                <div class="grid lg:grid-cols-2 gap-12">
+                    <div>
+                        <div class="inline-block px-4 py-2 bg-blue-100 rounded-full text-blue-700 text-sm font-semibold mb-4">베이직 플랜</div>
+                        <h1 class="text-5xl font-bold text-gray-900 mb-4">성장하는 학원을 위한<br><span class="text-blue-600">베이직 플랜</span></h1>
+                        <div class="flex items-end gap-3 mb-8">
+                            <span class="text-6xl font-bold text-gray-900">₩77,000</span>
+                            <span class="text-2xl text-gray-600 mb-2">/월</span>
+                        </div>
+
+                        <div class="bg-white rounded-2xl p-8 border-2 border-blue-200 mb-8">
+                            <h3 class="text-xl font-bold text-gray-900 mb-6">포함된 기능</h3>
+                            <div class="space-y-4">
+                                <div class="flex items-start gap-3"><div class="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"><svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></div><div><div class="font-semibold text-gray-900">학생 최대 50명</div><div class="text-sm text-gray-600">중소규모 학원에 적합</div></div></div>
+                                <div class="flex items-start gap-3"><div class="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"><svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></div><div><div class="font-semibold text-gray-900">AI 학습 리포트 월 50개</div><div class="text-sm text-gray-600">학생별 맞춤 분석 리포트</div></div></div>
+                                <div class="flex items-start gap-3"><div class="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"><svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></div><div><div class="font-semibold text-gray-900">랜딩페이지 70개</div><div class="text-sm text-gray-600">전문 마케팅 페이지 제작</div></div></div>
+                                <div class="flex items-start gap-3"><div class="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"><svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></div><div><div class="font-semibold text-gray-900">선생님 계정 4명</div><div class="text-sm text-gray-600">팀 협업 강화</div></div></div>
+                                <div class="flex items-start gap-3"><div class="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"><svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></div><div><div class="font-semibold text-gray-900">학부모 소통 자동화</div><div class="text-sm text-gray-600">자동 메시지 발송</div></div></div>
+                                <div class="flex items-start gap-3"><div class="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"><svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></div><div><div class="font-semibold text-gray-900">네이버 플레이스 최적화 가이드</div><div class="text-sm text-gray-600">지역 마케팅 강화</div></div></div>
+                                <div class="flex items-start gap-3"><div class="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"><svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></div><div><div class="font-semibold text-gray-900">이메일 지원</div><div class="text-sm text-gray-600">업무시간 내 지원</div></div></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="bg-white rounded-2xl p-8 border-2 border-blue-200 shadow-xl sticky top-32">
+                            <h2 class="text-2xl font-bold text-gray-900 mb-6">결제 정보</h2>
+                            <div class="mb-6">
+                                <div class="flex justify-between items-center py-4 border-b border-gray-200"><span class="text-gray-700">베이직 플랜 (월간)</span><span class="font-bold text-gray-900">₩77,000</span></div>
+                                <div class="flex justify-between items-center py-4 border-b border-gray-200"><span class="text-gray-700">VAT (10%)</span><span class="font-bold text-gray-900">₩7,700</span></div>
+                                <div class="flex justify-between items-center py-4"><span class="text-lg font-bold text-gray-900">총 결제금액</span><span class="text-2xl font-bold text-blue-600">₩84,700</span></div>
+                            </div>
+                            <div class="space-y-4 mb-6">
+                                <div><label class="block text-sm font-semibold text-gray-700 mb-2">이름</label><input type="text" id="buyerName" class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none" placeholder="홍길동"></div>
+                                <div><label class="block text-sm font-semibold text-gray-700 mb-2">이메일</label><input type="email" id="buyerEmail" class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none" placeholder="example@email.com"></div>
+                                <div><label class="block text-sm font-semibold text-gray-700 mb-2">연락처</label><input type="tel" id="buyerPhone" class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none" placeholder="010-1234-5678"></div>
+                            </div>
+                            <div class="mb-6"><label class="flex items-start gap-3"><input type="checkbox" id="agreeTerms" class="mt-1 w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"><span class="text-sm text-gray-700"><a href="/terms" class="text-blue-600 hover:underline">이용약관</a> 및 <a href="/privacy" class="text-blue-600 hover:underline">개인정보처리방침</a>에 동의합니다.</span></label></div>
+                            <button onclick="processPayment()" class="w-full py-4 gradient-blue text-white rounded-xl font-bold text-lg hover:shadow-2xl transition-all">₩84,700 결제하기</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            IMP.init('imp00000000');
+            const user = JSON.parse(localStorage.getItem('user') || 'null');
+            if (user) {
+                document.getElementById('buyerName').value = user.name || '';
+                document.getElementById('buyerEmail').value = user.email || '';
+                document.getElementById('buyerPhone').value = user.phone || '';
+            }
+            function processPayment() {
+                const name = document.getElementById('buyerName').value;
+                const email = document.getElementById('buyerEmail').value;
+                const phone = document.getElementById('buyerPhone').value;
+                const agreeTerms = document.getElementById('agreeTerms').checked;
+                if (!name || !email || !phone) { alert('모든 정보를 입력해주세요.'); return; }
+                if (!agreeTerms) { alert('이용약관 및 개인정보처리방침에 동의해주세요.'); return; }
+                if (!user) { alert('로그인이 필요한 서비스입니다.'); window.location.href = '/login'; return; }
+                const merchantUid = \`academy_\${user.id}_basic_\${new Date().getTime()}\`;
+                IMP.request_pay({
+                    pg: 'html5_inicis', pay_method: 'card', merchant_uid: merchantUid,
+                    name: '베이직 플랜 (월간)', amount: 84700,
+                    buyer_email: email, buyer_name: name, buyer_tel: phone
+                }, async function(rsp) {
+                    if (rsp.success) {
+                        try {
+                            const response = await fetch('/api/payments/complete', {
+                                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ imp_uid: rsp.imp_uid, merchant_uid: rsp.merchant_uid })
+                            });
+                            const result = await response.json();
+                            if (result.success) {
+                                alert(\`결제가 완료되었습니다!\\n\\n플랜: \${result.subscription.planName}\\n이용 기간: \${result.subscription.startDate} ~ \${result.subscription.endDate}\`);
+                                window.location.href = '/dashboard';
+                            } else { alert('결제 처리에 실패했습니다: ' + result.error); }
+                        } catch (error) { alert('결제 처리 중 오류가 발생했습니다.'); }
+                    } else { alert('결제에 실패했습니다: ' + rsp.error_msg); }
+                });
+            }
+        </script>
+    </body>
+    </html>
+  `)
+})
+
+// 프로 플랜 구매 페이지
+app.get('/pricing/pro', (c) => {
+  return c.html(`<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>프로 플랜 구매</title><script src="https://cdn.tailwindcss.com"></script><script src="https://cdn.iamport.kr/v1/iamport.js"></script><style>@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');*{font-family:'Pretendard Variable',Pretendard,sans-serif;}.gradient-purple{background:linear-gradient(135deg,#7c3aed 0%,#a855f7 100%);}</style></head><body class="bg-gradient-to-br from-purple-50 via-white to-pink-50"><nav class="fixed w-full top-0 z-50 bg-white/90 backdrop-blur-md border-b"><div class="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center"><a href="/" class="text-xl font-bold">우리는 슈퍼플레이스다</a><div class="flex gap-6"><a href="/pricing" class="text-gray-600">← 요금제</a><a href="/dashboard" class="gradient-purple text-white px-6 py-2.5 rounded-full">대시보드</a></div></div></nav><div class="pt-32 pb-24 px-6"><div class="max-w-6xl mx-auto grid lg:grid-cols-2 gap-12"><div><div class="inline-block px-4 py-2 bg-gradient-to-r from-purple-100 to-pink-100 rounded-full text-purple-700 font-semibold mb-4">프로 플랜 ⭐ 가장 인기</div><h1 class="text-5xl font-bold mb-4">중형 학원을 위한<br><span class="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">프리미엄 플랜</span></h1><div class="flex items-end gap-3 mb-8"><span class="text-6xl font-bold">₩147,000</span><span class="text-2xl text-gray-600">/월</span></div><div class="bg-gradient-to-br from-purple-600 to-purple-700 rounded-2xl p-8 text-white"><h3 class="text-xl font-bold mb-6">포함된 기능</h3><div class="space-y-3"><div class="flex gap-3"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"></path></svg><span>학생 100명</span></div><div class="flex gap-3"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"></path></svg><span>AI 리포트 100개/월</span></div><div class="flex gap-3"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"></path></svg><span>랜딩페이지 140개</span></div><div class="flex gap-3"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"></path></svg><span>선생님 6명</span></div><div class="flex gap-3"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"></path></svg><span>AI 마케팅 컨설팅</span></div><div class="flex gap-3"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"></path></svg><span>디자인 템플릿 무제한</span></div><div class="flex gap-3"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"></path></svg><span>우선 지원 (24시간)</span></div></div></div></div><div><div class="bg-white rounded-2xl p-8 border-2 border-purple-300 shadow-2xl sticky top-32"><div class="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-orange-500 to-red-500 text-white px-6 py-2 rounded-full text-sm font-bold">⭐ 가장 인기</div><h2 class="text-2xl font-bold mb-6 mt-4">결제 정보</h2><div class="mb-6"><div class="flex justify-between py-4 border-b"><span>프로 플랜</span><span class="font-bold">₩147,000</span></div><div class="flex justify-between py-4 border-b"><span>VAT</span><span class="font-bold">₩14,700</span></div><div class="flex justify-between py-4"><span class="font-bold">총액</span><span class="text-2xl font-bold text-purple-600">₩161,700</span></div></div><div class="space-y-4 mb-6"><input type="text" id="buyerName" class="w-full px-4 py-3 border-2 rounded-lg" placeholder="이름"><input type="email" id="buyerEmail" class="w-full px-4 py-3 border-2 rounded-lg" placeholder="이메일"><input type="tel" id="buyerPhone" class="w-full px-4 py-3 border-2 rounded-lg" placeholder="연락처"></div><label class="flex gap-3 mb-6"><input type="checkbox" id="agreeTerms" class="w-5 h-5"><span class="text-sm">약관 동의</span></label><button onclick="processPayment()" class="w-full py-4 gradient-purple text-white rounded-xl font-bold hover:shadow-2xl">₩161,700 결제</button></div></div></div></div><script>IMP.init('imp00000000');const user=JSON.parse(localStorage.getItem('user')||'null');if(user){document.getElementById('buyerName').value=user.name||'';document.getElementById('buyerEmail').value=user.email||'';document.getElementById('buyerPhone').value=user.phone||'';}function processPayment(){const name=document.getElementById('buyerName').value,email=document.getElementById('buyerEmail').value,phone=document.getElementById('buyerPhone').value;if(!name||!email||!phone||!document.getElementById('agreeTerms').checked){alert('정보 입력 및 약관 동의 필요');return;}if(!user){window.location.href='/login';return;}const merchantUid='academy_'+user.id+'_pro_'+Date.now();IMP.request_pay({pg:'html5_inicis',pay_method:'card',merchant_uid:merchantUid,name:'프로 플랜',amount:161700,buyer_email:email,buyer_name:name,buyer_tel:phone},async(rsp)=>{if(rsp.success){const res=await fetch('/api/payments/complete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({imp_uid:rsp.imp_uid,merchant_uid:rsp.merchant_uid})});const result=await res.json();if(result.success){alert('결제 완료!');window.location.href='/dashboard';}}else{alert('결제 실패: '+rsp.error_msg);}});}</script></body></html>`)
+})
+
+// 비즈니스 플랜 구매 페이지
+app.get('/pricing/business', (c) => {
+  return c.html(`<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><title>비즈니스 플랜 구매</title><script src="https://cdn.tailwindcss.com"></script><script src="https://cdn.iamport.kr/v1/iamport.js"></script><style>@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');*{font-family:'Pretendard Variable',Pretendard,sans-serif;}</style></head><body class="bg-gradient-to-br from-green-50 to-blue-50"><nav class="fixed w-full top-0 z-50 bg-white/90 backdrop-blur-md border-b"><div class="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center"><a href="/" class="text-xl font-bold">우리는 슈퍼플레이스다</a><div class="flex gap-6"><a href="/pricing" class="text-gray-600">← 요금제</a><a href="/dashboard" class="bg-green-600 text-white px-6 py-2.5 rounded-full">대시보드</a></div></div></nav><div class="pt-32 pb-24 px-6"><div class="max-w-6xl mx-auto grid lg:grid-cols-2 gap-12"><div><div class="inline-block px-4 py-2 bg-green-100 rounded-full text-green-700 font-semibold mb-4">비즈니스 플랜</div><h1 class="text-5xl font-bold mb-4">대형 학원을 위한<br><span class="text-green-600">비즈니스 솔루션</span></h1><div class="flex items-end gap-3 mb-8"><span class="text-6xl font-bold">₩297,000</span><span class="text-2xl text-gray-600">/월</span></div><div class="bg-white rounded-2xl p-8 border-2 border-green-200"><h3 class="text-xl font-bold mb-6">포함된 기능</h3><div class="space-y-3 text-gray-700"><div class="flex gap-3"><svg class="w-5 h-5 text-green-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"></path></svg><span>학생 300명</span></div><div class="flex gap-3"><svg class="w-5 h-5 text-green-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"></path></svg><span>AI 리포트 600개/월</span></div><div class="flex gap-3"><svg class="w-5 h-5 text-green-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"></path></svg><span>랜딩페이지 550개</span></div><div class="flex gap-3"><svg class="w-5 h-5 text-green-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"></path></svg><span>선생님 10명</span></div><div class="flex gap-3"><svg class="w-5 h-5 text-green-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"></path></svg><span>멀티 캠퍼스 관리</span></div><div class="flex gap-3"><svg class="w-5 h-5 text-green-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"></path></svg><span>전용 계정 매니저</span></div><div class="flex gap-3"><svg class="w-5 h-5 text-green-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"></path></svg><span>맞춤형 대시보드</span></div><div class="flex gap-3"><svg class="w-5 h-5 text-green-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"></path></svg><span>24/7 전화 지원</span></div></div></div></div><div><div class="bg-white rounded-2xl p-8 border-2 border-green-300 shadow-2xl sticky top-32"><h2 class="text-2xl font-bold mb-6">결제 정보</h2><div class="mb-6"><div class="flex justify-between py-4 border-b"><span>비즈니스 플랜</span><span class="font-bold">₩297,000</span></div><div class="flex justify-between py-4 border-b"><span>VAT</span><span class="font-bold">₩29,700</span></div><div class="flex justify-between py-4"><span class="font-bold">총액</span><span class="text-2xl font-bold text-green-600">₩326,700</span></div></div><div class="space-y-4 mb-6"><input type="text" id="buyerName" class="w-full px-4 py-3 border-2 rounded-lg" placeholder="이름"><input type="email" id="buyerEmail" class="w-full px-4 py-3 border-2 rounded-lg" placeholder="이메일"><input type="tel" id="buyerPhone" class="w-full px-4 py-3 border-2 rounded-lg" placeholder="연락처"></div><label class="flex gap-3 mb-6"><input type="checkbox" id="agreeTerms" class="w-5 h-5"><span class="text-sm">약관 동의</span></label><button onclick="processPayment()" class="w-full py-4 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700">₩326,700 결제</button></div></div></div></div><script>IMP.init('imp00000000');const user=JSON.parse(localStorage.getItem('user')||'null');if(user){document.getElementById('buyerName').value=user.name||'';document.getElementById('buyerEmail').value=user.email||'';document.getElementById('buyerPhone').value=user.phone||'';}function processPayment(){const name=document.getElementById('buyerName').value,email=document.getElementById('buyerEmail').value,phone=document.getElementById('buyerPhone').value;if(!name||!email||!phone||!document.getElementById('agreeTerms').checked){alert('정보 입력 및 약관 동의 필요');return;}if(!user){window.location.href='/login';return;}const merchantUid='academy_'+user.id+'_business_'+Date.now();IMP.request_pay({pg:'html5_inicis',pay_method:'card',merchant_uid:merchantUid,name:'비즈니스 플랜',amount:326700,buyer_email:email,buyer_name:name,buyer_tel:phone},async(rsp)=>{if(rsp.success){const res=await fetch('/api/payments/complete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({imp_uid:rsp.imp_uid,merchant_uid:rsp.merchant_uid})});const result=await res.json();if(result.success){alert('결제 완료!');window.location.href='/dashboard';}}else{alert('결제 실패: '+rsp.error_msg);}});}</script></body></html>`)
+})
+
+// 프리미엄 플랜 구매 페이지
+app.get('/pricing/premium', (c) => {
+  return c.html(`<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><title>프리미엄 플랜 구매</title><script src="https://cdn.tailwindcss.com"></script><script src="https://cdn.iamport.kr/v1/iamport.js"></script><style>@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');*{font-family:'Pretendard Variable',Pretendard,sans-serif;}</style></head><body class="bg-gradient-to-br from-amber-50 to-orange-50"><nav class="fixed w-full top-0 z-50 bg-white/90 backdrop-blur-md border-b"><div class="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center"><a href="/" class="text-xl font-bold">우리는 슈퍼플레이스다</a><div class="flex gap-6"><a href="/pricing" class="text-gray-600">← 요금제</a><a href="/dashboard" class="bg-amber-600 text-white px-6 py-2.5 rounded-full">대시보드</a></div></div></nav><div class="pt-32 pb-24 px-6"><div class="max-w-6xl mx-auto grid lg:grid-cols-2 gap-12"><div><div class="inline-block px-4 py-2 bg-gradient-to-r from-amber-100 to-orange-100 rounded-full text-amber-700 font-semibold mb-4">프리미엄 플랜</div><h1 class="text-5xl font-bold mb-4">최상위 학원을 위한<br><span class="bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">프리미엄 서비스</span></h1><div class="flex items-end gap-3 mb-8"><span class="text-6xl font-bold">₩440,000</span><span class="text-2xl text-gray-600">/월</span></div><div class="bg-gradient-to-br from-amber-500 to-orange-500 text-white rounded-2xl p-8"><h3 class="text-xl font-bold mb-6">포함된 기능</h3><div class="space-y-3"><div class="flex gap-3"><svg class="w-5 h-5 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"></path></svg><span>학생 500명</span></div><div class="flex gap-3"><svg class="w-5 h-5 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"></path></svg><span>AI 리포트 1,000개/월</span></div><div class="flex gap-3"><svg class="w-5 h-5 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"></path></svg><span>랜딩페이지 900개</span></div><div class="flex gap-3"><svg class="w-5 h-5 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"></path></svg><span>선생님 15명</span></div><div class="flex gap-3"><svg class="w-5 h-5 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"></path></svg><span>고급 분석 리포트</span></div><div class="flex gap-3"><svg class="w-5 h-5 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"></path></svg><span>API 연동 지원</span></div><div class="flex gap-3"><svg class="w-5 h-5 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"></path></svg><span>전용 마케팅 매니저</span></div><div class="flex gap-3"><svg class="w-5 h-5 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"></path></svg><span>VIP 지원</span></div></div></div></div><div><div class="bg-white rounded-2xl p-8 border-2 border-amber-300 shadow-2xl sticky top-32"><h2 class="text-2xl font-bold mb-6">결제 정보</h2><div class="mb-6"><div class="flex justify-between py-4 border-b"><span>프리미엄 플랜</span><span class="font-bold">₩440,000</span></div><div class="flex justify-between py-4 border-b"><span>VAT</span><span class="font-bold">₩44,000</span></div><div class="flex justify-between py-4"><span class="font-bold">총액</span><span class="text-2xl font-bold text-amber-600">₩484,000</span></div></div><div class="space-y-4 mb-6"><input type="text" id="buyerName" class="w-full px-4 py-3 border-2 rounded-lg" placeholder="이름"><input type="email" id="buyerEmail" class="w-full px-4 py-3 border-2 rounded-lg" placeholder="이메일"><input type="tel" id="buyerPhone" class="w-full px-4 py-3 border-2 rounded-lg" placeholder="연락처"></div><label class="flex gap-3 mb-6"><input type="checkbox" id="agreeTerms" class="w-5 h-5"><span class="text-sm">약관 동의</span></label><button onclick="processPayment()" class="w-full py-4 bg-gradient-to-r from-amber-600 to-orange-600 text-white rounded-xl font-bold hover:shadow-2xl">₩484,000 결제</button></div></div></div></div><script>IMP.init('imp00000000');const user=JSON.parse(localStorage.getItem('user')||'null');if(user){document.getElementById('buyerName').value=user.name||'';document.getElementById('buyerEmail').value=user.email||'';document.getElementById('buyerPhone').value=user.phone||'';}function processPayment(){const name=document.getElementById('buyerName').value,email=document.getElementById('buyerEmail').value,phone=document.getElementById('buyerPhone').value;if(!name||!email||!phone||!document.getElementById('agreeTerms').checked){alert('정보 입력 및 약관 동의 필요');return;}if(!user){window.location.href='/login';return;}const merchantUid='academy_'+user.id+'_premium_'+Date.now();IMP.request_pay({pg:'html5_inicis',pay_method:'card',merchant_uid:merchantUid,name:'프리미엄 플랜',amount:484000,buyer_email:email,buyer_name:name,buyer_tel:phone},async(rsp)=>{if(rsp.success){const res=await fetch('/api/payments/complete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({imp_uid:rsp.imp_uid,merchant_uid:rsp.merchant_uid})});const result=await res.json();if(result.success){alert('결제 완료!');window.location.href='/dashboard';}}else{alert('결제 실패: '+rsp.error_msg);}});}</script></body></html>`)
+})
+
+// 엔터프라이즈 플랜 구매 페이지
+app.get('/pricing/enterprise', (c) => {
+  return c.html(`<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><title>엔터프라이즈 플랜 구매</title><script src="https://cdn.tailwindcss.com"></script><script src="https://cdn.iamport.kr/v1/iamport.js"></script><style>@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');*{font-family:'Pretendard Variable',Pretendard,sans-serif;}</style></head><body class="bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white"><nav class="fixed w-full top-0 z-50 bg-black/50 backdrop-blur-md border-b border-white/10"><div class="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center"><a href="/" class="text-xl font-bold text-white">우리는 슈퍼플레이스다</a><div class="flex gap-6"><a href="/pricing" class="text-gray-300 hover:text-white">← 요금제</a><a href="/dashboard" class="bg-gradient-to-r from-purple-600 to-pink-600 px-6 py-2.5 rounded-full">대시보드</a></div></div></nav><div class="pt-32 pb-24 px-6"><div class="max-w-6xl mx-auto grid lg:grid-cols-2 gap-12"><div><div class="inline-block px-4 py-2 bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/50 rounded-full text-purple-300 font-semibold mb-4">엔터프라이즈</div><h1 class="text-5xl font-bold mb-4">대규모 학원 및<br><span class="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">프랜차이즈를 위한</span></h1><div class="flex items-end gap-3 mb-8"><span class="text-6xl font-bold">₩750,000</span><span class="text-2xl text-gray-400">/월</span></div><div class="bg-gradient-to-br from-purple-600/20 to-pink-600/20 backdrop-blur-xl border border-purple-500/30 rounded-2xl p-8"><h3 class="text-xl font-bold mb-6">포함된 기능</h3><div class="space-y-3"><div class="flex gap-3"><svg class="w-5 h-5 text-purple-400 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"></path></svg><span>학생 1,000명</span></div><div class="flex gap-3"><svg class="w-5 h-5 text-purple-400 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"></path></svg><span>AI 리포트 3,000개/월</span></div><div class="flex gap-3"><svg class="w-5 h-5 text-purple-400 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"></path></svg><span>랜딩페이지 2,000개</span></div><div class="flex gap-3"><svg class="w-5 h-5 text-purple-400 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"></path></svg><span>선생님 20명</span></div><div class="flex gap-3"><svg class="w-5 h-5 text-purple-400 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"></path></svg><span>프랜차이즈 멀티 지점</span></div><div class="flex gap-3"><svg class="w-5 h-5 text-purple-400 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"></path></svg><span>맞춤형 기능 개발</span></div><div class="flex gap-3"><svg class="w-5 h-5 text-purple-400 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"></path></svg><span>전담 개발 지원팀</span></div><div class="flex gap-3"><svg class="w-5 h-5 text-purple-400 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"></path></svg><span>24/7 전용 핫라인</span></div></div></div></div><div><div class="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-8 shadow-2xl sticky top-32"><h2 class="text-2xl font-bold mb-6">결제 정보</h2><div class="mb-6"><div class="flex justify-between py-4 border-b border-white/20"><span>엔터프라이즈 플랜</span><span class="font-bold">₩750,000</span></div><div class="flex justify-between py-4 border-b border-white/20"><span>VAT</span><span class="font-bold">₩75,000</span></div><div class="flex justify-between py-4"><span class="font-bold">총액</span><span class="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">₩825,000</span></div></div><div class="space-y-4 mb-6"><input type="text" id="buyerName" class="w-full px-4 py-3 bg-white/10 border-2 border-white/20 rounded-lg text-white placeholder-gray-400" placeholder="이름"><input type="email" id="buyerEmail" class="w-full px-4 py-3 bg-white/10 border-2 border-white/20 rounded-lg text-white placeholder-gray-400" placeholder="이메일"><input type="tel" id="buyerPhone" class="w-full px-4 py-3 bg-white/10 border-2 border-white/20 rounded-lg text-white placeholder-gray-400" placeholder="연락처"></div><label class="flex gap-3 mb-6"><input type="checkbox" id="agreeTerms" class="w-5 h-5"><span class="text-sm">약관 동의</span></label><button onclick="processPayment()" class="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-bold hover:shadow-2xl hover:shadow-purple-500/50">₩825,000 결제</button></div></div></div></div><script>IMP.init('imp00000000');const user=JSON.parse(localStorage.getItem('user')||'null');if(user){document.getElementById('buyerName').value=user.name||'';document.getElementById('buyerEmail').value=user.email||'';document.getElementById('buyerPhone').value=user.phone||'';}function processPayment(){const name=document.getElementById('buyerName').value,email=document.getElementById('buyerEmail').value,phone=document.getElementById('buyerPhone').value;if(!name||!email||!phone||!document.getElementById('agreeTerms').checked){alert('정보 입력 및 약관 동의 필요');return;}if(!user){window.location.href='/login';return;}const merchantUid='academy_'+user.id+'_enterprise_'+Date.now();IMP.request_pay({pg:'html5_inicis',pay_method:'card',merchant_uid:merchantUid,name:'엔터프라이즈 플랜',amount:825000,buyer_email:email,buyer_name:name,buyer_tel:phone},async(rsp)=>{if(rsp.success){const res=await fetch('/api/payments/complete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({imp_uid:rsp.imp_uid,merchant_uid:rsp.merchant_uid})});const result=await res.json();if(result.success){alert('결제 완료!');window.location.href='/dashboard';}}else{alert('결제 실패: '+rsp.error_msg);}});}</script></body></html>`)
+})
+
 // 요금제 페이지
 app.get('/pricing', (c) => {
   return c.html(`
@@ -6182,11 +6629,10 @@ app.get('/pricing', (c) => {
                             </div>
                         </div>
                         
-                        <button 
-                            onclick="startPayment('starter', 55000, '스타터 플랜')"
-                            class="w-full py-4 bg-gray-900 text-white rounded-xl font-bold hover:bg-gray-800 transition-all hover:shadow-lg">
+                        <a href="/pricing/starter"
+                            class="block text-center w-full py-4 bg-gray-900 text-white rounded-xl font-bold hover:bg-gray-800 transition-all hover:shadow-lg">
                             구매하기
-                        </button>
+                        </a>
                     </div>
 
                     <!-- 베이직 플랜 -->
@@ -6230,7 +6676,7 @@ app.get('/pricing', (c) => {
                         </div>
                         
                         <button 
-                            onclick="startPayment('basic', 77000, '베이직 플랜')"
+                            onclick="location.href='/pricing/basic'"
                             class="w-full py-4 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all hover:shadow-lg">
                             구매하기
                         </button>
@@ -6283,7 +6729,7 @@ app.get('/pricing', (c) => {
                         </div>
                         
                         <button 
-                            onclick="startPayment('pro', 147000, '프로 플랜')"
+                            onclick="location.href='/pricing/pro'"
                             class="w-full py-4 bg-white text-purple-600 rounded-xl font-bold hover:bg-purple-50 transition-all hover:shadow-lg">
                             구매하기
                         </button>
@@ -6330,7 +6776,7 @@ app.get('/pricing', (c) => {
                         </div>
                         
                         <button 
-                            onclick="startPayment('business', 297000, '비즈니스 플랜')"
+                            onclick="location.href='/pricing/business'"
                             class="w-full py-4 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-all hover:shadow-lg">
                             구매하기
                         </button>
@@ -6377,7 +6823,7 @@ app.get('/pricing', (c) => {
                         </div>
                         
                         <button 
-                            onclick="startPayment('premium', 440000, '프리미엄 플랜')"
+                            onclick="location.href='/pricing/premium'"
                             class="w-full py-4 bg-orange-600 text-white rounded-xl font-bold hover:bg-orange-700 transition-all hover:shadow-lg">
                             구매하기
                         </button>
@@ -6430,7 +6876,7 @@ app.get('/pricing', (c) => {
                         </div>
                         
                         <button 
-                            onclick="startPayment('enterprise', 750000, '엔터프라이즈 플랜')"
+                            onclick="location.href='/pricing/enterprise'"
                             class="w-full py-4 bg-white text-gray-900 rounded-xl font-bold hover:bg-gray-100 transition-all hover:shadow-lg">
                             구매하기
                         </button>
