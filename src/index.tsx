@@ -5567,7 +5567,7 @@ app.get('/', (c) => {
                                 <div class="mega-menu-inner">
                                     <!-- 홈 -->
                                     <div class="menu-column">
-                                        <div class="menu-column-title">홈</div>
+                                        <div class="menu-column-title"><a href="#home" onclick="scrollToSection('home'); return false;" style="cursor: pointer; text-decoration: none;">홈</a></div>
                                         <a href="/">메인 홈</a>
                                         <a href="/about">회사 소개</a>
                                         <a href="/dashboard">대시보드</a>
@@ -5575,7 +5575,7 @@ app.get('/', (c) => {
                                     
                                     <!-- 교육 프로그램 -->
                                     <div class="menu-column">
-                                        <div class="menu-column-title">교육 프로그램</div>
+                                        <div class="menu-column-title"><a href="#programs" onclick="scrollToSection('programs'); return false;" style="cursor: pointer; text-decoration: none;">교육 프로그램</a></div>
                                         <a href="/tools/landing-page-builder">랜딩페이지 생성기</a>
                                         <a href="/tools/sms-sender">문자 발송</a>
                                         <a href="/tools/student-management">학생 관리</a>
@@ -5584,7 +5584,7 @@ app.get('/', (c) => {
                                     
                                     <!-- 요금제 -->
                                     <div class="menu-column">
-                                        <div class="menu-column-title">요금제</div>
+                                        <div class="menu-column-title"><a href="#pricing" onclick="scrollToSection('pricing'); return false;" style="cursor: pointer; text-decoration: none;">요금제</a></div>
                                         <a href="/pricing/starter">스타터 플랜</a>
                                         <a href="/pricing/basic">베이직 플랜</a>
                                         <a href="/pricing/pro">프로 플랜</a>
@@ -5595,7 +5595,7 @@ app.get('/', (c) => {
                                     
                                     <!-- 성공 사례 -->
                                     <div class="menu-column">
-                                        <div class="menu-column-title">성공 사례</div>
+                                        <div class="menu-column-title"><a href="#success" onclick="scrollToSection('success'); return false;" style="cursor: pointer; text-decoration: none;">성공 사례</a></div>
                                         <a href="/success">전체 사례</a>
                                         <a href="/success/academy">학원 성공 사례</a>
                                         <a href="/success/teacher">교사 성공 사례</a>
@@ -5603,7 +5603,7 @@ app.get('/', (c) => {
                                     
                                     <!-- 문의하기 -->
                                     <div class="menu-column">
-                                        <div class="menu-column-title">문의하기</div>
+                                        <div class="menu-column-title"><a href="#contact" onclick="scrollToSection('contact'); return false;" style="cursor: pointer; text-decoration: none;">문의하기</a></div>
                                         <a href="/contact">일반 문의</a>
                                         <a href="/contact/support">기술 지원</a>
                                         <a href="/contact/sales">영업 문의</a>
@@ -5667,7 +5667,7 @@ app.get('/', (c) => {
         </nav>
 
         <!-- Hero Section -->
-        <section class="pt-32 pb-32 px-6 bg-white relative overflow-hidden">
+        <section id="home" class="pt-32 pb-32 px-6 bg-white relative overflow-hidden">
             <div class="absolute inset-0 z-0">
                 <div class="absolute top-0 right-0 w-1/2 h-1/2 bg-gradient-to-br from-purple-100 to-transparent rounded-full blur-3xl opacity-30"></div>
                 <div class="absolute bottom-0 left-0 w-1/2 h-1/2 bg-gradient-to-tr from-orange-100 to-transparent rounded-full blur-3xl opacity-30"></div>
@@ -5759,7 +5759,7 @@ app.get('/', (c) => {
         </section>
 
         <!-- Services Section -->
-        <section class="py-32 px-6 section-light">
+        <section id="programs" class="py-32 px-6 section-light">
             <div class="max-w-7xl mx-auto">
                 <div class="text-center mb-20 animate-fade-in">
                     <h2 class="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
@@ -5905,7 +5905,7 @@ app.get('/', (c) => {
         </section>
 
         <!-- Program CTA Section -->
-        <section class="py-20 px-6 bg-gradient-to-br from-purple-50 to-white">
+        <section id="pricing" class="py-20 px-6 bg-gradient-to-br from-purple-50 to-white">
             <div class="max-w-7xl mx-auto">
                 <div class="text-center mb-12">
                     <h2 class="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
@@ -6017,7 +6017,7 @@ app.get('/', (c) => {
         </section>
 
         <!-- Why Us Section -->
-        <section class="py-32 px-6 bg-white">
+        <section id="success" class="py-32 px-6 bg-white">
             <div class="max-w-7xl mx-auto">
                 <div class="text-center mb-20 animate-fade-in">
                     <h2 class="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
@@ -6123,7 +6123,7 @@ app.get('/', (c) => {
         </section>
 
         <!-- CTA Section -->
-        <section class="py-32 px-6 gradient-purple">
+        <section id="contact" class="py-32 px-6 gradient-purple">
             <div class="max-w-4xl mx-auto text-center animate-fade-in">
                 <h2 class="text-4xl lg:text-6xl font-bold text-white mb-8 text-balance">
                     학원 성장의 시작,<br>
@@ -6194,6 +6194,21 @@ app.get('/', (c) => {
         </footer>
 
         <script>
+            // Smooth scroll to section
+            function scrollToSection(sectionId) {
+                const element = document.getElementById(sectionId);
+                if (element) {
+                    const navHeight = 80; // Navigation bar height
+                    const elementPosition = element.getBoundingClientRect().top;
+                    const offsetPosition = elementPosition + window.pageYOffset - navHeight;
+                    
+                    window.scrollTo({
+                        top: offsetPosition,
+                        behavior: 'smooth'
+                    });
+                }
+            }
+            
             // 로그인 상태 체크
             function checkLoginStatus() {
                 const user = JSON.parse(localStorage.getItem('user') || 'null');
