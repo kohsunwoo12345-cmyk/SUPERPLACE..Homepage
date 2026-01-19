@@ -12613,7 +12613,7 @@ app.get('/api/students', async (c) => {
     try {
       const userHeader = c.req.header('X-User-Data-Base64')
       if (userHeader) {
-        const userData = JSON.parse(atob(userHeader))
+        const userData = JSON.parse(decodeURIComponent(escape(atob(userHeader))))
         userId = userData.id || userData.academy_id
         console.log('👥 [GetStudents] Got userId from header:', userId)
       }
@@ -12734,7 +12734,7 @@ app.post('/api/students', async (c) => {
     try {
       const userHeader = c.req.header('X-User-Data-Base64')
       if (userHeader && !finalAcademyId) {
-        const userData = JSON.parse(atob(userHeader))
+        const userData = JSON.parse(decodeURIComponent(escape(atob(userHeader))))
         finalAcademyId = userData.id || userData.academy_id
         console.log('➕ [AddStudent] Academy ID from header:', finalAcademyId)
       }
@@ -20463,7 +20463,7 @@ app.post('/api/classes', async (c) => {
     
     if (userHeader && !userId) {
       try {
-        const userData = JSON.parse(atob(userHeader))
+        const userData = JSON.parse(decodeURIComponent(escape(atob(userHeader))))
         userId = userData.id
         console.log('➕ [CreateClass] Extracted userId from header:', userId)
       } catch (err) {
