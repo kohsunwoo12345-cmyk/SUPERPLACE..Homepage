@@ -26748,11 +26748,10 @@ app.get('/students', (c) => {
         </div>
 
         <script>
-            const academyId = 1; // 현재 학원 ID
-            
             // 로그인 사용자 정보 확인
             const userStr = localStorage.getItem('user');
             let currentUser = null;
+            let academyId = 1; // 기본값 (로그인 시 덮어씌워짐)
             let userPermissions = {
                 canViewAllStudents: false,
                 canWriteDailyReports: false,
@@ -26761,7 +26760,9 @@ app.get('/students', (c) => {
             
             if (userStr) {
                 currentUser = JSON.parse(userStr);
+                academyId = currentUser.id; // 로그인한 사용자의 ID를 academyId로 사용
                 console.log('Current user:', currentUser);
+                console.log('Academy ID:', academyId);
             }
 
             // 페이지 로드 시 권한 확인 및 UI 제한
