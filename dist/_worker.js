@@ -9533,6 +9533,26 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
             loadMyLandingPages()
             loadStudentCount()
             loadTeacherCount()
+            
+            // 학생/선생님 수 자동 갱신 (30초마다)
+            setInterval(() => {
+                loadStudentCount()
+                loadTeacherCount()
+            }, 30000) // 30초
+            
+            // 페이지가 다시 포커스를 받을 때 갱신
+            window.addEventListener('focus', () => {
+                loadStudentCount()
+                loadTeacherCount()
+            })
+            
+            // 다른 탭에서 변경사항이 있을 때 갱신 (storage 이벤트)
+            window.addEventListener('storage', (e) => {
+                if (e.key === 'students_updated' || e.key === 'teachers_updated') {
+                    loadStudentCount()
+                    loadTeacherCount()
+                }
+            })
 
             function returnToAdmin() {
                 const originalAdmin = JSON.parse(localStorage.getItem('original_admin'))
