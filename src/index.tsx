@@ -5181,6 +5181,56 @@ app.get('/', (c) => {
           .text-balance {
             text-wrap: balance;
           }
+          
+          /* 드롭다운 메뉴 스타일 */
+          .dropdown {
+            position: relative;
+          }
+          
+          .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            display: none;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.1);
+            min-width: 200px;
+            padding: 8px 0;
+            margin-top: 8px;
+            z-index: 100;
+          }
+          
+          .dropdown:hover .dropdown-menu {
+            display: block;
+            animation: fadeInDown 0.2s ease-out;
+          }
+          
+          .dropdown-menu a {
+            display: block;
+            padding: 12px 20px;
+            color: #374151;
+            text-decoration: none;
+            transition: all 0.2s;
+          }
+          
+          .dropdown-menu a:hover {
+            background: #f3f4f6;
+            color: #7c3aed;
+            padding-left: 24px;
+          }
+          
+          @keyframes fadeInDown {
+            from {
+              opacity: 0;
+              transform: translateY(-10px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
         </style>
     </head>
     <body>
@@ -5194,8 +5244,31 @@ app.get('/', (c) => {
                     </div>
                     <div class="hidden md:flex items-center space-x-10">
                         <a href="/" class="text-gray-700 hover:text-purple-600 font-medium transition">홈</a>
-                        <a href="/programs" class="text-gray-700 hover:text-purple-600 font-medium transition">교육 프로그램</a>
-                        <a href="/pricing" class="text-gray-700 hover:text-purple-600 font-medium transition">요금제</a>
+                        
+                        <!-- 교육 프로그램 드롭다운 -->
+                        <div class="dropdown">
+                            <a href="/programs" class="text-gray-700 hover:text-purple-600 font-medium transition">교육 프로그램</a>
+                            <div class="dropdown-menu">
+                                <a href="/tools/landing-page-builder">📄 랜딩페이지 생성기</a>
+                                <a href="/tools/sms-sender">📱 문자 발송</a>
+                                <a href="/tools/student-management">👨‍🎓 학생 관리</a>
+                                <a href="/tools/ai-learning-report">📊 학습 분석 리포트</a>
+                            </div>
+                        </div>
+                        
+                        <!-- 요금제 드롭다운 -->
+                        <div class="dropdown">
+                            <a href="/pricing" class="text-gray-700 hover:text-purple-600 font-medium transition">요금제</a>
+                            <div class="dropdown-menu">
+                                <a href="/pricing/starter">💼 스타터 플랜</a>
+                                <a href="/pricing/basic">🎯 베이직 플랜</a>
+                                <a href="/pricing/pro">⭐ 프로 플랜</a>
+                                <a href="/pricing/business">🏢 비즈니스 플랜</a>
+                                <a href="/pricing/premium">💎 프리미엄 플랜</a>
+                                <a href="/pricing/enterprise">🏆 엔터프라이즈 플랜</a>
+                            </div>
+                        </div>
+                        
                         <a href="/success" class="text-gray-700 hover:text-purple-600 font-medium transition">성공 사례</a>
                         <a href="/contact" class="text-gray-700 hover:text-purple-600 font-medium transition">문의하기</a>
                         <!-- 로그인 전 -->
@@ -5982,6 +6055,43 @@ app.post('/api/payments/complete', async (c) => {
       endDate
     })
 
+    // usage_tracking 테이블 생성 (없을 경우)
+    await c.env.DB.prepare(`
+      CREATE TABLE IF NOT EXISTS usage_tracking (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        academy_id INTEGER NOT NULL,
+        subscription_id INTEGER NOT NULL,
+        current_students INTEGER DEFAULT 0,
+        ai_reports_used_this_month INTEGER DEFAULT 0,
+        last_ai_report_reset_date TEXT,
+        landing_pages_created INTEGER DEFAULT 0,
+        current_teachers INTEGER DEFAULT 0,
+        sms_sent_this_month INTEGER DEFAULT 0,
+        last_sms_reset_date TEXT,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+      )
+    `).run()
+
+    // usage_tracking 레코드 생성 (구독과 함께)
+    const usageResult = await c.env.DB.prepare(`
+      INSERT INTO usage_tracking (
+        academy_id, subscription_id, current_students, 
+        ai_reports_used_this_month, landing_pages_created, 
+        current_teachers, sms_sent_this_month,
+        last_ai_report_reset_date, last_sms_reset_date
+      ) VALUES (?, ?, 0, 0, 0, 0, 0, ?, ?)
+    `).bind(
+      academyId,
+      result.meta.last_row_id,
+      startDate,
+      startDate
+    ).run()
+
+    console.log('[Payment Complete] Usage tracking initialized:', {
+      usageId: usageResult.meta.last_row_id
+    })
+
     return c.json({ 
       success: true, 
       subscription: {
@@ -6060,6 +6170,399 @@ app.get('/api/subscriptions/status', async (c) => {
     })
   } catch (error) {
     console.error('[Subscription Status] Error:', error)
+    return c.json({ success: false, error: error.message }, 500)
+  }
+})
+
+// ==================== 사용량 한도 체크 API ====================
+
+// 사용량 조회 API
+app.get('/api/usage/check', async (c) => {
+  try {
+    const session = getCookie(c, 'user_session')
+    if (!session) {
+      return c.json({ success: false, error: 'Not authenticated' }, 401)
+    }
+
+    const sessionData = JSON.parse(session)
+    const academyId = sessionData.id
+
+    // 활성 구독 조회
+    const subscription = await c.env.DB.prepare(`
+      SELECT * FROM subscriptions 
+      WHERE academy_id = ? AND status = 'active'
+      ORDER BY created_at DESC LIMIT 1
+    `).bind(academyId).first()
+
+    if (!subscription) {
+      return c.json({ 
+        success: false, 
+        error: '활성 구독이 없습니다' 
+      }, 403)
+    }
+
+    // 사용량 조회
+    const usage = await c.env.DB.prepare(`
+      SELECT * FROM usage_tracking 
+      WHERE academy_id = ? AND subscription_id = ?
+    `).bind(academyId, subscription.id).first()
+
+    // 사용량 데이터가 없으면 생성
+    if (!usage) {
+      const now = new Date().toISOString().split('T')[0]
+      await c.env.DB.prepare(`
+        INSERT INTO usage_tracking (
+          academy_id, subscription_id, current_students,
+          ai_reports_used_this_month, landing_pages_created,
+          current_teachers, sms_sent_this_month,
+          last_ai_report_reset_date, last_sms_reset_date
+        ) VALUES (?, ?, 0, 0, 0, 0, 0, ?, ?)
+      `).bind(academyId, subscription.id, now, now).run()
+
+      return c.json({
+        success: true,
+        limits: {
+          students: subscription.student_limit,
+          aiReports: subscription.ai_report_limit,
+          landingPages: subscription.landing_page_limit,
+          teachers: subscription.teacher_limit
+        },
+        usage: {
+          students: 0,
+          aiReports: 0,
+          landingPages: 0,
+          teachers: 0,
+          sms: 0
+        }
+      })
+    }
+
+    return c.json({
+      success: true,
+      limits: {
+        students: subscription.student_limit,
+        aiReports: subscription.ai_report_limit,
+        landingPages: subscription.landing_page_limit,
+        teachers: subscription.teacher_limit
+      },
+      usage: {
+        students: usage.current_students || 0,
+        aiReports: usage.ai_reports_used_this_month || 0,
+        landingPages: usage.landing_pages_created || 0,
+        teachers: usage.current_teachers || 0,
+        sms: usage.sms_sent_this_month || 0
+      }
+    })
+  } catch (error) {
+    console.error('[Usage Check] Error:', error)
+    return c.json({ success: false, error: error.message }, 500)
+  }
+})
+
+// 학생 추가 전 한도 체크
+app.post('/api/usage/check-student-limit', async (c) => {
+  try {
+    const session = getCookie(c, 'user_session')
+    if (!session) {
+      return c.json({ success: false, error: 'Not authenticated' }, 401)
+    }
+
+    const sessionData = JSON.parse(session)
+    const academyId = sessionData.id
+
+    const subscription = await c.env.DB.prepare(`
+      SELECT * FROM subscriptions 
+      WHERE academy_id = ? AND status = 'active'
+      ORDER BY created_at DESC LIMIT 1
+    `).bind(academyId).first()
+
+    if (!subscription) {
+      return c.json({ 
+        success: false, 
+        error: '활성 구독이 없습니다' 
+      }, 403)
+    }
+
+    const usage = await c.env.DB.prepare(`
+      SELECT * FROM usage_tracking 
+      WHERE academy_id = ? AND subscription_id = ?
+    `).bind(academyId, subscription.id).first()
+
+    const currentStudents = usage?.current_students || 0
+    const canAdd = currentStudents < subscription.student_limit
+
+    return c.json({
+      success: true,
+      canAdd,
+      current: currentStudents,
+      limit: subscription.student_limit,
+      message: canAdd ? '학생을 추가할 수 있습니다' : '학생 수 한도에 도달했습니다'
+    })
+  } catch (error) {
+    return c.json({ success: false, error: error.message }, 500)
+  }
+})
+
+// AI 리포트 생성 전 한도 체크
+app.post('/api/usage/check-ai-report-limit', async (c) => {
+  try {
+    const session = getCookie(c, 'user_session')
+    if (!session) {
+      return c.json({ success: false, error: 'Not authenticated' }, 401)
+    }
+
+    const sessionData = JSON.parse(session)
+    const academyId = sessionData.id
+
+    const subscription = await c.env.DB.prepare(`
+      SELECT * FROM subscriptions 
+      WHERE academy_id = ? AND status = 'active'
+      ORDER BY created_at DESC LIMIT 1
+    `).bind(academyId).first()
+
+    if (!subscription) {
+      return c.json({ 
+        success: false, 
+        error: '활성 구독이 없습니다' 
+      }, 403)
+    }
+
+    const usage = await c.env.DB.prepare(`
+      SELECT * FROM usage_tracking 
+      WHERE academy_id = ? AND subscription_id = ?
+    `).bind(academyId, subscription.id).first()
+
+    const currentReports = usage?.ai_reports_used_this_month || 0
+    const canCreate = currentReports < subscription.ai_report_limit
+
+    return c.json({
+      success: true,
+      canCreate,
+      current: currentReports,
+      limit: subscription.ai_report_limit,
+      message: canCreate ? 'AI 리포트를 생성할 수 있습니다' : 'AI 리포트 월간 한도에 도달했습니다'
+    })
+  } catch (error) {
+    return c.json({ success: false, error: error.message }, 500)
+  }
+})
+
+// 랜딩페이지 생성 전 한도 체크
+app.post('/api/usage/check-landing-page-limit', async (c) => {
+  try {
+    const session = getCookie(c, 'user_session')
+    if (!session) {
+      return c.json({ success: false, error: 'Not authenticated' }, 401)
+    }
+
+    const sessionData = JSON.parse(session)
+    const academyId = sessionData.id
+
+    const subscription = await c.env.DB.prepare(`
+      SELECT * FROM subscriptions 
+      WHERE academy_id = ? AND status = 'active'
+      ORDER BY created_at DESC LIMIT 1
+    `).bind(academyId).first()
+
+    if (!subscription) {
+      return c.json({ 
+        success: false, 
+        error: '활성 구독이 없습니다' 
+      }, 403)
+    }
+
+    const usage = await c.env.DB.prepare(`
+      SELECT * FROM usage_tracking 
+      WHERE academy_id = ? AND subscription_id = ?
+    `).bind(academyId, subscription.id).first()
+
+    const currentPages = usage?.landing_pages_created || 0
+    const canCreate = currentPages < subscription.landing_page_limit
+
+    return c.json({
+      success: true,
+      canCreate,
+      current: currentPages,
+      limit: subscription.landing_page_limit,
+      message: canCreate ? '랜딩페이지를 생성할 수 있습니다' : '랜딩페이지 한도에 도달했습니다'
+    })
+  } catch (error) {
+    return c.json({ success: false, error: error.message }, 500)
+  }
+})
+
+// 선생님 추가 전 한도 체크
+app.post('/api/usage/check-teacher-limit', async (c) => {
+  try {
+    const session = getCookie(c, 'user_session')
+    if (!session) {
+      return c.json({ success: false, error: 'Not authenticated' }, 401)
+    }
+
+    const sessionData = JSON.parse(session)
+    const academyId = sessionData.id
+
+    const subscription = await c.env.DB.prepare(`
+      SELECT * FROM subscriptions 
+      WHERE academy_id = ? AND status = 'active'
+      ORDER BY created_at DESC LIMIT 1
+    `).bind(academyId).first()
+
+    if (!subscription) {
+      return c.json({ 
+        success: false, 
+        error: '활성 구독이 없습니다' 
+      }, 403)
+    }
+
+    const usage = await c.env.DB.prepare(`
+      SELECT * FROM usage_tracking 
+      WHERE academy_id = ? AND subscription_id = ?
+    `).bind(academyId, subscription.id).first()
+
+    const currentTeachers = usage?.current_teachers || 0
+    const canAdd = currentTeachers < subscription.teacher_limit
+
+    return c.json({
+      success: true,
+      canAdd,
+      current: currentTeachers,
+      limit: subscription.teacher_limit,
+      message: canAdd ? '선생님을 추가할 수 있습니다' : '선생님 계정 한도에 도달했습니다'
+    })
+  } catch (error) {
+    return c.json({ success: false, error: error.message }, 500)
+  }
+})
+
+// 사용량 증가 API (학생 추가 시)
+app.post('/api/usage/increment-students', async (c) => {
+  try {
+    const session = getCookie(c, 'user_session')
+    if (!session) {
+      return c.json({ success: false, error: 'Not authenticated' }, 401)
+    }
+
+    const sessionData = JSON.parse(session)
+    const academyId = sessionData.id
+
+    const subscription = await c.env.DB.prepare(`
+      SELECT * FROM subscriptions 
+      WHERE academy_id = ? AND status = 'active'
+      ORDER BY created_at DESC LIMIT 1
+    `).bind(academyId).first()
+
+    if (!subscription) {
+      return c.json({ success: false, error: '활성 구독이 없습니다' }, 403)
+    }
+
+    await c.env.DB.prepare(`
+      UPDATE usage_tracking 
+      SET current_students = current_students + 1, updated_at = CURRENT_TIMESTAMP
+      WHERE academy_id = ? AND subscription_id = ?
+    `).bind(academyId, subscription.id).run()
+
+    return c.json({ success: true, message: '학생 수가 증가했습니다' })
+  } catch (error) {
+    return c.json({ success: false, error: error.message }, 500)
+  }
+})
+
+// 사용량 증가 API (AI 리포트 생성 시)
+app.post('/api/usage/increment-ai-reports', async (c) => {
+  try {
+    const session = getCookie(c, 'user_session')
+    if (!session) {
+      return c.json({ success: false, error: 'Not authenticated' }, 401)
+    }
+
+    const sessionData = JSON.parse(session)
+    const academyId = sessionData.id
+
+    const subscription = await c.env.DB.prepare(`
+      SELECT * FROM subscriptions 
+      WHERE academy_id = ? AND status = 'active'
+      ORDER BY created_at DESC LIMIT 1
+    `).bind(academyId).first()
+
+    if (!subscription) {
+      return c.json({ success: false, error: '활성 구독이 없습니다' }, 403)
+    }
+
+    await c.env.DB.prepare(`
+      UPDATE usage_tracking 
+      SET ai_reports_used_this_month = ai_reports_used_this_month + 1, updated_at = CURRENT_TIMESTAMP
+      WHERE academy_id = ? AND subscription_id = ?
+    `).bind(academyId, subscription.id).run()
+
+    return c.json({ success: true, message: 'AI 리포트 사용량이 증가했습니다' })
+  } catch (error) {
+    return c.json({ success: false, error: error.message }, 500)
+  }
+})
+
+// 사용량 증가 API (랜딩페이지 생성 시)
+app.post('/api/usage/increment-landing-pages', async (c) => {
+  try {
+    const session = getCookie(c, 'user_session')
+    if (!session) {
+      return c.json({ success: false, error: 'Not authenticated' }, 401)
+    }
+
+    const sessionData = JSON.parse(session)
+    const academyId = sessionData.id
+
+    const subscription = await c.env.DB.prepare(`
+      SELECT * FROM subscriptions 
+      WHERE academy_id = ? AND status = 'active'
+      ORDER BY created_at DESC LIMIT 1
+    `).bind(academyId).first()
+
+    if (!subscription) {
+      return c.json({ success: false, error: '활성 구독이 없습니다' }, 403)
+    }
+
+    await c.env.DB.prepare(`
+      UPDATE usage_tracking 
+      SET landing_pages_created = landing_pages_created + 1, updated_at = CURRENT_TIMESTAMP
+      WHERE academy_id = ? AND subscription_id = ?
+    `).bind(academyId, subscription.id).run()
+
+    return c.json({ success: true, message: '랜딩페이지 사용량이 증가했습니다' })
+  } catch (error) {
+    return c.json({ success: false, error: error.message }, 500)
+  }
+})
+
+// 사용량 증가 API (선생님 추가 시)
+app.post('/api/usage/increment-teachers', async (c) => {
+  try {
+    const session = getCookie(c, 'user_session')
+    if (!session) {
+      return c.json({ success: false, error: 'Not authenticated' }, 401)
+    }
+
+    const sessionData = JSON.parse(session)
+    const academyId = sessionData.id
+
+    const subscription = await c.env.DB.prepare(`
+      SELECT * FROM subscriptions 
+      WHERE academy_id = ? AND status = 'active'
+      ORDER BY created_at DESC LIMIT 1
+    `).bind(academyId).first()
+
+    if (!subscription) {
+      return c.json({ success: false, error: '활성 구독이 없습니다' }, 403)
+    }
+
+    await c.env.DB.prepare(`
+      UPDATE usage_tracking 
+      SET current_teachers = current_teachers + 1, updated_at = CURRENT_TIMESTAMP
+      WHERE academy_id = ? AND subscription_id = ?
+    `).bind(academyId, subscription.id).run()
+
+    return c.json({ success: true, message: '선생님 수가 증가했습니다' })
+  } catch (error) {
     return c.json({ success: false, error: error.message }, 500)
   }
 })
@@ -6596,9 +7099,10 @@ app.get('/pricing', (c) => {
                                 스타터
                             </div>
                             <div class="flex items-end gap-2 mb-2">
-                                <span class="text-5xl font-bold text-gray-900">₩55,000</span>
+                                <span class="text-5xl font-bold text-gray-900">₩60,500</span>
                                 <span class="text-gray-600 mb-2">/월</span>
                             </div>
+                            <p class="text-sm text-gray-500 mb-2">VAT 포함</p>
                             <p class="text-gray-600">소규모 학원을 위한 기본 플랜</p>
                         </div>
                         
@@ -6642,9 +7146,10 @@ app.get('/pricing', (c) => {
                                 베이직
                             </div>
                             <div class="flex items-end gap-2 mb-2">
-                                <span class="text-5xl font-bold text-gray-900">₩77,000</span>
+                                <span class="text-5xl font-bold text-gray-900">₩84,700</span>
                                 <span class="text-gray-600 mb-2">/월</span>
                             </div>
+                            <p class="text-sm text-gray-500 mb-2">VAT 포함</p>
                             <p class="text-gray-600">성장하는 학원을 위한 플랜</p>
                         </div>
                         
@@ -6695,9 +7200,10 @@ app.get('/pricing', (c) => {
                                 프로
                             </div>
                             <div class="flex items-end gap-2 mb-2">
-                                <span class="text-5xl font-bold text-white">₩147,000</span>
+                                <span class="text-5xl font-bold text-white">₩161,700</span>
                                 <span class="text-purple-100 mb-2">/월</span>
                             </div>
+                            <p class="text-sm text-purple-100 mb-1">VAT 포함</p>
                             <p class="text-purple-100">중형 학원을 위한 프리미엄 플랜</p>
                         </div>
                         
@@ -6742,9 +7248,10 @@ app.get('/pricing', (c) => {
                                 비즈니스
                             </div>
                             <div class="flex items-end gap-2 mb-2">
-                                <span class="text-5xl font-bold text-gray-900">₩297,000</span>
+                                <span class="text-5xl font-bold text-gray-900">₩326,700</span>
                                 <span class="text-gray-600 mb-2">/월</span>
                             </div>
+                            <p class="text-sm text-gray-500 mb-1">VAT 포함</p>
                             <p class="text-gray-600">대형 학원을 위한 완전한 솔루션</p>
                         </div>
                         
@@ -6789,9 +7296,10 @@ app.get('/pricing', (c) => {
                                 프리미엄
                             </div>
                             <div class="flex items-end gap-2 mb-2">
-                                <span class="text-5xl font-bold text-gray-900">₩440,000</span>
+                                <span class="text-5xl font-bold text-gray-900">₩484,000</span>
                                 <span class="text-gray-600 mb-2">/월</span>
                             </div>
+                            <p class="text-sm text-gray-500 mb-1">VAT 포함</p>
                             <p class="text-gray-600">대규모 학원 최적화 솔루션</p>
                         </div>
                         
@@ -6836,9 +7344,10 @@ app.get('/pricing', (c) => {
                                 엔터프라이즈
                             </div>
                             <div class="flex items-end gap-2 mb-2">
-                                <span class="text-5xl font-bold text-white">₩750,000</span>
+                                <span class="text-5xl font-bold text-white">₩825,000</span>
                                 <span class="text-gray-300 mb-2">/월</span>
                             </div>
+                            <p class="text-sm text-gray-400 mb-1">VAT 포함</p>
                             <p class="text-gray-300">프랜차이즈 & 대형 학원 그룹</p>
                         </div>
                         
