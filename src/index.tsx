@@ -14539,7 +14539,7 @@ app.post('/api/learning-reports/generate', async (c) => {
     
     if (weakSubject && (weakSubject.score / weakSubject.max_score * 100) < 75) {
       weaknesses = weakSubject.subject + ' 과목에서 ' + (weakSubject.score / weakSubject.max_score * 100).toFixed(1) + '점으로 보완이 필요합니다.'
-    } else if (dailyRecords.length > 0 && dailyRecords.filter(r => r.homework_completion === '미완료').length > 0) {
+    } else if (dailyRecords.length > 0 && dailyRecords.filter(r => r.homework_status === '미완료').length > 0) {
       weaknesses = '과제 완성률이 낮습니다. 복습 시간을 늘려 과제를 완료하는 습관을 기르면 좋겠습니다.'
     } else {
       weaknesses = '전반적으로 균형잡힌 학습을 하고 있습니다.'
