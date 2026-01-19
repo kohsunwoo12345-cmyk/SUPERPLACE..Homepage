@@ -1138,6 +1138,76 @@ app.post('/api/init-db', async (c) => {
   }
 })
 
+// 🔧 데이터베이스 마이그레이션 API
+app.get('/api/db/migrate', async (c) => {
+  try {
+    console.log('🔧 [Migration] Starting database migrations...')
+    
+    // Migration 1: Add academy_id to users table if it doesn't exist
+    try {
+      await c.env.DB.prepare(`ALTER TABLE users ADD COLUMN academy_id INTEGER DEFAULT 1`).run()
+      console.log('✅ [Migration] Added academy_id column to users table')
+    } catch (e) {
+      console.log('ℹ️ [Migration] academy_id column already exists or migration failed:', e.message)
+    }
+    
+    // Migration 2: Set default academy_id for users without it
+    try {
+      await c.env.DB.prepare(`UPDATE users SET academy_id = 1 WHERE academy_id IS NULL`).run()
+      console.log('✅ [Migration] Set default academy_id for existing users')
+    } catch (e) {
+      console.log('ℹ️ [Migration] Failed to set default academy_id:', e.message)
+    }
+    
+    // Migration 3: Ensure academies table exists
+    try {
+      await c.env.DB.prepare(`
+        CREATE TABLE IF NOT EXISTS academies (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          academy_name TEXT NOT NULL,
+          owner_id INTEGER NOT NULL,
+          academy_id INTEGER UNIQUE,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (owner_id) REFERENCES users(id)
+        )
+      `).run()
+      console.log('✅ [Migration] Created academies table')
+    } catch (e) {
+      console.log('ℹ️ [Migration] Academies table creation failed:', e.message)
+    }
+    
+    // Migration 4: Ensure subscriptions table has academy_id
+    try {
+      await c.env.DB.prepare(`ALTER TABLE subscriptions ADD COLUMN academy_id INTEGER`).run()
+      console.log('✅ [Migration] Added academy_id to subscriptions table')
+    } catch (e) {
+      console.log('ℹ️ [Migration] academy_id in subscriptions already exists:', e.message)
+    }
+    
+    // Migration 5: Ensure usage_tracking table has academy_id
+    try {
+      await c.env.DB.prepare(`ALTER TABLE usage_tracking ADD COLUMN academy_id INTEGER`).run()
+      console.log('✅ [Migration] Added academy_id to usage_tracking table')
+    } catch (e) {
+      console.log('ℹ️ [Migration] academy_id in usage_tracking already exists:', e.message)
+    }
+    
+    return c.json({ 
+      success: true, 
+      message: '데이터베이스 마이그레이션이 완료되었습니다',
+      migrations: [
+        'users.academy_id',
+        'academies table',
+        'subscriptions.academy_id',
+        'usage_tracking.academy_id'
+      ]
+    })
+  } catch (err) {
+    console.error('❌ [Migration] Error:', err)
+    return c.json({ success: false, error: '마이그레이션 실패: ' + err.message }, 500)
+  }
+})
+
 // 포인트 충전 API (테스트용)
 app.post('/api/points/charge', async (c) => {
   try {
@@ -6740,10 +6810,25 @@ app.get('/api/admin/usage/:userId', async (c) => {
     const userId = c.req.param('userId')
     
     // 사용자의 academy_id 조회
-    const user = await c.env.DB.prepare('SELECT id, academy_id FROM users WHERE id = ?').bind(userId).first()
+    const user = await c.env.DB.prepare('SELECT id, academy_id, name, academy_name FROM users WHERE id = ?').bind(userId).first()
     
-    if (!user || !user.academy_id) {
-      return c.json({ success: false, hasSubscription: false, message: '학원 정보가 없습니다' })
+    if (!user) {
+      return c.json({ success: false, hasSubscription: false, message: '사용자를 찾을 수 없습니다' })
+    }
+    
+    // academy_id가 없으면 생성
+    let academyId = user.academy_id
+    if (!academyId) {
+      // user.id를 academy_id로 사용
+      academyId = user.id
+      try {
+        await c.env.DB.prepare(`
+          UPDATE users SET academy_id = ? WHERE id = ?
+        `).bind(academyId, user.id).run()
+        console.log('[Admin] Auto-created academy_id:', academyId)
+      } catch (err) {
+        console.error('[Admin] Failed to set academy_id:', err)
+      }
     }
     
     // 활성 구독 조회
@@ -6751,7 +6836,7 @@ app.get('/api/admin/usage/:userId', async (c) => {
       SELECT * FROM subscriptions 
       WHERE academy_id = ? AND status = 'active'
       ORDER BY created_at DESC LIMIT 1
-    `).bind(user.academy_id).first()
+    `).bind(academyId).first()
     
     if (!subscription) {
       return c.json({ success: true, hasSubscription: false, message: '활성 구독이 없습니다' })
