@@ -10749,7 +10749,7 @@ app.get('/dashboard', (c) => {
                             </svg>
                         </div>
                         <div class="text-4xl font-bold text-gray-900 mb-2"><span id="studentCount">0</span>명</div>
-                        <a href="/students" class="text-sm text-purple-600 hover:text-purple-700 font-medium">
+                        <a href="/students/list" class="text-sm text-purple-600 hover:text-purple-700 font-medium">
                             학생 관리 →
                         </a>
                     </div>
@@ -11571,11 +11571,19 @@ app.get('/dashboard', (c) => {
                 const user = JSON.parse(localStorage.getItem('user'))
                 if (user && user.id) {
                     try {
-                        const response = await fetch('/api/students?userId=' + user.id)
+                        // 헤더 방식으로 사용자 정보 전달
+                        const userDataHeader = btoa(unescape(encodeURIComponent(JSON.stringify(user))));
+                        const response = await fetch('/api/students', {
+                            headers: {
+                                'X-User-Data-Base64': userDataHeader
+                            }
+                        })
                         const data = await response.json()
+                        console.log('학생 수 로드:', data)
                         if (data.success && data.students) {
                             const count = data.students.length
                             document.getElementById('studentCount').textContent = count
+                            console.log('학생 수 업데이트:', count)
                         }
                     } catch (err) {
                         console.error('학생 수 로드 실패:', err)
