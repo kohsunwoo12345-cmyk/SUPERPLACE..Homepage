@@ -29996,18 +29996,25 @@ app.get('/admin/bank-transfers', async (c) => {
       `)
     }
     
-    // 계좌이체 신청 목록 조회
-    const transfers = await env.DB.prepare(`
-      SELECT * FROM bank_transfer_requests
-      ORDER BY 
-        CASE status
-          WHEN 'pending' THEN 1
-          WHEN 'approved' THEN 2
-          WHEN 'rejected' THEN 3
-        END,
-        created_at DESC
-      LIMIT 100
-    `).all()
+    // 계좌이체 신청 목록 조회 (테이블이 없을 수도 있으므로 try-catch)
+    let transfers: any = { results: [] }
+    try {
+      transfers = await env.DB.prepare(`
+        SELECT * FROM bank_transfer_requests
+        ORDER BY 
+          CASE status
+            WHEN 'pending' THEN 1
+            WHEN 'approved' THEN 2
+            WHEN 'rejected' THEN 3
+          END,
+          created_at DESC
+        LIMIT 100
+      `).all()
+    } catch (dbError) {
+      console.error('DB query error:', dbError)
+      // 테이블이 없으면 빈 배열로 계속 진행
+      transfers = { results: [] }
+    }
     
     return c.html(`
     <!DOCTYPE html>

@@ -23275,17 +23275,17 @@ ${l.director_name} 원장님의 승인을 기다려주세요.`,directorName:l.di
           <p>데이터베이스가 초기화되지 않았습니다.</p>
           <a href="/api/admin/init-payment-tables">데이터베이스 초기화하기</a>
         </body></html>
-      `);const a=await r.DB.prepare(`
-      SELECT * FROM bank_transfer_requests
-      ORDER BY 
-        CASE status
-          WHEN 'pending' THEN 1
-          WHEN 'approved' THEN 2
-          WHEN 'rejected' THEN 3
-        END,
-        created_at DESC
-      LIMIT 100
-    `).all();return e.html(`
+      `);let a={results:[]};try{a=await r.DB.prepare(`
+        SELECT * FROM bank_transfer_requests
+        ORDER BY 
+          CASE status
+            WHEN 'pending' THEN 1
+            WHEN 'approved' THEN 2
+            WHEN 'rejected' THEN 3
+          END,
+          created_at DESC
+        LIMIT 100
+      `).all()}catch(n){console.error("DB query error:",n),a={results:[]}}return e.html(`
     <!DOCTYPE html>
     <html lang="ko">
     <head>
