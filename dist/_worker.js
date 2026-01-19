@@ -11730,8 +11730,31 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
             }
 
             // 학생 목록 로드
+            // 학년 정렬 함수
+            function sortByGrade(students) {
+                const gradeOrder = {
+                    '초1': 1, '초2': 2, '초3': 3, '초4': 4, '초5': 5, '초6': 6,
+                    '중1': 7, '중2': 8, '중3': 9,
+                    '고1': 10, '고2': 11, '고3': 12
+                };
+                
+                return students.sort((a, b) => {
+                    const orderA = gradeOrder[a.grade] || 999;
+                    const orderB = gradeOrder[b.grade] || 999;
+                    
+                    if (orderA !== orderB) {
+                        return orderA - orderB;
+                    }
+                    
+                    // 같은 학년이면 이름순
+                    return a.name.localeCompare(b.name, 'ko');
+                });
+            }
+
             async function loadStudents() {
                 try {
+                    console.log('👥 [LoadStudents] Starting to load students...');
+                    
                     const userDataBase64 = btoa(unescape(encodeURIComponent(JSON.stringify(currentUser))));
                     const response = await fetch('/api/students', {
                         headers: {
@@ -11740,20 +11763,34 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
                     });
                     const data = await response.json();
                     
+                    console.log('👥 [LoadStudents] Response:', data.success, 'Students count:', data.students?.length);
+                    
                     const select = document.getElementById('studentSelect');
                     select.innerHTML = '<option value="">학생을 선택하세요</option>';
                     
-                    if (data.success && data.students) {
-                        // 모든 학생을 표시 (데이터 확인은 생성 시점에)
-                        data.students.forEach(student => {
+                    if (data.success && data.students && data.students.length > 0) {
+                        // 학년별로 정렬
+                        const sortedStudents = sortByGrade([...data.students]);
+                        
+                        console.log('👥 [LoadStudents] Sorted students:', sortedStudents.length);
+                        
+                        // 정렬된 학생 목록 표시
+                        sortedStudents.forEach(student => {
                             const option = document.createElement('option');
                             option.value = student.id;
                             option.textContent = \`\${student.name} (\${student.grade})\`;
                             select.appendChild(option);
                         });
+                        
+                        console.log('✅ [LoadStudents] Students loaded successfully');
+                    } else {
+                        console.warn('⚠️ [LoadStudents] No students found');
+                        select.innerHTML += '<option disabled>등록된 학생이 없습니다</option>';
                     }
                 } catch (err) {
-                    console.error('학생 목록 로드 실패:', err);
+                    console.error('❌ [LoadStudents] Error:', err);
+                    console.error('❌ [LoadStudents] Error message:', err.message);
+                    console.error('❌ [LoadStudents] Error stack:', err.stack);
                 }
             }
 
