@@ -359,11 +359,15 @@ export const classesPage = `
                 console.log('📥 Response status:', res.status);
                 const data = await res.json();
                 console.log('📥 Response data:', data);
+                console.log('📥 Full response:', JSON.stringify(data, null, 2));
                 
                 if (data.success) {
-                    alert(classId ? '반이 수정되었습니다.' : '새 반이 추가되었습니다.');
+                    console.log('✅ Save successful, reloading classes...');
                     hideModal();
-                    loadClasses();
+                    // 반 목록을 먼저 새로고침한 후 알림 표시
+                    await loadClasses();
+                    alert(classId ? '반이 수정되었습니다.' : '새 반이 추가되었습니다.');
+                    console.log('✅ Classes reloaded and displayed');
                 } else {
                     alert('저장 실패: ' + data.error);
                     if (data.details) {
