@@ -11571,11 +11571,6 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
                 loadFolders();
                 loadStudents();
                 setDefaultMonth();
-                
-                // 리포트 월 변경 시 학생 목록 다시 로드
-                document.getElementById('reportMonth').addEventListener('change', () => {
-                    loadStudents();
-                });
             });
 
             // 폴더 목록 로드
@@ -11749,35 +11744,13 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
                     select.innerHTML = '<option value="">학생을 선택하세요</option>';
                     
                     if (data.success && data.students) {
-                        // 각 학생의 데이터 존재 여부 확인
-                        const reportMonth = document.getElementById('reportMonth').value || new Date().toISOString().slice(0, 7);
-                        
-                        for (const student of data.students) {
-                            try {
-                                const dataCheckResponse = await fetch(\`/api/students/has-data/\${student.id}?month=\${reportMonth}\`);
-                                const dataCheck = await dataCheckResponse.json();
-                                
-                                const option = document.createElement('option');
-                                option.value = student.id;
-                                
-                                if (dataCheck.hasData) {
-                                    option.textContent = \`\${student.name} (\${student.grade})\`;
-                                } else {
-                                    option.textContent = \`\${student.name} (\${student.grade}) - 데이터 없음\`;
-                                    option.disabled = true;
-                                    option.style.color = '#999';
-                                }
-                                
-                                select.appendChild(option);
-                            } catch (err) {
-                                console.warn('데이터 확인 실패:', student.id, err);
-                                // 에러 발생 시 일단 추가
-                                const option = document.createElement('option');
-                                option.value = student.id;
-                                option.textContent = \`\${student.name} (\${student.grade})\`;
-                                select.appendChild(option);
-                            }
-                        }
+                        // 모든 학생을 표시 (데이터 확인은 생성 시점에)
+                        data.students.forEach(student => {
+                            const option = document.createElement('option');
+                            option.value = student.id;
+                            option.textContent = \`\${student.name} (\${student.grade})\`;
+                            select.appendChild(option);
+                        });
                     }
                 } catch (err) {
                     console.error('학생 목록 로드 실패:', err);
@@ -12512,16 +12485,16 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
         <\/script>
     </body>
     </html>
-  `));d.get("/api/students/has-data/:student_id",async e=>{try{const t=e.req.param("student_id"),s=e.req.query("month")||new Date().toISOString().slice(0,7);let r=!1,a=!1,o=!1;try{const l=await e.env.DB.prepare(`
+  `));d.get("/api/students/has-data/:student_id",async e=>{try{const t=e.req.param("student_id"),s=e.req.query("month")||new Date().toISOString().slice(0,7);console.log("🔍 [CheckData] Checking data for student:",t,"month:",s);let r=!1,a=!1,o=!1;try{const l=await e.env.DB.prepare(`
         SELECT COUNT(*) as count FROM grades 
         WHERE student_id = ? AND strftime('%Y-%m', test_date) = ?
-      `).bind(t,s).first();r=l&&l.count>0}catch(l){console.warn("Grades table not found:",l.message)}try{const l=await e.env.DB.prepare(`
+      `).bind(t,s).first();r=l&&l.count>0,console.log("📝 [CheckData] Grades:",r,"(count:",l==null?void 0:l.count,")")}catch(l){console.warn("⚠️ [CheckData] Grades table not found:",l.message)}try{const l=await e.env.DB.prepare(`
         SELECT COUNT(*) as count FROM attendance 
         WHERE student_id = ? AND strftime('%Y-%m', attendance_date) = ?
-      `).bind(t,s).first();a=l&&l.count>0}catch(l){console.warn("Attendance table not found:",l.message)}try{const l=await e.env.DB.prepare(`
+      `).bind(t,s).first();a=l&&l.count>0,console.log("📅 [CheckData] Attendance:",a,"(count:",l==null?void 0:l.count,")")}catch(l){console.warn("⚠️ [CheckData] Attendance table not found:",l.message)}try{const l=await e.env.DB.prepare(`
         SELECT COUNT(*) as count FROM daily_records 
         WHERE student_id = ? AND strftime('%Y-%m', record_date) = ?
-      `).bind(t,s).first();o=l&&l.count>0}catch(l){console.warn("Daily records table not found:",l.message)}const n=r||a||o;return e.json({success:!0,hasData:n,details:{hasGrades:r,hasAttendance:a,hasDailyRecords:o}})}catch(t){return console.error("Check student data error:",t),e.json({success:!1,error:"데이터 확인 실패",hasData:!1},500)}});d.get("/api/learning-reports/:student_id",async e=>{try{const t=e.req.param("student_id"),{results:s}=await e.env.DB.prepare(`
+      `).bind(t,s).first();o=l&&l.count>0,console.log("📋 [CheckData] Daily records:",o,"(count:",l==null?void 0:l.count,")")}catch(l){console.warn("⚠️ [CheckData] Daily records table not found:",l.message)}const n=r||a||o;return console.log("✅ [CheckData] Final result - hasData:",n),e.json({success:!0,hasData:n,details:{hasGrades:r,hasAttendance:a,hasDailyRecords:o,month:s}})}catch(t){return console.error("❌ [CheckData] Error:",t),console.error("❌ [CheckData] Stack:",t.stack),e.json({success:!0,hasData:!0,error:"데이터 확인 실패 - 기본적으로 선택 가능"},200)}});d.get("/api/learning-reports/:student_id",async e=>{try{const t=e.req.param("student_id"),{results:s}=await e.env.DB.prepare(`
       SELECT * FROM learning_reports 
       WHERE student_id = ? 
       ORDER BY report_month DESC
