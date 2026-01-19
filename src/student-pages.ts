@@ -275,9 +275,13 @@ export const classesPage = `
                 const url = classId ? '/api/classes/' + classId : '/api/classes';
                 const method = classId ? 'PUT' : 'POST';
                 
+                const userDataHeader = btoa(unescape(encodeURIComponent(JSON.stringify(currentUser))));
                 const res = await fetch(url, {
                     method,
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'X-User-Data-Base64': userDataHeader
+                    },
                     body: JSON.stringify(payload)
                 });
 
