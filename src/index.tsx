@@ -6425,6 +6425,33 @@ app.get('/api/subscriptions/status', async (c) => {
     `).bind(academyId).first()
 
     if (!subscription) {
+      // 구독이 없어도 관리자가 설정한 한도가 있는지 확인
+      // status가 'active'가 아니더라도 '관리자 설정 플랜'인 경우 표시
+      const adminSubscription = await c.env.DB.prepare(`
+        SELECT * FROM subscriptions 
+        WHERE academy_id = ? AND plan_name = '관리자 설정 플랜'
+        ORDER BY created_at DESC
+        LIMIT 1
+      `).bind(academyId).first()
+      
+      if (adminSubscription) {
+        // 관리자 설정 플랜이 있으면 표시
+        return c.json({ 
+          success: true, 
+          hasSubscription: true,
+          subscription: {
+            id: adminSubscription.id,
+            planName: adminSubscription.plan_name,
+            startDate: adminSubscription.subscription_start_date,
+            endDate: adminSubscription.subscription_end_date,
+            studentLimit: adminSubscription.student_limit || 0,
+            aiReportLimit: adminSubscription.ai_report_limit || 0,
+            landingPageLimit: adminSubscription.landing_page_limit || 0,
+            teacherLimit: adminSubscription.teacher_limit || 0
+          }
+        })
+      }
+      
       return c.json({ 
         success: true, 
         hasSubscription: false,
@@ -6500,11 +6527,20 @@ app.get('/api/usage/check', async (c) => {
     }
 
     // 활성 구독 조회
-    const subscription = await c.env.DB.prepare(`
+    let subscription = await c.env.DB.prepare(`
       SELECT * FROM subscriptions 
       WHERE academy_id = ? AND status = 'active'
       ORDER BY created_at DESC LIMIT 1
     `).bind(academyId).first()
+
+    // 활성 구독이 없으면 관리자 설정 플랜 확인
+    if (!subscription) {
+      subscription = await c.env.DB.prepare(`
+        SELECT * FROM subscriptions 
+        WHERE academy_id = ? AND plan_name = '관리자 설정 플랜'
+        ORDER BY created_at DESC LIMIT 1
+      `).bind(academyId).first()
+    }
 
     if (!subscription) {
       return c.json({ 
