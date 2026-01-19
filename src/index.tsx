@@ -5467,22 +5467,18 @@ app.get('/', (c) => {
           
           /* 드롭다운 메뉴 스타일 */
           .dropdown {
-            position: relative;
+            position: static;
           }
           
           .dropdown-menu {
             position: absolute;
             top: 100%;
-            left: 50%;
-            transform: translateX(-50%);
+            left: 0;
+            right: 0;
             display: none;
             background: white;
-            border: 2px solid #e5e7eb;
-            border-radius: 16px;
+            border-top: 2px solid #e5e7eb;
             box-shadow: 0 20px 40px -8px rgba(0, 0, 0, 0.15);
-            min-width: 280px;
-            padding: 16px;
-            margin-top: 12px;
             z-index: 100;
           }
           
@@ -5491,37 +5487,43 @@ app.get('/', (c) => {
             animation: fadeInDown 0.3s ease-out;
           }
           
+          .dropdown-menu-inner {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 32px 48px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px;
+          }
+          
           .dropdown-menu a {
             display: block;
-            padding: 14px 20px;
+            padding: 16px 24px;
             color: #374151;
             text-decoration: none;
             transition: all 0.25s;
-            border-radius: 10px;
-            margin-bottom: 4px;
+            border-radius: 12px;
             font-size: 15px;
             font-weight: 500;
-          }
-          
-          .dropdown-menu a:last-child {
-            margin-bottom: 0;
+            border: 1px solid transparent;
           }
           
           .dropdown-menu a:hover {
             background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
             color: white;
-            transform: translateX(4px);
-            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(124, 58, 237, 0.3);
+            border-color: #7c3aed;
           }
           
           @keyframes fadeInDown {
             from {
               opacity: 0;
-              transform: translateX(-50%) translateY(-10px);
+              transform: translateY(-10px);
             }
             to {
               opacity: 1;
-              transform: translateX(-50%) translateY(0);
+              transform: translateY(0);
             }
           }
         </style>
@@ -5536,16 +5538,28 @@ app.get('/', (c) => {
                         <span class="text-xl font-bold text-gray-900">우리는 슈퍼플레이스다</span>
                     </div>
                     <div class="hidden md:flex items-center space-x-10">
-                        <a href="/" class="text-gray-700 hover:text-purple-600 font-medium transition">홈</a>
+                        <!-- 홈 드롭다운 -->
+                        <div class="dropdown">
+                            <a href="/" class="text-gray-700 hover:text-purple-600 font-medium transition">홈</a>
+                            <div class="dropdown-menu">
+                                <div class="dropdown-menu-inner">
+                                    <a href="/">🏠 메인 홈</a>
+                                    <a href="/about">ℹ️ 회사 소개</a>
+                                    <a href="/dashboard">📊 대시보드</a>
+                                </div>
+                            </div>
+                        </div>
                         
                         <!-- 교육 프로그램 드롭다운 -->
                         <div class="dropdown">
                             <a href="/programs" class="text-gray-700 hover:text-purple-600 font-medium transition">교육 프로그램</a>
                             <div class="dropdown-menu">
-                                <a href="/tools/landing-page-builder">📄 랜딩페이지 생성기</a>
-                                <a href="/tools/sms-sender">📱 문자 발송</a>
-                                <a href="/tools/student-management">👨‍🎓 학생 관리</a>
-                                <a href="/tools/ai-learning-report">📊 학습 분석 리포트</a>
+                                <div class="dropdown-menu-inner">
+                                    <a href="/tools/landing-page-builder">📄 랜딩페이지 생성기</a>
+                                    <a href="/tools/sms-sender">📱 문자 발송</a>
+                                    <a href="/tools/student-management">👨‍🎓 학생 관리</a>
+                                    <a href="/tools/ai-learning-report">📊 학습 분석 리포트</a>
+                                </div>
                             </div>
                         </div>
                         
@@ -5553,20 +5567,52 @@ app.get('/', (c) => {
                         <div class="dropdown">
                             <a href="/pricing" class="text-gray-700 hover:text-purple-600 font-medium transition">요금제</a>
                             <div class="dropdown-menu">
-                                <a href="/pricing/starter">💼 스타터 플랜</a>
-                                <a href="/pricing/basic">🎯 베이직 플랜</a>
-                                <a href="/pricing/pro">⭐ 프로 플랜</a>
-                                <a href="/pricing/business">🏢 비즈니스 플랜</a>
-                                <a href="/pricing/premium">💎 프리미엄 플랜</a>
-                                <a href="/pricing/enterprise">🏆 엔터프라이즈 플랜</a>
+                                <div class="dropdown-menu-inner">
+                                    <a href="/pricing/starter">💼 스타터 플랜</a>
+                                    <a href="/pricing/basic">🎯 베이직 플랜</a>
+                                    <a href="/pricing/pro">⭐ 프로 플랜</a>
+                                    <a href="/pricing/business">🏢 비즈니스 플랜</a>
+                                    <a href="/pricing/premium">💎 프리미엄 플랜</a>
+                                    <a href="/pricing/enterprise">🏆 엔터프라이즈 플랜</a>
+                                </div>
                             </div>
                         </div>
                         
-                        <a href="/success" class="text-gray-700 hover:text-purple-600 font-medium transition">성공 사례</a>
-                        <a href="/contact" class="text-gray-700 hover:text-purple-600 font-medium transition">문의하기</a>
-                        <a href="https://kohsunwoo12345-cmyk.github.io/SUPERPLACE.Home.store/" target="_blank" class="text-gray-700 hover:text-purple-600 font-medium transition flex items-center gap-1">
-                            🤖 AI 봇 쇼핑몰
-                        </a>
+                        <!-- 성공 사례 드롭다운 -->
+                        <div class="dropdown">
+                            <a href="/success" class="text-gray-700 hover:text-purple-600 font-medium transition">성공 사례</a>
+                            <div class="dropdown-menu">
+                                <div class="dropdown-menu-inner">
+                                    <a href="/success">✨ 전체 사례</a>
+                                    <a href="/success/academy">🏫 학원 성공 사례</a>
+                                    <a href="/success/teacher">👨‍🏫 교사 성공 사례</a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 문의하기 드롭다운 -->
+                        <div class="dropdown">
+                            <a href="/contact" class="text-gray-700 hover:text-purple-600 font-medium transition">문의하기</a>
+                            <div class="dropdown-menu">
+                                <div class="dropdown-menu-inner">
+                                    <a href="/contact">✉️ 일반 문의</a>
+                                    <a href="/contact/support">🛠️ 기술 지원</a>
+                                    <a href="/contact/sales">💼 영업 문의</a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- AI 봇 쇼핑몰 드롭다운 -->
+                        <div class="dropdown">
+                            <a href="https://kohsunwoo12345-cmyk.github.io/SUPERPLACE.Home.store/" target="_blank" class="text-gray-700 hover:text-purple-600 font-medium transition">AI 봇 쇼핑몰</a>
+                            <div class="dropdown-menu">
+                                <div class="dropdown-menu-inner">
+                                    <a href="https://kohsunwoo12345-cmyk.github.io/SUPERPLACE.Home.store/" target="_blank">🛒 쇼핑몰 홈</a>
+                                    <a href="https://kohsunwoo12345-cmyk.github.io/SUPERPLACE.Home.store/products" target="_blank">📦 상품 목록</a>
+                                    <a href="https://kohsunwoo12345-cmyk.github.io/SUPERPLACE.Home.store/cart" target="_blank">🛍️ 장바구니</a>
+                                </div>
+                            </div>
+                        </div>
                         <!-- 로그인 전 -->
                         <a href="/signup?teacher=true" id="teacherRegisterBtn" class="text-purple-600 hover:text-purple-700 font-semibold border border-purple-600 px-5 py-2.5 rounded-full hover:bg-purple-50 transition-all">
                             선생님 등록
@@ -5606,7 +5652,7 @@ app.get('/', (c) => {
                     <a href="/pricing" class="block px-4 py-3 text-gray-700 hover:bg-purple-50 rounded-xl transition">요금제</a>
                     <a href="/success" class="block px-4 py-3 text-gray-700 hover:bg-purple-50 rounded-xl transition">성공 사례</a>
                     <a href="/contact" class="block px-4 py-3 text-gray-700 hover:bg-purple-50 rounded-xl transition">문의하기</a>
-                    <a href="https://kohsunwoo12345-cmyk.github.io/SUPERPLACE.Home.store/" target="_blank" class="block px-4 py-3 text-gray-700 hover:bg-purple-50 rounded-xl transition">🤖 AI 봇 쇼핑몰</a>
+                    <a href="https://kohsunwoo12345-cmyk.github.io/SUPERPLACE.Home.store/" target="_blank" class="block px-4 py-3 text-gray-700 hover:bg-purple-50 rounded-xl transition">AI 봇 쇼핑몰</a>
                     <a href="/teachers/register" class="block px-4 py-3 text-purple-600 border border-purple-600 bg-white hover:bg-purple-50 rounded-xl text-center font-semibold">선생님 등록</a>
                     <a href="/login" class="block px-4 py-3 gradient-purple text-white rounded-xl text-center font-medium">로그인</a>
                 </div>
