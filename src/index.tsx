@@ -20247,11 +20247,16 @@ app.post('/api/classes', async (c) => {
     
     console.log('➕ [CreateClass] Creating class for academy_id:', userId, 'name:', className)
     
-    // 🔧 스키마 호환성: academy_id와 class_name 사용
-    const result = await c.env.DB.prepare(`
-      INSERT INTO classes (academy_id, class_name, grade, description, schedule_days, start_time, end_time, created_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))
-    `).bind(userId, className, grade || null, description || null, scheduleDays || null, startTime || null, endTime || null).run()
+    // 🔧 스키마 호환성: schedule_days 컬럼이 없을 수 있으므로 try-catch
+    let result
+    try {
+      // schedule_days 컬럼이 있는 경우
+      result = await c.env.DB.prepare('INSERT INTO classes (academy_id, class_name, grade, description, schedule_days, start_time, end_time, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, datetime(\'now\'))').bind(userId, className, grade || null, description || null, scheduleDays || null, startTime || null, endTime || null).run()
+    } catch (err) {
+      console.log('⚠️ [CreateClass] schedule_days column not found, trying without it')
+      // schedule_days 컬럼이 없는 경우 (기본 테이블)
+      result = await c.env.DB.prepare('INSERT INTO classes (academy_id, class_name, grade, description, created_at) VALUES (?, ?, ?, ?, datetime(\'now\'))').bind(userId, className, grade || null, description || null).run()
+    }
     
     console.log('✅ [CreateClass] Class created with id:', result.meta.last_row_id)
     
@@ -20312,7 +20317,15 @@ app.put('/api/classes/:id', async (c) => {
     }
     
     // 🔒 보안 3단계: academy_id 조건 추가하여 이중 확인
-    const result = await c.env.DB.prepare('UPDATE classes SET class_name = ?, grade = ?, description = ?, schedule_days = ?, start_time = ?, end_time = ? WHERE id = ? AND academy_id = ?').bind(className, grade || null, description || null, scheduleDays || null, startTime || null, endTime || null, classId, academyId).run()
+    let result
+    try {
+      // schedule_days 컬럼이 있는 경우
+      result = await c.env.DB.prepare('UPDATE classes SET class_name = ?, grade = ?, description = ?, schedule_days = ?, start_time = ?, end_time = ? WHERE id = ? AND academy_id = ?').bind(className, grade || null, description || null, scheduleDays || null, startTime || null, endTime || null, classId, academyId).run()
+    } catch (err) {
+      console.log('⚠️ [UpdateClass] schedule_days column not found, trying without it')
+      // schedule_days 컬럼이 없는 경우
+      result = await c.env.DB.prepare('UPDATE classes SET class_name = ?, grade = ?, description = ? WHERE id = ? AND academy_id = ?').bind(className, grade || null, description || null, classId, academyId).run()
+    }
     
     if (result.meta.changes === 0) {
       return c.json({ success: false, error: '반 수정에 실패했습니다.' }, 400)
