@@ -26024,7 +26024,15 @@ ${l.director_name} 원장님의 승인을 기다려주세요.`,directorName:l.di
         function closeDetailModal(){document.getElementById('detailModal').classList.add('hidden');currentSubmissionId=null}
     <\/script>
 </body>
-</html>`));d.get("/test-deployment",async e=>e.text("Deployment successful! Timestamp: "+Date.now()));d.get("/api/debug/user/:userId/subscription",async e=>{try{const t=e.req.param("userId"),s=await e.env.DB.prepare(`
+</html>`));d.get("/test-deployment",async e=>e.text("Deployment successful! Timestamp: "+Date.now()));d.get("/api/debug/students/:academyId",async e=>{try{const t=e.req.param("academyId"),s=await e.env.DB.prepare(`
+      SELECT id, name, parent_phone, academy_id, created_at 
+      FROM students 
+      WHERE academy_id = ?
+      ORDER BY created_at DESC
+      LIMIT 100
+    `).bind(t).all(),r=await e.env.DB.prepare(`
+      SELECT COUNT(*) as count FROM students WHERE academy_id = ?
+    `).bind(t).first();return e.json({academyId:t,totalCount:(r==null?void 0:r.count)||0,students:s.results||[],message:`Academy ${t}의 실제 students 테이블 데이터`})}catch(t){return e.json({error:t.message,stack:t.stack},500)}});d.get("/api/debug/user/:userId/subscription",async e=>{try{const t=e.req.param("userId"),s=await e.env.DB.prepare(`
       SELECT id, email, name, academy_id, academy_name FROM users WHERE id = ?
     `).bind(t).first();if(!s)return e.json({error:"User not found"},404);const r=await e.env.DB.prepare(`
       SELECT * FROM subscriptions WHERE academy_id = ? ORDER BY created_at DESC

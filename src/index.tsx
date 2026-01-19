@@ -32894,6 +32894,36 @@ app.get('/test-deployment', async (c) => {
 })
 
 // 🔍 디버그: 사용자 구독 정보 상세 조회
+// 🔥 학생 목록 확인 API (디버깅용)
+app.get('/api/debug/students/:academyId', async (c) => {
+  try {
+    const academyId = c.req.param('academyId')
+    
+    // students 테이블에서 실제 학생 목록 조회
+    const students = await c.env.DB.prepare(`
+      SELECT id, name, parent_phone, academy_id, created_at 
+      FROM students 
+      WHERE academy_id = ?
+      ORDER BY created_at DESC
+      LIMIT 100
+    `).bind(academyId).all()
+    
+    // 총 학생 수
+    const count = await c.env.DB.prepare(`
+      SELECT COUNT(*) as count FROM students WHERE academy_id = ?
+    `).bind(academyId).first()
+    
+    return c.json({
+      academyId: academyId,
+      totalCount: count?.count || 0,
+      students: students.results || [],
+      message: `Academy ${academyId}의 실제 students 테이블 데이터`
+    })
+  } catch (error) {
+    return c.json({ error: error.message, stack: error.stack }, 500)
+  }
+})
+
 app.get('/api/debug/user/:userId/subscription', async (c) => {
   try {
     const userId = c.req.param('userId')
