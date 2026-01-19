@@ -12675,7 +12675,7 @@ app.post('/api/students', async (c) => {
   }
 })
 
-// GET /api/students/:id - 학생 상세 정보 조회
+// GET /api/students/:id - 학생 상세 정보 조회 (v2)
 app.get('/api/students/:id', async (c) => {
   try {
     const studentId = c.req.param('id')
