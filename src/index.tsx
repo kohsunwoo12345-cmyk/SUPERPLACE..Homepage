@@ -1276,16 +1276,14 @@ app.get('/api/db/migrate', async (c) => {
       await c.env.DB.prepare(`
         CREATE TABLE IF NOT EXISTS usage_tracking (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
-          academy_id INTEGER NOT NULL,
+          academy_id INTEGER,
           subscription_id INTEGER NOT NULL,
           current_students INTEGER DEFAULT 0,
           ai_reports_used_this_month INTEGER DEFAULT 0,
           landing_pages_created INTEGER DEFAULT 0,
           current_teachers INTEGER DEFAULT 0,
           created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-          updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-          FOREIGN KEY (academy_id) REFERENCES academies(id),
-          FOREIGN KEY (subscription_id) REFERENCES subscriptions(id)
+          updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )
       `).run()
       console.log('✅ [Migration] Created usage_tracking table')
@@ -1310,23 +1308,30 @@ app.get('/api/db/migrate', async (c) => {
       const subsWithoutUsage = await c.env.DB.prepare(`
         SELECT s.id as subscription_id, s.academy_id 
         FROM subscriptions s
-        WHERE s.id NOT IN (SELECT subscription_id FROM usage_tracking)
+        WHERE s.id NOT IN (SELECT COALESCE(subscription_id, 0) FROM usage_tracking)
         AND s.status = 'active'
+        AND s.academy_id IS NOT NULL
       `).all()
       
       if (subsWithoutUsage.results && subsWithoutUsage.results.length > 0) {
+        let created = 0
         for (const sub of subsWithoutUsage.results) {
-          await c.env.DB.prepare(`
-            INSERT INTO usage_tracking (
-              academy_id, subscription_id, 
-              current_students, ai_reports_used_this_month, 
-              landing_pages_created, current_teachers,
-              created_at, updated_at
-            ) VALUES (?, ?, 0, 0, 0, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-          `).bind(sub.academy_id, sub.subscription_id).run()
+          try {
+            await c.env.DB.prepare(`
+              INSERT INTO usage_tracking (
+                academy_id, subscription_id, 
+                current_students, ai_reports_used_this_month, 
+                landing_pages_created, current_teachers,
+                created_at, updated_at
+              ) VALUES (?, ?, 0, 0, 0, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+            `).bind(sub.academy_id, sub.subscription_id).run()
+            created++
+          } catch (insertError) {
+            console.log('⚠️ Failed to create usage_tracking for subscription', sub.subscription_id, ':', insertError.message)
+          }
         }
-        console.log('✅ [Migration] Created usage_tracking for', subsWithoutUsage.results.length, 'subscriptions')
-        results.push('✅ Created ' + subsWithoutUsage.results.length + ' usage_tracking records')
+        console.log('✅ [Migration] Created usage_tracking for', created, 'subscriptions')
+        results.push('✅ Created ' + created + ' usage_tracking records')
       } else {
         results.push('ℹ️ All subscriptions have usage_tracking')
       }
