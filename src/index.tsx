@@ -5483,12 +5483,7 @@ app.get('/', (c) => {
             border-top: 2px solid #e5e7eb;
             box-shadow: 0 20px 40px -8px rgba(0, 0, 0, 0.15);
             z-index: 100;
-          }
-          
-          .nav-menu-wrapper:hover .mega-menu,
-          .mega-menu:hover {
-            display: block;
-            animation: fadeInDown 0.3s ease-out;
+            transition: opacity 0.3s ease-out;
           }
           
           .mega-menu-inner {
@@ -6205,6 +6200,36 @@ app.get('/', (c) => {
         </footer>
 
         <script>
+            // Mega menu delay control
+            let menuTimeout;
+            const menuWrapper = document.querySelector('.nav-menu-wrapper');
+            const megaMenu = document.querySelector('.mega-menu');
+            
+            function showMegaMenu() {
+                clearTimeout(menuTimeout);
+                if (megaMenu) {
+                    megaMenu.style.display = 'block';
+                }
+            }
+            
+            function hideMegaMenu() {
+                menuTimeout = setTimeout(() => {
+                    if (megaMenu) {
+                        megaMenu.style.display = 'none';
+                    }
+                }, 500); // 500ms delay before hiding
+            }
+            
+            if (menuWrapper) {
+                menuWrapper.addEventListener('mouseenter', showMegaMenu);
+                menuWrapper.addEventListener('mouseleave', hideMegaMenu);
+            }
+            
+            if (megaMenu) {
+                megaMenu.addEventListener('mouseenter', showMegaMenu);
+                megaMenu.addEventListener('mouseleave', hideMegaMenu);
+            }
+            
             // Smooth scroll to section
             function scrollToSection(sectionId) {
                 const element = document.getElementById(sectionId);
