@@ -127,25 +127,50 @@ export const classesPage = `
 
     <script>
         // 현재 로그인한 사용자 정보 가져오기
-        const currentUser = JSON.parse(localStorage.getItem('user') || '{"id":1}');
+        const userStr = localStorage.getItem('user');
+        
+        // 로그인 확인
+        if (!userStr) {
+            alert('⚠️ 로그인이 필요합니다.\\n\\n반 관리 기능을 사용하려면 먼저 로그인해주세요.');
+            window.location.href = '/login';
+            throw new Error('Not logged in');
+        }
+        
+        const currentUser = JSON.parse(userStr);
         const academyId = currentUser.id;
+        
+        console.log('👤 Current User:', currentUser);
+        console.log('🏫 Academy ID:', academyId);
+        
         let classes = [];
 
         async function loadClasses() {
             try {
+                console.log('📡 Loading classes for academy:', academyId);
                 const userDataHeader = btoa(unescape(encodeURIComponent(JSON.stringify(currentUser))));
+                console.log('🔐 Auth header length:', userDataHeader.length);
+                
                 const res = await fetch('/api/classes', {
                     headers: {
                         'X-User-Data-Base64': userDataHeader
                     }
                 });
+                
+                console.log('📥 Response status:', res.status);
                 const data = await res.json();
+                console.log('📦 Response data:', data);
+                
                 if (data.success) {
                     classes = data.classes;
+                    console.log('✅ Loaded', classes.length, 'classes');
                     renderClasses();
+                } else {
+                    console.error('❌ Load failed:', data.error);
+                    alert('반 목록 로딩 실패: ' + data.error);
                 }
             } catch (error) {
-                console.error('반 목록 로딩 실패:', error);
+                console.error('❌ 반 목록 로딩 실패:', error);
+                alert('반 목록을 불러오는 중 오류가 발생했습니다.');
             }
         }
 
@@ -561,8 +586,16 @@ export const studentsListPage = `
 
     <script>
         // 현재 로그인한 사용자 정보 가져오기
-        const currentUser = JSON.parse(localStorage.getItem('user') || '{"id":1}');
+        const userStr = localStorage.getItem('user');
+        if (!userStr) {
+            alert('⚠️ 로그인이 필요합니다.\\n\\n학생 목록을 보려면 먼저 로그인해주세요.');
+            window.location.href = '/login';
+            throw new Error('Not logged in');
+        }
+        const currentUser = JSON.parse(userStr);
         const academyId = currentUser.id;
+        console.log('👤 Current User:', currentUser);
+        console.log('🏫 Academy ID:', academyId);
         let students = [];
         let allStudents = [];
         let classes = [];
@@ -1174,10 +1207,18 @@ export const dailyRecordPage = `
 
     <script>
         // 로컬 스토리지에서 사용자 정보 가져오기
-        const currentUser = JSON.parse(localStorage.getItem('user') || '{"id":1}');
+        const userStr = localStorage.getItem('user');
+        if (!userStr) {
+            alert('⚠️ 로그인이 필요합니다.\\n\\n일일 성과를 보려면 먼저 로그인해주세요.');
+            window.location.href = '/login';
+            throw new Error('Not logged in');
+        }
+        const currentUser = JSON.parse(userStr);
         const academyId = currentUser.id;
         const userId = currentUser.id;
         const userType = currentUser.user_type || 'director'; // 기본값은 원장님
+        console.log('👤 Current User:', currentUser);
+        console.log('🏫 Academy ID:', academyId);
         
         let currentDate = new Date();
         let selectedDate = new Date();
@@ -1767,9 +1808,18 @@ export const studentDetailPage = `
 
     <script>
         // 현재 로그인한 사용자 정보 가져오기
-        const currentUser = JSON.parse(localStorage.getItem('user') || '{"id":1}');
+        const userStr = localStorage.getItem('user');
+        if (!userStr) {
+            alert('⚠️ 로그인이 필요합니다.\\n\\n학생 상세 정보를 보려면 먼저 로그인해주세요.');
+            window.location.href = '/login';
+            throw new Error('Not logged in');
+        }
+        const currentUser = JSON.parse(userStr);
         const academyId = currentUser.id;
         const studentId = window.location.pathname.split('/').pop();
+        console.log('👤 Current User:', currentUser);
+        console.log('🏫 Academy ID:', academyId);
+        console.log('👨‍🎓 Student ID:', studentId);
         let student = null;
         let stats = null;
         let records = [];
