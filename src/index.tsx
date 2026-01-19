@@ -20345,34 +20345,88 @@ app.delete('/api/classes/:id', async (c) => {
   try {
     const classId = c.req.param('id')
     
+    console.log('🗑️ [DeleteClass] ==================== START ====================')
     console.log('🗑️ [DeleteClass] Request to delete class:', classId)
+    console.log('🗑️ [DeleteClass] Class ID type:', typeof classId)
     
     if (!classId) {
+      console.error('🗑️ [DeleteClass] ❌ No class ID provided')
       return c.json({ success: false, error: '반 ID가 필요합니다.' }, 400)
     }
     
-    // 반이 존재하는지만 확인
-    const classCheck = await c.env.DB.prepare('SELECT id FROM classes WHERE id = ?').bind(classId).first()
+    // 반이 존재하는지 확인
+    console.log('🗑️ [DeleteClass] Checking if class exists...')
+    const classCheck = await c.env.DB.prepare('SELECT id, academy_id, class_name FROM classes WHERE id = ?').bind(classId).first()
+    
+    console.log('🗑️ [DeleteClass] Class check result:', classCheck)
     
     if (!classCheck) {
+      console.error('🗑️ [DeleteClass] ❌ Class not found:', classId)
       return c.json({ success: false, error: '반을 찾을 수 없습니다.' }, 404)
     }
     
-    // 해당 반에 배정된 학생들의 class_id를 NULL로 설정
-    await c.env.DB.prepare('UPDATE students SET class_id = NULL WHERE class_id = ?').bind(classId).run()
+    console.log('🗑️ [DeleteClass] ✅ Class found:', classCheck.class_name)
     
-    // 반 삭제 (academy_id 조건 없이)
-    const result = await c.env.DB.prepare('DELETE FROM classes WHERE id = ?').bind(classId).run()
+    // 해당 반에 배정된 학생 수 확인
+    console.log('🗑️ [DeleteClass] Checking students in this class...')
+    const studentsCount = await c.env.DB.prepare(`
+      SELECT COUNT(*) as count FROM students 
+      WHERE class_id = ? OR class_id LIKE ? OR class_id LIKE ? OR class_id LIKE ?
+    `).bind(classId, `${classId},%`, `%,${classId},%`, `%,${classId}`).first()
     
-    if (result.meta.changes === 0) {
+    console.log('🗑️ [DeleteClass] Students in class:', studentsCount?.count || 0)
+    
+    // 해당 반에 배정된 학생들의 class_id 처리
+    // class_id가 단일 값이거나 쉼표로 구분된 값일 수 있음
+    console.log('🗑️ [DeleteClass] Removing class assignment from students...')
+    
+    // 1. 단일 class_id인 학생들
+    const result1 = await c.env.DB.prepare('UPDATE students SET class_id = NULL WHERE class_id = ?').bind(classId).run()
+    console.log('🗑️ [DeleteClass] Updated students with single class_id:', result1.meta.changes)
+    
+    // 2. 쉼표로 구분된 class_id 목록에서 해당 class_id 제거
+    const studentsWithMultipleClasses = await c.env.DB.prepare(`
+      SELECT id, class_id FROM students 
+      WHERE class_id LIKE ? OR class_id LIKE ? OR class_id LIKE ?
+    `).bind(`${classId},%`, `%,${classId},%`, `%,${classId}`).all()
+    
+    console.log('🗑️ [DeleteClass] Students with multiple classes:', studentsWithMultipleClasses.results?.length || 0)
+    
+    if (studentsWithMultipleClasses.results && studentsWithMultipleClasses.results.length > 0) {
+      for (const student of studentsWithMultipleClasses.results) {
+        const classIds = student.class_id.split(',').map(id => id.trim()).filter(id => id !== classId)
+        const newClassId = classIds.length > 0 ? classIds.join(',') : null
+        
+        console.log('🗑️ [DeleteClass] Student', student.id, 'class_id:', student.class_id, '->', newClassId)
+        
+        await c.env.DB.prepare('UPDATE students SET class_id = ? WHERE id = ?').bind(newClassId, student.id).run()
+      }
+    }
+    
+    // 반 삭제
+    console.log('🗑️ [DeleteClass] Deleting class from database...')
+    const deleteResult = await c.env.DB.prepare('DELETE FROM classes WHERE id = ?').bind(classId).run()
+    
+    console.log('🗑️ [DeleteClass] Delete result:', deleteResult.meta)
+    
+    if (deleteResult.meta.changes === 0) {
+      console.error('🗑️ [DeleteClass] ❌ No rows deleted')
       return c.json({ success: false, error: '반 삭제에 실패했습니다.' }, 400)
     }
     
-    console.log('✅ [DeleteClass] Class deleted successfully')
+    console.log('🗑️ [DeleteClass] ✅ Class deleted successfully')
+    console.log('🗑️ [DeleteClass] ==================== END ====================')
     return c.json({ success: true, message: '반이 삭제되었습니다.' })
   } catch (error) {
-    console.error('❌ [DeleteClass] Error:', error)
-    return c.json({ success: false, error: '반 삭제 중 오류가 발생했습니다: ' + error.message }, 500)
+    console.error('🗑️ [DeleteClass] ❌ Error:', error)
+    console.error('🗑️ [DeleteClass] ❌ Error name:', error.name)
+    console.error('🗑️ [DeleteClass] ❌ Error message:', error.message)
+    console.error('🗑️ [DeleteClass] ❌ Error stack:', error.stack)
+    return c.json({ 
+      success: false, 
+      error: '반 삭제 중 오류가 발생했습니다: ' + error.message,
+      details: error.stack 
+    }, 500)
   }
 })
 
