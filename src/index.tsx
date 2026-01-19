@@ -20343,29 +20343,33 @@ app.delete('/api/classes/:id', async (c) => {
   try {
     const classId = c.req.param('id')
     
+    console.log('🗑️ [DeleteClass] Request to delete class:', classId)
+    
     // 🔒 보안 1단계: X-User-Data-Base64 헤더 또는 쿼리에서 academy_id 추출
     let academyId = c.req.query('academyId') || c.req.query('userId')
     
-    try {
-      const userHeader = c.req.header('X-User-Data-Base64')
-      if (userHeader && !academyId) {
+    const userHeader = c.req.header('X-User-Data-Base64')
+    console.log('🗑️ [DeleteClass] Header present:', !!userHeader)
+    
+    if (userHeader && !academyId) {
+      try {
         const userData = JSON.parse(decodeURIComponent(escape(atob(userHeader))))
         academyId = userData.id || userData.academy_id
+        console.log('🗑️ [DeleteClass] Extracted academyId from header:', academyId)
+      } catch (err) {
+        console.error('[DeleteClass] Failed to parse user header:', err)
       }
-    } catch (err) {
-      console.error('[DeleteClass] Failed to parse user header:', err)
     }
     
     if (!academyId) {
+      console.error('🗑️ [DeleteClass] No academyId found')
       return c.json({ success: false, error: '학원 ID가 필요합니다.' }, 400)
     }
     
     console.log('🗑️ [DeleteClass] Deleting class', classId, 'for academy', academyId)
     
     // 🔒 보안 2단계: 해당 반이 현재 사용자의 학원 소속인지 확인
-    const classCheck = await c.env.DB.prepare(`
-      SELECT id, academy_id FROM classes WHERE id = ?
-    `).bind(classId).first()
+    const classCheck = await c.env.DB.prepare('SELECT id, academy_id FROM classes WHERE id = ?').bind(classId).first()
     
     if (!classCheck) {
       return c.json({ success: false, error: '반을 찾을 수 없습니다.' }, 404)
@@ -20381,15 +20385,10 @@ app.delete('/api/classes/:id', async (c) => {
     }
     
     // 🔒 보안 3단계: academy_id 조건 추가하여 학생 업데이트
-    await c.env.DB.prepare(`
-      UPDATE students SET class_id = NULL 
-      WHERE class_id = ? AND academy_id = ?
-    `).bind(classId, academyId).run()
+    await c.env.DB.prepare('UPDATE students SET class_id = NULL WHERE class_id = ? AND academy_id = ?').bind(classId, academyId).run()
     
     // 🔒 보안 3단계: academy_id 조건 추가하여 반 삭제
-    const result = await c.env.DB.prepare(`
-      DELETE FROM classes WHERE id = ? AND academy_id = ?
-    `).bind(classId, academyId).run()
+    const result = await c.env.DB.prepare('DELETE FROM classes WHERE id = ? AND academy_id = ?').bind(classId, academyId).run()
     
     if (result.meta.changes === 0) {
       return c.json({ success: false, error: '반 삭제에 실패했습니다.' }, 400)

@@ -238,9 +238,21 @@ export const classesPage = `
         async function deleteClass(classId, className) {
             if (!confirm(\`"\${className}" 반을 삭제하시겠습니까?\\n\\n⚠️ 이 반의 학생들은 반 배정이 해제됩니다.\`)) return;
 
+            console.log('🗑️ Deleting class:', classId);
+
             try {
-                const res = await fetch('/api/classes/' + classId, { method: 'DELETE' });
+                const userDataHeader = btoa(unescape(encodeURIComponent(JSON.stringify(currentUser))));
+                const res = await fetch('/api/classes/' + classId, { 
+                    method: 'DELETE',
+                    headers: {
+                        'X-User-Data-Base64': userDataHeader
+                    }
+                });
+                
+                console.log('🗑️ Delete response status:', res.status);
                 const data = await res.json();
+                console.log('🗑️ Delete response data:', data);
+                
                 if (data.success) {
                     alert('반이 삭제되었습니다.');
                     loadClasses();
@@ -248,6 +260,7 @@ export const classesPage = `
                     alert('삭제 실패: ' + data.error);
                 }
             } catch (error) {
+                console.error('🗑️ Delete error:', error);
                 alert('삭제 중 오류가 발생했습니다.');
             }
         }
