@@ -6636,19 +6636,37 @@ app.get('/api/usage/check', async (c) => {
     }
 
     // 🔥 실제 데이터 조회: students 테이블에서 실제 학생 수 계산
-    const actualStudents = await c.env.DB.prepare(`
-      SELECT COUNT(*) as count FROM students WHERE academy_id = ?
-    `).bind(academyId).first()
+    let actualStudents = null
+    try {
+      actualStudents = await c.env.DB.prepare(`
+        SELECT COUNT(*) as count FROM students WHERE academy_id = ?
+      `).bind(academyId).first()
+    } catch (err) {
+      console.error('[Usage] students table error:', err.message)
+      actualStudents = { count: 0 }
+    }
     
     // 🔥 실제 데이터 조회: landing_pages 테이블에서 실제 랜딩페이지 수 계산
-    const actualLandingPages = await c.env.DB.prepare(`
-      SELECT COUNT(*) as count FROM landing_pages WHERE user_id = ?
-    `).bind(userId).first()
+    let actualLandingPages = null
+    try {
+      actualLandingPages = await c.env.DB.prepare(`
+        SELECT COUNT(*) as count FROM landing_pages WHERE user_id = ?
+      `).bind(userId).first()
+    } catch (err) {
+      console.error('[Usage] landing_pages table error:', err.message)
+      actualLandingPages = { count: 0 }
+    }
     
     // 🔥 실제 데이터 조회: teacher_applications 테이블에서 실제 선생님 수 계산
-    const actualTeachers = await c.env.DB.prepare(`
-      SELECT COUNT(*) as count FROM teacher_applications WHERE academy_id = ?
-    `).bind(academyId).first()
+    let actualTeachers = null
+    try {
+      actualTeachers = await c.env.DB.prepare(`
+        SELECT COUNT(*) as count FROM teacher_applications WHERE academy_id = ?
+      `).bind(academyId).first()
+    } catch (err) {
+      console.error('[Usage] teacher_applications table error:', err.message)
+      actualTeachers = { count: 0 }
+    }
 
     // 사용량 조회 (AI 리포트는 usage_tracking에서 조회)
     let usage = await c.env.DB.prepare(`

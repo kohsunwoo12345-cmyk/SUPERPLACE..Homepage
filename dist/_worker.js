@@ -5267,13 +5267,13 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
         SELECT * FROM subscriptions 
         WHERE academy_id = ? AND plan_name = '관리자 설정 플랜'
         ORDER BY created_at DESC LIMIT 1
-      `).bind(n).first()),!o)return e.json({success:!1,error:"활성 구독이 없습니다"},403);const l=await e.env.DB.prepare(`
-      SELECT COUNT(*) as count FROM students WHERE academy_id = ?
-    `).bind(n).first(),i=await e.env.DB.prepare(`
-      SELECT COUNT(*) as count FROM landing_pages WHERE user_id = ?
-    `).bind(r).first(),d=await e.env.DB.prepare(`
-      SELECT COUNT(*) as count FROM teacher_applications WHERE academy_id = ?
-    `).bind(n).first();let p=await e.env.DB.prepare(`
+      `).bind(n).first()),!o)return e.json({success:!1,error:"활성 구독이 없습니다"},403);let l=null;try{l=await e.env.DB.prepare(`
+        SELECT COUNT(*) as count FROM students WHERE academy_id = ?
+      `).bind(n).first()}catch(u){console.error("[Usage] students table error:",u.message),l={count:0}}let i=null;try{i=await e.env.DB.prepare(`
+        SELECT COUNT(*) as count FROM landing_pages WHERE user_id = ?
+      `).bind(r).first()}catch(u){console.error("[Usage] landing_pages table error:",u.message),i={count:0}}let d=null;try{d=await e.env.DB.prepare(`
+        SELECT COUNT(*) as count FROM teacher_applications WHERE academy_id = ?
+      `).bind(n).first()}catch(u){console.error("[Usage] teacher_applications table error:",u.message),d={count:0}}let p=await e.env.DB.prepare(`
       SELECT * FROM usage_tracking 
       WHERE academy_id = ? AND subscription_id = ?
     `).bind(n,o.id).first();if(!p){const u=new Date().toISOString().split("T")[0];try{await e.env.DB.prepare(`
