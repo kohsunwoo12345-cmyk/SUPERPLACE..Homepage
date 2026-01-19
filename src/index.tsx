@@ -6409,19 +6409,19 @@ app.get('/api/subscriptions/status', async (c) => {
     
     console.log('[Subscription Status] user:', user)
     
-    let academyId = user?.academy_id
-    if (!academyId) {
-      // academy_id가 없으면 user.id를 사용
-      academyId = userId
+    // 🔥 핵심 변경: academy_id를 항상 user.id로 강제 설정
+    let academyId = user.id
+    
+    if (user?.academy_id !== user.id) {
+      console.log(`[Subscription Status] Fixing academy_id from ${user?.academy_id} to ${user.id}`)
       try {
         await c.env.DB.prepare(`UPDATE users SET academy_id = ? WHERE id = ?`).bind(academyId, userId).run()
-        console.log('[Subscription Status] Auto-set academy_id:', userId)
       } catch (e) {
-        console.error('[Subscription Status] Failed to set academy_id:', e)
+        console.error('[Subscription Status] Failed to update academy_id:', e)
       }
     }
 
-    console.log('[Subscription Status] Searching for subscription with academy_id:', academyId)
+    console.log('[Subscription Status] Using academy_id:', academyId)
 
     // 활성 구독 조회
     const subscription = await c.env.DB.prepare(`
@@ -6533,15 +6533,15 @@ app.get('/api/usage/check', async (c) => {
     // 사용자의 academy_id 조회
     const user = await c.env.DB.prepare(`SELECT id, academy_id FROM users WHERE id = ?`).bind(userId).first()
     
-    let academyId = user?.academy_id
-    if (!academyId) {
-      // academy_id가 없으면 user.id를 사용
-      academyId = userId
+    // 🔥 핵심 변경: academy_id를 항상 user.id로 강제 설정
+    let academyId = user.id
+    
+    if (user?.academy_id !== user.id) {
       try {
         await c.env.DB.prepare(`UPDATE users SET academy_id = ? WHERE id = ?`).bind(academyId, userId).run()
-        console.log('[Usage Check] Auto-set academy_id:', userId)
+        console.log('[Usage Check] Fixed academy_id to:', userId)
       } catch (e) {
-        console.error('[Usage Check] Failed to set academy_id:', e)
+        console.error('[Usage Check] Failed to update academy_id:', e)
       }
     }
 
@@ -6949,84 +6949,62 @@ app.post('/api/admin/usage/:userId/update-limits', async (c) => {
       return c.json({ success: false, error: '사용자를 찾을 수 없습니다' }, 404)
     }
     
-    // academy_id가 없으면 생성
-    let academyId = user.academy_id
-    if (!academyId) {
-      // academies 테이블에 새 학원 생성
-      try {
-        const academyResult = await c.env.DB.prepare(`
-          INSERT INTO academies (name, owner_id, created_at)
-          VALUES (?, ?, datetime('now'))
-        `).bind(user.academy_name || user.name + '의 학원', user.id).run()
-        
-        academyId = academyResult.meta.last_row_id
-        
-        // users 테이블에 academy_id 업데이트
-        await c.env.DB.prepare(`
-          UPDATE users SET academy_id = ? WHERE id = ?
-        `).bind(academyId, user.id).run()
-        
-        console.log('[Admin] Created new academy:', academyId)
-      } catch (err) {
-        console.error('[Admin] Academy creation error:', err)
-        // academies 테이블이 없을 수 있으므로 user.id를 academy_id로 사용
-        academyId = user.id
-        await c.env.DB.prepare(`
-          UPDATE users SET academy_id = ? WHERE id = ?
-        `).bind(academyId, user.id).run()
-      }
+    // 🔥 핵심 변경: 각 사용자에게 고유한 academy_id 할당 (user.id 기반)
+    // academy_id가 없거나 user.id와 다르면 user.id로 강제 설정
+    let academyId = user.id
+    
+    if (user.academy_id !== user.id) {
+      console.log(`[Admin] Updating academy_id from ${user.academy_id} to ${user.id} for user ${userId}`)
+      await c.env.DB.prepare(`
+        UPDATE users SET academy_id = ? WHERE id = ?
+      `).bind(academyId, user.id).run()
     }
     
-    // 활성 구독 조회 (두 가지 스키마 모두 시도)
-    let subscription = null
-    try {
-      // 먼저 새 스키마 시도 (academy_id)
-      subscription = await c.env.DB.prepare(`
-        SELECT id FROM subscriptions 
-        WHERE academy_id = ? AND status = 'active'
-        ORDER BY created_at DESC LIMIT 1
-      `).bind(academyId).first()
-    } catch (e) {
-      console.log('[Admin] academy_id column not found, trying user_id (old schema):', e.message)
-      // 구 스키마 시도 (user_id)
-      try {
-        subscription = await c.env.DB.prepare(`
-          SELECT id FROM subscriptions 
-          WHERE user_id = ? AND status = 'active'
-          ORDER BY created_at DESC LIMIT 1
-        `).bind(user.id).first()
-        
-        if (subscription) {
-          console.log('[Admin] Found subscription using old schema (user_id)')
-        }
-      } catch (e2) {
-        console.log('[Admin] Both schema attempts failed:', e2.message)
-      }
-    }
+    // 해당 사용자(academy)의 기존 구독 조회
+    const existingSubscription = await c.env.DB.prepare(`
+      SELECT id FROM subscriptions 
+      WHERE academy_id = ? AND plan_name = '관리자 설정 플랜'
+      ORDER BY created_at DESC LIMIT 1
+    `).bind(academyId).first()
     
-    if (subscription) {
-      // 기존 구독의 한도 업데이트
-      try {
+    if (existingSubscription) {
+      // 기존 관리자 플랜 업데이트
+      console.log('[Admin] Updating existing admin subscription:', existingSubscription.id)
+      
+      await c.env.DB.prepare(`
+        UPDATE subscriptions 
+        SET student_limit = ?, 
+            ai_report_limit = ?, 
+            landing_page_limit = ?, 
+            teacher_limit = ?,
+            status = 'active',
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+      `).bind(studentLimit, aiReportLimit, landingPageLimit, teacherLimit, existingSubscription.id).run()
+      
+      // usage_tracking도 확인하고 없으면 생성
+      const existingUsage = await c.env.DB.prepare(`
+        SELECT id FROM usage_tracking WHERE academy_id = ? AND subscription_id = ?
+      `).bind(academyId, existingSubscription.id).first()
+      
+      if (!existingUsage) {
+        console.log('[Admin] Creating missing usage_tracking for existing subscription')
         await c.env.DB.prepare(`
-          UPDATE subscriptions 
-          SET student_limit = ?, 
-              ai_report_limit = ?, 
-              landing_page_limit = ?, 
-              teacher_limit = ?,
-              academy_id = ?
-          WHERE id = ?
-        `).bind(studentLimit, aiReportLimit, landingPageLimit, teacherLimit, academyId, subscription.id).run()
-        
-        console.log('✅ [Admin] Existing subscription limits updated')
-      } catch (updateError) {
-        console.error('[Admin] Update failed, columns may not exist:', updateError.message)
-        return c.json({ 
-          success: false, 
-          error: 'DB 스키마 오류: 먼저 /api/db/migrate를 실행해주세요. Error: ' + updateError.message 
-        }, 500)
+          INSERT INTO usage_tracking (
+            academy_id, subscription_id,
+            current_students, ai_reports_used_this_month, 
+            landing_pages_created, current_teachers,
+            created_at, updated_at
+          )
+          VALUES (?, ?, 0, 0, 0, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+        `).bind(academyId, existingSubscription.id).run()
       }
+      
+      console.log('✅ [Admin] Existing admin subscription updated')
     } else {
-      // 새 구독 생성 (한국 시간 기준, 종료일은 한 달 후 전날 23:59:59)
+      // 새 관리자 플랜 생성
+      console.log('[Admin] Creating new admin subscription for academy_id:', academyId)
+      
       const now = new Date()
       const koreaTime = new Date(now.getTime() + (9 * 60 * 60 * 1000)) // UTC+9
       const today = koreaTime.toISOString().split('T')[0]
@@ -7034,7 +7012,7 @@ app.post('/api/admin/usage/:userId/update-limits', async (c) => {
       // 한 달 후 계산
       const nextMonth = new Date(koreaTime)
       nextMonth.setMonth(nextMonth.getMonth() + 1)
-      nextMonth.setDate(nextMonth.getDate() - 1) // 전날까지 (예: 1/20 구매 → 2/19까지)
+      nextMonth.setDate(nextMonth.getDate() - 1)
       const oneMonthLater = nextMonth.toISOString().split('T')[0]
       
       const newSubResult = await c.env.DB.prepare(`
@@ -7065,7 +7043,7 @@ app.post('/api/admin/usage/:userId/update-limits', async (c) => {
         VALUES (?, ?, 0, 0, 0, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
       `).bind(academyId, newSubId).run()
       
-      console.log('✅ [Admin] New subscription created with custom limits')
+      console.log('✅ [Admin] New admin subscription created with usage_tracking')
     }
     
     return c.json({ 
