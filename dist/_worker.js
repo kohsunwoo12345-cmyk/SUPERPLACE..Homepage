@@ -5223,18 +5223,41 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
       UPDATE usage_tracking 
       SET current_teachers = current_teachers + 1, updated_at = CURRENT_TIMESTAMP
       WHERE academy_id = ? AND subscription_id = ?
-    `).bind(r,a.id).run(),e.json({success:!0,message:"선생님 수가 증가했습니다"})):e.json({success:!1,error:"활성 구독이 없습니다"},403)}catch(t){return e.json({success:!1,error:t.message},500)}});d.post("/api/admin/usage/:userId/update-limits",async e=>{try{const t=e.req.param("userId"),{studentLimit:s,aiReportLimit:r,landingPageLimit:a,teacherLimit:n}=await e.req.json();console.log("[Admin] Updating usage limits for user:",t);const o=await e.env.DB.prepare("SELECT id, academy_id FROM users WHERE id = ?").bind(t).first();if(!o||!o.academy_id)return e.json({success:!1,error:"사용자 또는 학원 정보를 찾을 수 없습니다"},404);const l=await e.env.DB.prepare(`
+    `).bind(r,a.id).run(),e.json({success:!0,message:"선생님 수가 증가했습니다"})):e.json({success:!1,error:"활성 구독이 없습니다"},403)}catch(t){return e.json({success:!1,error:t.message},500)}});d.post("/api/admin/usage/:userId/update-limits",async e=>{try{const t=e.req.param("userId"),{studentLimit:s,aiReportLimit:r,landingPageLimit:a,teacherLimit:n}=await e.req.json();console.log("[Admin] Updating usage limits for user:",t);const o=await e.env.DB.prepare("SELECT id, email, name, academy_id, academy_name FROM users WHERE id = ?").bind(t).first();if(!o)return e.json({success:!1,error:"사용자를 찾을 수 없습니다"},404);let l=o.academy_id;if(!l)try{l=(await e.env.DB.prepare(`
+          INSERT INTO academies (name, owner_id, created_at)
+          VALUES (?, ?, datetime('now'))
+        `).bind(o.academy_name||o.name+"의 학원",o.id).run()).meta.last_row_id,await e.env.DB.prepare(`
+          UPDATE users SET academy_id = ? WHERE id = ?
+        `).bind(l,o.id).run(),console.log("[Admin] Created new academy:",l)}catch(c){console.error("[Admin] Academy creation error:",c),l=o.id,await e.env.DB.prepare(`
+          UPDATE users SET academy_id = ? WHERE id = ?
+        `).bind(l,o.id).run()}const i=await e.env.DB.prepare(`
       SELECT id FROM subscriptions 
       WHERE academy_id = ? AND status = 'active'
       ORDER BY created_at DESC LIMIT 1
-    `).bind(o.academy_id).first();return l?(await e.env.DB.prepare(`
-      UPDATE subscriptions 
-      SET student_limit = ?, 
-          ai_report_limit = ?, 
-          landing_page_limit = ?, 
-          teacher_limit = ?
-      WHERE id = ?
-    `).bind(s,r,a,n,l.id).run(),console.log("✅ [Admin] Usage limits updated successfully"),e.json({success:!0,message:"사용 한도가 업데이트되었습니다",limits:{studentLimit:s,aiReportLimit:r,landingPageLimit:a,teacherLimit:n}})):e.json({success:!1,error:"활성 구독이 없습니다"},404)}catch(t){return console.error("[Admin] Update limits error:",t),e.json({success:!1,error:t.message},500)}});d.get("/api/admin/usage/:userId",async e=>{try{const t=e.req.param("userId"),s=await e.env.DB.prepare("SELECT id, academy_id FROM users WHERE id = ?").bind(t).first();if(!s||!s.academy_id)return e.json({success:!1,hasSubscription:!1,message:"학원 정보가 없습니다"});const r=await e.env.DB.prepare(`
+    `).bind(l).first();if(i)await e.env.DB.prepare(`
+        UPDATE subscriptions 
+        SET student_limit = ?, 
+            ai_report_limit = ?, 
+            landing_page_limit = ?, 
+            teacher_limit = ?
+        WHERE id = ?
+      `).bind(s,r,a,n,i.id).run(),console.log("✅ [Admin] Existing subscription limits updated");else{const c=new Date().toISOString().split("T")[0],p=new Date(new Date().setMonth(new Date().getMonth()+1)).toISOString().split("T")[0],g=(await e.env.DB.prepare(`
+        INSERT INTO subscriptions (
+          academy_id, plan_name, plan_price, 
+          student_limit, ai_report_limit, landing_page_limit, teacher_limit,
+          subscription_start_date, subscription_end_date, status, payment_method,
+          merchant_uid, created_at
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+      `).bind(l,"관리자 설정 플랜",0,s,r,a,n,c,p,"active","admin","admin_"+t+"_"+Date.now()).run()).meta.last_row_id;await e.env.DB.prepare(`
+        INSERT INTO usage_tracking (
+          academy_id, subscription_id,
+          current_students, ai_reports_used_this_month, 
+          landing_pages_created, current_teachers,
+          created_at, updated_at
+        )
+        VALUES (?, ?, 0, 0, 0, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+      `).bind(l,g).run(),console.log("✅ [Admin] New subscription created with custom limits")}return e.json({success:!0,message:"사용 한도가 업데이트되었습니다",limits:{studentLimit:s,aiReportLimit:r,landingPageLimit:a,teacherLimit:n}})}catch(t){return console.error("[Admin] Update limits error:",t),e.json({success:!1,error:t.message},500)}});d.get("/api/admin/usage/:userId",async e=>{try{const t=e.req.param("userId"),s=await e.env.DB.prepare("SELECT id, academy_id FROM users WHERE id = ?").bind(t).first();if(!s||!s.academy_id)return e.json({success:!1,hasSubscription:!1,message:"학원 정보가 없습니다"});const r=await e.env.DB.prepare(`
       SELECT * FROM subscriptions 
       WHERE academy_id = ? AND status = 'active'
       ORDER BY created_at DESC LIMIT 1
@@ -17619,10 +17642,62 @@ ${M}
                 const content = document.getElementById('usageLimitsContent');
                 
                 if (!data.success || !data.hasSubscription) {
-                    content.innerHTML = '<div class="text-center py-12">' +
-                        '<div class="text-6xl mb-4">📭</div>' +
-                        '<p class="text-gray-600 text-lg mb-2">' + (data.message || '활성 구독이 없습니다') + '</p>' +
-                        '<p class="text-sm text-gray-500">구독을 활성화한 후 사용 한도를 관리할 수 있습니다.</p>' +
+                    // 구독 없을 때 - 수동으로 한도 설정 가능
+                    content.innerHTML = '<div class="space-y-6">' +
+                        '<div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">' +
+                        '<p class="text-sm text-yellow-800">' +
+                        '<i class="fas fa-exclamation-triangle mr-2"></i>' +
+                        '<strong>안내:</strong> 활성 구독이 없습니다. 수동으로 한도를 설정할 수 있습니다.' +
+                        '</p>' +
+                        '</div>' +
+                        '<div class="grid grid-cols-1 md:grid-cols-2 gap-4">' +
+                        '<!-- 학생 수 -->' +
+                        '<div class="border-2 border-blue-200 rounded-lg p-4 bg-blue-50">' +
+                        '<div class="flex items-center mb-3">' +
+                        '<span class="text-sm font-semibold text-gray-800">👥 학생 수 한도</span>' +
+                        '</div>' +
+                        '<div>' +
+                        '<input type="number" id="studentLimit" value="30" min="0" placeholder="예: 30" ' +
+                        'class="w-full px-3 py-2 text-sm border-2 border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500">' +
+                        '</div>' +
+                        '</div>' +
+                        '<!-- AI 리포트 -->' +
+                        '<div class="border-2 border-green-200 rounded-lg p-4 bg-green-50">' +
+                        '<div class="flex items-center mb-3">' +
+                        '<span class="text-sm font-semibold text-gray-800">📊 AI 리포트 한도</span>' +
+                        '</div>' +
+                        '<div>' +
+                        '<input type="number" id="aiReportLimit" value="30" min="0" placeholder="예: 30" ' +
+                        'class="w-full px-3 py-2 text-sm border-2 border-green-300 rounded-lg focus:ring-2 focus:ring-green-500">' +
+                        '</div>' +
+                        '</div>' +
+                        '<!-- 랜딩페이지 -->' +
+                        '<div class="border-2 border-purple-200 rounded-lg p-4 bg-purple-50">' +
+                        '<div class="flex items-center mb-3">' +
+                        '<span class="text-sm font-semibold text-gray-800">🎨 랜딩페이지 한도</span>' +
+                        '</div>' +
+                        '<div>' +
+                        '<input type="number" id="landingPageLimit" value="40" min="0" placeholder="예: 40" ' +
+                        'class="w-full px-3 py-2 text-sm border-2 border-purple-300 rounded-lg focus:ring-2 focus:ring-purple-500">' +
+                        '</div>' +
+                        '</div>' +
+                        '<!-- 선생님 -->' +
+                        '<div class="border-2 border-orange-200 rounded-lg p-4 bg-orange-50">' +
+                        '<div class="flex items-center mb-3">' +
+                        '<span class="text-sm font-semibold text-gray-800">👨‍🏫 선생님 한도</span>' +
+                        '</div>' +
+                        '<div>' +
+                        '<input type="number" id="teacherLimit" value="2" min="0" placeholder="예: 2" ' +
+                        'class="w-full px-3 py-2 text-sm border-2 border-orange-300 rounded-lg focus:ring-2 focus:ring-orange-500">' +
+                        '</div>' +
+                        '</div>' +
+                        '</div>' +
+                        '<div class="bg-blue-50 border border-blue-200 rounded-lg p-4">' +
+                        '<p class="text-sm text-blue-800">' +
+                        '<i class="fas fa-info-circle mr-2"></i>' +
+                        '<strong>안내:</strong> 구독 없이도 한도를 설정하면 해당 사용자가 기능을 이용할 수 있습니다.' +
+                        '</p>' +
+                        '</div>' +
                         '</div>';
                     return;
                 }
