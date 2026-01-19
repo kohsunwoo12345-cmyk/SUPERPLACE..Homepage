@@ -9353,7 +9353,7 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
                                     '<h3 class="text-xl font-bold text-gray-900">📊 실시간 사용량</h3>' +
                                     '<span class="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">자동 업데이트됨</span>' +
                                     '</div>' +
-                                    '<div class="grid grid-cols-1 md:grid-cols-2 gap-6">' +
+                                    '<div class="space-y-4">' +
                                     renderUsageCard('👥', '학생', studentUsage) +
                                     renderUsageCard('📊', 'AI 리포트', reportUsage) +
                                     renderUsageCard('🎨', '랜딩페이지', landingUsage) +

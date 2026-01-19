@@ -11322,7 +11322,7 @@ app.get('/dashboard', (c) => {
                                     '<h3 class="text-xl font-bold text-gray-900">📊 실시간 사용량</h3>' +
                                     '<span class="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">자동 업데이트됨</span>' +
                                     '</div>' +
-                                    '<div class="grid grid-cols-1 md:grid-cols-2 gap-6">' +
+                                    '<div class="space-y-4">' +
                                     renderUsageCard('👥', '학생', studentUsage) +
                                     renderUsageCard('📊', 'AI 리포트', reportUsage) +
                                     renderUsageCard('🎨', '랜딩페이지', landingUsage) +
@@ -32315,5 +32315,7 @@ app.get('/api/debug/user/:userId/subscription', async (c) => {
 
 export default app
 // Force rebuild: Sun Jan 18 18:13:00 UTC 2026
-// Cache buster: 1768763600
+// Cache buster: 1768863600
+// Force deploy: Mon Jan 20 00:00:00 UTC 2026
+// UI update: Single column layout for usage cards
 // Force deploy Mon Jan 19 02:13:47 UTC 2026
