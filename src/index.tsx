@@ -6610,6 +6610,10 @@ app.get('/api/usage/check', async (c) => {
     // 사용자의 academy_id 조회
     const user = await c.env.DB.prepare(`SELECT id, academy_id FROM users WHERE id = ?`).bind(userId).first()
     
+    if (!user) {
+      return c.json({ success: false, error: 'User not found' }, 404)
+    }
+    
     // 🔥 핵심 변경: academy_id를 항상 user.id로 강제 설정
     let academyId = user.id
     
@@ -6646,36 +6650,36 @@ app.get('/api/usage/check', async (c) => {
     }
 
     // 🔥 실제 데이터 조회: students 테이블에서 실제 학생 수 계산
-    let actualStudents = null
+    let actualStudentsCount = 0
     try {
-      actualStudents = await c.env.DB.prepare(`
+      const result = await c.env.DB.prepare(`
         SELECT COUNT(*) as count FROM students WHERE academy_id = ?
       `).bind(academyId).first()
+      actualStudentsCount = result?.count || 0
     } catch (err) {
       console.error('[Usage] students table error:', err.message)
-      actualStudents = { count: 0 }
     }
     
     // 🔥 실제 데이터 조회: landing_pages 테이블에서 실제 랜딩페이지 수 계산
-    let actualLandingPages = null
+    let actualLandingPagesCount = 0
     try {
-      actualLandingPages = await c.env.DB.prepare(`
+      const result = await c.env.DB.prepare(`
         SELECT COUNT(*) as count FROM landing_pages WHERE user_id = ?
       `).bind(userId).first()
+      actualLandingPagesCount = result?.count || 0
     } catch (err) {
       console.error('[Usage] landing_pages table error:', err.message)
-      actualLandingPages = { count: 0 }
     }
     
     // 🔥 실제 데이터 조회: teacher_applications 테이블에서 실제 선생님 수 계산
-    let actualTeachers = null
+    let actualTeachersCount = 0
     try {
-      actualTeachers = await c.env.DB.prepare(`
+      const result = await c.env.DB.prepare(`
         SELECT COUNT(*) as count FROM teacher_applications WHERE academy_id = ?
       `).bind(academyId).first()
+      actualTeachersCount = result?.count || 0
     } catch (err) {
       console.error('[Usage] teacher_applications table error:', err.message)
-      actualTeachers = { count: 0 }
     }
 
     // 사용량 조회 (AI 리포트는 usage_tracking에서 조회)
@@ -6684,60 +6688,13 @@ app.get('/api/usage/check', async (c) => {
       WHERE academy_id = ? AND subscription_id = ?
     `).bind(academyId, subscription.id).first()
 
-    // 사용량 데이터가 없으면 생성
-    if (!usage) {
-      const now = new Date().toISOString().split('T')[0]
-      try {
-        await c.env.DB.prepare(`
-          INSERT INTO usage_tracking (
-            academy_id, subscription_id, current_students,
-            ai_reports_used_this_month, landing_pages_created,
-            current_teachers, sms_sent_this_month,
-            last_ai_report_reset_date, last_sms_reset_date
-          ) VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?)
-        `).bind(
-          academyId, 
-          subscription.id, 
-          actualStudents?.count || 0,
-          0,  // AI 리포트는 처음엔 0
-          actualLandingPages?.count || 0,
-          actualTeachers?.count || 0,
-          now, 
-          now
-        ).run()
-        
-        // 새로 생성된 usage 조회
-        usage = await c.env.DB.prepare(`
-          SELECT * FROM usage_tracking 
-          WHERE academy_id = ? AND subscription_id = ?
-        `).bind(academyId, subscription.id).first()
-      } catch (insertErr) {
-        console.error('[Usage] Failed to create usage_tracking:', insertErr)
-      }
-    }
-
-    // 🔥 usage_tracking의 현재 값을 실제 값으로 업데이트
+    // AI 리포트 사용량 (usage_tracking에서만 조회)
+    let aiReportsCount = 0
     if (usage) {
-      try {
-        await c.env.DB.prepare(`
-          UPDATE usage_tracking 
-          SET current_students = ?, 
-              landing_pages_created = ?,
-              current_teachers = ?,
-              updated_at = CURRENT_TIMESTAMP
-          WHERE academy_id = ? AND subscription_id = ?
-        `).bind(
-          actualStudents?.count || 0,
-          actualLandingPages?.count || 0,
-          actualTeachers?.count || 0,
-          academyId, 
-          subscription.id
-        ).run()
-      } catch (updateErr) {
-        console.error('[Usage] Failed to update usage_tracking:', updateErr)
-      }
+      aiReportsCount = usage.ai_reports_used_this_month || 0
     }
 
+    // 📊 최종 응답: 실제 데이터 반환
     return c.json({
       success: true,
       limits: {
@@ -6747,16 +6704,20 @@ app.get('/api/usage/check', async (c) => {
         teachers: subscription.teacher_limit
       },
       usage: {
-        students: actualStudents?.count || 0,
-        aiReports: usage?.ai_reports_used_this_month || 0,
-        landingPages: actualLandingPages?.count || 0,
-        teachers: actualTeachers?.count || 0,
+        students: actualStudentsCount,
+        aiReports: aiReportsCount,
+        landingPages: actualLandingPagesCount,
+        teachers: actualTeachersCount,
         sms: usage?.sms_sent_this_month || 0
       }
     })
   } catch (error) {
     console.error('[Usage Check] Error:', error)
-    return c.json({ success: false, error: error.message }, 500)
+    return c.json({ 
+      success: false, 
+      error: error.message,
+      stack: error.stack 
+    }, 500)
   }
 })
 
