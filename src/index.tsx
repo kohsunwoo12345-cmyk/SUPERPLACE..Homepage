@@ -12767,24 +12767,58 @@ app.delete('/api/students/:id', async (c) => {
   try {
     const studentId = c.req.param('id')
     
+    console.log('[DeleteStudent] 🗑️ Starting deletion for student:', studentId)
+    
     if (!studentId) {
       return c.json({ success: false, error: '학생 ID가 필요합니다.' }, 400)
     }
     
     // 🔒 보안 1단계: X-User-Data-Base64 헤더에서 academy_id 추출
     let academyId
+    let userData
     try {
       const userHeader = c.req.header('X-User-Data-Base64')
-      if (userHeader) {
-        const userData = JSON.parse(decodeURIComponent(escape(atob(userHeader))))
-        academyId = userData.id || userData.academy_id
+      console.log('[DeleteStudent] 📡 User header exists:', !!userHeader)
+      console.log('[DeleteStudent] 📡 User header length:', userHeader?.length)
+      
+      if (!userHeader) {
+        console.error('[DeleteStudent] ❌ No X-User-Data-Base64 header found')
+        return c.json({ success: false, error: '인증 정보가 필요합니다. 다시 로그인해주세요.' }, 401)
       }
+      
+      // Base64 디코딩
+      const decoded = atob(userHeader)
+      console.log('[DeleteStudent] 🔓 Decoded length:', decoded.length)
+      
+      // URI 디코딩
+      const unescaped = decodeURIComponent(escape(decoded))
+      console.log('[DeleteStudent] 🔓 Unescaped length:', unescaped.length)
+      
+      // JSON 파싱
+      userData = JSON.parse(unescaped)
+      console.log('[DeleteStudent] 👤 Parsed user data:', {
+        id: userData.id,
+        academy_id: userData.academy_id,
+        user_type: userData.user_type,
+        email: userData.email
+      })
+      
+      academyId = userData.id || userData.academy_id
+      console.log('[DeleteStudent] 🏫 Extracted academy ID:', academyId)
+      
     } catch (err) {
-      console.error('[DeleteStudent] Failed to parse user header:', err)
+      console.error('[DeleteStudent] ❌ Failed to parse user header:', err)
+      console.error('[DeleteStudent] ❌ Error stack:', err.stack)
+      return c.json({ 
+        success: false, 
+        error: '인증 정보 파싱 실패. 다시 로그인해주세요.',
+        details: err.message 
+      }, 400)
     }
     
     if (!academyId) {
-      return c.json({ success: false, error: '학원 ID가 필요합니다.' }, 400)
+      console.error('[DeleteStudent] ❌ No academy ID in user data:', userData)
+      return c.json({ success: false, error: '학원 ID가 필요합니다. 사용자 정보를 확인해주세요.' }, 400)
     }
     
     console.log('[DeleteStudent] Soft deleting student:', studentId, 'academy:', academyId)

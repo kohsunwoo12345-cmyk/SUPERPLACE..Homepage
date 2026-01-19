@@ -880,8 +880,28 @@ export const studentsListPage = `
             if (!confirm(\`"\${studentName}" 학생을 삭제하시겠습니까?\\n\\n⚠️ 모든 성과 기록도 함께 삭제됩니다.\`)) return;
 
             try {
-                console.log('🗑️ [DeleteStudent] Deleting student:', studentId);
+                console.log('🗑️ [DeleteStudent] Starting deletion');
+                console.log('🗑️ [DeleteStudent] Student ID:', studentId);
+                console.log('🗑️ [DeleteStudent] Student Name:', studentName);
+                console.log('🗑️ [DeleteStudent] Current User:', currentUser);
+                console.log('🗑️ [DeleteStudent] Academy ID:', academyId);
+                
+                // currentUser 객체 검증
+                if (!currentUser) {
+                    alert('로그인 정보가 없습니다. 다시 로그인해주세요.');
+                    window.location.href = '/login';
+                    return;
+                }
+                
+                if (!currentUser.id && !currentUser.academy_id) {
+                    alert('사용자 ID를 찾을 수 없습니다. 다시 로그인해주세요.');
+                    window.location.href = '/login';
+                    return;
+                }
+                
                 const userDataHeader = btoa(unescape(encodeURIComponent(JSON.stringify(currentUser))));
+                console.log('🗑️ [DeleteStudent] User Data Header length:', userDataHeader.length);
+                console.log('🗑️ [DeleteStudent] First 50 chars:', userDataHeader.substring(0, 50));
                 
                 const res = await fetch('/api/students/' + studentId, { 
                     method: 'DELETE',
@@ -891,18 +911,32 @@ export const studentsListPage = `
                 });
                 
                 console.log('🗑️ [DeleteStudent] Response status:', res.status);
-                const data = await res.json();
+                console.log('🗑️ [DeleteStudent] Response headers:', Array.from(res.headers.entries()));
+                
+                const responseText = await res.text();
+                console.log('🗑️ [DeleteStudent] Response text:', responseText);
+                
+                let data;
+                try {
+                    data = JSON.parse(responseText);
+                } catch (e) {
+                    console.error('🗑️ [DeleteStudent] Failed to parse response:', e);
+                    alert('서버 응답 파싱 실패: ' + responseText);
+                    return;
+                }
+                
                 console.log('🗑️ [DeleteStudent] Response data:', data);
                 
                 if (data.success) {
                     alert('학생이 삭제되었습니다.');
                     loadStudents();
                 } else {
-                    alert('삭제 실패: ' + data.error);
+                    alert('삭제 실패: ' + data.error + (data.details ? '\\n상세: ' + data.details : ''));
                 }
             } catch (error) {
                 console.error('🗑️ [DeleteStudent] Error:', error);
-                alert('삭제 중 오류가 발생했습니다.');
+                console.error('🗑️ [DeleteStudent] Error stack:', error.stack);
+                alert('삭제 중 오류가 발생했습니다: ' + error.message);
             }
         }
 

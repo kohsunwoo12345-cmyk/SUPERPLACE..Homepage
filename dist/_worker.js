@@ -876,8 +876,28 @@ var _t=Object.defineProperty;var Ve=e=>{throw TypeError(e)};var kt=(e,t,s)=>t in
             if (!confirm(\`"\${studentName}" 학생을 삭제하시겠습니까?\\n\\n⚠️ 모든 성과 기록도 함께 삭제됩니다.\`)) return;
 
             try {
-                console.log('🗑️ [DeleteStudent] Deleting student:', studentId);
+                console.log('🗑️ [DeleteStudent] Starting deletion');
+                console.log('🗑️ [DeleteStudent] Student ID:', studentId);
+                console.log('🗑️ [DeleteStudent] Student Name:', studentName);
+                console.log('🗑️ [DeleteStudent] Current User:', currentUser);
+                console.log('🗑️ [DeleteStudent] Academy ID:', academyId);
+                
+                // currentUser 객체 검증
+                if (!currentUser) {
+                    alert('로그인 정보가 없습니다. 다시 로그인해주세요.');
+                    window.location.href = '/login';
+                    return;
+                }
+                
+                if (!currentUser.id && !currentUser.academy_id) {
+                    alert('사용자 ID를 찾을 수 없습니다. 다시 로그인해주세요.');
+                    window.location.href = '/login';
+                    return;
+                }
+                
                 const userDataHeader = btoa(unescape(encodeURIComponent(JSON.stringify(currentUser))));
+                console.log('🗑️ [DeleteStudent] User Data Header length:', userDataHeader.length);
+                console.log('🗑️ [DeleteStudent] First 50 chars:', userDataHeader.substring(0, 50));
                 
                 const res = await fetch('/api/students/' + studentId, { 
                     method: 'DELETE',
@@ -887,18 +907,32 @@ var _t=Object.defineProperty;var Ve=e=>{throw TypeError(e)};var kt=(e,t,s)=>t in
                 });
                 
                 console.log('🗑️ [DeleteStudent] Response status:', res.status);
-                const data = await res.json();
+                console.log('🗑️ [DeleteStudent] Response headers:', Array.from(res.headers.entries()));
+                
+                const responseText = await res.text();
+                console.log('🗑️ [DeleteStudent] Response text:', responseText);
+                
+                let data;
+                try {
+                    data = JSON.parse(responseText);
+                } catch (e) {
+                    console.error('🗑️ [DeleteStudent] Failed to parse response:', e);
+                    alert('서버 응답 파싱 실패: ' + responseText);
+                    return;
+                }
+                
                 console.log('🗑️ [DeleteStudent] Response data:', data);
                 
                 if (data.success) {
                     alert('학생이 삭제되었습니다.');
                     loadStudents();
                 } else {
-                    alert('삭제 실패: ' + data.error);
+                    alert('삭제 실패: ' + data.error + (data.details ? '\\n상세: ' + data.details : ''));
                 }
             } catch (error) {
                 console.error('🗑️ [DeleteStudent] Error:', error);
-                alert('삭제 중 오류가 발생했습니다.');
+                console.error('🗑️ [DeleteStudent] Error stack:', error.stack);
+                alert('삭제 중 오류가 발생했습니다: ' + error.message);
             }
         }
 
@@ -11138,9 +11172,9 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active')
     `).bind(s,r||null,a,o||null,n||"",k,U,w.id,N||new Date().toISOString().split("T")[0],I||null).run();if(T){const A=C.meta.last_row_id,S=typeof T=="string"?T.split(","):[T];for(const R of S)if(R&&R.trim())try{await e.env.DB.prepare(`
               UPDATE students SET class_id = ? WHERE id = ?
-            `).bind(parseInt(R.trim()),A).run()}catch(W){console.error("Class assignment error:",W)}}return e.json({success:!0,message:"학생이 추가되었습니다.",id:C.meta.last_row_id})}catch(t){return console.error("Add student error:",t),e.json({success:!1,error:`학생 추가 실패: ${t.message||t}`},500)}});d.delete("/api/students/:id",async e=>{try{const t=e.req.param("id");if(!t)return e.json({success:!1,error:"학생 ID가 필요합니다."},400);let s;try{const o=e.req.header("X-User-Data-Base64");if(o){const n=JSON.parse(decodeURIComponent(escape(atob(o))));s=n.id||n.academy_id}}catch(o){console.error("[DeleteStudent] Failed to parse user header:",o)}if(!s)return e.json({success:!1,error:"학원 ID가 필요합니다."},400);console.log("[DeleteStudent] Soft deleting student:",t,"academy:",s);const r=await e.env.DB.prepare(`
+            `).bind(parseInt(R.trim()),A).run()}catch(W){console.error("Class assignment error:",W)}}return e.json({success:!0,message:"학생이 추가되었습니다.",id:C.meta.last_row_id})}catch(t){return console.error("Add student error:",t),e.json({success:!1,error:`학생 추가 실패: ${t.message||t}`},500)}});d.delete("/api/students/:id",async e=>{try{const t=e.req.param("id");if(console.log("[DeleteStudent] 🗑️ Starting deletion for student:",t),!t)return e.json({success:!1,error:"학생 ID가 필요합니다."},400);let s,r;try{const n=e.req.header("X-User-Data-Base64");if(console.log("[DeleteStudent] 📡 User header exists:",!!n),console.log("[DeleteStudent] 📡 User header length:",n==null?void 0:n.length),!n)return console.error("[DeleteStudent] ❌ No X-User-Data-Base64 header found"),e.json({success:!1,error:"인증 정보가 필요합니다. 다시 로그인해주세요."},401);const l=atob(n);console.log("[DeleteStudent] 🔓 Decoded length:",l.length);const i=decodeURIComponent(escape(l));console.log("[DeleteStudent] 🔓 Unescaped length:",i.length),r=JSON.parse(i),console.log("[DeleteStudent] 👤 Parsed user data:",{id:r.id,academy_id:r.academy_id,user_type:r.user_type,email:r.email}),s=r.id||r.academy_id,console.log("[DeleteStudent] 🏫 Extracted academy ID:",s)}catch(n){return console.error("[DeleteStudent] ❌ Failed to parse user header:",n),console.error("[DeleteStudent] ❌ Error stack:",n.stack),e.json({success:!1,error:"인증 정보 파싱 실패. 다시 로그인해주세요.",details:n.message},400)}if(!s)return console.error("[DeleteStudent] ❌ No academy ID in user data:",r),e.json({success:!1,error:"학원 ID가 필요합니다. 사용자 정보를 확인해주세요."},400);console.log("[DeleteStudent] Soft deleting student:",t,"academy:",s);const a=await e.env.DB.prepare(`
       SELECT id, academy_id FROM students WHERE id = ?
-    `).bind(t).first();return r?r.academy_id!==s?(console.error("[DeleteStudent] Security breach attempt:",{studentId:t,studentAcademyId:r.academy_id,userAcademyId:s}),e.json({success:!1,error:"권한이 없습니다."},403)):(await e.env.DB.prepare(`
+    `).bind(t).first();return a?a.academy_id!==s?(console.error("[DeleteStudent] Security breach attempt:",{studentId:t,studentAcademyId:a.academy_id,userAcademyId:s}),e.json({success:!1,error:"권한이 없습니다."},403)):(await e.env.DB.prepare(`
       UPDATE students 
       SET status = 'deleted', updated_at = CURRENT_TIMESTAMP
       WHERE id = ? AND academy_id = ?
