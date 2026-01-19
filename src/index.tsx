@@ -32159,6 +32159,30 @@ app.get('/api/debug/user/:userId/subscription', async (c) => {
       SELECT * FROM usage_tracking WHERE academy_id = ? ORDER BY updated_at DESC LIMIT 1
     `).bind(user.academy_id || user.id).first()
     
+    // 🔥 실제 테이블 데이터 조회
+    let actualData = {}
+    try {
+      const students = await c.env.DB.prepare(`
+        SELECT COUNT(*) as count FROM students WHERE academy_id = ?
+      `).bind(user.academy_id || user.id).first()
+      
+      const landingPages = await c.env.DB.prepare(`
+        SELECT COUNT(*) as count FROM landing_pages WHERE user_id = ?
+      `).bind(userId).first()
+      
+      const teachers = await c.env.DB.prepare(`
+        SELECT COUNT(*) as count FROM teachers WHERE academy_id = ?
+      `).bind(user.academy_id || user.id).first()
+      
+      actualData = {
+        students: students?.count || 0,
+        landingPages: landingPages?.count || 0,
+        teachers: teachers?.count || 0
+      }
+    } catch (err) {
+      actualData = { error: err.message }
+    }
+    
     return c.json({
       user: user,
       subscriptions: {
@@ -32167,6 +32191,7 @@ app.get('/api/debug/user/:userId/subscription', async (c) => {
         admin: adminSubscription
       },
       usageTracking: usageTracking,
+      actualData: actualData,
       debug: {
         academyIdUsedForQuery: user.academy_id || user.id,
         totalSubscriptions: subscriptionsByAcademy.results.length
