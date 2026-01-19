@@ -1142,21 +1142,26 @@ app.post('/api/init-db', async (c) => {
 app.get('/api/db/migrate', async (c) => {
   try {
     console.log('🔧 [Migration] Starting database migrations...')
+    const results = []
     
     // Migration 1: Add academy_id to users table if it doesn't exist
     try {
       await c.env.DB.prepare(`ALTER TABLE users ADD COLUMN academy_id INTEGER DEFAULT 1`).run()
       console.log('✅ [Migration] Added academy_id column to users table')
+      results.push('✅ Added academy_id to users')
     } catch (e) {
-      console.log('ℹ️ [Migration] academy_id column already exists or migration failed:', e.message)
+      console.log('ℹ️ [Migration] academy_id column in users:', e.message)
+      results.push('ℹ️ users.academy_id: ' + e.message.substring(0, 50))
     }
     
     // Migration 2: Set default academy_id for users without it
     try {
-      await c.env.DB.prepare(`UPDATE users SET academy_id = 1 WHERE academy_id IS NULL`).run()
-      console.log('✅ [Migration] Set default academy_id for existing users')
+      const updateResult = await c.env.DB.prepare(`UPDATE users SET academy_id = id WHERE academy_id IS NULL OR academy_id = 0`).run()
+      console.log('✅ [Migration] Set default academy_id for users:', updateResult.meta.changes)
+      results.push('✅ Updated ' + updateResult.meta.changes + ' users with academy_id')
     } catch (e) {
       console.log('ℹ️ [Migration] Failed to set default academy_id:', e.message)
+      results.push('ℹ️ Update users: ' + e.message.substring(0, 50))
     }
     
     // Migration 3: Ensure academies table exists
@@ -1166,41 +1171,112 @@ app.get('/api/db/migrate', async (c) => {
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           academy_name TEXT NOT NULL,
           owner_id INTEGER NOT NULL,
-          academy_id INTEGER UNIQUE,
           created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
           FOREIGN KEY (owner_id) REFERENCES users(id)
         )
       `).run()
       console.log('✅ [Migration] Created academies table')
+      results.push('✅ Created academies table')
     } catch (e) {
-      console.log('ℹ️ [Migration] Academies table creation failed:', e.message)
+      console.log('ℹ️ [Migration] Academies table:', e.message)
+      results.push('ℹ️ academies: ' + e.message.substring(0, 50))
     }
     
-    // Migration 4: Ensure subscriptions table has academy_id
+    // Migration 4: Check if subscriptions table has user_id (old schema)
+    let hasOldSchema = false
+    try {
+      const testQuery = await c.env.DB.prepare(`SELECT user_id FROM subscriptions LIMIT 1`).first()
+      hasOldSchema = true
+      console.log('📋 [Migration] Detected OLD subscriptions schema with user_id')
+      results.push('📋 Old subscriptions schema detected')
+    } catch (e) {
+      console.log('📋 [Migration] New subscriptions schema detected (no user_id column)')
+      results.push('📋 New subscriptions schema')
+    }
+    
+    // Migration 5: Add academy_id to subscriptions if missing
     try {
       await c.env.DB.prepare(`ALTER TABLE subscriptions ADD COLUMN academy_id INTEGER`).run()
       console.log('✅ [Migration] Added academy_id to subscriptions table')
+      results.push('✅ Added academy_id to subscriptions')
     } catch (e) {
-      console.log('ℹ️ [Migration] academy_id in subscriptions already exists:', e.message)
+      console.log('ℹ️ [Migration] subscriptions.academy_id:', e.message)
+      results.push('ℹ️ subscriptions.academy_id: ' + e.message.substring(0, 50))
     }
     
-    // Migration 5: Ensure usage_tracking table has academy_id
+    // Migration 6: Populate academy_id from user_id if old schema
+    if (hasOldSchema) {
+      try {
+        // Get academy_id from users table and update subscriptions
+        const updateResult = await c.env.DB.prepare(`
+          UPDATE subscriptions 
+          SET academy_id = (SELECT academy_id FROM users WHERE users.id = subscriptions.user_id)
+          WHERE academy_id IS NULL
+        `).run()
+        console.log('✅ [Migration] Populated academy_id in subscriptions:', updateResult.meta.changes)
+        results.push('✅ Populated ' + updateResult.meta.changes + ' subscriptions with academy_id from users')
+      } catch (e) {
+        console.log('⚠️ [Migration] Failed to populate academy_id:', e.message)
+        results.push('⚠️ Populate academy_id: ' + e.message.substring(0, 50))
+      }
+    }
+    
+    // Migration 7: Add new columns to subscriptions if missing
+    const newColumns = [
+      { name: 'plan_name', type: 'TEXT', default: "'스타터 플랜'" },
+      { name: 'plan_price', type: 'INTEGER', default: '0' },
+      { name: 'student_limit', type: 'INTEGER', default: '30' },
+      { name: 'ai_report_limit', type: 'INTEGER', default: '30' },
+      { name: 'landing_page_limit', type: 'INTEGER', default: '40' },
+      { name: 'teacher_limit', type: 'INTEGER', default: '2' },
+      { name: 'subscription_start_date', type: 'TEXT', default: null },
+      { name: 'subscription_end_date', type: 'TEXT', default: null },
+      { name: 'payment_method', type: 'TEXT', default: null },
+      { name: 'merchant_uid', type: 'TEXT', default: null }
+    ]
+    
+    for (const col of newColumns) {
+      try {
+        const defaultClause = col.default ? ` DEFAULT ${col.default}` : ''
+        await c.env.DB.prepare(`ALTER TABLE subscriptions ADD COLUMN ${col.name} ${col.type}${defaultClause}`).run()
+        console.log(`✅ [Migration] Added ${col.name} to subscriptions`)
+        results.push(`✅ Added subscriptions.${col.name}`)
+      } catch (e) {
+        // Column already exists, skip
+      }
+    }
+    
+    // Migration 8: Populate subscription_start_date and subscription_end_date from start_date/end_date
+    if (hasOldSchema) {
+      try {
+        await c.env.DB.prepare(`
+          UPDATE subscriptions 
+          SET subscription_start_date = start_date,
+              subscription_end_date = end_date
+          WHERE subscription_start_date IS NULL
+        `).run()
+        console.log('✅ [Migration] Migrated date columns')
+        results.push('✅ Migrated date columns')
+      } catch (e) {
+        console.log('ℹ️ [Migration] Date migration:', e.message)
+      }
+    }
+    
+    // Migration 9: Ensure usage_tracking table has academy_id
     try {
       await c.env.DB.prepare(`ALTER TABLE usage_tracking ADD COLUMN academy_id INTEGER`).run()
       console.log('✅ [Migration] Added academy_id to usage_tracking table')
+      results.push('✅ Added academy_id to usage_tracking')
     } catch (e) {
-      console.log('ℹ️ [Migration] academy_id in usage_tracking already exists:', e.message)
+      console.log('ℹ️ [Migration] usage_tracking.academy_id:', e.message)
+      results.push('ℹ️ usage_tracking.academy_id: exists')
     }
     
     return c.json({ 
       success: true, 
       message: '데이터베이스 마이그레이션이 완료되었습니다',
-      migrations: [
-        'users.academy_id',
-        'academies table',
-        'subscriptions.academy_id',
-        'usage_tracking.academy_id'
-      ]
+      results: results,
+      note: hasOldSchema ? '⚠️ Old schema detected - migrated to new schema' : '✅ Using new schema'
     })
   } catch (err) {
     console.error('❌ [Migration] Error:', err)
@@ -6733,25 +6809,54 @@ app.post('/api/admin/usage/:userId/update-limits', async (c) => {
       }
     }
     
-    // 활성 구독 조회
-    const subscription = await c.env.DB.prepare(`
-      SELECT id FROM subscriptions 
-      WHERE academy_id = ? AND status = 'active'
-      ORDER BY created_at DESC LIMIT 1
-    `).bind(academyId).first()
+    // 활성 구독 조회 (두 가지 스키마 모두 시도)
+    let subscription = null
+    try {
+      // 먼저 새 스키마 시도 (academy_id)
+      subscription = await c.env.DB.prepare(`
+        SELECT id FROM subscriptions 
+        WHERE academy_id = ? AND status = 'active'
+        ORDER BY created_at DESC LIMIT 1
+      `).bind(academyId).first()
+    } catch (e) {
+      console.log('[Admin] academy_id column not found, trying user_id (old schema):', e.message)
+      // 구 스키마 시도 (user_id)
+      try {
+        subscription = await c.env.DB.prepare(`
+          SELECT id FROM subscriptions 
+          WHERE user_id = ? AND status = 'active'
+          ORDER BY created_at DESC LIMIT 1
+        `).bind(user.id).first()
+        
+        if (subscription) {
+          console.log('[Admin] Found subscription using old schema (user_id)')
+        }
+      } catch (e2) {
+        console.log('[Admin] Both schema attempts failed:', e2.message)
+      }
+    }
     
     if (subscription) {
       // 기존 구독의 한도 업데이트
-      await c.env.DB.prepare(`
-        UPDATE subscriptions 
-        SET student_limit = ?, 
-            ai_report_limit = ?, 
-            landing_page_limit = ?, 
-            teacher_limit = ?
-        WHERE id = ?
-      `).bind(studentLimit, aiReportLimit, landingPageLimit, teacherLimit, subscription.id).run()
-      
-      console.log('✅ [Admin] Existing subscription limits updated')
+      try {
+        await c.env.DB.prepare(`
+          UPDATE subscriptions 
+          SET student_limit = ?, 
+              ai_report_limit = ?, 
+              landing_page_limit = ?, 
+              teacher_limit = ?,
+              academy_id = ?
+          WHERE id = ?
+        `).bind(studentLimit, aiReportLimit, landingPageLimit, teacherLimit, academyId, subscription.id).run()
+        
+        console.log('✅ [Admin] Existing subscription limits updated')
+      } catch (updateError) {
+        console.error('[Admin] Update failed, columns may not exist:', updateError.message)
+        return c.json({ 
+          success: false, 
+          error: 'DB 스키마 오류: 먼저 /api/db/migrate를 실행해주세요. Error: ' + updateError.message 
+        }, 500)
+      }
     } else {
       // 새 구독 생성
       const today = new Date().toISOString().split('T')[0]
@@ -6831,12 +6936,36 @@ app.get('/api/admin/usage/:userId', async (c) => {
       }
     }
     
-    // 활성 구독 조회
-    const subscription = await c.env.DB.prepare(`
-      SELECT * FROM subscriptions 
-      WHERE academy_id = ? AND status = 'active'
-      ORDER BY created_at DESC LIMIT 1
-    `).bind(academyId).first()
+    // 활성 구독 조회 (두 가지 스키마 모두 시도)
+    let subscription = null
+    try {
+      // 먼저 새 스키마 시도 (academy_id)
+      subscription = await c.env.DB.prepare(`
+        SELECT * FROM subscriptions 
+        WHERE academy_id = ? AND status = 'active'
+        ORDER BY created_at DESC LIMIT 1
+      `).bind(academyId).first()
+    } catch (e) {
+      console.log('[Admin] academy_id column not found in GET, trying user_id (old schema):', e.message)
+      // 구 스키마 시도 (user_id)
+      try {
+        subscription = await c.env.DB.prepare(`
+          SELECT * FROM subscriptions 
+          WHERE user_id = ? AND status = 'active'
+          ORDER BY created_at DESC LIMIT 1
+        `).bind(user.id).first()
+        
+        if (subscription) {
+          console.log('[Admin] Found subscription using old schema (user_id) in GET')
+        }
+      } catch (e2) {
+        console.log('[Admin] Both schema attempts failed in GET:', e2.message)
+        return c.json({ 
+          success: false, 
+          error: 'DB 스키마 오류: /api/db/migrate를 실행해주세요. Error: ' + e2.message 
+        }, 500)
+      }
+    }
     
     if (!subscription) {
       return c.json({ success: true, hasSubscription: false, message: '활성 구독이 없습니다' })

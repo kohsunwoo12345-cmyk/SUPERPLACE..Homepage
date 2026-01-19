@@ -2907,16 +2907,24 @@ var Lt=Object.defineProperty;var Qe=e=>{throw TypeError(e)};var Bt=(e,t,s)=>t in
         INSERT INTO sms_pricing (message_type, price, description)
         VALUES ('SMS', 20, '단문 SMS (90바이트 이하)'),
                ('LMS', 50, '장문 SMS (90바이트 초과)')
-      `).run(),e.json({success:!0,message:"DB 초기화 완료",tables:["users","point_transactions","sender_ids","sms_pricing"]})}catch(t){return console.error("DB Init error:",t),e.json({success:!1,error:"DB 초기화 실패: "+t.message},500)}});d.get("/api/db/migrate",async e=>{try{console.log("🔧 [Migration] Starting database migrations...");try{await e.env.DB.prepare("ALTER TABLE users ADD COLUMN academy_id INTEGER DEFAULT 1").run(),console.log("✅ [Migration] Added academy_id column to users table")}catch(t){console.log("ℹ️ [Migration] academy_id column already exists or migration failed:",t.message)}try{await e.env.DB.prepare("UPDATE users SET academy_id = 1 WHERE academy_id IS NULL").run(),console.log("✅ [Migration] Set default academy_id for existing users")}catch(t){console.log("ℹ️ [Migration] Failed to set default academy_id:",t.message)}try{await e.env.DB.prepare(`
+      `).run(),e.json({success:!0,message:"DB 초기화 완료",tables:["users","point_transactions","sender_ids","sms_pricing"]})}catch(t){return console.error("DB Init error:",t),e.json({success:!1,error:"DB 초기화 실패: "+t.message},500)}});d.get("/api/db/migrate",async e=>{try{console.log("🔧 [Migration] Starting database migrations...");const t=[];try{await e.env.DB.prepare("ALTER TABLE users ADD COLUMN academy_id INTEGER DEFAULT 1").run(),console.log("✅ [Migration] Added academy_id column to users table"),t.push("✅ Added academy_id to users")}catch(a){console.log("ℹ️ [Migration] academy_id column in users:",a.message),t.push("ℹ️ users.academy_id: "+a.message.substring(0,50))}try{const a=await e.env.DB.prepare("UPDATE users SET academy_id = id WHERE academy_id IS NULL OR academy_id = 0").run();console.log("✅ [Migration] Set default academy_id for users:",a.meta.changes),t.push("✅ Updated "+a.meta.changes+" users with academy_id")}catch(a){console.log("ℹ️ [Migration] Failed to set default academy_id:",a.message),t.push("ℹ️ Update users: "+a.message.substring(0,50))}try{await e.env.DB.prepare(`
         CREATE TABLE IF NOT EXISTS academies (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           academy_name TEXT NOT NULL,
           owner_id INTEGER NOT NULL,
-          academy_id INTEGER UNIQUE,
           created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
           FOREIGN KEY (owner_id) REFERENCES users(id)
         )
-      `).run(),console.log("✅ [Migration] Created academies table")}catch(t){console.log("ℹ️ [Migration] Academies table creation failed:",t.message)}try{await e.env.DB.prepare("ALTER TABLE subscriptions ADD COLUMN academy_id INTEGER").run(),console.log("✅ [Migration] Added academy_id to subscriptions table")}catch(t){console.log("ℹ️ [Migration] academy_id in subscriptions already exists:",t.message)}try{await e.env.DB.prepare("ALTER TABLE usage_tracking ADD COLUMN academy_id INTEGER").run(),console.log("✅ [Migration] Added academy_id to usage_tracking table")}catch(t){console.log("ℹ️ [Migration] academy_id in usage_tracking already exists:",t.message)}return e.json({success:!0,message:"데이터베이스 마이그레이션이 완료되었습니다",migrations:["users.academy_id","academies table","subscriptions.academy_id","usage_tracking.academy_id"]})}catch(t){return console.error("❌ [Migration] Error:",t),e.json({success:!1,error:"마이그레이션 실패: "+t.message},500)}});d.post("/api/points/charge",async e=>{try{const{userId:t,amount:s}=await e.req.json();if(!t||!s)return e.json({success:!1,error:"사용자 ID와 충전 금액이 필요합니다."},400);const r=await e.env.DB.prepare("SELECT * FROM users WHERE id = ?").bind(t).first();if(!r)return e.json({success:!1,error:"사용자를 찾을 수 없습니다."},404);const a=r.balance||0;await e.env.DB.prepare("UPDATE users SET balance = balance + ? WHERE id = ?").bind(s,t).run(),await e.env.DB.prepare(`
+      `).run(),console.log("✅ [Migration] Created academies table"),t.push("✅ Created academies table")}catch(a){console.log("ℹ️ [Migration] Academies table:",a.message),t.push("ℹ️ academies: "+a.message.substring(0,50))}let s=!1;try{const a=await e.env.DB.prepare("SELECT user_id FROM subscriptions LIMIT 1").first();s=!0,console.log("📋 [Migration] Detected OLD subscriptions schema with user_id"),t.push("📋 Old subscriptions schema detected")}catch{console.log("📋 [Migration] New subscriptions schema detected (no user_id column)"),t.push("📋 New subscriptions schema")}try{await e.env.DB.prepare("ALTER TABLE subscriptions ADD COLUMN academy_id INTEGER").run(),console.log("✅ [Migration] Added academy_id to subscriptions table"),t.push("✅ Added academy_id to subscriptions")}catch(a){console.log("ℹ️ [Migration] subscriptions.academy_id:",a.message),t.push("ℹ️ subscriptions.academy_id: "+a.message.substring(0,50))}if(s)try{const a=await e.env.DB.prepare(`
+          UPDATE subscriptions 
+          SET academy_id = (SELECT academy_id FROM users WHERE users.id = subscriptions.user_id)
+          WHERE academy_id IS NULL
+        `).run();console.log("✅ [Migration] Populated academy_id in subscriptions:",a.meta.changes),t.push("✅ Populated "+a.meta.changes+" subscriptions with academy_id from users")}catch(a){console.log("⚠️ [Migration] Failed to populate academy_id:",a.message),t.push("⚠️ Populate academy_id: "+a.message.substring(0,50))}const r=[{name:"plan_name",type:"TEXT",default:"'스타터 플랜'"},{name:"plan_price",type:"INTEGER",default:"0"},{name:"student_limit",type:"INTEGER",default:"30"},{name:"ai_report_limit",type:"INTEGER",default:"30"},{name:"landing_page_limit",type:"INTEGER",default:"40"},{name:"teacher_limit",type:"INTEGER",default:"2"},{name:"subscription_start_date",type:"TEXT",default:null},{name:"subscription_end_date",type:"TEXT",default:null},{name:"payment_method",type:"TEXT",default:null},{name:"merchant_uid",type:"TEXT",default:null}];for(const a of r)try{const n=a.default?` DEFAULT ${a.default}`:"";await e.env.DB.prepare(`ALTER TABLE subscriptions ADD COLUMN ${a.name} ${a.type}${n}`).run(),console.log(`✅ [Migration] Added ${a.name} to subscriptions`),t.push(`✅ Added subscriptions.${a.name}`)}catch{}if(s)try{await e.env.DB.prepare(`
+          UPDATE subscriptions 
+          SET subscription_start_date = start_date,
+              subscription_end_date = end_date
+          WHERE subscription_start_date IS NULL
+        `).run(),console.log("✅ [Migration] Migrated date columns"),t.push("✅ Migrated date columns")}catch(a){console.log("ℹ️ [Migration] Date migration:",a.message)}try{await e.env.DB.prepare("ALTER TABLE usage_tracking ADD COLUMN academy_id INTEGER").run(),console.log("✅ [Migration] Added academy_id to usage_tracking table"),t.push("✅ Added academy_id to usage_tracking")}catch(a){console.log("ℹ️ [Migration] usage_tracking.academy_id:",a.message),t.push("ℹ️ usage_tracking.academy_id: exists")}return e.json({success:!0,message:"데이터베이스 마이그레이션이 완료되었습니다",results:t,note:s?"⚠️ Old schema detected - migrated to new schema":"✅ Using new schema"})}catch(t){return console.error("❌ [Migration] Error:",t),e.json({success:!1,error:"마이그레이션 실패: "+t.message},500)}});d.post("/api/points/charge",async e=>{try{const{userId:t,amount:s}=await e.req.json();if(!t||!s)return e.json({success:!1,error:"사용자 ID와 충전 금액이 필요합니다."},400);const r=await e.env.DB.prepare("SELECT * FROM users WHERE id = ?").bind(t).first();if(!r)return e.json({success:!1,error:"사용자를 찾을 수 없습니다."},404);const a=r.balance||0;await e.env.DB.prepare("UPDATE users SET balance = balance + ? WHERE id = ?").bind(s,t).run(),await e.env.DB.prepare(`
       INSERT INTO point_transactions (user_id, amount, balance_before, balance_after, transaction_type, description, created_at)
       VALUES (?, ?, ?, ?, 'charge', '테스트 충전', CURRENT_TIMESTAMP)
     `).bind(t,s,a,a+s).run();const n=await e.env.DB.prepare("SELECT balance FROM users WHERE id = ?").bind(t).first();return e.json({success:!0,message:"포인트가 충전되었습니다.",balance:n.balance})}catch(t){return console.error("Charge points error:",t),e.json({success:!1,error:"포인트 충전 실패: "+t.message},500)}});d.post("/api/sms/send",async e=>{var t;try{const{userId:s,senderId:r,receivers:a,message:n,reserveTime:o}=await e.req.json();if(!s||!r||!a||!n)return e.json({success:!1,error:"필수 정보를 입력해주세요."},400);const l=await e.env.DB.prepare(`
@@ -5243,18 +5251,23 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
           UPDATE users SET academy_id = ? WHERE id = ?
         `).bind(l,o.id).run(),console.log("[Admin] Created new academy:",l)}catch(c){console.error("[Admin] Academy creation error:",c),l=o.id,await e.env.DB.prepare(`
           UPDATE users SET academy_id = ? WHERE id = ?
-        `).bind(l,o.id).run()}const i=await e.env.DB.prepare(`
-      SELECT id FROM subscriptions 
-      WHERE academy_id = ? AND status = 'active'
-      ORDER BY created_at DESC LIMIT 1
-    `).bind(l).first();if(i)await e.env.DB.prepare(`
-        UPDATE subscriptions 
-        SET student_limit = ?, 
-            ai_report_limit = ?, 
-            landing_page_limit = ?, 
-            teacher_limit = ?
-        WHERE id = ?
-      `).bind(s,r,a,n,i.id).run(),console.log("✅ [Admin] Existing subscription limits updated");else{const c=new Date().toISOString().split("T")[0],p=new Date(new Date().setMonth(new Date().getMonth()+1)).toISOString().split("T")[0],g=(await e.env.DB.prepare(`
+        `).bind(l,o.id).run()}let i=null;try{i=await e.env.DB.prepare(`
+        SELECT id FROM subscriptions 
+        WHERE academy_id = ? AND status = 'active'
+        ORDER BY created_at DESC LIMIT 1
+      `).bind(l).first()}catch(c){console.log("[Admin] academy_id column not found, trying user_id (old schema):",c.message);try{i=await e.env.DB.prepare(`
+          SELECT id FROM subscriptions 
+          WHERE user_id = ? AND status = 'active'
+          ORDER BY created_at DESC LIMIT 1
+        `).bind(o.id).first(),i&&console.log("[Admin] Found subscription using old schema (user_id)")}catch(p){console.log("[Admin] Both schema attempts failed:",p.message)}}if(i)try{await e.env.DB.prepare(`
+          UPDATE subscriptions 
+          SET student_limit = ?, 
+              ai_report_limit = ?, 
+              landing_page_limit = ?, 
+              teacher_limit = ?,
+              academy_id = ?
+          WHERE id = ?
+        `).bind(s,r,a,n,l,i.id).run(),console.log("✅ [Admin] Existing subscription limits updated")}catch(c){return console.error("[Admin] Update failed, columns may not exist:",c.message),e.json({success:!1,error:"DB 스키마 오류: 먼저 /api/db/migrate를 실행해주세요. Error: "+c.message},500)}else{const c=new Date().toISOString().split("T")[0],p=new Date(new Date().setMonth(new Date().getMonth()+1)).toISOString().split("T")[0],g=(await e.env.DB.prepare(`
         INSERT INTO subscriptions (
           academy_id, plan_name, plan_price, 
           student_limit, ai_report_limit, landing_page_limit, teacher_limit,
@@ -5272,11 +5285,15 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
         VALUES (?, ?, 0, 0, 0, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
       `).bind(l,g).run(),console.log("✅ [Admin] New subscription created with custom limits")}return e.json({success:!0,message:"사용 한도가 업데이트되었습니다",limits:{studentLimit:s,aiReportLimit:r,landingPageLimit:a,teacherLimit:n}})}catch(t){return console.error("[Admin] Update limits error:",t),e.json({success:!1,error:t.message},500)}});d.get("/api/admin/usage/:userId",async e=>{try{const t=e.req.param("userId"),s=await e.env.DB.prepare("SELECT id, academy_id, name, academy_name FROM users WHERE id = ?").bind(t).first();if(!s)return e.json({success:!1,hasSubscription:!1,message:"사용자를 찾을 수 없습니다"});let r=s.academy_id;if(!r){r=s.id;try{await e.env.DB.prepare(`
           UPDATE users SET academy_id = ? WHERE id = ?
-        `).bind(r,s.id).run(),console.log("[Admin] Auto-created academy_id:",r)}catch(o){console.error("[Admin] Failed to set academy_id:",o)}}const a=await e.env.DB.prepare(`
-      SELECT * FROM subscriptions 
-      WHERE academy_id = ? AND status = 'active'
-      ORDER BY created_at DESC LIMIT 1
-    `).bind(r).first();if(!a)return e.json({success:!0,hasSubscription:!1,message:"활성 구독이 없습니다"});const n=await e.env.DB.prepare(`
+        `).bind(r,s.id).run(),console.log("[Admin] Auto-created academy_id:",r)}catch(o){console.error("[Admin] Failed to set academy_id:",o)}}let a=null;try{a=await e.env.DB.prepare(`
+        SELECT * FROM subscriptions 
+        WHERE academy_id = ? AND status = 'active'
+        ORDER BY created_at DESC LIMIT 1
+      `).bind(r).first()}catch(o){console.log("[Admin] academy_id column not found in GET, trying user_id (old schema):",o.message);try{a=await e.env.DB.prepare(`
+          SELECT * FROM subscriptions 
+          WHERE user_id = ? AND status = 'active'
+          ORDER BY created_at DESC LIMIT 1
+        `).bind(s.id).first(),a&&console.log("[Admin] Found subscription using old schema (user_id) in GET")}catch(l){return console.log("[Admin] Both schema attempts failed in GET:",l.message),e.json({success:!1,error:"DB 스키마 오류: /api/db/migrate를 실행해주세요. Error: "+l.message},500)}}if(!a)return e.json({success:!0,hasSubscription:!1,message:"활성 구독이 없습니다"});const n=await e.env.DB.prepare(`
       SELECT * FROM usage_tracking 
       WHERE subscription_id = ?
     `).bind(a.id).first();return e.json({success:!0,hasSubscription:!0,subscription:{id:a.id,planName:a.plan_name,startDate:a.subscription_start_date,endDate:a.subscription_end_date,studentLimit:a.student_limit,aiReportLimit:a.ai_report_limit,landingPageLimit:a.landing_page_limit,teacherLimit:a.teacher_limit},usage:{currentStudents:(n==null?void 0:n.current_students)||0,aiReportsUsed:(n==null?void 0:n.ai_reports_used_this_month)||0,landingPagesCreated:(n==null?void 0:n.landing_pages_created)||0,currentTeachers:(n==null?void 0:n.current_teachers)||0}})}catch(t){return console.error("[Admin] Get usage error:",t),e.json({success:!1,error:t.message},500)}});d.get("/pricing/starter",e=>e.html(`
