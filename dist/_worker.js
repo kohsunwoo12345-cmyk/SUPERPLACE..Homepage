@@ -9065,9 +9065,14 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
             const user = JSON.parse(localStorage.getItem('user') || 'null')
             const isImpersonating = localStorage.getItem('is_impersonating') === 'true'
             
+            console.log('[Dashboard Init] User from localStorage:', user)
+            
             if (!user) {
+                console.error('[Dashboard Init] No user in localStorage, redirecting to login')
                 window.location.href = '/login'
             } else {
+                console.log('[Dashboard Init] User ID:', user.id, 'Email:', user.email, 'Name:', user.name)
+                
                 document.getElementById('userName').textContent = user.name
                 document.getElementById('userNameDisplay').textContent = user.name
                 
@@ -9089,6 +9094,7 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
                 }
                 
                 // 구독 상태 로드
+                console.log('[Dashboard Init] Loading subscription status...')
                 loadSubscriptionStatus()
                 
                 // 권한 체크 및 UI 표시/숨김
