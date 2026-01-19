@@ -5466,13 +5466,16 @@ app.get('/', (c) => {
           }
           
           /* 전체 메가 메뉴 스타일 */
-          .nav-menu-container {
+          .nav-menu-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 40px;
             position: relative;
           }
           
           .mega-menu {
-            position: absolute;
-            top: 100%;
+            position: fixed;
+            top: 80px;
             left: 0;
             right: 0;
             display: none;
@@ -5482,7 +5485,7 @@ app.get('/', (c) => {
             z-index: 100;
           }
           
-          .nav-menu-container:hover .mega-menu {
+          .nav-menu-wrapper:hover .mega-menu {
             display: block;
             animation: fadeInDown 0.3s ease-out;
           }
@@ -5499,25 +5502,28 @@ app.get('/', (c) => {
           .menu-column {
             display: flex;
             flex-direction: column;
+            min-width: 0;
           }
           
           .menu-column-title {
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 700;
             color: #7c3aed;
-            margin-bottom: 16px;
+            margin-bottom: 12px;
             padding-bottom: 8px;
             border-bottom: 2px solid #e5e7eb;
+            white-space: nowrap;
           }
           
           .menu-column a {
             display: block;
-            padding: 10px 0;
+            padding: 8px 0;
             color: #374151;
             text-decoration: none;
             transition: all 0.2s;
             font-size: 14px;
             font-weight: 500;
+            white-space: nowrap;
           }
           
           .menu-column a:hover {
@@ -5546,70 +5552,74 @@ app.get('/', (c) => {
                         <img src="/static/images/logo.png" alt="SUPER PLACE" class="h-10" onerror="this.style.display='none'">
                         <span class="text-xl font-bold text-gray-900">우리는 슈퍼플레이스다</span>
                     </div>
-                    <div class="hidden md:flex items-center space-x-10 nav-menu-container">
-                        <a href="/" class="text-gray-700 hover:text-purple-600 font-medium transition">홈</a>
-                        <a href="/programs" class="text-gray-700 hover:text-purple-600 font-medium transition">교육 프로그램</a>
-                        <a href="/pricing" class="text-gray-700 hover:text-purple-600 font-medium transition">요금제</a>
-                        <a href="/success" class="text-gray-700 hover:text-purple-600 font-medium transition">성공 사례</a>
-                        <a href="/contact" class="text-gray-700 hover:text-purple-600 font-medium transition">문의하기</a>
-                        <a href="https://kohsunwoo12345-cmyk.github.io/SUPERPLACE.Home.store/" target="_blank" class="text-gray-700 hover:text-purple-600 font-medium transition">AI 봇 쇼핑몰</a>
-                        
-                        <!-- 전체 메가 메뉴 -->
-                        <div class="mega-menu">
-                            <div class="mega-menu-inner">
-                                <!-- 홈 -->
-                                <div class="menu-column">
-                                    <div class="menu-column-title">홈</div>
-                                    <a href="/">메인 홈</a>
-                                    <a href="/about">회사 소개</a>
-                                    <a href="/dashboard">대시보드</a>
-                                </div>
-                                
-                                <!-- 교육 프로그램 -->
-                                <div class="menu-column">
-                                    <div class="menu-column-title">교육 프로그램</div>
-                                    <a href="/tools/landing-page-builder">랜딩페이지 생성기</a>
-                                    <a href="/tools/sms-sender">문자 발송</a>
-                                    <a href="/tools/student-management">학생 관리</a>
-                                    <a href="/tools/ai-learning-report">학습 분석 리포트</a>
-                                </div>
-                                
-                                <!-- 요금제 -->
-                                <div class="menu-column">
-                                    <div class="menu-column-title">요금제</div>
-                                    <a href="/pricing/starter">스타터 플랜</a>
-                                    <a href="/pricing/basic">베이직 플랜</a>
-                                    <a href="/pricing/pro">프로 플랜</a>
-                                    <a href="/pricing/business">비즈니스 플랜</a>
-                                    <a href="/pricing/premium">프리미엄 플랜</a>
-                                    <a href="/pricing/enterprise">엔터프라이즈 플랜</a>
-                                </div>
-                                
-                                <!-- 성공 사례 -->
-                                <div class="menu-column">
-                                    <div class="menu-column-title">성공 사례</div>
-                                    <a href="/success">전체 사례</a>
-                                    <a href="/success/academy">학원 성공 사례</a>
-                                    <a href="/success/teacher">교사 성공 사례</a>
-                                </div>
-                                
-                                <!-- 문의하기 -->
-                                <div class="menu-column">
-                                    <div class="menu-column-title">문의하기</div>
-                                    <a href="/contact">일반 문의</a>
-                                    <a href="/contact/support">기술 지원</a>
-                                    <a href="/contact/sales">영업 문의</a>
-                                </div>
-                                
-                                <!-- AI 봇 쇼핑몰 -->
-                                <div class="menu-column">
-                                    <div class="menu-column-title">AI 봇 쇼핑몰</div>
-                                    <a href="https://kohsunwoo12345-cmyk.github.io/SUPERPLACE.Home.store/" target="_blank">쇼핑몰 홈</a>
-                                    <a href="https://kohsunwoo12345-cmyk.github.io/SUPERPLACE.Home.store/products" target="_blank">상품 목록</a>
-                                    <a href="https://kohsunwoo12345-cmyk.github.io/SUPERPLACE.Home.store/cart" target="_blank">장바구니</a>
+                    <div class="hidden md:flex items-center space-x-10">
+                        <!-- 메뉴 항목들 -->
+                        <div class="nav-menu-wrapper">
+                            <a href="/" class="text-gray-700 hover:text-purple-600 font-medium transition">홈</a>
+                            <a href="/programs" class="text-gray-700 hover:text-purple-600 font-medium transition">교육 프로그램</a>
+                            <a href="/pricing" class="text-gray-700 hover:text-purple-600 font-medium transition">요금제</a>
+                            <a href="/success" class="text-gray-700 hover:text-purple-600 font-medium transition">성공 사례</a>
+                            <a href="/contact" class="text-gray-700 hover:text-purple-600 font-medium transition">문의하기</a>
+                            <a href="https://kohsunwoo12345-cmyk.github.io/SUPERPLACE.Home.store/" target="_blank" class="text-gray-700 hover:text-purple-600 font-medium transition">AI 봇 쇼핑몰</a>
+                            
+                            <!-- 전체 메가 메뉴 -->
+                            <div class="mega-menu">
+                                <div class="mega-menu-inner">
+                                    <!-- 홈 -->
+                                    <div class="menu-column">
+                                        <div class="menu-column-title">홈</div>
+                                        <a href="/">메인 홈</a>
+                                        <a href="/about">회사 소개</a>
+                                        <a href="/dashboard">대시보드</a>
+                                    </div>
+                                    
+                                    <!-- 교육 프로그램 -->
+                                    <div class="menu-column">
+                                        <div class="menu-column-title">교육 프로그램</div>
+                                        <a href="/tools/landing-page-builder">랜딩페이지 생성기</a>
+                                        <a href="/tools/sms-sender">문자 발송</a>
+                                        <a href="/tools/student-management">학생 관리</a>
+                                        <a href="/tools/ai-learning-report">학습 분석 리포트</a>
+                                    </div>
+                                    
+                                    <!-- 요금제 -->
+                                    <div class="menu-column">
+                                        <div class="menu-column-title">요금제</div>
+                                        <a href="/pricing/starter">스타터 플랜</a>
+                                        <a href="/pricing/basic">베이직 플랜</a>
+                                        <a href="/pricing/pro">프로 플랜</a>
+                                        <a href="/pricing/business">비즈니스 플랜</a>
+                                        <a href="/pricing/premium">프리미엄 플랜</a>
+                                        <a href="/pricing/enterprise">엔터프라이즈 플랜</a>
+                                    </div>
+                                    
+                                    <!-- 성공 사례 -->
+                                    <div class="menu-column">
+                                        <div class="menu-column-title">성공 사례</div>
+                                        <a href="/success">전체 사례</a>
+                                        <a href="/success/academy">학원 성공 사례</a>
+                                        <a href="/success/teacher">교사 성공 사례</a>
+                                    </div>
+                                    
+                                    <!-- 문의하기 -->
+                                    <div class="menu-column">
+                                        <div class="menu-column-title">문의하기</div>
+                                        <a href="/contact">일반 문의</a>
+                                        <a href="/contact/support">기술 지원</a>
+                                        <a href="/contact/sales">영업 문의</a>
+                                    </div>
+                                    
+                                    <!-- AI 봇 쇼핑몰 -->
+                                    <div class="menu-column">
+                                        <div class="menu-column-title">AI 봇 쇼핑몰</div>
+                                        <a href="https://kohsunwoo12345-cmyk.github.io/SUPERPLACE.Home.store/" target="_blank">쇼핑몰 홈</a>
+                                        <a href="https://kohsunwoo12345-cmyk.github.io/SUPERPLACE.Home.store/products" target="_blank">상품 목록</a>
+                                        <a href="https://kohsunwoo12345-cmyk.github.io/SUPERPLACE.Home.store/cart" target="_blank">장바구니</a>
+                                    </div>
                                 </div>
                             </div>
                         </div>
+                        
                         <!-- 로그인 전 -->
                         <a href="/signup?teacher=true" id="teacherRegisterBtn" class="text-purple-600 hover:text-purple-700 font-semibold border border-purple-600 px-5 py-2.5 rounded-full hover:bg-purple-50 transition-all">
                             선생님 등록
