@@ -6402,8 +6402,12 @@ app.get('/api/subscriptions/status', async (c) => {
     const sessionData = JSON.parse(session)
     const userId = sessionData.id
     
+    console.log('[Subscription Status] userId:', userId)
+    
     // 사용자의 academy_id 조회
     const user = await c.env.DB.prepare(`SELECT id, academy_id FROM users WHERE id = ?`).bind(userId).first()
+    
+    console.log('[Subscription Status] user:', user)
     
     let academyId = user?.academy_id
     if (!academyId) {
@@ -6417,6 +6421,8 @@ app.get('/api/subscriptions/status', async (c) => {
       }
     }
 
+    console.log('[Subscription Status] Searching for subscription with academy_id:', academyId)
+
     // 활성 구독 조회
     const subscription = await c.env.DB.prepare(`
       SELECT * FROM subscriptions 
@@ -6425,9 +6431,12 @@ app.get('/api/subscriptions/status', async (c) => {
       LIMIT 1
     `).bind(academyId).first()
 
+    console.log('[Subscription Status] Active subscription:', subscription)
+
     if (!subscription) {
       // 구독이 없어도 관리자가 설정한 한도가 있는지 확인
-      // status가 'active'가 아니더라도 '관리자 설정 플랜'인 경우 표시
+      console.log('[Subscription Status] No active subscription, checking for admin plan')
+      
       const adminSubscription = await c.env.DB.prepare(`
         SELECT * FROM subscriptions 
         WHERE academy_id = ? AND plan_name = '관리자 설정 플랜'
@@ -6435,8 +6444,11 @@ app.get('/api/subscriptions/status', async (c) => {
         LIMIT 1
       `).bind(academyId).first()
       
+      console.log('[Subscription Status] Admin subscription:', adminSubscription)
+      
       if (adminSubscription) {
         // 관리자 설정 플랜이 있으면 표시
+        console.log('[Subscription Status] Returning admin subscription')
         return c.json({ 
           success: true, 
           hasSubscription: true,
@@ -6453,12 +6465,15 @@ app.get('/api/subscriptions/status', async (c) => {
         })
       }
       
+      console.log('[Subscription Status] No subscription found at all')
       return c.json({ 
         success: true, 
         hasSubscription: false,
         message: '활성 구독이 없습니다'
       })
     }
+
+    console.log('[Subscription Status] Found active subscription, checking expiration')
 
     // 구독 만료 확인 (한국 시간 기준, 종료일 23:59:59까지 사용 가능)
     const now = new Date()
@@ -11027,6 +11042,8 @@ app.get('/dashboard', (c) => {
                     const response = await fetch('/api/subscriptions/status')
                     const data = await response.json()
                     
+                    console.log('[Dashboard] Subscription Status Response:', data)
+                    
                     const statusDiv = document.getElementById('subscriptionStatusMain')
                     const warningBanner = document.getElementById('subscriptionWarningBanner')
                     
@@ -11039,17 +11056,24 @@ app.get('/dashboard', (c) => {
                     const hasSubscription = data.success && data.hasSubscription
                     const isAdminPlan = hasSubscription && data.subscription && data.subscription.planName === '관리자 설정 플랜'
                     
-                    // 관리자 설정 플랜이 아니고 구독이 없으면 경고 배너 표시
+                    console.log('[Dashboard] hasSubscription:', hasSubscription, 'isAdminPlan:', isAdminPlan)
+                    
+                    // 구독이 없으면 경고 배너 표시 (관리자 플랜 포함 모든 구독이 있으면 배너 숨김)
                     if (!hasSubscription && warningBanner) {
+                        console.log('[Dashboard] Showing warning banner - no subscription')
                         warningBanner.classList.remove('hidden')
                         // 배너 높이만큼 컨텐츠 영역을 아래로 밀기
-                        document.querySelector('.pt-32').classList.remove('pt-32')
-                        document.querySelector('.pb-24').classList.add('pt-48')
+                        const mainContent = document.querySelector('.pt-32')
+                        if (mainContent) {
+                            mainContent.classList.remove('pt-32')
+                            mainContent.classList.add('pt-48')
+                        }
                     } else if (warningBanner) {
+                        console.log('[Dashboard] Hiding warning banner - has subscription')
                         warningBanner.classList.add('hidden')
                     }
                     
-                    if (data.success && data.hasSubscription) {
+                    if (hasSubscription) {
                         const sub = data.subscription
                         const daysLeft = Math.ceil((new Date(sub.endDate) - new Date()) / (1000 * 60 * 60 * 24))
                         
