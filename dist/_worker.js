@@ -2924,7 +2924,33 @@ var Lt=Object.defineProperty;var Qe=e=>{throw TypeError(e)};var Bt=(e,t,s)=>t in
           SET subscription_start_date = start_date,
               subscription_end_date = end_date
           WHERE subscription_start_date IS NULL
-        `).run(),console.log("✅ [Migration] Migrated date columns"),t.push("✅ Migrated date columns")}catch(a){console.log("ℹ️ [Migration] Date migration:",a.message)}try{await e.env.DB.prepare("ALTER TABLE usage_tracking ADD COLUMN academy_id INTEGER").run(),console.log("✅ [Migration] Added academy_id to usage_tracking table"),t.push("✅ Added academy_id to usage_tracking")}catch(a){console.log("ℹ️ [Migration] usage_tracking.academy_id:",a.message),t.push("ℹ️ usage_tracking.academy_id: exists")}return e.json({success:!0,message:"데이터베이스 마이그레이션이 완료되었습니다",results:t,note:s?"⚠️ Old schema detected - migrated to new schema":"✅ Using new schema"})}catch(t){return console.error("❌ [Migration] Error:",t),e.json({success:!1,error:"마이그레이션 실패: "+t.message},500)}});d.post("/api/points/charge",async e=>{try{const{userId:t,amount:s}=await e.req.json();if(!t||!s)return e.json({success:!1,error:"사용자 ID와 충전 금액이 필요합니다."},400);const r=await e.env.DB.prepare("SELECT * FROM users WHERE id = ?").bind(t).first();if(!r)return e.json({success:!1,error:"사용자를 찾을 수 없습니다."},404);const a=r.balance||0;await e.env.DB.prepare("UPDATE users SET balance = balance + ? WHERE id = ?").bind(s,t).run(),await e.env.DB.prepare(`
+        `).run(),console.log("✅ [Migration] Migrated date columns"),t.push("✅ Migrated date columns")}catch(a){console.log("ℹ️ [Migration] Date migration:",a.message)}try{await e.env.DB.prepare(`
+        CREATE TABLE IF NOT EXISTS usage_tracking (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          academy_id INTEGER NOT NULL,
+          subscription_id INTEGER NOT NULL,
+          current_students INTEGER DEFAULT 0,
+          ai_reports_used_this_month INTEGER DEFAULT 0,
+          landing_pages_created INTEGER DEFAULT 0,
+          current_teachers INTEGER DEFAULT 0,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (academy_id) REFERENCES academies(id),
+          FOREIGN KEY (subscription_id) REFERENCES subscriptions(id)
+        )
+      `).run(),console.log("✅ [Migration] Created usage_tracking table"),t.push("✅ Created usage_tracking table")}catch(a){console.log("ℹ️ [Migration] usage_tracking table:",a.message),t.push("ℹ️ usage_tracking: "+a.message.substring(0,50))}try{await e.env.DB.prepare("ALTER TABLE usage_tracking ADD COLUMN academy_id INTEGER").run(),console.log("✅ [Migration] Added academy_id to existing usage_tracking table"),t.push("✅ Added academy_id to usage_tracking")}catch(a){console.log("ℹ️ [Migration] usage_tracking.academy_id:",a.message),t.push("ℹ️ usage_tracking.academy_id: exists")}try{const a=await e.env.DB.prepare(`
+        SELECT s.id as subscription_id, s.academy_id 
+        FROM subscriptions s
+        WHERE s.id NOT IN (SELECT subscription_id FROM usage_tracking)
+        AND s.status = 'active'
+      `).all();if(a.results&&a.results.length>0){for(const n of a.results)await e.env.DB.prepare(`
+            INSERT INTO usage_tracking (
+              academy_id, subscription_id, 
+              current_students, ai_reports_used_this_month, 
+              landing_pages_created, current_teachers,
+              created_at, updated_at
+            ) VALUES (?, ?, 0, 0, 0, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+          `).bind(n.academy_id,n.subscription_id).run();console.log("✅ [Migration] Created usage_tracking for",a.results.length,"subscriptions"),t.push("✅ Created "+a.results.length+" usage_tracking records")}else t.push("ℹ️ All subscriptions have usage_tracking")}catch(a){console.log("⚠️ [Migration] Failed to create usage_tracking:",a.message),t.push("⚠️ usage_tracking creation: "+a.message.substring(0,50))}return e.json({success:!0,message:"데이터베이스 마이그레이션이 완료되었습니다",results:t,note:s?"⚠️ Old schema detected - migrated to new schema":"✅ Using new schema"})}catch(t){return console.error("❌ [Migration] Error:",t),e.json({success:!1,error:"마이그레이션 실패: "+t.message},500)}});d.post("/api/points/charge",async e=>{try{const{userId:t,amount:s}=await e.req.json();if(!t||!s)return e.json({success:!1,error:"사용자 ID와 충전 금액이 필요합니다."},400);const r=await e.env.DB.prepare("SELECT * FROM users WHERE id = ?").bind(t).first();if(!r)return e.json({success:!1,error:"사용자를 찾을 수 없습니다."},404);const a=r.balance||0;await e.env.DB.prepare("UPDATE users SET balance = balance + ? WHERE id = ?").bind(s,t).run(),await e.env.DB.prepare(`
       INSERT INTO point_transactions (user_id, amount, balance_before, balance_after, transaction_type, description, created_at)
       VALUES (?, ?, ?, ?, 'charge', '테스트 충전', CURRENT_TIMESTAMP)
     `).bind(t,s,a,a+s).run();const n=await e.env.DB.prepare("SELECT balance FROM users WHERE id = ?").bind(t).first();return e.json({success:!0,message:"포인트가 충전되었습니다.",balance:n.balance})}catch(t){return console.error("Charge points error:",t),e.json({success:!1,error:"포인트 충전 실패: "+t.message},500)}});d.post("/api/sms/send",async e=>{var t;try{const{userId:s,senderId:r,receivers:a,message:n,reserveTime:o}=await e.req.json();if(!s||!r||!a||!n)return e.json({success:!1,error:"필수 정보를 입력해주세요."},400);const l=await e.env.DB.prepare(`

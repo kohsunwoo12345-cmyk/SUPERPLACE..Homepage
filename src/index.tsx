@@ -1271,14 +1271,68 @@ app.get('/api/db/migrate', async (c) => {
       }
     }
     
-    // Migration 9: Ensure usage_tracking table has academy_id
+    // Migration 9: Ensure usage_tracking table exists
+    try {
+      await c.env.DB.prepare(`
+        CREATE TABLE IF NOT EXISTS usage_tracking (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          academy_id INTEGER NOT NULL,
+          subscription_id INTEGER NOT NULL,
+          current_students INTEGER DEFAULT 0,
+          ai_reports_used_this_month INTEGER DEFAULT 0,
+          landing_pages_created INTEGER DEFAULT 0,
+          current_teachers INTEGER DEFAULT 0,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (academy_id) REFERENCES academies(id),
+          FOREIGN KEY (subscription_id) REFERENCES subscriptions(id)
+        )
+      `).run()
+      console.log('✅ [Migration] Created usage_tracking table')
+      results.push('✅ Created usage_tracking table')
+    } catch (e) {
+      console.log('ℹ️ [Migration] usage_tracking table:', e.message)
+      results.push('ℹ️ usage_tracking: ' + e.message.substring(0, 50))
+    }
+    
+    // Migration 10: Add academy_id column to usage_tracking if missing (for old tables)
     try {
       await c.env.DB.prepare(`ALTER TABLE usage_tracking ADD COLUMN academy_id INTEGER`).run()
-      console.log('✅ [Migration] Added academy_id to usage_tracking table')
+      console.log('✅ [Migration] Added academy_id to existing usage_tracking table')
       results.push('✅ Added academy_id to usage_tracking')
     } catch (e) {
       console.log('ℹ️ [Migration] usage_tracking.academy_id:', e.message)
       results.push('ℹ️ usage_tracking.academy_id: exists')
+    }
+    
+    // Migration 11: Create usage_tracking for all existing subscriptions without tracking
+    try {
+      const subsWithoutUsage = await c.env.DB.prepare(`
+        SELECT s.id as subscription_id, s.academy_id 
+        FROM subscriptions s
+        WHERE s.id NOT IN (SELECT subscription_id FROM usage_tracking)
+        AND s.status = 'active'
+      `).all()
+      
+      if (subsWithoutUsage.results && subsWithoutUsage.results.length > 0) {
+        for (const sub of subsWithoutUsage.results) {
+          await c.env.DB.prepare(`
+            INSERT INTO usage_tracking (
+              academy_id, subscription_id, 
+              current_students, ai_reports_used_this_month, 
+              landing_pages_created, current_teachers,
+              created_at, updated_at
+            ) VALUES (?, ?, 0, 0, 0, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+          `).bind(sub.academy_id, sub.subscription_id).run()
+        }
+        console.log('✅ [Migration] Created usage_tracking for', subsWithoutUsage.results.length, 'subscriptions')
+        results.push('✅ Created ' + subsWithoutUsage.results.length + ' usage_tracking records')
+      } else {
+        results.push('ℹ️ All subscriptions have usage_tracking')
+      }
+    } catch (e) {
+      console.log('⚠️ [Migration] Failed to create usage_tracking:', e.message)
+      results.push('⚠️ usage_tracking creation: ' + e.message.substring(0, 50))
     }
     
     return c.json({ 
