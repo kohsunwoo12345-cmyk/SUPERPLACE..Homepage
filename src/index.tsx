@@ -14684,7 +14684,14 @@ app.put('/api/learning-reports/:report_id/update-field', async (c) => {
       return c.json({ success: false, error: '리포트를 찾을 수 없습니다.' }, 404)
     }
     
-    await c.env.DB.prepare(`UPDATE learning_reports SET ${field} = ?, updated_at = datetime('now') WHERE id = ?`).bind(value, reportId).run()
+    try {
+      // updated_at 컬럼이 있는 경우
+      await c.env.DB.prepare(`UPDATE learning_reports SET ${field} = ?, updated_at = datetime('now') WHERE id = ?`).bind(value, reportId).run()
+    } catch (updateErr) {
+      console.warn('⚠️ updated_at column not found, trying without it')
+      // updated_at 컬럼이 없는 경우
+      await c.env.DB.prepare(`UPDATE learning_reports SET ${field} = ? WHERE id = ?`).bind(value, reportId).run()
+    }
     
     console.log(`Report ${reportId} field ${field} updated`)
     
@@ -14728,27 +14735,55 @@ app.put('/api/learning-reports/:report_id', async (c) => {
     
     console.log('✏️ [UpdateReport] Executing UPDATE query...')
     
-    const result = await c.env.DB.prepare(`
-      UPDATE learning_reports 
-      SET overall_score = ?, study_attitude = ?, strengths = ?, 
-          weaknesses = ?, improvements = ?, recommendations = ?, 
-          next_month_goals = ?, ai_analysis = ?, parent_message = ?,
-          updated_at = datetime('now')
-      WHERE id = ?
-    `).bind(
-      overall_score,
-      study_attitude,
-      strengths,
-      weaknesses,
-      improvements,
-      recommendations,
-      next_month_goals,
-      ai_analysis,
-      parent_message,
-      reportId
-    ).run()
+    try {
+      // updated_at 컬럼이 있는 경우
+      const result = await c.env.DB.prepare(`
+        UPDATE learning_reports 
+        SET overall_score = ?, study_attitude = ?, strengths = ?, 
+            weaknesses = ?, improvements = ?, recommendations = ?, 
+            next_month_goals = ?, ai_analysis = ?, parent_message = ?,
+            updated_at = datetime('now')
+        WHERE id = ?
+      `).bind(
+        overall_score,
+        study_attitude,
+        strengths,
+        weaknesses,
+        improvements,
+        recommendations,
+        next_month_goals,
+        ai_analysis,
+        parent_message,
+        reportId
+      ).run()
+      
+      console.log('✅ [UpdateReport] UPDATE result:', JSON.stringify(result.meta))
+    } catch (updateErr) {
+      console.warn('⚠️ [UpdateReport] updated_at column not found, trying without it:', updateErr.message)
+      
+      // updated_at 컬럼이 없는 경우 (fallback)
+      const result = await c.env.DB.prepare(`
+        UPDATE learning_reports 
+        SET overall_score = ?, study_attitude = ?, strengths = ?, 
+            weaknesses = ?, improvements = ?, recommendations = ?, 
+            next_month_goals = ?, ai_analysis = ?, parent_message = ?
+        WHERE id = ?
+      `).bind(
+        overall_score,
+        study_attitude,
+        strengths,
+        weaknesses,
+        improvements,
+        recommendations,
+        next_month_goals,
+        ai_analysis,
+        parent_message,
+        reportId
+      ).run()
+      
+      console.log('✅ [UpdateReport] UPDATE result (without updated_at):', JSON.stringify(result.meta))
+    }
     
-    console.log('✅ [UpdateReport] UPDATE result:', JSON.stringify(result.meta))
     console.log('✅ [UpdateReport] Report updated successfully')
     
     return c.json({ success: true, message: '리포트가 수정되었습니다.' })
