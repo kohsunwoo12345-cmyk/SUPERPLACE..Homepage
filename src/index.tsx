@@ -6399,7 +6399,22 @@ app.get('/api/subscriptions/status', async (c) => {
     }
 
     const sessionData = JSON.parse(session)
-    const academyId = sessionData.id
+    const userId = sessionData.id
+    
+    // 사용자의 academy_id 조회
+    const user = await c.env.DB.prepare(`SELECT id, academy_id FROM users WHERE id = ?`).bind(userId).first()
+    
+    let academyId = user?.academy_id
+    if (!academyId) {
+      // academy_id가 없으면 user.id를 사용
+      academyId = userId
+      try {
+        await c.env.DB.prepare(`UPDATE users SET academy_id = ? WHERE id = ?`).bind(academyId, userId).run()
+        console.log('[Subscription Status] Auto-set academy_id:', userId)
+      } catch (e) {
+        console.error('[Subscription Status] Failed to set academy_id:', e)
+      }
+    }
 
     // 활성 구독 조회
     const subscription = await c.env.DB.prepare(`
@@ -6467,7 +6482,22 @@ app.get('/api/usage/check', async (c) => {
     }
 
     const sessionData = JSON.parse(session)
-    const academyId = sessionData.id
+    const userId = sessionData.id
+    
+    // 사용자의 academy_id 조회
+    const user = await c.env.DB.prepare(`SELECT id, academy_id FROM users WHERE id = ?`).bind(userId).first()
+    
+    let academyId = user?.academy_id
+    if (!academyId) {
+      // academy_id가 없으면 user.id를 사용
+      academyId = userId
+      try {
+        await c.env.DB.prepare(`UPDATE users SET academy_id = ? WHERE id = ?`).bind(academyId, userId).run()
+        console.log('[Usage Check] Auto-set academy_id:', userId)
+      } catch (e) {
+        console.error('[Usage Check] Failed to set academy_id:', e)
+      }
+    }
 
     // 활성 구독 조회
     const subscription = await c.env.DB.prepare(`
