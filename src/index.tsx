@@ -12510,7 +12510,7 @@ app.get('/api/sms/stats', async (c) => {
 
 // 학생 관리 API
 
-// GET /api/students/:id/stats - 학생 통계 조회 (가장 구체적인 라우트 먼저)
+// GET /api/students/:id/stats - 학생 통계 조회 (가장 구체적인 라우트 먼저) - VERIFIED
 app.get('/api/students/:id/stats', async (c) => {
   try {
     const studentId = c.req.param('id')
