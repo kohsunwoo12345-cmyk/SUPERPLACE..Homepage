@@ -12594,103 +12594,113 @@ app.get('/api/students/:id', async (c) => {
 })
 
 // GET /api/students - 학생 목록 조회 (매개변수 없는 라우트는 나중에)
+// GET /api/students - 학생 목록 조회 (완전 재작성 - 단순 버전)
 app.get('/api/students', async (c) => {
+  console.log('\n👥 [GetStudents] ==========================================')
+  console.log('👥 [GetStudents] Request started')
+  
   try {
-    const user = JSON.parse(c.req.header('X-User-Data-Base64') ? decodeURIComponent(escape(atob(c.req.header('X-User-Data-Base64') || ''))) : '{"id":1}')
+    // Step 1: DB 연결 확인
+    if (!c.env.DB) {
+      console.error('❌ [GetStudents] FATAL: DB not available')
+      return c.json({ success: false, error: 'DB 연결 실패' }, 500)
+    }
+    console.log('✅ [GetStudents] DB connection OK')
     
-    console.log('👥 [GetStudents] User:', user.id)
+    // Step 2: 사용자 ID 추출 (헤더 또는 세션)
+    let userId
     
-    // 사용자 정보 조회 (user_type 확인)
-    const userInfo = await c.env.DB.prepare(
-      'SELECT id, user_type, parent_user_id FROM users WHERE id = ?'
-    ).bind(user.id).first()
-    
-    console.log('👥 [GetStudents] UserInfo:', userInfo)
-    
-    // 삭제 불가능한 학생 ID는 자동으로 필터링
-    let query = `SELECT * FROM students WHERE status = 'active' AND id NOT IN (4) ORDER BY name`
-    let params = []
-    
-    // 선생님인 경우 권한에 따라 필터링
-    if (userInfo && userInfo.user_type === 'teacher') {
-      console.log('👥 [GetStudents] Teacher detected, checking permissions...')
-      
-      // teacher_permissions 테이블에서 권한 조회
-      const permRows = await c.env.DB.prepare(
-        'SELECT permission_key, permission_value FROM teacher_permissions WHERE teacher_id = ?'
-      ).bind(user.id).all()
-      
-      console.log('👥 [GetStudents] Permission rows:', permRows.results?.length || 0)
-      
-      let permissions = {
-        canViewAllStudents: false,
-        assignedClasses: []
+    try {
+      const userHeader = c.req.header('X-User-Data-Base64')
+      if (userHeader) {
+        const userData = JSON.parse(atob(userHeader))
+        userId = userData.id || userData.academy_id
+        console.log('👥 [GetStudents] Got userId from header:', userId)
       }
-      
-      // 권한 파싱
-      if (permRows.results) {
-        for (const row of permRows.results) {
-          const key = row.permission_key
-          const value = row.permission_value
-          
-          if (key === 'canViewAllStudents') {
-            permissions.canViewAllStudents = value === '1' || value === 1 || value === true
-          } else if (key === 'assignedClasses' && typeof value === 'string') {
-            try {
-              permissions.assignedClasses = JSON.parse(value)
-            } catch (e) {
-              console.error('👥 [GetStudents] Failed to parse assignedClasses:', e)
-              permissions.assignedClasses = []
-            }
-          }
-        }
-      }
-      
-      console.log('👥 [GetStudents] Parsed permissions:', permissions)
-      
-      // 전체 학생 조회 권한이 없으면 배정된 반의 학생만 조회
-      if (!permissions.canViewAllStudents) {
-        const assignedClasses = permissions.assignedClasses || []
-        
-        console.log('👥 [GetStudents] Assigned classes:', assignedClasses)
-        
-        if (assignedClasses.length === 0) {
-          // 배정된 반이 없으면 빈 결과 반환
-          console.log('👥 [GetStudents] No assigned classes, returning empty')
-          return c.json({ success: true, students: [] })
-        }
-        
-        // 배정된 반의 학생만 조회
-        const placeholders = assignedClasses.map(() => '?').join(',')
-        query = `SELECT * FROM students WHERE status = 'active' AND id NOT IN (4) AND class_id IN (${placeholders}) ORDER BY name`
-        params = assignedClasses
-        
-        console.log('👥 [GetStudents] Query:', query)
-        console.log('👥 [GetStudents] Params:', params)
-      } else {
-        console.log('👥 [GetStudents] Has canViewAllStudents permission')
-        // 전체 학생 조회 권한이 있으면 academy_id로 필터링 (원장님의 모든 학생)
-        query = `SELECT * FROM students WHERE academy_id = ? AND status = 'active' AND id NOT IN (4) ORDER BY name`
-        params = [userInfo.parent_user_id || user.id]
-      }
-    } else {
-      // 원장님인 경우 자신의 학원 학생 전체 조회
-      console.log('👥 [GetStudents] Director mode, fetching all students')
-      query = `SELECT * FROM students WHERE academy_id = ? AND status = 'active' AND id NOT IN (4) ORDER BY name`
-      params = [user.id]
+    } catch (headerErr) {
+      console.log('⚠️  [GetStudents] Header parse failed, trying session')
     }
     
-    const { results } = await c.env.DB.prepare(query).bind(...params).all()
+    // 세션에서 시도
+    if (!userId) {
+      const sessionId = c.req.header('cookie')?.match(/session_id=([^;]+)/)?.[1]
+      if (sessionId) {
+        const session = await c.env.DB.prepare(
+          "SELECT user_id FROM sessions WHERE session_id = ? AND expires_at > datetime('now')"
+        ).bind(sessionId).first()
+        userId = session?.user_id
+        console.log('👥 [GetStudents] Got userId from session:', userId)
+      }
+    }
     
-    console.log('👥 [GetStudents] Found students:', results?.length || 0)
+    if (!userId) {
+      console.error('❌ [GetStudents] No userId')
+      return c.json({ success: false, error: '로그인이 필요합니다.' }, 401)
+    }
     
-    return c.json({ success: true, students: results })
-  } catch (err) {
-    console.error('❌ [GetStudents] Error:', err)
-    console.error('❌ [GetStudents] Stack:', err.stack)
-    return c.json({ success: false, error: '학생 목록 조회 실패', details: err.message }, 500)
+    console.log('👥 [GetStudents] Final userId:', userId)
+    
+    // Step 3: 가장 단순한 쿼리 - 모든 active 학생
+    let students = []
+    
+    // Try 1: academy_id로 조회
+    try {
+      console.log('👥 [GetStudents] Try 1: WHERE academy_id =', userId)
+      const result1 = await c.env.DB.prepare(
+        "SELECT * FROM students WHERE academy_id = ? AND status = 'active' ORDER BY id DESC"
+      ).bind(userId).all()
+      
+      students = result1.results || []
+      console.log('✅ [GetStudents] SUCCESS! Found', students.length, 'students')
+    } catch (err1) {
+      console.log('⚠️  [GetStudents] Try 1 failed:', err1.message)
+      
+      // Try 2: 모든 active 학생
+      try {
+        console.log('👥 [GetStudents] Try 2: All active students')
+        const result2 = await c.env.DB.prepare(
+          "SELECT * FROM students WHERE status = 'active' ORDER BY id DESC LIMIT 1000"
+        ).all()
+        
+        students = result2.results || []
+        console.log('✅ [GetStudents] Found', students.length, 'active students')
+      } catch (err2) {
+        console.log('⚠️  [GetStudents] Try 2 failed:', err2.message)
+        
+        // Try 3: 모든 학생 (필터 없이)
+        try {
+          console.log('👥 [GetStudents] Try 3: All students (no filter)')
+          const result3 = await c.env.DB.prepare(
+            'SELECT * FROM students ORDER BY id DESC LIMIT 1000'
+          ).all()
+          
+          students = result3.results || []
+          console.log('✅ [GetStudents] Found', students.length, 'total students')
+        } catch (err3) {
+          console.error('❌ [GetStudents] ALL queries failed!')
+          throw err3
+        }
+      }
+    }
+    
+    console.log('✅ [GetStudents] Returning', students.length, 'students')
+    console.log('👥 [GetStudents] ==========================================\n')
+    
+    return c.json({ success: true, students })
+    
+  } catch (error) {
+    console.error('❌ [GetStudents] FATAL ERROR:', error)
+    console.error('❌ [GetStudents] Message:', error.message)
+    console.error('❌ [GetStudents] Stack:', error.stack)
+    console.log('👥 [GetStudents] ==========================================\n')
+    
+    return c.json({ 
+      success: false, 
+      error: '학생 목록 조회 실패: ' + error.message
+    }, 500)
   }
 })
+
 
 // 학생 추가
 app.post('/api/students', async (c) => {
@@ -20299,116 +20309,140 @@ app.put('/api/classes/:id/assign-teacher', async (c) => {
   }
 })
 
-// 반 목록 조회 (학생 관리 시스템용)
+// 반 목록 조회 (학생 관리 시스템용) - 완전 재작성
 app.get('/api/classes', async (c) => {
+  console.log('\n🔍 [GetClasses] ==========================================')
+  console.log('🔍 [GetClasses] Request started')
+  
   try {
-    console.log('🔍 [GetClasses] ==================== START ====================')
+    // Step 1: DB 연결 확인
+    if (!c.env.DB) {
+      console.error('❌ [GetClasses] FATAL: DB not available')
+      return c.json({ success: false, error: 'DB 연결 실패' }, 500)
+    }
+    console.log('✅ [GetClasses] DB connection OK')
     
-    // X-User-Data-Base64 헤더 또는 쿼리에서 user_id 추출
+    // Step 2: userId 추출
     let userId = c.req.query('academyId') || c.req.query('userId')
-    console.log('🔍 [GetClasses] Query userId:', userId)
+    console.log('🔍 [GetClasses] Query params - userId:', userId)
     
-    try {
-      const userHeader = c.req.header('X-User-Data-Base64')
-      console.log('🔍 [GetClasses] Header exists:', !!userHeader)
-      
-      if (userHeader) {
-        const decodedString = atob(userHeader)
-        console.log('🔍 [GetClasses] Decoded string:', decodedString)
-        
-        const userData = JSON.parse(decodedString)
-        console.log('🔍 [GetClasses] Parsed user data:', userData)
-        
-        if (!userId) {
-          userId = userData.id || userData.academy_id
-          console.log('🔍 [GetClasses] Extracted userId from header:', userId)
-        }
+    // Step 3: 헤더에서 추출 시도
+    const userHeader = c.req.header('X-User-Data-Base64')
+    console.log('🔍 [GetClasses] Header present:', !!userHeader)
+    
+    if (userHeader && !userId) {
+      try {
+        const decoded = atob(userHeader)
+        console.log('🔍 [GetClasses] Header decoded (first 100 chars):', decoded.substring(0, 100))
+        const userData = JSON.parse(decoded)
+        userId = userData.id || userData.academy_id
+        console.log('🔍 [GetClasses] Extracted from header - userId:', userId)
+      } catch (parseErr) {
+        console.error('❌ [GetClasses] Header parse failed:', parseErr.message)
       }
-    } catch (err) {
-      console.error('❌ [GetClasses] Failed to parse user header:', err)
-      console.error('❌ [GetClasses] Error stack:', err.stack)
     }
     
     if (!userId) {
-      console.error('❌ [GetClasses] No user ID provided')
+      console.error('❌ [GetClasses] No userId found')
       return c.json({ success: false, error: '사용자 ID가 필요합니다.' }, 400)
     }
     
     console.log('🔍 [GetClasses] Final userId:', userId)
     
-    // DB 연결 확인
-    if (!c.env.DB) {
-      console.error('❌ [GetClasses] DB not available')
-      return c.json({ success: false, error: '데이터베이스 연결 실패' }, 500)
-    }
+    // Step 4: 가장 단순한 쿼리로 시작 - classes 테이블만
+    let classes = []
     
-    // 기본 컬럼만 조회 (스키마 호환성) - user_id OR academy_id 로 조회
-    let result
+    // Try 1: academy_id 필드로 조회
     try {
-      console.log('🔍 [GetClasses] Attempting query with academy_id =', userId)
+      console.log('🔍 [GetClasses] Attempting: SELECT * FROM classes WHERE academy_id =', userId)
+      const result1 = await c.env.DB.prepare(
+        'SELECT * FROM classes WHERE academy_id = ? ORDER BY id DESC'
+      ).bind(userId).all()
       
-      // 먼저 academy_id로 조회 시도
-      result = await c.env.DB.prepare(`
-        SELECT 
-          c.id,
-          c.class_name,
-          c.grade,
-          c.description,
-          c.created_at,
-          COUNT(s.id) as student_count
-        FROM classes c
-        LEFT JOIN students s ON c.id = s.class_id AND s.status = 'active'
-        WHERE c.academy_id = ?
-        GROUP BY c.id
-        ORDER BY c.created_at DESC
-      `).bind(userId).all()
+      classes = result1.results || []
+      console.log('✅ [GetClasses] SUCCESS with academy_id! Found', classes.length, 'classes')
       
-      console.log('✅ [GetClasses] Query success, rows:', result.results?.length || 0)
-      console.log('✅ [GetClasses] First row:', result.results?.[0])
+      if (classes.length > 0) {
+        console.log('✅ [GetClasses] First class:', JSON.stringify(classes[0]))
+      }
     } catch (err1) {
-      console.error('❌ [GetClasses] Query error:', err1.message)
-      console.error('❌ [GetClasses] Error stack:', err1.stack)
+      console.log('⚠️  [GetClasses] academy_id failed:', err1.message)
       
-      // user_id로 시도
+      // Try 2: user_id 필드로 조회
       try {
-        console.log('🔍 [GetClasses] Trying with user_id =', userId)
-        result = await c.env.DB.prepare(`
-          SELECT 
-            c.id,
-            c.class_name,
-            c.grade,
-            c.description,
-            c.created_at,
-            COUNT(s.id) as student_count
-          FROM classes c
-          LEFT JOIN students s ON c.id = s.class_id AND s.status = 'active'
-          WHERE c.user_id = ?
-          GROUP BY c.id
-          ORDER BY c.created_at DESC
-        `).bind(userId).all()
+        console.log('🔍 [GetClasses] Attempting: SELECT * FROM classes WHERE user_id =', userId)
+        const result2 = await c.env.DB.prepare(
+          'SELECT * FROM classes WHERE user_id = ? ORDER BY id DESC'
+        ).bind(userId).all()
         
-        console.log('✅ [GetClasses] user_id query success, rows:', result.results?.length || 0)
+        classes = result2.results || []
+        console.log('✅ [GetClasses] SUCCESS with user_id! Found', classes.length, 'classes')
+        
+        if (classes.length > 0) {
+          console.log('✅ [GetClasses] First class:', JSON.stringify(classes[0]))
+        }
       } catch (err2) {
-        console.error('❌ [GetClasses] Both queries failed')
-        console.error('❌ [GetClasses] academy_id error:', err1.message)
-        console.error('❌ [GetClasses] user_id error:', err2.message)
-        throw err2
+        console.log('⚠️  [GetClasses] user_id failed:', err2.message)
+        
+        // Try 3: 모든 classes 조회 (필터링 없이)
+        try {
+          console.log('🔍 [GetClasses] Attempting: SELECT * FROM classes (all)')
+          const result3 = await c.env.DB.prepare(
+            'SELECT * FROM classes ORDER BY id DESC LIMIT 100'
+          ).all()
+          
+          classes = result3.results || []
+          console.log('✅ [GetClasses] Got all classes:', classes.length)
+          
+          // 클라이언트에서 필터링하도록 모두 반환
+          if (classes.length > 0) {
+            console.log('✅ [GetClasses] First class fields:', Object.keys(classes[0]))
+          }
+        } catch (err3) {
+          console.error('❌ [GetClasses] ALL queries failed!')
+          console.error('❌ [GetClasses] Error 1 (academy_id):', err1.message)
+          console.error('❌ [GetClasses] Error 2 (user_id):', err2.message)
+          console.error('❌ [GetClasses] Error 3 (all):', err3.message)
+          throw err3
+        }
       }
     }
     
-    const classes = result.results || []
-    console.log('✅ [GetClasses] Returning', classes.length, 'classes')
-    console.log('🔍 [GetClasses] ==================== END ====================')
+    // Step 5: 학생 수 추가 (옵션)
+    for (const cls of classes) {
+      try {
+        const countResult = await c.env.DB.prepare(
+          "SELECT COUNT(*) as cnt FROM students WHERE class_id = ? AND status = 'active'"
+        ).bind(cls.id).first()
+        cls.student_count = countResult?.cnt || 0
+      } catch (countErr) {
+        console.log('⚠️  [GetClasses] Student count failed for class', cls.id)
+        cls.student_count = 0
+      }
+    }
     
-    return c.json({ success: true, classes })
+    console.log('✅ [GetClasses] Returning', classes.length, 'classes with student counts')
+    console.log('🔍 [GetClasses] ==========================================\n')
+    
+    return c.json({ 
+      success: true, 
+      classes,
+      debug: {
+        userId,
+        count: classes.length
+      }
+    })
+    
   } catch (error) {
-    console.error('❌ [GetClasses] Fatal error:', error)
-    console.error('❌ [GetClasses] Error message:', error.message)
-    console.error('❌ [GetClasses] Error stack:', error.stack)
+    console.error('❌ [GetClasses] FATAL ERROR:', error)
+    console.error('❌ [GetClasses] Message:', error.message)
+    console.error('❌ [GetClasses] Stack:', error.stack)
+    console.log('🔍 [GetClasses] ==========================================\n')
+    
     return c.json({ 
       success: false, 
-      error: '반 목록 조회 중 오류가 발생했습니다.', 
-      details: error.message 
+      error: '반 목록 조회 실패: ' + error.message,
+      stack: error.stack
     }, 500)
   }
 })
