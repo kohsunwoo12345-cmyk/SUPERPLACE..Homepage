@@ -1097,14 +1097,44 @@ var _t=Object.defineProperty;var Ye=e=>{throw TypeError(e)};var kt=(e,t,s)=>t in
                 </div>
             </div>
 
-            <!-- 선택된 날짜의 기록 목록 -->
+            <!-- 탭과 컨텐츠 -->
             <div class="lg:col-span-2">
-                <div class="bg-white rounded-xl shadow-lg p-6">
-                    <h2 class="text-xl font-bold text-gray-900 mb-6">
-                        <i class="fas fa-list mr-2"></i><span id="recordDateTitle">오늘의 기록</span>
-                    </h2>
-                    <div id="recordsList" class="space-y-4">
-                        <div class="text-center text-gray-500 py-12">날짜를 선택하면 기록이 표시됩니다.</div>
+                <div class="bg-white rounded-xl shadow-lg">
+                    <!-- 탭 헤더 -->
+                    <div class="flex border-b">
+                        <button onclick="switchTab('records')" id="recordsTab" class="flex-1 px-6 py-4 font-semibold text-gray-600 hover:text-gray-900 hover:bg-gray-50 border-b-2 border-transparent">
+                            <i class="fas fa-list mr-2"></i>일일 기록
+                        </button>
+                        <button onclick="switchTab('todayClasses')" id="todayClassesTab" class="flex-1 px-6 py-4 font-semibold text-gray-600 hover:text-gray-900 hover:bg-gray-50 border-b-2 border-transparent">
+                            <i class="fas fa-clock mr-2"></i>오늘 수업
+                        </button>
+                    </div>
+                    
+                    <!-- 탭 컨텐츠 -->
+                    <div class="p-6">
+                        <!-- 일일 기록 탭 -->
+                        <div id="recordsContent" class="tab-content">
+                            <h2 class="text-xl font-bold text-gray-900 mb-6">
+                                <span id="recordDateTitle">오늘의 기록</span>
+                            </h2>
+                            <div id="recordsList" class="space-y-4">
+                                <div class="text-center text-gray-500 py-12">날짜를 선택하면 기록이 표시됩니다.</div>
+                            </div>
+                        </div>
+                        
+                        <!-- 오늘 수업 탭 -->
+                        <div id="todayClassesContent" class="tab-content hidden">
+                            <h2 class="text-xl font-bold text-gray-900 mb-6">
+                                <i class="fas fa-calendar-day mr-2"></i>오늘 수업하는 아이들
+                                <span id="todayKoreanDate" class="text-base font-normal text-gray-600 ml-2"></span>
+                            </h2>
+                            <div id="todayClassesList" class="space-y-6">
+                                <div class="text-center text-gray-500 py-12">
+                                    <i class="fas fa-spinner fa-spin text-4xl mb-4"></i>
+                                    <p>로딩 중...</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1370,6 +1400,145 @@ var _t=Object.defineProperty;var Ye=e=>{throw TypeError(e)};var kt=(e,t,s)=>t in
                 }
             } catch (error) {
                 console.error('반 목록 로딩 실패:', error);
+            }
+        }
+
+        // 탭 전환 함수
+        function switchTab(tabName) {
+            // 모든 탭 버튼 비활성화
+            document.getElementById('recordsTab').classList.remove('border-blue-500', 'text-blue-600');
+            document.getElementById('todayClassesTab').classList.remove('border-blue-500', 'text-blue-600');
+            
+            // 모든 컨텐츠 숨기기
+            document.getElementById('recordsContent').classList.add('hidden');
+            document.getElementById('todayClassesContent').classList.add('hidden');
+            
+            // 선택된 탭 활성화
+            if (tabName === 'records') {
+                document.getElementById('recordsTab').classList.add('border-blue-500', 'text-blue-600');
+                document.getElementById('recordsContent').classList.remove('hidden');
+            } else if (tabName === 'todayClasses') {
+                document.getElementById('todayClassesTab').classList.add('border-blue-500', 'text-blue-600');
+                document.getElementById('todayClassesContent').classList.remove('hidden');
+                loadTodayClasses();
+            }
+        }
+
+        // 오늘 수업하는 아이들 로딩
+        async function loadTodayClasses() {
+            const container = document.getElementById('todayClassesList');
+            container.innerHTML = '<div class="text-center text-gray-500 py-12"><i class="fas fa-spinner fa-spin text-4xl mb-4"></i><p>로딩 중...</p></div>';
+            
+            try {
+                // 한국 시간 기준 오늘 날짜와 요일
+                const now = new Date();
+                const koreaTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Seoul' }));
+                const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
+                const todayDay = dayNames[koreaTime.getDay()];
+                
+                // 날짜 표시 업데이트
+                document.getElementById('todayKoreanDate').textContent = 
+                    \`\${koreaTime.getFullYear()}년 \${koreaTime.getMonth() + 1}월 \${koreaTime.getDate()}일 (\${todayDay}요일)\`;
+                
+                // classes 배열이 없으면 먼저 로드
+                if (!classes || classes.length === 0) {
+                    await loadClasses();
+                }
+                
+                // 학생 목록이 없으면 먼저 로드
+                if (!students || students.length === 0) {
+                    await loadStudents();
+                }
+                
+                // 오늘 요일에 해당하는 반들 필터링
+                const todayClasses = classes.filter(cls => {
+                    if (!cls.schedule_days) return false;
+                    return cls.schedule_days.includes(todayDay);
+                });
+                
+                if (todayClasses.length === 0) {
+                    container.innerHTML = \`
+                        <div class="text-center text-gray-500 py-12">
+                            <i class="fas fa-calendar-times text-6xl mb-4 text-gray-300"></i>
+                            <p class="text-lg font-semibold mb-2">오늘 수업이 없습니다</p>
+                            <p class="text-sm text-gray-400">오늘 \${todayDay}요일에 예정된 수업이 없습니다.</p>
+                        </div>
+                    \`;
+                    return;
+                }
+                
+                // 시간별로 정렬
+                todayClasses.sort((a, b) => {
+                    const timeA = a.start_time || '00:00';
+                    const timeB = b.start_time || '00:00';
+                    return timeA.localeCompare(timeB);
+                });
+                
+                // 각 반의 학생들 표시
+                let html = '';
+                for (const cls of todayClasses) {
+                    // 해당 반의 학생들 찾기
+                    const classStudents = students.filter(s => s.class_id === cls.id && s.status === 'active');
+                    
+                    html += \`
+                        <div class="border border-gray-200 rounded-lg p-5 hover:shadow-md transition">
+                            <div class="flex justify-between items-start mb-4">
+                                <div>
+                                    <h3 class="text-lg font-bold text-gray-900 mb-1">\${cls.class_name}</h3>
+                                    <p class="text-sm text-gray-600">\${cls.grade || '학년 미지정'}</p>
+                                </div>
+                                <div class="text-right">
+                                    \${cls.start_time && cls.end_time ? \`
+                                        <div class="flex items-center text-blue-600 font-semibold">
+                                            <i class="fas fa-clock mr-2"></i>
+                                            <span>\${cls.start_time} - \${cls.end_time}</span>
+                                        </div>
+                                    \` : ''}
+                                    <div class="text-xs text-gray-500 mt-1">
+                                        <i class="fas fa-calendar mr-1"></i>\${cls.schedule_days}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            \${classStudents.length > 0 ? \`
+                                <div class="mt-4 pt-4 border-t border-gray-100">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <span class="text-sm font-semibold text-gray-700">
+                                            <i class="fas fa-users mr-2 text-purple-500"></i>수강 학생 (\${classStudents.length}명)
+                                        </span>
+                                    </div>
+                                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                                        \${classStudents.map(student => \`
+                                            <div class="flex items-center bg-gray-50 rounded-lg px-3 py-2 hover:bg-gray-100 transition">
+                                                <i class="fas fa-user-circle text-purple-400 mr-2"></i>
+                                                <div class="flex-1 min-w-0">
+                                                    <p class="text-sm font-medium text-gray-900 truncate">\${student.name}</p>
+                                                    <p class="text-xs text-gray-500 truncate">\${student.grade}</p>
+                                                </div>
+                                            </div>
+                                        \`).join('')}
+                                    </div>
+                                </div>
+                            \` : \`
+                                <div class="mt-4 pt-4 border-t border-gray-100 text-center text-gray-400 text-sm">
+                                    <i class="fas fa-user-slash mr-2"></i>등록된 학생이 없습니다
+                                </div>
+                            \`}
+                        </div>
+                    \`;
+                }
+                
+                container.innerHTML = html;
+                
+            } catch (error) {
+                console.error('오늘 수업 로딩 실패:', error);
+                container.innerHTML = \`
+                    <div class="text-center text-red-500 py-12">
+                        <i class="fas fa-exclamation-triangle text-4xl mb-4"></i>
+                        <p>오늘 수업 정보를 불러오는 중 오류가 발생했습니다.</p>
+                        <p class="text-sm text-gray-500 mt-2">\${error.message}</p>
+                    </div>
+                \`;
             }
         }
 
@@ -1687,7 +1856,10 @@ var _t=Object.defineProperty;var Ye=e=>{throw TypeError(e)};var kt=(e,t,s)=>t in
             selectDate(new Date());
             await loadMonthlyRecords();
             await loadStudents();
+            await loadClasses();
             await loadCourses();
+            // 기본 탭 설정 (일일 기록)
+            switchTab('records');
         })();
     <\/script>
 </body>
