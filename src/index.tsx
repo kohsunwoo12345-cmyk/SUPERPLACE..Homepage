@@ -12751,25 +12751,79 @@ app.post('/api/students', async (c) => {
       return c.json({ success: false, error: '학원 ID가 필요합니다.' }, 400)
     }
     
-    // school 컬럼 제거, class_id 포함
-    const result = await c.env.DB.prepare(`
-      INSERT INTO students (
-        name, phone, grade, subjects, parent_name, parent_phone, 
-        academy_id, enrollment_date, notes, status, class_id
-      )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', ?)
-    `).bind(
-      name, 
-      phone || null, 
-      grade, 
-      subjects || '', 
-      finalParentName, 
-      finalParentPhone, 
-      finalAcademyId, 
-      finalEnrollmentDate,
-      finalNotes || null,
-      finalClassId || null
-    ).run()
+    // 가장 기본적인 컬럼만 사용 (enrollment_date 대신 created_at 사용)
+    let result
+    try {
+      // 먼저 기본 컬럼만으로 시도
+      result = await c.env.DB.prepare(`
+        INSERT INTO students (
+          name, phone, grade, subjects, parent_name, parent_phone, 
+          academy_id, class_id, notes, status, created_at
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', datetime('now'))
+      `).bind(
+        name, 
+        phone || null, 
+        grade, 
+        subjects || '', 
+        finalParentName, 
+        finalParentPhone, 
+        finalAcademyId, 
+        finalClassId || null,
+        finalNotes || null
+      ).run()
+    } catch (err1) {
+      console.error('➕ [AddStudent] First attempt failed:', err1.message)
+      
+      // enrollment_date 컬럼이 있는 경우 시도
+      try {
+        result = await c.env.DB.prepare(`
+          INSERT INTO students (
+            name, phone, grade, subjects, parent_name, parent_phone, 
+            academy_id, enrollment_date, notes, status, class_id
+          )
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', ?)
+        `).bind(
+          name, 
+          phone || null, 
+          grade, 
+          subjects || '', 
+          finalParentName, 
+          finalParentPhone, 
+          finalAcademyId, 
+          finalEnrollmentDate,
+          finalNotes || null,
+          finalClassId || null
+        ).run()
+      } catch (err2) {
+        console.error('➕ [AddStudent] Second attempt failed:', err2.message)
+        
+        // 가장 최소한의 컬럼만 사용
+        result = await c.env.DB.prepare(`
+          INSERT INTO students (
+            name, grade, parent_name, parent_phone, academy_id, status
+          )
+          VALUES (?, ?, ?, ?, ?, 'active')
+        `).bind(
+          name, 
+          grade, 
+          finalParentName, 
+          finalParentPhone, 
+          finalAcademyId
+        ).run()
+        
+        // class_id를 별도로 업데이트
+        if (finalClassId && result.meta.last_row_id) {
+          try {
+            await c.env.DB.prepare(
+              'UPDATE students SET class_id = ? WHERE id = ?'
+            ).bind(finalClassId, result.meta.last_row_id).run()
+          } catch (err3) {
+            console.error('➕ [AddStudent] Class ID update failed:', err3.message)
+          }
+        }
+      }
+    }
     
     console.log('➕ [AddStudent] Success! Student ID:', result.meta.last_row_id)
     
@@ -20244,21 +20298,46 @@ app.get('/api/classes', async (c) => {
     
     console.log('🔍 [GetClasses] Loading classes for user_id:', userId)
     
-    // 🔧 스키마 호환성: academy_id와 user_id 모두 지원
-    const result = await c.env.DB.prepare(`
-      SELECT 
-        c.id,
-        c.class_name,
-        c.grade,
-        c.description,
-        c.created_at,
-        COUNT(s.id) as student_count
-      FROM classes c
-      LEFT JOIN students s ON c.id = s.class_id AND s.status = 'active'
-      WHERE c.academy_id = ?
-      GROUP BY c.id
-      ORDER BY c.created_at DESC
-    `).bind(userId).all()
+    // 기본 컬럼만 조회 (스키마 호환성)
+    let result
+    try {
+      // 먼저 schedule_days 포함 시도
+      result = await c.env.DB.prepare(`
+        SELECT 
+          c.id,
+          c.class_name,
+          c.grade,
+          c.description,
+          c.schedule_days,
+          c.start_time,
+          c.end_time,
+          c.created_at,
+          COUNT(s.id) as student_count
+        FROM classes c
+        LEFT JOIN students s ON c.id = s.class_id AND s.status = 'active'
+        WHERE c.academy_id = ?
+        GROUP BY c.id
+        ORDER BY c.created_at DESC
+      `).bind(userId).all()
+    } catch (err1) {
+      console.log('🔍 [GetClasses] schedule_days columns not found, using basic columns')
+      
+      // schedule_days 없이 시도
+      result = await c.env.DB.prepare(`
+        SELECT 
+          c.id,
+          c.class_name,
+          c.grade,
+          c.description,
+          c.created_at,
+          COUNT(s.id) as student_count
+        FROM classes c
+        LEFT JOIN students s ON c.id = s.class_id AND s.status = 'active'
+        WHERE c.academy_id = ?
+        GROUP BY c.id
+        ORDER BY c.created_at DESC
+      `).bind(userId).all()
+    }
     
     console.log('✅ [GetClasses] Found', result.results?.length || 0, 'classes')
     
