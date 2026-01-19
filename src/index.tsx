@@ -5841,6 +5841,229 @@ app.get('/', (c) => {
   `)
 })
 
+// ==================== 결제 시스템 API ====================
+
+// 플랜 정보 매핑
+const PLAN_INFO = {
+  'starter': { name: '스타터 플랜', price: 55000, studentLimit: 30, aiReportLimit: 30, landingPageLimit: 40, teacherLimit: 2 },
+  'basic': { name: '베이직 플랜', price: 77000, studentLimit: 50, aiReportLimit: 50, landingPageLimit: 70, teacherLimit: 4 },
+  'pro': { name: '프로 플랜', price: 147000, studentLimit: 100, aiReportLimit: 100, landingPageLimit: 140, teacherLimit: 6 },
+  'business': { name: '비즈니스 플랜', price: 297000, studentLimit: 300, aiReportLimit: 600, landingPageLimit: 550, teacherLimit: 10 },
+  'premium': { name: '프리미엄 플랜', price: 440000, studentLimit: 500, aiReportLimit: 1000, landingPageLimit: 900, teacherLimit: 15 },
+  'enterprise': { name: '엔터프라이즈 플랜', price: 750000, studentLimit: 1000, aiReportLimit: 3000, landingPageLimit: 2000, teacherLimit: 20 }
+}
+
+// 결제 완료 웹훅 (아임포트에서 호출)
+app.post('/api/payments/webhook', async (c) => {
+  try {
+    const { imp_uid, merchant_uid, status } = await c.req.json()
+    
+    console.log('[Payment Webhook] Received:', { imp_uid, merchant_uid, status })
+
+    if (status === 'paid') {
+      // merchant_uid에서 academy_id와 plan 추출
+      // 형식: academy_{academyId}_{planId}_{timestamp}
+      const parts = merchant_uid.split('_')
+      const academyId = parseInt(parts[1])
+      const planId = parts[2]
+      
+      const planInfo = PLAN_INFO[planId]
+      if (!planInfo) {
+        console.error('[Payment Webhook] Invalid plan ID:', planId)
+        return c.json({ success: false, error: 'Invalid plan' }, 400)
+      }
+
+      // 구독 시작일과 종료일 계산 (1개월)
+      const now = new Date()
+      const startDate = now.toISOString().split('T')[0]
+      const endDate = new Date(now.setMonth(now.getMonth() + 1)).toISOString().split('T')[0]
+
+      // 기존 구독 비활성화
+      await c.env.DB.prepare(`
+        UPDATE subscriptions 
+        SET status = 'expired', updated_at = CURRENT_TIMESTAMP
+        WHERE academy_id = ? AND status = 'active'
+      `).bind(academyId).run()
+
+      // 새 구독 생성
+      const result = await c.env.DB.prepare(`
+        INSERT INTO subscriptions (
+          academy_id, plan_name, plan_price, student_limit, ai_report_limit,
+          landing_page_limit, teacher_limit, subscription_start_date, 
+          subscription_end_date, status, payment_method, merchant_uid, imp_uid
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', 'card', ?, ?)
+      `).bind(
+        academyId,
+        planInfo.name,
+        planInfo.price,
+        planInfo.studentLimit,
+        planInfo.aiReportLimit,
+        planInfo.landingPageLimit,
+        planInfo.teacherLimit,
+        startDate,
+        endDate,
+        merchant_uid,
+        imp_uid
+      ).run()
+
+      console.log('[Payment Webhook] Subscription created:', {
+        subscriptionId: result.meta.last_row_id,
+        academyId,
+        plan: planInfo.name,
+        startDate,
+        endDate
+      })
+
+      return c.json({ success: true, subscriptionId: result.meta.last_row_id })
+    }
+
+    return c.json({ success: true, message: 'Status not paid' })
+  } catch (error) {
+    console.error('[Payment Webhook] Error:', error)
+    return c.json({ success: false, error: error.message }, 500)
+  }
+})
+
+// 결제 완료 후 클라이언트 측 확인
+app.post('/api/payments/complete', async (c) => {
+  try {
+    const { imp_uid, merchant_uid } = await c.req.json()
+    
+    console.log('[Payment Complete] Client callback:', { imp_uid, merchant_uid })
+
+    // merchant_uid에서 정보 추출
+    const parts = merchant_uid.split('_')
+    const academyId = parseInt(parts[1])
+    const planId = parts[2]
+    
+    const planInfo = PLAN_INFO[planId]
+    if (!planInfo) {
+      return c.json({ success: false, error: 'Invalid plan' }, 400)
+    }
+
+    // 구독 시작일과 종료일 계산
+    const now = new Date()
+    const startDate = now.toISOString().split('T')[0]
+    const endDate = new Date(now.setMonth(now.getMonth() + 1)).toISOString().split('T')[0]
+
+    // 기존 구독 비활성화
+    await c.env.DB.prepare(`
+      UPDATE subscriptions 
+      SET status = 'expired', updated_at = CURRENT_TIMESTAMP
+      WHERE academy_id = ? AND status = 'active'
+    `).bind(academyId).run()
+
+    // 새 구독 생성
+    const result = await c.env.DB.prepare(`
+      INSERT INTO subscriptions (
+        academy_id, plan_name, plan_price, student_limit, ai_report_limit,
+        landing_page_limit, teacher_limit, subscription_start_date, 
+        subscription_end_date, status, payment_method, merchant_uid, imp_uid
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', 'card', ?, ?)
+    `).bind(
+      academyId,
+      planInfo.name,
+      planInfo.price,
+      planInfo.studentLimit,
+      planInfo.aiReportLimit,
+      planInfo.landingPageLimit,
+      planInfo.teacherLimit,
+      startDate,
+      endDate,
+      merchant_uid,
+      imp_uid
+    ).run()
+
+    console.log('[Payment Complete] Subscription created:', {
+      subscriptionId: result.meta.last_row_id,
+      academyId,
+      plan: planInfo.name,
+      startDate,
+      endDate
+    })
+
+    return c.json({ 
+      success: true, 
+      subscription: {
+        id: result.meta.last_row_id,
+        planName: planInfo.name,
+        startDate,
+        endDate
+      }
+    })
+  } catch (error) {
+    console.error('[Payment Complete] Error:', error)
+    return c.json({ success: false, error: error.message }, 500)
+  }
+})
+
+// 구독 상태 확인 API
+app.get('/api/subscriptions/status', async (c) => {
+  try {
+    // 세션에서 사용자 정보 가져오기
+    const session = getCookie(c, 'user_session')
+    if (!session) {
+      return c.json({ success: false, error: 'Not authenticated' }, 401)
+    }
+
+    const sessionData = JSON.parse(session)
+    const academyId = sessionData.id
+
+    // 활성 구독 조회
+    const subscription = await c.env.DB.prepare(`
+      SELECT * FROM subscriptions 
+      WHERE academy_id = ? AND status = 'active'
+      ORDER BY created_at DESC
+      LIMIT 1
+    `).bind(academyId).first()
+
+    if (!subscription) {
+      return c.json({ 
+        success: true, 
+        hasSubscription: false,
+        message: '활성 구독이 없습니다'
+      })
+    }
+
+    // 구독 만료 확인
+    const today = new Date().toISOString().split('T')[0]
+    const isExpired = today > subscription.subscription_end_date
+
+    if (isExpired) {
+      // 구독 만료 처리
+      await c.env.DB.prepare(`
+        UPDATE subscriptions 
+        SET status = 'expired', updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+      `).bind(subscription.id).run()
+
+      return c.json({ 
+        success: true, 
+        hasSubscription: false,
+        message: '구독이 만료되었습니다'
+      })
+    }
+
+    return c.json({ 
+      success: true, 
+      hasSubscription: true,
+      subscription: {
+        id: subscription.id,
+        planName: subscription.plan_name,
+        startDate: subscription.subscription_start_date,
+        endDate: subscription.subscription_end_date,
+        studentLimit: subscription.student_limit,
+        aiReportLimit: subscription.ai_report_limit,
+        landingPageLimit: subscription.landing_page_limit,
+        teacherLimit: subscription.teacher_limit
+      }
+    })
+  } catch (error) {
+    console.error('[Subscription Status] Error:', error)
+    return c.json({ success: false, error: error.message }, 500)
+  }
+})
+
 // 요금제 페이지
 app.get('/pricing', (c) => {
   return c.html(`
@@ -6296,7 +6519,10 @@ app.get('/pricing', (c) => {
                 }
 
                 const user = JSON.parse(currentUser);
-                const merchantUid = 'ORDER_' + new Date().getTime();
+                // merchant_uid 형식: academy_{academyId}_{planId}_{timestamp}
+                const merchantUid = \`academy_\${user.id}_\${plan}_\${new Date().getTime()}\`;
+
+                console.log('[Payment] Starting payment:', { plan, amount, planName, merchantUid });
 
                 IMP.request_pay({
                     pg: 'html5_inicis',  // PG사 (inicis: KG이니시스)
@@ -6311,35 +6537,36 @@ app.get('/pricing', (c) => {
                     buyer_postcode: ''
                 }, async function(rsp) {
                     if (rsp.success) {
-                        // 결제 성공 시 서버에 검증 요청
+                        console.log('[Payment] Payment success:', { imp_uid: rsp.imp_uid, merchant_uid: rsp.merchant_uid });
+                        
+                        // 결제 성공 시 서버에 구독 생성 요청
                         try {
-                            const response = await fetch('/api/payment/verify', {
+                            const response = await fetch('/api/payments/complete', {
                                 method: 'POST',
                                 headers: {
                                     'Content-Type': 'application/json',
                                 },
                                 body: JSON.stringify({
                                     imp_uid: rsp.imp_uid,
-                                    merchant_uid: rsp.merchant_uid,
-                                    plan: plan,
-                                    amount: amount,
-                                    user_id: user.id
+                                    merchant_uid: rsp.merchant_uid
                                 })
                             });
 
                             const result = await response.json();
                             
                             if (result.success) {
-                                alert('결제가 완료되었습니다!\\n' + planName + '을(를) 구매하셨습니다.');
+                                const sub = result.subscription;
+                                alert(\`결제가 완료되었습니다!\\n\\n플랜: \${sub.planName}\\n이용 기간: \${sub.startDate} ~ \${sub.endDate}\\n\\n대시보드로 이동합니다.\`);
                                 window.location.href = '/dashboard';
                             } else {
-                                alert('결제 검증에 실패했습니다: ' + result.error);
+                                alert('결제 처리에 실패했습니다: ' + result.error);
                             }
                         } catch (error) {
-                            console.error('Payment verification error:', error);
-                            alert('결제 검증 중 오류가 발생했습니다.');
+                            console.error('[Payment] Error:', error);
+                            alert('결제 처리 중 오류가 발생했습니다.');
                         }
                     } else {
+                        console.error('[Payment] Payment failed:', rsp.error_msg);
                         alert('결제에 실패했습니다: ' + rsp.error_msg);
                     }
                 });
@@ -8766,6 +8993,9 @@ app.get('/dashboard', (c) => {
                 <div class="mb-10">
                     <h1 class="text-4xl font-bold text-gray-900 mb-2">안녕하세요, <span id="userNameDisplay"></span>님!</h1>
                     <p class="text-xl text-gray-600">학원 마케팅 현황을 확인하세요</p>
+                    
+                    <!-- 구독 상태 표시 -->
+                    <div id="subscriptionStatus" class="mt-6"></div>
                 </div>
 
                 <!-- Stats Grid -->
@@ -9261,8 +9491,80 @@ app.get('/dashboard', (c) => {
                     }
                 }
                 
+                // 구독 상태 로드
+                loadSubscriptionStatus()
+                
                 // 권한 체크 및 UI 표시/숨김
                 checkPermissions()
+            }
+            
+            // 구독 상태 로드 함수
+            async function loadSubscriptionStatus() {
+                try {
+                    const response = await fetch('/api/subscriptions/status')
+                    const data = await response.json()
+                    
+                    const statusDiv = document.getElementById('subscriptionStatus')
+                    
+                    if (data.success && data.hasSubscription) {
+                        const sub = data.subscription
+                        const daysLeft = Math.ceil((new Date(sub.endDate) - new Date()) / (1000 * 60 * 60 * 24))
+                        
+                        statusDiv.innerHTML = \`
+                            <div class="bg-gradient-to-r from-purple-100 to-blue-100 border-2 border-purple-300 rounded-xl p-6">
+                                <div class="flex items-center justify-between flex-wrap gap-4">
+                                    <div class="flex items-center gap-4">
+                                        <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-700 rounded-full flex items-center justify-center">
+                                            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path>
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <div class="flex items-center gap-2 mb-1">
+                                                <span class="text-lg font-bold text-gray-900">\${sub.planName}</span>
+                                                <span class="px-3 py-1 bg-green-500 text-white text-xs font-bold rounded-full">활성</span>
+                                            </div>
+                                            <div class="text-sm text-gray-600">
+                                                이용 기간: \${sub.startDate} ~ \${sub.endDate} (\${daysLeft}일 남음)
+                                            </div>
+                                            <div class="text-xs text-gray-500 mt-1">
+                                                학생 \${sub.studentLimit}명 • AI 리포트 \${sub.aiReportLimit}개/월 • 랜딩페이지 \${sub.landingPageLimit}개 • 선생님 \${sub.teacherLimit}명
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <a href="/pricing" class="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition font-medium whitespace-nowrap">
+                                        플랜 변경
+                                    </a>
+                                </div>
+                            </div>
+                        \`
+                    } else {
+                        statusDiv.innerHTML = \`
+                            <div class="bg-gradient-to-r from-orange-100 to-red-100 border-2 border-orange-300 rounded-xl p-6">
+                                <div class="flex items-center justify-between flex-wrap gap-4">
+                                    <div class="flex items-center gap-4">
+                                        <div class="w-16 h-16 bg-gradient-to-br from-orange-500 to-red-500 rounded-full flex items-center justify-center">
+                                            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <div class="text-lg font-bold text-gray-900 mb-1">구독이 없습니다</div>
+                                            <div class="text-sm text-gray-600">
+                                                플랜을 구독하고 모든 기능을 이용하세요
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <a href="/pricing" class="bg-orange-600 text-white px-6 py-3 rounded-lg hover:bg-orange-700 transition font-medium whitespace-nowrap">
+                                        플랜 선택하기
+                                    </a>
+                                </div>
+                            </div>
+                        \`
+                    }
+                } catch (error) {
+                    console.error('[Subscription Status] Error:', error)
+                }
             }
             
             // 권한 체크 함수
