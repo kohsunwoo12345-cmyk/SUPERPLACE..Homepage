@@ -6938,9 +6938,12 @@ app.post('/api/usage/increment-teachers', async (c) => {
 app.post('/api/admin/usage/:userId/update-limits', async (c) => {
   try {
     const userId = c.req.param('userId')
-    const { studentLimit, aiReportLimit, landingPageLimit, teacherLimit } = await c.req.json()
+    const { studentLimit, aiReportLimit, landingPageLimit, teacherLimit, subscriptionMonths } = await c.req.json()
     
-    console.log('[Admin] Updating usage limits for user:', userId)
+    // 기본값: 구독 개월 수가 없으면 1개월
+    const months = subscriptionMonths || 1
+    
+    console.log('[Admin] Updating usage limits for user:', userId, 'months:', months)
     
     // 사용자 정보 조회
     const user = await c.env.DB.prepare('SELECT id, email, name, academy_id, academy_name FROM users WHERE id = ?').bind(userId).first()
@@ -6967,6 +6970,19 @@ app.post('/api/admin/usage/:userId/update-limits', async (c) => {
       ORDER BY created_at DESC LIMIT 1
     `).bind(academyId).first()
     
+    // 한국 시간 기준으로 날짜 계산
+    const now = new Date()
+    const koreaTime = new Date(now.getTime() + (9 * 60 * 60 * 1000)) // UTC+9
+    const today = koreaTime.toISOString().split('T')[0]
+    
+    // N개월 후 계산 (종료일은 N개월 후 전날 23:59:59)
+    const endDate = new Date(koreaTime)
+    endDate.setMonth(endDate.getMonth() + months)
+    endDate.setDate(endDate.getDate() - 1) // 전날까지
+    const subscriptionEndDate = endDate.toISOString().split('T')[0]
+    
+    console.log(`[Admin] Subscription period: ${today} to ${subscriptionEndDate} (${months} months)`)
+    
     if (existingSubscription) {
       // 기존 관리자 플랜 업데이트
       console.log('[Admin] Updating existing admin subscription:', existingSubscription.id)
@@ -6977,10 +6993,12 @@ app.post('/api/admin/usage/:userId/update-limits', async (c) => {
             ai_report_limit = ?, 
             landing_page_limit = ?, 
             teacher_limit = ?,
+            subscription_start_date = ?,
+            subscription_end_date = ?,
             status = 'active',
             updated_at = CURRENT_TIMESTAMP
         WHERE id = ?
-      `).bind(studentLimit, aiReportLimit, landingPageLimit, teacherLimit, existingSubscription.id).run()
+      `).bind(studentLimit, aiReportLimit, landingPageLimit, teacherLimit, today, subscriptionEndDate, existingSubscription.id).run()
       
       // usage_tracking도 확인하고 없으면 생성
       const existingUsage = await c.env.DB.prepare(`
@@ -7005,16 +7023,6 @@ app.post('/api/admin/usage/:userId/update-limits', async (c) => {
       // 새 관리자 플랜 생성
       console.log('[Admin] Creating new admin subscription for academy_id:', academyId)
       
-      const now = new Date()
-      const koreaTime = new Date(now.getTime() + (9 * 60 * 60 * 1000)) // UTC+9
-      const today = koreaTime.toISOString().split('T')[0]
-      
-      // 한 달 후 계산
-      const nextMonth = new Date(koreaTime)
-      nextMonth.setMonth(nextMonth.getMonth() + 1)
-      nextMonth.setDate(nextMonth.getDate() - 1)
-      const oneMonthLater = nextMonth.toISOString().split('T')[0]
-      
       const newSubResult = await c.env.DB.prepare(`
         INSERT INTO subscriptions (
           academy_id, plan_name, plan_price, 
@@ -7026,7 +7034,7 @@ app.post('/api/admin/usage/:userId/update-limits', async (c) => {
       `).bind(
         academyId, '관리자 설정 플랜', 0,
         studentLimit, aiReportLimit, landingPageLimit, teacherLimit,
-        today, oneMonthLater, 'active', 'admin',
+        today, subscriptionEndDate, 'active', 'admin',
         'admin_' + userId + '_' + Date.now()
       ).run()
       
@@ -21734,6 +21742,17 @@ app.get('/admin/users', async (c) => {
                         '<strong>안내:</strong> 활성 구독이 없습니다. 수동으로 한도를 설정할 수 있습니다.' +
                         '</p>' +
                         '</div>' +
+                        '<!-- 구독 기간 설정 -->' +
+                        '<div class="bg-indigo-50 border-2 border-indigo-200 rounded-lg p-4 mb-4">' +
+                        '<div class="flex items-center mb-3">' +
+                        '<span class="text-sm font-semibold text-gray-800">📅 구독 기간 (개월)</span>' +
+                        '</div>' +
+                        '<div>' +
+                        '<input type="number" id="subscriptionMonths" value="1" min="1" max="120" placeholder="예: 3" ' +
+                        'class="w-full px-3 py-2 text-sm border-2 border-indigo-300 rounded-lg focus:ring-2 focus:ring-indigo-500">' +
+                        '<p class="text-xs text-gray-600 mt-2">💡 설정한 개월 수만큼 구독이 유지됩니다. (예: 3개월 = 오늘부터 3개월 후 전날까지)</p>' +
+                        '</div>' +
+                        '</div>' +
                         '<div class="grid grid-cols-1 md:grid-cols-2 gap-4">' +
                         '<!-- 학생 수 -->' +
                         '<div class="border-2 border-blue-200 rounded-lg p-4 bg-blue-50">' +
@@ -21803,6 +21822,17 @@ app.get('/admin/users', async (c) => {
                     '<p class="text-sm text-gray-600 mt-1">' + sub.startDate + ' ~ ' + sub.endDate + '</p>' +
                     '</div>' +
                     '<span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">활성</span>' +
+                    '</div>' +
+                    '</div>' +
+                    '<!-- 구독 기간 설정 -->' +
+                    '<div class="bg-indigo-50 border-2 border-indigo-200 rounded-lg p-4">' +
+                    '<div class="flex items-center mb-3">' +
+                    '<span class="text-sm font-semibold text-gray-800">📅 구독 기간 (개월)</span>' +
+                    '</div>' +
+                    '<div>' +
+                    '<input type="number" id="subscriptionMonths" value="1" min="1" max="120" placeholder="예: 3" ' +
+                    'class="w-full px-3 py-2 text-sm border-2 border-indigo-300 rounded-lg focus:ring-2 focus:ring-indigo-500">' +
+                    '<p class="text-xs text-gray-600 mt-2">💡 설정한 개월 수만큼 구독이 유지됩니다. (예: 3개월 = 오늘부터 3개월 후 전날까지)</p>' +
                     '</div>' +
                     '</div>' +
                     '<!-- 사용량 & 한도 조절 -->' +
@@ -21900,6 +21930,7 @@ app.get('/admin/users', async (c) => {
             const aiReportLimit = parseInt(document.getElementById('aiReportLimit')?.value);
             const landingPageLimit = parseInt(document.getElementById('landingPageLimit')?.value);
             const teacherLimit = parseInt(document.getElementById('teacherLimit')?.value);
+            const subscriptionMonths = parseInt(document.getElementById('subscriptionMonths')?.value) || 1;
             
             if (!studentLimit || !aiReportLimit || !landingPageLimit || !teacherLimit) {
                 alert('❌ 모든 한도를 올바르게 입력해주세요');
@@ -21911,7 +21942,12 @@ app.get('/admin/users', async (c) => {
                 return;
             }
             
-            if (confirm('정말 사용 한도를 변경하시겠습니까?\\n\\n학생: ' + studentLimit + '\\nAI 리포트: ' + aiReportLimit + '\\n랜딩페이지: ' + landingPageLimit + '\\n선생님: ' + teacherLimit)) {
+            if (subscriptionMonths < 1 || subscriptionMonths > 120) {
+                alert('❌ 구독 기간은 1~120개월 사이여야 합니다');
+                return;
+            }
+            
+            if (confirm('정말 사용 한도를 변경하시겠습니까?\\n\\n구독 기간: ' + subscriptionMonths + '개월\\n학생: ' + studentLimit + '\\nAI 리포트: ' + aiReportLimit + '\\n랜딩페이지: ' + landingPageLimit + '\\n선생님: ' + teacherLimit)) {
                 try {
                     const response = await fetch('/api/admin/usage/' + currentUsageUserId + '/update-limits', {
                         method: 'POST',
@@ -21920,14 +21956,15 @@ app.get('/admin/users', async (c) => {
                             studentLimit,
                             aiReportLimit,
                             landingPageLimit,
-                            teacherLimit
+                            teacherLimit,
+                            subscriptionMonths
                         })
                     });
                     
                     const data = await response.json();
                     
                     if (data.success) {
-                        alert('✅ 사용 한도가 성공적으로 업데이트되었습니다!');
+                        alert('✅ 사용 한도가 성공적으로 업데이트되었습니다!\\n구독 기간: ' + subscriptionMonths + '개월');
                         closeUsageLimitsModal();
                     } else {
                         alert('❌ 업데이트 실패: ' + (data.error || '알 수 없는 오류'));
