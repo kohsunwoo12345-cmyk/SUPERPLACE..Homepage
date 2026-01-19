@@ -13215,6 +13215,21 @@ app.get('/tools/ai-learning-report', (c) => {
                     <div id="reportDetail" class="p-6"></div>
                 </div>
             </div>
+
+            <!-- 리포트 수정 모달 -->
+            <div id="editReportModal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                <div class="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                    <div class="sticky top-0 bg-white border-b border-gray-200 p-6 flex justify-between items-center">
+                        <h3 class="text-2xl font-bold">📝 리포트 수정</h3>
+                        <button onclick="closeEditModal()" class="text-gray-500 hover:text-gray-700">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <div id="editReportDetail" class="p-6"></div>
+                </div>
+            </div>
         </div>
 
         <script>
@@ -13496,15 +13511,20 @@ app.get('/tools/ai-learning-report', (c) => {
                     
                     if (data.success && data.reports && data.reports.length > 0) {
                         listDiv.innerHTML = data.reports.map(report => \`
-                            <div class="p-6 border-2 border-gray-200 rounded-xl hover:border-purple-400 transition cursor-pointer" onclick="viewReport(\${report.id})">
+                            <div class="p-6 border-2 border-gray-200 rounded-xl hover:border-purple-400 transition">
                                 <div class="flex justify-between items-start mb-4">
-                                    <div>
+                                    <div onclick="viewReport(\${report.id})" class="cursor-pointer flex-1">
                                         <div class="text-lg font-bold text-gray-900">\${report.report_month} 리포트</div>
                                         <div class="text-sm text-gray-600">\${new Date(report.created_at).toLocaleDateString('ko-KR')}</div>
                                     </div>
-                                    <span class="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">\${report.study_attitude}</span>
+                                    <div class="flex items-center gap-2">
+                                        <span class="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">\${report.study_attitude}</span>
+                                        <button onclick="event.stopPropagation(); editReport(\${report.id})" class="px-3 py-1 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition text-sm">
+                                            <i class="fas fa-edit"></i> 수정
+                                        </button>
+                                    </div>
                                 </div>
-                                <div class="grid grid-cols-2 gap-4 text-sm">
+                                <div class="grid grid-cols-2 gap-4 text-sm" onclick="viewReport(\${report.id})" class="cursor-pointer">
                                     <div class="text-gray-600">평균 점수: <span class="font-bold text-gray-900">\${report.overall_score}점</span></div>
                                     <div class="text-gray-600">생성일: <span class="font-bold text-gray-900">\${new Date(report.created_at).toLocaleDateString('ko-KR')}</span></div>
                                 </div>
@@ -13580,6 +13600,133 @@ app.get('/tools/ai-learning-report', (c) => {
                     console.error('리포트 상세 조회 실패:', err);
                     alert('리포트를 불러오는 중 오류가 발생했습니다.');
                 }
+            }
+
+            // 리포트 수정
+            async function editReport(reportId) {
+                try {
+                    const response = await fetch(\`/api/learning-reports/detail/\${reportId}\`);
+                    const data = await response.json();
+
+                    if (data.success && data.report) {
+                        const report = data.report;
+                        document.getElementById('editReportDetail').innerHTML = \`
+                            <div class="space-y-6">
+                                <div class="bg-gradient-to-r from-purple-100 to-pink-100 p-6 rounded-xl">
+                                    <div class="text-sm text-gray-600 mb-2">\${report.report_month}</div>
+                                    <div class="text-2xl font-bold text-gray-900 mb-2">\${report.student_name} 학생 학습 분석 리포트 수정</div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">평균 점수</label>
+                                    <input type="number" id="edit_overall_score" value="\${report.overall_score}" class="w-full px-4 py-2 border border-gray-300 rounded-lg" step="0.1">
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">학습 태도</label>
+                                    <select id="edit_study_attitude" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                                        <option value="매우 우수" \${report.study_attitude === '매우 우수' ? 'selected' : ''}>매우 우수</option>
+                                        <option value="우수" \${report.study_attitude === '우수' ? 'selected' : ''}>우수</option>
+                                        <option value="양호" \${report.study_attitude === '양호' ? 'selected' : ''}>양호</option>
+                                        <option value="개선 필요" \${report.study_attitude === '개선 필요' ? 'selected' : ''}>개선 필요</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">💪 강점</label>
+                                    <textarea id="edit_strengths" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg">\${report.strengths}</textarea>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">🎯 약점</label>
+                                    <textarea id="edit_weaknesses" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg">\${report.weaknesses}</textarea>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">📝 개선사항</label>
+                                    <textarea id="edit_improvements" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg">\${report.improvements}</textarea>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">💡 추천사항</label>
+                                    <textarea id="edit_recommendations" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg">\${report.recommendations}</textarea>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">🎯 다음 달 목표</label>
+                                    <textarea id="edit_next_month_goals" rows="2" class="w-full px-4 py-2 border border-gray-300 rounded-lg">\${report.next_month_goals}</textarea>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">🤖 AI 종합 분석</label>
+                                    <textarea id="edit_ai_analysis" rows="4" class="w-full px-4 py-2 border border-gray-300 rounded-lg">\${report.ai_analysis}</textarea>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">💌 학부모님께 보낼 메시지</label>
+                                    <textarea id="edit_parent_message" rows="8" class="w-full px-4 py-2 border border-gray-300 rounded-lg">\${report.parent_message}</textarea>
+                                </div>
+
+                                <div class="flex gap-3">
+                                    <button onclick="saveReport(\${reportId})" class="flex-1 px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition font-bold">
+                                        💾 저장하기
+                                    </button>
+                                    <button onclick="closeEditModal()" class="px-6 py-3 bg-gray-300 text-gray-700 rounded-xl hover:bg-gray-400 transition font-bold">
+                                        취소
+                                    </button>
+                                </div>
+                            </div>
+                        \`;
+                        document.getElementById('editReportModal').classList.remove('hidden');
+                    }
+                } catch (err) {
+                    console.error('리포트 로드 실패:', err);
+                    alert('리포트를 불러오는 중 오류가 발생했습니다.');
+                }
+            }
+
+            // 리포트 저장
+            async function saveReport(reportId) {
+                try {
+                    const payload = {
+                        overall_score: parseFloat(document.getElementById('edit_overall_score').value),
+                        study_attitude: document.getElementById('edit_study_attitude').value,
+                        strengths: document.getElementById('edit_strengths').value,
+                        weaknesses: document.getElementById('edit_weaknesses').value,
+                        improvements: document.getElementById('edit_improvements').value,
+                        recommendations: document.getElementById('edit_recommendations').value,
+                        next_month_goals: document.getElementById('edit_next_month_goals').value,
+                        ai_analysis: document.getElementById('edit_ai_analysis').value,
+                        parent_message: document.getElementById('edit_parent_message').value
+                    };
+
+                    const response = await fetch(\`/api/learning-reports/\${reportId}\`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        alert('리포트가 수정되었습니다!');
+                        closeEditModal();
+                        const studentId = document.getElementById('studentSelect').value;
+                        if (studentId) {
+                            loadReportsForStudent(studentId);
+                        }
+                    } else {
+                        alert('저장 실패: ' + data.error);
+                    }
+                } catch (err) {
+                    console.error('리포트 저장 실패:', err);
+                    alert('저장 중 오류가 발생했습니다.');
+                }
+            }
+
+            // 수정 모달 닫기
+            function closeEditModal() {
+                document.getElementById('editReportModal').classList.add('hidden');
             }
 
             // 모달 닫기
@@ -14044,14 +14191,25 @@ app.get('/api/report-folders', async (c) => {
   try {
     const academyId = c.req.query('academyId')
     
-    const result = await c.env.DB.prepare(`
-      SELECT * FROM report_folders
-      WHERE academy_id = ?
-      ORDER BY created_at DESC
-    `).bind(academyId).all()
+    if (!academyId) {
+      return c.json({ success: false, error: '학원 ID가 필요합니다.' }, 400)
+    }
     
-    return c.json({ success: true, folders: result.results })
+    try {
+      const result = await c.env.DB.prepare(`
+        SELECT * FROM report_folders
+        WHERE academy_id = ?
+        ORDER BY created_at DESC
+      `).bind(academyId).all()
+      
+      return c.json({ success: true, folders: result.results || [] })
+    } catch (err) {
+      console.warn('⚠️ report_folders table not found:', err.message)
+      // 테이블이 없으면 빈 배열 반환
+      return c.json({ success: true, folders: [] })
+    }
   } catch (error) {
+    console.error('❌ Get report folders error:', error)
     return c.json({ success: false, error: error.message }, 500)
   }
 })
@@ -14386,7 +14544,7 @@ app.put('/api/learning-reports/:report_id/update-field', async (c) => {
     const reportId = c.req.param('report_id')
     const { field, value } = await c.req.json()
     
-    const allowedFields = ['strengths', 'weaknesses', 'improvements', 'recommendations', 'next_month_goals', 'ai_analysis', 'parent_message']
+    const allowedFields = ['strengths', 'weaknesses', 'improvements', 'recommendations', 'next_month_goals', 'ai_analysis', 'parent_message', 'study_attitude']
     
     if (!allowedFields.includes(field)) {
       return c.json({ success: false, error: '허용되지 않은 필드입니다.' }, 400)
@@ -14406,6 +14564,56 @@ app.put('/api/learning-reports/:report_id/update-field', async (c) => {
   } catch (err) {
     console.error('Update report field error:', err)
     return c.json({ success: false, error: '저장 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
+// 리포트 전체 업데이트 API
+app.put('/api/learning-reports/:report_id', async (c) => {
+  try {
+    const reportId = c.req.param('report_id')
+    const data = await c.req.json()
+    
+    console.log('✏️ [UpdateReport] Updating report:', reportId)
+    console.log('✏️ [UpdateReport] Data:', data)
+    
+    const report = await c.env.DB.prepare('SELECT id FROM learning_reports WHERE id = ?').bind(reportId).first()
+    
+    if (!report) {
+      return c.json({ success: false, error: '리포트를 찾을 수 없습니다.' }, 404)
+    }
+    
+    const { 
+      overall_score, study_attitude, strengths, weaknesses, 
+      improvements, recommendations, next_month_goals, 
+      ai_analysis, parent_message 
+    } = data
+    
+    await c.env.DB.prepare(`
+      UPDATE learning_reports 
+      SET overall_score = ?, study_attitude = ?, strengths = ?, 
+          weaknesses = ?, improvements = ?, recommendations = ?, 
+          next_month_goals = ?, ai_analysis = ?, parent_message = ?,
+          updated_at = datetime('now')
+      WHERE id = ?
+    `).bind(
+      overall_score,
+      study_attitude,
+      strengths,
+      weaknesses,
+      improvements,
+      recommendations,
+      next_month_goals,
+      ai_analysis,
+      parent_message,
+      reportId
+    ).run()
+    
+    console.log('✅ [UpdateReport] Report updated successfully')
+    
+    return c.json({ success: true, message: '리포트가 수정되었습니다.' })
+  } catch (err) {
+    console.error('❌ [UpdateReport] Error:', err)
+    return c.json({ success: false, error: '리포트 수정 중 오류가 발생했습니다.' }, 500)
   }
 })
 
