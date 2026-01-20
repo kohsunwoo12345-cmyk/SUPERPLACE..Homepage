@@ -7471,11 +7471,13 @@ app.post('/api/bank-transfer/approve', async (c) => {
 
     // 사용자의 academy_id는 user.id와 동일하게 설정
     const academyId = request.user_id
+    console.log('[Bank Transfer Approve] Using academyId:', academyId, 'for user:', request.user_id)
     
     // users 테이블에서 academy_id 업데이트 (본인 ID로)
     await c.env.DB.prepare(`
       UPDATE users SET academy_id = ? WHERE id = ?
     `).bind(academyId, request.user_id).run()
+    console.log('[Bank Transfer Approve] Updated users.academy_id')
 
     // 기존 활성 구독 비활성화
     await c.env.DB.prepare(`
@@ -7483,11 +7485,16 @@ app.post('/api/bank-transfer/approve', async (c) => {
       SET status = 'expired', updated_at = CURRENT_TIMESTAMP
       WHERE academy_id = ? AND status = 'active'
     `).bind(academyId).run()
+    console.log('[Bank Transfer Approve] Deactivated existing subscriptions')
 
     // 구독 시작일과 종료일 계산 (1개월)
     const startDate = new Date()
     const endDate = new Date()
     endDate.setMonth(endDate.getMonth() + 1)
+    
+    const startDateStr = startDate.toISOString().split('T')[0]
+    const endDateStr = endDate.toISOString().split('T')[0]
+    console.log('[Bank Transfer Approve] Date range:', startDateStr, 'to', endDateStr)
 
     // 구독 생성
     const subscriptionResult = await c.env.DB.prepare(`
@@ -7504,19 +7511,33 @@ app.post('/api/bank-transfer/approve', async (c) => {
       limits.ai_report,
       limits.landing_page,
       limits.teacher,
-      startDate.toISOString(),
-      endDate.toISOString()
+      startDateStr,
+      endDateStr
     ).run()
 
     const subscriptionId = subscriptionResult.meta.last_row_id
+    console.log('[Bank Transfer Approve] Created subscription:', subscriptionId)
+
+    // 기존 usage_tracking 삭제 (있다면)
+    await c.env.DB.prepare(`
+      DELETE FROM usage_tracking WHERE academy_id = ?
+    `).bind(academyId).run()
+    console.log('[Bank Transfer Approve] Deleted old usage_tracking')
 
     // usage_tracking 생성
     await c.env.DB.prepare(`
       INSERT INTO usage_tracking (
         academy_id, subscription_id, current_students, ai_reports_used_this_month,
-        landing_pages_created, current_teachers, updated_at
-      ) VALUES (?, ?, 0, 0, 0, 0, CURRENT_TIMESTAMP)
-    `).bind(academyId, subscriptionId).run()
+        landing_pages_created, current_teachers, sms_sent_this_month,
+        last_ai_report_reset_date, last_sms_reset_date, created_at, updated_at
+      ) VALUES (?, ?, 0, 0, 0, 0, 0, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+    `).bind(
+      academyId, 
+      subscriptionId,
+      startDateStr,
+      startDateStr
+    ).run()
+    console.log('[Bank Transfer Approve] Created usage_tracking')
 
     // 🔥 프로그램 자동 등록 (4개 기본 프로그램)
     const programs = [
@@ -7554,8 +7575,13 @@ app.post('/api/bank-transfer/approve', async (c) => {
       academy_id: academyId
     })
   } catch (error) {
-    console.error('승인 처리 실패:', error)
-    return c.json({ success: false, error: '승인 처리 중 오류가 발생했습니다: ' + (error as Error).message }, 500)
+    console.error('[Bank Transfer Approve] Error:', error)
+    console.error('[Bank Transfer Approve] Error stack:', (error as Error).stack)
+    console.error('[Bank Transfer Approve] Error message:', (error as Error).message)
+    return c.json({ 
+      success: false, 
+      error: '승인 처리 중 오류가 발생했습니다: ' + (error as Error).message 
+    }, 500)
   }
 })
 

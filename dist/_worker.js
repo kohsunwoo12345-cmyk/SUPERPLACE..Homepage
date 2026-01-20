@@ -5442,31 +5442,34 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
         created_at DESC
     `).all();return e.json({success:!0,requests:s.results||[]})}catch(t){return console.error("신청 목록 조회 실패:",t),e.json({success:!1,error:"목록 조회 중 오류가 발생했습니다."},500)}});d.post("/api/bank-transfer/approve",async e=>{try{const{requestId:t,adminEmail:s}=await e.req.json();if(s!=="admin@superplace.co.kr")return e.json({success:!1,error:"관리자 권한이 필요합니다."},403);const r=await e.env.DB.prepare(`
       SELECT * FROM bank_transfer_requests WHERE id = ?
-    `).bind(t).first();if(!r)return e.json({success:!1,error:"신청 정보를 찾을 수 없습니다."},404);if(r.status==="approved")return e.json({success:!1,error:"이미 승인된 신청입니다."},400);const a={"스타터 플랜":{student:30,ai_report:30,landing_page:40,teacher:2,price:55e3},"베이직 플랜":{student:50,ai_report:50,landing_page:70,teacher:3,price:77e3},"프로 플랜":{student:100,ai_report:100,landing_page:140,teacher:6,price:147e3},"비즈니스 플랜":{student:300,ai_report:600,landing_page:550,teacher:10,price:297e3},"프리미엄 플랜":{student:500,ai_report:1e3,landing_page:900,teacher:15,price:44e4},"엔터프라이즈 플랜":{student:1e3,ai_report:3e3,landing_page:2e3,teacher:20,price:75e4}},n=a[r.plan_name]||a["스타터 플랜"],o=r.user_id;await e.env.DB.prepare(`
+    `).bind(t).first();if(!r)return e.json({success:!1,error:"신청 정보를 찾을 수 없습니다."},404);if(r.status==="approved")return e.json({success:!1,error:"이미 승인된 신청입니다."},400);const a={"스타터 플랜":{student:30,ai_report:30,landing_page:40,teacher:2,price:55e3},"베이직 플랜":{student:50,ai_report:50,landing_page:70,teacher:3,price:77e3},"프로 플랜":{student:100,ai_report:100,landing_page:140,teacher:6,price:147e3},"비즈니스 플랜":{student:300,ai_report:600,landing_page:550,teacher:10,price:297e3},"프리미엄 플랜":{student:500,ai_report:1e3,landing_page:900,teacher:15,price:44e4},"엔터프라이즈 플랜":{student:1e3,ai_report:3e3,landing_page:2e3,teacher:20,price:75e4}},n=a[r.plan_name]||a["스타터 플랜"],o=r.user_id;console.log("[Bank Transfer Approve] Using academyId:",o,"for user:",r.user_id),await e.env.DB.prepare(`
       UPDATE users SET academy_id = ? WHERE id = ?
-    `).bind(o,r.user_id).run(),await e.env.DB.prepare(`
+    `).bind(o,r.user_id).run(),console.log("[Bank Transfer Approve] Updated users.academy_id"),await e.env.DB.prepare(`
       UPDATE subscriptions 
       SET status = 'expired', updated_at = CURRENT_TIMESTAMP
       WHERE academy_id = ? AND status = 'active'
-    `).bind(o).run();const l=new Date,i=new Date;i.setMonth(i.getMonth()+1);const p=(await e.env.DB.prepare(`
+    `).bind(o).run(),console.log("[Bank Transfer Approve] Deactivated existing subscriptions");const l=new Date,i=new Date;i.setMonth(i.getMonth()+1);const c=l.toISOString().split("T")[0],p=i.toISOString().split("T")[0];console.log("[Bank Transfer Approve] Date range:",c,"to",p);const m=(await e.env.DB.prepare(`
       INSERT INTO subscriptions (
         academy_id, plan_name, plan_price, student_limit, ai_report_limit, 
         landing_page_limit, teacher_limit, subscription_start_date, 
         subscription_end_date, status, payment_method, created_at, updated_at
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', 'bank_transfer', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-    `).bind(o,r.plan_name,n.price,n.student,n.ai_report,n.landing_page,n.teacher,l.toISOString(),i.toISOString()).run()).meta.last_row_id;await e.env.DB.prepare(`
+    `).bind(o,r.plan_name,n.price,n.student,n.ai_report,n.landing_page,n.teacher,c,p).run()).meta.last_row_id;console.log("[Bank Transfer Approve] Created subscription:",m),await e.env.DB.prepare(`
+      DELETE FROM usage_tracking WHERE academy_id = ?
+    `).bind(o).run(),console.log("[Bank Transfer Approve] Deleted old usage_tracking"),await e.env.DB.prepare(`
       INSERT INTO usage_tracking (
         academy_id, subscription_id, current_students, ai_reports_used_this_month,
-        landing_pages_created, current_teachers, updated_at
-      ) VALUES (?, ?, 0, 0, 0, 0, CURRENT_TIMESTAMP)
-    `).bind(o,p).run();const u=[{route:"/students",name:"학생 관리"},{route:"/tools/ai-learning-report",name:"AI학습 분석 리포트"},{route:"/tools/dashboard-analytics",name:"통합 분석 대시보드"},{route:"/tools/search-volume",name:"네이버 검색량 조회"}];for(const m of u)try{await e.env.DB.prepare(`
+        landing_pages_created, current_teachers, sms_sent_this_month,
+        last_ai_report_reset_date, last_sms_reset_date, created_at, updated_at
+      ) VALUES (?, ?, 0, 0, 0, 0, 0, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+    `).bind(o,m,c,c).run(),console.log("[Bank Transfer Approve] Created usage_tracking");const g=[{route:"/students",name:"학생 관리"},{route:"/tools/ai-learning-report",name:"AI학습 분석 리포트"},{route:"/tools/dashboard-analytics",name:"통합 분석 대시보드"},{route:"/tools/search-volume",name:"네이버 검색량 조회"}];for(const b of g)try{await e.env.DB.prepare(`
           INSERT OR IGNORE INTO user_programs (user_id, program_route, program_name, enabled, created_at)
           VALUES (?, ?, ?, 1, CURRENT_TIMESTAMP)
-        `).bind(r.user_id,m.route,m.name).run()}catch(g){console.error("[Bank Transfer Approve] Failed to add program:",m.name,g)}return console.log("[Bank Transfer Approve] Added 4 basic programs for user:",r.user_id),await e.env.DB.prepare(`
+        `).bind(r.user_id,b.route,b.name).run()}catch(h){console.error("[Bank Transfer Approve] Failed to add program:",b.name,h)}return console.log("[Bank Transfer Approve] Added 4 basic programs for user:",r.user_id),await e.env.DB.prepare(`
       UPDATE bank_transfer_requests
       SET status = 'approved', approved_at = CURRENT_TIMESTAMP, approved_by = ?
       WHERE id = ?
-    `).bind(s,t).run(),e.json({success:!0,message:"계좌이체가 승인되고 구독이 활성화되었습니다.",subscription_id:p,academy_id:o})}catch(t){return console.error("승인 처리 실패:",t),e.json({success:!1,error:"승인 처리 중 오류가 발생했습니다: "+t.message},500)}});d.post("/api/bank-transfer/reject",async e=>{try{const{requestId:t,adminEmail:s,reason:r}=await e.req.json();return s!=="admin@superplace.co.kr"?e.json({success:!1,error:"관리자 권한이 필요합니다."},403):(await e.env.DB.prepare(`
+    `).bind(s,t).run(),e.json({success:!0,message:"계좌이체가 승인되고 구독이 활성화되었습니다.",subscription_id:m,academy_id:o})}catch(t){return console.error("[Bank Transfer Approve] Error:",t),console.error("[Bank Transfer Approve] Error stack:",t.stack),console.error("[Bank Transfer Approve] Error message:",t.message),e.json({success:!1,error:"승인 처리 중 오류가 발생했습니다: "+t.message},500)}});d.post("/api/bank-transfer/reject",async e=>{try{const{requestId:t,adminEmail:s,reason:r}=await e.req.json();return s!=="admin@superplace.co.kr"?e.json({success:!1,error:"관리자 권한이 필요합니다."},403):(await e.env.DB.prepare(`
       UPDATE bank_transfer_requests
       SET status = 'rejected', rejected_at = CURRENT_TIMESTAMP, rejected_by = ?, rejection_reason = ?
       WHERE id = ?
