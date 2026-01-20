@@ -279,6 +279,28 @@ function selectAllPermissions() {
     });
 }
 
+// 기본 권한만 선택하는 함수 (플랜 시작 시 4개 권한)
+function selectDefaultPermissions() {
+    const defaultPermissions = ['search_volume', 'landing_builder', 'student_management', 'ai_learning_report'];
+    const checkboxes = document.querySelectorAll('#systemPermissions input[type="checkbox"]');
+    
+    checkboxes.forEach(checkbox => {
+        const programKey = checkbox.dataset.programKey;
+        const shouldCheck = defaultPermissions.includes(programKey);
+        checkbox.checked = shouldCheck;
+        
+        // 체크박스 변경 시 라벨 스타일도 업데이트
+        const label = checkbox.closest('label');
+        if (shouldCheck) {
+            label.classList.remove('border-gray-200');
+            label.classList.add('border-blue-500', 'bg-blue-50');
+        } else {
+            label.classList.remove('border-blue-500', 'bg-blue-50');
+            label.classList.add('border-gray-200');
+        }
+    });
+}
+
 function logout() {
     if(confirm('로그아웃 하시겠습니까?')) {
         localStorage.removeItem('user');
@@ -444,6 +466,7 @@ window.managePermissions = managePermissions;
 window.savePermissions = savePermissions;
 window.closeModal = closeModal;
 window.selectAllPermissions = selectAllPermissions;
+window.selectDefaultPermissions = selectDefaultPermissions;
 window.logout = logout;
 
 // 디버깅 함수
@@ -475,5 +498,5 @@ window.testPermissionAPI = async function(userId, programKey) {
 };
 
 console.log('✅ All admin functions registered globally');
-console.log('Available functions:', Object.keys({changePassword, givePoints, deductPoints, loginAs, deleteUser, managePermissions, selectAllPermissions}));
+console.log('Available functions:', Object.keys({changePassword, givePoints, deductPoints, loginAs, deleteUser, managePermissions, selectAllPermissions, selectDefaultPermissions}));
 console.log('💡 Test permission API: testPermissionAPI(userId, "search_volume")');

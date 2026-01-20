@@ -8895,7 +8895,7 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
                             </svg>
                             <span>🏠 홈으로</span>
                         </a>
-                        <div id="smsNavDropdown" class="relative group hidden">
+                        <div id="smsNavDropdown" class="relative group">
                             <button class="flex items-center space-x-1 text-gray-700 hover:text-purple-600 transition font-medium">
                                 <span>📱 SMS</span>
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -8914,6 +8914,22 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
                                 </a>
                                 <a href="/sms/points" class="block px-4 py-2 text-gray-700 hover:bg-purple-50 hover:text-purple-600 transition">
                                     💰 포인트 관리
+                                </a>
+                            </div>
+                        </div>
+                        <div id="landingNavDropdown" class="relative group">
+                            <button class="flex items-center space-x-1 text-gray-700 hover:text-purple-600 transition font-medium">
+                                <span>🚀 랜딩페이지</span>
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                </svg>
+                            </button>
+                            <div class="hidden group-hover:block absolute top-full right-0 mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-100 py-2 z-50">
+                                <a href="/tools/landing-page-builder" class="block px-4 py-2 text-gray-700 hover:bg-purple-50 hover:text-purple-600 transition">
+                                    ✨ 페이지 생성
+                                </a>
+                                <a href="/landing-pages" class="block px-4 py-2 text-gray-700 hover:bg-purple-50 hover:text-purple-600 transition">
+                                    📋 내 페이지
                                 </a>
                             </div>
                         </div>
@@ -19112,9 +19128,14 @@ ${M}
                 </div>
 
                 <div class="p-6 border-t border-gray-200 bg-gray-50 sticky bottom-0 flex justify-between items-center">
-                    <button onclick="selectAllPermissions()" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition text-sm font-medium">
-                        전체 선택
-                    </button>
+                    <div class="flex gap-2">
+                        <button onclick="selectDefaultPermissions()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm font-medium">
+                            기본 권한 (4개)
+                        </button>
+                        <button onclick="selectAllPermissions()" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition text-sm font-medium">
+                            전체 선택
+                        </button>
+                    </div>
                     <div class="flex gap-3">
                         <button onclick="closeModal()" class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
                             취소
