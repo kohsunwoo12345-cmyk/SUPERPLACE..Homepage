@@ -7705,19 +7705,16 @@ app.post('/api/admin/seed-test-data', async (c) => {
     
     console.log('[Admin Seed] Starting test data creation')
     
-    // 외래 키 체크 일시 비활성화
-    await DB.prepare('PRAGMA foreign_keys = OFF').run()
-    
-    // 테스트 사용자 생성 (academy_id를 자기 자신의 ID로 설정)
+    // Step 1: 테스트 사용자 생성 (academy_id는 기본값 1 사용)
     await DB.prepare(`
-      INSERT OR IGNORE INTO users (id, email, name, password, academy_id, role, created_at)
+      INSERT OR IGNORE INTO users (id, email, name, password, role, created_at)
       VALUES 
-      (100, 'test1@example.com', '테스트사용자1', 'dummy_hash', 100, 'teacher', datetime('now', '-30 days')),
-      (101, 'test2@example.com', '테스트사용자2', 'dummy_hash', 101, 'teacher', datetime('now', '-20 days')),
-      (102, 'test3@example.com', '테스트사용자3', 'dummy_hash', 102, 'teacher', datetime('now', '-10 days'))
+      (100, 'test1@example.com', '테스트사용자1', 'dummy_hash', 'teacher', datetime('now', '-30 days')),
+      (101, 'test2@example.com', '테스트사용자2', 'dummy_hash', 'teacher', datetime('now', '-20 days')),
+      (102, 'test3@example.com', '테스트사용자3', 'dummy_hash', 'teacher', datetime('now', '-10 days'))
     `).run()
     
-    // 테스트 학원 생성 (먼저 academy가 있어야 함)
+    // Step 2: 테스트 학원 생성
     await DB.prepare(`
       INSERT OR IGNORE INTO academies (id, owner_id, academy_name, created_at)
       VALUES
@@ -7725,6 +7722,11 @@ app.post('/api/admin/seed-test-data', async (c) => {
       (101, 101, '테스트학원2', datetime('now', '-20 days')),
       (102, 102, '테스트학원3', datetime('now', '-10 days'))
     `).run()
+    
+    // Step 3: 사용자의 academy_id 업데이트
+    await DB.prepare(`UPDATE users SET academy_id = 100 WHERE id = 100`).run()
+    await DB.prepare(`UPDATE users SET academy_id = 101 WHERE id = 101`).run()
+    await DB.prepare(`UPDATE users SET academy_id = 102 WHERE id = 102`).run()
     
     // 테스트 구독 생성
     await DB.prepare(`
@@ -7758,9 +7760,6 @@ app.post('/api/admin/seed-test-data', async (c) => {
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ${payment[8]})
       `).bind(...payment.slice(0, 8)).run()
     }
-    
-    // 외래 키 체크 다시 활성화
-    await DB.prepare('PRAGMA foreign_keys = ON').run()
     
     console.log('[Admin Seed] Test data created successfully')
     
