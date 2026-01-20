@@ -6087,7 +6087,8 @@ app.get('/', (c) => {
                     </p>
                 </div>
                 
-                <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+                <!-- 교육 프로그램 (첫 번째 줄) -->
+                <div class="grid md:grid-cols-3 gap-6 mb-6">
                     <!-- 네이버 플레이스 버튼 -->
                     <a href="/programs/naver-place" class="group bg-white rounded-2xl p-8 border-2 border-purple-200 hover:border-purple-600 hover:shadow-xl transition-all duration-300 hover:-translate-y-2">
                         <div class="w-16 h-16 gradient-purple rounded-2xl flex items-center justify-center mb-6 mx-auto group-hover:scale-110 transition-transform">
@@ -6148,23 +6149,86 @@ app.get('/', (c) => {
                             </span>
                         </div>
                     </a>
-                    
-                    <!-- 학생 관리 버튼 -->
-                    <a href="/students" class="group bg-white rounded-2xl p-8 border-2 border-blue-200 hover:border-blue-600 hover:shadow-xl transition-all duration-300 hover:-translate-y-2">
-                        <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl flex items-center justify-center mb-6 mx-auto group-hover:scale-110 transition-transform">
+                </div>
+
+                <!-- 마케팅 도구 (두 번째 줄) -->
+                <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+                    <!-- 네이버 검색량 조회 -->
+                    <a href="/features/search-volume" class="group bg-gradient-to-br from-cyan-500 to-cyan-700 rounded-2xl p-8 hover:shadow-xl transition-all duration-300 hover:-translate-y-2">
+                        <div class="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mb-6 mx-auto group-hover:scale-110 transition-transform">
                             <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                             </svg>
                         </div>
-                        <h3 class="text-2xl font-bold text-gray-900 text-center mb-3">
-                            학생<br>관리
+                        <h3 class="text-2xl font-bold text-white text-center mb-3">
+                            네이버 검색량<br>조회
                         </h3>
-                        <p class="text-gray-600 text-center mb-4">
-                            학생/반/성과 통합 관리
+                        <p class="text-cyan-100 text-center mb-4">
+                            실시간 검색량 분석
                         </p>
                         <div class="text-center">
-                            <span class="text-blue-600 font-bold group-hover:text-blue-700">
-                                바로가기 →
+                            <span class="text-white font-bold">
+                                자세히 보기 →
+                            </span>
+                        </div>
+                    </a>
+
+                    <!-- 랜딩페이지 생성기 -->
+                    <a href="/features/landing-builder" class="group bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl p-8 hover:shadow-xl transition-all duration-300 hover:-translate-y-2">
+                        <div class="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mb-6 mx-auto group-hover:scale-110 transition-transform">
+                            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-2xl font-bold text-white text-center mb-3">
+                            랜딩페이지<br>생성기
+                        </h3>
+                        <p class="text-blue-100 text-center mb-4">
+                            AI 자동 페이지 제작
+                        </p>
+                        <div class="text-center">
+                            <span class="text-white font-bold">
+                                자세히 보기 →
+                            </span>
+                        </div>
+                    </a>
+
+                    <!-- SMS 문자 발송 -->
+                    <a href="/features/sms-sender" class="group bg-gradient-to-br from-purple-500 to-purple-700 rounded-2xl p-8 hover:shadow-xl transition-all duration-300 hover:-translate-y-2">
+                        <div class="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mb-6 mx-auto group-hover:scale-110 transition-transform">
+                            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-2xl font-bold text-white text-center mb-3">
+                            SMS<br>문자 발송
+                        </h3>
+                        <p class="text-purple-100 text-center mb-4">
+                            빠르고 효율적인 소통
+                        </p>
+                        <div class="text-center">
+                            <span class="text-white font-bold">
+                                자세히 보기 →
+                            </span>
+                        </div>
+                    </a>
+
+                    <!-- AI 학습 분석 리포트 -->
+                    <a href="/features/ai-learning-report" class="group bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-2xl p-8 hover:shadow-xl transition-all duration-300 hover:-translate-y-2">
+                        <div class="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mb-6 mx-auto group-hover:scale-110 transition-transform">
+                            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-2xl font-bold text-white text-center mb-3">
+                            AI 학습<br>분석 리포트
+                        </h3>
+                        <p class="text-indigo-100 text-center mb-4">
+                            개인별 맞춤 분석
+                        </p>
+                        <div class="text-center">
+                            <span class="text-white font-bold">
+                                자세히 보기 →
                             </span>
                         </div>
                     </a>
