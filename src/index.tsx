@@ -36761,6 +36761,104 @@ app.get('/api/debug/user/:userId/subscription', async (c) => {
   }
 })
 
+// 🔧 디버깅: 선생님 데이터 확인 API
+app.get('/api/debug/teachers', async (c) => {
+  try {
+    const sessionId = getCookie(c, 'session_id')
+    if (!sessionId) {
+      return c.json({ success: false, error: 'Not authenticated' }, 401)
+    }
+
+    // 세션에서 user_id 조회
+    const session = await c.env.DB.prepare(`
+      SELECT user_id FROM sessions WHERE session_id = ? AND expires_at > datetime('now')
+    `).bind(sessionId).first()
+    
+    if (!session) {
+      return c.json({ success: false, error: 'Session expired' }, 401)
+    }
+
+    const userId = session.user_id
+    
+    // 사용자 정보 조회
+    const user = await c.env.DB.prepare(`
+      SELECT id, name, email, user_type, academy_id, parent_user_id FROM users WHERE id = ?
+    `).bind(userId).first()
+    
+    if (!user) {
+      return c.json({ success: false, error: 'User not found' }, 404)
+    }
+
+    // academyId 결정
+    let academyId
+    if (user.user_type === 'teacher') {
+      academyId = user.academy_id || user.parent_user_id
+    } else {
+      academyId = user.id
+    }
+
+    // 모든 선생님 조회 (academy_id 기준)
+    const teachersByAcademyId = await c.env.DB.prepare(`
+      SELECT id, name, email, user_type, academy_id, parent_user_id, created_at 
+      FROM users 
+      WHERE academy_id = ? AND user_type = 'teacher'
+      ORDER BY created_at DESC
+    `).bind(academyId).all()
+
+    // 모든 선생님 조회 (parent_user_id 기준)
+    const teachersByParentId = await c.env.DB.prepare(`
+      SELECT id, name, email, user_type, academy_id, parent_user_id, created_at 
+      FROM users 
+      WHERE parent_user_id = ? AND user_type = 'teacher'
+      ORDER BY created_at DESC
+    `).bind(academyId).all()
+
+    // user_type='teacher'인 모든 사용자
+    const allTeachers = await c.env.DB.prepare(`
+      SELECT id, name, email, user_type, academy_id, parent_user_id, created_at 
+      FROM users 
+      WHERE user_type = 'teacher'
+      ORDER BY created_at DESC
+      LIMIT 50
+    `).all()
+
+    // 구독 정보
+    const subscription = await c.env.DB.prepare(`
+      SELECT id, academy_id, plan_name, teacher_limit, status 
+      FROM subscriptions 
+      WHERE academy_id = ? AND status = 'active'
+      ORDER BY created_at DESC LIMIT 1
+    `).bind(academyId).first()
+
+    return c.json({
+      success: true,
+      debug: {
+        currentUser: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          user_type: user.user_type,
+          academy_id: user.academy_id,
+          parent_user_id: user.parent_user_id
+        },
+        academyIdUsed: academyId,
+        subscription: subscription || null,
+        counts: {
+          byAcademyId: teachersByAcademyId.results?.length || 0,
+          byParentId: teachersByParentId.results?.length || 0,
+          allTeachers: allTeachers.results?.length || 0
+        },
+        teachersByAcademyId: teachersByAcademyId.results || [],
+        teachersByParentId: teachersByParentId.results || [],
+        allTeachers: allTeachers.results || []
+      }
+    })
+  } catch (error) {
+    console.error('[Debug Teachers] Error:', error)
+    return c.json({ success: false, error: error.message }, 500)
+  }
+})
+
 export default app
 // Force rebuild: Sun Jan 18 18:13:00 UTC 2026
 // Cache buster: 1768863600
