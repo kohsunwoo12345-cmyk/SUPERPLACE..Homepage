@@ -8116,8 +8116,11 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
               .filter(p => p.permission_type === 'program')
               .map(p => p.permission_name);
 
-            // 프로그램 카드 렌더링
-            programs.forEach(program => {
+            // 프로그램 카드 렌더링 (4개만 표시: 네이버 검색량, 랜딩페이지, 학생 관리, AI 리포트)
+            const allowedProgramIds = ['data', 'funnel', 'sms', 'blog'];  // data=검색량, funnel=랜딩페이지, sms=학생관리, blog=AI리포트로 임시 매핑
+            const filteredPrograms = programs.filter(p => allowedProgramIds.includes(p.id));
+            
+            filteredPrograms.forEach(program => {
               const hasPermission = user.role === 'admin' || programPermissions.includes(program.id);
               
               const card = \`
@@ -8890,9 +8893,6 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
                     </div>
                     <div class="flex items-center space-x-6">
                         <a href="/" class="flex items-center space-x-2 bg-gradient-to-r from-purple-600 to-purple-700 text-white px-5 py-2.5 rounded-lg hover:from-purple-700 hover:to-purple-800 transition-all shadow-md hover:shadow-lg font-medium">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
-                            </svg>
                             <span>🏠 홈으로</span>
                         </a>
                         <div id="smsNavDropdown" class="relative group">
@@ -8917,22 +8917,7 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
                                 </a>
                             </div>
                         </div>
-                        <div id="landingNavDropdown" class="relative group">
-                            <button class="flex items-center space-x-1 text-gray-700 hover:text-purple-600 transition font-medium">
-                                <span>🚀 랜딩페이지</span>
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                </svg>
-                            </button>
-                            <div class="hidden group-hover:block absolute top-full right-0 mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-100 py-2 z-50">
-                                <a href="/tools/landing-page-builder" class="block px-4 py-2 text-gray-700 hover:bg-purple-50 hover:text-purple-600 transition">
-                                    ✨ 페이지 생성
-                                </a>
-                                <a href="/landing-pages" class="block px-4 py-2 text-gray-700 hover:bg-purple-50 hover:text-purple-600 transition">
-                                    📋 내 페이지
-                                </a>
-                            </div>
-                        </div>
+
                         <span id="userName" class="text-gray-700 font-medium"></span>
                         <a href="/profile" class="text-gray-600 hover:text-purple-600 transition">프로필</a>
                         <a id="adminDashboardBtn" href="/admin/dashboard" class="hidden bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition font-medium">
@@ -9105,7 +9090,7 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
                 </div>
 
                 <!-- Landing Page Builder Section -->
-                <div id="landingSection" class="mb-12" style="display: none;">
+                <div id="landingSection" class="mb-12">
                     <div class="flex justify-between items-center mb-6">
                         <h2 class="text-2xl font-bold text-gray-900">🎨 랜딩페이지 생성기</h2>
                         <a href="/tools/landing-builder" class="bg-gradient-to-r from-purple-600 to-purple-700 text-white px-6 py-3 rounded-lg hover:from-purple-700 hover:to-purple-800 transition-all shadow-md hover:shadow-lg font-medium flex items-center space-x-2">
@@ -9241,52 +9226,6 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
                             </div>
                         </a>
 
-                        <a href="/tools/parent-message" class="block bg-gradient-to-br from-purple-500 to-purple-700 rounded-2xl p-8 hover:shadow-2xl transition-all hover:-translate-y-1">
-                            <div class="flex items-center gap-4 mb-4">
-                                <div class="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-                                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
-                                    </svg>
-                                </div>
-                                <div>
-                                    <h3 class="text-2xl font-bold text-white">학부모 소통 시스템</h3>
-                                    <p class="text-purple-100 text-sm">AI 메시지 자동 생성</p>
-                                </div>
-                            </div>
-                            <p class="text-white/90 leading-relaxed mb-4">
-                                간단한 메모만 작성하면 AI가 따뜻한 메시지로 변환해드립니다. 학부모님과의 소통이 더욱 편리해집니다.
-                            </p>
-                            <div class="flex items-center text-white font-medium">
-                                <span>바로 사용하기</span>
-                                <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                                </svg>
-                            </div>
-                        </a>
-
-                        <a href="/tools/blog-writer" class="block bg-gradient-to-br from-orange-500 to-orange-700 rounded-2xl p-8 hover:shadow-2xl transition-all hover:-translate-y-1">
-                            <div class="flex items-center gap-4 mb-4">
-                                <div class="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-                                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                    </svg>
-                                </div>
-                                <div>
-                                    <h3 class="text-2xl font-bold text-white">블로그 작성 도구</h3>
-                                    <p class="text-orange-100 text-sm">SEO 최적화 글 생성</p>
-                                </div>
-                            </div>
-                            <p class="text-white/90 leading-relaxed mb-4">
-                                주제만 입력하면 네이버 SEO에 최적화된 블로그 글을 자동으로 생성합니다. 상위노출을 위한 필수 도구입니다.
-                            </p>
-                            <div class="flex items-center text-white font-medium">
-                                <span>바로 사용하기</span>
-                                <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                                </svg>
-                            </div>
-                        </a>
-
                         <a href="/tools/landing-builder" class="block bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl p-8 hover:shadow-2xl transition-all hover:-translate-y-1">
                             <div class="flex items-center gap-4 mb-4">
                                 <div class="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
@@ -9324,29 +9263,6 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
                             </div>
                             <p class="text-white/90 leading-relaxed mb-4">
                                 학생 정보, 출결 관리, 성적 기록, 상담 내역을 한 곳에서 체계적으로 관리하세요.
-                            </p>
-                            <div class="flex items-center text-white font-medium">
-                                <span>바로 사용하기</span>
-                                <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                                </svg>
-                            </div>
-                        </a>
-
-                        <a href="/tools/dashboard-analytics" class="block bg-gradient-to-br from-teal-500 to-teal-700 rounded-2xl p-8 hover:shadow-2xl transition-all hover:-translate-y-1">
-                            <div class="flex items-center gap-4 mb-4">
-                                <div class="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-                                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                                    </svg>
-                                </div>
-                                <div>
-                                    <h3 class="text-2xl font-bold text-white">통합 분석 대시보드</h3>
-                                    <p class="text-teal-100 text-sm">매출·학생·마케팅 통계</p>
-                                </div>
-                            </div>
-                            <p class="text-white/90 leading-relaxed mb-4">
-                                학원 운영 현황을 한눈에 파악하고, 데이터 기반 의사결정을 하세요.
                             </p>
                             <div class="flex items-center text-white font-medium">
                                 <span>바로 사용하기</span>
