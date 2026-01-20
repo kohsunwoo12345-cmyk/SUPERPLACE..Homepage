@@ -1145,6 +1145,41 @@ app.get('/api/db/migrate', async (c) => {
     console.log('🔧 [Migration] Starting database migrations...')
     const results = []
     
+    // 🔥 긴급 수정: usage_tracking 테이블 재생성 (FK 제약 제거)
+    try {
+      await c.env.DB.prepare(`DROP TABLE IF EXISTS usage_tracking`).run()
+      console.log('✅ [Migration] Dropped old usage_tracking table')
+      results.push('✅ Dropped old usage_tracking table')
+    } catch (e) {
+      console.log('⚠️ [Migration] Drop usage_tracking:', e.message)
+      results.push('⚠️ Drop failed: ' + e.message.substring(0, 50))
+    }
+    
+    // usage_tracking 테이블 재생성 (FK 없이)
+    try {
+      await c.env.DB.prepare(`
+        CREATE TABLE IF NOT EXISTS usage_tracking (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          academy_id INTEGER,
+          subscription_id INTEGER,
+          current_students INTEGER DEFAULT 0,
+          ai_reports_used_this_month INTEGER DEFAULT 0,
+          last_ai_report_reset_date TEXT,
+          landing_pages_created INTEGER DEFAULT 0,
+          current_teachers INTEGER DEFAULT 0,
+          sms_sent_this_month INTEGER DEFAULT 0,
+          last_sms_reset_date TEXT,
+          created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+          updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )
+      `).run()
+      console.log('✅ [Migration] Created new usage_tracking table (no FK)')
+      results.push('✅ Created new usage_tracking table (no FK)')
+    } catch (e) {
+      console.log('⚠️ [Migration] Create usage_tracking:', e.message)
+      results.push('⚠️ Create failed: ' + e.message.substring(0, 50))
+    }
+    
     // Migration 1: Add academy_id to users table if it doesn't exist
     try {
       await c.env.DB.prepare(`ALTER TABLE users ADD COLUMN academy_id INTEGER DEFAULT 1`).run()
