@@ -7714,13 +7714,26 @@ app.post('/api/admin/seed-test-data', async (c) => {
       (102, 'test3@example.com', '테스트사용자3', 'dummy_hash', 'teacher', datetime('now', '-10 days'))
     `).run()
     
+    // 테스트 학원 생성 (먼저 academy가 있어야 함)
+    await DB.prepare(`
+      INSERT OR IGNORE INTO academies (id, owner_id, name, phone, address, created_at)
+      VALUES
+      (100, 100, '테스트학원1', '010-1111-1111', '서울시 강남구', datetime('now', '-30 days')),
+      (101, 101, '테스트학원2', '010-2222-2222', '서울시 서초구', datetime('now', '-20 days')),
+      (102, 102, '테스트학원3', '010-3333-3333', '서울시 송파구', datetime('now', '-10 days'))
+    `).run()
+    
     // 테스트 구독 생성
     await DB.prepare(`
-      INSERT OR IGNORE INTO subscriptions (id, user_id, academy_id, plan_name, status, start_date, created_at)
+      INSERT OR IGNORE INTO subscriptions (
+        id, academy_id, plan_name, plan_price, student_limit, ai_report_limit, 
+        landing_page_limit, teacher_limit, subscription_start_date, subscription_end_date, 
+        status, created_at
+      )
       VALUES
-      (100, 100, 100, '스타터 플랜', 'active', datetime('now', '-30 days'), datetime('now', '-30 days')),
-      (101, 101, 101, '베이직 플랜', 'active', datetime('now', '-20 days'), datetime('now', '-20 days')),
-      (102, 102, 102, '프로 플랜', 'active', datetime('now', '-10 days'), datetime('now', '-10 days'))
+      (100, 100, '스타터 플랜', 55000, 30, 30, 40, 2, date('now', '-30 days'), date('now', '+335 days'), 'active', datetime('now', '-30 days')),
+      (101, 101, '베이직 플랜', 77000, 50, 50, 70, 4, date('now', '-20 days'), date('now', '+345 days'), 'active', datetime('now', '-20 days')),
+      (102, 102, '프로 플랜', 147000, 100, 100, 140, 6, date('now', '-10 days'), date('now', '+355 days'), 'active', datetime('now', '-10 days'))
     `).run()
     
     // 테스트 결제 데이터 추가
@@ -7750,6 +7763,7 @@ app.post('/api/admin/seed-test-data', async (c) => {
       message: '테스트 데이터가 생성되었습니다.',
       data: {
         users: 3,
+        academies: 3,
         subscriptions: 3,
         payments: 9
       }
