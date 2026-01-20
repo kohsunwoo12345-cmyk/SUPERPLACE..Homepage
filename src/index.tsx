@@ -584,15 +584,15 @@ async function grantDefaultPermissions(db: any, userId: string | number) {
         // 기존 권한이 있으면 활성화만
         await db.prepare(`
           UPDATE user_permissions 
-          SET is_active = 1, granted_by = 'system'
+          SET is_active = 1
           WHERE user_id = ? AND program_key = ?
         `).bind(userId, programKey).run()
         console.log(`[Permissions] ✅ Activated: ${programKey}`)
       } else {
-        // 권한이 없으면 새로 생성
+        // 권한이 없으면 새로 생성 (granted_by는 NULL)
         await db.prepare(`
           INSERT INTO user_permissions (user_id, program_key, granted_by, is_active, created_at)
-          VALUES (?, ?, 'system', 1, datetime('now'))
+          VALUES (?, ?, NULL, 1, datetime('now'))
         `).bind(userId, programKey).run()
         console.log(`[Permissions] ✅ Created: ${programKey}`)
       }
@@ -7522,6 +7522,94 @@ app.post('/api/debug/force-grant-permissions/:userId', async (c) => {
     })
   } catch (err) {
     console.error('[Debug] Force grant error:', err)
+    return c.json({ success: false, error: err.message }, 500)
+  }
+})
+
+// 🔥 디버그: 기존 권한 모두 활성화 API (즉시 수정용)
+app.post('/api/debug/activate-all-permissions/:userId', async (c) => {
+  try {
+    const userId = c.req.param('userId')
+    console.log('[Debug] Activating all permissions for user:', userId)
+    
+    // 기존 모든 권한을 활성화
+    const updateResult = await c.env.DB.prepare(`
+      UPDATE user_permissions 
+      SET is_active = 1 
+      WHERE user_id = ?
+    `).bind(userId).run()
+    
+    // 활성화된 권한 확인
+    const permissions = await c.env.DB.prepare(`
+      SELECT program_key, is_active 
+      FROM user_permissions 
+      WHERE user_id = ? AND is_active = 1
+    `).bind(userId).all()
+    
+    return c.json({ 
+      success: true, 
+      activated: updateResult.meta.changes,
+      permissions: permissions.results
+    })
+  } catch (err) {
+    console.error('[Debug] Activate error:', err)
+    return c.json({ success: false, error: err.message }, 500)
+  }
+})
+
+// 🔥 디버그: 모든 기본 권한 생성 및 활성화 API
+app.post('/api/debug/grant-all-default-permissions/:userId', async (c) => {
+  try {
+    const userId = c.req.param('userId')
+    console.log('[Debug] Granting all default permissions for user:', userId)
+    
+    const defaultPermissions = [
+      'student_management', 'landing_builder', 'ai_learning_report',
+      'parent_message', 'blog_writer', 'search_volume',
+      'dashboard_analytics', 'keyword_analyzer', 'review_template',
+      'ad_copy_generator', 'photo_optimizer', 'competitor_analysis',
+      'blog_checklist', 'content_calendar', 'consultation_script',
+      'place_optimization', 'roi_calculator', 'sms_sender'
+    ]
+    
+    let inserted = 0
+    let updated = 0
+    
+    for (const perm of defaultPermissions) {
+      try {
+        // 먼저 INSERT 시도 (granted_by는 NULL)
+        await c.env.DB.prepare(`
+          INSERT INTO user_permissions (user_id, program_key, granted_by, is_active, created_at)
+          VALUES (?, ?, NULL, 1, datetime('now'))
+        `).bind(userId, perm).run()
+        inserted++
+      } catch (err) {
+        // UNIQUE 제약 위반 시 UPDATE
+        await c.env.DB.prepare(`
+          UPDATE user_permissions 
+          SET is_active = 1
+          WHERE user_id = ? AND program_key = ?
+        `).bind(userId, perm).run()
+        updated++
+      }
+    }
+    
+    // 최종 확인
+    const permissions = await c.env.DB.prepare(`
+      SELECT program_key, is_active 
+      FROM user_permissions 
+      WHERE user_id = ? AND is_active = 1
+    `).bind(userId).all()
+    
+    return c.json({ 
+      success: true, 
+      inserted,
+      updated,
+      total: permissions.results.length,
+      permissions: permissions.results
+    })
+  } catch (err) {
+    console.error('[Debug] Grant all error:', err)
     return c.json({ success: false, error: err.message }, 500)
   }
 })
