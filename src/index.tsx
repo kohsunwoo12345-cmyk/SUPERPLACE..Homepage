@@ -7705,6 +7705,9 @@ app.post('/api/admin/seed-test-data', async (c) => {
     
     console.log('[Admin Seed] Starting test data creation')
     
+    // 외래 키 체크 일시 비활성화
+    await DB.prepare('PRAGMA foreign_keys = OFF').run()
+    
     // 테스트 사용자 생성 (academy_id를 자기 자신의 ID로 설정)
     await DB.prepare(`
       INSERT OR IGNORE INTO users (id, email, name, password, academy_id, role, created_at)
@@ -7755,6 +7758,9 @@ app.post('/api/admin/seed-test-data', async (c) => {
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ${payment[8]})
       `).bind(...payment.slice(0, 8)).run()
     }
+    
+    // 외래 키 체크 다시 활성화
+    await DB.prepare('PRAGMA foreign_keys = ON').run()
     
     console.log('[Admin Seed] Test data created successfully')
     
