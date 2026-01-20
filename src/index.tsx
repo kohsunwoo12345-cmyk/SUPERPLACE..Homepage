@@ -33025,6 +33025,101 @@ app.get('/api/debug/user/:userId/subscription', async (c) => {
   }
 })
 
+// 🔥 긴급 복구 API: User 7의 구독 재생성
+app.post('/api/emergency/restore-subscription/:userId', async (c) => {
+  try {
+    const userId = parseInt(c.req.param('userId'))
+    const { studentLimit, aiReportLimit, landingPageLimit, teacherLimit, months } = await c.req.json()
+    
+    console.log('[Emergency Restore] Restoring subscription for user:', userId)
+    
+    // 사용자 확인
+    const user = await c.env.DB.prepare(`
+      SELECT id, academy_id FROM users WHERE id = ?
+    `).bind(userId).first()
+    
+    if (!user) {
+      return c.json({ success: false, error: 'User not found' }, 404)
+    }
+    
+    const academyId = user.id
+    
+    // 구독 기간 계산
+    const today = new Date().toISOString().split('T')[0]
+    const endDate = new Date()
+    endDate.setMonth(endDate.getMonth() + months)
+    const subscriptionEndDate = endDate.toISOString().split('T')[0]
+    
+    console.log('[Emergency Restore] Creating subscription:', {
+      academyId,
+      studentLimit,
+      aiReportLimit,
+      landingPageLimit,
+      teacherLimit,
+      startDate: today,
+      endDate: subscriptionEndDate
+    })
+    
+    // 기존 구독 모두 만료 처리
+    await c.env.DB.prepare(`
+      UPDATE subscriptions 
+      SET status = 'expired', updated_at = CURRENT_TIMESTAMP
+      WHERE academy_id = ?
+    `).bind(academyId).run()
+    
+    // 새 구독 생성
+    const result = await c.env.DB.prepare(`
+      INSERT INTO subscriptions (
+        academy_id, plan_name, plan_price,
+        student_limit, ai_report_limit, landing_page_limit, teacher_limit,
+        subscription_start_date, subscription_end_date, status, payment_method,
+        merchant_uid, created_at, updated_at
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
+    `).bind(
+      academyId, '관리자 설정 플랜', 0,
+      studentLimit, aiReportLimit, landingPageLimit, teacherLimit,
+      today, subscriptionEndDate, 'active', 'admin',
+      'admin_' + userId + '_' + Date.now()
+    ).run()
+    
+    const subscriptionId = result.meta.last_row_id
+    
+    // usage_tracking 생성
+    await c.env.DB.prepare(`
+      INSERT INTO usage_tracking (
+        academy_id, subscription_id,
+        current_students, ai_reports_used_this_month,
+        landing_pages_created, current_teachers,
+        created_at, updated_at
+      )
+      VALUES (?, ?, 0, 0, 0, 0, datetime('now'), datetime('now'))
+    `).bind(academyId, subscriptionId).run()
+    
+    console.log('[Emergency Restore] Subscription restored successfully')
+    
+    return c.json({
+      success: true,
+      message: '구독이 복구되었습니다',
+      subscription: {
+        id: subscriptionId,
+        academy_id: academyId,
+        start_date: today,
+        end_date: subscriptionEndDate,
+        limits: {
+          students: studentLimit,
+          ai_reports: aiReportLimit,
+          landing_pages: landingPageLimit,
+          teachers: teacherLimit
+        }
+      }
+    })
+  } catch (error) {
+    console.error('[Emergency Restore] Error:', error)
+    return c.json({ success: false, error: error.message }, 500)
+  }
+})
+
 export default app
 // Force rebuild: Sun Jan 18 18:13:00 UTC 2026
 // Cache buster: 1768863600

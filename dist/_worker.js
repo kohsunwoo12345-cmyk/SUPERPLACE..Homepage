@@ -26052,4 +26052,26 @@ ${l.director_name} 원장님의 승인을 기다려주세요.`,directorName:l.di
           SELECT COUNT(*) as count FROM landing_pages WHERE user_id = ?
         `).bind(t).first();c=(u==null?void 0:u.count)||0}catch{c="table_not_found"}let p=0;try{const u=await e.env.DB.prepare(`
           SELECT COUNT(*) as count FROM teacher_applications WHERE academy_id = ?
-        `).bind(s.academy_id||s.id).first();p=(u==null?void 0:u.count)||0}catch{p="table_not_found"}l={students:i,landingPages:c,teachers:p}}catch(i){l={error:i.message}}return e.json({user:s,subscriptions:{all:r.results,active:a,admin:n},usageTracking:o,actualData:l,debug:{academyIdUsedForQuery:s.academy_id||s.id,totalSubscriptions:r.results.length}})}catch(t){return e.json({error:t.message},500)}});const lt=new et,Ys=Object.assign({"/src/index.tsx":d});let Rt=!1;for(const[,e]of Object.entries(Ys))e&&(lt.all("*",t=>{let s;try{s=t.executionCtx}catch{}return e.fetch(t.req.raw,t.env,s)}),lt.notFound(t=>{let s;try{s=t.executionCtx}catch{}return e.fetch(t.req.raw,t.env,s)}),Rt=!0);if(!Rt)throw new Error("Can't import modules from ['/src/index.ts','/src/index.tsx','/app/server.ts']");export{lt as default};
+        `).bind(s.academy_id||s.id).first();p=(u==null?void 0:u.count)||0}catch{p="table_not_found"}l={students:i,landingPages:c,teachers:p}}catch(i){l={error:i.message}}return e.json({user:s,subscriptions:{all:r.results,active:a,admin:n},usageTracking:o,actualData:l,debug:{academyIdUsedForQuery:s.academy_id||s.id,totalSubscriptions:r.results.length}})}catch(t){return e.json({error:t.message},500)}});d.post("/api/emergency/restore-subscription/:userId",async e=>{try{const t=parseInt(e.req.param("userId")),{studentLimit:s,aiReportLimit:r,landingPageLimit:a,teacherLimit:n,months:o}=await e.req.json();console.log("[Emergency Restore] Restoring subscription for user:",t);const l=await e.env.DB.prepare(`
+      SELECT id, academy_id FROM users WHERE id = ?
+    `).bind(t).first();if(!l)return e.json({success:!1,error:"User not found"},404);const i=l.id,c=new Date().toISOString().split("T")[0],p=new Date;p.setMonth(p.getMonth()+o);const u=p.toISOString().split("T")[0];console.log("[Emergency Restore] Creating subscription:",{academyId:i,studentLimit:s,aiReportLimit:r,landingPageLimit:a,teacherLimit:n,startDate:c,endDate:u}),await e.env.DB.prepare(`
+      UPDATE subscriptions 
+      SET status = 'expired', updated_at = CURRENT_TIMESTAMP
+      WHERE academy_id = ?
+    `).bind(i).run();const x=(await e.env.DB.prepare(`
+      INSERT INTO subscriptions (
+        academy_id, plan_name, plan_price,
+        student_limit, ai_report_limit, landing_page_limit, teacher_limit,
+        subscription_start_date, subscription_end_date, status, payment_method,
+        merchant_uid, created_at, updated_at
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
+    `).bind(i,"관리자 설정 플랜",0,s,r,a,n,c,u,"active","admin","admin_"+t+"_"+Date.now()).run()).meta.last_row_id;return await e.env.DB.prepare(`
+      INSERT INTO usage_tracking (
+        academy_id, subscription_id,
+        current_students, ai_reports_used_this_month,
+        landing_pages_created, current_teachers,
+        created_at, updated_at
+      )
+      VALUES (?, ?, 0, 0, 0, 0, datetime('now'), datetime('now'))
+    `).bind(i,x).run(),console.log("[Emergency Restore] Subscription restored successfully"),e.json({success:!0,message:"구독이 복구되었습니다",subscription:{id:x,academy_id:i,start_date:c,end_date:u,limits:{students:s,ai_reports:r,landing_pages:a,teachers:n}}})}catch(t){return console.error("[Emergency Restore] Error:",t),e.json({success:!1,error:t.message},500)}});const lt=new et,Ys=Object.assign({"/src/index.tsx":d});let Rt=!1;for(const[,e]of Object.entries(Ys))e&&(lt.all("*",t=>{let s;try{s=t.executionCtx}catch{}return e.fetch(t.req.raw,t.env,s)}),lt.notFound(t=>{let s;try{s=t.executionCtx}catch{}return e.fetch(t.req.raw,t.env,s)}),Rt=!0);if(!Rt)throw new Error("Can't import modules from ['/src/index.ts','/src/index.tsx','/app/server.ts']");export{lt as default};
