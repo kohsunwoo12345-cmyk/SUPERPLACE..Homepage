@@ -6800,12 +6800,12 @@ app.get('/api/subscriptions/status', async (c) => {
     console.log('[Subscription Status] Active subscription:', subscription)
 
     if (!subscription) {
-      // 구독이 없어도 관리자가 설정한 한도가 있는지 확인
+      // 구독이 없어도 관리자가 설정한 한도가 있는지 확인 (🔥 수정: status = 'active' 체크 추가)
       console.log('[Subscription Status] No active subscription, checking for admin plan')
       
       const adminSubscription = await c.env.DB.prepare(`
         SELECT * FROM subscriptions 
-        WHERE academy_id = ? AND plan_name = '관리자 설정 플랜'
+        WHERE academy_id = ? AND plan_name = '관리자 설정 플랜' AND status = 'active'
         ORDER BY created_at DESC
         LIMIT 1
       `).bind(academyId).first()
@@ -6813,8 +6813,8 @@ app.get('/api/subscriptions/status', async (c) => {
       console.log('[Subscription Status] Admin subscription:', adminSubscription)
       
       if (adminSubscription) {
-        // 관리자 설정 플랜이 있으면 표시
-        console.log('[Subscription Status] Returning admin subscription')
+        // 관리자 설정 플랜이 있고 active 상태일 때만 표시
+        console.log('[Subscription Status] Returning active admin subscription')
         return c.json({ 
           success: true, 
           hasSubscription: true,
@@ -6831,7 +6831,7 @@ app.get('/api/subscriptions/status', async (c) => {
         })
       }
       
-      console.log('[Subscription Status] No subscription found at all')
+      console.log('[Subscription Status] No active subscription found - showing warning')
       return c.json({ 
         success: true, 
         hasSubscription: false,
