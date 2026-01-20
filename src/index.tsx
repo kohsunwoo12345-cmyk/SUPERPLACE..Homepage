@@ -7503,6 +7503,9 @@ app.post('/api/usage/increment-teachers', async (c) => {
 // 🔥 관리자: 사용자 사용 한도 수정 API (구독 생성 포함)
 app.post('/api/admin/usage/:userId/update-limits', async (c) => {
   try {
+    // ⚡ FOREIGN KEY 제약 임시 비활성화
+    await c.env.DB.prepare('PRAGMA foreign_keys = OFF').run()
+    
     const userId = c.req.param('userId')
     const { studentLimit, aiReportLimit, landingPageLimit, teacherLimit, subscriptionMonths } = await c.req.json()
     
@@ -7720,6 +7723,9 @@ app.post('/api/admin/usage/:userId/update-limits', async (c) => {
       }
     }
     
+    // ⚡ FOREIGN KEY 제약 다시 활성화
+    await c.env.DB.prepare('PRAGMA foreign_keys = ON').run()
+    
     return c.json({ 
       success: true, 
       message: '사용 한도가 업데이트되었습니다',
@@ -7731,6 +7737,13 @@ app.post('/api/admin/usage/:userId/update-limits', async (c) => {
       }
     })
   } catch (error) {
+    // ⚡ 에러 발생 시에도 FOREIGN KEY 제약 다시 활성화
+    try {
+      await c.env.DB.prepare('PRAGMA foreign_keys = ON').run()
+    } catch (pragmaError) {
+      console.error('[Admin] Failed to re-enable foreign keys:', pragmaError.message)
+    }
+    
     console.error('[Admin] ❌ Update limits error:', error)
     console.error('[Admin] Error message:', error.message)
     console.error('[Admin] Error stack:', error.stack)
