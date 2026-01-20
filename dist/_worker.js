@@ -18886,11 +18886,11 @@ ${M}
                     </div>
                 </div>
 
-                <div class="p-6 border-t border-gray-200 bg-gray-50 sticky bottom-0 flex justify-end gap-3">
-                    <button onclick="closeUsageLimitsModal()" class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                <div class="p-6 border-t border-gray-200 bg-gray-50 sticky bottom-0 z-20 flex justify-end gap-3">
+                    <button onclick="closeUsageLimitsModal()" class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 cursor-pointer">
                         취소
                     </button>
-                    <button onclick="saveUsageLimits()" class="px-6 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 font-medium">
+                    <button id="saveUsageLimitsBtn" onclick="saveUsageLimits()" class="px-6 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 font-medium cursor-pointer" style="pointer-events: auto;">
                         저장
                     </button>
                 </div>
@@ -19106,6 +19106,21 @@ ${M}
                     '<p class="text-sm mt-2">' + error.message + '</p>' +
                     '</div>';
             }
+            
+            // 모달이 열린 후 버튼 이벤트 확인 및 재설정
+            setTimeout(() => {
+                const saveBtn = document.getElementById('saveUsageLimitsBtn');
+                if (saveBtn) {
+                    console.log('🔧 [Modal] Save button found, ensuring it is clickable');
+                    saveBtn.style.pointerEvents = 'auto';
+                    saveBtn.style.cursor = 'pointer';
+                    saveBtn.style.position = 'relative';
+                    saveBtn.style.zIndex = '30';
+                    console.log('✅ [Modal] Save button is now fully interactive');
+                } else {
+                    console.error('❌ [Modal] Save button not found!');
+                }
+            }, 500);
         }
         
         // 사용 한도 저장
