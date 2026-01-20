@@ -7557,13 +7557,19 @@ app.post('/api/admin/usage/:userId/update-limits', async (c) => {
     if (!existingAcademy) {
       console.log('[Admin] Creating academy record for academy_id:', academyId)
       try {
+        // SQLite에서 AUTOINCREMENT 테이블에 명시적 ID 삽입 시도
+        // 먼저 INSERT OR IGNORE를 사용하고, 실패하면 UPDATE 시도
+        const academyName = user.academy_name || user.name + '학원'
+        
+        // 방법 1: INSERT OR REPLACE (기존 데이터 삭제 후 삽입)
         await c.env.DB.prepare(`
-          INSERT INTO academies (id, academy_name, owner_id, created_at)
+          INSERT OR REPLACE INTO academies (id, academy_name, owner_id, created_at)
           VALUES (?, ?, ?, datetime('now'))
-        `).bind(academyId, user.academy_name || user.name + '학원', user.id).run()
-        console.log('✅ [Admin] Academy record created')
+        `).bind(academyId, academyName, user.id).run()
+        console.log('✅ [Admin] Academy record created with INSERT OR REPLACE')
       } catch (academyError) {
-        console.warn('[Admin] Academy creation failed (may already exist):', academyError.message)
+        console.warn('[Admin] Academy creation failed:', academyError.message)
+        // 실패해도 계속 진행 - subscriptions INSERT가 실패하면 에러 반환됨
       }
     }
     
