@@ -7887,14 +7887,13 @@ app.post('/api/admin/revoke-plan/:userId', async (c) => {
     
     const academyId = user.academy_id || user.id
     
-    // 1. 모든 활성 구독을 비활성화
+    // 1. 모든 구독을 완전히 삭제 (활성, 취소, 관리자 설정 플랜 모두 포함)
     await c.env.DB.prepare(`
-      UPDATE subscriptions 
-      SET status = 'cancelled', updated_at = CURRENT_TIMESTAMP
-      WHERE academy_id = ? AND status = 'active'
+      DELETE FROM subscriptions 
+      WHERE academy_id = ?
     `).bind(academyId).run()
     
-    console.log('[Admin Revoke] Cancelled all active subscriptions for academy:', academyId)
+    console.log('[Admin Revoke] Deleted all subscriptions for academy:', academyId)
     
     // 2. 모든 프로그램 삭제
     await c.env.DB.prepare(`
@@ -7903,7 +7902,14 @@ app.post('/api/admin/revoke-plan/:userId', async (c) => {
     
     console.log('[Admin Revoke] Deleted all programs for user:', userId)
     
-    // 3. usage_tracking 초기화 (삭제하지 않고 0으로 리셋)
+    // 3. 모든 사용자 권한 삭제
+    await c.env.DB.prepare(`
+      DELETE FROM user_permissions WHERE user_id = ?
+    `).bind(userId).run()
+    
+    console.log('[Admin Revoke] Deleted all permissions for user:', userId)
+    
+    // 4. usage_tracking 초기화 (삭제하지 않고 0으로 리셋)
     await c.env.DB.prepare(`
       UPDATE usage_tracking
       SET current_students = 0, ai_reports_used_this_month = 0, 

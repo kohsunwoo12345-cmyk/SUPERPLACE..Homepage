@@ -5538,12 +5538,13 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
                 )
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
               `).bind(c,"관리자 설정 플랜",0,s,r,a,n,g,h,"active","admin","admin_"+t+"_"+Date.now()).run();console.log("[Admin] ✅ Subscription created on retry:",y.meta.last_row_id)}catch(y){throw console.error("[Admin] ❌ Retry also failed:",y.message),y}}else throw b}}return e.json({success:!0,message:"사용 한도가 업데이트되었습니다",limits:{studentLimit:s,aiReportLimit:r,landingPageLimit:a,teacherLimit:n}})}catch(t){return console.error("[Admin] ❌ Update limits error:",t),console.error("[Admin] Error message:",t.message),console.error("[Admin] Error stack:",t.stack),t.message&&t.message.includes("FOREIGN KEY")?e.json({success:!1,error:`데이터베이스 제약 조건 오류: ${t.message}. 관리자에게 문의하세요.`},500):e.json({success:!1,error:t.message||"알 수 없는 오류가 발생했습니다"},500)}});d.post("/api/admin/revoke-plan/:userId",async e=>{try{const t=e.req.param("userId");console.log("[Admin Revoke] Revoking plan for user:",t);const s=await e.env.DB.prepare("SELECT id, academy_id, name FROM users WHERE id = ?").bind(t).first();if(!s)return e.json({success:!1,error:"사용자를 찾을 수 없습니다"},404);const r=s.academy_id||s.id;return await e.env.DB.prepare(`
-      UPDATE subscriptions 
-      SET status = 'cancelled', updated_at = CURRENT_TIMESTAMP
-      WHERE academy_id = ? AND status = 'active'
-    `).bind(r).run(),console.log("[Admin Revoke] Cancelled all active subscriptions for academy:",r),await e.env.DB.prepare(`
+      DELETE FROM subscriptions 
+      WHERE academy_id = ?
+    `).bind(r).run(),console.log("[Admin Revoke] Deleted all subscriptions for academy:",r),await e.env.DB.prepare(`
       DELETE FROM user_programs WHERE user_id = ?
     `).bind(t).run(),console.log("[Admin Revoke] Deleted all programs for user:",t),await e.env.DB.prepare(`
+      DELETE FROM user_permissions WHERE user_id = ?
+    `).bind(t).run(),console.log("[Admin Revoke] Deleted all permissions for user:",t),await e.env.DB.prepare(`
       UPDATE usage_tracking
       SET current_students = 0, ai_reports_used_this_month = 0, 
           landing_pages_created = 0, current_teachers = 0,
