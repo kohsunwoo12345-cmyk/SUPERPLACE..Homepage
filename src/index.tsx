@@ -27809,7 +27809,7 @@ app.get('/admin/revenue', async (c) => {
             function exportData() {
                 if (!statsData) return;
 
-                let csv = '날짜,사용자,이메일,플랜,결제수단,금액\n';
+                let csv = '날짜,사용자,이메일,플랜,결제수단,금액\\n';
                 
                 // 실제로는 서버에서 전체 데이터를 가져와야 하지만, 
                 // 여기서는 현재 페이지의 데이터만 내보냅니다
@@ -27825,7 +27825,7 @@ app.get('/admin/revenue', async (c) => {
                         const plan = cells[2].textContent.trim();
                         const method = cells[3].textContent.trim();
                         const amount = cells[4].textContent.trim();
-                        csv += '"' + date + '","' + userName + '","' + userEmail + '","' + plan + '","' + method + '","' + amount + '"\n';
+                        csv += '"' + date + '","' + userName + '","' + userEmail + '","' + plan + '","' + method + '","' + amount + '"\\n';
                     }
                 });
 
