@@ -135,6 +135,7 @@ const systemFeatures = [
     }
 ];
 
+// 권한 관리 함수 - 원래 이름 유지
 async function managePermissions(userId, userName) {
     currentUserId = userId;
     document.getElementById('modalUserName').textContent = userName + '님의 프로그램 권한 설정';

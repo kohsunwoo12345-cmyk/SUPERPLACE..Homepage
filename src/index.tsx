@@ -23626,6 +23626,7 @@ app.get('/admin/users', async (c) => {
         <title>사용자 관리 - 슈퍼플레이스</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+        <script src="/static/admin-users.js"></script>
         <style>
             .gradient-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
         </style>
@@ -23741,6 +23742,36 @@ app.get('/admin/users', async (c) => {
                 currentUsageUserId = null;
             };
             
+            window.revokePlan = function() {
+                console.log('🚫 revokePlan called');
+                if (!currentUsageUserId) {
+                    alert('❌ 사용자 정보를 찾을 수 없습니다');
+                    return;
+                }
+                
+                if (!confirm('⚠️ 정말로 이 사용자의 플랜을 회수하시겠습니까?\\n\\n이 작업은 다음을 수행합니다:\\n- 구독 종료\\n- 모든 사용 한도 0으로 설정\\n\\n이 작업은 되돌릴 수 없습니다.')) {
+                    return;
+                }
+                
+                fetch('/api/admin/revoke-plan/' + currentUsageUserId, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                })
+                .then(function(res) { return res.json(); })
+                .then(function(data) {
+                    if (data.success) {
+                        alert('✅ 플랜이 성공적으로 회수되었습니다!');
+                        window.closeUsageLimitsModal();
+                        location.reload();
+                    } else {
+                        alert('❌ 플랜 회수 실패: ' + (data.error || '알 수 없는 오류'));
+                    }
+                })
+                .catch(function(err) {
+                    alert('❌ 네트워크 오류: ' + err.message);
+                });
+            };
+            
             window.changePassword = function(userId, userName) {
                 var newPassword = prompt(userName + '님의 새 비밀번호를 입력하세요:');
                 if (newPassword && newPassword.trim()) {
@@ -23755,33 +23786,81 @@ app.get('/admin/users', async (c) => {
             };
             
             window.givePoints = function(userId, userName, currentPoints) {
-                var amount = prompt(userName + '님에게 지급할 포인트:');
+                var amount = prompt(userName + '님에게 지급할 포인트 (현재: ' + currentPoints.toLocaleString() + 'P):');
                 if (amount && !isNaN(amount) && parseInt(amount) > 0) {
                     fetch('/api/admin/users/' + userId + '/points', {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ amount: parseInt(amount) })
+                        body: JSON.stringify({ points: parseInt(amount) })
                     }).then(function(res) { return res.json(); }).then(function(data) {
-                        if (data.success) { alert('✅ 지급 완료'); location.reload(); }
+                        if (data.success) { 
+                            alert('✅ ' + amount + 'P가 지급되었습니다! 새 잔액: ' + data.newPoints.toLocaleString() + 'P'); 
+                            location.reload(); 
+                        } else {
+                            alert('❌ 오류: ' + (data.error || '포인트 지급 실패'));
+                        }
+                    }).catch(function(err) {
+                        alert('❌ 포인트 지급 중 오류가 발생했습니다: ' + err.message);
                     });
                 }
             };
             
             window.deductPoints = function(userId, userName, currentPoints) {
-                var amount = prompt(userName + '님에서 차감할 포인트:');
+                var amount = prompt(userName + '님의 포인트를 차감합니다 (현재: ' + currentPoints.toLocaleString() + 'P) - 차감할 포인트:');
                 if (amount && !isNaN(amount) && parseInt(amount) > 0) {
+                    if (parseInt(amount) > currentPoints) {
+                        if (!confirm('경고: 현재 포인트(' + currentPoints.toLocaleString() + 'P)보다 많은 금액(' + amount + 'P)을 차감하면 포인트가 마이너스가 됩니다. 계속하시겠습니까?')) {
+                            return;
+                        }
+                    }
+                    if (!confirm(userName + '님의 포인트를 ' + amount + 'P 차감하시겠습니까? (차감 후 잔액: ' + (currentPoints - parseInt(amount)).toLocaleString() + 'P)')) {
+                        return;
+                    }
                     fetch('/api/admin/users/' + userId + '/points/deduct', {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ amount: parseInt(amount) })
+                        body: JSON.stringify({ points: parseInt(amount) })
                     }).then(function(res) { return res.json(); }).then(function(data) {
-                        if (data.success) { alert('✅ 차감 완료'); location.reload(); }
+                        if (data.success) { 
+                            alert('✅ ' + amount + 'P가 차감되었습니다! 새 잔액: ' + data.newPoints.toLocaleString() + 'P'); 
+                            location.reload(); 
+                        } else {
+                            alert('❌ 오류: ' + (data.error || '포인트 차감 실패'));
+                        }
+                    }).catch(function(err) {
+                        alert('❌ 포인트 차감 중 오류가 발생했습니다: ' + err.message);
                     });
                 }
             };
             
-            window.loginAs = function(userId, userName) { alert('🚧 준비 중'); };
-            window.managePermissions = function(userId, userName) { alert('🚧 준비 중'); };
+            window.loginAs = function(userId, userName) {
+                if (!confirm(userName + '님의 계정으로 로그인하시겠습니까?')) return;
+                
+                fetch('/api/admin/login-as/' + userId, { method: 'POST' })
+                    .then(function(res) { return res.json(); })
+                    .then(function(data) {
+                        if (data.success) {
+                            localStorage.setItem('user', JSON.stringify(data.user));
+                            alert('✅ ' + userName + '님으로 로그인되었습니다!');
+                            window.location.href = '/dashboard';
+                        } else {
+                            alert('❌ 오류: ' + (data.error || '로그인 실패'));
+                        }
+                    })
+                    .catch(function(err) {
+                        alert('❌ 로그인 중 오류가 발생했습니다: ' + err.message);
+                    });
+            };
+            
+            window.managePermissions = function(userId, userName) {
+                // admin-users.js의 managePermissions 함수 호출
+                if (typeof managePermissions === 'function') {
+                    managePermissions(userId, userName);
+                } else {
+                    console.error('managePermissions function not found');
+                    alert('❌ 권한 관리 기능을 로드할 수 없습니다.');
+                }
+            };
             window.deleteUser = function(userId, userName) {
                 if (confirm('⚠️ 정말 ' + userName + '님을 삭제하시겠습니까?')) {
                     fetch('/api/admin/users/' + userId, { method: 'DELETE' })
@@ -23998,13 +24077,18 @@ app.get('/admin/users', async (c) => {
                     </div>
                 </div>
 
-                <div class="p-6 border-t border-gray-200 bg-gray-50 sticky bottom-0 flex justify-end gap-3" style="z-index: 9999 !important; position: relative !important;">
-                    <button id="closeUsageLimitsBtn" class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 cursor-pointer" style="pointer-events: auto !important; cursor: pointer !important; z-index: 10000 !important; position: relative !important;">
-                        취소
+                <div class="p-6 border-t border-gray-200 bg-gray-50 sticky bottom-0 flex justify-between gap-3" style="z-index: 9999 !important; position: relative !important;">
+                    <button id="revokePlanBtn" onclick="revokePlan()" class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium cursor-pointer" style="pointer-events: auto !important; cursor: pointer !important; z-index: 10000 !important; position: relative !important;">
+                        플랜 회수
                     </button>
-                    <button id="saveUsageLimitsBtn" class="px-6 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 font-medium cursor-pointer" style="pointer-events: auto !important; cursor: pointer !important; z-index: 10000 !important; position: relative !important;">
-                        저장
-                    </button>
+                    <div class="flex gap-3">
+                        <button id="closeUsageLimitsBtn" onclick="closeUsageLimitsModal()" class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 cursor-pointer" style="pointer-events: auto !important; cursor: pointer !important; z-index: 10000 !important; position: relative !important;">
+                            취소
+                        </button>
+                        <button id="saveUsageLimitsBtn" onclick="saveUsageLimits()" class="px-6 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 font-medium cursor-pointer" style="pointer-events: auto !important; cursor: pointer !important; z-index: 10000 !important; position: relative !important;">
+                            저장
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
