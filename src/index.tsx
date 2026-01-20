@@ -23303,11 +23303,11 @@ app.get('/admin/users', async (c) => {
                     </div>
                 </div>
 
-                <div class="p-6 border-t border-gray-200 bg-gray-50 sticky bottom-0 z-20 flex justify-end gap-3">
-                    <button onclick="closeUsageLimitsModal()" class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 cursor-pointer">
+                <div class="p-6 border-t border-gray-200 bg-gray-50 sticky bottom-0 flex justify-end gap-3" style="z-index: 9999 !important; position: relative !important;">
+                    <button id="closeUsageLimitsBtn" class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 cursor-pointer" style="pointer-events: auto !important; cursor: pointer !important; z-index: 10000 !important; position: relative !important;">
                         취소
                     </button>
-                    <button id="saveUsageLimitsBtn" onclick="saveUsageLimits()" class="px-6 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 font-medium cursor-pointer" style="pointer-events: auto;">
+                    <button id="saveUsageLimitsBtn" class="px-6 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 font-medium cursor-pointer" style="pointer-events: auto !important; cursor: pointer !important; z-index: 10000 !important; position: relative !important;">
                         저장
                     </button>
                 </div>
@@ -23526,14 +23526,62 @@ app.get('/admin/users', async (c) => {
             
             // 모달이 열린 후 버튼 이벤트 확인 및 재설정
             setTimeout(() => {
+                console.log('🔧 [Modal] Setting up button click handlers...');
+                
+                // 닫기 버튼
+                const closeBtn = document.getElementById('closeUsageLimitsBtn');
+                if (closeBtn) {
+                    // 기존 이벤트 제거
+                    const newCloseBtn = closeBtn.cloneNode(true);
+                    closeBtn.parentNode.replaceChild(newCloseBtn, closeBtn);
+                    
+                    // 새 이벤트 추가
+                    newCloseBtn.addEventListener('click', function(e) {
+                        console.log('🖱️ [Button] Close button clicked');
+                        e.preventDefault();
+                        e.stopPropagation();
+                        closeUsageLimitsModal();
+                    });
+                    
+                    console.log('✅ [Modal] Close button event added');
+                }
+                
+                // 저장 버튼
                 const saveBtn = document.getElementById('saveUsageLimitsBtn');
                 if (saveBtn) {
-                    console.log('🔧 [Modal] Save button found, ensuring it is clickable');
-                    saveBtn.style.pointerEvents = 'auto';
-                    saveBtn.style.cursor = 'pointer';
-                    saveBtn.style.position = 'relative';
-                    saveBtn.style.zIndex = '30';
-                    console.log('✅ [Modal] Save button is now fully interactive');
+                    console.log('🔧 [Modal] Save button found');
+                    
+                    // 기존 이벤트 제거 (cloneNode로 깨끗하게)
+                    const newSaveBtn = saveBtn.cloneNode(true);
+                    saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
+                    
+                    // 스타일 강제 적용
+                    newSaveBtn.style.pointerEvents = 'auto';
+                    newSaveBtn.style.cursor = 'pointer';
+                    newSaveBtn.style.zIndex = '10000';
+                    newSaveBtn.style.position = 'relative';
+                    
+                    // click 이벤트 추가
+                    newSaveBtn.addEventListener('click', function(e) {
+                        console.log('🖱️ [Button] Save button clicked via addEventListener!');
+                        e.preventDefault();
+                        e.stopPropagation();
+                        saveUsageLimits();
+                    });
+                    
+                    // mousedown 이벤트도 추가 (더 확실하게)
+                    newSaveBtn.addEventListener('mousedown', function(e) {
+                        console.log('🖱️ [Button] Save button mousedown detected!');
+                    });
+                    
+                    // 터치 이벤트도 추가
+                    newSaveBtn.addEventListener('touchstart', function(e) {
+                        console.log('🖱️ [Button] Save button touchstart detected!');
+                        e.preventDefault();
+                        saveUsageLimits();
+                    });
+                    
+                    console.log('✅ [Modal] Save button is now fully interactive with multiple event handlers');
                 } else {
                     console.error('❌ [Modal] Save button not found!');
                 }
