@@ -7549,6 +7549,24 @@ app.post('/api/admin/usage/:userId/update-limits', async (c) => {
     
     console.log(`[Admin] Subscription period: ${today} to ${subscriptionEndDate} (${months} months)`)
     
+    // 🔥 CRITICAL: academies 테이블에 레코드가 있는지 확인하고 없으면 생성
+    const existingAcademy = await c.env.DB.prepare(`
+      SELECT id FROM academies WHERE id = ?
+    `).bind(academyId).first()
+    
+    if (!existingAcademy) {
+      console.log('[Admin] Creating academy record for academy_id:', academyId)
+      try {
+        await c.env.DB.prepare(`
+          INSERT INTO academies (id, academy_name, owner_id, created_at)
+          VALUES (?, ?, ?, datetime('now'))
+        `).bind(academyId, user.academy_name || user.name + '학원', user.id).run()
+        console.log('✅ [Admin] Academy record created')
+      } catch (academyError) {
+        console.warn('[Admin] Academy creation failed (may already exist):', academyError.message)
+      }
+    }
+    
     if (existingSubscription) {
       // 기존 관리자 플랜 업데이트
       console.log('[Admin] Updating existing admin subscription:', existingSubscription.id)
