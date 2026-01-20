@@ -7549,45 +7549,40 @@ app.post('/api/admin/usage/:userId/update-limits', async (c) => {
     
     console.log(`[Admin] Subscription period: ${today} to ${subscriptionEndDate} (${months} months)`)
     
-    // 🔥 CRITICAL: academies 테이블에 레코드가 있는지 확인하고 없으면 생성
-    const existingAcademy = await c.env.DB.prepare(`
-      SELECT id FROM academies WHERE id = ?
-    `).bind(academyId).first()
-    
-    if (!existingAcademy) {
-      console.log('[Admin] Creating academy record for academy_id:', academyId)
-      try {
-        const academyName = user.academy_name || user.name + '학원'
-        
-        // INSERT OR IGNORE를 사용 (이미 존재하면 무시)
-        await c.env.DB.prepare(`
-          INSERT OR IGNORE INTO academies (id, academy_name, owner_id, created_at)
-          VALUES (?, ?, ?, datetime('now'))
-        `).bind(academyId, academyName, user.id).run()
-        
-        // 다시 확인하여 실제로 생성되었는지 확인
-        const recheck = await c.env.DB.prepare(`
-          SELECT id FROM academies WHERE id = ?
-        `).bind(academyId).first()
-        
-        if (recheck) {
-          console.log('✅ [Admin] Academy record created successfully')
-        } else {
-          // Academy가 여전히 없으면 직접 생성 시도 (AUTOINCREMENT 무시)
-          console.log('[Admin] Academy not found after INSERT, trying direct creation')
-          await c.env.DB.prepare(`
-            INSERT INTO academies (id, academy_name, owner_id, created_at)
-            SELECT ?, ?, ?, datetime('now')
-            WHERE NOT EXISTS (SELECT 1 FROM academies WHERE id = ?)
-          `).bind(academyId, academyName, user.id, academyId).run()
-        }
-      } catch (academyError) {
-        console.error('[Admin] Academy creation failed:', academyError.message)
+    // 🔥 CRITICAL: academies 테이블에 레코드 생성 (REPLACE INTO로 확실히 보장)
+    console.log('[Admin] Ensuring academy record exists for academy_id:', academyId)
+    try {
+      const academyName = user.academy_name || user.name + '학원'
+      
+      // REPLACE INTO를 사용하여 무조건 레코드 존재 보장
+      // (이미 있으면 업데이트, 없으면 생성)
+      await c.env.DB.prepare(`
+        REPLACE INTO academies (id, academy_name, owner_id, created_at)
+        VALUES (?, ?, ?, datetime('now'))
+      `).bind(academyId, academyName, user.id).run()
+      
+      // 확인
+      const verifyAcademy = await c.env.DB.prepare(`
+        SELECT id, academy_name FROM academies WHERE id = ?
+      `).bind(academyId).first()
+      
+      if (verifyAcademy) {
+        console.log(`✅ [Admin] Academy record verified: ID=${verifyAcademy.id}, Name=${verifyAcademy.academy_name}`)
+      } else {
+        // 이 경우는 절대 발생하면 안 됨
+        console.error('[Admin] ❌ FATAL: Academy record not found after REPLACE INTO')
         return c.json({ 
           success: false, 
-          error: `Academy 생성 실패: ${academyError.message}` 
+          error: 'Academy 레코드 생성에 실패했습니다. DB 구조를 확인해주세요.' 
         }, 500)
       }
+    } catch (academyError) {
+      console.error('[Admin] Academy creation/update failed:', academyError.message)
+      console.error('[Admin] Stack trace:', academyError.stack)
+      return c.json({ 
+        success: false, 
+        error: `Academy 생성/업데이트 실패: ${academyError.message}` 
+      }, 500)
     }
     
     if (existingSubscription) {
@@ -7681,8 +7676,19 @@ app.post('/api/admin/usage/:userId/update-limits', async (c) => {
       }
     })
   } catch (error) {
-    console.error('[Admin] Update limits error:', error)
-    return c.json({ success: false, error: error.message }, 500)
+    console.error('[Admin] ❌ Update limits error:', error)
+    console.error('[Admin] Error message:', error.message)
+    console.error('[Admin] Error stack:', error.stack)
+    
+    // FOREIGN KEY constraint 에러 특별 처리
+    if (error.message && error.message.includes('FOREIGN KEY')) {
+      return c.json({ 
+        success: false, 
+        error: `데이터베이스 제약 조건 오류: ${error.message}. 관리자에게 문의하세요.` 
+      }, 500)
+    }
+    
+    return c.json({ success: false, error: error.message || '알 수 없는 오류가 발생했습니다' }, 500)
   }
 })
 
