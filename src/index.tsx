@@ -574,12 +574,29 @@ async function grantDefaultPermissions(db: any, userId: string | number) {
   
   for (const programKey of defaultPermissions) {
     try {
-      await db.prepare(`
-        INSERT OR REPLACE INTO user_permissions (user_id, program_key, granted_by, is_active, created_at)
-        VALUES (?, ?, 'system', 1, datetime('now'))
-      `).bind(userId, programKey).run()
+      // 🔥 수정: 먼저 기존 권한이 있는지 확인
+      const existing = await db.prepare(`
+        SELECT id FROM user_permissions 
+        WHERE user_id = ? AND program_key = ?
+      `).bind(userId, programKey).first()
+      
+      if (existing) {
+        // 기존 권한이 있으면 활성화만
+        await db.prepare(`
+          UPDATE user_permissions 
+          SET is_active = 1, granted_by = 'system'
+          WHERE user_id = ? AND program_key = ?
+        `).bind(userId, programKey).run()
+        console.log(`[Permissions] ✅ Activated: ${programKey}`)
+      } else {
+        // 권한이 없으면 새로 생성
+        await db.prepare(`
+          INSERT INTO user_permissions (user_id, program_key, granted_by, is_active, created_at)
+          VALUES (?, ?, 'system', 1, datetime('now'))
+        `).bind(userId, programKey).run()
+        console.log(`[Permissions] ✅ Created: ${programKey}`)
+      }
       successCount++
-      console.log(`[Permissions] ✅ Granted: ${programKey}`)
     } catch (err) {
       failCount++
       console.error(`[Permissions] ❌ Failed to grant: ${programKey}`, err)
