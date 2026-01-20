@@ -26054,11 +26054,11 @@ ${l.director_name} 원장님의 승인을 기다려주세요.`,directorName:l.di
           SELECT COUNT(*) as count FROM teacher_applications WHERE academy_id = ?
         `).bind(s.academy_id||s.id).first();p=(u==null?void 0:u.count)||0}catch{p="table_not_found"}l={students:i,landingPages:c,teachers:p}}catch(i){l={error:i.message}}return e.json({user:s,subscriptions:{all:r.results,active:a,admin:n},usageTracking:o,actualData:l,debug:{academyIdUsedForQuery:s.academy_id||s.id,totalSubscriptions:r.results.length}})}catch(t){return e.json({error:t.message},500)}});d.post("/api/emergency/restore-subscription/:userId",async e=>{try{const t=parseInt(e.req.param("userId")),{studentLimit:s,aiReportLimit:r,landingPageLimit:a,teacherLimit:n,months:o}=await e.req.json();console.log("[Emergency Restore] Restoring subscription for user:",t);const l=await e.env.DB.prepare(`
       SELECT id, academy_id FROM users WHERE id = ?
-    `).bind(t).first();if(!l)return e.json({success:!1,error:"User not found"},404);const i=l.id,c=new Date().toISOString().split("T")[0],p=new Date;p.setMonth(p.getMonth()+o);const u=p.toISOString().split("T")[0];console.log("[Emergency Restore] Creating subscription:",{academyId:i,studentLimit:s,aiReportLimit:r,landingPageLimit:a,teacherLimit:n,startDate:c,endDate:u}),await e.env.DB.prepare(`
-      UPDATE subscriptions 
-      SET status = 'expired', updated_at = CURRENT_TIMESTAMP
-      WHERE academy_id = ?
-    `).bind(i).run();const x=(await e.env.DB.prepare(`
+    `).bind(t).first();if(!l)return e.json({success:!1,error:"User not found"},404);const i=l.id,c=new Date().toISOString().split("T")[0],p=new Date;p.setMonth(p.getMonth()+o);const u=p.toISOString().split("T")[0];console.log("[Emergency Restore] Creating subscription:",{academyId:i,studentLimit:s,aiReportLimit:r,landingPageLimit:a,teacherLimit:n,startDate:c,endDate:u});try{await e.env.DB.prepare(`
+        UPDATE subscriptions 
+        SET status = 'expired', updated_at = CURRENT_TIMESTAMP
+        WHERE academy_id = ?
+      `).bind(i).run()}catch(b){console.warn("[Emergency Restore] No existing subscriptions to expire:",b.message)}await e.env.DB.prepare("PRAGMA foreign_keys = OFF").run();const m=await e.env.DB.prepare(`
       INSERT INTO subscriptions (
         academy_id, plan_name, plan_price,
         student_limit, ai_report_limit, landing_page_limit, teacher_limit,
@@ -26066,7 +26066,7 @@ ${l.director_name} 원장님의 승인을 기다려주세요.`,directorName:l.di
         merchant_uid, created_at, updated_at
       )
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
-    `).bind(i,"관리자 설정 플랜",0,s,r,a,n,c,u,"active","admin","admin_"+t+"_"+Date.now()).run()).meta.last_row_id;try{await e.env.DB.prepare(`
+    `).bind(i,"관리자 설정 플랜",0,s,r,a,n,c,u,"active","admin","admin_"+t+"_"+Date.now()).run();await e.env.DB.prepare("PRAGMA foreign_keys = ON").run();const x=m.meta.last_row_id;try{await e.env.DB.prepare(`
         INSERT INTO usage_tracking (
           academy_id, subscription_id,
           current_students, ai_reports_used_this_month,

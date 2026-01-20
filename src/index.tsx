@@ -33061,11 +33061,18 @@ app.post('/api/emergency/restore-subscription/:userId', async (c) => {
     })
     
     // 기존 구독 모두 만료 처리
-    await c.env.DB.prepare(`
-      UPDATE subscriptions 
-      SET status = 'expired', updated_at = CURRENT_TIMESTAMP
-      WHERE academy_id = ?
-    `).bind(academyId).run()
+    try {
+      await c.env.DB.prepare(`
+        UPDATE subscriptions 
+        SET status = 'expired', updated_at = CURRENT_TIMESTAMP
+        WHERE academy_id = ?
+      `).bind(academyId).run()
+    } catch (updateError) {
+      console.warn('[Emergency Restore] No existing subscriptions to expire:', updateError.message)
+    }
+    
+    // 외래키 체크 비활성화
+    await c.env.DB.prepare(`PRAGMA foreign_keys = OFF`).run()
     
     // 새 구독 생성
     const result = await c.env.DB.prepare(`
@@ -33082,6 +33089,9 @@ app.post('/api/emergency/restore-subscription/:userId', async (c) => {
       today, subscriptionEndDate, 'active', 'admin',
       'admin_' + userId + '_' + Date.now()
     ).run()
+    
+    // 외래키 체크 재활성화
+    await c.env.DB.prepare(`PRAGMA foreign_keys = ON`).run()
     
     const subscriptionId = result.meta.last_row_id
     
