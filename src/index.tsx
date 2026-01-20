@@ -7348,6 +7348,37 @@ app.post('/api/bank-transfer/approve', async (c) => {
       ) VALUES (?, ?, 0, 0, 0, 0, CURRENT_TIMESTAMP)
     `).bind(academyId, subscriptionId).run()
 
+    // 🔥 프로그램 자동 등록 (13개 전체 프로그램)
+    const programs = [
+      { route: '/programs/naver-place', name: '네이버 플레이스 상위노출' },
+      { route: '/programs/consulting', name: '컨설팅 서비스' },
+      { route: '/programs/naver-form-register', name: '네이버 폼 등록' },
+      { route: '/programs/video-editing', name: '영상 편집' },
+      { route: '/programs/consulting-automation', name: '상담 자동화' },
+      { route: '/programs/online-consulting', name: '온라인 상담' },
+      { route: '/programs/sns-management', name: 'SNS 관리' },
+      { route: '/programs/naver-blog', name: '네이버 블로그' },
+      { route: '/programs/ai-teacher', name: 'AI 선생님' },
+      { route: '/programs/landing-builder', name: '랜딩페이지 빌더' },
+      { route: '/programs/attendance', name: '출결 관리' },
+      { route: '/programs/student-report', name: '학생 리포트' },
+      { route: '/programs/operation-consulting', name: '운영 컨설팅' }
+    ]
+    
+    // user_programs 테이블에 모든 프로그램 추가
+    for (const program of programs) {
+      try {
+        await c.env.DB.prepare(`
+          INSERT OR IGNORE INTO user_programs (user_id, program_route, program_name, enabled, created_at)
+          VALUES (?, ?, ?, 1, CURRENT_TIMESTAMP)
+        `).bind(request.user_id, program.route, program.name).run()
+      } catch (e) {
+        console.error('[Bank Transfer Approve] Failed to add program:', program.name, e)
+      }
+    }
+    
+    console.log('[Bank Transfer Approve] Added all programs for user:', request.user_id)
+
     // 신청 상태 업데이트
     await c.env.DB.prepare(`
       UPDATE bank_transfer_requests
@@ -26470,35 +26501,134 @@ app.post('/api/payment/verify', async (c) => {
     const { imp_uid, merchant_uid, plan, amount, user_id } = await c.req.json()
     const { DB } = c.env
     
-    // 실제 운영 환경에서는 아임포트 API로 결제 정보를 검증해야 합니다
-    const subscriptionId = 'SUB_' + Date.now()
+    console.log('[Payment Verify] User:', user_id, 'Plan:', plan, 'Amount:', amount)
     
-    // 한국 시간 기준으로 날짜 계산 (종료일은 한 달 후 전날 23:59:59)
-    const now = new Date()
-    const koreaTime = new Date(now.getTime() + (9 * 60 * 60 * 1000)) // UTC+9
-    const startDate = koreaTime.toISOString().split('T')[0]
+    // 플랜별 한도 설정
+    const planLimits: any = {
+      '스타터 플랜': { student: 30, ai_report: 30, landing_page: 40, teacher: 2, price: 55000 },
+      '베이직 플랜': { student: 50, ai_report: 50, landing_page: 70, teacher: 3, price: 77000 },
+      '프로 플랜': { student: 100, ai_report: 100, landing_page: 140, teacher: 6, price: 147000 },
+      '비즈니스 플랜': { student: 300, ai_report: 600, landing_page: 550, teacher: 10, price: 297000 },
+      '프리미엄 플랜': { student: 500, ai_report: 1000, landing_page: 900, teacher: 15, price: 440000 },
+      '엔터프라이즈 플랜': { student: 1000, ai_report: 3000, landing_page: 2000, teacher: 20, price: 750000 }
+    }
     
-    // 한 달 후 계산
-    const nextMonth = new Date(koreaTime)
-    nextMonth.setMonth(nextMonth.getMonth() + 1)
-    nextMonth.setDate(nextMonth.getDate() - 1) // 전날까지 (예: 1/20 구매 → 2/19까지)
-    const endDate = nextMonth.toISOString().split('T')[0]
+    const limits = planLimits[plan] || planLimits['스타터 플랜']
     
+    // 사용자 정보 조회
+    const user: any = await DB.prepare('SELECT id, name, email FROM users WHERE id = ?').bind(user_id).first()
+    if (!user) {
+      return c.json({ success: false, error: '사용자를 찾을 수 없습니다' }, 404)
+    }
+    
+    // 사용자의 academy_id 확인 (없으면 생성)
+    let academy: any = await DB.prepare(`
+      SELECT id FROM academies WHERE owner_id = ?
+    `).bind(user_id).first()
+    
+    if (!academy) {
+      // 학원 생성
+      const academyResult = await DB.prepare(`
+        INSERT INTO academies (academy_name, owner_id, created_at)
+        VALUES (?, ?, CURRENT_TIMESTAMP)
+      `).bind(user.name + ' 학원', user_id).run()
+      
+      academy = { id: academyResult.meta.last_row_id }
+      
+      // users 테이블에 academy_id 업데이트
+      await DB.prepare(`
+        UPDATE users SET academy_id = ? WHERE id = ?
+      `).bind(academy.id, user_id).run()
+      
+      console.log('[Payment Verify] Created academy:', academy.id)
+    }
+    
+    const academyId = academy.id
+    
+    // 한국 시간 기준으로 날짜 계산
+    const startDate = new Date()
+    const endDate = new Date()
+    endDate.setMonth(endDate.getMonth() + 1)
+    
+    // 구독 생성
+    const subscriptionResult = await DB.prepare(`
+      INSERT INTO subscriptions (
+        academy_id, plan_name, plan_price, student_limit, ai_report_limit,
+        landing_page_limit, teacher_limit, subscription_start_date,
+        subscription_end_date, status, payment_method, merchant_uid, imp_uid,
+        created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', 'card', ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+    `).bind(
+      academyId,
+      plan,
+      limits.price,
+      limits.student,
+      limits.ai_report,
+      limits.landing_page,
+      limits.teacher,
+      startDate.toISOString(),
+      endDate.toISOString(),
+      merchant_uid,
+      imp_uid
+    ).run()
+    
+    const subscriptionId = subscriptionResult.meta.last_row_id
+    console.log('[Payment Verify] Created subscription:', subscriptionId)
+    
+    // usage_tracking 생성
     await DB.prepare(`
-      INSERT INTO subscriptions (id, user_id, plan_type, amount, start_date, end_date, status, merchant_uid, imp_uid, created_at)
-      VALUES (?, ?, ?, ?, ?, ?, 'active', ?, ?, datetime('now'))
-    `).bind(subscriptionId, user_id, plan, amount, startDate, endDate, merchant_uid, imp_uid).run()
+      INSERT INTO usage_tracking (
+        academy_id, subscription_id, current_students, ai_reports_used_this_month,
+        landing_pages_created, current_teachers, updated_at
+      ) VALUES (?, ?, 0, 0, 0, 0, CURRENT_TIMESTAMP)
+    `).bind(academyId, subscriptionId).run()
     
+    console.log('[Payment Verify] Created usage_tracking')
+    
+    // payments 테이블에 기록
     const paymentId = 'PAY_' + Date.now()
     await DB.prepare(`
       INSERT INTO payments (id, subscription_id, user_id, amount, payment_method, merchant_uid, imp_uid, status, created_at)
       VALUES (?, ?, ?, ?, 'card', ?, ?, 'completed', datetime('now'))
     `).bind(paymentId, subscriptionId, user_id, amount, merchant_uid, imp_uid).run()
     
+    // 🔥 프로그램 자동 등록 (13개 전체 프로그램)
+    const programs = [
+      { route: '/programs/naver-place', name: '네이버 플레이스 상위노출' },
+      { route: '/programs/consulting', name: '컨설팅 서비스' },
+      { route: '/programs/naver-form-register', name: '네이버 폼 등록' },
+      { route: '/programs/video-editing', name: '영상 편집' },
+      { route: '/programs/consulting-automation', name: '상담 자동화' },
+      { route: '/programs/online-consulting', name: '온라인 상담' },
+      { route: '/programs/sns-management', name: 'SNS 관리' },
+      { route: '/programs/naver-blog', name: '네이버 블로그' },
+      { route: '/programs/ai-teacher', name: 'AI 선생님' },
+      { route: '/programs/landing-builder', name: '랜딩페이지 빌더' },
+      { route: '/programs/attendance', name: '출결 관리' },
+      { route: '/programs/student-report', name: '학생 리포트' },
+      { route: '/programs/operation-consulting', name: '운영 컨설팅' }
+    ]
+    
+    // user_programs 테이블에 모든 프로그램 추가
+    for (const program of programs) {
+      try {
+        await DB.prepare(`
+          INSERT OR IGNORE INTO user_programs (user_id, program_route, program_name, enabled, created_at)
+          VALUES (?, ?, ?, 1, CURRENT_TIMESTAMP)
+        `).bind(user_id, program.route, program.name).run()
+      } catch (e) {
+        console.error('[Payment Verify] Failed to add program:', program.name, e)
+      }
+    }
+    
+    console.log('[Payment Verify] Added all programs for user:', user_id)
+    
     return c.json({
       success: true,
       message: '결제가 성공적으로 처리되었습니다',
-      subscription: { id: subscriptionId, plan: plan, startDate: startDate, endDate: endDate }
+      subscription_id: subscriptionId,
+      academy_id: academyId,
+      subscription: { id: subscriptionId, plan: plan, startDate: startDate.toISOString(), endDate: endDate.toISOString() }
     })
   } catch (error: any) {
     console.error('Payment verification error:', error)
@@ -30016,6 +30146,21 @@ app.get('/admin/bank-transfers', async (c) => {
       transfers = { results: [] }
     }
     
+    // 한국 시간으로 변환 함수
+    const formatKoreanTime = (utcTimeString: string) => {
+      if (!utcTimeString) return '-'
+      const date = new Date(utcTimeString)
+      // UTC to Korea Time (UTC+9)
+      const koreaTime = new Date(date.getTime() + (9 * 60 * 60 * 1000))
+      const year = koreaTime.getFullYear()
+      const month = String(koreaTime.getMonth() + 1).padStart(2, '0')
+      const day = String(koreaTime.getDate()).padStart(2, '0')
+      const hours = String(koreaTime.getHours()).padStart(2, '0')
+      const minutes = String(koreaTime.getMinutes()).padStart(2, '0')
+      const seconds = String(koreaTime.getSeconds()).padStart(2, '0')
+      return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
+    }
+    
     return c.html(`
     <!DOCTYPE html>
     <html lang="ko">
@@ -30052,6 +30197,30 @@ app.get('/admin/bank-transfers', async (c) => {
                 <h1 class="text-3xl font-bold text-gray-900">💰 계좌이체 신청 관리</h1>
                 <div class="text-sm text-gray-600">
                     총 <span class="font-bold text-purple-600">${transfers.results?.length || 0}</span>건
+                </div>
+            </div>
+
+            <!-- 검색창 -->
+            <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+                <div class="flex gap-4 items-center">
+                    <div class="flex-1">
+                        <input 
+                            type="text" 
+                            id="searchInput" 
+                            placeholder="신청자 이름, 이메일, 전화번호로 검색..." 
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                            onkeyup="filterTransfers()"
+                        />
+                    </div>
+                    <select id="statusFilter" class="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" onchange="filterTransfers()">
+                        <option value="">전체 상태</option>
+                        <option value="pending">대기중</option>
+                        <option value="approved">승인완료</option>
+                        <option value="rejected">거절</option>
+                    </select>
+                    <button onclick="clearFilters()" class="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200">
+                        <i class="fas fa-redo mr-2"></i>초기화
+                    </button>
                 </div>
             </div>
 
@@ -30125,7 +30294,7 @@ app.get('/admin/bank-transfers', async (c) => {
                             : '<span class="text-gray-400 text-sm">완료</span>'
                           
                           return `
-                            <tr class="border-b hover:bg-gray-50">
+                            <tr class="border-b hover:bg-gray-50 transfer-row" data-name="${t.user_name}" data-email="${t.user_email}" data-phone="${t.user_phone}" data-status="${t.status}">
                               <td class="px-6 py-4 text-sm text-gray-900 font-mono">#${t.id}</td>
                               <td class="px-6 py-4">
                                 <div class="text-sm font-medium text-gray-900">${t.user_name}</div>
@@ -30134,7 +30303,7 @@ app.get('/admin/bank-transfers', async (c) => {
                               <td class="px-6 py-4 text-sm text-gray-900">${t.plan_name}</td>
                               <td class="px-6 py-4 text-sm font-bold text-purple-600">₩${parseInt(t.amount).toLocaleString()}</td>
                               <td class="px-6 py-4 text-sm text-gray-600">${t.user_phone}</td>
-                              <td class="px-6 py-4 text-sm text-gray-600">${new Date(t.created_at).toLocaleString('ko-KR')}</td>
+                              <td class="px-6 py-4 text-sm text-gray-600">${formatKoreanTime(t.created_at)}</td>
                               <td class="px-6 py-4">${statusBadge}</td>
                               <td class="px-6 py-4 text-center">${actionButtons}</td>
                             </tr>
@@ -30146,21 +30315,71 @@ app.get('/admin/bank-transfers', async (c) => {
         </div>
 
         <script>
+        // 한국 시간으로 변환
+        function formatKoreanTime(utcTimeString) {
+            if (!utcTimeString) return '-'
+            const date = new Date(utcTimeString)
+            // UTC to Korea Time (UTC+9)
+            const koreaTime = new Date(date.getTime() + (9 * 60 * 60 * 1000))
+            const year = koreaTime.getFullYear()
+            const month = String(koreaTime.getMonth() + 1).padStart(2, '0')
+            const day = String(koreaTime.getDate()).padStart(2, '0')
+            const hours = String(koreaTime.getHours()).padStart(2, '0')
+            const minutes = String(koreaTime.getMinutes()).padStart(2, '0')
+            const seconds = String(koreaTime.getSeconds()).padStart(2, '0')
+            return year + '-' + month + '-' + day + ' ' + hours + ':' + minutes + ':' + seconds
+        }
+
         function logout() {
             localStorage.removeItem('user')
             window.location.href = '/'
         }
 
+        // 검색 기능
+        function filterTransfers() {
+            const searchText = document.getElementById('searchInput').value.toLowerCase()
+            const statusFilter = document.getElementById('statusFilter').value
+            const rows = document.querySelectorAll('.transfer-row')
+            
+            rows.forEach(row => {
+                const name = row.getAttribute('data-name').toLowerCase()
+                const email = row.getAttribute('data-email').toLowerCase()
+                const phone = row.getAttribute('data-phone').toLowerCase()
+                const status = row.getAttribute('data-status')
+                
+                const matchesSearch = name.includes(searchText) || email.includes(searchText) || phone.includes(searchText)
+                const matchesStatus = !statusFilter || status === statusFilter
+                
+                if (matchesSearch && matchesStatus) {
+                    row.style.display = ''
+                } else {
+                    row.style.display = 'none'
+                }
+            })
+            
+            updateStats()
+        }
+
+        // 필터 초기화
+        function clearFilters() {
+            document.getElementById('searchInput').value = ''
+            document.getElementById('statusFilter').value = ''
+            filterTransfers()
+        }
+
         // 통계 업데이트
         function updateStats() {
-            const rows = document.querySelectorAll('#transferList tr')
+            const rows = document.querySelectorAll('.transfer-row')
             let pending = 0, approved = 0, rejected = 0
             
             rows.forEach(row => {
-                const status = row.querySelector('span[class*="bg-"]')?.textContent?.trim()
-                if (status === '대기중') pending++
-                else if (status === '승인완료') approved++
-                else if (status === '거절') rejected++
+                // 보이는 행만 카운트
+                if (row.style.display !== 'none') {
+                    const status = row.querySelector('span[class*="bg-"]')?.textContent?.trim()
+                    if (status === '대기중') pending++
+                    else if (status === '승인완료') approved++
+                    else if (status === '거절') rejected++
+                }
             })
             
             document.getElementById('pendingCount').textContent = pending
