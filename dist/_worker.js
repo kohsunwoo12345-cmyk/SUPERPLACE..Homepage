@@ -20502,12 +20502,17 @@ ${l.director_name} 원장님의 승인을 기다려주세요.`,directorName:l.di
             }
 
             function updateCharts(data) {
-                // 일별 차트
-                const dailyLabels = data.daily.slice(0, 30).reverse().map(d => {
-                    const date = new Date(d.date);
-                    return (date.getMonth() + 1) + '/' + date.getDate();
-                });
-                const dailyData = data.daily.slice(0, 30).reverse().map(d => d.revenue || 0);
+                // 일별 차트 - 빈 데이터 처리
+                const dailyLabels = data.daily && data.daily.length > 0
+                    ? data.daily.slice(0, 30).reverse().map(d => {
+                        const date = new Date(d.date);
+                        return (date.getMonth() + 1) + '/' + date.getDate();
+                    })
+                    : ['최근 30일'];
+                
+                const dailyData = data.daily && data.daily.length > 0
+                    ? data.daily.slice(0, 30).reverse().map(d => d.revenue || 0)
+                    : [0];
 
                 const dailyCtx = document.getElementById('dailyChart').getContext('2d');
                 if (dailyChart) dailyChart.destroy();
@@ -20543,9 +20548,14 @@ ${l.director_name} 원장님의 승인을 기다려주세요.`,directorName:l.di
                     }
                 });
 
-                // 플랜별 차트
-                const planLabels = data.byPlan.map(p => p.plan_name);
-                const planData = data.byPlan.map(p => p.revenue || 0);
+                // 플랜별 차트 - 빈 데이터 처리
+                const planLabels = data.byPlan && data.byPlan.length > 0
+                    ? data.byPlan.map(p => p.plan_name)
+                    : ['데이터 없음'];
+                
+                const planData = data.byPlan && data.byPlan.length > 0
+                    ? data.byPlan.map(p => p.revenue || 0)
+                    : [1];
                 const planColors = [
                     'rgb(147, 51, 234)',
                     'rgb(59, 130, 246)',
