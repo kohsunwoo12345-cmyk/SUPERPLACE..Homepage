@@ -23527,14 +23527,50 @@ app.get('/admin/users', async (c) => {
         
         // 사용 한도 저장
         async function saveUsageLimits() {
-            const studentLimit = parseInt(document.getElementById('studentLimit')?.value);
-            const aiReportLimit = parseInt(document.getElementById('aiReportLimit')?.value);
-            const landingPageLimit = parseInt(document.getElementById('landingPageLimit')?.value);
-            const teacherLimit = parseInt(document.getElementById('teacherLimit')?.value);
-            const subscriptionMonths = parseInt(document.getElementById('subscriptionMonths')?.value) || 1;
+            console.log('💾 [SaveUsageLimits] Function called');
+            console.log('💾 [SaveUsageLimits] currentUsageUserId:', currentUsageUserId);
             
-            if (!studentLimit || !aiReportLimit || !landingPageLimit || !teacherLimit) {
-                alert('❌ 모든 한도를 올바르게 입력해주세요');
+            if (!currentUsageUserId) {
+                alert('❌ 사용자 정보를 찾을 수 없습니다. 모달을 닫고 다시 시도해주세요.');
+                console.error('❌ [SaveUsageLimits] currentUsageUserId is null or undefined');
+                return;
+            }
+            
+            const studentLimitEl = document.getElementById('studentLimit');
+            const aiReportLimitEl = document.getElementById('aiReportLimit');
+            const landingPageLimitEl = document.getElementById('landingPageLimit');
+            const teacherLimitEl = document.getElementById('teacherLimit');
+            const subscriptionMonthsEl = document.getElementById('subscriptionMonths');
+            
+            console.log('📋 [SaveUsageLimits] Input elements:', {
+                studentLimitEl: !!studentLimitEl,
+                aiReportLimitEl: !!aiReportLimitEl,
+                landingPageLimitEl: !!landingPageLimitEl,
+                teacherLimitEl: !!teacherLimitEl,
+                subscriptionMonthsEl: !!subscriptionMonthsEl
+            });
+            
+            if (!studentLimitEl || !aiReportLimitEl || !landingPageLimitEl || !teacherLimitEl || !subscriptionMonthsEl) {
+                alert('❌ 입력 필드를 찾을 수 없습니다. 페이지를 새로고침해주세요.');
+                return;
+            }
+            
+            const studentLimit = parseInt(studentLimitEl.value);
+            const aiReportLimit = parseInt(aiReportLimitEl.value);
+            const landingPageLimit = parseInt(landingPageLimitEl.value);
+            const teacherLimit = parseInt(teacherLimitEl.value);
+            const subscriptionMonths = parseInt(subscriptionMonthsEl.value) || 1;
+            
+            console.log('📊 [SaveUsageLimits] Parsed values:', {
+                studentLimit,
+                aiReportLimit,
+                landingPageLimit,
+                teacherLimit,
+                subscriptionMonths
+            });
+            
+            if (isNaN(studentLimit) || isNaN(aiReportLimit) || isNaN(landingPageLimit) || isNaN(teacherLimit)) {
+                alert('❌ 모든 한도를 올바르게 입력해주세요 (숫자만 입력 가능)');
                 return;
             }
             
@@ -23548,32 +23584,40 @@ app.get('/admin/users', async (c) => {
                 return;
             }
             
-            if (confirm('정말 사용 한도를 변경하시겠습니까?\\n\\n구독 기간: ' + subscriptionMonths + '개월\\n학생: ' + studentLimit + '\\nAI 리포트: ' + aiReportLimit + '\\n랜딩페이지: ' + landingPageLimit + '\\n선생님: ' + teacherLimit)) {
-                try {
-                    const response = await fetch('/api/admin/usage/' + currentUsageUserId + '/update-limits', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            studentLimit,
-                            aiReportLimit,
-                            landingPageLimit,
-                            teacherLimit,
-                            subscriptionMonths
-                        })
-                    });
-                    
-                    const data = await response.json();
-                    
-                    if (data.success) {
-                        alert('✅ 사용 한도가 성공적으로 업데이트되었습니다!\\n구독 기간: ' + subscriptionMonths + '개월');
-                        closeUsageLimitsModal();
-                    } else {
-                        alert('❌ 업데이트 실패: ' + (data.error || '알 수 없는 오류'));
-                    }
-                } catch (error) {
-                    console.error('Update error:', error);
-                    alert('❌ 네트워크 오류가 발생했습니다');
+            if (!confirm('정말 사용 한도를 변경하시겠습니까?\\n\\n구독 기간: ' + subscriptionMonths + '개월\\n학생: ' + studentLimit + '명\\nAI 리포트: ' + aiReportLimit + '개\\n랜딩페이지: ' + landingPageLimit + '개\\n선생님: ' + teacherLimit + '명')) {
+                console.log('❌ [SaveUsageLimits] User cancelled');
+                return;
+            }
+            
+            try {
+                console.log('🚀 [SaveUsageLimits] Sending API request...');
+                const response = await fetch('/api/admin/usage/' + currentUsageUserId + '/update-limits', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        studentLimit,
+                        aiReportLimit,
+                        landingPageLimit,
+                        teacherLimit,
+                        subscriptionMonths
+                    })
+                });
+                
+                console.log('📡 [SaveUsageLimits] Response status:', response.status);
+                const data = await response.json();
+                console.log('📦 [SaveUsageLimits] Response data:', data);
+                
+                if (data.success) {
+                    alert('✅ 사용 한도가 성공적으로 업데이트되었습니다!\\n\\n구독 기간: ' + subscriptionMonths + '개월\\n학생: ' + studentLimit + '명\\nAI 리포트: ' + aiReportLimit + '개\\n랜딩페이지: ' + landingPageLimit + '개\\n선생님: ' + teacherLimit + '명');
+                    closeUsageLimitsModal();
+                    console.log('✅ [SaveUsageLimits] Reloading page...');
+                    window.location.reload();
+                } else {
+                    alert('❌ 업데이트 실패: ' + (data.error || '알 수 없는 오류'));
                 }
+            } catch (error) {
+                console.error('❌ [SaveUsageLimits] Error:', error);
+                alert('❌ 네트워크 오류가 발생했습니다: ' + error.message);
             }
         }
         
