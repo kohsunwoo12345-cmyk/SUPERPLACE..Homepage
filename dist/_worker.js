@@ -18778,6 +18778,7 @@ ${M}
             .gradient-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
         </style>
         <script>
+            // v2.0 - All functions defined immediately in head
             // 전역 변수
             var currentUsageUserId = null;
             
@@ -20158,7 +20159,15 @@ ${l.director_name} 원장님의 승인을 기다려주세요.`,directorName:l.di
       WHERE p.user_id = ? ORDER BY p.created_at DESC
     `).bind(t).all();return e.json({success:!0,payments:r||[]})}catch(t){return console.error("Get payments error:",t),e.json({success:!1,error:t.message},500)}});d.post("/api/subscription/:subscriptionId/cancel",async e=>{try{const t=e.req.param("subscriptionId"),{DB:s}=e.env;return await s.prepare(`
       UPDATE subscriptions SET status = 'cancelled', updated_at = datetime('now') WHERE id = ?
-    `).bind(t).run(),e.json({success:!0,message:"구독이 취소되었습니다"})}catch(t){return console.error("Cancel subscription error:",t),e.json({success:!1,error:t.message},500)}});d.post("/api/admin/init-payment-tables",async e=>{try{const{DB:t}=e.env;try{await t.prepare("DROP TABLE IF EXISTS old_subscriptions").run(),await t.prepare("ALTER TABLE subscriptions RENAME TO old_subscriptions").run()}catch{}await t.prepare(`
+    `).bind(t).run(),e.json({success:!0,message:"구독이 취소되었습니다"})}catch(t){return console.error("Cancel subscription error:",t),e.json({success:!1,error:t.message},500)}});d.post("/api/admin/init-payment-tables",async e=>{try{const{DB:t}=e.env;await t.prepare(`
+      CREATE TABLE IF NOT EXISTS academies (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        academy_name TEXT NOT NULL,
+        owner_id INTEGER NOT NULL,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (owner_id) REFERENCES users(id)
+      )
+    `).run();try{await t.prepare("DROP TABLE IF EXISTS old_subscriptions").run(),await t.prepare("ALTER TABLE subscriptions RENAME TO old_subscriptions").run()}catch{}await t.prepare(`
       CREATE TABLE IF NOT EXISTS subscriptions (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         academy_id INTEGER NOT NULL,
@@ -20177,14 +20186,6 @@ ${l.director_name} 원장님의 승인을 기다려주세요.`,directorName:l.di
         created_at TEXT DEFAULT CURRENT_TIMESTAMP,
         updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (academy_id) REFERENCES academies(id)
-      )
-    `).run(),await t.prepare(`
-      CREATE TABLE IF NOT EXISTS academies (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        academy_name TEXT NOT NULL,
-        owner_id INTEGER NOT NULL,
-        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (owner_id) REFERENCES users(id)
       )
     `).run(),await t.prepare(`
       CREATE TABLE IF NOT EXISTS usage_tracking (

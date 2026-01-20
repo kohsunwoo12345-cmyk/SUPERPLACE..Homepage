@@ -23411,6 +23411,7 @@ app.get('/admin/users', async (c) => {
             .gradient-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
         </style>
         <script>
+            // v2.0 - All functions defined immediately in head
             // 전역 변수
             var currentUsageUserId = null;
             
@@ -27022,6 +27023,17 @@ app.post('/api/admin/init-payment-tables', async (c) => {
   try {
     const { DB } = c.env
     
+    // Create academies table FIRST (before subscriptions, since subscriptions references it)
+    await DB.prepare(`
+      CREATE TABLE IF NOT EXISTS academies (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        academy_name TEXT NOT NULL,
+        owner_id INTEGER NOT NULL,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (owner_id) REFERENCES users(id)
+      )
+    `).run()
+    
     // Drop old subscriptions table if exists (for migration)
     try {
       await DB.prepare(`DROP TABLE IF EXISTS old_subscriptions`).run()
@@ -27030,7 +27042,7 @@ app.post('/api/admin/init-payment-tables', async (c) => {
       // Table doesn't exist or already migrated
     }
     
-    // Create new subscriptions table with correct schema
+    // Create new subscriptions table with correct schema (AFTER academies table)
     await DB.prepare(`
       CREATE TABLE IF NOT EXISTS subscriptions (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -27050,17 +27062,6 @@ app.post('/api/admin/init-payment-tables', async (c) => {
         created_at TEXT DEFAULT CURRENT_TIMESTAMP,
         updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (academy_id) REFERENCES academies(id)
-      )
-    `).run()
-    
-    // Create academies table
-    await DB.prepare(`
-      CREATE TABLE IF NOT EXISTS academies (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        academy_name TEXT NOT NULL,
-        owner_id INTEGER NOT NULL,
-        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (owner_id) REFERENCES users(id)
       )
     `).run()
     
