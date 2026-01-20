@@ -7480,6 +7480,54 @@ app.post('/api/admin/usage/:userId/update-limits', async (c) => {
   }
 })
 
+// 🔥 관리자: 플랜 회수 API
+app.post('/api/admin/revoke-plan/:userId', async (c) => {
+  try {
+    const userId = c.req.param('userId')
+    
+    console.log('[Admin] Revoking plan for user:', userId)
+    
+    // 사용자 정보 조회
+    const user = await c.env.DB.prepare('SELECT id, email, name, academy_id FROM users WHERE id = ?').bind(userId).first()
+    
+    if (!user) {
+      return c.json({ success: false, error: '사용자를 찾을 수 없습니다' }, 404)
+    }
+    
+    const academyId = user.academy_id || user.id
+    
+    // 1. 구독 만료 처리
+    const updateResult = await c.env.DB.prepare(`
+      UPDATE subscriptions 
+      SET status = 'expired', updated_at = CURRENT_TIMESTAMP
+      WHERE academy_id = ? AND status = 'active'
+    `).bind(academyId).run()
+    
+    console.log('[Admin] Subscriptions expired:', updateResult.meta.changes)
+    
+    // 2. 모든 권한 비활성화
+    const revokeResult = await c.env.DB.prepare(`
+      UPDATE user_permissions 
+      SET is_active = 0, updated_at = CURRENT_TIMESTAMP
+      WHERE user_id = ?
+    `).bind(userId).run()
+    
+    console.log('[Admin] Permissions revoked:', revokeResult.meta.changes)
+    
+    return c.json({ 
+      success: true, 
+      message: '플랜이 회수되었습니다',
+      details: {
+        subscriptionsExpired: updateResult.meta.changes,
+        permissionsRevoked: revokeResult.meta.changes
+      }
+    })
+  } catch (error) {
+    console.error('[Admin] Revoke plan error:', error)
+    return c.json({ success: false, error: error.message }, 500)
+  }
+})
+
 // 🔥 관리자: 사용자 구독 정보 조회 API
 app.get('/api/admin/usage/:userId', async (c) => {
   try {
@@ -22997,13 +23045,19 @@ app.get('/admin/users', async (c) => {
                     </div>
                 </div>
 
-                <div class="p-6 border-t border-gray-200 bg-gray-50 sticky bottom-0 flex justify-end gap-3">
-                    <button onclick="closeUsageLimitsModal()" class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
-                        취소
+                <div class="p-6 border-t border-gray-200 bg-gray-50 sticky bottom-0 flex justify-between items-center">
+                    <button id="revokePlanBtn" onclick="revokePlan()" class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium flex items-center gap-2">
+                        <i class="fas fa-ban"></i>
+                        플랜 회수
                     </button>
-                    <button onclick="saveUsageLimits()" class="px-6 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 font-medium">
-                        저장
-                    </button>
+                    <div class="flex gap-3">
+                        <button onclick="closeUsageLimitsModal()" class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                            취소
+                        </button>
+                        <button onclick="saveUsageLimits()" class="px-6 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 font-medium">
+                            저장
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -23263,6 +23317,41 @@ app.get('/admin/users', async (c) => {
                     console.error('Update error:', error);
                     alert('❌ 네트워크 오류가 발생했습니다');
                 }
+            }
+        }
+        
+        // 플랜 회수
+        async function revokePlan() {
+            if (!currentUsageUserId) {
+                alert('❌ 사용자 정보를 찾을 수 없습니다');
+                return;
+            }
+            
+            const userName = document.getElementById('usageModalUserName').textContent.replace('님의 사용 한도', '');
+            
+            if (!confirm('⚠️ 정말 ' + userName + '님의 플랜을 회수하시겠습니까?\\n\\n회수 시:\\n• 모든 구독이 만료 처리됩니다\\n• 모든 권한이 비활성화됩니다\\n• 대시보드 기능 카드가 숨겨집니다\\n\\n이 작업은 되돌릴 수 없습니다.')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/admin/revoke-plan/' + currentUsageUserId, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('✅ 플랜이 성공적으로 회수되었습니다!\\n\\n• 만료된 구독: ' + (data.details.subscriptionsExpired || 0) + '개\\n• 비활성화된 권한: ' + (data.details.permissionsRevoked || 0) + '개');
+                    closeUsageLimitsModal();
+                    // 페이지 새로고침하여 업데이트된 정보 표시
+                    window.location.reload();
+                } else {
+                    alert('❌ 회수 실패: ' + (data.error || '알 수 없는 오류'));
+                }
+            } catch (error) {
+                console.error('Revoke error:', error);
+                alert('❌ 네트워크 오류가 발생했습니다');
             }
         }
         
