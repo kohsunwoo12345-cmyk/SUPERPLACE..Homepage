@@ -7698,106 +7698,72 @@ app.post('/api/admin/revoke-plan/:userId', async (c) => {
   }
 })
 
-// 🧪 관리자: 테스트 데이터 생성 API (임시)
+// 🧪 관리자: 테스트 데이터 생성 API (임시) - 단순화 버전
 app.post('/api/admin/seed-test-data', async (c) => {
   try {
     const DB = c.env.DB
     
-    console.log('[Admin Seed] Starting test data creation')
+    console.log('[Admin Seed] Starting simplified test data creation')
     
-    try {
-      // Step 1: 테스트 사용자 생성 (academy_id는 기본값 1 사용)
-      console.log('[Admin Seed] Creating users...')
-      await DB.prepare(`
-        INSERT OR IGNORE INTO users (id, email, name, password, role, created_at)
-        VALUES 
-        (100, 'test1@example.com', '테스트사용자1', 'dummy_hash', 'teacher', datetime('now', '-30 days')),
-        (101, 'test2@example.com', '테스트사용자2', 'dummy_hash', 'teacher', datetime('now', '-20 days')),
-        (102, 'test3@example.com', '테스트사용자3', 'dummy_hash', 'teacher', datetime('now', '-10 days'))
-      `).run()
-      console.log('[Admin Seed] Users created')
-      
-      // Step 2: 테스트 학원 생성
-      console.log('[Admin Seed] Creating academies...')
-      await DB.prepare(`
-        INSERT OR IGNORE INTO academies (id, owner_id, academy_name, created_at)
-        VALUES
-        (100, 100, '테스트학원1', datetime('now', '-30 days')),
-        (101, 101, '테스트학원2', datetime('now', '-20 days')),
-        (102, 102, '테스트학원3', datetime('now', '-10 days'))
-      `).run()
-      console.log('[Admin Seed] Academies created')
-      
-      // Step 3: 사용자의 academy_id 업데이트
-      console.log('[Admin Seed] Updating user academy_id...')
-      await DB.prepare(`UPDATE users SET academy_id = 100 WHERE id = 100`).run()
-      await DB.prepare(`UPDATE users SET academy_id = 101 WHERE id = 101`).run()
-      await DB.prepare(`UPDATE users SET academy_id = 102 WHERE id = 102`).run()
-      console.log('[Admin Seed] User academy_id updated')
-    } catch (e) {
-      console.error('[Admin Seed] Error in user/academy creation:', e)
-      throw e
-    }
+    // Step 1: 간단한 결제 데이터만 직접 생성 (외래 키 무시)
+    const testPayments = [
+      // 최근 30일 간격으로 다양한 플랜 결제
+      { id: 'pay_001', sub_id: 1, user_id: 1, amount: 55000, method: 'card', plan: 'starter', days_ago: 30 },
+      { id: 'pay_002', sub_id: 2, user_id: 2, amount: 77000, method: 'bank_transfer', plan: 'basic', days_ago: 28 },
+      { id: 'pay_003', sub_id: 3, user_id: 3, amount: 147000, method: 'card', plan: 'pro', days_ago: 25 },
+      { id: 'pay_004', sub_id: 1, user_id: 1, amount: 55000, method: 'card', plan: 'starter', days_ago: 22 },
+      { id: 'pay_005', sub_id: 4, user_id: 4, amount: 297000, method: 'bank_transfer', plan: 'business', days_ago: 20 },
+      { id: 'pay_006', sub_id: 2, user_id: 2, amount: 77000, method: 'card', plan: 'basic', days_ago: 18 },
+      { id: 'pay_007', sub_id: 5, user_id: 5, amount: 440000, method: 'card', plan: 'premium', days_ago: 15 },
+      { id: 'pay_008', sub_id: 3, user_id: 3, amount: 147000, method: 'bank_transfer', plan: 'pro', days_ago: 12 },
+      { id: 'pay_009', sub_id: 6, user_id: 6, amount: 750000, method: 'card', plan: 'enterprise', days_ago: 10 },
+      { id: 'pay_010', sub_id: 1, user_id: 1, amount: 55000, method: 'card', plan: 'starter', days_ago: 8 },
+      { id: 'pay_011', sub_id: 4, user_id: 4, amount: 297000, method: 'card', plan: 'business', days_ago: 7 },
+      { id: 'pay_012', sub_id: 2, user_id: 2, amount: 77000, method: 'bank_transfer', plan: 'basic', days_ago: 5 },
+      { id: 'pay_013', sub_id: 3, user_id: 3, amount: 147000, method: 'card', plan: 'pro', days_ago: 3 },
+      { id: 'pay_014', sub_id: 5, user_id: 5, amount: 440000, method: 'bank_transfer', plan: 'premium', days_ago: 2 },
+      { id: 'pay_015', sub_id: 1, user_id: 1, amount: 55000, method: 'card', plan: 'starter', days_ago: 1 },
+      // 이전 달 데이터 추가
+      { id: 'pay_016', sub_id: 2, user_id: 2, amount: 77000, method: 'card', plan: 'basic', days_ago: 35 },
+      { id: 'pay_017', sub_id: 3, user_id: 3, amount: 147000, method: 'bank_transfer', plan: 'pro', days_ago: 40 },
+      { id: 'pay_018', sub_id: 4, user_id: 4, amount: 297000, method: 'card', plan: 'business', days_ago: 45 },
+      { id: 'pay_019', sub_id: 5, user_id: 5, amount: 440000, method: 'card', plan: 'premium', days_ago: 50 },
+      { id: 'pay_020', sub_id: 6, user_id: 6, amount: 750000, method: 'bank_transfer', plan: 'enterprise', days_ago: 55 }
+    ]
     
-    try {
-      // 테스트 구독 생성
-      console.log('[Admin Seed] Creating subscriptions...')
-      await DB.prepare(`
-        INSERT OR IGNORE INTO subscriptions (
-          id, academy_id, plan_name, plan_price, student_limit, ai_report_limit, 
-          landing_page_limit, teacher_limit, subscription_start_date, subscription_end_date, 
-          status, created_at
-        )
-        VALUES
-        (100, 100, '스타터 플랜', 55000, 30, 30, 40, 2, date('now', '-30 days'), date('now', '+335 days'), 'active', datetime('now', '-30 days')),
-        (101, 101, '베이직 플랜', 77000, 50, 50, 70, 4, date('now', '-20 days'), date('now', '+345 days'), 'active', datetime('now', '-20 days')),
-        (102, 102, '프로 플랜', 147000, 100, 100, 140, 6, date('now', '-10 days'), date('now', '+355 days'), 'active', datetime('now', '-10 days'))
-      `).run()
-      console.log('[Admin Seed] Subscriptions created')
-    } catch (e) {
-      console.error('[Admin Seed] Error in subscription creation:', e)
-      throw e
-    }
+    let successCount = 0
+    let errorCount = 0
     
-    try {
-      // 테스트 결제 데이터 추가
-      console.log('[Admin Seed] Creating payments...')
-      const payments = [
-        ['payment_test_001', 100, 100, 55000, 'card', 'academy_100_starter_001', 'imp_001', 'completed', "datetime('now', '-30 days')"],
-        ['payment_test_002', 100, 100, 55000, 'card', 'academy_100_starter_002', 'imp_002', 'completed', "datetime('now', '-25 days')"],
-        ['payment_test_003', 101, 101, 77000, 'bank_transfer', 'academy_101_basic_001', null, 'completed', "datetime('now', '-20 days')"],
-        ['payment_test_004', 101, 101, 77000, 'bank_transfer', 'academy_101_basic_002', null, 'completed', "datetime('now', '-15 days')"],
-        ['payment_test_005', 102, 102, 147000, 'card', 'academy_102_pro_001', 'imp_005', 'completed', "datetime('now', '-10 days')"],
-        ['payment_test_006', 102, 102, 147000, 'card', 'academy_102_pro_002', 'imp_006', 'completed', "datetime('now', '-5 days')"],
-        ['payment_test_007', 100, 100, 55000, 'card', 'academy_100_starter_003', 'imp_007', 'completed', "datetime('now', '-3 days')"],
-        ['payment_test_008', 101, 101, 77000, 'bank_transfer', 'academy_101_basic_003', null, 'completed', "datetime('now', '-2 days')"],
-        ['payment_test_009', 102, 102, 147000, 'card', 'academy_102_pro_003', 'imp_009', 'completed', "datetime('now', '-1 days')"]
-      ]
-      
-      for (let i = 0; i < payments.length; i++) {
-        const payment = payments[i]
-        console.log(`[Admin Seed] Creating payment ${i + 1}/${payments.length}...`)
+    for (const payment of testPayments) {
+      try {
         await DB.prepare(`
-          INSERT OR IGNORE INTO payments (id, subscription_id, user_id, amount, payment_method, merchant_uid, imp_uid, status, created_at)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ${payment[8]})
-        `).bind(...payment.slice(0, 8)).run()
+          INSERT OR REPLACE INTO payments (id, subscription_id, user_id, amount, payment_method, merchant_uid, imp_uid, status, created_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, 'completed', datetime('now', '-${payment.days_ago} days'))
+        `).bind(
+          payment.id,
+          payment.sub_id,
+          payment.user_id,
+          payment.amount,
+          payment.method,
+          `merchant_${payment.id}`,
+          payment.method === 'card' ? `imp_${payment.id}` : null
+        ).run()
+        successCount++
+      } catch (e) {
+        console.error(`[Admin Seed] Error creating payment ${payment.id}:`, e.message)
+        errorCount++
       }
-      console.log('[Admin Seed] Payments created')
-    } catch (e) {
-      console.error('[Admin Seed] Error in payment creation:', e)
-      throw e
     }
     
-    console.log('[Admin Seed] Test data created successfully')
+    console.log(`[Admin Seed] Test data created: ${successCount} success, ${errorCount} errors`)
     
     return c.json({ 
       success: true, 
-      message: '테스트 데이터가 생성되었습니다.',
+      message: '테스트 결제 데이터가 생성되었습니다.',
       data: {
-        users: 3,
-        academies: 3,
-        subscriptions: 3,
-        payments: 9
+        created: successCount,
+        errors: errorCount,
+        total: testPayments.length
       }
     })
   } catch (error) {
@@ -27372,7 +27338,10 @@ app.get('/admin/revenue', async (c) => {
         <div class="max-w-7xl mx-auto px-6 py-8">
             <div class="mb-8">
                 <h1 class="text-3xl font-bold text-gray-900 mb-2">💰 매출 관리</h1>
-                <p class="text-gray-600">실시간 매출 통계 및 거래 내역을 확인하세요</p>
+                <p class="text-gray-600">
+                    실시간 매출 통계 및 거래 내역을 확인하세요
+                    <span id="currentDate" class="ml-4 font-semibold text-purple-600"></span>
+                </p>
             </div>
 
             <!-- 로딩 상태 -->
@@ -27383,6 +27352,33 @@ app.get('/admin/revenue', async (c) => {
 
             <!-- 메인 컨텐츠 -->
             <div id="content" class="hidden">
+                <!-- 월별 매출 요약 카드 -->
+                <div class="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl shadow-lg p-6 text-white mb-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-indigo-100 text-sm">이번 달 매출</p>
+                            <p class="text-4xl font-bold mt-1" id="currentMonthRevenue">₩0</p>
+                            <p class="text-indigo-100 text-sm mt-2">
+                                <span id="currentMonthCount">0</span>건 · 
+                                <span id="currentMonthName"></span>
+                            </p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-indigo-100 text-sm">지난 달 매출</p>
+                            <p class="text-2xl font-bold mt-1" id="lastMonthRevenue">₩0</p>
+                            <p class="text-indigo-100 text-sm mt-2">
+                                <span id="lastMonthCount">0</span>건 · 
+                                <span id="lastMonthName"></span>
+                            </p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-indigo-100 text-sm">증감률</p>
+                            <p class="text-2xl font-bold mt-1" id="growthRate">-</p>
+                            <p class="text-indigo-100 text-sm mt-2">전월 대비</p>
+                        </div>
+                    </div>
+                </div>
+                
                 <!-- 통계 카드 -->
                 <div class="grid md:grid-cols-4 gap-6 mb-8">
                     <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg p-6 text-white">
@@ -27566,19 +27562,69 @@ app.get('/admin/revenue', async (c) => {
             }
 
             function updateStatCards(data) {
+                // 현재 날짜 표시
+                const now = new Date();
+                const dateStr = now.getFullYear() + '년 ' + (now.getMonth() + 1) + '월 ' + now.getDate() + '일';
+                document.getElementById('currentDate').textContent = dateStr;
+                
+                // 총 매출 카드
                 document.getElementById('totalRevenue').textContent = formatCurrency(data.total.revenue);
                 document.getElementById('totalCount').textContent = data.total.count;
                 
+                // 결제 수단별 카드
                 document.getElementById('cardRevenue').textContent = formatCurrency(data.byMethod.card.revenue);
                 document.getElementById('cardCount').textContent = data.byMethod.card.count;
                 
                 document.getElementById('bankRevenue').textContent = formatCurrency(data.byMethod.bank_transfer.revenue);
                 document.getElementById('bankCount').textContent = data.byMethod.bank_transfer.count;
                 
+                // 월 평균
                 const avgMonthly = data.monthly.length > 0 
                     ? Math.floor(data.monthly.reduce((sum, m) => sum + (m.revenue || 0), 0) / data.monthly.length)
                     : 0;
                 document.getElementById('avgRevenue').textContent = formatCurrency(avgMonthly);
+                
+                // 월별 데이터 (최신 2개월)
+                if (data.monthly && data.monthly.length > 0) {
+                    const currentMonth = data.monthly[0]; // 가장 최근 달
+                    const lastMonth = data.monthly[1] || { month: '', count: 0, revenue: 0 };
+                    
+                    // 현재 달
+                    document.getElementById('currentMonthRevenue').textContent = formatCurrency(currentMonth.revenue || 0);
+                    document.getElementById('currentMonthCount').textContent = currentMonth.count || 0;
+                    document.getElementById('currentMonthName').textContent = formatMonthName(currentMonth.month);
+                    
+                    // 지난 달
+                    document.getElementById('lastMonthRevenue').textContent = formatCurrency(lastMonth.revenue || 0);
+                    document.getElementById('lastMonthCount').textContent = lastMonth.count || 0;
+                    document.getElementById('lastMonthName').textContent = formatMonthName(lastMonth.month);
+                    
+                    // 증감률 계산
+                    if (lastMonth.revenue > 0) {
+                        const growth = ((currentMonth.revenue - lastMonth.revenue) / lastMonth.revenue * 100).toFixed(1);
+                        const growthText = growth >= 0 ? ('+' + growth + '%') : (growth + '%');
+                        const growthColor = growth >= 0 ? '↑' : '↓';
+                        document.getElementById('growthRate').textContent = growthColor + ' ' + growthText;
+                    } else {
+                        document.getElementById('growthRate').textContent = '-';
+                    }
+                } else {
+                    // 데이터 없을 때
+                    document.getElementById('currentMonthRevenue').textContent = '₩0';
+                    document.getElementById('currentMonthCount').textContent = '0';
+                    document.getElementById('currentMonthName').textContent = now.getFullYear() + '년 ' + (now.getMonth() + 1) + '월';
+                    document.getElementById('lastMonthRevenue').textContent = '₩0';
+                    document.getElementById('lastMonthCount').textContent = '0';
+                    const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+                    document.getElementById('lastMonthName').textContent = lastMonth.getFullYear() + '년 ' + (lastMonth.getMonth() + 1) + '월';
+                    document.getElementById('growthRate').textContent = '-';
+                }
+            }
+            
+            function formatMonthName(monthStr) {
+                if (!monthStr) return '';
+                const parts = monthStr.split('-'); // '2026-01' 형식
+                return parts[0] + '년 ' + parseInt(parts[1]) + '월';
             }
 
             function updateCharts(data) {
