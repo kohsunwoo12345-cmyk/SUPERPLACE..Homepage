@@ -7623,6 +7623,8 @@ app.post('/api/admin/usage/:userId/update-limits', async (c) => {
         console.log('[Admin] Academy name:', academyName, 'Owner ID:', user.id)
         
         try {
+          // ⚡ 먼저 직접 academies 테이블에 INSERT 시도 (owner_id validation 없이)
+          // D1은 트랜잭션 내에서 FOREIGN KEY를 나중에 체크할 수 있음
           const insertResult = await c.env.DB.prepare(`
             INSERT INTO academies (academy_name, owner_id, created_at)
             VALUES (?, ?, datetime('now'))
@@ -7640,24 +7642,33 @@ app.post('/api/admin/usage/:userId/update-limits', async (c) => {
           console.log('[Admin] ✅ User academy_id updated to:', finalAcademyId)
         } catch (insertError) {
           console.error('[Admin] ❌ Academy INSERT failed:', insertError.message)
-          console.error('[Admin] Error details:', insertError)
           
-          // FOREIGN KEY 에러인 경우 대체 방법 사용
+          // ⚡ Fallback 1: FOREIGN KEY 에러면 user.id를 academy_id로 사용
           if (insertError.message && insertError.message.includes('FOREIGN KEY')) {
-            console.error('[Admin] 🔧 FOREIGN KEY constraint failed! Using fallback: user.id as academy_id')
-            console.error('[Admin] Will use user.id directly without creating academy record')
+            console.warn('[Admin] 🔧 FOREIGN KEY error - trying fallback method')
             
-            // ⚡ 해결책: academy 생성 없이 user.id를 academy_id로 사용
-            finalAcademyId = user.id
+            // 먼저 academies 테이블에 이미 해당 ID가 있는지 확인
+            const existingById = await c.env.DB.prepare(`
+              SELECT id FROM academies WHERE id = ?
+            `).bind(user.id).first()
             
-            // users 테이블의 academy_id 업데이트 (자기 자신의 ID 사용)
+            if (existingById) {
+              console.log('[Admin] ✅ Academy with user.id already exists, using it')
+              finalAcademyId = user.id
+            } else {
+              // ⚡ Fallback 2: academy 생성 없이 진행 (subscriptions만 생성)
+              console.warn('[Admin] ⚠️ Cannot create academy - will try to create subscription without academy record')
+              finalAcademyId = user.id // user.id를 academy_id로 사용
+            }
+            
+            // users 테이블의 academy_id 업데이트
             await c.env.DB.prepare(`
               UPDATE users SET academy_id = ? WHERE id = ?
             `).bind(finalAcademyId, user.id).run()
             
-            console.log('[Admin] ✅ Fallback: Using user.id as academy_id:', finalAcademyId)
+            console.log('[Admin] ✅ Using fallback academy_id:', finalAcademyId)
           } else {
-            // FOREIGN KEY 에러가 아닌 경우 재throw
+            // 다른 에러는 재throw
             throw insertError
           }
         }
@@ -7760,38 +7771,94 @@ app.post('/api/admin/usage/:userId/update-limits', async (c) => {
       // 새 관리자 플랜 생성
       console.log('[Admin] Creating new admin subscription for academy_id:', academyId)
       
-      const newSubResult = await c.env.DB.prepare(`
-        INSERT INTO subscriptions (
-          academy_id, plan_name, plan_price, 
-          student_limit, ai_report_limit, landing_page_limit, teacher_limit,
-          subscription_start_date, subscription_end_date, status, payment_method,
-          merchant_uid, created_at
-        )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
-      `).bind(
-        academyId, '관리자 설정 플랜', 0,
-        studentLimit, aiReportLimit, landingPageLimit, teacherLimit,
-        today, subscriptionEndDate, 'active', 'admin',
-        'admin_' + userId + '_' + Date.now()
-      ).run()
-      
-      const newSubId = newSubResult.meta.last_row_id
-      
-      // usage_tracking 생성
       try {
-        await c.env.DB.prepare(`
-          INSERT INTO usage_tracking (
-            academy_id, subscription_id,
-            current_students, ai_reports_used_this_month, 
-            landing_pages_created, current_teachers,
-            created_at, updated_at
+        const newSubResult = await c.env.DB.prepare(`
+          INSERT INTO subscriptions (
+            academy_id, plan_name, plan_price, 
+            student_limit, ai_report_limit, landing_page_limit, teacher_limit,
+            subscription_start_date, subscription_end_date, status, payment_method,
+            merchant_uid, created_at
           )
-          VALUES (?, ?, 0, 0, 0, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-        `).bind(academyId, newSubId).run()
-        console.log('✅ [Admin] New admin subscription created with usage_tracking')
-      } catch (usageError) {
-        console.warn('[Admin] Failed to create usage_tracking:', usageError.message)
-        console.log('✅ [Admin] New admin subscription created (usage_tracking will be auto-created on first use)')
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+        `).bind(
+          academyId, '관리자 설정 플랜', 0,
+          studentLimit, aiReportLimit, landingPageLimit, teacherLimit,
+          today, subscriptionEndDate, 'active', 'admin',
+          'admin_' + userId + '_' + Date.now()
+        ).run()
+        
+        const newSubId = newSubResult.meta.last_row_id
+        console.log('[Admin] ✅ Subscription created with ID:', newSubId)
+        
+        // usage_tracking 생성
+        try {
+          await c.env.DB.prepare(`
+            INSERT INTO usage_tracking (
+              academy_id, subscription_id,
+              current_students, ai_reports_used_this_month, 
+              landing_pages_created, current_teachers,
+              created_at, updated_at
+            )
+            VALUES (?, ?, 0, 0, 0, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+          `).bind(academyId, newSubId).run()
+          console.log('✅ [Admin] New admin subscription created with usage_tracking')
+        } catch (usageError) {
+          console.warn('[Admin] Failed to create usage_tracking:', usageError.message)
+          console.log('✅ [Admin] New admin subscription created (usage_tracking will be auto-created on first use)')
+        }
+      } catch (subscriptionError) {
+        console.error('[Admin] ❌ Subscription INSERT failed:', subscriptionError.message)
+        
+        if (subscriptionError.message && subscriptionError.message.includes('FOREIGN KEY')) {
+          console.error('[Admin] 🔧 Subscription FOREIGN KEY error!')
+          console.error('[Admin] academy_id used:', academyId)
+          
+          // academies 테이블에 레코드가 있는지 확인
+          const academyCheck = await c.env.DB.prepare(`
+            SELECT id, academy_name FROM academies WHERE id = ?
+          `).bind(academyId).first()
+          
+          if (!academyCheck) {
+            console.error('[Admin] ❌ Academy record missing for ID:', academyId)
+            console.error('[Admin] 🔧 Creating academy record now...')
+            
+            // 강제로 academy 레코드 생성 시도 (owner_id를 1로 설정 - admin)
+            try {
+              await c.env.DB.prepare(`
+                INSERT INTO academies (academy_name, owner_id, created_at)
+                VALUES (?, ?, datetime('now'))
+              `).bind(user.name + '학원', 1).run() // owner_id를 1 (admin)로 설정
+              
+              console.log('[Admin] ✅ Academy record created with admin as owner')
+              
+              // 다시 subscription 생성 시도
+              const retrySubResult = await c.env.DB.prepare(`
+                INSERT INTO subscriptions (
+                  academy_id, plan_name, plan_price, 
+                  student_limit, ai_report_limit, landing_page_limit, teacher_limit,
+                  subscription_start_date, subscription_end_date, status, payment_method,
+                  merchant_uid, created_at
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+              `).bind(
+                academyId, '관리자 설정 플랜', 0,
+                studentLimit, aiReportLimit, landingPageLimit, teacherLimit,
+                today, subscriptionEndDate, 'active', 'admin',
+                'admin_' + userId + '_' + Date.now()
+              ).run()
+              
+              console.log('[Admin] ✅ Subscription created on retry:', retrySubResult.meta.last_row_id)
+            } catch (retryError) {
+              console.error('[Admin] ❌ Retry also failed:', retryError.message)
+              throw retryError
+            }
+          } else {
+            console.error('[Admin] Academy exists but FK still failed - unknown issue')
+            throw subscriptionError
+          }
+        } else {
+          throw subscriptionError
+        }
       }
     }
     
