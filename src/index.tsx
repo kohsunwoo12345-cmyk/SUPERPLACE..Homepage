@@ -6849,7 +6849,7 @@ app.get('/api/subscriptions/status', async (c) => {
         
         await c.env.DB.prepare(`
           UPDATE user_permissions 
-          SET is_active = 0, updated_at = CURRENT_TIMESTAMP
+          SET is_active = 0
           WHERE user_id = ?
         `).bind(user.id).run()
         
@@ -7505,10 +7505,10 @@ app.post('/api/admin/revoke-plan/:userId', async (c) => {
     
     console.log('[Admin] Subscriptions expired:', updateResult.meta.changes)
     
-    // 2. 모든 권한 비활성화
+    // 2. 모든 권한 비활성화 (user_permissions 테이블에는 updated_at 없음)
     const revokeResult = await c.env.DB.prepare(`
       UPDATE user_permissions 
-      SET is_active = 0, updated_at = CURRENT_TIMESTAMP
+      SET is_active = 0
       WHERE user_id = ?
     `).bind(userId).run()
     
