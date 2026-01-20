@@ -7155,12 +7155,15 @@ app.get('/api/usage/check', async (c) => {
     }
 
     // 🔥 실제 데이터 조회: students 테이블에서 실제 학생 수 계산
+    // user_id로 조회하고 status='active'인 학생만 카운트 (학생 목록 API와 일치)
     let actualStudentsCount = 0
     try {
       const result = await c.env.DB.prepare(`
-        SELECT COUNT(*) as count FROM students WHERE academy_id = ?
-      `).bind(academyId).first()
+        SELECT COUNT(*) as count FROM students 
+        WHERE user_id = ? AND status = 'active'
+      `).bind(userId).first()
       actualStudentsCount = result?.count || 0
+      console.log('[Usage Check] Actual students count:', actualStudentsCount, 'for user:', userId)
     } catch (err) {
       console.error('[Usage] students table error:', err.message)
     }
@@ -7176,15 +7179,18 @@ app.get('/api/usage/check', async (c) => {
       console.error('[Usage] landing_pages table error:', err.message)
     }
     
-    // 🔥 실제 데이터 조회: teacher_applications 테이블에서 실제 선생님 수 계산
+    // 🔥 실제 데이터 조회: users 테이블에서 실제 선생님 수 계산
+    // academy_id가 현재 사용자인 선생님들 (user_type='teacher' AND academy_id=userId)
     let actualTeachersCount = 0
     try {
       const result = await c.env.DB.prepare(`
-        SELECT COUNT(*) as count FROM teacher_applications WHERE academy_id = ?
-      `).bind(academyId).first()
+        SELECT COUNT(*) as count FROM users 
+        WHERE academy_id = ? AND user_type = 'teacher'
+      `).bind(userId).first()
       actualTeachersCount = result?.count || 0
+      console.log('[Usage Check] Actual teachers count:', actualTeachersCount, 'for academy:', userId)
     } catch (err) {
-      console.error('[Usage] teacher_applications table error:', err.message)
+      console.error('[Usage] teachers count error:', err.message)
     }
 
     // 사용량 조회 (AI 리포트는 usage_tracking에서 조회)

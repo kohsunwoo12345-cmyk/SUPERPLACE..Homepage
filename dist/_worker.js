@@ -5441,12 +5441,14 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
         SET status = 'expired', updated_at = CURRENT_TIMESTAMP
         WHERE id = ?
       `).bind(o.id).run(),e.json({success:!1,error:"구독이 만료되었습니다",expired:!0,endDate:o.subscription_end_date},403);let u=0;try{const v=await e.env.DB.prepare(`
-        SELECT COUNT(*) as count FROM students WHERE academy_id = ?
-      `).bind(n).first();u=(v==null?void 0:v.count)||0}catch(v){console.error("[Usage] students table error:",v.message)}let m=0;try{const v=await e.env.DB.prepare(`
+        SELECT COUNT(*) as count FROM students 
+        WHERE user_id = ? AND status = 'active'
+      `).bind(r).first();u=(v==null?void 0:v.count)||0,console.log("[Usage Check] Actual students count:",u,"for user:",r)}catch(v){console.error("[Usage] students table error:",v.message)}let m=0;try{const v=await e.env.DB.prepare(`
         SELECT COUNT(*) as count FROM landing_pages WHERE user_id = ?
       `).bind(r).first();m=(v==null?void 0:v.count)||0}catch(v){console.error("[Usage] landing_pages table error:",v.message)}let g=0;try{const v=await e.env.DB.prepare(`
-        SELECT COUNT(*) as count FROM teacher_applications WHERE academy_id = ?
-      `).bind(n).first();g=(v==null?void 0:v.count)||0}catch(v){console.error("[Usage] teacher_applications table error:",v.message)}let b=await e.env.DB.prepare(`
+        SELECT COUNT(*) as count FROM users 
+        WHERE academy_id = ? AND user_type = 'teacher'
+      `).bind(r).first();g=(v==null?void 0:v.count)||0,console.log("[Usage Check] Actual teachers count:",g,"for academy:",r)}catch(v){console.error("[Usage] teachers count error:",v.message)}let b=await e.env.DB.prepare(`
       SELECT * FROM usage_tracking 
       WHERE academy_id = ? AND subscription_id = ?
     `).bind(n,o.id).first(),h=0;return b&&(h=b.ai_reports_used_this_month||0),e.json({success:!0,limits:{students:o.student_limit,aiReports:o.ai_report_limit,landingPages:o.landing_page_limit,teachers:o.teacher_limit},usage:{students:u,aiReports:h,landingPages:m,teachers:g,sms:(b==null?void 0:b.sms_sent_this_month)||0}})}catch(t){return console.error("[Usage Check] Error:",t),e.json({success:!1,error:t.message,stack:t.stack},500)}});d.post("/api/usage/check-student-limit",async e=>{try{const t=X(e,"session_id");if(!t)return e.json({success:!1,error:"Not authenticated"},401);const r=JSON.parse(t).id,a=await e.env.DB.prepare(`
