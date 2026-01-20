@@ -6839,6 +6839,23 @@ app.get('/api/subscriptions/status', async (c) => {
         WHERE id = ?
       `).bind(subscription.id).run()
 
+      // 🔥 자동 권한 환수: 구독 만료 시 모든 권한 비활성화
+      const user = await c.env.DB.prepare(`
+        SELECT id FROM users WHERE academy_id = ?
+      `).bind(academyId).first()
+
+      if (user) {
+        console.log('[Subscription Expired] Revoking all permissions for user:', user.id)
+        
+        await c.env.DB.prepare(`
+          UPDATE user_permissions 
+          SET is_active = 0, updated_at = CURRENT_TIMESTAMP
+          WHERE user_id = ?
+        `).bind(user.id).run()
+        
+        console.log('[Subscription Expired] All permissions revoked for user:', user.id)
+      }
+
       return c.json({ 
         success: true, 
         hasSubscription: false,
@@ -11396,7 +11413,7 @@ app.get('/dashboard', (c) => {
                         <h2 class="text-2xl font-bold text-gray-900 mb-6">🚀 주요 기능</h2>
                         <div class="grid md:grid-cols-2 gap-4">
                             <!-- Landing Page Builder -->
-                            <a href="/tools/landing-builder" class="flex items-center p-6 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl hover:shadow-lg transition-all border-2 border-purple-200">
+                            <a href="/tools/landing-builder" class="dashboard-card-landing-builder flex items-center p-6 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl hover:shadow-lg transition-all border-2 border-purple-200">
                                 <div class="w-14 h-14 bg-purple-500 rounded-xl flex items-center justify-center mr-4 flex-shrink-0">
                                     <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
@@ -11412,7 +11429,7 @@ app.get('/dashboard', (c) => {
                             </a>
 
                             <!-- AI Learning Report -->
-                            <a href="/tools/ai-learning-report" class="flex items-center p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl hover:shadow-lg transition-all border-2 border-blue-200">
+                            <a href="/tools/ai-learning-report" class="dashboard-card-ai-report flex items-center p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl hover:shadow-lg transition-all border-2 border-blue-200">
                                 <div class="w-14 h-14 bg-blue-500 rounded-xl flex items-center justify-center mr-4 flex-shrink-0">
                                     <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
@@ -11428,7 +11445,7 @@ app.get('/dashboard', (c) => {
                             </a>
 
                             <!-- Student Management -->
-                            <a href="/students/list" class="flex items-center p-6 bg-gradient-to-br from-green-50 to-green-100 rounded-xl hover:shadow-lg transition-all border-2 border-green-200">
+                            <a href="/students/list" class="dashboard-card-student-mgmt flex items-center p-6 bg-gradient-to-br from-green-50 to-green-100 rounded-xl hover:shadow-lg transition-all border-2 border-green-200">
                                 <div class="w-14 h-14 bg-green-500 rounded-xl flex items-center justify-center mr-4 flex-shrink-0">
                                     <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
@@ -11444,7 +11461,7 @@ app.get('/dashboard', (c) => {
                             </a>
 
                             <!-- SMS Message -->
-                            <a href="/tools/sms-sender" class="flex items-center p-6 bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl hover:shadow-lg transition-all border-2 border-orange-200">
+                            <a href="/tools/sms-sender" class="dashboard-card-sms flex items-center p-6 bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl hover:shadow-lg transition-all border-2 border-orange-200">
                                 <div class="w-14 h-14 bg-orange-500 rounded-xl flex items-center justify-center mr-4 flex-shrink-0">
                                     <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
@@ -11903,7 +11920,7 @@ app.get('/dashboard', (c) => {
                             'blog_writer': 'a[href="/tools/blog-writer"]',
                             'landing_builder': 'a[href="/tools/landing-builder"]',
                             'sms_sender': 'a[href="/tools/sms-sender"]',
-                            'student_management': 'a[href="/students"]',
+                            'student_management': 'a[href="/students/list"], a[href="/students"]',
                             'dashboard_analytics': 'a[href="/tools/dashboard-analytics"]',
                             'ai_learning_report': 'a[href="/tools/ai-learning-report"]',
                             'keyword_analyzer': 'a[href="/tools/keyword-analyzer"]',
@@ -11918,6 +11935,14 @@ app.get('/dashboard', (c) => {
                             'roi_calculator': 'a[href="/tools/roi-calculator"]'
                         }
                         
+                        // 🔥 대시보드 주요 기능 카드 매핑 추가
+                        const dashboardCardMapping = {
+                            'landing_builder': '.dashboard-card-landing-builder',
+                            'ai_learning_report': '.dashboard-card-ai-report',
+                            'student_management': '.dashboard-card-student-mgmt',
+                            'sms_sender': '.dashboard-card-sms'
+                        }
+                        
                         // 모든 도구 카드를 먼저 숨김
                         Object.values(toolMapping).forEach(selector => {
                             const elements = document.querySelectorAll(selector)
@@ -11926,14 +11951,35 @@ app.get('/dashboard', (c) => {
                             })
                         })
                         
+                        // 🔥 모든 대시보드 카드를 먼저 숨김
+                        Object.values(dashboardCardMapping).forEach(selector => {
+                            const elements = document.querySelectorAll(selector)
+                            elements.forEach(el => {
+                                el.style.display = 'none'
+                                console.log('🔒 대시보드 카드 숨김:', selector)
+                            })
+                        })
+                        
                         // 권한이 있는 도구만 표시
                         Object.keys(permissions).forEach(permKey => {
-                            if (permissions[permKey] && toolMapping[permKey]) {
-                                const elements = document.querySelectorAll(toolMapping[permKey])
-                                elements.forEach(el => {
-                                    el.style.display = ''
-                                })
-                                console.log('✅ 권한 있음:', permKey)
+                            if (permissions[permKey]) {
+                                // 일반 도구 표시
+                                if (toolMapping[permKey]) {
+                                    const elements = document.querySelectorAll(toolMapping[permKey])
+                                    elements.forEach(el => {
+                                        el.style.display = ''
+                                    })
+                                    console.log('✅ 권한 있음:', permKey)
+                                }
+                                
+                                // 🔥 대시보드 카드 표시
+                                if (dashboardCardMapping[permKey]) {
+                                    const elements = document.querySelectorAll(dashboardCardMapping[permKey])
+                                    elements.forEach(el => {
+                                        el.style.display = ''
+                                        console.log('✅ 대시보드 카드 표시:', permKey)
+                                    })
+                                }
                             }
                         })
                         

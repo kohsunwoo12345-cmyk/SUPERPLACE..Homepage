@@ -5357,11 +5357,17 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
         WHERE academy_id = ? AND plan_name = '관리자 설정 플랜'
         ORDER BY created_at DESC
         LIMIT 1
-      `).bind(n).first();return console.log("[Subscription Status] Admin subscription:",m),m?(console.log("[Subscription Status] Returning admin subscription"),e.json({success:!0,hasSubscription:!0,subscription:{id:m.id,planName:m.plan_name,startDate:m.subscription_start_date,endDate:m.subscription_end_date,studentLimit:m.student_limit||0,aiReportLimit:m.ai_report_limit||0,landingPageLimit:m.landing_page_limit||0,teacherLimit:m.teacher_limit||0}})):(console.log("[Subscription Status] No subscription found at all"),e.json({success:!0,hasSubscription:!1,message:"활성 구독이 없습니다"}))}console.log("[Subscription Status] Found active subscription, checking expiration");const l=new Date,i=new Date(l.getTime()+540*60*1e3),c=i.toISOString().split("T")[0],p=new Date(o.subscription_end_date+"T23:59:59+09:00");return i>p?(await e.env.DB.prepare(`
+      `).bind(n).first();return console.log("[Subscription Status] Admin subscription:",m),m?(console.log("[Subscription Status] Returning admin subscription"),e.json({success:!0,hasSubscription:!0,subscription:{id:m.id,planName:m.plan_name,startDate:m.subscription_start_date,endDate:m.subscription_end_date,studentLimit:m.student_limit||0,aiReportLimit:m.ai_report_limit||0,landingPageLimit:m.landing_page_limit||0,teacherLimit:m.teacher_limit||0}})):(console.log("[Subscription Status] No subscription found at all"),e.json({success:!0,hasSubscription:!1,message:"활성 구독이 없습니다"}))}console.log("[Subscription Status] Found active subscription, checking expiration");const l=new Date,i=new Date(l.getTime()+540*60*1e3),c=i.toISOString().split("T")[0],p=new Date(o.subscription_end_date+"T23:59:59+09:00");if(i>p){await e.env.DB.prepare(`
         UPDATE subscriptions 
         SET status = 'expired', updated_at = CURRENT_TIMESTAMP
         WHERE id = ?
-      `).bind(o.id).run(),e.json({success:!0,hasSubscription:!1,message:"구독이 만료되었습니다"})):e.json({success:!0,hasSubscription:!0,subscription:{id:o.id,planName:o.plan_name,startDate:o.subscription_start_date,endDate:o.subscription_end_date,studentLimit:o.student_limit,aiReportLimit:o.ai_report_limit,landingPageLimit:o.landing_page_limit,teacherLimit:o.teacher_limit}})}catch(t){return console.error("[Subscription Status] Error:",t),e.json({success:!1,error:t.message},500)}});d.get("/api/usage/check",async e=>{try{const t=X(e,"session_id");if(!t)return e.json({success:!1,error:"Not authenticated"},401);const s=await e.env.DB.prepare(`
+      `).bind(o.id).run();const m=await e.env.DB.prepare(`
+        SELECT id FROM users WHERE academy_id = ?
+      `).bind(n).first();return m&&(console.log("[Subscription Expired] Revoking all permissions for user:",m.id),await e.env.DB.prepare(`
+          UPDATE user_permissions 
+          SET is_active = 0, updated_at = CURRENT_TIMESTAMP
+          WHERE user_id = ?
+        `).bind(m.id).run(),console.log("[Subscription Expired] All permissions revoked for user:",m.id)),e.json({success:!0,hasSubscription:!1,message:"구독이 만료되었습니다"})}return e.json({success:!0,hasSubscription:!0,subscription:{id:o.id,planName:o.plan_name,startDate:o.subscription_start_date,endDate:o.subscription_end_date,studentLimit:o.student_limit,aiReportLimit:o.ai_report_limit,landingPageLimit:o.landing_page_limit,teacherLimit:o.teacher_limit}})}catch(t){return console.error("[Subscription Status] Error:",t),e.json({success:!1,error:t.message},500)}});d.get("/api/usage/check",async e=>{try{const t=X(e,"session_id");if(!t)return e.json({success:!1,error:"Not authenticated"},401);const s=await e.env.DB.prepare(`
       SELECT user_id FROM sessions WHERE session_id = ? AND expires_at > datetime('now')
     `).bind(t).first();if(!s)return e.json({success:!1,error:"Session expired or invalid"},401);const r=s.user_id,a=await e.env.DB.prepare("SELECT id, academy_id FROM users WHERE id = ?").bind(r).first();if(!a)return e.json({success:!1,error:"User not found"},404);let n=a.id;if((a==null?void 0:a.academy_id)!==a.id)try{await e.env.DB.prepare("UPDATE users SET academy_id = ? WHERE id = ?").bind(n,r).run(),console.log("[Usage Check] Fixed academy_id to:",r)}catch(m){console.error("[Usage Check] Failed to update academy_id:",m)}let o=await e.env.DB.prepare(`
       SELECT * FROM subscriptions 
@@ -9238,7 +9244,7 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
                         <h2 class="text-2xl font-bold text-gray-900 mb-6">🚀 주요 기능</h2>
                         <div class="grid md:grid-cols-2 gap-4">
                             <!-- Landing Page Builder -->
-                            <a href="/tools/landing-builder" class="flex items-center p-6 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl hover:shadow-lg transition-all border-2 border-purple-200">
+                            <a href="/tools/landing-builder" class="dashboard-card-landing-builder flex items-center p-6 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl hover:shadow-lg transition-all border-2 border-purple-200">
                                 <div class="w-14 h-14 bg-purple-500 rounded-xl flex items-center justify-center mr-4 flex-shrink-0">
                                     <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
@@ -9254,7 +9260,7 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
                             </a>
 
                             <!-- AI Learning Report -->
-                            <a href="/tools/ai-learning-report" class="flex items-center p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl hover:shadow-lg transition-all border-2 border-blue-200">
+                            <a href="/tools/ai-learning-report" class="dashboard-card-ai-report flex items-center p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl hover:shadow-lg transition-all border-2 border-blue-200">
                                 <div class="w-14 h-14 bg-blue-500 rounded-xl flex items-center justify-center mr-4 flex-shrink-0">
                                     <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
@@ -9270,7 +9276,7 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
                             </a>
 
                             <!-- Student Management -->
-                            <a href="/students/list" class="flex items-center p-6 bg-gradient-to-br from-green-50 to-green-100 rounded-xl hover:shadow-lg transition-all border-2 border-green-200">
+                            <a href="/students/list" class="dashboard-card-student-mgmt flex items-center p-6 bg-gradient-to-br from-green-50 to-green-100 rounded-xl hover:shadow-lg transition-all border-2 border-green-200">
                                 <div class="w-14 h-14 bg-green-500 rounded-xl flex items-center justify-center mr-4 flex-shrink-0">
                                     <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
@@ -9286,7 +9292,7 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
                             </a>
 
                             <!-- SMS Message -->
-                            <a href="/tools/sms-sender" class="flex items-center p-6 bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl hover:shadow-lg transition-all border-2 border-orange-200">
+                            <a href="/tools/sms-sender" class="dashboard-card-sms flex items-center p-6 bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl hover:shadow-lg transition-all border-2 border-orange-200">
                                 <div class="w-14 h-14 bg-orange-500 rounded-xl flex items-center justify-center mr-4 flex-shrink-0">
                                     <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
@@ -9745,7 +9751,7 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
                             'blog_writer': 'a[href="/tools/blog-writer"]',
                             'landing_builder': 'a[href="/tools/landing-builder"]',
                             'sms_sender': 'a[href="/tools/sms-sender"]',
-                            'student_management': 'a[href="/students"]',
+                            'student_management': 'a[href="/students/list"], a[href="/students"]',
                             'dashboard_analytics': 'a[href="/tools/dashboard-analytics"]',
                             'ai_learning_report': 'a[href="/tools/ai-learning-report"]',
                             'keyword_analyzer': 'a[href="/tools/keyword-analyzer"]',
@@ -9760,6 +9766,14 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
                             'roi_calculator': 'a[href="/tools/roi-calculator"]'
                         }
                         
+                        // 🔥 대시보드 주요 기능 카드 매핑 추가
+                        const dashboardCardMapping = {
+                            'landing_builder': '.dashboard-card-landing-builder',
+                            'ai_learning_report': '.dashboard-card-ai-report',
+                            'student_management': '.dashboard-card-student-mgmt',
+                            'sms_sender': '.dashboard-card-sms'
+                        }
+                        
                         // 모든 도구 카드를 먼저 숨김
                         Object.values(toolMapping).forEach(selector => {
                             const elements = document.querySelectorAll(selector)
@@ -9768,14 +9782,35 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
                             })
                         })
                         
+                        // 🔥 모든 대시보드 카드를 먼저 숨김
+                        Object.values(dashboardCardMapping).forEach(selector => {
+                            const elements = document.querySelectorAll(selector)
+                            elements.forEach(el => {
+                                el.style.display = 'none'
+                                console.log('🔒 대시보드 카드 숨김:', selector)
+                            })
+                        })
+                        
                         // 권한이 있는 도구만 표시
                         Object.keys(permissions).forEach(permKey => {
-                            if (permissions[permKey] && toolMapping[permKey]) {
-                                const elements = document.querySelectorAll(toolMapping[permKey])
-                                elements.forEach(el => {
-                                    el.style.display = ''
-                                })
-                                console.log('✅ 권한 있음:', permKey)
+                            if (permissions[permKey]) {
+                                // 일반 도구 표시
+                                if (toolMapping[permKey]) {
+                                    const elements = document.querySelectorAll(toolMapping[permKey])
+                                    elements.forEach(el => {
+                                        el.style.display = ''
+                                    })
+                                    console.log('✅ 권한 있음:', permKey)
+                                }
+                                
+                                // 🔥 대시보드 카드 표시
+                                if (dashboardCardMapping[permKey]) {
+                                    const elements = document.querySelectorAll(dashboardCardMapping[permKey])
+                                    elements.forEach(el => {
+                                        el.style.display = ''
+                                        console.log('✅ 대시보드 카드 표시:', permKey)
+                                    })
+                                }
                             }
                         })
                         
