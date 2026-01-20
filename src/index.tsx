@@ -7435,7 +7435,8 @@ app.post('/api/admin/usage/:userId/update-limits', async (c) => {
       console.log('✅ [Admin] Existing admin subscription updated')
       
       // 🔥 구독 설정 시 자동으로 권한 부여
-      await grantDefaultPermissions(c.env.DB, userId)
+      const permissionResult = await grantDefaultPermissions(c.env.DB, userId)
+      console.log('[Admin] Permission grant result:', permissionResult)
     } else {
       // 새 관리자 플랜 생성
       console.log('[Admin] Creating new admin subscription for academy_id:', academyId)
@@ -7471,13 +7472,15 @@ app.post('/api/admin/usage/:userId/update-limits', async (c) => {
         console.log('✅ [Admin] New admin subscription created with usage_tracking')
         
         // 🔥 구독 설정 시 자동으로 권한 부여
-        await grantDefaultPermissions(c.env.DB, userId)
+        const permissionResult = await grantDefaultPermissions(c.env.DB, userId)
+        console.log('[Admin] Permission grant result:', permissionResult)
       } catch (usageError) {
         console.warn('[Admin] Failed to create usage_tracking:', usageError.message)
         console.log('✅ [Admin] New admin subscription created (usage_tracking will be auto-created on first use)')
         
         // 🔥 구독 설정 시 자동으로 권한 부여
-        await grantDefaultPermissions(c.env.DB, userId)
+        const permissionResult = await grantDefaultPermissions(c.env.DB, userId)
+        console.log('[Admin] Permission grant result:', permissionResult)
       }
     }
     
