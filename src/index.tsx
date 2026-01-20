@@ -7155,15 +7155,25 @@ app.get('/api/usage/check', async (c) => {
     }
 
     // 🔥 실제 데이터 조회: students 테이블에서 실제 학생 수 계산
-    // user_id로 조회하고 status='active'인 학생만 카운트 (학생 목록 API와 일치)
+    // academy_id로 조회하고 status='active'인 학생만 카운트
     let actualStudentsCount = 0
     try {
+      // 먼저 users.academy_id가 올바르게 설정되어 있는지 확인
+      console.log('[Usage Check] userId:', userId, 'academyId:', academyId)
+      console.log('[Usage Check] user.academy_id:', user.academy_id, 'user.id:', user.id)
+      
       const result = await c.env.DB.prepare(`
         SELECT COUNT(*) as count FROM students 
-        WHERE user_id = ? AND status = 'active'
-      `).bind(userId).first()
+        WHERE academy_id = ? AND status = 'active'
+      `).bind(academyId).first()
       actualStudentsCount = result?.count || 0
-      console.log('[Usage Check] Actual students count:', actualStudentsCount, 'for user:', userId)
+      console.log('[Usage Check] Actual students count:', actualStudentsCount, 'for academy_id:', academyId)
+      
+      // 디버깅: 모든 학생 레코드 확인
+      const allStudents = await c.env.DB.prepare(`
+        SELECT id, name, academy_id, status FROM students LIMIT 10
+      `).all()
+      console.log('[Usage Check] Sample students:', JSON.stringify(allStudents.results))
     } catch (err) {
       console.error('[Usage] students table error:', err.message)
     }
@@ -26476,7 +26486,7 @@ app.get('/api/students/list', async (c) => {
           FROM students s
           LEFT JOIN classes c ON s.class_id = c.id
           LEFT JOIN users u ON c.teacher_id = u.id
-          WHERE s.user_id = ? AND s.class_id = ? AND s.status = 'active'
+          WHERE s.academy_id = ? AND s.class_id = ? AND s.status = 'active'
           ORDER BY s.name
         `
         params = [userId, classId]
@@ -26486,7 +26496,7 @@ app.get('/api/students/list', async (c) => {
           FROM students s
           LEFT JOIN classes c ON s.class_id = c.id
           LEFT JOIN users u ON c.teacher_id = u.id
-          WHERE s.user_id = ? AND s.status = 'active'
+          WHERE s.academy_id = ? AND s.status = 'active'
           ORDER BY c.name, s.name
         `
         params = [userId]

@@ -5440,10 +5440,12 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
         UPDATE subscriptions 
         SET status = 'expired', updated_at = CURRENT_TIMESTAMP
         WHERE id = ?
-      `).bind(o.id).run(),e.json({success:!1,error:"구독이 만료되었습니다",expired:!0,endDate:o.subscription_end_date},403);let u=0;try{const v=await e.env.DB.prepare(`
+      `).bind(o.id).run(),e.json({success:!1,error:"구독이 만료되었습니다",expired:!0,endDate:o.subscription_end_date},403);let u=0;try{console.log("[Usage Check] userId:",r,"academyId:",n),console.log("[Usage Check] user.academy_id:",a.academy_id,"user.id:",a.id);const v=await e.env.DB.prepare(`
         SELECT COUNT(*) as count FROM students 
-        WHERE user_id = ? AND status = 'active'
-      `).bind(r).first();u=(v==null?void 0:v.count)||0,console.log("[Usage Check] Actual students count:",u,"for user:",r)}catch(v){console.error("[Usage] students table error:",v.message)}let m=0;try{const v=await e.env.DB.prepare(`
+        WHERE academy_id = ? AND status = 'active'
+      `).bind(n).first();u=(v==null?void 0:v.count)||0,console.log("[Usage Check] Actual students count:",u,"for academy_id:",n);const f=await e.env.DB.prepare(`
+        SELECT id, name, academy_id, status FROM students LIMIT 10
+      `).all();console.log("[Usage Check] Sample students:",JSON.stringify(f.results))}catch(v){console.error("[Usage] students table error:",v.message)}let m=0;try{const v=await e.env.DB.prepare(`
         SELECT COUNT(*) as count FROM landing_pages WHERE user_id = ?
       `).bind(r).first();m=(v==null?void 0:v.count)||0}catch(v){console.error("[Usage] landing_pages table error:",v.message)}let g=0;try{const v=await e.env.DB.prepare(`
         SELECT COUNT(*) as count FROM users 
@@ -19719,14 +19721,14 @@ ${l.director_name} 원장님의 승인을 기다려주세요.`,directorName:l.di
           FROM students s
           LEFT JOIN classes c ON s.class_id = c.id
           LEFT JOIN users u ON c.teacher_id = u.id
-          WHERE s.user_id = ? AND s.class_id = ? AND s.status = 'active'
+          WHERE s.academy_id = ? AND s.class_id = ? AND s.status = 'active'
           ORDER BY s.name
         `,n=[t,r]):(a=`
           SELECT s.*, c.name as class_name, u.name as teacher_name
           FROM students s
           LEFT JOIN classes c ON s.class_id = c.id
           LEFT JOIN users u ON c.teacher_id = u.id
-          WHERE s.user_id = ? AND s.status = 'active'
+          WHERE s.academy_id = ? AND s.status = 'active'
           ORDER BY c.name, s.name
         `,n=[t]);const o=await e.env.DB.prepare(a).bind(...n).all();return e.json({success:!0,students:o.results||[]})}catch(t){return console.error("Get students error:",t),e.json({success:!1,error:"학생 목록 조회 중 오류가 발생했습니다."},500)}});d.get("/api/admin/users/:id/detail",async e=>{try{const t=e.req.param("id"),s=await e.env.DB.prepare(`
       SELECT id, email, name, phone, academy_name, role, points, created_at
