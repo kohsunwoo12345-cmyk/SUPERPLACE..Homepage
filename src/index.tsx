@@ -33085,16 +33085,22 @@ app.post('/api/emergency/restore-subscription/:userId', async (c) => {
     
     const subscriptionId = result.meta.last_row_id
     
-    // usage_tracking 생성
-    await c.env.DB.prepare(`
-      INSERT INTO usage_tracking (
-        academy_id, subscription_id,
-        current_students, ai_reports_used_this_month,
-        landing_pages_created, current_teachers,
-        created_at, updated_at
-      )
-      VALUES (?, ?, 0, 0, 0, 0, datetime('now'), datetime('now'))
-    `).bind(academyId, subscriptionId).run()
+    // usage_tracking 생성 (실패해도 계속 진행)
+    try {
+      await c.env.DB.prepare(`
+        INSERT INTO usage_tracking (
+          academy_id, subscription_id,
+          current_students, ai_reports_used_this_month,
+          landing_pages_created, current_teachers,
+          created_at, updated_at
+        )
+        VALUES (?, ?, 0, 0, 0, 0, datetime('now'), datetime('now'))
+      `).bind(academyId, subscriptionId).run()
+      console.log('[Emergency Restore] usage_tracking created')
+    } catch (usageError) {
+      console.warn('[Emergency Restore] Failed to create usage_tracking:', usageError.message)
+      // Continue anyway - subscription is created
+    }
     
     console.log('[Emergency Restore] Subscription restored successfully')
     

@@ -26066,12 +26066,12 @@ ${l.director_name} 원장님의 승인을 기다려주세요.`,directorName:l.di
         merchant_uid, created_at, updated_at
       )
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
-    `).bind(i,"관리자 설정 플랜",0,s,r,a,n,c,u,"active","admin","admin_"+t+"_"+Date.now()).run()).meta.last_row_id;return await e.env.DB.prepare(`
-      INSERT INTO usage_tracking (
-        academy_id, subscription_id,
-        current_students, ai_reports_used_this_month,
-        landing_pages_created, current_teachers,
-        created_at, updated_at
-      )
-      VALUES (?, ?, 0, 0, 0, 0, datetime('now'), datetime('now'))
-    `).bind(i,x).run(),console.log("[Emergency Restore] Subscription restored successfully"),e.json({success:!0,message:"구독이 복구되었습니다",subscription:{id:x,academy_id:i,start_date:c,end_date:u,limits:{students:s,ai_reports:r,landing_pages:a,teachers:n}}})}catch(t){return console.error("[Emergency Restore] Error:",t),e.json({success:!1,error:t.message},500)}});const lt=new et,Ys=Object.assign({"/src/index.tsx":d});let Rt=!1;for(const[,e]of Object.entries(Ys))e&&(lt.all("*",t=>{let s;try{s=t.executionCtx}catch{}return e.fetch(t.req.raw,t.env,s)}),lt.notFound(t=>{let s;try{s=t.executionCtx}catch{}return e.fetch(t.req.raw,t.env,s)}),Rt=!0);if(!Rt)throw new Error("Can't import modules from ['/src/index.ts','/src/index.tsx','/app/server.ts']");export{lt as default};
+    `).bind(i,"관리자 설정 플랜",0,s,r,a,n,c,u,"active","admin","admin_"+t+"_"+Date.now()).run()).meta.last_row_id;try{await e.env.DB.prepare(`
+        INSERT INTO usage_tracking (
+          academy_id, subscription_id,
+          current_students, ai_reports_used_this_month,
+          landing_pages_created, current_teachers,
+          created_at, updated_at
+        )
+        VALUES (?, ?, 0, 0, 0, 0, datetime('now'), datetime('now'))
+      `).bind(i,x).run(),console.log("[Emergency Restore] usage_tracking created")}catch(b){console.warn("[Emergency Restore] Failed to create usage_tracking:",b.message)}return console.log("[Emergency Restore] Subscription restored successfully"),e.json({success:!0,message:"구독이 복구되었습니다",subscription:{id:x,academy_id:i,start_date:c,end_date:u,limits:{students:s,ai_reports:r,landing_pages:a,teachers:n}}})}catch(t){return console.error("[Emergency Restore] Error:",t),e.json({success:!1,error:t.message},500)}});const lt=new et,Ys=Object.assign({"/src/index.tsx":d});let Rt=!1;for(const[,e]of Object.entries(Ys))e&&(lt.all("*",t=>{let s;try{s=t.executionCtx}catch{}return e.fetch(t.req.raw,t.env,s)}),lt.notFound(t=>{let s;try{s=t.executionCtx}catch{}return e.fetch(t.req.raw,t.env,s)}),Rt=!0);if(!Rt)throw new Error("Can't import modules from ['/src/index.ts','/src/index.tsx','/app/server.ts']");export{lt as default};
