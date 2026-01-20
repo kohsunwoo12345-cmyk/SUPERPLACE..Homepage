@@ -6577,26 +6577,35 @@ app.post('/api/payments/webhook', async (c) => {
       }
 
       // academies 테이블에 레코드가 있는지 확인하고 없으면 생성 (FOREIGN KEY 제약 조건 만족)
-      const existingAcademy = await c.env.DB.prepare(`
-        SELECT id FROM academies WHERE id = ?
+      // INSERT OR IGNORE를 사용하여 중복 시 무시
+      console.log('[Payment Webhook] Ensuring academy record exists for user:', academyId)
+      
+      // 사용자 정보 조회
+      const user = await c.env.DB.prepare(`SELECT name FROM users WHERE id = ?`).bind(academyId).first()
+      const academyName = user?.name ? user.name + ' 학원' : '학원'
+      
+      try {
+        await c.env.DB.prepare(`
+          INSERT OR IGNORE INTO academies (academy_name, owner_id, created_at)
+          VALUES (?, ?, CURRENT_TIMESTAMP)
+        `).bind(academyName, academyId).run()
+        console.log('[Payment Webhook] Academy record ensured')
+      } catch (academyError) {
+        console.error('[Payment Webhook] Academy insert failed:', academyError)
+      }
+      
+      // academyId는 owner_id로 매칭된 academy id를 가져옴
+      const academy = await c.env.DB.prepare(`
+        SELECT id FROM academies WHERE owner_id = ?
       `).bind(academyId).first()
       
-      if (!existingAcademy) {
-        console.log('[Payment Webhook] Creating academy record with id:', academyId)
-        // 사용자 정보 조회
-        const user = await c.env.DB.prepare(`SELECT name FROM users WHERE id = ?`).bind(academyId).first()
-        const academyName = user?.name ? user.name + ' 학원' : '학원'
-        
-        await c.env.DB.prepare(`
-          INSERT INTO academies (id, academy_name, owner_id, created_at)
-          VALUES (?, ?, ?, CURRENT_TIMESTAMP)
-        `).bind(academyId, academyName, academyId).run()
-      }
+      const finalAcademyId = academy?.id || academyId
+      console.log('[Payment Webhook] Using finalAcademyId:', finalAcademyId)
 
-      // users 테이블에서 academy_id 업데이트 (본인 ID로)
+      // users 테이블에서 academy_id 업데이트
       await c.env.DB.prepare(`
         UPDATE users SET academy_id = ? WHERE id = ?
-      `).bind(academyId, academyId).run()
+      `).bind(finalAcademyId, academyId).run()
 
       // 구독 시작일과 종료일 계산 (1개월)
       const now = new Date()
@@ -6608,7 +6617,7 @@ app.post('/api/payments/webhook', async (c) => {
         UPDATE subscriptions 
         SET status = 'expired', updated_at = CURRENT_TIMESTAMP
         WHERE academy_id = ? AND status = 'active'
-      `).bind(academyId).run()
+      `).bind(finalAcademyId).run()
 
       // 새 구독 생성
       const result = await c.env.DB.prepare(`
@@ -6618,7 +6627,7 @@ app.post('/api/payments/webhook', async (c) => {
           subscription_end_date, status, payment_method, merchant_uid, imp_uid
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', 'card', ?, ?)
       `).bind(
-        academyId,
+        finalAcademyId,
         planInfo.name,
         planInfo.price,
         planInfo.studentLimit,
@@ -6633,7 +6642,7 @@ app.post('/api/payments/webhook', async (c) => {
 
       console.log('[Payment Webhook] Subscription created:', {
         subscriptionId: result.meta.last_row_id,
-        academyId,
+        academyId: finalAcademyId,
         plan: planInfo.name,
         startDate,
         endDate
@@ -6647,7 +6656,7 @@ app.post('/api/payments/webhook', async (c) => {
         { route: '/tools/search-volume', name: '네이버 검색량 조회' }
       ]
       
-      // user_programs 테이블에 기본 4개 프로그램 추가
+      // user_programs 테이블에 기본 4개 프로그램 추가 (user_id는 원래 사용자 ID 사용)
       for (const program of programs) {
         try {
           await c.env.DB.prepare(`
@@ -6689,26 +6698,35 @@ app.post('/api/payments/complete', async (c) => {
     }
 
     // academies 테이블에 레코드가 있는지 확인하고 없으면 생성 (FOREIGN KEY 제약 조건 만족)
-    const existingAcademy = await c.env.DB.prepare(`
-      SELECT id FROM academies WHERE id = ?
+    // INSERT OR IGNORE를 사용하여 중복 시 무시
+    console.log('[Payment Complete] Ensuring academy record exists for user:', academyId)
+    
+    // 사용자 정보 조회
+    const user = await c.env.DB.prepare(`SELECT name FROM users WHERE id = ?`).bind(academyId).first()
+    const academyName = user?.name ? user.name + ' 학원' : '학원'
+    
+    try {
+      await c.env.DB.prepare(`
+        INSERT OR IGNORE INTO academies (academy_name, owner_id, created_at)
+        VALUES (?, ?, CURRENT_TIMESTAMP)
+      `).bind(academyName, academyId).run()
+      console.log('[Payment Complete] Academy record ensured')
+    } catch (academyError) {
+      console.error('[Payment Complete] Academy insert failed:', academyError)
+    }
+    
+    // academyId는 owner_id로 매칭된 academy id를 가져옴
+    const academy = await c.env.DB.prepare(`
+      SELECT id FROM academies WHERE owner_id = ?
     `).bind(academyId).first()
     
-    if (!existingAcademy) {
-      console.log('[Payment Complete] Creating academy record with id:', academyId)
-      // 사용자 정보 조회
-      const user = await c.env.DB.prepare(`SELECT name FROM users WHERE id = ?`).bind(academyId).first()
-      const academyName = user?.name ? user.name + ' 학원' : '학원'
-      
-      await c.env.DB.prepare(`
-        INSERT INTO academies (id, academy_name, owner_id, created_at)
-        VALUES (?, ?, ?, CURRENT_TIMESTAMP)
-      `).bind(academyId, academyName, academyId).run()
-    }
+    const finalAcademyId = academy?.id || academyId
+    console.log('[Payment Complete] Using finalAcademyId:', finalAcademyId)
 
-    // users 테이블에서 academy_id 업데이트 (본인 ID로)
+    // users 테이블에서 academy_id 업데이트
     await c.env.DB.prepare(`
       UPDATE users SET academy_id = ? WHERE id = ?
-    `).bind(academyId, academyId).run()
+    `).bind(finalAcademyId, academyId).run()
 
     // 구독 시작일과 종료일 계산
     const now = new Date()
@@ -6720,7 +6738,7 @@ app.post('/api/payments/complete', async (c) => {
       UPDATE subscriptions 
       SET status = 'expired', updated_at = CURRENT_TIMESTAMP
       WHERE academy_id = ? AND status = 'active'
-    `).bind(academyId).run()
+    `).bind(finalAcademyId).run()
 
     // 새 구독 생성
     const result = await c.env.DB.prepare(`
@@ -6730,7 +6748,7 @@ app.post('/api/payments/complete', async (c) => {
         subscription_end_date, status, payment_method, merchant_uid, imp_uid
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', 'card', ?, ?)
     `).bind(
-      academyId,
+      finalAcademyId,
       planInfo.name,
       planInfo.price,
       planInfo.studentLimit,
@@ -6745,7 +6763,7 @@ app.post('/api/payments/complete', async (c) => {
 
     console.log('[Payment Complete] Subscription created:', {
       subscriptionId: result.meta.last_row_id,
-      academyId,
+      academyId: finalAcademyId,
       plan: planInfo.name,
       startDate,
       endDate
@@ -6778,7 +6796,7 @@ app.post('/api/payments/complete', async (c) => {
         last_ai_report_reset_date, last_sms_reset_date
       ) VALUES (?, ?, 0, 0, 0, 0, 0, ?, ?)
     `).bind(
-      academyId,
+      finalAcademyId,
       result.meta.last_row_id,
       startDate,
       startDate
@@ -6788,7 +6806,7 @@ app.post('/api/payments/complete', async (c) => {
       usageId: usageResult.meta.last_row_id
     })
 
-    // 🔥 프로그램 자동 등록 (4개 기본 프로그램)
+    // 🔥 프로그램 자동 등록 (4개 기본 프로그램) - user_id는 원래 사용자 ID 사용
     const programs = [
       { route: '/students', name: '학생 관리' },
       { route: '/tools/ai-learning-report', name: 'AI학습 분석 리포트' },
@@ -7572,30 +7590,39 @@ app.post('/api/bank-transfer/approve', async (c) => {
     console.log('[Bank Transfer Approve] Using academyId:', academyId, 'for user:', request.user_id)
     
     // academies 테이블에 레코드가 있는지 확인하고 없으면 생성 (FOREIGN KEY 제약 조건 만족)
-    const existingAcademy = await c.env.DB.prepare(`
-      SELECT id FROM academies WHERE id = ?
-    `).bind(academyId).first()
-    
-    if (!existingAcademy) {
-      console.log('[Bank Transfer Approve] Creating academy record with id:', academyId)
+    // INSERT OR IGNORE를 사용하여 중복 시 무시
+    console.log('[Bank Transfer Approve] Ensuring academy record exists for id:', academyId)
+    try {
       await c.env.DB.prepare(`
-        INSERT INTO academies (id, academy_name, owner_id, created_at)
-        VALUES (?, ?, ?, CURRENT_TIMESTAMP)
-      `).bind(academyId, request.user_name + ' 학원', request.user_id).run()
+        INSERT OR IGNORE INTO academies (academy_name, owner_id, created_at)
+        VALUES (?, ?, CURRENT_TIMESTAMP)
+      `).bind(request.user_name + ' 학원', request.user_id).run()
+      console.log('[Bank Transfer Approve] Academy record ensured')
+    } catch (academyError) {
+      console.error('[Bank Transfer Approve] Academy insert failed:', academyError)
+      // 이미 존재하는 경우 무시하고 계속 진행
     }
     
-    // users 테이블에서 academy_id 업데이트 (본인 ID로)
+    // academyId는 방금 생성된 academy의 id 또는 기존 owner_id로 매칭된 academy id를 가져옴
+    const academy = await c.env.DB.prepare(`
+      SELECT id FROM academies WHERE owner_id = ?
+    `).bind(request.user_id).first()
+    
+    const finalAcademyId = academy?.id || academyId
+    console.log('[Bank Transfer Approve] Using finalAcademyId:', finalAcademyId)
+    
+    // users 테이블에서 academy_id 업데이트
     await c.env.DB.prepare(`
       UPDATE users SET academy_id = ? WHERE id = ?
-    `).bind(academyId, request.user_id).run()
-    console.log('[Bank Transfer Approve] Updated users.academy_id')
+    `).bind(finalAcademyId, request.user_id).run()
+    console.log('[Bank Transfer Approve] Updated users.academy_id to', finalAcademyId)
 
     // 기존 활성 구독 비활성화
     await c.env.DB.prepare(`
       UPDATE subscriptions 
       SET status = 'expired', updated_at = CURRENT_TIMESTAMP
       WHERE academy_id = ? AND status = 'active'
-    `).bind(academyId).run()
+    `).bind(finalAcademyId).run()
     console.log('[Bank Transfer Approve] Deactivated existing subscriptions')
 
     // 구독 시작일과 종료일 계산 (1개월)
@@ -7615,7 +7642,7 @@ app.post('/api/bank-transfer/approve', async (c) => {
         subscription_end_date, status, payment_method, created_at, updated_at
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', 'bank_transfer', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
     `).bind(
-      academyId,
+      finalAcademyId,
       request.plan_name,
       limits.price,
       limits.student,
@@ -7632,7 +7659,7 @@ app.post('/api/bank-transfer/approve', async (c) => {
     // 기존 usage_tracking 삭제 (있다면)
     await c.env.DB.prepare(`
       DELETE FROM usage_tracking WHERE academy_id = ?
-    `).bind(academyId).run()
+    `).bind(finalAcademyId).run()
     console.log('[Bank Transfer Approve] Deleted old usage_tracking')
 
     // usage_tracking 생성
@@ -7643,7 +7670,7 @@ app.post('/api/bank-transfer/approve', async (c) => {
         last_ai_report_reset_date, last_sms_reset_date, created_at, updated_at
       ) VALUES (?, ?, 0, 0, 0, 0, 0, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
     `).bind(
-      academyId, 
+      finalAcademyId, 
       subscriptionId,
       startDateStr,
       startDateStr
@@ -7683,7 +7710,7 @@ app.post('/api/bank-transfer/approve', async (c) => {
       success: true,
       message: '계좌이체가 승인되고 구독이 활성화되었습니다.',
       subscription_id: subscriptionId,
-      academy_id: academyId
+      academy_id: finalAcademyId
     })
   } catch (error) {
     console.error('[Bank Transfer Approve] Error:', error)
