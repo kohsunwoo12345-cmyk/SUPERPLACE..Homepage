@@ -6891,23 +6891,30 @@ app.get('/api/subscriptions/status', async (c) => {
     if (user.user_type === 'teacher') {
       // 선생님인 경우 academy_id (원장 ID)로 구독 조회
       academyId = user.academy_id
-      console.log('[Subscription Status] Teacher detected, using owner academy_id:', academyId)
+      console.log('🎓 [Subscription Status] TEACHER detected!')
+      console.log('  └─ Teacher userId:', userId)
+      console.log('  └─ Owner academy_id:', academyId)
+      console.log('  └─ Will inherit owner\'s plan from academy_id:', academyId)
     } else {
       // 원장인 경우 자신의 ID로 구독 조회
       academyId = user.id
+      console.log('👨‍💼 [Subscription Status] OWNER detected!')
+      console.log('  └─ Owner userId:', userId)
+      console.log('  └─ Using own academy_id:', academyId)
       
       // academy_id가 자신의 ID와 다르면 수정
       if (user?.academy_id !== user.id) {
-        console.log(`[Subscription Status] Owner: Fixing academy_id from ${user?.academy_id} to ${user.id}`)
+        console.log(`  └─ Fixing academy_id from ${user?.academy_id} to ${user.id}`)
         try {
           await c.env.DB.prepare(`UPDATE users SET academy_id = ? WHERE id = ?`).bind(academyId, userId).run()
+          console.log('  └─ ✅ Fixed!')
         } catch (e) {
-          console.error('[Subscription Status] Failed to update academy_id:', e)
+          console.error('  └─ ❌ Failed to update academy_id:', e)
         }
       }
     }
 
-    console.log('[Subscription Status] Using academy_id:', academyId, 'for user_type:', user.user_type)
+    console.log('🔍 [Subscription Status] Querying subscription WHERE academy_id =', academyId, 'AND status = active')
 
     // 활성 구독 조회
     const subscription = await c.env.DB.prepare(`
@@ -6917,11 +6924,24 @@ app.get('/api/subscriptions/status', async (c) => {
       LIMIT 1
     `).bind(academyId).first()
 
-    console.log('[Subscription Status] Active subscription:', subscription)
+    console.log('📋 [Subscription Status] Active subscription:', subscription ? 'FOUND ✅' : 'NOT FOUND ❌')
+    if (subscription) {
+      console.log('  └─ Subscription ID:', subscription.id)
+      console.log('  └─ Plan:', subscription.plan_name)
+      console.log('  └─ Academy ID:', subscription.academy_id)
+      console.log('  └─ Start:', subscription.subscription_start_date)
+      console.log('  └─ End:', subscription.subscription_end_date)
+      console.log('  └─ Limits:', {
+        students: subscription.student_limit,
+        aiReports: subscription.ai_report_limit,
+        landingPages: subscription.landing_page_limit,
+        teachers: subscription.teacher_limit
+      })
+    }
 
     if (!subscription) {
       // 구독이 없어도 관리자가 설정한 한도가 있는지 확인
-      console.log('[Subscription Status] No active subscription, checking for admin plan')
+      console.log('⚠️ [Subscription Status] No active subscription, checking for admin plan...')
       
       const adminSubscription = await c.env.DB.prepare(`
         SELECT * FROM subscriptions 
@@ -6930,11 +6950,11 @@ app.get('/api/subscriptions/status', async (c) => {
         LIMIT 1
       `).bind(academyId).first()
       
-      console.log('[Subscription Status] Admin subscription:', adminSubscription)
+      console.log('📋 [Subscription Status] Admin plan:', adminSubscription ? 'FOUND ✅' : 'NOT FOUND ❌')
       
       if (adminSubscription) {
         // 관리자 설정 플랜이 있으면 표시
-        console.log('[Subscription Status] Returning admin subscription')
+        console.log('✅ [Subscription Status] Returning admin subscription')
         return c.json({ 
           success: true, 
           hasSubscription: true,
@@ -6951,7 +6971,12 @@ app.get('/api/subscriptions/status', async (c) => {
         })
       }
       
-      console.log('[Subscription Status] No subscription found at all')
+      console.error('💥 [Subscription Status] CRITICAL: No subscription found!')
+      console.error('  └─ User type:', user.user_type)
+      console.error('  └─ User ID:', userId)
+      console.error('  └─ Academy ID used:', academyId)
+      console.error('  └─ User academy_id:', user.academy_id)
+      
       return c.json({ 
         success: true, 
         hasSubscription: false,
@@ -7148,21 +7173,29 @@ app.get('/api/usage/check', async (c) => {
     if (user.user_type === 'teacher') {
       // 선생님인 경우 academy_id (원장 ID)로 구독 조회
       academyId = user.academy_id
-      console.log('[Usage Check] Teacher detected, using owner academy_id:', academyId)
+      console.log('🎓 [Usage Check] TEACHER detected!')
+      console.log('  └─ Teacher userId:', userId)
+      console.log('  └─ Owner academy_id:', academyId)
+      console.log('  └─ Will lookup subscription for owner academy_id:', academyId)
     } else {
       // 원장인 경우 자신의 ID로 구독 조회
       academyId = user.id
+      console.log('👨‍💼 [Usage Check] OWNER detected!')
+      console.log('  └─ Owner userId:', userId)
+      console.log('  └─ Using own academy_id:', academyId)
       
       // academy_id가 자신의 ID와 다르면 수정
       if (user?.academy_id !== user.id) {
         try {
           await c.env.DB.prepare(`UPDATE users SET academy_id = ? WHERE id = ?`).bind(academyId, userId).run()
-          console.log('[Usage Check] Owner: Fixed academy_id to:', userId)
+          console.log('  └─ Fixed academy_id from', user.academy_id, 'to', userId)
         } catch (e) {
-          console.error('[Usage Check] Failed to update academy_id:', e)
+          console.error('  └─ Failed to update academy_id:', e)
         }
       }
     }
+
+    console.log('🔍 [Usage Check] Querying subscription WHERE academy_id =', academyId)
 
     // 활성 구독 조회
     let subscription = await c.env.DB.prepare(`
@@ -7171,16 +7204,36 @@ app.get('/api/usage/check', async (c) => {
       ORDER BY created_at DESC LIMIT 1
     `).bind(academyId).first()
 
+    console.log('📋 [Usage Check] Active subscription found:', subscription ? 'YES ✅' : 'NO ❌')
+    if (subscription) {
+      console.log('  └─ Subscription ID:', subscription.id)
+      console.log('  └─ Plan:', subscription.plan_name)
+      console.log('  └─ Academy ID:', subscription.academy_id)
+      console.log('  └─ Status:', subscription.status)
+      console.log('  └─ End Date:', subscription.subscription_end_date)
+    }
+
     // 활성 구독이 없으면 관리자 설정 플랜 확인
     if (!subscription) {
+      console.log('⚠️ [Usage Check] No active subscription, checking admin plan...')
       subscription = await c.env.DB.prepare(`
         SELECT * FROM subscriptions 
         WHERE academy_id = ? AND plan_name = '관리자 설정 플랜'
         ORDER BY created_at DESC LIMIT 1
       `).bind(academyId).first()
+      
+      if (subscription) {
+        console.log('✅ [Usage Check] Found admin plan!')
+      } else {
+        console.log('❌ [Usage Check] No admin plan either!')
+      }
     }
 
     if (!subscription) {
+      console.error('💥 [Usage Check] CRITICAL: No subscription found for academy_id:', academyId)
+      console.error('  └─ User type:', user.user_type)
+      console.error('  └─ User ID:', userId)
+      console.error('  └─ User academy_id:', user.academy_id)
       return c.json({ 
         success: false, 
         error: '활성 구독이 없습니다' 
@@ -8367,28 +8420,42 @@ app.get('/api/admin/revenue/stats', async (c) => {
   try {
     const DB = c.env.DB
     
-    // 1. 전체 매출 통계
-    const totalStats = await DB.prepare(`
+    // 🔥 1. 전체 매출 통계 (카드 결제 + 계좌이체 승인 모두 포함)
+    const cardStats = await DB.prepare(`
       SELECT 
-        COUNT(*) as total_count,
-        SUM(amount) as total_revenue
-      FROM payments
-      WHERE status = 'completed'
-    `).first()
-    
-    // 2. 결제 수단별 통계 (카드 vs 계좌이체)
-    const paymentMethodStats = await DB.prepare(`
-      SELECT 
-        payment_method,
         COUNT(*) as count,
         SUM(amount) as revenue
       FROM payments
       WHERE status = 'completed'
-      GROUP BY payment_method
-    `).all()
+    `).first()
     
-    // 3. 플랜별 매출 통계
-    const planStats = await DB.prepare(`
+    const bankStats = await DB.prepare(`
+      SELECT 
+        COUNT(*) as count,
+        SUM(amount) as revenue
+      FROM bank_transfer_requests
+      WHERE status = 'approved'
+    `).first()
+    
+    const totalCount = (cardStats?.count || 0) + (bankStats?.count || 0)
+    const totalRevenue = (cardStats?.revenue || 0) + (bankStats?.revenue || 0)
+    
+    console.log('[Admin Revenue] Card:', cardStats, 'Bank:', bankStats)
+    
+    // 🔥 2. 결제 수단별 통계 (카드 vs 계좌이체)
+    const methodData = {
+      card: { 
+        count: cardStats?.count || 0, 
+        revenue: cardStats?.revenue || 0 
+      },
+      bank_transfer: { 
+        count: bankStats?.count || 0, 
+        revenue: bankStats?.revenue || 0 
+      }
+    }
+    
+    // 🔥 3. 플랜별 매출 통계 (카드 + 계좌이체)
+    const cardPlanStats = await DB.prepare(`
       SELECT 
         s.plan_name,
         COUNT(p.id) as count,
@@ -8397,11 +8464,42 @@ app.get('/api/admin/revenue/stats', async (c) => {
       JOIN subscriptions s ON p.subscription_id = s.id
       WHERE p.status = 'completed'
       GROUP BY s.plan_name
-      ORDER BY revenue DESC
     `).all()
     
-    // 4. 최근 30일 일별 매출
-    const dailyStats = await DB.prepare(`
+    const bankPlanStats = await DB.prepare(`
+      SELECT 
+        plan_name,
+        COUNT(*) as count,
+        SUM(amount) as revenue
+      FROM bank_transfer_requests
+      WHERE status = 'approved'
+      GROUP BY plan_name
+    `).all()
+    
+    // 플랜별 데이터 병합
+    const planStatsMap = new Map()
+    
+    cardPlanStats.results.forEach((item: any) => {
+      planStatsMap.set(item.plan_name, {
+        plan_name: item.plan_name,
+        count: item.count || 0,
+        revenue: item.revenue || 0
+      })
+    })
+    
+    bankPlanStats.results.forEach((item: any) => {
+      const existing = planStatsMap.get(item.plan_name) || { plan_name: item.plan_name, count: 0, revenue: 0 }
+      planStatsMap.set(item.plan_name, {
+        plan_name: item.plan_name,
+        count: existing.count + (item.count || 0),
+        revenue: existing.revenue + (item.revenue || 0)
+      })
+    })
+    
+    const planStats = Array.from(planStatsMap.values()).sort((a, b) => b.revenue - a.revenue)
+    
+    // 🔥 4. 최근 30일 일별 매출 (카드 + 계좌이체)
+    const cardDailyStats = await DB.prepare(`
       SELECT 
         DATE(created_at) as date,
         COUNT(*) as count,
@@ -8410,11 +8508,43 @@ app.get('/api/admin/revenue/stats', async (c) => {
       WHERE status = 'completed'
         AND DATE(created_at) >= DATE('now', '-30 days')
       GROUP BY DATE(created_at)
-      ORDER BY date DESC
     `).all()
     
-    // 5. 월별 매출 (최근 12개월)
-    const monthlyStats = await DB.prepare(`
+    const bankDailyStats = await DB.prepare(`
+      SELECT 
+        DATE(approved_at) as date,
+        COUNT(*) as count,
+        SUM(amount) as revenue
+      FROM bank_transfer_requests
+      WHERE status = 'approved'
+        AND DATE(approved_at) >= DATE('now', '-30 days')
+      GROUP BY DATE(approved_at)
+    `).all()
+    
+    // 일별 데이터 병합
+    const dailyStatsMap = new Map()
+    
+    cardDailyStats.results.forEach((item: any) => {
+      dailyStatsMap.set(item.date, {
+        date: item.date,
+        count: item.count || 0,
+        revenue: item.revenue || 0
+      })
+    })
+    
+    bankDailyStats.results.forEach((item: any) => {
+      const existing = dailyStatsMap.get(item.date) || { date: item.date, count: 0, revenue: 0 }
+      dailyStatsMap.set(item.date, {
+        date: item.date,
+        count: existing.count + (item.count || 0),
+        revenue: existing.revenue + (item.revenue || 0)
+      })
+    })
+    
+    const dailyStats = Array.from(dailyStatsMap.values()).sort((a, b) => b.date.localeCompare(a.date))
+    
+    // 🔥 5. 월별 매출 (최근 12개월, 카드 + 계좌이체)
+    const cardMonthlyStats = await DB.prepare(`
       SELECT 
         strftime('%Y-%m', created_at) as month,
         COUNT(*) as count,
@@ -8423,34 +8553,52 @@ app.get('/api/admin/revenue/stats', async (c) => {
       WHERE status = 'completed'
         AND DATE(created_at) >= DATE('now', '-12 months')
       GROUP BY strftime('%Y-%m', created_at)
-      ORDER BY month DESC
     `).all()
     
-    // 결제 수단별 데이터 정리
-    const methodData = {
-      card: { count: 0, revenue: 0 },
-      bank_transfer: { count: 0, revenue: 0 }
-    }
+    const bankMonthlyStats = await DB.prepare(`
+      SELECT 
+        strftime('%Y-%m', approved_at) as month,
+        COUNT(*) as count,
+        SUM(amount) as revenue
+      FROM bank_transfer_requests
+      WHERE status = 'approved'
+        AND DATE(approved_at) >= DATE('now', '-12 months')
+      GROUP BY strftime('%Y-%m', approved_at)
+    `).all()
     
-    paymentMethodStats.results.forEach((item: any) => {
-      if (item.payment_method === 'card') {
-        methodData.card = { count: item.count, revenue: item.revenue || 0 }
-      } else if (item.payment_method === 'bank_transfer') {
-        methodData.bank_transfer = { count: item.count, revenue: item.revenue || 0 }
-      }
+    // 월별 데이터 병합
+    const monthlyStatsMap = new Map()
+    
+    cardMonthlyStats.results.forEach((item: any) => {
+      monthlyStatsMap.set(item.month, {
+        month: item.month,
+        count: item.count || 0,
+        revenue: item.revenue || 0
+      })
     })
+    
+    bankMonthlyStats.results.forEach((item: any) => {
+      const existing = monthlyStatsMap.get(item.month) || { month: item.month, count: 0, revenue: 0 }
+      monthlyStatsMap.set(item.month, {
+        month: item.month,
+        count: existing.count + (item.count || 0),
+        revenue: existing.revenue + (item.revenue || 0)
+      })
+    })
+    
+    const monthlyStats = Array.from(monthlyStatsMap.values()).sort((a, b) => b.month.localeCompare(a.month))
     
     return c.json({
       success: true,
       data: {
         total: {
-          count: totalStats?.total_count || 0,
-          revenue: totalStats?.total_revenue || 0
+          count: totalCount,
+          revenue: totalRevenue
         },
         byMethod: methodData,
-        byPlan: planStats.results || [],
-        daily: dailyStats.results || [],
-        monthly: monthlyStats.results || []
+        byPlan: planStats,
+        daily: dailyStats,
+        monthly: monthlyStats
       }
     })
   } catch (error) {
@@ -8459,7 +8607,7 @@ app.get('/api/admin/revenue/stats', async (c) => {
   }
 })
 
-// 💰 관리자: 상세 거래 내역 조회 API
+// 💰 관리자: 상세 거래 내역 조회 API (카드 + 계좌이체 통합)
 app.get('/api/admin/revenue/transactions', async (c) => {
   try {
     const DB = c.env.DB
@@ -8471,49 +8619,42 @@ app.get('/api/admin/revenue/transactions', async (c) => {
     const startDate = url.searchParams.get('startDate')
     const endDate = url.searchParams.get('endDate')
     
-    // 쿼리 조건 생성
-    let conditions = ["p.status = 'completed'"]
-    let params: any[] = []
+    console.log('[Admin Transactions] Fetching with filters:', { method, plan, startDate, endDate, limit, offset })
     
-    if (method) {
-      conditions.push('p.payment_method = ?')
-      params.push(method)
+    // 🔥 카드 결제 조회
+    let cardConditions = ["p.status = 'completed'"]
+    let cardParams: any[] = []
+    
+    if (method === 'card') {
+      // 카드만 필터
+    } else if (method === 'bank_transfer') {
+      // 계좌이체만 필터 -> 카드 결과는 제외
+      cardConditions.push('1 = 0')
     }
     
     if (plan) {
-      conditions.push('s.plan_name = ?')
-      params.push(plan)
+      cardConditions.push('s.plan_name = ?')
+      cardParams.push(plan)
     }
     
     if (startDate) {
-      conditions.push("DATE(p.created_at) >= DATE(?)")
-      params.push(startDate)
+      cardConditions.push("DATE(p.created_at) >= DATE(?)")
+      cardParams.push(startDate)
     }
     
     if (endDate) {
-      conditions.push("DATE(p.created_at) <= DATE(?)")
-      params.push(endDate)
+      cardConditions.push("DATE(p.created_at) <= DATE(?)")
+      cardParams.push(endDate)
     }
     
-    const whereClause = conditions.length > 0 ? 'WHERE ' + conditions.join(' AND ') : ''
+    const cardWhereClause = cardConditions.length > 0 ? 'WHERE ' + cardConditions.join(' AND ') : ''
     
-    // 전체 건수 조회
-    const countQuery = `
-      SELECT COUNT(*) as total
-      FROM payments p
-      JOIN subscriptions s ON p.subscription_id = s.id
-      JOIN users u ON p.user_id = u.id
-      ${whereClause}
-    `
-    const countResult = await DB.prepare(countQuery).bind(...params).first()
-    
-    // 거래 내역 조회
-    const query = `
+    const cardQuery = `
       SELECT 
+        'card' as payment_method,
         p.id,
         p.amount,
-        p.payment_method,
-        p.created_at,
+        p.created_at as transaction_date,
         p.merchant_uid,
         s.plan_name,
         s.plan_price,
@@ -8523,23 +8664,86 @@ app.get('/api/admin/revenue/transactions', async (c) => {
       FROM payments p
       JOIN subscriptions s ON p.subscription_id = s.id
       JOIN users u ON p.user_id = u.id
-      ${whereClause}
-      ORDER BY p.created_at DESC
-      LIMIT ? OFFSET ?
+      ${cardWhereClause}
     `
     
-    params.push(limit, offset)
-    const transactions = await DB.prepare(query).bind(...params).all()
+    // 🔥 계좌이체 조회
+    let bankConditions = ["b.status = 'approved'"]
+    let bankParams: any[] = []
+    
+    if (method === 'bank_transfer') {
+      // 계좌이체만 필터
+    } else if (method === 'card') {
+      // 카드만 필터 -> 계좌이체 결과는 제외
+      bankConditions.push('1 = 0')
+    }
+    
+    if (plan) {
+      bankConditions.push('b.plan_name = ?')
+      bankParams.push(plan)
+    }
+    
+    if (startDate) {
+      bankConditions.push("DATE(b.approved_at) >= DATE(?)")
+      bankParams.push(startDate)
+    }
+    
+    if (endDate) {
+      bankConditions.push("DATE(b.approved_at) <= DATE(?)")
+      bankParams.push(endDate)
+    }
+    
+    const bankWhereClause = bankConditions.length > 0 ? 'WHERE ' + bankConditions.join(' AND ') : ''
+    
+    const bankQuery = `
+      SELECT 
+        'bank_transfer' as payment_method,
+        b.id,
+        b.amount,
+        b.approved_at as transaction_date,
+        '' as merchant_uid,
+        b.plan_name,
+        b.amount as plan_price,
+        u.id as user_id,
+        u.name as user_name,
+        u.email as user_email
+      FROM bank_transfer_requests b
+      JOIN users u ON b.user_id = u.id
+      ${bankWhereClause}
+    `
+    
+    // 🔥 두 쿼리를 UNION으로 병합
+    const unionQuery = `
+      ${cardQuery}
+      UNION ALL
+      ${bankQuery}
+      ORDER BY transaction_date DESC
+    `
+    
+    console.log('[Admin Transactions] Union query:', unionQuery)
+    console.log('[Admin Transactions] Card params:', cardParams, 'Bank params:', bankParams)
+    
+    // 전체 거래 내역 조회
+    const allParams = [...cardParams, ...bankParams]
+    const allTransactions = await DB.prepare(unionQuery).bind(...allParams).all()
+    
+    // 전체 건수
+    const total = allTransactions.results?.length || 0
+    
+    // 페이지네이션 적용 (메모리에서 처리)
+    const paginatedTransactions = (allTransactions.results || []).slice(offset, offset + limit)
+    
+    console.log('[Admin Transactions] Total:', total, 'Paginated:', paginatedTransactions.length)
     
     return c.json({
       success: true,
       data: {
-        transactions: transactions.results || [],
+        transactions: paginatedTransactions,
         pagination: {
-          total: countResult?.total || 0,
+          total,
           limit,
           offset,
-          hasMore: (offset + limit) < (countResult?.total || 0)
+          hasMore: (offset + limit) < total
         }
       }
     })
