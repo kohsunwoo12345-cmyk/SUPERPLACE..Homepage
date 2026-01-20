@@ -11994,7 +11994,7 @@ app.get('/dashboard', (c) => {
                 </div>
 
                 <!-- Marketing Tools -->
-                <div class="mb-12">
+                <div id="marketingToolsSection" class="mb-12">
                     <h2 class="text-2xl font-bold text-gray-900 mb-6">🎯 마케팅 도구</h2>
                     <div class="grid md:grid-cols-2 gap-6">
                         <a href="/tools/search-volume" class="block bg-gradient-to-br from-cyan-500 to-cyan-700 rounded-2xl p-8 hover:shadow-2xl transition-all hover:-translate-y-1">
@@ -12225,6 +12225,7 @@ app.get('/dashboard', (c) => {
                     
                     const statusDiv = document.getElementById('subscriptionStatusMain')
                     const warningBanner = document.getElementById('subscriptionWarningBanner')
+                    const marketingToolsSection = document.getElementById('marketingToolsSection')
                     
                     if (!statusDiv) {
                         console.error('subscriptionStatusMain element not found')
@@ -12236,6 +12237,15 @@ app.get('/dashboard', (c) => {
                     const isAdminPlan = hasSubscription && data.subscription && data.subscription.planName === '관리자 설정 플랜'
                     
                     console.log('[Dashboard] hasSubscription:', hasSubscription, 'isAdminPlan:', isAdminPlan)
+                    
+                    // 구독이 없으면 마케팅 도구 섹션 숨김
+                    if (!hasSubscription && marketingToolsSection) {
+                        console.log('[Dashboard] Hiding marketing tools - no subscription')
+                        marketingToolsSection.style.display = 'none'
+                    } else if (marketingToolsSection) {
+                        console.log('[Dashboard] Showing marketing tools - has subscription')
+                        marketingToolsSection.style.display = 'block'
+                    }
                     
                     // 구독이 없으면 경고 배너 표시 (관리자 플랜 포함 모든 구독이 있으면 배너 숨김)
                     if (!hasSubscription && warningBanner) {
