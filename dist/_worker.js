@@ -9234,7 +9234,7 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
                 <div id="marketingToolsSection" class="mb-12">
                     <h2 class="text-2xl font-bold text-gray-900 mb-6">🎯 마케팅 도구</h2>
                     <div class="grid md:grid-cols-2 gap-6">
-                        <a href="/tools/search-volume" class="block bg-gradient-to-br from-cyan-500 to-cyan-700 rounded-2xl p-8 hover:shadow-2xl transition-all hover:-translate-y-1">
+                        <div class="block bg-gradient-to-br from-cyan-500 to-cyan-700 rounded-2xl p-8 hover:shadow-2xl transition-all hover:-translate-y-1">
                             <div class="flex items-center gap-4 mb-4">
                                 <div class="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
                                     <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -9249,13 +9249,15 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
                             <p class="text-white/90 leading-relaxed mb-4">
                                 키워드 검색량과 네이버 플레이스 순위를 실시간으로 확인하세요. 경쟁사 분석과 최적 키워드 발굴이 가능합니다.
                             </p>
-                            <div class="flex items-center text-white font-medium">
-                                <span>바로 사용하기</span>
-                                <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                                </svg>
+                            <div class="flex items-center gap-3">
+                                <a href="/features/search-volume" class="flex-1 text-center py-2 bg-white/20 hover:bg-white/30 text-white rounded-lg font-medium transition">
+                                    자세히 보기
+                                </a>
+                                <a href="/tools/search-volume" class="flex-1 text-center py-2 bg-white text-cyan-600 rounded-lg font-medium hover:bg-cyan-50 transition">
+                                    바로 사용하기 →
+                                </a>
                             </div>
-                        </a>
+                        </div>
 
                         <div class="block bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl p-8 hover:shadow-2xl transition-all hover:-translate-y-1">
                             <div class="flex items-center gap-4 mb-4">
@@ -20360,7 +20362,176 @@ ${l.director_name} 원장님의 승인을 기다려주세요.`,directorName:l.di
           current_teachers INTEGER DEFAULT 0,
           updated_at TEXT DEFAULT CURRENT_TIMESTAMP
         )
-      `).run(),s.push("✅ Created usage_tracking table (no FK constraints)")}catch(a){s.push("ℹ️ usage_tracking table: "+a.message)}const r=["CREATE INDEX IF NOT EXISTS idx_subscriptions_academy_id ON subscriptions(academy_id)","CREATE INDEX IF NOT EXISTS idx_subscriptions_status ON subscriptions(status)","CREATE INDEX IF NOT EXISTS idx_academies_owner_id ON academies(owner_id)","CREATE INDEX IF NOT EXISTS idx_usage_tracking_academy_id ON usage_tracking(academy_id)","CREATE INDEX IF NOT EXISTS idx_usage_tracking_subscription_id ON usage_tracking(subscription_id)"];for(const a of r)try{await t.prepare(a).run()}catch{}return s.push("Created/verified all indexes"),e.json({success:!0,message:"데이터베이스 마이그레이션이 완료되었습니다",migrations:s})}catch(t){return console.error("Database migration error:",t),e.json({success:!1,error:t.message,stack:t.stack},500)}});d.get("/api/test/db",async e=>{const{env:t}=e;try{if(!t.DB)return e.json({success:!1,error:"DB binding not found",env_keys:Object.keys(t)});const s=await t.DB.prepare("SELECT 1 as test").first();return e.json({success:!0,message:"DB connection OK",result:s})}catch(s){return e.json({success:!1,error:s.message,stack:s.stack},500)}});d.get("/features/landing-builder",e=>e.html(`
+      `).run(),s.push("✅ Created usage_tracking table (no FK constraints)")}catch(a){s.push("ℹ️ usage_tracking table: "+a.message)}const r=["CREATE INDEX IF NOT EXISTS idx_subscriptions_academy_id ON subscriptions(academy_id)","CREATE INDEX IF NOT EXISTS idx_subscriptions_status ON subscriptions(status)","CREATE INDEX IF NOT EXISTS idx_academies_owner_id ON academies(owner_id)","CREATE INDEX IF NOT EXISTS idx_usage_tracking_academy_id ON usage_tracking(academy_id)","CREATE INDEX IF NOT EXISTS idx_usage_tracking_subscription_id ON usage_tracking(subscription_id)"];for(const a of r)try{await t.prepare(a).run()}catch{}return s.push("Created/verified all indexes"),e.json({success:!0,message:"데이터베이스 마이그레이션이 완료되었습니다",migrations:s})}catch(t){return console.error("Database migration error:",t),e.json({success:!1,error:t.message,stack:t.stack},500)}});d.get("/api/test/db",async e=>{const{env:t}=e;try{if(!t.DB)return e.json({success:!1,error:"DB binding not found",env_keys:Object.keys(t)});const s=await t.DB.prepare("SELECT 1 as test").first();return e.json({success:!0,message:"DB connection OK",result:s})}catch(s){return e.json({success:!1,error:s.message,stack:s.stack},500)}});d.get("/features/search-volume",e=>e.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>네이버 검색량 조회 - 슈퍼플레이스</title>
+        <script src="https://cdn.tailwindcss.com"><\/script>
+        <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+        <style>
+          @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
+          * { font-family: 'Pretendard Variable', Pretendard, sans-serif; }
+          .gradient-cyan { background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); }
+        </style>
+    </head>
+    <body class="bg-gray-50">
+        <nav class="bg-white border-b sticky top-0 z-50">
+            <div class="max-w-7xl mx-auto px-6 py-4">
+                <div class="flex justify-between items-center">
+                    <a href="/dashboard" class="text-2xl font-bold text-cyan-600">슈퍼플레이스</a>
+                    <a href="/dashboard" class="text-gray-600 hover:text-cyan-600">← 대시보드</a>
+                </div>
+            </div>
+        </nav>
+
+        <div class="max-w-7xl mx-auto px-6 py-12">
+            <!-- Hero Section -->
+            <div class="text-center mb-16">
+                <div class="inline-block px-4 py-2 bg-cyan-100 rounded-full text-cyan-700 text-sm font-semibold mb-4">
+                    📊 실시간 데이터 분석
+                </div>
+                <h1 class="text-5xl font-bold text-gray-900 mb-6">네이버 검색량 조회</h1>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                    키워드 검색량과 경쟁 현황을 실시간으로 파악하세요.<br>
+                    데이터 기반 마케팅 전략으로 학원 홍보 효과를 극대화할 수 있습니다.
+                </p>
+            </div>
+
+            <!-- 주요 기능 -->
+            <div class="mb-16">
+                <h2 class="text-3xl font-bold text-gray-900 mb-8 text-center">주요 기능</h2>
+                <div class="grid md:grid-cols-3 gap-8">
+                    <div class="bg-white rounded-xl p-8 shadow-sm border border-gray-200">
+                        <div class="w-16 h-16 bg-cyan-100 rounded-xl flex items-center justify-center mb-4">
+                            <i class="fas fa-search text-3xl text-cyan-600"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-3">키워드 검색량 분석</h3>
+                        <p class="text-gray-600">
+                            원하는 키워드의 월간 검색량을 실시간으로 조회하고 트렌드를 파악할 수 있습니다.
+                        </p>
+                    </div>
+
+                    <div class="bg-white rounded-xl p-8 shadow-sm border border-gray-200">
+                        <div class="w-16 h-16 bg-blue-100 rounded-xl flex items-center justify-center mb-4">
+                            <i class="fas fa-chart-line text-3xl text-blue-600"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-3">경쟁 현황 분석</h3>
+                        <p class="text-gray-600">
+                            관련 키워드의 경쟁 강도와 광고 비용을 확인하여 효율적인 마케팅 전략을 수립할 수 있습니다.
+                        </p>
+                    </div>
+
+                    <div class="bg-white rounded-xl p-8 shadow-sm border border-gray-200">
+                        <div class="w-16 h-16 bg-purple-100 rounded-xl flex items-center justify-center mb-4">
+                            <i class="fas fa-lightbulb text-3xl text-purple-600"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-3">연관 키워드 추천</h3>
+                        <p class="text-gray-600">
+                            입력한 키워드와 관련된 추천 키워드를 자동으로 제공하여 마케팅 기회를 발굴합니다.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 사용 방법 -->
+            <div class="mb-16">
+                <h2 class="text-3xl font-bold text-gray-900 mb-8 text-center">사용 방법</h2>
+                <div class="space-y-6">
+                    <div class="flex gap-6 items-start">
+                        <div class="flex-shrink-0 w-12 h-12 bg-cyan-600 text-white rounded-full flex items-center justify-center font-bold text-xl">1</div>
+                        <div class="flex-1">
+                            <h3 class="text-xl font-bold mb-2">키워드 입력</h3>
+                            <p class="text-gray-600">조회하고 싶은 키워드를 입력합니다. 예: "수학학원", "영어과외" 등</p>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-6 items-start">
+                        <div class="flex-shrink-0 w-12 h-12 bg-cyan-600 text-white rounded-full flex items-center justify-center font-bold text-xl">2</div>
+                        <div class="flex-1">
+                            <h3 class="text-xl font-bold mb-2">검색량 확인</h3>
+                            <p class="text-gray-600">월간 검색량, PC/모바일 비율, 경쟁 강도 등의 데이터를 확인합니다.</p>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-6 items-start">
+                        <div class="flex-shrink-0 w-12 h-12 bg-cyan-600 text-white rounded-full flex items-center justify-center font-bold text-xl">3</div>
+                        <div class="flex-1">
+                            <h3 class="text-xl font-bold mb-2">연관 키워드 분석</h3>
+                            <p class="text-gray-600">추천된 연관 키워드를 확인하고 추가로 분석합니다.</p>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-6 items-start">
+                        <div class="flex-shrink-0 w-12 h-12 bg-cyan-600 text-white rounded-full flex items-center justify-center font-bold text-xl">4</div>
+                        <div class="flex-1">
+                            <h3 class="text-xl font-bold mb-2">마케팅 전략 수립</h3>
+                            <p class="text-gray-600">분석 결과를 바탕으로 블로그, 플레이스, 광고 등의 마케팅 전략을 수립합니다.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 장점 -->
+            <div class="mb-16">
+                <h2 class="text-3xl font-bold text-gray-900 mb-8 text-center">왜 네이버 검색량 조회를 사용해야 할까요?</h2>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="bg-gradient-to-br from-cyan-50 to-cyan-100 rounded-xl p-6 border border-cyan-200">
+                        <div class="flex items-start gap-4">
+                            <i class="fas fa-check-circle text-2xl text-cyan-600 mt-1"></i>
+                            <div>
+                                <h3 class="font-bold text-lg mb-2">데이터 기반 의사결정</h3>
+                                <p class="text-gray-700">실제 검색량 데이터를 바탕으로 효과적인 마케팅 전략을 수립할 수 있습니다.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 border border-blue-200">
+                        <div class="flex items-start gap-4">
+                            <i class="fas fa-check-circle text-2xl text-blue-600 mt-1"></i>
+                            <div>
+                                <h3 class="font-bold text-lg mb-2">예산 최적화</h3>
+                                <p class="text-gray-700">검색량이 많고 경쟁이 적은 키워드를 찾아 광고 비용을 절감할 수 있습니다.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-6 border border-purple-200">
+                        <div class="flex items-start gap-4">
+                            <i class="fas fa-check-circle text-2xl text-purple-600 mt-1"></i>
+                            <div>
+                                <h3 class="font-bold text-lg mb-2">트렌드 파악</h3>
+                                <p class="text-gray-700">실시간 검색 트렌드를 파악하여 시의적절한 마케팅을 진행할 수 있습니다.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-6 border border-green-200">
+                        <div class="flex items-start gap-4">
+                            <i class="fas fa-check-circle text-2xl text-green-600 mt-1"></i>
+                            <div>
+                                <h3 class="font-bold text-lg mb-2">경쟁 우위 확보</h3>
+                                <p class="text-gray-700">경쟁사가 간과하는 틈새 키워드를 발굴하여 경쟁에서 앞서갈 수 있습니다.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CTA -->
+            <div class="text-center bg-gradient-to-r from-cyan-600 to-cyan-700 rounded-2xl p-12 text-white">
+                <h2 class="text-3xl font-bold mb-4">지금 바로 시작하세요</h2>
+                <p class="text-xl mb-8 text-cyan-100">데이터 기반 마케팅으로 학원을 성장시키세요</p>
+                <a href="/tools/search-volume" class="inline-block px-8 py-4 bg-white text-cyan-600 rounded-xl font-bold text-lg hover:bg-cyan-50 transition shadow-lg">
+                    검색량 조회하기 →
+                </a>
+            </div>
+        </div>
+    </body>
+    </html>
+  `));d.get("/features/landing-builder",e=>e.html(`
     <!DOCTYPE html>
     <html lang="ko">
     <head>
