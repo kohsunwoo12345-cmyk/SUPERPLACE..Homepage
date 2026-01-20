@@ -27903,10 +27903,10 @@ app.get('/features/search-volume', (c) => {
 
             <!-- CTA -->
             <div class="text-center bg-gradient-to-r from-cyan-600 to-cyan-700 rounded-2xl p-12 text-white">
-                <h2 class="text-3xl font-bold mb-4">지금 바로 시작하세요</h2>
+                <h2 class="text-3xl font-bold mb-4">플랜을 시작해보세요!</h2>
                 <p class="text-xl mb-8 text-cyan-100">데이터 기반 마케팅으로 학원을 성장시키세요</p>
-                <a href="/tools/search-volume" class="inline-block px-8 py-4 bg-white text-cyan-600 rounded-xl font-bold text-lg hover:bg-cyan-50 transition shadow-lg">
-                    검색량 조회하기 →
+                <a href="/pricing" class="inline-block px-8 py-4 bg-white text-cyan-600 rounded-xl font-bold text-lg hover:bg-cyan-50 transition shadow-lg">
+                    요금제 보기 →
                 </a>
             </div>
         </div>
@@ -28077,10 +28077,10 @@ app.get('/features/landing-builder', (c) => {
 
             <!-- CTA -->
             <div class="text-center bg-gradient-to-r from-purple-600 to-purple-700 rounded-2xl p-12 text-white">
-                <h2 class="text-3xl font-bold mb-4">지금 바로 시작하세요</h2>
+                <h2 class="text-3xl font-bold mb-4">플랜을 시작해보세요!</h2>
                 <p class="text-xl mb-8 text-purple-100">AI가 만드는 전문적인 랜딩페이지를 경험해보세요</p>
-                <a href="/tools/landing-builder" class="inline-block px-8 py-4 bg-white text-purple-600 rounded-xl font-bold text-lg hover:bg-purple-50 transition shadow-lg">
-                    랜딩페이지 만들기 →
+                <a href="/pricing" class="inline-block px-8 py-4 bg-white text-purple-600 rounded-xl font-bold text-lg hover:bg-purple-50 transition shadow-lg">
+                    요금제 보기 →
                 </a>
             </div>
         </div>
@@ -28251,10 +28251,10 @@ app.get('/features/sms-sender', (c) => {
 
             <!-- CTA -->
             <div class="text-center bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-12 text-white">
-                <h2 class="text-3xl font-bold mb-4">지금 바로 시작하세요</h2>
+                <h2 class="text-3xl font-bold mb-4">플랜을 시작해보세요!</h2>
                 <p class="text-xl mb-8 text-blue-100">학부모님들과 더 효과적으로 소통하세요</p>
-                <a href="/sms/compose" class="inline-block px-8 py-4 bg-white text-blue-600 rounded-xl font-bold text-lg hover:bg-blue-50 transition shadow-lg">
-                    문자 작성하기 →
+                <a href="/pricing" class="inline-block px-8 py-4 bg-white text-blue-600 rounded-xl font-bold text-lg hover:bg-blue-50 transition shadow-lg">
+                    요금제 보기 →
                 </a>
             </div>
         </div>
@@ -28425,10 +28425,10 @@ app.get('/features/student-management', (c) => {
 
             <!-- CTA -->
             <div class="text-center bg-gradient-to-r from-green-600 to-green-700 rounded-2xl p-12 text-white">
-                <h2 class="text-3xl font-bold mb-4">지금 바로 시작하세요</h2>
+                <h2 class="text-3xl font-bold mb-4">플랜을 시작해보세요!</h2>
                 <p class="text-xl mb-8 text-green-100">체계적인 학생 관리로 학원 운영을 효율화하세요</p>
-                <a href="/students" class="inline-block px-8 py-4 bg-white text-green-600 rounded-xl font-bold text-lg hover:bg-green-50 transition shadow-lg">
-                    학생 관리 시작하기 →
+                <a href="/pricing" class="inline-block px-8 py-4 bg-white text-green-600 rounded-xl font-bold text-lg hover:bg-green-50 transition shadow-lg">
+                    요금제 보기 →
                 </a>
             </div>
         </div>
@@ -28599,10 +28599,10 @@ app.get('/features/ai-learning-report', (c) => {
 
             <!-- CTA -->
             <div class="text-center bg-gradient-to-r from-indigo-600 to-indigo-700 rounded-2xl p-12 text-white">
-                <h2 class="text-3xl font-bold mb-4">지금 바로 시작하세요</h2>
+                <h2 class="text-3xl font-bold mb-4">플랜을 시작해보세요!</h2>
                 <p class="text-xl mb-8 text-indigo-100">AI가 만드는 전문적인 학습 분석 리포트를 경험해보세요</p>
-                <a href="/tools/ai-learning-report" class="inline-block px-8 py-4 bg-white text-indigo-600 rounded-xl font-bold text-lg hover:bg-indigo-50 transition shadow-lg">
-                    리포트 생성하기 →
+                <a href="/pricing" class="inline-block px-8 py-4 bg-white text-indigo-600 rounded-xl font-bold text-lg hover:bg-indigo-50 transition shadow-lg">
+                    요금제 보기 →
                 </a>
             </div>
         </div>
