@@ -536,6 +536,61 @@ app.post('/api/register', async (c) => {
 })
 
 // ========================================
+// Helper Functions
+// ========================================
+
+/**
+ * 구독 생성 시 기본 권한 자동 부여
+ * @param db - Cloudflare D1 Database
+ * @param userId - 사용자 ID
+ */
+async function grantDefaultPermissions(db: any, userId: string | number) {
+  console.log('[Permissions] Granting default permissions for user:', userId)
+  
+  // 기본적으로 부여할 권한 목록
+  const defaultPermissions = [
+    'student_management',    // 학생 관리
+    'landing_builder',       // 랜딩페이지 생성기
+    'ai_learning_report',    // AI 학습 분석 리포트
+    'parent_message',        // 학부모 메시지
+    'blog_writer',          // 블로그 작성
+    'search_volume',        // 검색량 조회
+    'dashboard_analytics',  // 대시보드 분석
+    'keyword_analyzer',     // 키워드 분석
+    'review_template',      // 리뷰 템플릿
+    'ad_copy_generator',    // 광고 문구 생성
+    'photo_optimizer',      // 사진 최적화
+    'competitor_analysis',  // 경쟁사 분석
+    'blog_checklist',       // 블로그 체크리스트
+    'content_calendar',     // 콘텐츠 캘린더
+    'consultation_script',  // 상담 스크립트
+    'place_optimization',   // 플레이스 최적화
+    'roi_calculator',       // ROI 계산기
+    'sms_sender'           // SMS 발송
+  ]
+  
+  let successCount = 0
+  let failCount = 0
+  
+  for (const programKey of defaultPermissions) {
+    try {
+      await db.prepare(`
+        INSERT OR REPLACE INTO user_permissions (user_id, program_key, granted_by, is_active, created_at)
+        VALUES (?, ?, 'system', 1, datetime('now'))
+      `).bind(userId, programKey).run()
+      successCount++
+      console.log(`[Permissions] ✅ Granted: ${programKey}`)
+    } catch (err) {
+      failCount++
+      console.error(`[Permissions] ❌ Failed to grant: ${programKey}`, err)
+    }
+  }
+  
+  console.log(`[Permissions] Grant complete: ${successCount} success, ${failCount} failed`)
+  return { successCount, failCount }
+}
+
+// ========================================
 // User Permissions API Routes
 // 사용자 권한 확인 API
 app.get('/api/user/permissions', async (c) => {
@@ -547,19 +602,45 @@ app.get('/api/user/permissions', async (c) => {
     }
 
     // 관리자는 모든 권한 보유
-    const user = await c.env.DB.prepare('SELECT role FROM users WHERE id = ?').bind(userId).first()
+    const user = await c.env.DB.prepare('SELECT id, role, academy_id FROM users WHERE id = ?').bind(userId).first()
     if (user && user.role === 'admin') {
       return c.json({ 
         success: true, 
         permissions: {
           search_volume: true,
           sms: true,
+          sms_sender: true,
           landing_builder: true,
           analytics: true,
+          student_management: true,
+          ai_learning_report: true,
+          parent_message: true,
+          blog_writer: true,
+          dashboard_analytics: true,
+          keyword_analyzer: true,
+          review_template: true,
+          ad_copy_generator: true,
+          photo_optimizer: true,
+          competitor_analysis: true,
+          blog_checklist: true,
+          content_calendar: true,
+          consultation_script: true,
+          place_optimization: true,
+          roi_calculator: true,
           all: true
         }
       })
     }
+    
+    // 🔥 구독이 있는 사용자는 기본 권한 조회
+    const academyId = user?.id || userId
+    const subscription = await c.env.DB.prepare(`
+      SELECT id FROM subscriptions 
+      WHERE academy_id = ? AND status = 'active'
+      ORDER BY created_at DESC LIMIT 1
+    `).bind(academyId).first()
+    
+    console.log('[Permissions] User:', userId, 'Academy:', academyId, 'Subscription:', subscription?.id || 'none')
 
     // 일반 사용자 권한 조회
     const permissions = await c.env.DB.prepare(`
@@ -572,14 +653,33 @@ app.get('/api/user/permissions', async (c) => {
     const permissionMap = {
       search_volume: false,
       sms: false,
+      sms_sender: false,
       landing_builder: false,
       analytics: false,
+      student_management: false,
+      ai_learning_report: false,
+      parent_message: false,
+      blog_writer: false,
+      dashboard_analytics: false,
+      keyword_analyzer: false,
+      review_template: false,
+      ad_copy_generator: false,
+      photo_optimizer: false,
+      competitor_analysis: false,
+      blog_checklist: false,
+      content_calendar: false,
+      consultation_script: false,
+      place_optimization: false,
+      roi_calculator: false,
       all: false
     }
 
     permissions.results.forEach(p => {
       permissionMap[p.program_key] = true
+      console.log('[Permissions] Found permission:', p.program_key)
     })
+    
+    console.log('[Permissions] Final permission map:', permissionMap)
 
     return c.json({ success: true, permissions: permissionMap })
   } catch (err) {
@@ -7299,6 +7399,9 @@ app.post('/api/admin/usage/:userId/update-limits', async (c) => {
       }
       
       console.log('✅ [Admin] Existing admin subscription updated')
+      
+      // 🔥 구독 설정 시 자동으로 권한 부여
+      await grantDefaultPermissions(c.env.DB, userId)
     } else {
       // 새 관리자 플랜 생성
       console.log('[Admin] Creating new admin subscription for academy_id:', academyId)
@@ -7332,9 +7435,15 @@ app.post('/api/admin/usage/:userId/update-limits', async (c) => {
           VALUES (?, ?, 0, 0, 0, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
         `).bind(academyId, newSubId).run()
         console.log('✅ [Admin] New admin subscription created with usage_tracking')
+        
+        // 🔥 구독 설정 시 자동으로 권한 부여
+        await grantDefaultPermissions(c.env.DB, userId)
       } catch (usageError) {
         console.warn('[Admin] Failed to create usage_tracking:', usageError.message)
         console.log('✅ [Admin] New admin subscription created (usage_tracking will be auto-created on first use)')
+        
+        // 🔥 구독 설정 시 자동으로 권한 부여
+        await grantDefaultPermissions(c.env.DB, userId)
       }
     }
     
