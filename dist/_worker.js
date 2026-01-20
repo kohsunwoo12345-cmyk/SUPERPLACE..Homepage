@@ -8920,6 +8920,9 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
                                 </svg>
                             </button>
                             <div class="hidden group-hover:block absolute top-full right-0 mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-100 py-2 z-50">
+                                <a href="/features/sms-sender" class="block px-4 py-2 text-purple-600 bg-purple-50 font-semibold hover:bg-purple-100 transition border-b border-purple-100">
+                                    ℹ️ SMS 소개 및 사용법
+                                </a>
                                 <a href="/sms/compose" class="block px-4 py-2 text-gray-700 hover:bg-purple-50 hover:text-purple-600 transition">
                                     ✍️ 문자 작성
                                 </a>
@@ -9243,7 +9246,7 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
                             </div>
                         </a>
 
-                        <a href="/tools/landing-builder" class="block bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl p-8 hover:shadow-2xl transition-all hover:-translate-y-1">
+                        <div class="block bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl p-8 hover:shadow-2xl transition-all hover:-translate-y-1">
                             <div class="flex items-center gap-4 mb-4">
                                 <div class="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
                                     <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -9258,15 +9261,17 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
                             <p class="text-white/90 leading-relaxed mb-4">
                                 학원 소개, 프로그램 홍보, 학생 리포트 페이지를 간단한 입력만으로 자동 생성합니다. 카카오톡으로 바로 공유하세요.
                             </p>
-                            <div class="flex items-center text-white font-medium">
-                                <span>바로 사용하기</span>
-                                <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                                </svg>
+                            <div class="flex items-center gap-3">
+                                <a href="/features/landing-builder" class="flex-1 text-center py-2 bg-white/20 hover:bg-white/30 text-white rounded-lg font-medium transition">
+                                    자세히 보기
+                                </a>
+                                <a href="/tools/landing-builder" class="flex-1 text-center py-2 bg-white text-blue-600 rounded-lg font-medium hover:bg-blue-50 transition">
+                                    바로 사용하기 →
+                                </a>
                             </div>
-                        </a>
+                        </div>
 
-                        <a href="/students" class="block bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-2xl p-8 hover:shadow-2xl transition-all hover:-translate-y-1">
+                        <div class="block bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-2xl p-8 hover:shadow-2xl transition-all hover:-translate-y-1">
                             <div class="flex items-center gap-4 mb-4">
                                 <div class="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
                                     <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -9281,15 +9286,17 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
                             <p class="text-white/90 leading-relaxed mb-4">
                                 학생 정보, 출결 관리, 성적 기록, 상담 내역을 한 곳에서 체계적으로 관리하세요.
                             </p>
-                            <div class="flex items-center text-white font-medium">
-                                <span>바로 사용하기</span>
-                                <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                                </svg>
+                            <div class="flex items-center gap-3">
+                                <a href="/features/student-management" class="flex-1 text-center py-2 bg-white/20 hover:bg-white/30 text-white rounded-lg font-medium transition">
+                                    자세히 보기
+                                </a>
+                                <a href="/students" class="flex-1 text-center py-2 bg-white text-indigo-600 rounded-lg font-medium hover:bg-indigo-50 transition">
+                                    바로 사용하기 →
+                                </a>
                             </div>
-                        </a>
+                        </div>
 
-                        <a href="/tools/ai-learning-report" class="block bg-gradient-to-br from-violet-500 to-fuchsia-700 rounded-2xl p-8 hover:shadow-2xl transition-all hover:-translate-y-1">
+                        <div class="block bg-gradient-to-br from-violet-500 to-fuchsia-700 rounded-2xl p-8 hover:shadow-2xl transition-all hover:-translate-y-1">
                             <div class="flex items-center gap-4 mb-4">
                                 <div class="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
                                     <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -9304,13 +9311,15 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
                             <p class="text-white/90 leading-relaxed mb-4">
                                 AI가 학생의 성적, 출석, 학습 태도를 종합 분석하여 맞춤형 리포트를 자동 생성합니다.
                             </p>
-                            <div class="flex items-center text-white font-medium">
-                                <span>바로 사용하기</span>
-                                <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                                </svg>
+                            <div class="flex items-center gap-3">
+                                <a href="/features/ai-learning-report" class="flex-1 text-center py-2 bg-white/20 hover:bg-white/30 text-white rounded-lg font-medium transition">
+                                    자세히 보기
+                                </a>
+                                <a href="/tools/ai-learning-report" class="flex-1 text-center py-2 bg-white text-violet-600 rounded-lg font-medium hover:bg-violet-50 transition">
+                                    바로 사용하기 →
+                                </a>
                             </div>
-                        </a>
+                        </div>
                     </div>
                 </div>
 
@@ -20340,7 +20349,683 @@ ${l.director_name} 원장님의 승인을 기다려주세요.`,directorName:l.di
           current_teachers INTEGER DEFAULT 0,
           updated_at TEXT DEFAULT CURRENT_TIMESTAMP
         )
-      `).run(),s.push("✅ Created usage_tracking table (no FK constraints)")}catch(a){s.push("ℹ️ usage_tracking table: "+a.message)}const r=["CREATE INDEX IF NOT EXISTS idx_subscriptions_academy_id ON subscriptions(academy_id)","CREATE INDEX IF NOT EXISTS idx_subscriptions_status ON subscriptions(status)","CREATE INDEX IF NOT EXISTS idx_academies_owner_id ON academies(owner_id)","CREATE INDEX IF NOT EXISTS idx_usage_tracking_academy_id ON usage_tracking(academy_id)","CREATE INDEX IF NOT EXISTS idx_usage_tracking_subscription_id ON usage_tracking(subscription_id)"];for(const a of r)try{await t.prepare(a).run()}catch{}return s.push("Created/verified all indexes"),e.json({success:!0,message:"데이터베이스 마이그레이션이 완료되었습니다",migrations:s})}catch(t){return console.error("Database migration error:",t),e.json({success:!1,error:t.message,stack:t.stack},500)}});d.get("/api/test/db",async e=>{const{env:t}=e;try{if(!t.DB)return e.json({success:!1,error:"DB binding not found",env_keys:Object.keys(t)});const s=await t.DB.prepare("SELECT 1 as test").first();return e.json({success:!0,message:"DB connection OK",result:s})}catch(s){return e.json({success:!1,error:s.message,stack:s.stack},500)}});d.get("/admin/dashboard",async e=>{var g,v,h,b,f,y;const{env:t}=e;if(!(t!=null&&t.DB))return e.html('<h1>DB Error</h1><a href="/admin/users">Users</a>');let s=0,r=0,a=0,n=0,o=0,l=0;try{s=((g=await t.DB.prepare("SELECT COUNT(*)c FROM users").first())==null?void 0:g.c)||0}catch{}try{r=((v=await t.DB.prepare("SELECT COUNT(*)c FROM contacts").first())==null?void 0:v.c)||0}catch{}try{a=((h=await t.DB.prepare("SELECT COUNT(*)c FROM contacts WHERE status=?").bind("pending").first())==null?void 0:h.c)||0}catch{}try{n=((b=await t.DB.prepare("SELECT COUNT(*)c FROM deposit_requests WHERE status=?").bind("pending").first())==null?void 0:b.c)||0}catch{}try{o=((f=await t.DB.prepare("SELECT COUNT(*)c FROM sender_verification_requests WHERE status=?").bind("pending").first())==null?void 0:f.c)||0}catch{}try{l=((y=await t.DB.prepare("SELECT COUNT(*)c FROM bank_transfer_requests WHERE status=?").bind("pending").first())==null?void 0:y.c)||0}catch{}const i='<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>관리자 대시보드</title><script src="https://cdn.tailwindcss.com"><\/script><link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet"></head><body class="bg-gray-50">',c=`<nav class="bg-white border-b"><div class="max-w-7xl mx-auto px-6 py-4"><div class="flex justify-between items-center"><div class="flex items-center gap-8"><a href="/admin/dashboard" class="text-2xl font-bold text-purple-600">슈퍼플레이스</a><div class="flex gap-4"><a href="/admin/dashboard" class="text-purple-600 font-semibold">대시보드</a><a href="/admin/users" class="text-gray-600 hover:text-purple-600">사용자</a><a href="/admin/contacts" class="text-gray-600 hover:text-purple-600">문의</a><a href="/admin/sms" class="text-gray-600 hover:text-purple-600">문자</a><a href="/admin/sender/verification" class="text-gray-600 hover:text-purple-600">발신번호</a></div></div><button onclick="localStorage.removeItem('user');location.href='/'" class="text-gray-600 hover:text-red-600"><i class="fas fa-sign-out-alt mr-2"></i>로그아웃</button></div></div></nav>`,p=`<div class="max-w-7xl mx-auto px-6 py-8"><h1 class="text-3xl font-bold mb-8">관리자 대시보드</h1><div class="grid md:grid-cols-3 gap-6 mb-8"><div class="bg-white rounded-xl shadow p-6 border"><div class="flex items-center justify-between mb-2"><span class="text-gray-600">전체 사용자</span><i class="fas fa-users text-blue-600 text-2xl"></i></div><p class="text-3xl font-bold">${s}</p></div><div class="bg-white rounded-xl shadow p-6 border"><div class="flex items-center justify-between mb-2"><span class="text-gray-600">전체 문의</span><i class="fas fa-envelope text-green-600 text-2xl"></i></div><p class="text-3xl font-bold">${r}</p></div><div class="bg-white rounded-xl shadow p-6 border"><div class="flex items-center justify-between mb-2"><span class="text-gray-600">대기중 문의</span><i class="fas fa-clock text-orange-600 text-2xl"></i></div><p class="text-3xl font-bold">${a}</p></div></div>`,u=`<div class="mb-8"><h2 class="text-xl font-bold mb-4">신청 대기</h2><div class="grid md:grid-cols-3 gap-6"><div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow p-6 text-white"><div class="flex items-center justify-between mb-2"><span>입금 대기</span><i class="fas fa-money-bill-wave text-2xl"></i></div><p class="text-3xl font-bold">${n}</p></div><div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow p-6 text-white"><div class="flex items-center justify-between mb-2"><span>발신번호 대기</span><i class="fas fa-phone text-2xl"></i></div><p class="text-3xl font-bold">${o}</p></div><a href="/admin/bank-transfers" class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow p-6 text-white hover:shadow-lg transition"><div class="flex items-center justify-between mb-2"><span>계좌이체 대기</span><i class="fas fa-university text-2xl"></i></div><p class="text-3xl font-bold">${l}</p><p class="text-sm text-blue-100 mt-2">클릭하여 관리</p></a></div></div>`;return e.html(i+c+p+u+'<div class="grid md:grid-cols-3 gap-6"><a href="/admin/users" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"><i class="fas fa-user-cog text-blue-600 text-xl"></i></div><div><h3 class="text-lg font-bold">사용자 관리</h3><p class="text-gray-600 text-sm">권한 관리</p></div></div></a><a href="/admin/contacts" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center"><i class="fas fa-comments text-green-600 text-xl"></i></div><div><h3 class="text-lg font-bold">문의 관리</h3><p class="text-gray-600 text-sm">문의 처리</p></div></div></a><a href="/admin/revenue" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center"><i class="fas fa-chart-line text-yellow-600 text-xl"></i></div><div><h3 class="text-lg font-bold">매출 관리</h3><p class="text-gray-600 text-sm">매출 통계</p></div></div></a><a href="/admin/sms" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"><i class="fas fa-sms text-blue-600 text-xl"></i></div><div><h3 class="text-lg font-bold">문자 관리</h3><p class="text-gray-600 text-sm">SMS 발송</p></div></div></a><a href="/admin/sender/verification" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center"><i class="fas fa-phone text-purple-600 text-xl"></i></div><div><h3 class="text-lg font-bold">발신번호</h3><p class="text-gray-600 text-sm">인증 승인</p></div></div></a><a href="/admin/deposits" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center"><i class="fas fa-money-bill-wave text-green-600 text-xl"></i></div><div><h3 class="text-lg font-bold">입금 관리</h3><p class="text-gray-600 text-sm">포인트 승인</p></div></div></a><a href="/admin/bank-transfers" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"><i class="fas fa-university text-blue-600 text-xl"></i></div><div><h3 class="text-lg font-bold">계좌이체</h3><p class="text-gray-600 text-sm">승인 관리</p></div></div></a><a href="/admin/programs" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center"><i class="fas fa-graduation-cap text-purple-600 text-xl"></i></div><div><h3 class="text-lg font-bold">프로그램</h3><p class="text-gray-600 text-sm">교육 관리</p></div></div></a></div></div></body></html>')});d.get("/api/admin/pending-counts",async e=>{var n,o,l;const{env:t}=e;if(!(t!=null&&t.DB))return e.json({success:!1,error:"DB Error"},500);let s=0,r=0,a=0;try{s=((n=await t.DB.prepare("SELECT COUNT(*) c FROM deposit_requests WHERE status=?").bind("pending").first())==null?void 0:n.c)||0}catch{}try{r=((o=await t.DB.prepare("SELECT COUNT(*) c FROM sender_verification_requests WHERE status=?").bind("pending").first())==null?void 0:o.c)||0}catch{}try{a=((l=await t.DB.prepare("SELECT COUNT(*) c FROM bank_transfer_requests WHERE status=?").bind("pending").first())==null?void 0:l.c)||0}catch{}return e.json({success:!0,deposits:s,senders:r,bankTransfers:a})});d.get("/admin/programs.html",e=>e.redirect("/admin/programs",301));d.get("/admin/revenue",async e=>e.html(`
+      `).run(),s.push("✅ Created usage_tracking table (no FK constraints)")}catch(a){s.push("ℹ️ usage_tracking table: "+a.message)}const r=["CREATE INDEX IF NOT EXISTS idx_subscriptions_academy_id ON subscriptions(academy_id)","CREATE INDEX IF NOT EXISTS idx_subscriptions_status ON subscriptions(status)","CREATE INDEX IF NOT EXISTS idx_academies_owner_id ON academies(owner_id)","CREATE INDEX IF NOT EXISTS idx_usage_tracking_academy_id ON usage_tracking(academy_id)","CREATE INDEX IF NOT EXISTS idx_usage_tracking_subscription_id ON usage_tracking(subscription_id)"];for(const a of r)try{await t.prepare(a).run()}catch{}return s.push("Created/verified all indexes"),e.json({success:!0,message:"데이터베이스 마이그레이션이 완료되었습니다",migrations:s})}catch(t){return console.error("Database migration error:",t),e.json({success:!1,error:t.message,stack:t.stack},500)}});d.get("/api/test/db",async e=>{const{env:t}=e;try{if(!t.DB)return e.json({success:!1,error:"DB binding not found",env_keys:Object.keys(t)});const s=await t.DB.prepare("SELECT 1 as test").first();return e.json({success:!0,message:"DB connection OK",result:s})}catch(s){return e.json({success:!1,error:s.message,stack:s.stack},500)}});d.get("/features/landing-builder",e=>e.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>랜딩페이지 생성기 - 슈퍼플레이스</title>
+        <script src="https://cdn.tailwindcss.com"><\/script>
+        <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+        <style>
+          @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
+          * { font-family: 'Pretendard Variable', Pretendard, sans-serif; }
+          .gradient-purple { background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%); }
+        </style>
+    </head>
+    <body class="bg-gray-50">
+        <nav class="bg-white border-b sticky top-0 z-50">
+            <div class="max-w-7xl mx-auto px-6 py-4">
+                <div class="flex justify-between items-center">
+                    <a href="/dashboard" class="text-2xl font-bold text-purple-600">슈퍼플레이스</a>
+                    <a href="/dashboard" class="text-gray-600 hover:text-purple-600">← 대시보드</a>
+                </div>
+            </div>
+        </nav>
+
+        <div class="max-w-7xl mx-auto px-6 py-12">
+            <!-- Hero Section -->
+            <div class="text-center mb-16">
+                <div class="inline-block px-4 py-2 bg-purple-100 rounded-full text-purple-700 text-sm font-semibold mb-4">
+                    🚀 AI 기반 자동화 도구
+                </div>
+                <h1 class="text-5xl font-bold text-gray-900 mb-6">랜딩페이지 생성기</h1>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                    AI가 자동으로 전문적인 랜딩페이지를 생성합니다.<br>
+                    학원 소개, 프로그램 홍보, 학생 리포트를 간편하게 제작하고 카카오톡으로 공유하세요.
+                </p>
+            </div>
+
+            <!-- 주요 기능 -->
+            <div class="mb-16">
+                <h2 class="text-3xl font-bold text-gray-900 mb-8 text-center">주요 기능</h2>
+                <div class="grid md:grid-cols-3 gap-8">
+                    <div class="bg-white rounded-xl p-8 shadow-sm border border-gray-200">
+                        <div class="w-16 h-16 bg-purple-100 rounded-xl flex items-center justify-center mb-4">
+                            <i class="fas fa-magic text-3xl text-purple-600"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-3">AI 자동 생성</h3>
+                        <p class="text-gray-600">
+                            간단한 정보만 입력하면 AI가 전문적인 디자인의 랜딩페이지를 자동으로 생성합니다.
+                        </p>
+                    </div>
+
+                    <div class="bg-white rounded-xl p-8 shadow-sm border border-gray-200">
+                        <div class="w-16 h-16 bg-blue-100 rounded-xl flex items-center justify-center mb-4">
+                            <i class="fas fa-mobile-alt text-3xl text-blue-600"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-3">모바일 최적화</h3>
+                        <p class="text-gray-600">
+                            모든 페이지는 모바일 환경에 최적화되어 어떤 기기에서도 완벽하게 표시됩니다.
+                        </p>
+                    </div>
+
+                    <div class="bg-white rounded-xl p-8 shadow-sm border border-gray-200">
+                        <div class="w-16 h-16 bg-green-100 rounded-xl flex items-center justify-center mb-4">
+                            <i class="fab fa-kickstarter text-3xl text-green-600"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-3">카카오톡 공유</h3>
+                        <p class="text-gray-600">
+                            생성된 페이지를 카카오톡으로 바로 공유하여 학부모님께 전달할 수 있습니다.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 사용 방법 -->
+            <div class="mb-16">
+                <h2 class="text-3xl font-bold text-gray-900 mb-8 text-center">사용 방법</h2>
+                <div class="space-y-6">
+                    <div class="flex gap-6 items-start">
+                        <div class="flex-shrink-0 w-12 h-12 bg-purple-600 text-white rounded-full flex items-center justify-center font-bold text-xl">1</div>
+                        <div class="flex-1">
+                            <h3 class="text-xl font-bold mb-2">페이지 유형 선택</h3>
+                            <p class="text-gray-600">학원 소개, 프로그램 홍보, 학생 리포트 중 원하는 유형을 선택합니다.</p>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-6 items-start">
+                        <div class="flex-shrink-0 w-12 h-12 bg-purple-600 text-white rounded-full flex items-center justify-center font-bold text-xl">2</div>
+                        <div class="flex-1">
+                            <h3 class="text-xl font-bold mb-2">정보 입력</h3>
+                            <p class="text-gray-600">학원 이름, 프로그램 설명, 학생 정보 등 필요한 내용을 간단히 입력합니다.</p>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-6 items-start">
+                        <div class="flex-shrink-0 w-12 h-12 bg-purple-600 text-white rounded-full flex items-center justify-center font-bold text-xl">3</div>
+                        <div class="flex-1">
+                            <h3 class="text-xl font-bold mb-2">AI 자동 생성</h3>
+                            <p class="text-gray-600">AI가 입력된 정보를 바탕으로 전문적인 랜딩페이지를 자동으로 생성합니다.</p>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-6 items-start">
+                        <div class="flex-shrink-0 w-12 h-12 bg-purple-600 text-white rounded-full flex items-center justify-center font-bold text-xl">4</div>
+                        <div class="flex-1">
+                            <h3 class="text-xl font-bold mb-2">공유 및 관리</h3>
+                            <p class="text-gray-600">생성된 페이지를 카카오톡으로 공유하거나 링크로 전달합니다.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 장점 -->
+            <div class="mb-16">
+                <h2 class="text-3xl font-bold text-gray-900 mb-8 text-center">왜 랜딩페이지 생성기를 사용해야 할까요?</h2>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-6 border border-purple-200">
+                        <div class="flex items-start gap-4">
+                            <i class="fas fa-check-circle text-2xl text-purple-600 mt-1"></i>
+                            <div>
+                                <h3 class="font-bold text-lg mb-2">시간 절약</h3>
+                                <p class="text-gray-700">디자이너나 개발자 없이도 몇 분 만에 전문적인 페이지를 만들 수 있습니다.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 border border-blue-200">
+                        <div class="flex items-start gap-4">
+                            <i class="fas fa-check-circle text-2xl text-blue-600 mt-1"></i>
+                            <div>
+                                <h3 class="font-bold text-lg mb-2">비용 절감</h3>
+                                <p class="text-gray-700">외부 제작 비용 없이 무제한으로 랜딩페이지를 생성할 수 있습니다.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-6 border border-green-200">
+                        <div class="flex items-start gap-4">
+                            <i class="fas fa-check-circle text-2xl text-green-600 mt-1"></i>
+                            <div>
+                                <h3 class="font-bold text-lg mb-2">전문적인 디자인</h3>
+                                <p class="text-gray-700">AI가 최신 디자인 트렌드를 반영한 세련된 페이지를 생성합니다.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-6 border border-orange-200">
+                        <div class="flex items-start gap-4">
+                            <i class="fas fa-check-circle text-2xl text-orange-600 mt-1"></i>
+                            <div>
+                                <h3 class="font-bold text-lg mb-2">즉시 공유</h3>
+                                <p class="text-gray-700">생성 즉시 카카오톡이나 링크로 학부모님께 전달할 수 있습니다.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CTA -->
+            <div class="text-center bg-gradient-to-r from-purple-600 to-purple-700 rounded-2xl p-12 text-white">
+                <h2 class="text-3xl font-bold mb-4">지금 바로 시작하세요</h2>
+                <p class="text-xl mb-8 text-purple-100">AI가 만드는 전문적인 랜딩페이지를 경험해보세요</p>
+                <a href="/tools/landing-builder" class="inline-block px-8 py-4 bg-white text-purple-600 rounded-xl font-bold text-lg hover:bg-purple-50 transition shadow-lg">
+                    랜딩페이지 만들기 →
+                </a>
+            </div>
+        </div>
+    </body>
+    </html>
+  `));d.get("/features/sms-sender",e=>e.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>SMS 문자 발송 - 슈퍼플레이스</title>
+        <script src="https://cdn.tailwindcss.com"><\/script>
+        <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+        <style>
+          @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
+          * { font-family: 'Pretendard Variable', Pretendard, sans-serif; }
+          .gradient-blue { background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%); }
+        </style>
+    </head>
+    <body class="bg-gray-50">
+        <nav class="bg-white border-b sticky top-0 z-50">
+            <div class="max-w-7xl mx-auto px-6 py-4">
+                <div class="flex justify-between items-center">
+                    <a href="/dashboard" class="text-2xl font-bold text-blue-600">슈퍼플레이스</a>
+                    <a href="/dashboard" class="text-gray-600 hover:text-blue-600">← 대시보드</a>
+                </div>
+            </div>
+        </nav>
+
+        <div class="max-w-7xl mx-auto px-6 py-12">
+            <!-- Hero Section -->
+            <div class="text-center mb-16">
+                <div class="inline-block px-4 py-2 bg-blue-100 rounded-full text-blue-700 text-sm font-semibold mb-4">
+                    💬 빠르고 효율적인 소통
+                </div>
+                <h1 class="text-5xl font-bold text-gray-900 mb-6">SMS 문자 발송</h1>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                    학부모님들과 빠르고 효과적으로 소통하세요.<br>
+                    일정 안내, 공지사항, 개별 메시지를 손쉽게 발송하고 관리할 수 있습니다.
+                </p>
+            </div>
+
+            <!-- 주요 기능 -->
+            <div class="mb-16">
+                <h2 class="text-3xl font-bold text-gray-900 mb-8 text-center">주요 기능</h2>
+                <div class="grid md:grid-cols-3 gap-8">
+                    <div class="bg-white rounded-xl p-8 shadow-sm border border-gray-200">
+                        <div class="w-16 h-16 bg-blue-100 rounded-xl flex items-center justify-center mb-4">
+                            <i class="fas fa-users text-3xl text-blue-600"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-3">대량 발송</h3>
+                        <p class="text-gray-600">
+                            여러 학부모님께 한 번에 문자를 발송할 수 있습니다. 그룹별, 학년별 발송도 가능합니다.
+                        </p>
+                    </div>
+
+                    <div class="bg-white rounded-xl p-8 shadow-sm border border-gray-200">
+                        <div class="w-16 h-16 bg-green-100 rounded-xl flex items-center justify-center mb-4">
+                            <i class="fas fa-user-check text-3xl text-green-600"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-3">개인 맞춤 발송</h3>
+                        <p class="text-gray-600">
+                            학생 이름이나 개별 정보를 자동으로 치환하여 맞춤형 메시지를 보낼 수 있습니다.
+                        </p>
+                    </div>
+
+                    <div class="bg-white rounded-xl p-8 shadow-sm border border-gray-200">
+                        <div class="w-16 h-16 bg-purple-100 rounded-xl flex items-center justify-center mb-4">
+                            <i class="fas fa-chart-bar text-3xl text-purple-600"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-3">발송 내역 관리</h3>
+                        <p class="text-gray-600">
+                            모든 발송 기록을 확인하고 관리할 수 있습니다. 발송 성공/실패 여부도 추적됩니다.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 사용 방법 -->
+            <div class="mb-16">
+                <h2 class="text-3xl font-bold text-gray-900 mb-8 text-center">사용 방법</h2>
+                <div class="space-y-6">
+                    <div class="flex gap-6 items-start">
+                        <div class="flex-shrink-0 w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-xl">1</div>
+                        <div class="flex-1">
+                            <h3 class="text-xl font-bold mb-2">발신번호 등록</h3>
+                            <p class="text-gray-600">먼저 발신번호를 등록하고 인증을 완료합니다. (최초 1회)</p>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-6 items-start">
+                        <div class="flex-shrink-0 w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-xl">2</div>
+                        <div class="flex-1">
+                            <h3 class="text-xl font-bold mb-2">수신자 선택</h3>
+                            <p class="text-gray-600">학생 관리 시스템에서 수신자를 선택하거나, 직접 번호를 입력합니다.</p>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-6 items-start">
+                        <div class="flex-shrink-0 w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-xl">3</div>
+                        <div class="flex-1">
+                            <h3 class="text-xl font-bold mb-2">메시지 작성</h3>
+                            <p class="text-gray-600">보낼 메시지를 작성합니다. 템플릿을 사용하거나 직접 입력할 수 있습니다.</p>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-6 items-start">
+                        <div class="flex-shrink-0 w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-xl">4</div>
+                        <div class="flex-1">
+                            <h3 class="text-xl font-bold mb-2">발송 및 확인</h3>
+                            <p class="text-gray-600">발송 버튼을 클릭하고, 발송 내역에서 결과를 확인합니다.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 장점 -->
+            <div class="mb-16">
+                <h2 class="text-3xl font-bold text-gray-900 mb-8 text-center">왜 SMS 문자 발송을 사용해야 할까요?</h2>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 border border-blue-200">
+                        <div class="flex items-start gap-4">
+                            <i class="fas fa-check-circle text-2xl text-blue-600 mt-1"></i>
+                            <div>
+                                <h3 class="font-bold text-lg mb-2">높은 도달률</h3>
+                                <p class="text-gray-700">SMS는 98% 이상의 도달률과 90% 이상의 읽기율을 자랑합니다.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-6 border border-green-200">
+                        <div class="flex items-start gap-4">
+                            <i class="fas fa-check-circle text-2xl text-green-600 mt-1"></i>
+                            <div>
+                                <h3 class="font-bold text-lg mb-2">즉각적인 소통</h3>
+                                <p class="text-gray-700">긴급 공지나 일정 변경 사항을 실시간으로 전달할 수 있습니다.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-6 border border-purple-200">
+                        <div class="flex items-start gap-4">
+                            <i class="fas fa-check-circle text-2xl text-purple-600 mt-1"></i>
+                            <div>
+                                <h3 class="font-bold text-lg mb-2">효율적인 관리</h3>
+                                <p class="text-gray-700">모든 발송 내역을 한 곳에서 관리하고 추적할 수 있습니다.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-6 border border-orange-200">
+                        <div class="flex items-start gap-4">
+                            <i class="fas fa-check-circle text-2xl text-orange-600 mt-1"></i>
+                            <div>
+                                <h3 class="font-bold text-lg mb-2">비용 효율적</h3>
+                                <p class="text-gray-700">건당 저렴한 비용으로 효과적인 소통이 가능합니다.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CTA -->
+            <div class="text-center bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-12 text-white">
+                <h2 class="text-3xl font-bold mb-4">지금 바로 시작하세요</h2>
+                <p class="text-xl mb-8 text-blue-100">학부모님들과 더 효과적으로 소통하세요</p>
+                <a href="/sms/compose" class="inline-block px-8 py-4 bg-white text-blue-600 rounded-xl font-bold text-lg hover:bg-blue-50 transition shadow-lg">
+                    문자 작성하기 →
+                </a>
+            </div>
+        </div>
+    </body>
+    </html>
+  `));d.get("/features/student-management",e=>e.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>학생 관리 - 슈퍼플레이스</title>
+        <script src="https://cdn.tailwindcss.com"><\/script>
+        <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+        <style>
+          @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
+          * { font-family: 'Pretendard Variable', Pretendard, sans-serif; }
+          .gradient-green { background: linear-gradient(135deg, #10b981 0%, #34d399 100%); }
+        </style>
+    </head>
+    <body class="bg-gray-50">
+        <nav class="bg-white border-b sticky top-0 z-50">
+            <div class="max-w-7xl mx-auto px-6 py-4">
+                <div class="flex justify-between items-center">
+                    <a href="/dashboard" class="text-2xl font-bold text-green-600">슈퍼플레이스</a>
+                    <a href="/dashboard" class="text-gray-600 hover:text-green-600">← 대시보드</a>
+                </div>
+            </div>
+        </nav>
+
+        <div class="max-w-7xl mx-auto px-6 py-12">
+            <!-- Hero Section -->
+            <div class="text-center mb-16">
+                <div class="inline-block px-4 py-2 bg-green-100 rounded-full text-green-700 text-sm font-semibold mb-4">
+                    👨‍🎓 체계적인 학생 관리
+                </div>
+                <h1 class="text-5xl font-bold text-gray-900 mb-6">학생 관리 시스템</h1>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                    학생 정보를 한눈에 파악하고 체계적으로 관리하세요.<br>
+                    출결 관리, 성적 추적, 학부모 연락처까지 모든 정보를 통합 관리할 수 있습니다.
+                </p>
+            </div>
+
+            <!-- 주요 기능 -->
+            <div class="mb-16">
+                <h2 class="text-3xl font-bold text-gray-900 mb-8 text-center">주요 기능</h2>
+                <div class="grid md:grid-cols-3 gap-8">
+                    <div class="bg-white rounded-xl p-8 shadow-sm border border-gray-200">
+                        <div class="w-16 h-16 bg-green-100 rounded-xl flex items-center justify-center mb-4">
+                            <i class="fas fa-user-graduate text-3xl text-green-600"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-3">학생 정보 관리</h3>
+                        <p class="text-gray-600">
+                            학생의 이름, 학년, 연락처, 학부모 정보 등을 체계적으로 관리할 수 있습니다.
+                        </p>
+                    </div>
+
+                    <div class="bg-white rounded-xl p-8 shadow-sm border border-gray-200">
+                        <div class="w-16 h-16 bg-blue-100 rounded-xl flex items-center justify-center mb-4">
+                            <i class="fas fa-calendar-check text-3xl text-blue-600"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-3">출결 관리</h3>
+                        <p class="text-gray-600">
+                            출석, 지각, 결석을 기록하고 출결 현황을 실시간으로 확인할 수 있습니다.
+                        </p>
+                    </div>
+
+                    <div class="bg-white rounded-xl p-8 shadow-sm border border-gray-200">
+                        <div class="w-16 h-16 bg-purple-100 rounded-xl flex items-center justify-center mb-4">
+                            <i class="fas fa-chart-line text-3xl text-purple-600"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-3">성적 추적</h3>
+                        <p class="text-gray-600">
+                            시험 성적, 과제 점수 등을 기록하고 학생별 성적 변화를 추적할 수 있습니다.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 사용 방법 -->
+            <div class="mb-16">
+                <h2 class="text-3xl font-bold text-gray-900 mb-8 text-center">사용 방법</h2>
+                <div class="space-y-6">
+                    <div class="flex gap-6 items-start">
+                        <div class="flex-shrink-0 w-12 h-12 bg-green-600 text-white rounded-full flex items-center justify-center font-bold text-xl">1</div>
+                        <div class="flex-1">
+                            <h3 class="text-xl font-bold mb-2">학생 등록</h3>
+                            <p class="text-gray-600">새로운 학생 정보를 입력하여 등록합니다. 이름, 학년, 연락처 등 기본 정보를 입력합니다.</p>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-6 items-start">
+                        <div class="flex-shrink-0 w-12 h-12 bg-green-600 text-white rounded-full flex items-center justify-center font-bold text-xl">2</div>
+                        <div class="flex-1">
+                            <h3 class="text-xl font-bold mb-2">정보 관리</h3>
+                            <p class="text-gray-600">학생 목록에서 원하는 학생을 선택하여 상세 정보를 조회하고 수정할 수 있습니다.</p>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-6 items-start">
+                        <div class="flex-shrink-0 w-12 h-12 bg-green-600 text-white rounded-full flex items-center justify-center font-bold text-xl">3</div>
+                        <div class="flex-1">
+                            <h3 class="text-xl font-bold mb-2">출결 및 성적 기록</h3>
+                            <p class="text-gray-600">일일 출결을 체크하고, 시험이나 과제 성적을 입력합니다.</p>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-6 items-start">
+                        <div class="flex-shrink-0 w-12 h-12 bg-green-600 text-white rounded-full flex items-center justify-center font-bold text-xl">4</div>
+                        <div class="flex-1">
+                            <h3 class="text-xl font-bold mb-2">리포트 생성</h3>
+                            <p class="text-gray-600">학생별 출결 현황, 성적 추이 등의 리포트를 생성하여 학부모님께 전달합니다.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 장점 -->
+            <div class="mb-16">
+                <h2 class="text-3xl font-bold text-gray-900 mb-8 text-center">왜 학생 관리 시스템을 사용해야 할까요?</h2>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-6 border border-green-200">
+                        <div class="flex items-start gap-4">
+                            <i class="fas fa-check-circle text-2xl text-green-600 mt-1"></i>
+                            <div>
+                                <h3 class="font-bold text-lg mb-2">통합 관리</h3>
+                                <p class="text-gray-700">모든 학생 정보를 한 곳에서 통합 관리하여 업무 효율이 향상됩니다.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 border border-blue-200">
+                        <div class="flex items-start gap-4">
+                            <i class="fas fa-check-circle text-2xl text-blue-600 mt-1"></i>
+                            <div>
+                                <h3 class="font-bold text-lg mb-2">실시간 현황 파악</h3>
+                                <p class="text-gray-700">학생별 출결, 성적, 상담 내역을 실시간으로 확인할 수 있습니다.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-6 border border-purple-200">
+                        <div class="flex items-start gap-4">
+                            <i class="fas fa-check-circle text-2xl text-purple-600 mt-1"></i>
+                            <div>
+                                <h3 class="font-bold text-lg mb-2">데이터 기반 지도</h3>
+                                <p class="text-gray-700">축적된 데이터를 바탕으로 학생별 맞춤 지도가 가능합니다.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-6 border border-orange-200">
+                        <div class="flex items-start gap-4">
+                            <i class="fas fa-check-circle text-2xl text-orange-600 mt-1"></i>
+                            <div>
+                                <h3 class="font-bold text-lg mb-2">학부모 소통 강화</h3>
+                                <p class="text-gray-700">정확한 정보를 바탕으로 학부모님과 더 효과적으로 소통할 수 있습니다.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CTA -->
+            <div class="text-center bg-gradient-to-r from-green-600 to-green-700 rounded-2xl p-12 text-white">
+                <h2 class="text-3xl font-bold mb-4">지금 바로 시작하세요</h2>
+                <p class="text-xl mb-8 text-green-100">체계적인 학생 관리로 학원 운영을 효율화하세요</p>
+                <a href="/students" class="inline-block px-8 py-4 bg-white text-green-600 rounded-xl font-bold text-lg hover:bg-green-50 transition shadow-lg">
+                    학생 관리 시작하기 →
+                </a>
+            </div>
+        </div>
+    </body>
+    </html>
+  `));d.get("/features/ai-learning-report",e=>e.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>AI 학습 분석 리포트 - 슈퍼플레이스</title>
+        <script src="https://cdn.tailwindcss.com"><\/script>
+        <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+        <style>
+          @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
+          * { font-family: 'Pretendard Variable', Pretendard, sans-serif; }
+          .gradient-indigo { background: linear-gradient(135deg, #6366f1 0%, #818cf8 100%); }
+        </style>
+    </head>
+    <body class="bg-gray-50">
+        <nav class="bg-white border-b sticky top-0 z-50">
+            <div class="max-w-7xl mx-auto px-6 py-4">
+                <div class="flex justify-between items-center">
+                    <a href="/dashboard" class="text-2xl font-bold text-indigo-600">슈퍼플레이스</a>
+                    <a href="/dashboard" class="text-gray-600 hover:text-indigo-600">← 대시보드</a>
+                </div>
+            </div>
+        </nav>
+
+        <div class="max-w-7xl mx-auto px-6 py-12">
+            <!-- Hero Section -->
+            <div class="text-center mb-16">
+                <div class="inline-block px-4 py-2 bg-indigo-100 rounded-full text-indigo-700 text-sm font-semibold mb-4">
+                    🤖 AI 기반 학습 분석
+                </div>
+                <h1 class="text-5xl font-bold text-gray-900 mb-6">AI 학습 분석 리포트</h1>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                    AI가 학생의 학습 데이터를 분석하여 맞춤형 리포트를 생성합니다.<br>
+                    강점과 약점을 파악하고, 개선 방향을 제시하여 효과적인 학습을 지원합니다.
+                </p>
+            </div>
+
+            <!-- 주요 기능 -->
+            <div class="mb-16">
+                <h2 class="text-3xl font-bold text-gray-900 mb-8 text-center">주요 기능</h2>
+                <div class="grid md:grid-cols-3 gap-8">
+                    <div class="bg-white rounded-xl p-8 shadow-sm border border-gray-200">
+                        <div class="w-16 h-16 bg-indigo-100 rounded-xl flex items-center justify-center mb-4">
+                            <i class="fas fa-brain text-3xl text-indigo-600"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-3">AI 자동 분석</h3>
+                        <p class="text-gray-600">
+                            학생의 성적, 출결, 과제 데이터를 AI가 자동으로 분석하여 인사이트를 제공합니다.
+                        </p>
+                    </div>
+
+                    <div class="bg-white rounded-xl p-8 shadow-sm border border-gray-200">
+                        <div class="w-16 h-16 bg-purple-100 rounded-xl flex items-center justify-center mb-4">
+                            <i class="fas fa-chart-pie text-3xl text-purple-600"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-3">시각화 리포트</h3>
+                        <p class="text-gray-600">
+                            차트와 그래프로 학습 현황을 한눈에 파악할 수 있는 보기 쉬운 리포트를 생성합니다.
+                        </p>
+                    </div>
+
+                    <div class="bg-white rounded-xl p-8 shadow-sm border border-gray-200">
+                        <div class="w-16 h-16 bg-blue-100 rounded-xl flex items-center justify-center mb-4">
+                            <i class="fas fa-bullseye text-3xl text-blue-600"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-3">맞춤형 제안</h3>
+                        <p class="text-gray-600">
+                            학생별 강점과 약점을 분석하여 구체적인 학습 개선 방안을 제시합니다.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 사용 방법 -->
+            <div class="mb-16">
+                <h2 class="text-3xl font-bold text-gray-900 mb-8 text-center">사용 방법</h2>
+                <div class="space-y-6">
+                    <div class="flex gap-6 items-start">
+                        <div class="flex-shrink-0 w-12 h-12 bg-indigo-600 text-white rounded-full flex items-center justify-center font-bold text-xl">1</div>
+                        <div class="flex-1">
+                            <h3 class="text-xl font-bold mb-2">학생 선택</h3>
+                            <p class="text-gray-600">리포트를 생성할 학생을 선택합니다. 개별 학생 또는 그룹별 선택이 가능합니다.</p>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-6 items-start">
+                        <div class="flex-shrink-0 w-12 h-12 bg-indigo-600 text-white rounded-full flex items-center justify-center font-bold text-xl">2</div>
+                        <div class="flex-1">
+                            <h3 class="text-xl font-bold mb-2">분석 기간 설정</h3>
+                            <p class="text-gray-600">분석할 기간을 선택합니다. 최근 1개월, 3개월, 6개월 등 원하는 기간을 설정할 수 있습니다.</p>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-6 items-start">
+                        <div class="flex-shrink-0 w-12 h-12 bg-indigo-600 text-white rounded-full flex items-center justify-center font-bold text-xl">3</div>
+                        <div class="flex-1">
+                            <h3 class="text-xl font-bold mb-2">AI 분석 실행</h3>
+                            <p class="text-gray-600">AI가 자동으로 학습 데이터를 분석하고 리포트를 생성합니다. 수 초 내에 완료됩니다.</p>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-6 items-start">
+                        <div class="flex-shrink-0 w-12 h-12 bg-indigo-600 text-white rounded-full flex items-center justify-center font-bold text-xl">4</div>
+                        <div class="flex-1">
+                            <h3 class="text-xl font-bold mb-2">리포트 확인 및 공유</h3>
+                            <p class="text-gray-600">생성된 리포트를 확인하고, 학부모님께 공유하거나 상담 자료로 활용합니다.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 장점 -->
+            <div class="mb-16">
+                <h2 class="text-3xl font-bold text-gray-900 mb-8 text-center">왜 AI 학습 분석 리포트를 사용해야 할까요?</h2>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-xl p-6 border border-indigo-200">
+                        <div class="flex items-start gap-4">
+                            <i class="fas fa-check-circle text-2xl text-indigo-600 mt-1"></i>
+                            <div>
+                                <h3 class="font-bold text-lg mb-2">객관적인 분석</h3>
+                                <p class="text-gray-700">AI가 데이터를 기반으로 객관적이고 정확한 분석 결과를 제공합니다.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-6 border border-purple-200">
+                        <div class="flex items-start gap-4">
+                            <i class="fas fa-check-circle text-2xl text-purple-600 mt-1"></i>
+                            <div>
+                                <h3 class="font-bold text-lg mb-2">시간 절약</h3>
+                                <p class="text-gray-700">수작업으로 분석하던 시간을 대폭 절약하고 학생 지도에 집중할 수 있습니다.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 border border-blue-200">
+                        <div class="flex items-start gap-4">
+                            <i class="fas fa-check-circle text-2xl text-blue-600 mt-1"></i>
+                            <div>
+                                <h3 class="font-bold text-lg mb-2">맞춤형 지도</h3>
+                                <p class="text-gray-700">학생별 강약점을 파악하여 개인 맞춤형 학습 지도가 가능합니다.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-6 border border-green-200">
+                        <div class="flex items-start gap-4">
+                            <i class="fas fa-check-circle text-2xl text-green-600 mt-1"></i>
+                            <div>
+                                <h3 class="font-bold text-lg mb-2">학부모 만족도 향상</h3>
+                                <p class="text-gray-700">전문적인 리포트로 학부모님께 신뢰를 얻고 만족도를 높일 수 있습니다.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CTA -->
+            <div class="text-center bg-gradient-to-r from-indigo-600 to-indigo-700 rounded-2xl p-12 text-white">
+                <h2 class="text-3xl font-bold mb-4">지금 바로 시작하세요</h2>
+                <p class="text-xl mb-8 text-indigo-100">AI가 만드는 전문적인 학습 분석 리포트를 경험해보세요</p>
+                <a href="/tools/ai-learning-report" class="inline-block px-8 py-4 bg-white text-indigo-600 rounded-xl font-bold text-lg hover:bg-indigo-50 transition shadow-lg">
+                    리포트 생성하기 →
+                </a>
+            </div>
+        </div>
+    </body>
+    </html>
+  `));d.get("/admin/dashboard",async e=>{var g,v,h,b,f,y;const{env:t}=e;if(!(t!=null&&t.DB))return e.html('<h1>DB Error</h1><a href="/admin/users">Users</a>');let s=0,r=0,a=0,n=0,o=0,l=0;try{s=((g=await t.DB.prepare("SELECT COUNT(*)c FROM users").first())==null?void 0:g.c)||0}catch{}try{r=((v=await t.DB.prepare("SELECT COUNT(*)c FROM contacts").first())==null?void 0:v.c)||0}catch{}try{a=((h=await t.DB.prepare("SELECT COUNT(*)c FROM contacts WHERE status=?").bind("pending").first())==null?void 0:h.c)||0}catch{}try{n=((b=await t.DB.prepare("SELECT COUNT(*)c FROM deposit_requests WHERE status=?").bind("pending").first())==null?void 0:b.c)||0}catch{}try{o=((f=await t.DB.prepare("SELECT COUNT(*)c FROM sender_verification_requests WHERE status=?").bind("pending").first())==null?void 0:f.c)||0}catch{}try{l=((y=await t.DB.prepare("SELECT COUNT(*)c FROM bank_transfer_requests WHERE status=?").bind("pending").first())==null?void 0:y.c)||0}catch{}const i='<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>관리자 대시보드</title><script src="https://cdn.tailwindcss.com"><\/script><link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet"></head><body class="bg-gray-50">',c=`<nav class="bg-white border-b"><div class="max-w-7xl mx-auto px-6 py-4"><div class="flex justify-between items-center"><div class="flex items-center gap-8"><a href="/admin/dashboard" class="text-2xl font-bold text-purple-600">슈퍼플레이스</a><div class="flex gap-4"><a href="/admin/dashboard" class="text-purple-600 font-semibold">대시보드</a><a href="/admin/users" class="text-gray-600 hover:text-purple-600">사용자</a><a href="/admin/contacts" class="text-gray-600 hover:text-purple-600">문의</a><a href="/admin/sms" class="text-gray-600 hover:text-purple-600">문자</a><a href="/admin/sender/verification" class="text-gray-600 hover:text-purple-600">발신번호</a></div></div><button onclick="localStorage.removeItem('user');location.href='/'" class="text-gray-600 hover:text-red-600"><i class="fas fa-sign-out-alt mr-2"></i>로그아웃</button></div></div></nav>`,p=`<div class="max-w-7xl mx-auto px-6 py-8"><h1 class="text-3xl font-bold mb-8">관리자 대시보드</h1><div class="grid md:grid-cols-3 gap-6 mb-8"><div class="bg-white rounded-xl shadow p-6 border"><div class="flex items-center justify-between mb-2"><span class="text-gray-600">전체 사용자</span><i class="fas fa-users text-blue-600 text-2xl"></i></div><p class="text-3xl font-bold">${s}</p></div><div class="bg-white rounded-xl shadow p-6 border"><div class="flex items-center justify-between mb-2"><span class="text-gray-600">전체 문의</span><i class="fas fa-envelope text-green-600 text-2xl"></i></div><p class="text-3xl font-bold">${r}</p></div><div class="bg-white rounded-xl shadow p-6 border"><div class="flex items-center justify-between mb-2"><span class="text-gray-600">대기중 문의</span><i class="fas fa-clock text-orange-600 text-2xl"></i></div><p class="text-3xl font-bold">${a}</p></div></div>`,u=`<div class="mb-8"><h2 class="text-xl font-bold mb-4">신청 대기</h2><div class="grid md:grid-cols-3 gap-6"><div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow p-6 text-white"><div class="flex items-center justify-between mb-2"><span>입금 대기</span><i class="fas fa-money-bill-wave text-2xl"></i></div><p class="text-3xl font-bold">${n}</p></div><div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow p-6 text-white"><div class="flex items-center justify-between mb-2"><span>발신번호 대기</span><i class="fas fa-phone text-2xl"></i></div><p class="text-3xl font-bold">${o}</p></div><a href="/admin/bank-transfers" class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow p-6 text-white hover:shadow-lg transition"><div class="flex items-center justify-between mb-2"><span>계좌이체 대기</span><i class="fas fa-university text-2xl"></i></div><p class="text-3xl font-bold">${l}</p><p class="text-sm text-blue-100 mt-2">클릭하여 관리</p></a></div></div>`;return e.html(i+c+p+u+'<div class="grid md:grid-cols-3 gap-6"><a href="/admin/users" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"><i class="fas fa-user-cog text-blue-600 text-xl"></i></div><div><h3 class="text-lg font-bold">사용자 관리</h3><p class="text-gray-600 text-sm">권한 관리</p></div></div></a><a href="/admin/contacts" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center"><i class="fas fa-comments text-green-600 text-xl"></i></div><div><h3 class="text-lg font-bold">문의 관리</h3><p class="text-gray-600 text-sm">문의 처리</p></div></div></a><a href="/admin/revenue" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center"><i class="fas fa-chart-line text-yellow-600 text-xl"></i></div><div><h3 class="text-lg font-bold">매출 관리</h3><p class="text-gray-600 text-sm">매출 통계</p></div></div></a><a href="/admin/sms" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"><i class="fas fa-sms text-blue-600 text-xl"></i></div><div><h3 class="text-lg font-bold">문자 관리</h3><p class="text-gray-600 text-sm">SMS 발송</p></div></div></a><a href="/admin/sender/verification" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center"><i class="fas fa-phone text-purple-600 text-xl"></i></div><div><h3 class="text-lg font-bold">발신번호</h3><p class="text-gray-600 text-sm">인증 승인</p></div></div></a><a href="/admin/deposits" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center"><i class="fas fa-money-bill-wave text-green-600 text-xl"></i></div><div><h3 class="text-lg font-bold">입금 관리</h3><p class="text-gray-600 text-sm">포인트 승인</p></div></div></a><a href="/admin/bank-transfers" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"><i class="fas fa-university text-blue-600 text-xl"></i></div><div><h3 class="text-lg font-bold">계좌이체</h3><p class="text-gray-600 text-sm">승인 관리</p></div></div></a><a href="/admin/programs" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center"><i class="fas fa-graduation-cap text-purple-600 text-xl"></i></div><div><h3 class="text-lg font-bold">프로그램</h3><p class="text-gray-600 text-sm">교육 관리</p></div></div></a></div></div></body></html>')});d.get("/api/admin/pending-counts",async e=>{var n,o,l;const{env:t}=e;if(!(t!=null&&t.DB))return e.json({success:!1,error:"DB Error"},500);let s=0,r=0,a=0;try{s=((n=await t.DB.prepare("SELECT COUNT(*) c FROM deposit_requests WHERE status=?").bind("pending").first())==null?void 0:n.c)||0}catch{}try{r=((o=await t.DB.prepare("SELECT COUNT(*) c FROM sender_verification_requests WHERE status=?").bind("pending").first())==null?void 0:o.c)||0}catch{}try{a=((l=await t.DB.prepare("SELECT COUNT(*) c FROM bank_transfer_requests WHERE status=?").bind("pending").first())==null?void 0:l.c)||0}catch{}return e.json({success:!0,deposits:s,senders:r,bankTransfers:a})});d.get("/admin/programs.html",e=>e.redirect("/admin/programs",301));d.get("/admin/revenue",async e=>e.html(`
     <!DOCTYPE html>
     <html lang="ko">
     <head>
