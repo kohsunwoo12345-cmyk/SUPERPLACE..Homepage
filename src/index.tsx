@@ -554,32 +554,93 @@ app.get('/api/user/permissions', async (c) => {
         permissions: {
           search_volume: true,
           sms: true,
+          sms_sender: true,
           landing_builder: true,
           analytics: true,
+          parent_message: true,
+          blog_writer: true,
+          student_management: true,
+          dashboard_analytics: true,
+          ai_learning_report: true,
+          keyword_analyzer: true,
+          review_template: true,
+          ad_copy_generator: true,
+          photo_optimizer: true,
+          competitor_analysis: true,
+          blog_checklist: true,
+          content_calendar: true,
+          consultation_script: true,
+          place_optimization: true,
+          roi_calculator: true,
           all: true
         }
       })
     }
 
-    // 일반 사용자 권한 조회
-    const permissions = await c.env.DB.prepare(`
-      SELECT program_key 
-      FROM user_permissions 
-      WHERE user_id = ? AND is_active = 1 
-      AND (expires_at IS NULL OR expires_at > datetime('now'))
+    // user_programs 테이블에서 프로그램 조회
+    const { results: programs } = await c.env.DB.prepare(`
+      SELECT program_route, program_name, enabled
+      FROM user_programs
+      WHERE user_id = ? AND enabled = 1
     `).bind(userId).all()
+    
+    console.log('[User Permissions] Programs for user', userId, ':', programs)
 
-    const permissionMap = {
+    // 프로그램 라우트를 권한 키로 변환
+    const permissionMap: any = {
       search_volume: false,
       sms: false,
+      sms_sender: false,
       landing_builder: false,
       analytics: false,
+      parent_message: false,
+      blog_writer: false,
+      student_management: false,
+      dashboard_analytics: false,
+      ai_learning_report: false,
+      keyword_analyzer: false,
+      review_template: false,
+      ad_copy_generator: false,
+      photo_optimizer: false,
+      competitor_analysis: false,
+      blog_checklist: false,
+      content_calendar: false,
+      consultation_script: false,
+      place_optimization: false,
+      roi_calculator: false,
       all: false
     }
 
-    permissions.results.forEach(p => {
-      permissionMap[p.program_key] = true
+    // 라우트와 권한 키 매핑
+    const routeToPermission: any = {
+      '/programs/naver-place': 'search_volume',
+      '/programs/consulting': 'consultation_script',
+      '/programs/naver-form-register': 'parent_message',
+      '/programs/video-editing': 'photo_optimizer',
+      '/programs/consulting-automation': 'consultation_script',
+      '/programs/online-consulting': 'consultation_script',
+      '/programs/sns-management': 'content_calendar',
+      '/programs/naver-blog': 'blog_writer',
+      '/programs/ai-teacher': 'ai_learning_report',
+      '/programs/landing-builder': 'landing_builder',
+      '/programs/attendance': 'student_management',
+      '/programs/student-report': 'ai_learning_report',
+      '/programs/operation-consulting': 'consultation_script'
+    }
+
+    // 프로그램이 있으면 해당 권한 활성화
+    programs.forEach((program: any) => {
+      const permKey = routeToPermission[program.program_route]
+      if (permKey) {
+        permissionMap[permKey] = true
+        console.log('[User Permissions] Enabled:', permKey, 'from program:', program.program_name)
+      }
     })
+    
+    // SMS 권한은 sms_sender로도 매핑
+    if (permissionMap.sms_sender) {
+      permissionMap.sms = true
+    }
 
     return c.json({ success: true, permissions: permissionMap })
   } catch (err) {
@@ -11702,8 +11763,20 @@ app.get('/dashboard', (c) => {
                         const sub = data.subscription
                         
                         // 날짜 계산
-                        const startDate = new Date(sub.startDate)
-                        const endDate = new Date(sub.endDate + 'T23:59:59+09:00')
+                        const parseDate = (dateStr) => {
+                            if (!dateStr) return null
+                            if (dateStr.includes('T')) return new Date(dateStr)
+                            return new Date(dateStr + 'T00:00:00+09:00')
+                        }
+                        const startDate = parseDate(sub.startDate)
+                        const endDate = parseDate(sub.endDate)
+                        if (!startDate || !endDate || isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+                            console.error('[Dashboard] Invalid dates')
+                            statusDiv.innerHTML = '<div>Date error</div>'
+                            return
+                        }
+                        const endOfDay = new Date(endDate)
+                        endOfDay.setHours(23, 59, 59, 999)
                         const today = new Date()
                         const daysLeft = Math.max(0, Math.ceil((endDate - today) / (1000 * 60 * 60 * 24)))
                         const totalDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24))

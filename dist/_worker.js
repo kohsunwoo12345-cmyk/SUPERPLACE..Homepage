@@ -2786,12 +2786,11 @@ var Bt=Object.defineProperty;var tt=e=>{throw TypeError(e)};var Mt=(e,t,s)=>t in
     `).bind(t).first())return e.json({success:!1,error:"이미 등록된 이메일입니다."},400);const m=await e.env.DB.prepare(`
       INSERT INTO users (email, password, name, phone, academy_name, role, google_id, kakao_id, profile_image, social_provider)
       VALUES (?, ?, ?, ?, ?, 'director', ?, ?, ?, ?)
-    `).bind(t,s||"social_login_"+Date.now(),r,a||null,n||null,l||null,i||null,c||null,p||null).run();return e.json({success:!0,message:"회원가입이 완료되었습니다.",user:{id:m.meta.last_row_id,email:t,name:r}})}catch(t){return console.error("Register error:",t),e.json({success:!1,error:"회원가입 중 오류가 발생했습니다."},500)}});d.get("/api/user/permissions",async e=>{try{const t=e.req.query("userId");if(!t)return e.json({success:!1,error:"사용자 ID가 필요합니다."},400);const s=await e.env.DB.prepare("SELECT role FROM users WHERE id = ?").bind(t).first();if(s&&s.role==="admin")return e.json({success:!0,permissions:{search_volume:!0,sms:!0,landing_builder:!0,analytics:!0,all:!0}});const r=await e.env.DB.prepare(`
-      SELECT program_key 
-      FROM user_permissions 
-      WHERE user_id = ? AND is_active = 1 
-      AND (expires_at IS NULL OR expires_at > datetime('now'))
-    `).bind(t).all(),a={search_volume:!1,sms:!1,landing_builder:!1,analytics:!1,all:!1};return r.results.forEach(n=>{a[n.program_key]=!0}),e.json({success:!0,permissions:a})}catch(t){return console.error("Get user permissions error:",t),e.json({success:!1,error:"권한 조회 중 오류가 발생했습니다."},500)}});d.post("/api/admin/grant-permission",async e=>{try{const t=await e.req.json(),{userId:s,programKey:r,expiresAt:a}=t,n=t.adminId||t.grantedBy;if(!s||!r||!n)return e.json({success:!1,error:"필수 정보를 입력해주세요."},400);const o=await e.env.DB.prepare("SELECT role FROM users WHERE id = ?").bind(n).first();return!o||o.role!=="admin"?e.json({success:!1,error:"관리자 권한이 필요합니다."},403):(await e.env.DB.prepare(`
+    `).bind(t,s||"social_login_"+Date.now(),r,a||null,n||null,l||null,i||null,c||null,p||null).run();return e.json({success:!0,message:"회원가입이 완료되었습니다.",user:{id:m.meta.last_row_id,email:t,name:r}})}catch(t){return console.error("Register error:",t),e.json({success:!1,error:"회원가입 중 오류가 발생했습니다."},500)}});d.get("/api/user/permissions",async e=>{try{const t=e.req.query("userId");if(!t)return e.json({success:!1,error:"사용자 ID가 필요합니다."},400);const s=await e.env.DB.prepare("SELECT role FROM users WHERE id = ?").bind(t).first();if(s&&s.role==="admin")return e.json({success:!0,permissions:{search_volume:!0,sms:!0,sms_sender:!0,landing_builder:!0,analytics:!0,parent_message:!0,blog_writer:!0,student_management:!0,dashboard_analytics:!0,ai_learning_report:!0,keyword_analyzer:!0,review_template:!0,ad_copy_generator:!0,photo_optimizer:!0,competitor_analysis:!0,blog_checklist:!0,content_calendar:!0,consultation_script:!0,place_optimization:!0,roi_calculator:!0,all:!0}});const{results:r}=await e.env.DB.prepare(`
+      SELECT program_route, program_name, enabled
+      FROM user_programs
+      WHERE user_id = ? AND enabled = 1
+    `).bind(t).all();console.log("[User Permissions] Programs for user",t,":",r);const a={search_volume:!1,sms:!1,sms_sender:!1,landing_builder:!1,analytics:!1,parent_message:!1,blog_writer:!1,student_management:!1,dashboard_analytics:!1,ai_learning_report:!1,keyword_analyzer:!1,review_template:!1,ad_copy_generator:!1,photo_optimizer:!1,competitor_analysis:!1,blog_checklist:!1,content_calendar:!1,consultation_script:!1,place_optimization:!1,roi_calculator:!1,all:!1},n={"/programs/naver-place":"search_volume","/programs/consulting":"consultation_script","/programs/naver-form-register":"parent_message","/programs/video-editing":"photo_optimizer","/programs/consulting-automation":"consultation_script","/programs/online-consulting":"consultation_script","/programs/sns-management":"content_calendar","/programs/naver-blog":"blog_writer","/programs/ai-teacher":"ai_learning_report","/programs/landing-builder":"landing_builder","/programs/attendance":"student_management","/programs/student-report":"ai_learning_report","/programs/operation-consulting":"consultation_script"};return r.forEach(o=>{const l=n[o.program_route];l&&(a[l]=!0,console.log("[User Permissions] Enabled:",l,"from program:",o.program_name))}),a.sms_sender&&(a.sms=!0),e.json({success:!0,permissions:a})}catch(t){return console.error("Get user permissions error:",t),e.json({success:!1,error:"권한 조회 중 오류가 발생했습니다."},500)}});d.post("/api/admin/grant-permission",async e=>{try{const t=await e.req.json(),{userId:s,programKey:r,expiresAt:a}=t,n=t.adminId||t.grantedBy;if(!s||!r||!n)return e.json({success:!1,error:"필수 정보를 입력해주세요."},400);const o=await e.env.DB.prepare("SELECT role FROM users WHERE id = ?").bind(n).first();return!o||o.role!=="admin"?e.json({success:!1,error:"관리자 권한이 필요합니다."},403):(await e.env.DB.prepare(`
       INSERT OR REPLACE INTO user_permissions (user_id, program_key, granted_by, is_active, expires_at)
       VALUES (?, ?, ?, 1, ?)
     `).bind(s,r,n,a||null).run(),e.json({success:!0,message:"권한이 부여되었습니다."}))}catch(t){return console.error("Grant permission error:",t),e.json({success:!1,error:"권한 부여 중 오류가 발생했습니다."},500)}});d.post("/api/admin/revoke-permission",async e=>{try{const{userId:t,programKey:s,adminId:r}=await e.req.json();if(!t||!s||!r)return e.json({success:!1,error:"필수 정보를 입력해주세요."},400);const a=await e.env.DB.prepare("SELECT role FROM users WHERE id = ?").bind(r).first();return!a||a.role!=="admin"?e.json({success:!1,error:"관리자 권한이 필요합니다."},403):(await e.env.DB.prepare(`
@@ -9419,8 +9418,20 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
                         const sub = data.subscription
                         
                         // 날짜 계산
-                        const startDate = new Date(sub.startDate)
-                        const endDate = new Date(sub.endDate + 'T23:59:59+09:00')
+                        const parseDate = (dateStr) => {
+                            if (!dateStr) return null
+                            if (dateStr.includes('T')) return new Date(dateStr)
+                            return new Date(dateStr + 'T00:00:00+09:00')
+                        }
+                        const startDate = parseDate(sub.startDate)
+                        const endDate = parseDate(sub.endDate)
+                        if (!startDate || !endDate || isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+                            console.error('[Dashboard] Invalid dates')
+                            statusDiv.innerHTML = '<div>Date error</div>'
+                            return
+                        }
+                        const endOfDay = new Date(endDate)
+                        endOfDay.setHours(23, 59, 59, 999)
                         const today = new Date()
                         const daysLeft = Math.max(0, Math.ceil((endDate - today) / (1000 * 60 * 60 * 24)))
                         const totalDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24))
