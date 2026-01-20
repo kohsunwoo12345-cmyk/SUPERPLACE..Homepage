@@ -6574,6 +6574,22 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
                     }
                 });
             }
+            
+            // 로그인 상태 확인 및 네비게이션 버튼 업데이트
+            (function() {
+                const user = JSON.parse(localStorage.getItem('user') || 'null');
+                const navButtons = document.querySelectorAll('nav a[href="/login"]');
+                
+                navButtons.forEach(loginBtn => {
+                    if (user && user.id) {
+                        // 로그인한 사용자: 대시보드 버튼으로 변경
+                        loginBtn.href = '/dashboard';
+                        loginBtn.textContent = '대시보드';
+                        loginBtn.className = 'gradient-purple text-white px-6 py-2.5 rounded-full font-medium hover:shadow-lg transition-all';
+                    }
+                    // 로그인하지 않은 사용자: 기존 로그인 버튼 유지
+                });
+            })();
         <\/script>
     </body>
     </html>
