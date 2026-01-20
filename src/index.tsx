@@ -1,4 +1,4 @@
-// SUPERPLACE Academy - Complete Restructure 2026
+// SUPERPLACE Academy - Complete Restructure 2026 - Dashboard Permission Fix v1.1
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { getCookie } from 'hono/cookie'
