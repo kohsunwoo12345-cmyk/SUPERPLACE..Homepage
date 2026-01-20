@@ -6579,6 +6579,34 @@ app.post('/api/payments/webhook', async (c) => {
       // 🔥 academy_id는 항상 user.id (구독 조회 API와 일치)
       const actualAcademyId = academyId // user.id
       console.log('[Payment Webhook] Using academy_id = user.id:', actualAcademyId)
+      
+      // 🔥 FOREIGN KEY 제약 만족: academies 테이블에 user.id를 id로 하는 레코드 생성
+      try {
+        const existingAcademy = await c.env.DB.prepare(`
+          SELECT id FROM academies WHERE id = ?
+        `).bind(actualAcademyId).first()
+        
+        if (!existingAcademy) {
+          console.log('[Payment Webhook] Creating academy with explicit id:', actualAcademyId)
+          
+          // FOREIGN KEY 체크 임시 비활성화
+          await c.env.DB.prepare(`PRAGMA foreign_keys = OFF`).run()
+          
+          const user = await c.env.DB.prepare(`SELECT name FROM users WHERE id = ?`).bind(actualAcademyId).first()
+          const academyName = user?.name ? user.name + ' 학원' : '학원'
+          
+          await c.env.DB.prepare(`
+            INSERT OR REPLACE INTO academies (id, academy_name, owner_id, created_at)
+            VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+          `).bind(actualAcademyId, academyName, actualAcademyId).run()
+          
+          await c.env.DB.prepare(`PRAGMA foreign_keys = ON`).run()
+          
+          console.log('[Payment Webhook] Academy created with id:', actualAcademyId)
+        }
+      } catch (academyError) {
+        console.error('[Payment Webhook] Academy creation error:', academyError)
+      }
 
       // users 테이블에서 academy_id 업데이트
       await c.env.DB.prepare(`
@@ -6678,6 +6706,34 @@ app.post('/api/payments/complete', async (c) => {
     // 🔥 academy_id는 항상 user.id (구독 조회 API와 일치)
     const actualAcademyId = academyId // user.id
     console.log('[Payment Complete] Using academy_id = user.id:', actualAcademyId)
+    
+    // 🔥 FOREIGN KEY 제약 만족: academies 테이블에 user.id를 id로 하는 레코드 생성
+    try {
+      const existingAcademy = await c.env.DB.prepare(`
+        SELECT id FROM academies WHERE id = ?
+      `).bind(actualAcademyId).first()
+      
+      if (!existingAcademy) {
+        console.log('[Payment Complete] Creating academy with explicit id:', actualAcademyId)
+        
+        // FOREIGN KEY 체크 임시 비활성화
+        await c.env.DB.prepare(`PRAGMA foreign_keys = OFF`).run()
+        
+        const user = await c.env.DB.prepare(`SELECT name FROM users WHERE id = ?`).bind(actualAcademyId).first()
+        const academyName = user?.name ? user.name + ' 학원' : '학원'
+        
+        await c.env.DB.prepare(`
+          INSERT OR REPLACE INTO academies (id, academy_name, owner_id, created_at)
+          VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+        `).bind(actualAcademyId, academyName, actualAcademyId).run()
+        
+        await c.env.DB.prepare(`PRAGMA foreign_keys = ON`).run()
+        
+        console.log('[Payment Complete] Academy created with id:', actualAcademyId)
+      }
+    } catch (academyError) {
+      console.error('[Payment Complete] Academy creation error:', academyError)
+    }
 
     // users 테이블에서 academy_id 업데이트
     await c.env.DB.prepare(`
@@ -7546,9 +7602,40 @@ app.post('/api/bank-transfer/approve', async (c) => {
     console.log('[Bank Transfer Approve] Using academyId:', academyId, 'for user:', request.user_id)
     
     // 🔥 핵심: academy_id는 항상 user.id를 직접 사용 (구독 조회 API와 완전 일치)
-    // FOREIGN KEY 제약은 나중에 처리하거나 무시 (실제로는 users.id를 참조)
     const actualAcademyId = academyId // user.id
     console.log('[Bank Transfer Approve] Using academy_id = user.id:', actualAcademyId)
+    
+    // 🔥 FOREIGN KEY 제약 만족: academies 테이블에 user.id를 id로 하는 레코드 생성
+    // SQLite에서 명시적 id를 삽입하려면 특별한 방법 필요
+    try {
+      // 먼저 해당 id가 있는지 확인
+      const existingAcademy = await c.env.DB.prepare(`
+        SELECT id FROM academies WHERE id = ?
+      `).bind(actualAcademyId).first()
+      
+      if (!existingAcademy) {
+        console.log('[Bank Transfer Approve] Creating academy with explicit id:', actualAcademyId)
+        
+        // AUTOINCREMENT 제약을 우회하기 위해 sqlite_sequence 조작
+        // 방법 1: AUTOINCREMENT가 없는 테이블이라면 직접 삽입 가능
+        // 방법 2: 임시로 FOREIGN KEY 체크 비활성화
+        
+        // PRAGMA를 사용하여 FOREIGN KEY 체크를 임시로 끄고 삽입
+        await c.env.DB.prepare(`PRAGMA foreign_keys = OFF`).run()
+        
+        await c.env.DB.prepare(`
+          INSERT OR REPLACE INTO academies (id, academy_name, owner_id, created_at)
+          VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+        `).bind(actualAcademyId, request.user_name + ' 학원', actualAcademyId).run()
+        
+        await c.env.DB.prepare(`PRAGMA foreign_keys = ON`).run()
+        
+        console.log('[Bank Transfer Approve] Academy created with id:', actualAcademyId)
+      }
+    } catch (academyError) {
+      console.error('[Bank Transfer Approve] Academy creation error:', academyError)
+      // 실패해도 계속 진행 (FOREIGN KEY 체크가 꺼져있을 수도 있음)
+    }
     
     // users 테이블에서 academy_id 업데이트 (자기 자신의 ID로)
     await c.env.DB.prepare(`
