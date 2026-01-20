@@ -6894,6 +6894,35 @@ app.get('/api/subscriptions/status', async (c) => {
       console.log('🎓 [Subscription Status] TEACHER detected!')
       console.log('  └─ Teacher userId:', userId)
       console.log('  └─ Owner academy_id:', academyId)
+      
+      // 🔥 academy_id가 없는 경우 parent_user_id를 사용
+      if (!academyId) {
+        console.log('  └─ ⚠️ academy_id is null, trying parent_user_id...')
+        const parentUser = await c.env.DB.prepare(`
+          SELECT parent_user_id FROM users WHERE id = ?
+        `).bind(userId).first()
+        
+        if (parentUser?.parent_user_id) {
+          academyId = parentUser.parent_user_id
+          console.log('  └─ ✅ Found parent_user_id:', academyId)
+          
+          // academy_id 자동 설정
+          try {
+            await c.env.DB.prepare(`UPDATE users SET academy_id = ? WHERE id = ?`).bind(academyId, userId).run()
+            console.log('  └─ ✅ Auto-fixed academy_id to:', academyId)
+          } catch (e) {
+            console.error('  └─ ❌ Failed to update academy_id:', e)
+          }
+        } else {
+          console.error('  └─ ❌ No parent_user_id found either!')
+          return c.json({ 
+            success: true,
+            hasSubscription: false,
+            message: '선생님 계정이 학원에 연결되어 있지 않습니다. 학원장에게 문의하세요.' 
+          })
+        }
+      }
+      
       console.log('  └─ Will inherit owner\'s plan from academy_id:', academyId)
     } else {
       // 원장인 경우 자신의 ID로 구독 조회
@@ -7173,9 +7202,38 @@ app.get('/api/usage/check', async (c) => {
     if (user.user_type === 'teacher') {
       // 선생님인 경우 academy_id (원장 ID)로 구독 조회
       academyId = user.academy_id
+      
       console.log('🎓 [Usage Check] TEACHER detected!')
       console.log('  └─ Teacher userId:', userId)
       console.log('  └─ Owner academy_id:', academyId)
+      
+      // 🔥 academy_id가 없는 경우 parent_user_id를 사용
+      if (!academyId) {
+        console.log('  └─ ⚠️ academy_id is null, trying parent_user_id...')
+        const parentUser = await c.env.DB.prepare(`
+          SELECT parent_user_id FROM users WHERE id = ?
+        `).bind(userId).first()
+        
+        if (parentUser?.parent_user_id) {
+          academyId = parentUser.parent_user_id
+          console.log('  └─ ✅ Found parent_user_id:', academyId)
+          
+          // academy_id 자동 설정
+          try {
+            await c.env.DB.prepare(`UPDATE users SET academy_id = ? WHERE id = ?`).bind(academyId, userId).run()
+            console.log('  └─ ✅ Auto-fixed academy_id to:', academyId)
+          } catch (e) {
+            console.error('  └─ ❌ Failed to update academy_id:', e)
+          }
+        } else {
+          console.error('  └─ ❌ No parent_user_id found either!')
+          return c.json({ 
+            success: false, 
+            error: '선생님 계정이 학원에 연결되어 있지 않습니다. 학원장에게 문의하세요.' 
+          }, 403)
+        }
+      }
+      
       console.log('  └─ Will lookup subscription for owner academy_id:', academyId)
     } else {
       // 원장인 경우 자신의 ID로 구독 조회
