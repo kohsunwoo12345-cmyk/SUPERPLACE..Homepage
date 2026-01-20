@@ -11391,6 +11391,76 @@ app.get('/dashboard', (c) => {
                         </div>
                     </div>
 
+                    <!-- Main Tools Section -->
+                    <div class="bg-white rounded-2xl p-8 border border-gray-200 mb-8">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-6">🚀 주요 기능</h2>
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <!-- Landing Page Builder -->
+                            <a href="/tools/landing-builder" class="flex items-center p-6 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl hover:shadow-lg transition-all border-2 border-purple-200">
+                                <div class="w-14 h-14 bg-purple-500 rounded-xl flex items-center justify-center mr-4 flex-shrink-0">
+                                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                                    </svg>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="font-bold text-lg text-gray-900">랜딩페이지 생성기</div>
+                                    <div class="text-sm text-gray-600 mt-1">학원 홍보 페이지를 쉽게 만들어보세요</div>
+                                </div>
+                                <svg class="w-6 h-6 text-purple-600 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                </svg>
+                            </a>
+
+                            <!-- AI Learning Report -->
+                            <a href="/tools/ai-learning-report" class="flex items-center p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl hover:shadow-lg transition-all border-2 border-blue-200">
+                                <div class="w-14 h-14 bg-blue-500 rounded-xl flex items-center justify-center mr-4 flex-shrink-0">
+                                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                    </svg>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="font-bold text-lg text-gray-900">AI 학습 분석 리포트</div>
+                                    <div class="text-sm text-gray-600 mt-1">학생 성적을 AI로 분석하세요</div>
+                                </div>
+                                <svg class="w-6 h-6 text-blue-600 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                </svg>
+                            </a>
+
+                            <!-- Student Management -->
+                            <a href="/students/list" class="flex items-center p-6 bg-gradient-to-br from-green-50 to-green-100 rounded-xl hover:shadow-lg transition-all border-2 border-green-200">
+                                <div class="w-14 h-14 bg-green-500 rounded-xl flex items-center justify-center mr-4 flex-shrink-0">
+                                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                                    </svg>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="font-bold text-lg text-gray-900">학생 관리</div>
+                                    <div class="text-sm text-gray-600 mt-1">학생 정보를 체계적으로 관리하세요</div>
+                                </div>
+                                <svg class="w-6 h-6 text-green-600 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                </svg>
+                            </a>
+
+                            <!-- SMS Message -->
+                            <a href="/tools/sms-sender" class="flex items-center p-6 bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl hover:shadow-lg transition-all border-2 border-orange-200">
+                                <div class="w-14 h-14 bg-orange-500 rounded-xl flex items-center justify-center mr-4 flex-shrink-0">
+                                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
+                                    </svg>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="font-bold text-lg text-gray-900">문자 메시지</div>
+                                    <div class="text-sm text-gray-600 mt-1">학부모에게 문자를 발송하세요</div>
+                                </div>
+                                <svg class="w-6 h-6 text-orange-600 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+
                     <!-- Quick Links -->
                     <div class="bg-white rounded-2xl p-8 border border-gray-200">
                         <h2 class="text-2xl font-bold text-gray-900 mb-6">바로가기</h2>
