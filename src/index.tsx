@@ -7549,32 +7549,56 @@ app.post('/api/admin/usage/:userId/update-limits', async (c) => {
     
     console.log(`[Admin] Subscription period: ${today} to ${subscriptionEndDate} (${months} months)`)
     
-    // 🔥 CRITICAL: academies 테이블에 레코드 생성 (REPLACE INTO로 확실히 보장)
+    // 🔥 CRITICAL: academies 테이블에 레코드 생성 (INSERT OR IGNORE + UPDATE로 확실히 보장)
     console.log('[Admin] Ensuring academy record exists for academy_id:', academyId)
     try {
       const academyName = user.academy_name || user.name + '학원'
       
-      // REPLACE INTO를 사용하여 무조건 레코드 존재 보장
-      // (이미 있으면 업데이트, 없으면 생성)
-      await c.env.DB.prepare(`
-        REPLACE INTO academies (id, academy_name, owner_id, created_at)
+      // Step 1: INSERT OR IGNORE (이미 있으면 무시, 없으면 생성)
+      const insertResult = await c.env.DB.prepare(`
+        INSERT OR IGNORE INTO academies (id, academy_name, owner_id, created_at)
         VALUES (?, ?, ?, datetime('now'))
       `).bind(academyId, academyName, user.id).run()
       
-      // 확인
+      console.log('[Admin] INSERT OR IGNORE result:', insertResult.meta)
+      
+      // Step 2: UPDATE (이미 있던 것이든 방금 생성된 것이든 업데이트)
+      const updateResult = await c.env.DB.prepare(`
+        UPDATE academies 
+        SET academy_name = ?, owner_id = ?
+        WHERE id = ?
+      `).bind(academyName, user.id, academyId).run()
+      
+      console.log('[Admin] UPDATE result:', updateResult.meta)
+      
+      // Step 3: 확인
       const verifyAcademy = await c.env.DB.prepare(`
-        SELECT id, academy_name FROM academies WHERE id = ?
+        SELECT id, academy_name, owner_id FROM academies WHERE id = ?
       `).bind(academyId).first()
       
       if (verifyAcademy) {
-        console.log(`✅ [Admin] Academy record verified: ID=${verifyAcademy.id}, Name=${verifyAcademy.academy_name}`)
+        console.log(`✅ [Admin] Academy record verified: ID=${verifyAcademy.id}, Name=${verifyAcademy.academy_name}, Owner=${verifyAcademy.owner_id}`)
       } else {
         // 이 경우는 절대 발생하면 안 됨
-        console.error('[Admin] ❌ FATAL: Academy record not found after REPLACE INTO')
-        return c.json({ 
-          success: false, 
-          error: 'Academy 레코드 생성에 실패했습니다. DB 구조를 확인해주세요.' 
-        }, 500)
+        console.error('[Admin] ❌ FATAL: Academy record not found after INSERT+UPDATE')
+        console.error('[Admin] Attempted academy_id:', academyId)
+        console.error('[Admin] User info:', { id: user.id, name: user.name, email: user.email })
+        
+        // 마지막 시도: 직접 INSERT (AUTOINCREMENT 무시)
+        try {
+          await c.env.DB.prepare(`
+            INSERT INTO academies (id, academy_name, owner_id, created_at)
+            VALUES (?, ?, ?, datetime('now'))
+          `).bind(academyId, academyName, user.id).run()
+          
+          console.log('[Admin] ✅ Academy record created with direct INSERT')
+        } catch (directInsertError) {
+          console.error('[Admin] Direct INSERT also failed:', directInsertError.message)
+          return c.json({ 
+            success: false, 
+            error: `Academy 레코드 생성에 실패했습니다. 관리자에게 문의하세요. (ID: ${academyId})` 
+          }, 500)
+        }
       }
     } catch (academyError) {
       console.error('[Admin] Academy creation/update failed:', academyError.message)
