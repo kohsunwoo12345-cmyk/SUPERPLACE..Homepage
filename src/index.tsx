@@ -7698,6 +7698,193 @@ app.post('/api/admin/revoke-plan/:userId', async (c) => {
   }
 })
 
+// 💰 관리자: 매출 통계 조회 API
+app.get('/api/admin/revenue/stats', async (c) => {
+  try {
+    const DB = c.env.DB
+    
+    // 1. 전체 매출 통계
+    const totalStats = await DB.prepare(`
+      SELECT 
+        COUNT(*) as total_count,
+        SUM(amount) as total_revenue
+      FROM payments
+      WHERE status = 'completed'
+    `).first()
+    
+    // 2. 결제 수단별 통계 (카드 vs 계좌이체)
+    const paymentMethodStats = await DB.prepare(`
+      SELECT 
+        payment_method,
+        COUNT(*) as count,
+        SUM(amount) as revenue
+      FROM payments
+      WHERE status = 'completed'
+      GROUP BY payment_method
+    `).all()
+    
+    // 3. 플랜별 매출 통계
+    const planStats = await DB.prepare(`
+      SELECT 
+        s.plan_name,
+        COUNT(p.id) as count,
+        SUM(p.amount) as revenue
+      FROM payments p
+      JOIN subscriptions s ON p.subscription_id = s.id
+      WHERE p.status = 'completed'
+      GROUP BY s.plan_name
+      ORDER BY revenue DESC
+    `).all()
+    
+    // 4. 최근 30일 일별 매출
+    const dailyStats = await DB.prepare(`
+      SELECT 
+        DATE(created_at) as date,
+        COUNT(*) as count,
+        SUM(amount) as revenue
+      FROM payments
+      WHERE status = 'completed'
+        AND DATE(created_at) >= DATE('now', '-30 days')
+      GROUP BY DATE(created_at)
+      ORDER BY date DESC
+    `).all()
+    
+    // 5. 월별 매출 (최근 12개월)
+    const monthlyStats = await DB.prepare(`
+      SELECT 
+        strftime('%Y-%m', created_at) as month,
+        COUNT(*) as count,
+        SUM(amount) as revenue
+      FROM payments
+      WHERE status = 'completed'
+        AND DATE(created_at) >= DATE('now', '-12 months')
+      GROUP BY strftime('%Y-%m', created_at)
+      ORDER BY month DESC
+    `).all()
+    
+    // 결제 수단별 데이터 정리
+    const methodData = {
+      card: { count: 0, revenue: 0 },
+      bank_transfer: { count: 0, revenue: 0 }
+    }
+    
+    paymentMethodStats.results.forEach((item: any) => {
+      if (item.payment_method === 'card') {
+        methodData.card = { count: item.count, revenue: item.revenue || 0 }
+      } else if (item.payment_method === 'bank_transfer') {
+        methodData.bank_transfer = { count: item.count, revenue: item.revenue || 0 }
+      }
+    })
+    
+    return c.json({
+      success: true,
+      data: {
+        total: {
+          count: totalStats?.total_count || 0,
+          revenue: totalStats?.total_revenue || 0
+        },
+        byMethod: methodData,
+        byPlan: planStats.results || [],
+        daily: dailyStats.results || [],
+        monthly: monthlyStats.results || []
+      }
+    })
+  } catch (error) {
+    console.error('[Admin Revenue] Error:', error)
+    return c.json({ success: false, error: error.message }, 500)
+  }
+})
+
+// 💰 관리자: 상세 거래 내역 조회 API
+app.get('/api/admin/revenue/transactions', async (c) => {
+  try {
+    const DB = c.env.DB
+    const url = new URL(c.req.url)
+    const limit = parseInt(url.searchParams.get('limit') || '50')
+    const offset = parseInt(url.searchParams.get('offset') || '0')
+    const method = url.searchParams.get('method') // 'card' or 'bank_transfer'
+    const plan = url.searchParams.get('plan')
+    const startDate = url.searchParams.get('startDate')
+    const endDate = url.searchParams.get('endDate')
+    
+    // 쿼리 조건 생성
+    let conditions = ["p.status = 'completed'"]
+    let params: any[] = []
+    
+    if (method) {
+      conditions.push('p.payment_method = ?')
+      params.push(method)
+    }
+    
+    if (plan) {
+      conditions.push('s.plan_name = ?')
+      params.push(plan)
+    }
+    
+    if (startDate) {
+      conditions.push("DATE(p.created_at) >= DATE(?)")
+      params.push(startDate)
+    }
+    
+    if (endDate) {
+      conditions.push("DATE(p.created_at) <= DATE(?)")
+      params.push(endDate)
+    }
+    
+    const whereClause = conditions.length > 0 ? 'WHERE ' + conditions.join(' AND ') : ''
+    
+    // 전체 건수 조회
+    const countQuery = `
+      SELECT COUNT(*) as total
+      FROM payments p
+      JOIN subscriptions s ON p.subscription_id = s.id
+      JOIN users u ON p.user_id = u.id
+      ${whereClause}
+    `
+    const countResult = await DB.prepare(countQuery).bind(...params).first()
+    
+    // 거래 내역 조회
+    const query = `
+      SELECT 
+        p.id,
+        p.amount,
+        p.payment_method,
+        p.created_at,
+        p.merchant_uid,
+        s.plan_name,
+        s.plan_price,
+        u.id as user_id,
+        u.name as user_name,
+        u.email as user_email
+      FROM payments p
+      JOIN subscriptions s ON p.subscription_id = s.id
+      JOIN users u ON p.user_id = u.id
+      ${whereClause}
+      ORDER BY p.created_at DESC
+      LIMIT ? OFFSET ?
+    `
+    
+    params.push(limit, offset)
+    const transactions = await DB.prepare(query).bind(...params).all()
+    
+    return c.json({
+      success: true,
+      data: {
+        transactions: transactions.results || [],
+        pagination: {
+          total: countResult?.total || 0,
+          limit,
+          offset,
+          hasMore: (offset + limit) < (countResult?.total || 0)
+        }
+      }
+    })
+  } catch (error) {
+    console.error('[Admin Transactions] Error:', error)
+    return c.json({ success: false, error: error.message }, 500)
+  }
+})
+
 // 🔥 관리자: 사용자 구독 정보 조회 API
 app.get('/api/admin/usage/:userId', async (c) => {
   try {
@@ -27228,6 +27415,467 @@ app.get('/admin/dashboard', async (c) => {
 // .html 확장자 접근 시 리다이렉트
 app.get('/admin/programs.html', (c) => {
   return c.redirect('/admin/programs', 301)
+})
+
+
+// 💰 관리자: 매출 관리 페이지
+app.get('/admin/revenue', async (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>매출 관리 - 슈퍼플레이스</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    </head>
+    <body class="bg-gray-50">
+        <!-- 네비게이션 -->
+        <nav class="bg-white border-b border-gray-200 sticky top-0 z-50">
+            <div class="max-w-7xl mx-auto px-6 py-4">
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center gap-8">
+                        <a href="/admin/dashboard" class="text-2xl font-bold text-purple-600">슈퍼플레이스 관리자</a>
+                        <div class="flex gap-4">
+                            <a href="/admin/dashboard" class="text-gray-600 hover:text-purple-600">대시보드</a>
+                            <a href="/admin/users" class="text-gray-600 hover:text-purple-600">사용자</a>
+                            <a href="/admin/revenue" class="text-purple-600 font-semibold">매출</a>
+                            <a href="/admin/bank-transfers" class="text-gray-600 hover:text-purple-600">계좌이체</a>
+                        </div>
+                    </div>
+                    <button onclick="logout()" class="text-gray-600 hover:text-red-600">
+                        <i class="fas fa-sign-out-alt mr-2"></i>로그아웃
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <div class="max-w-7xl mx-auto px-6 py-8">
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">💰 매출 관리</h1>
+                <p class="text-gray-600">실시간 매출 통계 및 거래 내역을 확인하세요</p>
+            </div>
+
+            <!-- 로딩 상태 -->
+            <div id="loading" class="text-center py-12">
+                <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+                <p class="mt-4 text-gray-600">데이터 로딩 중...</p>
+            </div>
+
+            <!-- 메인 컨텐츠 -->
+            <div id="content" class="hidden">
+                <!-- 통계 카드 -->
+                <div class="grid md:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg p-6 text-white">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-purple-100">총 매출</span>
+                            <i class="fas fa-won-sign text-2xl"></i>
+                        </div>
+                        <p class="text-3xl font-bold" id="totalRevenue">₩0</p>
+                        <p class="text-purple-100 text-sm mt-2">
+                            <span id="totalCount">0</span>건
+                        </p>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-white">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-blue-100">카드 결제</span>
+                            <i class="fas fa-credit-card text-2xl"></i>
+                        </div>
+                        <p class="text-3xl font-bold" id="cardRevenue">₩0</p>
+                        <p class="text-blue-100 text-sm mt-2">
+                            <span id="cardCount">0</span>건
+                        </p>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg p-6 text-white">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-green-100">계좌이체</span>
+                            <i class="fas fa-university text-2xl"></i>
+                        </div>
+                        <p class="text-3xl font-bold" id="bankRevenue">₩0</p>
+                        <p class="text-green-100 text-sm mt-2">
+                            <span id="bankCount">0</span>건
+                        </p>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl shadow-lg p-6 text-white">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-yellow-100">월 평균</span>
+                            <i class="fas fa-chart-line text-2xl"></i>
+                        </div>
+                        <p class="text-3xl font-bold" id="avgRevenue">₩0</p>
+                        <p class="text-yellow-100 text-sm mt-2">최근 12개월</p>
+                    </div>
+                </div>
+
+                <!-- 차트 영역 -->
+                <div class="grid md:grid-cols-2 gap-6 mb-8">
+                    <div class="bg-white rounded-xl shadow p-6 border">
+                        <h3 class="text-lg font-bold mb-4">일별 매출 추이 (최근 30일)</h3>
+                        <canvas id="dailyChart"></canvas>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow p-6 border">
+                        <h3 class="text-lg font-bold mb-4">플랜별 매출 분포</h3>
+                        <canvas id="planChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- 필터 영역 -->
+                <div class="bg-white rounded-xl shadow p-6 border mb-6">
+                    <h3 class="text-lg font-bold mb-4">거래 내역 필터</h3>
+                    <div class="grid md:grid-cols-4 gap-4">
+                        <select id="filterMethod" class="px-4 py-2 border rounded-lg">
+                            <option value="">전체 결제수단</option>
+                            <option value="card">카드 결제</option>
+                            <option value="bank_transfer">계좌이체</option>
+                        </select>
+
+                        <select id="filterPlan" class="px-4 py-2 border rounded-lg">
+                            <option value="">전체 플랜</option>
+                            <!-- 동적으로 추가됨 -->
+                        </select>
+
+                        <input type="date" id="filterStartDate" class="px-4 py-2 border rounded-lg">
+                        <input type="date" id="filterEndDate" class="px-4 py-2 border rounded-lg">
+                    </div>
+                    <div class="mt-4 flex gap-2">
+                        <button onclick="applyFilters()" class="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
+                            <i class="fas fa-filter mr-2"></i>필터 적용
+                        </button>
+                        <button onclick="resetFilters()" class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">
+                            <i class="fas fa-redo mr-2"></i>초기화
+                        </button>
+                        <button onclick="exportData()" class="ml-auto px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                            <i class="fas fa-download mr-2"></i>내보내기
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 거래 내역 테이블 -->
+                <div class="bg-white rounded-xl shadow border">
+                    <div class="p-6 border-b">
+                        <h3 class="text-lg font-bold">거래 내역</h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">날짜/시간</th>
+                                    <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">사용자</th>
+                                    <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">플랜</th>
+                                    <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">결제수단</th>
+                                    <th class="px-6 py-3 text-right text-sm font-semibold text-gray-700">금액</th>
+                                </tr>
+                            </thead>
+                            <tbody id="transactionsList" class="divide-y">
+                                <!-- 동적으로 추가됨 -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="p-4 bg-gray-50 border-t">
+                        <div class="flex justify-between items-center">
+                            <p class="text-sm text-gray-600">
+                                총 <span id="transactionTotal">0</span>건
+                            </p>
+                            <div class="flex gap-2">
+                                <button onclick="loadPreviousPage()" id="prevBtn" class="px-4 py-2 text-sm border rounded-lg hover:bg-gray-100 disabled:opacity-50" disabled>
+                                    이전
+                                </button>
+                                <button onclick="loadNextPage()" id="nextBtn" class="px-4 py-2 text-sm border rounded-lg hover:bg-gray-100 disabled:opacity-50" disabled>
+                                    다음
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            let currentOffset = 0;
+            const limit = 50;
+            let totalTransactions = 0;
+            let statsData = null;
+            let dailyChart = null;
+            let planChart = null;
+
+            function logout() {
+                localStorage.removeItem('user');
+                location.href = '/';
+            }
+
+            function formatCurrency(amount) {
+                return '₩' + (amount || 0).toLocaleString('ko-KR');
+            }
+
+            function formatDate(dateStr) {
+                const date = new Date(dateStr);
+                return date.toLocaleString('ko-KR', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            }
+
+            function getPaymentMethodBadge(method) {
+                if (method === 'card') {
+                    return '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">카드</span>';
+                } else if (method === 'bank_transfer') {
+                    return '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">계좌이체</span>';
+                }
+                return method;
+            }
+
+            async function loadStats() {
+                try {
+                    const response = await fetch('/api/admin/revenue/stats');
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        statsData = data.data;
+                        updateStatCards(data.data);
+                        updateCharts(data.data);
+                        updatePlanFilter(data.data.byPlan);
+                    }
+                } catch (error) {
+                    console.error('Error loading stats:', error);
+                }
+            }
+
+            function updateStatCards(data) {
+                document.getElementById('totalRevenue').textContent = formatCurrency(data.total.revenue);
+                document.getElementById('totalCount').textContent = data.total.count;
+                
+                document.getElementById('cardRevenue').textContent = formatCurrency(data.byMethod.card.revenue);
+                document.getElementById('cardCount').textContent = data.byMethod.card.count;
+                
+                document.getElementById('bankRevenue').textContent = formatCurrency(data.byMethod.bank_transfer.revenue);
+                document.getElementById('bankCount').textContent = data.byMethod.bank_transfer.count;
+                
+                const avgMonthly = data.monthly.length > 0 
+                    ? Math.floor(data.monthly.reduce((sum, m) => sum + (m.revenue || 0), 0) / data.monthly.length)
+                    : 0;
+                document.getElementById('avgRevenue').textContent = formatCurrency(avgMonthly);
+            }
+
+            function updateCharts(data) {
+                // 일별 차트
+                const dailyLabels = data.daily.slice(0, 30).reverse().map(d => {
+                    const date = new Date(d.date);
+                    return (date.getMonth() + 1) + '/' + date.getDate();
+                });
+                const dailyData = data.daily.slice(0, 30).reverse().map(d => d.revenue || 0);
+
+                const dailyCtx = document.getElementById('dailyChart').getContext('2d');
+                if (dailyChart) dailyChart.destroy();
+                dailyChart = new Chart(dailyCtx, {
+                    type: 'line',
+                    data: {
+                        labels: dailyLabels,
+                        datasets: [{
+                            label: '일별 매출',
+                            data: dailyData,
+                            borderColor: 'rgb(147, 51, 234)',
+                            backgroundColor: 'rgba(147, 51, 234, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: { display: false }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return '₩' + (value / 1000) + 'K';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+
+                // 플랜별 차트
+                const planLabels = data.byPlan.map(p => p.plan_name);
+                const planData = data.byPlan.map(p => p.revenue || 0);
+                const planColors = [
+                    'rgb(147, 51, 234)',
+                    'rgb(59, 130, 246)',
+                    'rgb(16, 185, 129)',
+                    'rgb(245, 158, 11)',
+                    'rgb(239, 68, 68)',
+                    'rgb(168, 85, 247)'
+                ];
+
+                const planCtx = document.getElementById('planChart').getContext('2d');
+                if (planChart) planChart.destroy();
+                planChart = new Chart(planCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: planLabels,
+                        datasets: [{
+                            data: planData,
+                            backgroundColor: planColors,
+                            borderWidth: 2,
+                            borderColor: '#fff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+            }
+
+            function updatePlanFilter(plans) {
+                const select = document.getElementById('filterPlan');
+                plans.forEach(plan => {
+                    const option = document.createElement('option');
+                    option.value = plan.plan_name;
+                    option.textContent = plan.plan_name;
+                    select.appendChild(option);
+                });
+            }
+
+            async function loadTransactions(offset = 0) {
+                try {
+                    const method = document.getElementById('filterMethod').value;
+                    const plan = document.getElementById('filterPlan').value;
+                    const startDate = document.getElementById('filterStartDate').value;
+                    const endDate = document.getElementById('filterEndDate').value;
+
+                    let url = '/api/admin/revenue/transactions?limit=' + limit + '&offset=' + offset;
+                    if (method) url += '&method=' + method;
+                    if (plan) url += '&plan=' + encodeURIComponent(plan);
+                    if (startDate) url += '&startDate=' + startDate;
+                    if (endDate) url += '&endDate=' + endDate;
+
+                    const response = await fetch(url);
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        totalTransactions = data.data.pagination.total;
+                        updateTransactionsList(data.data.transactions);
+                        updatePagination(data.data.pagination);
+                    }
+                } catch (error) {
+                    console.error('Error loading transactions:', error);
+                }
+            }
+
+            function updateTransactionsList(transactions) {
+                const tbody = document.getElementById('transactionsList');
+                tbody.innerHTML = '';
+
+                if (transactions.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-8 text-center text-gray-500">거래 내역이 없습니다</td></tr>';
+                    return;
+                }
+
+                transactions.forEach(t => {
+                    const row = document.createElement('tr');
+                    row.className = 'hover:bg-gray-50';
+                    row.innerHTML = '<td class="px-6 py-4 text-sm text-gray-900">' + formatDate(t.created_at) + '</td>' +
+                        '<td class="px-6 py-4 text-sm">' +
+                            '<div class="font-medium text-gray-900">' + t.user_name + '</div>' +
+                            '<div class="text-gray-500">' + t.user_email + '</div>' +
+                        '</td>' +
+                        '<td class="px-6 py-4 text-sm text-gray-900">' + t.plan_name + '</td>' +
+                        '<td class="px-6 py-4 text-sm">' + getPaymentMethodBadge(t.payment_method) + '</td>' +
+                        '<td class="px-6 py-4 text-sm text-right font-semibold text-gray-900">' + formatCurrency(t.amount) + '</td>';
+                    tbody.appendChild(row);
+                });
+            }
+
+            function updatePagination(pagination) {
+                document.getElementById('transactionTotal').textContent = pagination.total;
+                document.getElementById('prevBtn').disabled = pagination.offset === 0;
+                document.getElementById('nextBtn').disabled = !pagination.hasMore;
+                currentOffset = pagination.offset;
+            }
+
+            function loadPreviousPage() {
+                if (currentOffset > 0) {
+                    loadTransactions(currentOffset - limit);
+                }
+            }
+
+            function loadNextPage() {
+                loadTransactions(currentOffset + limit);
+            }
+
+            function applyFilters() {
+                currentOffset = 0;
+                loadTransactions(0);
+            }
+
+            function resetFilters() {
+                document.getElementById('filterMethod').value = '';
+                document.getElementById('filterPlan').value = '';
+                document.getElementById('filterStartDate').value = '';
+                document.getElementById('filterEndDate').value = '';
+                applyFilters();
+            }
+
+            function exportData() {
+                if (!statsData) return;
+
+                let csv = '날짜,사용자,이메일,플랜,결제수단,금액\n';
+                
+                // 실제로는 서버에서 전체 데이터를 가져와야 하지만, 
+                // 여기서는 현재 페이지의 데이터만 내보냅니다
+                const tbody = document.getElementById('transactionsList');
+                const rows = tbody.querySelectorAll('tr');
+                
+                rows.forEach(row => {
+                    const cells = row.querySelectorAll('td');
+                    if (cells.length > 1) {
+                        const date = cells[0].textContent.trim();
+                        const userName = cells[1].querySelector('div:first-child').textContent.trim();
+                        const userEmail = cells[1].querySelector('div:last-child').textContent.trim();
+                        const plan = cells[2].textContent.trim();
+                        const method = cells[3].textContent.trim();
+                        const amount = cells[4].textContent.trim();
+                        csv += '"' + date + '","' + userName + '","' + userEmail + '","' + plan + '","' + method + '","' + amount + '"\n';
+                    }
+                });
+
+                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = 'revenue_' + new Date().toISOString().split('T')[0] + '.csv';
+                link.click();
+            }
+
+            // 초기 로딩
+            async function init() {
+                await loadStats();
+                await loadTransactions(0);
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('content').classList.remove('hidden');
+            }
+
+            init();
+        </script>
+    </body>
+    </html>
+  `)
 })
 
 // 관리자 프로그램 관리 페이지
