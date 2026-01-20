@@ -7361,22 +7361,56 @@ app.get('/api/usage/check', async (c) => {
     }
     
     // 🔥 실제 데이터 조회: users 테이블에서 실제 선생님 수 계산
-    // academy_id가 원장 ID인 선생님들 (user_type='teacher' AND academy_id=academyId)
+    // academy_id 또는 parent_user_id가 원장 ID인 선생님들
     let actualTeachersCount = 0
     try {
-      const result = await c.env.DB.prepare(`
+      // 🔧 방법 1: academy_id로 조회
+      const resultByAcademyId = await c.env.DB.prepare(`
         SELECT COUNT(*) as count FROM users 
         WHERE academy_id = ? AND user_type = 'teacher'
       `).bind(academyId).first()
-      actualTeachersCount = result?.count || 0
-      console.log('[Usage Check] Actual teachers count:', actualTeachersCount, 'for academy:', academyId)
       
-      // 디버깅: 선생님 목록 확인
+      // 🔧 방법 2: parent_user_id로 조회 (academy_id가 없는 경우 대비)
+      const resultByParentId = await c.env.DB.prepare(`
+        SELECT COUNT(*) as count FROM users 
+        WHERE parent_user_id = ? AND user_type = 'teacher'
+      `).bind(academyId).first()
+      
+      const countByAcademyId = resultByAcademyId?.count || 0
+      const countByParentId = resultByParentId?.count || 0
+      
+      // 두 방법 중 큰 값 사용 (더 정확한 값)
+      actualTeachersCount = Math.max(countByAcademyId, countByParentId)
+      
+      console.log('[Usage Check] Teachers count by academy_id:', countByAcademyId)
+      console.log('[Usage Check] Teachers count by parent_user_id:', countByParentId)
+      console.log('[Usage Check] Using max count:', actualTeachersCount, 'for academy:', academyId)
+      
+      // 🔥 자동 수정: parent_user_id는 있는데 academy_id가 없는 선생님 수정
+      if (countByParentId > countByAcademyId) {
+        console.log('[Usage Check] ⚠️ Found teachers without academy_id, auto-fixing...')
+        
+        try {
+          const updateResult = await c.env.DB.prepare(`
+            UPDATE users 
+            SET academy_id = parent_user_id 
+            WHERE parent_user_id = ? 
+              AND user_type = 'teacher' 
+              AND (academy_id IS NULL OR academy_id != parent_user_id)
+          `).bind(academyId).run()
+          
+          console.log('[Usage Check] ✅ Auto-fixed', updateResult.meta.changes, 'teachers')
+        } catch (updateErr) {
+          console.error('[Usage Check] ❌ Failed to auto-fix:', updateErr.message)
+        }
+      }
+      
+      // 디버깅: 선생님 목록 확인 (academy_id 또는 parent_user_id)
       const teachersList = await c.env.DB.prepare(`
-        SELECT id, name, email, user_type, academy_id FROM users 
-        WHERE academy_id = ? AND user_type = 'teacher'
+        SELECT id, name, email, user_type, academy_id, parent_user_id FROM users 
+        WHERE (academy_id = ? OR parent_user_id = ?) AND user_type = 'teacher'
         LIMIT 10
-      `).bind(academyId).all()
+      `).bind(academyId, academyId).all()
       console.log('[Usage Check] Teachers list:', JSON.stringify(teachersList.results))
     } catch (err) {
       console.error('[Usage] teachers count error:', err.message)
@@ -7602,13 +7636,39 @@ app.post('/api/usage/check-teacher-limit', async (c) => {
       }, 403)
     }
 
-    // 🔥 실제 선생님 수 조회 (users 테이블에서 직접 카운트)
-    const result = await c.env.DB.prepare(`
+    // 🔥 실제 선생님 수 조회 (academy_id 또는 parent_user_id)
+    const resultByAcademyId = await c.env.DB.prepare(`
       SELECT COUNT(*) as count FROM users 
       WHERE academy_id = ? AND user_type = 'teacher'
     `).bind(academyId).first()
     
-    const currentTeachers = result?.count || 0
+    const resultByParentId = await c.env.DB.prepare(`
+      SELECT COUNT(*) as count FROM users 
+      WHERE parent_user_id = ? AND user_type = 'teacher'
+    `).bind(academyId).first()
+    
+    const countByAcademyId = resultByAcademyId?.count || 0
+    const countByParentId = resultByParentId?.count || 0
+    const currentTeachers = Math.max(countByAcademyId, countByParentId)
+    
+    console.log('[Teacher Limit Check] By academy_id:', countByAcademyId, 'By parent_user_id:', countByParentId)
+    console.log('[Teacher Limit Check] Using max:', currentTeachers, 'Limit:', subscription.teacher_limit)
+    
+    // 🔥 자동 수정
+    if (countByParentId > countByAcademyId) {
+      try {
+        await c.env.DB.prepare(`
+          UPDATE users 
+          SET academy_id = parent_user_id 
+          WHERE parent_user_id = ? AND user_type = 'teacher' 
+            AND (academy_id IS NULL OR academy_id != parent_user_id)
+        `).bind(academyId).run()
+        console.log('[Teacher Limit Check] ✅ Auto-fixed teachers')
+      } catch (err) {
+        console.error('[Teacher Limit Check] Auto-fix failed:', err)
+      }
+    }
+    
     const canAdd = currentTeachers < subscription.teacher_limit
 
     console.log('[Teacher Limit Check] Academy:', academyId, 'Current:', currentTeachers, 'Limit:', subscription.teacher_limit, 'Can add:', canAdd)
@@ -25156,15 +25216,21 @@ app.post('/api/teachers/applications/:id/approve', async (c) => {
         }, 403)
       }
       
-      // 현재 선생님 수 조회
-      const result = await c.env.DB.prepare(`
+      // 현재 선생님 수 조회 (academy_id 또는 parent_user_id)
+      const countByAcademyId = await c.env.DB.prepare(`
         SELECT COUNT(*) as count FROM users 
         WHERE academy_id = ? AND user_type = 'teacher'
       `).bind(directorId).first()
       
-      const currentTeachers = result?.count || 0
+      const countByParentId = await c.env.DB.prepare(`
+        SELECT COUNT(*) as count FROM users 
+        WHERE parent_user_id = ? AND user_type = 'teacher'
+      `).bind(directorId).first()
+      
+      const currentTeachers = Math.max(countByAcademyId?.count || 0, countByParentId?.count || 0)
       const teacherLimit = subscription.teacher_limit
       
+      console.log('[ApproveTeacher] By academy_id:', countByAcademyId?.count, 'By parent_user_id:', countByParentId?.count)
       console.log('[ApproveTeacher] Current teachers:', currentTeachers, 'Limit:', teacherLimit)
       
       if (currentTeachers >= teacherLimit) {
@@ -25336,15 +25402,21 @@ app.post('/api/teachers/add', async (c) => {
       }, 403)
     }
     
-    // 🔥 현재 선생님 수 조회 (users 테이블에서 직접 카운트)
-    const teacherCountResult = await c.env.DB.prepare(`
+    // 🔥 현재 선생님 수 조회 (academy_id 또는 parent_user_id)
+    const countByAcademyId = await c.env.DB.prepare(`
       SELECT COUNT(*) as count FROM users 
       WHERE academy_id = ? AND user_type = 'teacher'
     `).bind(academyIdToUse).first()
     
-    const currentTeachers = teacherCountResult?.count || 0
+    const countByParentId = await c.env.DB.prepare(`
+      SELECT COUNT(*) as count FROM users 
+      WHERE parent_user_id = ? AND user_type = 'teacher'
+    `).bind(academyIdToUse).first()
+    
+    const currentTeachers = Math.max(countByAcademyId?.count || 0, countByParentId?.count || 0)
     const teacherLimit = activeSubscription.teacher_limit
     
+    console.log('[AddTeacher] By academy_id:', countByAcademyId?.count, 'By parent_user_id:', countByParentId?.count)
     console.log('[AddTeacher] Current teachers:', currentTeachers, 'Limit:', teacherLimit)
     
     if (currentTeachers >= teacherLimit) {
