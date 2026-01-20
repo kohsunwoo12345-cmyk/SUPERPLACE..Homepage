@@ -23293,10 +23293,179 @@ app.get('/admin/users', async (c) => {
         <title>사용자 관리 - 슈퍼플레이스</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
-        <script src="/static/admin-users.js" defer></script>
         <style>
             .gradient-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
         </style>
+        <script>
+            // 전역 변수
+            var currentUsageUserId = null;
+            
+            // 즉시 함수 정의
+            window.manageUsageLimits = function(userId, userName) {
+                console.log('manageUsageLimits called:', userId, userName);
+                currentUsageUserId = userId;
+                document.getElementById('usageModalUserName').textContent = userName + '님의 사용 한도';
+                document.getElementById('usageLimitsModal').classList.remove('hidden');
+                
+                fetch('/api/admin/usage/' + userId)
+                    .then(res => res.json())
+                    .then(data => {
+                        var content = document.getElementById('usageLimitsContent');
+                        if (!data.success || !data.hasSubscription) {
+                            content.innerHTML = '<div class="space-y-6">' +
+                                '<div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">' +
+                                '<p class="text-sm text-yellow-800"><i class="fas fa-exclamation-triangle mr-2"></i><strong>안내:</strong> 활성 구독이 없습니다. 수동으로 한도를 설정할 수 있습니다.</p></div>' +
+                                '<div class="bg-indigo-50 border-2 border-indigo-200 rounded-lg p-4 mb-4">' +
+                                '<div class="flex items-center mb-3"><span class="text-sm font-semibold text-gray-800">📅 구독 기간 (개월)</span></div>' +
+                                '<div><input type="number" id="subscriptionMonths" value="1" min="1" max="120" placeholder="예: 3" class="w-full px-3 py-2 text-sm border-2 border-indigo-300 rounded-lg focus:ring-2 focus:ring-indigo-500">' +
+                                '<p class="text-xs text-gray-600 mt-2">💡 설정한 개월 수만큼 구독이 유지됩니다.</p></div></div>' +
+                                '<div class="grid grid-cols-1 md:grid-cols-2 gap-4">' +
+                                '<div class="border-2 border-blue-200 rounded-lg p-4 bg-blue-50"><div class="flex items-center mb-3"><span class="text-sm font-semibold text-gray-800">👥 학생 수 한도</span></div>' +
+                                '<div><input type="number" id="studentLimit" value="30" min="0" class="w-full px-3 py-2 text-sm border-2 border-blue-300 rounded-lg"></div></div>' +
+                                '<div class="border-2 border-green-200 rounded-lg p-4 bg-green-50"><div class="flex items-center mb-3"><span class="text-sm font-semibold text-gray-800">📊 AI 리포트 한도</span></div>' +
+                                '<div><input type="number" id="aiReportLimit" value="30" min="0" class="w-full px-3 py-2 text-sm border-2 border-green-300 rounded-lg"></div></div>' +
+                                '<div class="border-2 border-purple-200 rounded-lg p-4 bg-purple-50"><div class="flex items-center mb-3"><span class="text-sm font-semibold text-gray-800">🎨 랜딩페이지 한도</span></div>' +
+                                '<div><input type="number" id="landingPageLimit" value="40" min="0" class="w-full px-3 py-2 text-sm border-2 border-purple-300 rounded-lg"></div></div>' +
+                                '<div class="border-2 border-orange-200 rounded-lg p-4 bg-orange-50"><div class="flex items-center mb-3"><span class="text-sm font-semibold text-gray-800">👨‍🏫 선생님 한도</span></div>' +
+                                '<div><input type="number" id="teacherLimit" value="2" min="0" class="w-full px-3 py-2 text-sm border-2 border-orange-300 rounded-lg"></div></div></div></div>';
+                        } else {
+                            var sub = data.subscription;
+                            var use = data.usage;
+                            content.innerHTML = '<div class="space-y-6"><div class="bg-gradient-to-br from-teal-50 to-cyan-50 rounded-xl p-4 border border-teal-200">' +
+                                '<div class="flex justify-between items-start"><div><h4 class="text-lg font-bold text-gray-900">' + sub.planName + '</h4>' +
+                                '<p class="text-sm text-gray-600 mt-1">' + sub.startDate + ' ~ ' + sub.endDate + '</p></div>' +
+                                '<span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">활성</span></div></div>' +
+                                '<div class="bg-indigo-50 border-2 border-indigo-200 rounded-lg p-4"><div class="flex items-center mb-3"><span class="text-sm font-semibold text-gray-800">📅 구독 기간 (개월)</span></div>' +
+                                '<div><input type="number" id="subscriptionMonths" value="1" min="1" max="120" class="w-full px-3 py-2 text-sm border-2 border-indigo-300 rounded-lg"></div></div>' +
+                                '<div class="grid grid-cols-1 md:grid-cols-2 gap-4">' +
+                                '<div class="border-2 border-blue-200 rounded-lg p-4 bg-blue-50"><input type="number" id="studentLimit" value="' + sub.studentLimit + '" min="0" class="w-full px-3 py-2 text-sm border-2 border-blue-300 rounded-lg"></div>' +
+                                '<div class="border-2 border-green-200 rounded-lg p-4 bg-green-50"><input type="number" id="aiReportLimit" value="' + sub.aiReportLimit + '" min="0" class="w-full px-3 py-2 text-sm border-2 border-green-300 rounded-lg"></div>' +
+                                '<div class="border-2 border-purple-200 rounded-lg p-4 bg-purple-50"><input type="number" id="landingPageLimit" value="' + sub.landingPageLimit + '" min="0" class="w-full px-3 py-2 text-sm border-2 border-purple-300 rounded-lg"></div>' +
+                                '<div class="border-2 border-orange-200 rounded-lg p-4 bg-orange-50"><input type="number" id="teacherLimit" value="' + sub.teacherLimit + '" min="0" class="w-full px-3 py-2 text-sm border-2 border-orange-300 rounded-lg"></div></div></div>';
+                        }
+                        
+                        setTimeout(function() {
+                            var saveBtn = document.getElementById('saveUsageLimitsBtn');
+                            if (saveBtn) {
+                                console.log('✅ Save button found and ready');
+                                saveBtn.onclick = function() {
+                                    window.saveUsageLimits();
+                                };
+                            }
+                        }, 300);
+                    })
+                    .catch(function(err) {
+                        console.error('Error:', err);
+                        document.getElementById('usageLimitsContent').innerHTML = '<div class="text-center py-12 text-red-500">오류가 발생했습니다</div>';
+                    });
+            };
+            
+            window.saveUsageLimits = function() {
+                console.log('💾 saveUsageLimits called');
+                if (!currentUsageUserId) {
+                    alert('❌ 사용자 정보를 찾을 수 없습니다');
+                    return;
+                }
+                
+                var studentLimit = parseInt(document.getElementById('studentLimit').value);
+                var aiReportLimit = parseInt(document.getElementById('aiReportLimit').value);
+                var landingPageLimit = parseInt(document.getElementById('landingPageLimit').value);
+                var teacherLimit = parseInt(document.getElementById('teacherLimit').value);
+                var subscriptionMonths = parseInt(document.getElementById('subscriptionMonths').value) || 1;
+                
+                if (isNaN(studentLimit) || isNaN(aiReportLimit) || isNaN(landingPageLimit) || isNaN(teacherLimit)) {
+                    alert('❌ 모든 한도를 올바르게 입력해주세요');
+                    return;
+                }
+                
+                if (!confirm('정말 사용 한도를 변경하시겠습니까?\\n\\n구독 기간: ' + subscriptionMonths + '개월\\n학생: ' + studentLimit + '\\nAI 리포트: ' + aiReportLimit + '\\n랜딩페이지: ' + landingPageLimit + '\\n선생님: ' + teacherLimit)) {
+                    return;
+                }
+                
+                fetch('/api/admin/usage/' + currentUsageUserId + '/update-limits', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ studentLimit: studentLimit, aiReportLimit: aiReportLimit, landingPageLimit: landingPageLimit, teacherLimit: teacherLimit, subscriptionMonths: subscriptionMonths })
+                })
+                .then(function(res) { return res.json(); })
+                .then(function(data) {
+                    if (data.success) {
+                        alert('✅ 사용 한도가 성공적으로 업데이트되었습니다!');
+                        window.closeUsageLimitsModal();
+                        location.reload();
+                    } else {
+                        alert('❌ 업데이트 실패: ' + (data.error || '알 수 없는 오류'));
+                    }
+                })
+                .catch(function(err) {
+                    alert('❌ 네트워크 오류: ' + err.message);
+                });
+            };
+            
+            window.closeUsageLimitsModal = function() {
+                document.getElementById('usageLimitsModal').classList.add('hidden');
+                currentUsageUserId = null;
+            };
+            
+            window.changePassword = function(userId, userName) {
+                var newPassword = prompt(userName + '님의 새 비밀번호를 입력하세요:');
+                if (newPassword && newPassword.trim()) {
+                    fetch('/api/admin/users/' + userId + '/password', {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ newPassword: newPassword.trim() })
+                    }).then(function(res) { return res.json(); }).then(function(data) {
+                        alert(data.success ? '✅ 비밀번호가 변경되었습니다!' : '❌ 변경 실패');
+                    });
+                }
+            };
+            
+            window.givePoints = function(userId, userName, currentPoints) {
+                var amount = prompt(userName + '님에게 지급할 포인트:');
+                if (amount && !isNaN(amount) && parseInt(amount) > 0) {
+                    fetch('/api/admin/users/' + userId + '/points', {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ amount: parseInt(amount) })
+                    }).then(function(res) { return res.json(); }).then(function(data) {
+                        if (data.success) { alert('✅ 지급 완료'); location.reload(); }
+                    });
+                }
+            };
+            
+            window.deductPoints = function(userId, userName, currentPoints) {
+                var amount = prompt(userName + '님에서 차감할 포인트:');
+                if (amount && !isNaN(amount) && parseInt(amount) > 0) {
+                    fetch('/api/admin/users/' + userId + '/points/deduct', {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ amount: parseInt(amount) })
+                    }).then(function(res) { return res.json(); }).then(function(data) {
+                        if (data.success) { alert('✅ 차감 완료'); location.reload(); }
+                    });
+                }
+            };
+            
+            window.loginAs = function(userId, userName) { alert('🚧 준비 중'); };
+            window.managePermissions = function(userId, userName) { alert('🚧 준비 중'); };
+            window.deleteUser = function(userId, userName) {
+                if (confirm('⚠️ 정말 ' + userName + '님을 삭제하시겠습니까?')) {
+                    fetch('/api/admin/users/' + userId, { method: 'DELETE' })
+                        .then(function(res) { return res.json(); })
+                        .then(function(data) {
+                            if (data.success) { alert('✅ 삭제 완료'); location.reload(); }
+                        });
+                }
+            };
+            window.logout = function() {
+                if (confirm('로그아웃하시겠습니까?')) {
+                    document.cookie = 'session_id=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+                    window.location.href = '/login';
+                }
+            };
+            
+            console.log('✅ All functions loaded in head');
+        </script>
     </head>
     <body class="bg-gray-50">
         <!-- 헤더 -->
@@ -23502,422 +23671,20 @@ app.get('/admin/users', async (c) => {
         </div>
         
         <script>
-        // 전역 변수
-        let currentUsageUserId = null;
-        
-        // 사용 한도 관리 모달 열기
-        window.manageUsageLimits = async function(userId, userName) {
-            currentUsageUserId = userId;
-            document.getElementById('usageModalUserName').textContent = userName + '님의 사용 한도';
-            document.getElementById('usageLimitsModal').classList.remove('hidden');
-            
-            try {
-                const response = await fetch('/api/admin/usage/' + userId);
-                const data = await response.json();
-                
-                const content = document.getElementById('usageLimitsContent');
-                
-                if (!data.success || !data.hasSubscription) {
-                    // 구독 없을 때 - 수동으로 한도 설정 가능
-                    content.innerHTML = '<div class="space-y-6">' +
-                        '<div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">' +
-                        '<p class="text-sm text-yellow-800">' +
-                        '<i class="fas fa-exclamation-triangle mr-2"></i>' +
-                        '<strong>안내:</strong> 활성 구독이 없습니다. 수동으로 한도를 설정할 수 있습니다.' +
-                        '</p>' +
-                        '</div>' +
-                        '<!-- 구독 기간 설정 -->' +
-                        '<div class="bg-indigo-50 border-2 border-indigo-200 rounded-lg p-4 mb-4">' +
-                        '<div class="flex items-center mb-3">' +
-                        '<span class="text-sm font-semibold text-gray-800">📅 구독 기간 (개월)</span>' +
-                        '</div>' +
-                        '<div>' +
-                        '<input type="number" id="subscriptionMonths" value="1" min="1" max="120" placeholder="예: 3" ' +
-                        'class="w-full px-3 py-2 text-sm border-2 border-indigo-300 rounded-lg focus:ring-2 focus:ring-indigo-500">' +
-                        '<p class="text-xs text-gray-600 mt-2">💡 설정한 개월 수만큼 구독이 유지됩니다. (예: 3개월 = 오늘부터 3개월 후 전날까지)</p>' +
-                        '</div>' +
-                        '</div>' +
-                        '<div class="grid grid-cols-1 md:grid-cols-2 gap-4">' +
-                        '<!-- 학생 수 -->' +
-                        '<div class="border-2 border-blue-200 rounded-lg p-4 bg-blue-50">' +
-                        '<div class="flex items-center mb-3">' +
-                        '<span class="text-sm font-semibold text-gray-800">👥 학생 수 한도</span>' +
-                        '</div>' +
-                        '<div>' +
-                        '<input type="number" id="studentLimit" value="30" min="0" placeholder="예: 30" ' +
-                        'class="w-full px-3 py-2 text-sm border-2 border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500">' +
-                        '</div>' +
-                        '</div>' +
-                        '<!-- AI 리포트 -->' +
-                        '<div class="border-2 border-green-200 rounded-lg p-4 bg-green-50">' +
-                        '<div class="flex items-center mb-3">' +
-                        '<span class="text-sm font-semibold text-gray-800">📊 AI 리포트 한도</span>' +
-                        '</div>' +
-                        '<div>' +
-                        '<input type="number" id="aiReportLimit" value="30" min="0" placeholder="예: 30" ' +
-                        'class="w-full px-3 py-2 text-sm border-2 border-green-300 rounded-lg focus:ring-2 focus:ring-green-500">' +
-                        '</div>' +
-                        '</div>' +
-                        '<!-- 랜딩페이지 -->' +
-                        '<div class="border-2 border-purple-200 rounded-lg p-4 bg-purple-50">' +
-                        '<div class="flex items-center mb-3">' +
-                        '<span class="text-sm font-semibold text-gray-800">🎨 랜딩페이지 한도</span>' +
-                        '</div>' +
-                        '<div>' +
-                        '<input type="number" id="landingPageLimit" value="40" min="0" placeholder="예: 40" ' +
-                        'class="w-full px-3 py-2 text-sm border-2 border-purple-300 rounded-lg focus:ring-2 focus:ring-purple-500">' +
-                        '</div>' +
-                        '</div>' +
-                        '<!-- 선생님 -->' +
-                        '<div class="border-2 border-orange-200 rounded-lg p-4 bg-orange-50">' +
-                        '<div class="flex items-center mb-3">' +
-                        '<span class="text-sm font-semibold text-gray-800">👨‍🏫 선생님 한도</span>' +
-                        '</div>' +
-                        '<div>' +
-                        '<input type="number" id="teacherLimit" value="2" min="0" placeholder="예: 2" ' +
-                        'class="w-full px-3 py-2 text-sm border-2 border-orange-300 rounded-lg focus:ring-2 focus:ring-orange-500">' +
-                        '</div>' +
-                        '</div>' +
-                        '</div>' +
-                        '<div class="bg-blue-50 border border-blue-200 rounded-lg p-4">' +
-                        '<p class="text-sm text-blue-800">' +
-                        '<i class="fas fa-info-circle mr-2"></i>' +
-                        '<strong>안내:</strong> 구독 없이도 한도를 설정하면 해당 사용자가 기능을 이용할 수 있습니다.' +
-                        '</p>' +
-                        '</div>' +
-                        '</div>';
-                    return;
-                }
-                
-                const sub = data.subscription;
-                const use = data.usage;
-                
-                const studentPercent = Math.min((use.currentStudents / sub.studentLimit) * 100, 100);
-                const reportPercent = Math.min((use.aiReportsUsed / sub.aiReportLimit) * 100, 100);
-                const landingPercent = Math.min((use.landingPagesCreated / sub.landingPageLimit) * 100, 100);
-                const teacherPercent = Math.min((use.currentTeachers / sub.teacherLimit) * 100, 100);
-                
-                content.innerHTML = '<div class="space-y-6">' +
-                    '<!-- 플랜 정보 -->' +
-                    '<div class="bg-gradient-to-br from-teal-50 to-cyan-50 rounded-xl p-4 border border-teal-200">' +
-                    '<div class="flex justify-between items-start">' +
-                    '<div>' +
-                    '<h4 class="text-lg font-bold text-gray-900">' + sub.planName + '</h4>' +
-                    '<p class="text-sm text-gray-600 mt-1">' + sub.startDate + ' ~ ' + sub.endDate + '</p>' +
-                    '</div>' +
-                    '<div class="flex items-center gap-2">' +
-                    '<span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">활성</span>' +
-                    '<button onclick="revokePlan(' + userId + ', \'' + userName + '\')" class="px-3 py-1 bg-red-600 text-white rounded-full text-sm font-medium hover:bg-red-700 transition">' +
-                    '<i class="fas fa-times mr-1"></i>플랜 회수' +
-                    '</button>' +
-                    '</div>' +
-                    '</div>' +
-                    '</div>' +
-                    '<!-- 구독 기간 설정 -->' +
-                    '<div class="bg-indigo-50 border-2 border-indigo-200 rounded-lg p-4">' +
-                    '<div class="flex items-center mb-3">' +
-                    '<span class="text-sm font-semibold text-gray-800">📅 구독 기간 (개월)</span>' +
-                    '</div>' +
-                    '<div>' +
-                    '<input type="number" id="subscriptionMonths" value="1" min="1" max="120" placeholder="예: 3" ' +
-                    'class="w-full px-3 py-2 text-sm border-2 border-indigo-300 rounded-lg focus:ring-2 focus:ring-indigo-500">' +
-                    '<p class="text-xs text-gray-600 mt-2">💡 설정한 개월 수만큼 구독이 유지됩니다. (예: 3개월 = 오늘부터 3개월 후 전날까지)</p>' +
-                    '</div>' +
-                    '</div>' +
-                    '<!-- 사용량 & 한도 조절 -->' +
-                    '<div class="grid grid-cols-1 md:grid-cols-2 gap-4">' +
-                    '<!-- 학생 수 -->' +
-                    '<div class="border-2 border-blue-200 rounded-lg p-4 bg-blue-50">' +
-                    '<div class="flex items-center justify-between mb-3">' +
-                    '<span class="text-sm font-semibold text-gray-800">👥 학생 수</span>' +
-                    '<span class="text-sm font-bold ' + (use.currentStudents >= sub.studentLimit ? 'text-red-600' : 'text-blue-600') + '">' +
-                    use.currentStudents + ' / ' + sub.studentLimit +
-                    '</span>' +
-                    '</div>' +
-                    '<div class="w-full bg-gray-200 rounded-full h-2 mb-3">' +
-                    '<div class="bg-blue-600 h-2 rounded-full transition-all" style="width: ' + studentPercent + '%"></div>' +
-                    '</div>' +
-                    '<div>' +
-                    '<label class="text-xs font-medium text-gray-700 mb-1 block">한도 설정:</label>' +
-                    '<input type="number" id="studentLimit" value="' + sub.studentLimit + '" min="0" ' +
-                    'class="w-full px-3 py-2 text-sm border-2 border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">' +
-                    '</div>' +
-                    '</div>' +
-                    '<!-- AI 리포트 -->' +
-                    '<div class="border-2 border-green-200 rounded-lg p-4 bg-green-50">' +
-                    '<div class="flex items-center justify-between mb-3">' +
-                    '<span class="text-sm font-semibold text-gray-800">📊 AI 리포트</span>' +
-                    '<span class="text-sm font-bold ' + (use.aiReportsUsed >= sub.aiReportLimit ? 'text-red-600' : 'text-green-600') + '">' +
-                    use.aiReportsUsed + ' / ' + sub.aiReportLimit +
-                    '</span>' +
-                    '</div>' +
-                    '<div class="w-full bg-gray-200 rounded-full h-2 mb-3">' +
-                    '<div class="bg-green-600 h-2 rounded-full transition-all" style="width: ' + reportPercent + '%"></div>' +
-                    '</div>' +
-                    '<div>' +
-                    '<label class="text-xs font-medium text-gray-700 mb-1 block">한도 설정:</label>' +
-                    '<input type="number" id="aiReportLimit" value="' + sub.aiReportLimit + '" min="0" ' +
-                    'class="w-full px-3 py-2 text-sm border-2 border-green-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">' +
-                    '</div>' +
-                    '</div>' +
-                    '<!-- 랜딩페이지 -->' +
-                    '<div class="border-2 border-purple-200 rounded-lg p-4 bg-purple-50">' +
-                    '<div class="flex items-center justify-between mb-3">' +
-                    '<span class="text-sm font-semibold text-gray-800">🎨 랜딩페이지</span>' +
-                    '<span class="text-sm font-bold ' + (use.landingPagesCreated >= sub.landingPageLimit ? 'text-red-600' : 'text-purple-600') + '">' +
-                    use.landingPagesCreated + ' / ' + sub.landingPageLimit +
-                    '</span>' +
-                    '</div>' +
-                    '<div class="w-full bg-gray-200 rounded-full h-2 mb-3">' +
-                    '<div class="bg-purple-600 h-2 rounded-full transition-all" style="width: ' + landingPercent + '%"></div>' +
-                    '</div>' +
-                    '<div>' +
-                    '<label class="text-xs font-medium text-gray-700 mb-1 block">한도 설정:</label>' +
-                    '<input type="number" id="landingPageLimit" value="' + sub.landingPageLimit + '" min="0" ' +
-                    'class="w-full px-3 py-2 text-sm border-2 border-purple-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500">' +
-                    '</div>' +
-                    '</div>' +
-                    '<!-- 선생님 계정 -->' +
-                    '<div class="border-2 border-orange-200 rounded-lg p-4 bg-orange-50">' +
-                    '<div class="flex items-center justify-between mb-3">' +
-                    '<span class="text-sm font-semibold text-gray-800">👨‍🏫 선생님</span>' +
-                    '<span class="text-sm font-bold ' + (use.currentTeachers >= sub.teacherLimit ? 'text-red-600' : 'text-orange-600') + '">' +
-                    use.currentTeachers + ' / ' + sub.teacherLimit +
-                    '</span>' +
-                    '</div>' +
-                    '<div class="w-full bg-gray-200 rounded-full h-2 mb-3">' +
-                    '<div class="bg-orange-600 h-2 rounded-full transition-all" style="width: ' + teacherPercent + '%"></div>' +
-                    '</div>' +
-                    '<div>' +
-                    '<label class="text-xs font-medium text-gray-700 mb-1 block">한도 설정:</label>' +
-                    '<input type="number" id="teacherLimit" value="' + sub.teacherLimit + '" min="0" ' +
-                    'class="w-full px-3 py-2 text-sm border-2 border-orange-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500">' +
-                    '</div>' +
-                    '</div>' +
-                    '</div>' +
-                    '<div class="bg-blue-50 border border-blue-200 rounded-lg p-4">' +
-                    '<p class="text-sm text-blue-800">' +
-                    '<i class="fas fa-info-circle mr-2"></i>' +
-                    '<strong>안내:</strong> 한도를 변경하면 즉시 적용되며, 사용자는 새로운 한도까지 기능을 이용할 수 있습니다.' +
-                    '</p>' +
-                    '</div>' +
-                    '</div>';
-            } catch (error) {
-                console.error('Failed to load usage limits:', error);
-                document.getElementById('usageLimitsContent').innerHTML =
-                    '<div class="text-center py-12 text-red-500">' +
-                    '<div class="text-6xl mb-4">⚠️</div>' +
-                    '<p class="text-lg">정보를 불러오는데 실패했습니다</p>' +
-                    '<p class="text-sm mt-2">' + error.message + '</p>' +
-                    '</div>';
-            }
-            
-            // 모달이 열린 후 버튼 이벤트 확인 및 재설정
-            setTimeout(() => {
-                console.log('🔧 [Modal] Setting up button click handlers...');
-                
-                // 닫기 버튼
-                const closeBtn = document.getElementById('closeUsageLimitsBtn');
-                if (closeBtn) {
-                    // 기존 이벤트 제거
-                    const newCloseBtn = closeBtn.cloneNode(true);
-                    closeBtn.parentNode.replaceChild(newCloseBtn, closeBtn);
-                    
-                    // 새 이벤트 추가
-                    newCloseBtn.addEventListener('click', function(e) {
-                        console.log('🖱️ [Button] Close button clicked');
-                        e.preventDefault();
-                        e.stopPropagation();
-                        closeUsageLimitsModal();
-                    });
-                    
-                    console.log('✅ [Modal] Close button event added');
-                }
-                
-                // 저장 버튼
-                const saveBtn = document.getElementById('saveUsageLimitsBtn');
-                if (saveBtn) {
-                    console.log('🔧 [Modal] Save button found');
-                    
-                    // 기존 이벤트 제거 (cloneNode로 깨끗하게)
-                    const newSaveBtn = saveBtn.cloneNode(true);
-                    saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
-                    
-                    // 스타일 강제 적용
-                    newSaveBtn.style.pointerEvents = 'auto';
-                    newSaveBtn.style.cursor = 'pointer';
-                    newSaveBtn.style.zIndex = '10000';
-                    newSaveBtn.style.position = 'relative';
-                    
-                    // click 이벤트 추가
-                    newSaveBtn.addEventListener('click', function(e) {
-                        console.log('🖱️ [Button] Save button clicked via addEventListener!');
-                        e.preventDefault();
-                        e.stopPropagation();
-                        saveUsageLimits();
-                    });
-                    
-                    // mousedown 이벤트도 추가 (더 확실하게)
-                    newSaveBtn.addEventListener('mousedown', function(e) {
-                        console.log('🖱️ [Button] Save button mousedown detected!');
-                    });
-                    
-                    // 터치 이벤트도 추가
-                    newSaveBtn.addEventListener('touchstart', function(e) {
-                        console.log('🖱️ [Button] Save button touchstart detected!');
-                        e.preventDefault();
-                        saveUsageLimits();
-                    });
-                    
-                    console.log('✅ [Modal] Save button is now fully interactive with multiple event handlers');
-                } else {
-                    console.error('❌ [Modal] Save button not found!');
-                }
-            }, 500);
-        }
-        
-        // 사용 한도 저장
-        window.saveUsageLimits = async function() {
-            console.log('💾 [SaveUsageLimits] Function called');
-            console.log('💾 [SaveUsageLimits] currentUsageUserId:', currentUsageUserId);
-            
-            if (!currentUsageUserId) {
-                alert('❌ 사용자 정보를 찾을 수 없습니다. 모달을 닫고 다시 시도해주세요.');
-                console.error('❌ [SaveUsageLimits] currentUsageUserId is null or undefined');
-                return;
-            }
-            
-            const studentLimitEl = document.getElementById('studentLimit');
-            const aiReportLimitEl = document.getElementById('aiReportLimit');
-            const landingPageLimitEl = document.getElementById('landingPageLimit');
-            const teacherLimitEl = document.getElementById('teacherLimit');
-            const subscriptionMonthsEl = document.getElementById('subscriptionMonths');
-            
-            console.log('📋 [SaveUsageLimits] Input elements:', {
-                studentLimitEl: !!studentLimitEl,
-                aiReportLimitEl: !!aiReportLimitEl,
-                landingPageLimitEl: !!landingPageLimitEl,
-                teacherLimitEl: !!teacherLimitEl,
-                subscriptionMonthsEl: !!subscriptionMonthsEl
-            });
-            
-            if (!studentLimitEl || !aiReportLimitEl || !landingPageLimitEl || !teacherLimitEl || !subscriptionMonthsEl) {
-                alert('❌ 입력 필드를 찾을 수 없습니다. 페이지를 새로고침해주세요.');
-                return;
-            }
-            
-            const studentLimit = parseInt(studentLimitEl.value);
-            const aiReportLimit = parseInt(aiReportLimitEl.value);
-            const landingPageLimit = parseInt(landingPageLimitEl.value);
-            const teacherLimit = parseInt(teacherLimitEl.value);
-            const subscriptionMonths = parseInt(subscriptionMonthsEl.value) || 1;
-            
-            console.log('📊 [SaveUsageLimits] Parsed values:', {
-                studentLimit,
-                aiReportLimit,
-                landingPageLimit,
-                teacherLimit,
-                subscriptionMonths
-            });
-            
-            if (isNaN(studentLimit) || isNaN(aiReportLimit) || isNaN(landingPageLimit) || isNaN(teacherLimit)) {
-                alert('❌ 모든 한도를 올바르게 입력해주세요 (숫자만 입력 가능)');
-                return;
-            }
-            
-            if (studentLimit < 0 || aiReportLimit < 0 || landingPageLimit < 0 || teacherLimit < 0) {
-                alert('❌ 한도는 0 이상이어야 합니다');
-                return;
-            }
-            
-            if (subscriptionMonths < 1 || subscriptionMonths > 120) {
-                alert('❌ 구독 기간은 1~120개월 사이여야 합니다');
-                return;
-            }
-            
-            if (!confirm('정말 사용 한도를 변경하시겠습니까?\\n\\n구독 기간: ' + subscriptionMonths + '개월\\n학생: ' + studentLimit + '명\\nAI 리포트: ' + aiReportLimit + '개\\n랜딩페이지: ' + landingPageLimit + '개\\n선생님: ' + teacherLimit + '명')) {
-                console.log('❌ [SaveUsageLimits] User cancelled');
-                return;
-            }
-            
-            try {
-                console.log('🚀 [SaveUsageLimits] Sending API request...');
-                const response = await fetch('/api/admin/usage/' + currentUsageUserId + '/update-limits', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        studentLimit,
-                        aiReportLimit,
-                        landingPageLimit,
-                        teacherLimit,
-                        subscriptionMonths
-                    })
-                });
-                
-                console.log('📡 [SaveUsageLimits] Response status:', response.status);
-                const data = await response.json();
-                console.log('📦 [SaveUsageLimits] Response data:', data);
-                
-                if (data.success) {
-                    alert('✅ 사용 한도가 성공적으로 업데이트되었습니다!\\n\\n구독 기간: ' + subscriptionMonths + '개월\\n학생: ' + studentLimit + '명\\nAI 리포트: ' + aiReportLimit + '개\\n랜딩페이지: ' + landingPageLimit + '개\\n선생님: ' + teacherLimit + '명');
-                    closeUsageLimitsModal();
-                    console.log('✅ [SaveUsageLimits] Reloading page...');
-                    window.location.reload();
-                } else {
-                    alert('❌ 업데이트 실패: ' + (data.error || '알 수 없는 오류'));
-                }
-            } catch (error) {
-                console.error('❌ [SaveUsageLimits] Error:', error);
-                alert('❌ 네트워크 오류가 발생했습니다: ' + error.message);
-            }
-        }
-        
-        // 플랜 회수 함수
-        window.revokePlan = async function(userId, userName) {
-            if (!confirm('정말 ' + userName + '님의 플랜을 회수하시겠습니까?\\n\\n회수 후:\\n- 모든 구독이 비활성화됩니다\\n- 등록된 프로그램이 모두 삭제됩니다\\n- 사용자는 프로그램을 이용할 수 없게 됩니다')) {
-                return;
-            }
-            
-            try {
-                const response = await fetch('/api/admin/revoke-plan/' + userId, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    alert('✅ 플랜이 성공적으로 회수되었습니다!');
-                    closeUsageLimitsModal();
-                    location.reload(); // 페이지 새로고침
-                } else {
-                    alert('❌ 회수 실패: ' + (data.error || '알 수 없는 오류'));
-                }
-            } catch (error) {
-                console.error('Revoke error:', error);
-                alert('❌ 네트워크 오류가 발생했습니다');
-            }
-        }
-        
-        // 사용 한도 모달 닫기
-        window.closeUsageLimitsModal = function() {
-            document.getElementById('usageLimitsModal').classList.add('hidden');
-            currentUsageUserId = null;
-        }
-        
-        // 사용자 검색 필터링
+        // filterUsers와 clearSearch만 정의
         window.filterUsers = function() {
-            const searchInput = document.getElementById('searchInput').value.toLowerCase().trim();
-            const rows = document.querySelectorAll('tbody tr[data-user]');
-            let visibleCount = 0;
+            var searchInput = document.getElementById('searchInput').value.toLowerCase().trim();
+            var rows = document.querySelectorAll('tbody tr[data-user]');
+            var visibleCount = 0;
             
-            rows.forEach(row => {
-                const email = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
-                const name = row.querySelector('td:nth-child(3)').textContent.toLowerCase();
-                const phone = row.querySelector('td:nth-child(4)').textContent.toLowerCase();
-                const academy = row.querySelector('td:nth-child(5)').textContent.toLowerCase();
+            rows.forEach(function(row) {
+                var email = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+                var name = row.querySelector('td:nth-child(3)').textContent.toLowerCase();
+                var phone = (row.querySelector('td:nth-child(4)').textContent || '').toLowerCase();
+                var academy = (row.querySelector('td:nth-child(5)').textContent || '').toLowerCase();
                 
-                if (email.includes(searchInput) || name.includes(searchInput) || phone.includes(searchInput) || academy.includes(searchInput)) {
+                if (email.includes(searchInput) || name.includes(searchInput) || 
+                    phone.includes(searchInput) || academy.includes(searchInput)) {
                     row.style.display = '';
                     visibleCount++;
                 } else {
@@ -23926,120 +23693,16 @@ app.get('/admin/users', async (c) => {
             });
             
             document.getElementById('filteredUsers').textContent = visibleCount;
-        }
+        };
         
         window.clearSearch = function() {
             document.getElementById('searchInput').value = '';
-            filterUsers();
-        }
-        
-        // 비밀번호 변경
-        window.changePassword = function(userId, userName) {
-            const newPassword = prompt(userName + '님의 새 비밀번호를 입력하세요:');
-            if (newPassword && newPassword.trim()) {
-                fetch('/api/admin/users/' + userId + '/password', {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ newPassword: newPassword.trim() })
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        alert('✅ 비밀번호가 변경되었습니다!');
-                    } else {
-                        alert('❌ 변경 실패: ' + (data.error || '알 수 없는 오류'));
-                    }
-                })
-                .catch(err => alert('❌ 네트워크 오류: ' + err.message));
-            }
-        }
-        
-        // 포인트 지급
-        window.givePoints = function(userId, userName, currentPoints) {
-            const amount = prompt(userName + '님 (현재: ' + currentPoints + 'P)에게 지급할 포인트:');
-            if (amount && !isNaN(amount) && parseInt(amount) > 0) {
-                fetch('/api/admin/users/' + userId + '/points', {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ amount: parseInt(amount) })
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        alert('✅ ' + amount + 'P가 지급되었습니다!');
-                        location.reload();
-                    } else {
-                        alert('❌ 지급 실패: ' + (data.error || '알 수 없는 오류'));
-                    }
-                })
-                .catch(err => alert('❌ 네트워크 오류: ' + err.message));
-            }
-        }
-        
-        // 포인트 차감
-        window.deductPoints = function(userId, userName, currentPoints) {
-            const amount = prompt(userName + '님 (현재: ' + currentPoints + 'P)에서 차감할 포인트:');
-            if (amount && !isNaN(amount) && parseInt(amount) > 0) {
-                fetch('/api/admin/users/' + userId + '/points/deduct', {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ amount: parseInt(amount) })
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        alert('✅ ' + amount + 'P가 차감되었습니다!');
-                        location.reload();
-                    } else {
-                        alert('❌ 차감 실패: ' + (data.error || '알 수 없는 오류'));
-                    }
-                })
-                .catch(err => alert('❌ 네트워크 오류: ' + err.message));
-            }
-        }
-        
-        // 사용자로 로그인
-        window.loginAs = function(userId, userName) {
-            if (confirm(userName + '님의 계정으로 로그인하시겠습니까?')) {
-                alert('🚧 이 기능은 아직 구현되지 않았습니다.');
-            }
-        }
-        
-        // 권한 관리
-        window.managePermissions = function(userId, userName) {
-            alert('🚧 권한 관리 기능은 별도 모달에서 구현 예정입니다.');
-        }
-        
-        // 사용자 삭제
-        window.deleteUser = function(userId, userName) {
-            if (confirm('⚠️ 정말 ' + userName + '님을 삭제하시겠습니까?\\n\\n이 작업은 되돌릴 수 없습니다.')) {
-                fetch('/api/admin/users/' + userId, {
-                    method: 'DELETE'
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        alert('✅ 사용자가 삭제되었습니다!');
-                        location.reload();
-                    } else {
-                        alert('❌ 삭제 실패: ' + (data.error || '알 수 없는 오류'));
-                    }
-                })
-                .catch(err => alert('❌ 네트워크 오류: ' + err.message));
-            }
-        }
-        
-        // logout 함수
-        window.logout = function() {
-            if (confirm('로그아웃하시겠습니까?')) {
-                document.cookie = 'session_id=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-                window.location.href = '/login';
-            }
-        }
+            window.filterUsers();
+        };
         
         // 페이지 로드시 전체 사용자 수 설정
-        window.addEventListener('DOMContentLoaded', () => {
-            const rows = document.querySelectorAll('tbody tr[data-user]');
+        document.addEventListener('DOMContentLoaded', function() {
+            var rows = document.querySelectorAll('tbody tr[data-user]');
             document.getElementById('totalUsers').textContent = rows.length;
             document.getElementById('filteredUsers').textContent = rows.length;
         });

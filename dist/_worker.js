@@ -1,4 +1,4 @@
-var Bt=Object.defineProperty;var tt=e=>{throw TypeError(e)};var Mt=(e,t,s)=>t in e?Bt(e,t,{enumerable:!0,configurable:!0,writable:!0,value:s}):e[t]=s;var E=(e,t,s)=>Mt(e,typeof t!="symbol"?t+"":t,s),Ye=(e,t,s)=>t.has(e)||tt("Cannot "+s);var x=(e,t,s)=>(Ye(e,t,"read from private field"),s?s.call(e):t.get(e)),T=(e,t,s)=>t.has(e)?tt("Cannot add the same private member more than once"):t instanceof WeakSet?t.add(e):t.set(e,s),w=(e,t,s,r)=>(Ye(e,t,"write to private field"),r?r.call(e,s):t.set(e,s),s),D=(e,t,s)=>(Ye(e,t,"access private method"),s);var st=(e,t,s,r)=>({set _(a){w(e,t,a,s)},get _(){return x(e,t,r)}});var rt=(e,t,s)=>(r,a)=>{let n=-1;return o(0);async function o(l){if(l<=n)throw new Error("next() called multiple times");n=l;let i,c=!1,p;if(e[l]?(p=e[l][0][0],r.req.routeIndex=l):p=l===e.length&&a||void 0,p)try{i=await p(r,()=>o(l+1))}catch(u){if(u instanceof Error&&t)r.error=u,i=await t(u,r),c=!0;else throw u}else r.finalized===!1&&s&&(i=await s(r));return i&&(r.finalized===!1||c)&&(r.res=i),r}},Nt=Symbol(),Ot=async(e,t=Object.create(null))=>{const{all:s=!1,dot:r=!1}=t,n=(e instanceof ht?e.raw.headers:e.headers).get("Content-Type");return n!=null&&n.startsWith("multipart/form-data")||n!=null&&n.startsWith("application/x-www-form-urlencoded")?At(e,{all:s,dot:r}):{}};async function At(e,t){const s=await e.formData();return s?Ut(s,t):{}}function Ut(e,t){const s=Object.create(null);return e.forEach((r,a)=>{t.all||a.endsWith("[]")?Pt(s,a,r):s[a]=r}),t.dot&&Object.entries(s).forEach(([r,a])=>{r.includes(".")&&(Ft(s,r,a),delete s[r])}),s}var Pt=(e,t,s)=>{e[t]!==void 0?Array.isArray(e[t])?e[t].push(s):e[t]=[e[t],s]:t.endsWith("[]")?e[t]=[s]:e[t]=s},Ft=(e,t,s)=>{let r=e;const a=t.split(".");a.forEach((n,o)=>{o===a.length-1?r[n]=s:((!r[n]||typeof r[n]!="object"||Array.isArray(r[n])||r[n]instanceof File)&&(r[n]=Object.create(null)),r=r[n])})},gt=e=>{const t=e.split("/");return t[0]===""&&t.shift(),t},$t=e=>{const{groups:t,path:s}=qt(e),r=gt(s);return Ht(r,t)},qt=e=>{const t=[];return e=e.replace(/\{[^}]+\}/g,(s,r)=>{const a=`@${r}`;return t.push([a,s]),a}),{groups:t,path:e}},Ht=(e,t)=>{for(let s=t.length-1;s>=0;s--){const[r]=t[s];for(let a=e.length-1;a>=0;a--)if(e[a].includes(r)){e[a]=e[a].replace(r,t[s][1]);break}}return e},Pe={},Wt=(e,t)=>{if(e==="*")return"*";const s=e.match(/^\:([^\{\}]+)(?:\{(.+)\})?$/);if(s){const r=`${e}#${t}`;return Pe[r]||(s[2]?Pe[r]=t&&t[0]!==":"&&t[0]!=="*"?[r,s[1],new RegExp(`^${s[2]}(?=/${t})`)]:[e,s[1],new RegExp(`^${s[2]}$`)]:Pe[r]=[e,s[1],!0]),Pe[r]}return null},ze=(e,t)=>{try{return t(e)}catch{return e.replace(/(?:%[0-9A-Fa-f]{2})+/g,s=>{try{return t(s)}catch{return s}})}},Gt=e=>ze(e,decodeURI),xt=e=>{const t=e.url,s=t.indexOf("/",t.indexOf(":")+4);let r=s;for(;r<t.length;r++){const a=t.charCodeAt(r);if(a===37){const n=t.indexOf("?",r),o=t.slice(s,n===-1?void 0:n);return Gt(o.includes("%25")?o.replace(/%25/g,"%2525"):o)}else if(a===63)break}return t.slice(s,r)},zt=e=>{const t=xt(e);return t.length>1&&t.at(-1)==="/"?t.slice(0,-1):t},he=(e,t,...s)=>(s.length&&(t=he(t,...s)),`${(e==null?void 0:e[0])==="/"?"":"/"}${e}${t==="/"?"":`${(e==null?void 0:e.at(-1))==="/"?"":"/"}${(t==null?void 0:t[0])==="/"?t.slice(1):t}`}`),bt=e=>{if(e.charCodeAt(e.length-1)!==63||!e.includes(":"))return null;const t=e.split("/"),s=[];let r="";return t.forEach(a=>{if(a!==""&&!/\:/.test(a))r+="/"+a;else if(/\:/.test(a))if(/\?/.test(a)){s.length===0&&r===""?s.push("/"):s.push(r);const n=a.replace("?","");r+="/"+n,s.push(r)}else r+="/"+a}),s.filter((a,n,o)=>o.indexOf(a)===n)},Ve=e=>/[%+]/.test(e)?(e.indexOf("+")!==-1&&(e=e.replace(/\+/g," ")),e.indexOf("%")!==-1?ze(e,Qe):e):e,vt=(e,t,s)=>{let r;if(!s&&t&&!/[%+]/.test(t)){let o=e.indexOf("?",8);if(o===-1)return;for(e.startsWith(t,o+1)||(o=e.indexOf(`&${t}`,o+1));o!==-1;){const l=e.charCodeAt(o+t.length+1);if(l===61){const i=o+t.length+2,c=e.indexOf("&",i);return Ve(e.slice(i,c===-1?void 0:c))}else if(l==38||isNaN(l))return"";o=e.indexOf(`&${t}`,o+1)}if(r=/[%+]/.test(e),!r)return}const a={};r??(r=/[%+]/.test(e));let n=e.indexOf("?",8);for(;n!==-1;){const o=e.indexOf("&",n+1);let l=e.indexOf("=",n);l>o&&o!==-1&&(l=-1);let i=e.slice(n+1,l===-1?o===-1?void 0:o:l);if(r&&(i=Ve(i)),n=o,i==="")continue;let c;l===-1?c="":(c=e.slice(l+1,o===-1?void 0:o),r&&(c=Ve(c))),s?(a[i]&&Array.isArray(a[i])||(a[i]=[]),a[i].push(c)):a[i]??(a[i]=c)}return t?a[t]:a},Yt=vt,Vt=(e,t)=>vt(e,t,!0),Qe=decodeURIComponent,at=e=>ze(e,Qe),we,H,ee,ft,yt,Ze,te,it,ht=(it=class{constructor(e,t="/",s=[[]]){T(this,ee);E(this,"raw");T(this,we);T(this,H);E(this,"routeIndex",0);E(this,"path");E(this,"bodyCache",{});T(this,te,e=>{const{bodyCache:t,raw:s}=this,r=t[e];if(r)return r;const a=Object.keys(t)[0];return a?t[a].then(n=>(a==="json"&&(n=JSON.stringify(n)),new Response(n)[e]())):t[e]=s[e]()});this.raw=e,this.path=t,w(this,H,s),w(this,we,{})}param(e){return e?D(this,ee,ft).call(this,e):D(this,ee,yt).call(this)}query(e){return Yt(this.url,e)}queries(e){return Vt(this.url,e)}header(e){if(e)return this.raw.headers.get(e)??void 0;const t={};return this.raw.headers.forEach((s,r)=>{t[r]=s}),t}async parseBody(e){var t;return(t=this.bodyCache).parsedBody??(t.parsedBody=await Ot(this,e))}json(){return x(this,te).call(this,"text").then(e=>JSON.parse(e))}text(){return x(this,te).call(this,"text")}arrayBuffer(){return x(this,te).call(this,"arrayBuffer")}blob(){return x(this,te).call(this,"blob")}formData(){return x(this,te).call(this,"formData")}addValidatedData(e,t){x(this,we)[e]=t}valid(e){return x(this,we)[e]}get url(){return this.raw.url}get method(){return this.raw.method}get[Nt](){return x(this,H)}get matchedRoutes(){return x(this,H)[0].map(([[,e]])=>e)}get routePath(){return x(this,H)[0].map(([[,e]])=>e)[this.routeIndex].path}},we=new WeakMap,H=new WeakMap,ee=new WeakSet,ft=function(e){const t=x(this,H)[0][this.routeIndex][1][e],s=D(this,ee,Ze).call(this,t);return s&&/\%/.test(s)?at(s):s},yt=function(){const e={},t=Object.keys(x(this,H)[0][this.routeIndex][1]);for(const s of t){const r=D(this,ee,Ze).call(this,x(this,H)[0][this.routeIndex][1][s]);r!==void 0&&(e[s]=/\%/.test(r)?at(r):r)}return e},Ze=function(e){return x(this,H)[1]?x(this,H)[1][e]:e},te=new WeakMap,it),Xt={Stringify:1},wt=async(e,t,s,r,a)=>{typeof e=="object"&&!(e instanceof String)&&(e instanceof Promise||(e=e.toString()),e instanceof Promise&&(e=await e));const n=e.callbacks;return n!=null&&n.length?(a?a[0]+=e:a=[e],Promise.all(n.map(l=>l({phase:t,buffer:a,context:r}))).then(l=>Promise.all(l.filter(Boolean).map(i=>wt(i,t,!1,r,a))).then(()=>a[0]))):Promise.resolve(e)},Jt="text/plain; charset=UTF-8",Xe=(e,t)=>({"Content-Type":e,...t}),je,Le,J,Ee,K,F,Be,_e,Te,ce,Me,Ne,se,fe,dt,Kt=(dt=class{constructor(e,t){T(this,se);T(this,je);T(this,Le);E(this,"env",{});T(this,J);E(this,"finalized",!1);E(this,"error");T(this,Ee);T(this,K);T(this,F);T(this,Be);T(this,_e);T(this,Te);T(this,ce);T(this,Me);T(this,Ne);E(this,"render",(...e)=>(x(this,_e)??w(this,_e,t=>this.html(t)),x(this,_e).call(this,...e)));E(this,"setLayout",e=>w(this,Be,e));E(this,"getLayout",()=>x(this,Be));E(this,"setRenderer",e=>{w(this,_e,e)});E(this,"header",(e,t,s)=>{this.finalized&&w(this,F,new Response(x(this,F).body,x(this,F)));const r=x(this,F)?x(this,F).headers:x(this,ce)??w(this,ce,new Headers);t===void 0?r.delete(e):s!=null&&s.append?r.append(e,t):r.set(e,t)});E(this,"status",e=>{w(this,Ee,e)});E(this,"set",(e,t)=>{x(this,J)??w(this,J,new Map),x(this,J).set(e,t)});E(this,"get",e=>x(this,J)?x(this,J).get(e):void 0);E(this,"newResponse",(...e)=>D(this,se,fe).call(this,...e));E(this,"body",(e,t,s)=>D(this,se,fe).call(this,e,t,s));E(this,"text",(e,t,s)=>!x(this,ce)&&!x(this,Ee)&&!t&&!s&&!this.finalized?new Response(e):D(this,se,fe).call(this,e,t,Xe(Jt,s)));E(this,"json",(e,t,s)=>D(this,se,fe).call(this,JSON.stringify(e),t,Xe("application/json",s)));E(this,"html",(e,t,s)=>{const r=a=>D(this,se,fe).call(this,a,t,Xe("text/html; charset=UTF-8",s));return typeof e=="object"?wt(e,Xt.Stringify,!1,{}).then(r):r(e)});E(this,"redirect",(e,t)=>{const s=String(e);return this.header("Location",/[^\x00-\xFF]/.test(s)?encodeURI(s):s),this.newResponse(null,t??302)});E(this,"notFound",()=>(x(this,Te)??w(this,Te,()=>new Response),x(this,Te).call(this,this)));w(this,je,e),t&&(w(this,K,t.executionCtx),this.env=t.env,w(this,Te,t.notFoundHandler),w(this,Ne,t.path),w(this,Me,t.matchResult))}get req(){return x(this,Le)??w(this,Le,new ht(x(this,je),x(this,Ne),x(this,Me))),x(this,Le)}get event(){if(x(this,K)&&"respondWith"in x(this,K))return x(this,K);throw Error("This context has no FetchEvent")}get executionCtx(){if(x(this,K))return x(this,K);throw Error("This context has no ExecutionContext")}get res(){return x(this,F)||w(this,F,new Response(null,{headers:x(this,ce)??w(this,ce,new Headers)}))}set res(e){if(x(this,F)&&e){e=new Response(e.body,e);for(const[t,s]of x(this,F).headers.entries())if(t!=="content-type")if(t==="set-cookie"){const r=x(this,F).headers.getSetCookie();e.headers.delete("set-cookie");for(const a of r)e.headers.append("set-cookie",a)}else e.headers.set(t,s)}w(this,F,e),this.finalized=!0}get var(){return x(this,J)?Object.fromEntries(x(this,J)):{}}},je=new WeakMap,Le=new WeakMap,J=new WeakMap,Ee=new WeakMap,K=new WeakMap,F=new WeakMap,Be=new WeakMap,_e=new WeakMap,Te=new WeakMap,ce=new WeakMap,Me=new WeakMap,Ne=new WeakMap,se=new WeakSet,fe=function(e,t,s){const r=x(this,F)?new Headers(x(this,F).headers):x(this,ce)??new Headers;if(typeof t=="object"&&"headers"in t){const n=t.headers instanceof Headers?t.headers:new Headers(t.headers);for(const[o,l]of n)o.toLowerCase()==="set-cookie"?r.append(o,l):r.set(o,l)}if(s)for(const[n,o]of Object.entries(s))if(typeof o=="string")r.set(n,o);else{r.delete(n);for(const l of o)r.append(n,l)}const a=typeof t=="number"?t:(t==null?void 0:t.status)??x(this,Ee);return new Response(e,{status:a,headers:r})},dt),N="ALL",Zt="all",Qt=["get","post","put","delete","options","patch"],Et="Can not add a route since the matcher is already built.",_t=class extends Error{},es="__COMPOSED_HANDLER",ts=e=>e.text("404 Not Found",404),nt=(e,t)=>{if("getResponse"in e){const s=e.getResponse();return t.newResponse(s.body,s)}return console.error(e),t.text("Internal Server Error",500)},W,O,Tt,G,ie,Fe,$e,Ie,ss=(Ie=class{constructor(t={}){T(this,O);E(this,"get");E(this,"post");E(this,"put");E(this,"delete");E(this,"options");E(this,"patch");E(this,"all");E(this,"on");E(this,"use");E(this,"router");E(this,"getPath");E(this,"_basePath","/");T(this,W,"/");E(this,"routes",[]);T(this,G,ts);E(this,"errorHandler",nt);E(this,"onError",t=>(this.errorHandler=t,this));E(this,"notFound",t=>(w(this,G,t),this));E(this,"fetch",(t,...s)=>D(this,O,$e).call(this,t,s[1],s[0],t.method));E(this,"request",(t,s,r,a)=>t instanceof Request?this.fetch(s?new Request(t,s):t,r,a):(t=t.toString(),this.fetch(new Request(/^https?:\/\//.test(t)?t:`http://localhost${he("/",t)}`,s),r,a)));E(this,"fire",()=>{addEventListener("fetch",t=>{t.respondWith(D(this,O,$e).call(this,t.request,t,void 0,t.request.method))})});[...Qt,Zt].forEach(n=>{this[n]=(o,...l)=>(typeof o=="string"?w(this,W,o):D(this,O,ie).call(this,n,x(this,W),o),l.forEach(i=>{D(this,O,ie).call(this,n,x(this,W),i)}),this)}),this.on=(n,o,...l)=>{for(const i of[o].flat()){w(this,W,i);for(const c of[n].flat())l.map(p=>{D(this,O,ie).call(this,c.toUpperCase(),x(this,W),p)})}return this},this.use=(n,...o)=>(typeof n=="string"?w(this,W,n):(w(this,W,"*"),o.unshift(n)),o.forEach(l=>{D(this,O,ie).call(this,N,x(this,W),l)}),this);const{strict:r,...a}=t;Object.assign(this,a),this.getPath=r??!0?t.getPath??xt:zt}route(t,s){const r=this.basePath(t);return s.routes.map(a=>{var o;let n;s.errorHandler===nt?n=a.handler:(n=async(l,i)=>(await rt([],s.errorHandler)(l,()=>a.handler(l,i))).res,n[es]=a.handler),D(o=r,O,ie).call(o,a.method,a.path,n)}),this}basePath(t){const s=D(this,O,Tt).call(this);return s._basePath=he(this._basePath,t),s}mount(t,s,r){let a,n;r&&(typeof r=="function"?n=r:(n=r.optionHandler,r.replaceRequest===!1?a=i=>i:a=r.replaceRequest));const o=n?i=>{const c=n(i);return Array.isArray(c)?c:[c]}:i=>{let c;try{c=i.executionCtx}catch{}return[i.env,c]};a||(a=(()=>{const i=he(this._basePath,t),c=i==="/"?0:i.length;return p=>{const u=new URL(p.url);return u.pathname=u.pathname.slice(c)||"/",new Request(u,p)}})());const l=async(i,c)=>{const p=await s(a(i.req.raw),...o(i));if(p)return p;await c()};return D(this,O,ie).call(this,N,he(t,"*"),l),this}},W=new WeakMap,O=new WeakSet,Tt=function(){const t=new Ie({router:this.router,getPath:this.getPath});return t.errorHandler=this.errorHandler,w(t,G,x(this,G)),t.routes=this.routes,t},G=new WeakMap,ie=function(t,s,r){t=t.toUpperCase(),s=he(this._basePath,s);const a={basePath:this._basePath,path:s,method:t,handler:r};this.router.add(t,s,[r,a]),this.routes.push(a)},Fe=function(t,s){if(t instanceof Error)return this.errorHandler(t,s);throw t},$e=function(t,s,r,a){if(a==="HEAD")return(async()=>new Response(null,await D(this,O,$e).call(this,t,s,r,"GET")))();const n=this.getPath(t,{env:r}),o=this.router.match(a,n),l=new Kt(t,{path:n,matchResult:o,env:r,executionCtx:s,notFoundHandler:x(this,G)});if(o[0].length===1){let c;try{c=o[0][0][0][0](l,async()=>{l.res=await x(this,G).call(this,l)})}catch(p){return D(this,O,Fe).call(this,p,l)}return c instanceof Promise?c.then(p=>p||(l.finalized?l.res:x(this,G).call(this,l))).catch(p=>D(this,O,Fe).call(this,p,l)):c??x(this,G).call(this,l)}const i=rt(o[0],this.errorHandler,x(this,G));return(async()=>{try{const c=await i(l);if(!c.finalized)throw new Error("Context is not finalized. Did you forget to return a Response object or `await next()`?");return c.res}catch(c){return D(this,O,Fe).call(this,c,l)}})()},Ie),It=[];function rs(e,t){const s=this.buildAllMatchers(),r=((a,n)=>{const o=s[a]||s[N],l=o[2][n];if(l)return l;const i=n.match(o[0]);if(!i)return[[],It];const c=i.indexOf("",1);return[o[1][c],i]});return this.match=r,r(e,t)}var He="[^/]+",Ce=".*",Re="(?:|/.*)",ye=Symbol(),as=new Set(".\\+*[^]$()");function ns(e,t){return e.length===1?t.length===1?e<t?-1:1:-1:t.length===1||e===Ce||e===Re?1:t===Ce||t===Re?-1:e===He?1:t===He?-1:e.length===t.length?e<t?-1:1:t.length-e.length}var pe,ue,z,xe,os=(xe=class{constructor(){T(this,pe);T(this,ue);T(this,z,Object.create(null))}insert(t,s,r,a,n){if(t.length===0){if(x(this,pe)!==void 0)throw ye;if(n)return;w(this,pe,s);return}const[o,...l]=t,i=o==="*"?l.length===0?["","",Ce]:["","",He]:o==="/*"?["","",Re]:o.match(/^\:([^\{\}]+)(?:\{(.+)\})?$/);let c;if(i){const p=i[1];let u=i[2]||He;if(p&&i[2]&&(u===".*"||(u=u.replace(/^\((?!\?:)(?=[^)]+\)$)/,"(?:"),/\((?!\?:)/.test(u))))throw ye;if(c=x(this,z)[u],!c){if(Object.keys(x(this,z)).some(m=>m!==Ce&&m!==Re))throw ye;if(n)return;c=x(this,z)[u]=new xe,p!==""&&w(c,ue,a.varIndex++)}!n&&p!==""&&r.push([p,x(c,ue)])}else if(c=x(this,z)[o],!c){if(Object.keys(x(this,z)).some(p=>p.length>1&&p!==Ce&&p!==Re))throw ye;if(n)return;c=x(this,z)[o]=new xe}c.insert(l,s,r,a,n)}buildRegExpStr(){const s=Object.keys(x(this,z)).sort(ns).map(r=>{const a=x(this,z)[r];return(typeof x(a,ue)=="number"?`(${r})@${x(a,ue)}`:as.has(r)?`\\${r}`:r)+a.buildRegExpStr()});return typeof x(this,pe)=="number"&&s.unshift(`#${x(this,pe)}`),s.length===0?"":s.length===1?s[0]:"(?:"+s.join("|")+")"}},pe=new WeakMap,ue=new WeakMap,z=new WeakMap,xe),We,Oe,ct,ls=(ct=class{constructor(){T(this,We,{varIndex:0});T(this,Oe,new os)}insert(e,t,s){const r=[],a=[];for(let o=0;;){let l=!1;if(e=e.replace(/\{[^}]+\}/g,i=>{const c=`@\\${o}`;return a[o]=[c,i],o++,l=!0,c}),!l)break}const n=e.match(/(?::[^\/]+)|(?:\/\*$)|./g)||[];for(let o=a.length-1;o>=0;o--){const[l]=a[o];for(let i=n.length-1;i>=0;i--)if(n[i].indexOf(l)!==-1){n[i]=n[i].replace(l,a[o][1]);break}}return x(this,Oe).insert(n,t,r,x(this,We),s),r}buildRegExp(){let e=x(this,Oe).buildRegExpStr();if(e==="")return[/^$/,[],[]];let t=0;const s=[],r=[];return e=e.replace(/#(\d+)|@(\d+)|\.\*\$/g,(a,n,o)=>n!==void 0?(s[++t]=Number(n),"$()"):(o!==void 0&&(r[Number(o)]=++t),"")),[new RegExp(`^${e}`),s,r]}},We=new WeakMap,Oe=new WeakMap,ct),is=[/^$/,[],Object.create(null)],qe=Object.create(null);function kt(e){return qe[e]??(qe[e]=new RegExp(e==="*"?"":`^${e.replace(/\/\*$|([.\\+*[^\]$()])/g,(t,s)=>s?`\\${s}`:"(?:|/.*)")}$`))}function ds(){qe=Object.create(null)}function cs(e){var c;const t=new ls,s=[];if(e.length===0)return is;const r=e.map(p=>[!/\*|\/:/.test(p[0]),...p]).sort(([p,u],[m,g])=>p?1:m?-1:u.length-g.length),a=Object.create(null);for(let p=0,u=-1,m=r.length;p<m;p++){const[g,b,h]=r[p];g?a[b]=[h.map(([y])=>[y,Object.create(null)]),It]:u++;let v;try{v=t.insert(b,u,g)}catch(y){throw y===ye?new _t(b):y}g||(s[u]=h.map(([y,f])=>{const I=Object.create(null);for(f-=1;f>=0;f--){const[k,S]=v[f];I[k]=S}return[y,I]}))}const[n,o,l]=t.buildRegExp();for(let p=0,u=s.length;p<u;p++)for(let m=0,g=s[p].length;m<g;m++){const b=(c=s[p][m])==null?void 0:c[1];if(!b)continue;const h=Object.keys(b);for(let v=0,y=h.length;v<y;v++)b[h[v]]=l[b[h[v]]]}const i=[];for(const p in o)i[p]=s[o[p]];return[n,i,a]}function ve(e,t){if(e){for(const s of Object.keys(e).sort((r,a)=>a.length-r.length))if(kt(s).test(t))return[...e[s]]}}var re,ae,Ge,St,pt,ps=(pt=class{constructor(){T(this,Ge);E(this,"name","RegExpRouter");T(this,re);T(this,ae);E(this,"match",rs);w(this,re,{[N]:Object.create(null)}),w(this,ae,{[N]:Object.create(null)})}add(e,t,s){var l;const r=x(this,re),a=x(this,ae);if(!r||!a)throw new Error(Et);r[e]||[r,a].forEach(i=>{i[e]=Object.create(null),Object.keys(i[N]).forEach(c=>{i[e][c]=[...i[N][c]]})}),t==="/*"&&(t="*");const n=(t.match(/\/:/g)||[]).length;if(/\*$/.test(t)){const i=kt(t);e===N?Object.keys(r).forEach(c=>{var p;(p=r[c])[t]||(p[t]=ve(r[c],t)||ve(r[N],t)||[])}):(l=r[e])[t]||(l[t]=ve(r[e],t)||ve(r[N],t)||[]),Object.keys(r).forEach(c=>{(e===N||e===c)&&Object.keys(r[c]).forEach(p=>{i.test(p)&&r[c][p].push([s,n])})}),Object.keys(a).forEach(c=>{(e===N||e===c)&&Object.keys(a[c]).forEach(p=>i.test(p)&&a[c][p].push([s,n]))});return}const o=bt(t)||[t];for(let i=0,c=o.length;i<c;i++){const p=o[i];Object.keys(a).forEach(u=>{var m;(e===N||e===u)&&((m=a[u])[p]||(m[p]=[...ve(r[u],p)||ve(r[N],p)||[]]),a[u][p].push([s,n-c+i+1]))})}}buildAllMatchers(){const e=Object.create(null);return Object.keys(x(this,ae)).concat(Object.keys(x(this,re))).forEach(t=>{e[t]||(e[t]=D(this,Ge,St).call(this,t))}),w(this,re,w(this,ae,void 0)),ds(),e}},re=new WeakMap,ae=new WeakMap,Ge=new WeakSet,St=function(e){const t=[];let s=e===N;return[x(this,re),x(this,ae)].forEach(r=>{const a=r[e]?Object.keys(r[e]).map(n=>[n,r[e][n]]):[];a.length!==0?(s||(s=!0),t.push(...a)):e!==N&&t.push(...Object.keys(r[N]).map(n=>[n,r[N][n]]))}),s?cs(t):null},pt),ne,Z,ut,us=(ut=class{constructor(e){E(this,"name","SmartRouter");T(this,ne,[]);T(this,Z,[]);w(this,ne,e.routers)}add(e,t,s){if(!x(this,Z))throw new Error(Et);x(this,Z).push([e,t,s])}match(e,t){if(!x(this,Z))throw new Error("Fatal error");const s=x(this,ne),r=x(this,Z),a=s.length;let n=0,o;for(;n<a;n++){const l=s[n];try{for(let i=0,c=r.length;i<c;i++)l.add(...r[i]);o=l.match(e,t)}catch(i){if(i instanceof _t)continue;throw i}this.match=l.match.bind(l),w(this,ne,[l]),w(this,Z,void 0);break}if(n===a)throw new Error("Fatal error");return this.name=`SmartRouter + ${this.activeRouter.name}`,o}get activeRouter(){if(x(this,Z)||x(this,ne).length!==1)throw new Error("No active router has been determined yet.");return x(this,ne)[0]}},ne=new WeakMap,Z=new WeakMap,ut),De=Object.create(null),oe,U,me,ke,A,Q,de,Se,ms=(Se=class{constructor(t,s,r){T(this,Q);T(this,oe);T(this,U);T(this,me);T(this,ke,0);T(this,A,De);if(w(this,U,r||Object.create(null)),w(this,oe,[]),t&&s){const a=Object.create(null);a[t]={handler:s,possibleKeys:[],score:0},w(this,oe,[a])}w(this,me,[])}insert(t,s,r){w(this,ke,++st(this,ke)._);let a=this;const n=$t(s),o=[];for(let l=0,i=n.length;l<i;l++){const c=n[l],p=n[l+1],u=Wt(c,p),m=Array.isArray(u)?u[0]:c;if(m in x(a,U)){a=x(a,U)[m],u&&o.push(u[1]);continue}x(a,U)[m]=new Se,u&&(x(a,me).push(u),o.push(u[1])),a=x(a,U)[m]}return x(a,oe).push({[t]:{handler:r,possibleKeys:o.filter((l,i,c)=>c.indexOf(l)===i),score:x(this,ke)}}),a}search(t,s){var i;const r=[];w(this,A,De);let n=[this];const o=gt(s),l=[];for(let c=0,p=o.length;c<p;c++){const u=o[c],m=c===p-1,g=[];for(let b=0,h=n.length;b<h;b++){const v=n[b],y=x(v,U)[u];y&&(w(y,A,x(v,A)),m?(x(y,U)["*"]&&r.push(...D(this,Q,de).call(this,x(y,U)["*"],t,x(v,A))),r.push(...D(this,Q,de).call(this,y,t,x(v,A)))):g.push(y));for(let f=0,I=x(v,me).length;f<I;f++){const k=x(v,me)[f],S=x(v,A)===De?{}:{...x(v,A)};if(k==="*"){const M=x(v,U)["*"];M&&(r.push(...D(this,Q,de).call(this,M,t,x(v,A))),w(M,A,S),g.push(M));continue}const[C,j,B]=k;if(!u&&!(B instanceof RegExp))continue;const L=x(v,U)[C],le=o.slice(c).join("/");if(B instanceof RegExp){const M=B.exec(le);if(M){if(S[j]=M[0],r.push(...D(this,Q,de).call(this,L,t,x(v,A),S)),Object.keys(x(L,U)).length){w(L,A,S);const V=((i=M[0].match(/\//))==null?void 0:i.length)??0;(l[V]||(l[V]=[])).push(L)}continue}}(B===!0||B.test(u))&&(S[j]=u,m?(r.push(...D(this,Q,de).call(this,L,t,S,x(v,A))),x(L,U)["*"]&&r.push(...D(this,Q,de).call(this,x(L,U)["*"],t,S,x(v,A)))):(w(L,A,S),g.push(L)))}}n=g.concat(l.shift()??[])}return r.length>1&&r.sort((c,p)=>c.score-p.score),[r.map(({handler:c,params:p})=>[c,p])]}},oe=new WeakMap,U=new WeakMap,me=new WeakMap,ke=new WeakMap,A=new WeakMap,Q=new WeakSet,de=function(t,s,r,a){const n=[];for(let o=0,l=x(t,oe).length;o<l;o++){const i=x(t,oe)[o],c=i[s]||i[N],p={};if(c!==void 0&&(c.params=Object.create(null),n.push(c),r!==De||a&&a!==De))for(let u=0,m=c.possibleKeys.length;u<m;u++){const g=c.possibleKeys[u],b=p[c.score];c.params[g]=a!=null&&a[g]&&!b?a[g]:r[g]??(a==null?void 0:a[g]),p[c.score]=!0}}return n},Se),ge,mt,gs=(mt=class{constructor(){E(this,"name","TrieRouter");T(this,ge);w(this,ge,new ms)}add(e,t,s){const r=bt(t);if(r){for(let a=0,n=r.length;a<n;a++)x(this,ge).insert(e,r[a],s);return}x(this,ge).insert(e,t,s)}match(e,t){return x(this,ge).search(e,t)}},ge=new WeakMap,mt),et=class extends ss{constructor(e={}){super(e),this.router=e.router??new us({routers:[new ps,new gs]})}},xs=e=>{const s={...{origin:"*",allowMethods:["GET","HEAD","PUT","POST","DELETE","PATCH"],allowHeaders:[],exposeHeaders:[]},...e},r=(n=>typeof n=="string"?n==="*"?()=>n:o=>n===o?o:null:typeof n=="function"?n:o=>n.includes(o)?o:null)(s.origin),a=(n=>typeof n=="function"?n:Array.isArray(n)?()=>n:()=>[])(s.allowMethods);return async function(o,l){var p;function i(u,m){o.res.headers.set(u,m)}const c=await r(o.req.header("origin")||"",o);if(c&&i("Access-Control-Allow-Origin",c),s.credentials&&i("Access-Control-Allow-Credentials","true"),(p=s.exposeHeaders)!=null&&p.length&&i("Access-Control-Expose-Headers",s.exposeHeaders.join(",")),o.req.method==="OPTIONS"){s.origin!=="*"&&i("Vary","Origin"),s.maxAge!=null&&i("Access-Control-Max-Age",s.maxAge.toString());const u=await a(o.req.header("origin")||"",o);u.length&&i("Access-Control-Allow-Methods",u.join(","));let m=s.allowHeaders;if(!(m!=null&&m.length)){const g=o.req.header("Access-Control-Request-Headers");g&&(m=g.split(/\s*,\s*/))}return m!=null&&m.length&&(i("Access-Control-Allow-Headers",m.join(",")),o.res.headers.append("Vary","Access-Control-Request-Headers")),o.res.headers.delete("Content-Length"),o.res.headers.delete("Content-Type"),new Response(null,{headers:o.res.headers,status:204,statusText:"No Content"})}await l(),s.origin!=="*"&&o.header("Vary","Origin",{append:!0})}},bs=/^[\w!#$%&'*.^`|~+-]+$/,vs=/^[ !#-:<-[\]-~]*$/,hs=(e,t)=>{if(e.indexOf(t)===-1)return{};const s=e.trim().split(";"),r={};for(let a of s){a=a.trim();const n=a.indexOf("=");if(n===-1)continue;const o=a.substring(0,n).trim();if(t!==o||!bs.test(o))continue;let l=a.substring(n+1).trim();if(l.startsWith('"')&&l.endsWith('"')&&(l=l.slice(1,-1)),vs.test(l)){r[o]=l.indexOf("%")!==-1?ze(l,Qe):l;break}}return r},X=(e,t,s)=>{const r=e.req.raw.headers.get("Cookie");{if(!r)return;let a=t;return hs(r,a)[a]}},fs=/^\s*(?:text\/(?!event-stream(?:[;\s]|$))[^;\s]+|application\/(?:javascript|json|xml|xml-dtd|ecmascript|dart|postscript|rtf|tar|toml|vnd\.dart|vnd\.ms-fontobject|vnd\.ms-opentype|wasm|x-httpd-php|x-javascript|x-ns-proxy-autoconfig|x-sh|x-tar|x-virtualbox-hdd|x-virtualbox-ova|x-virtualbox-ovf|x-virtualbox-vbox|x-virtualbox-vdi|x-virtualbox-vhd|x-virtualbox-vmdk|x-www-form-urlencoded)|font\/(?:otf|ttf)|image\/(?:bmp|vnd\.adobe\.photoshop|vnd\.microsoft\.icon|vnd\.ms-dds|x-icon|x-ms-bmp)|message\/rfc822|model\/gltf-binary|x-shader\/x-fragment|x-shader\/x-vertex|[^;\s]+?\+(?:json|text|xml|yaml))(?:[;\s]|$)/i,ot=(e,t=ws)=>{const s=/\.([a-zA-Z0-9]+?)$/,r=e.match(s);if(!r)return;let a=t[r[1]];return a&&a.startsWith("text")&&(a+="; charset=utf-8"),a},ys={aac:"audio/aac",avi:"video/x-msvideo",avif:"image/avif",av1:"video/av1",bin:"application/octet-stream",bmp:"image/bmp",css:"text/css",csv:"text/csv",eot:"application/vnd.ms-fontobject",epub:"application/epub+zip",gif:"image/gif",gz:"application/gzip",htm:"text/html",html:"text/html",ico:"image/x-icon",ics:"text/calendar",jpeg:"image/jpeg",jpg:"image/jpeg",js:"text/javascript",json:"application/json",jsonld:"application/ld+json",map:"application/json",mid:"audio/x-midi",midi:"audio/x-midi",mjs:"text/javascript",mp3:"audio/mpeg",mp4:"video/mp4",mpeg:"video/mpeg",oga:"audio/ogg",ogv:"video/ogg",ogx:"application/ogg",opus:"audio/opus",otf:"font/otf",pdf:"application/pdf",png:"image/png",rtf:"application/rtf",svg:"image/svg+xml",tif:"image/tiff",tiff:"image/tiff",ts:"video/mp2t",ttf:"font/ttf",txt:"text/plain",wasm:"application/wasm",webm:"video/webm",weba:"audio/webm",webmanifest:"application/manifest+json",webp:"image/webp",woff:"font/woff",woff2:"font/woff2",xhtml:"application/xhtml+xml",xml:"application/xml",zip:"application/zip","3gp":"video/3gpp","3g2":"video/3gpp2",gltf:"model/gltf+json",glb:"model/gltf-binary"},ws=ys,Es=(...e)=>{let t=e.filter(a=>a!=="").join("/");t=t.replace(new RegExp("(?<=\\/)\\/+","g"),"");const s=t.split("/"),r=[];for(const a of s)a===".."&&r.length>0&&r.at(-1)!==".."?r.pop():a!=="."&&r.push(a);return r.join("/")||"."},Dt={br:".br",zstd:".zst",gzip:".gz"},_s=Object.keys(Dt),Ts="index.html",Is=e=>{const t=e.root??"./",s=e.path,r=e.join??Es;return async(a,n)=>{var p,u,m,g;if(a.finalized)return n();let o;if(e.path)o=e.path;else try{if(o=decodeURIComponent(a.req.path),/(?:^|[\/\\])\.\.(?:$|[\/\\])/.test(o))throw new Error}catch{return await((p=e.onNotFound)==null?void 0:p.call(e,a.req.path,a)),n()}let l=r(t,!s&&e.rewriteRequestPath?e.rewriteRequestPath(o):o);e.isDir&&await e.isDir(l)&&(l=r(l,Ts));const i=e.getContent;let c=await i(l,a);if(c instanceof Response)return a.newResponse(c.body,c);if(c){const b=e.mimes&&ot(l,e.mimes)||ot(l);if(a.header("Content-Type",b||"application/octet-stream"),e.precompressed&&(!b||fs.test(b))){const h=new Set((u=a.req.header("Accept-Encoding"))==null?void 0:u.split(",").map(v=>v.trim()));for(const v of _s){if(!h.has(v))continue;const y=await i(l+Dt[v],a);if(y){c=y,a.header("Content-Encoding",v),a.header("Vary","Accept-Encoding",{append:!0});break}}}return await((m=e.onFound)==null?void 0:m.call(e,l,a)),a.body(c)}await((g=e.onNotFound)==null?void 0:g.call(e,l,a)),await n()}},ks=async(e,t)=>{let s;t&&t.manifest?typeof t.manifest=="string"?s=JSON.parse(t.manifest):s=t.manifest:typeof __STATIC_CONTENT_MANIFEST=="string"?s=JSON.parse(__STATIC_CONTENT_MANIFEST):s=__STATIC_CONTENT_MANIFEST;let r;t&&t.namespace?r=t.namespace:r=__STATIC_CONTENT;const a=s[e]||e;if(!a)return null;const n=await r.get(a,{type:"stream"});return n||null},Ss=e=>async function(s,r){return Is({...e,getContent:async n=>ks(n,{manifest:e.manifest,namespace:e.namespace?e.namespace:s.env?s.env.__STATIC_CONTENT:void 0})})(s,r)},Ds=e=>Ss(e);const Cs=`
+var Bt=Object.defineProperty;var tt=e=>{throw TypeError(e)};var Nt=(e,t,s)=>t in e?Bt(e,t,{enumerable:!0,configurable:!0,writable:!0,value:s}):e[t]=s;var E=(e,t,s)=>Nt(e,typeof t!="symbol"?t+"":t,s),Ye=(e,t,s)=>t.has(e)||tt("Cannot "+s);var x=(e,t,s)=>(Ye(e,t,"read from private field"),s?s.call(e):t.get(e)),T=(e,t,s)=>t.has(e)?tt("Cannot add the same private member more than once"):t instanceof WeakSet?t.add(e):t.set(e,s),w=(e,t,s,r)=>(Ye(e,t,"write to private field"),r?r.call(e,s):t.set(e,s),s),D=(e,t,s)=>(Ye(e,t,"access private method"),s);var st=(e,t,s,r)=>({set _(a){w(e,t,a,s)},get _(){return x(e,t,r)}});var rt=(e,t,s)=>(r,a)=>{let n=-1;return o(0);async function o(l){if(l<=n)throw new Error("next() called multiple times");n=l;let i,c=!1,p;if(e[l]?(p=e[l][0][0],r.req.routeIndex=l):p=l===e.length&&a||void 0,p)try{i=await p(r,()=>o(l+1))}catch(u){if(u instanceof Error&&t)r.error=u,i=await t(u,r),c=!0;else throw u}else r.finalized===!1&&s&&(i=await s(r));return i&&(r.finalized===!1||c)&&(r.res=i),r}},Mt=Symbol(),Ot=async(e,t=Object.create(null))=>{const{all:s=!1,dot:r=!1}=t,n=(e instanceof ht?e.raw.headers:e.headers).get("Content-Type");return n!=null&&n.startsWith("multipart/form-data")||n!=null&&n.startsWith("application/x-www-form-urlencoded")?At(e,{all:s,dot:r}):{}};async function At(e,t){const s=await e.formData();return s?Ut(s,t):{}}function Ut(e,t){const s=Object.create(null);return e.forEach((r,a)=>{t.all||a.endsWith("[]")?Pt(s,a,r):s[a]=r}),t.dot&&Object.entries(s).forEach(([r,a])=>{r.includes(".")&&(Ft(s,r,a),delete s[r])}),s}var Pt=(e,t,s)=>{e[t]!==void 0?Array.isArray(e[t])?e[t].push(s):e[t]=[e[t],s]:t.endsWith("[]")?e[t]=[s]:e[t]=s},Ft=(e,t,s)=>{let r=e;const a=t.split(".");a.forEach((n,o)=>{o===a.length-1?r[n]=s:((!r[n]||typeof r[n]!="object"||Array.isArray(r[n])||r[n]instanceof File)&&(r[n]=Object.create(null)),r=r[n])})},gt=e=>{const t=e.split("/");return t[0]===""&&t.shift(),t},$t=e=>{const{groups:t,path:s}=qt(e),r=gt(s);return Ht(r,t)},qt=e=>{const t=[];return e=e.replace(/\{[^}]+\}/g,(s,r)=>{const a=`@${r}`;return t.push([a,s]),a}),{groups:t,path:e}},Ht=(e,t)=>{for(let s=t.length-1;s>=0;s--){const[r]=t[s];for(let a=e.length-1;a>=0;a--)if(e[a].includes(r)){e[a]=e[a].replace(r,t[s][1]);break}}return e},Pe={},Wt=(e,t)=>{if(e==="*")return"*";const s=e.match(/^\:([^\{\}]+)(?:\{(.+)\})?$/);if(s){const r=`${e}#${t}`;return Pe[r]||(s[2]?Pe[r]=t&&t[0]!==":"&&t[0]!=="*"?[r,s[1],new RegExp(`^${s[2]}(?=/${t})`)]:[e,s[1],new RegExp(`^${s[2]}$`)]:Pe[r]=[e,s[1],!0]),Pe[r]}return null},ze=(e,t)=>{try{return t(e)}catch{return e.replace(/(?:%[0-9A-Fa-f]{2})+/g,s=>{try{return t(s)}catch{return s}})}},Gt=e=>ze(e,decodeURI),xt=e=>{const t=e.url,s=t.indexOf("/",t.indexOf(":")+4);let r=s;for(;r<t.length;r++){const a=t.charCodeAt(r);if(a===37){const n=t.indexOf("?",r),o=t.slice(s,n===-1?void 0:n);return Gt(o.includes("%25")?o.replace(/%25/g,"%2525"):o)}else if(a===63)break}return t.slice(s,r)},zt=e=>{const t=xt(e);return t.length>1&&t.at(-1)==="/"?t.slice(0,-1):t},he=(e,t,...s)=>(s.length&&(t=he(t,...s)),`${(e==null?void 0:e[0])==="/"?"":"/"}${e}${t==="/"?"":`${(e==null?void 0:e.at(-1))==="/"?"":"/"}${(t==null?void 0:t[0])==="/"?t.slice(1):t}`}`),bt=e=>{if(e.charCodeAt(e.length-1)!==63||!e.includes(":"))return null;const t=e.split("/"),s=[];let r="";return t.forEach(a=>{if(a!==""&&!/\:/.test(a))r+="/"+a;else if(/\:/.test(a))if(/\?/.test(a)){s.length===0&&r===""?s.push("/"):s.push(r);const n=a.replace("?","");r+="/"+n,s.push(r)}else r+="/"+a}),s.filter((a,n,o)=>o.indexOf(a)===n)},Ve=e=>/[%+]/.test(e)?(e.indexOf("+")!==-1&&(e=e.replace(/\+/g," ")),e.indexOf("%")!==-1?ze(e,Qe):e):e,vt=(e,t,s)=>{let r;if(!s&&t&&!/[%+]/.test(t)){let o=e.indexOf("?",8);if(o===-1)return;for(e.startsWith(t,o+1)||(o=e.indexOf(`&${t}`,o+1));o!==-1;){const l=e.charCodeAt(o+t.length+1);if(l===61){const i=o+t.length+2,c=e.indexOf("&",i);return Ve(e.slice(i,c===-1?void 0:c))}else if(l==38||isNaN(l))return"";o=e.indexOf(`&${t}`,o+1)}if(r=/[%+]/.test(e),!r)return}const a={};r??(r=/[%+]/.test(e));let n=e.indexOf("?",8);for(;n!==-1;){const o=e.indexOf("&",n+1);let l=e.indexOf("=",n);l>o&&o!==-1&&(l=-1);let i=e.slice(n+1,l===-1?o===-1?void 0:o:l);if(r&&(i=Ve(i)),n=o,i==="")continue;let c;l===-1?c="":(c=e.slice(l+1,o===-1?void 0:o),r&&(c=Ve(c))),s?(a[i]&&Array.isArray(a[i])||(a[i]=[]),a[i].push(c)):a[i]??(a[i]=c)}return t?a[t]:a},Yt=vt,Vt=(e,t)=>vt(e,t,!0),Qe=decodeURIComponent,at=e=>ze(e,Qe),we,H,ee,ft,yt,Ze,te,it,ht=(it=class{constructor(e,t="/",s=[[]]){T(this,ee);E(this,"raw");T(this,we);T(this,H);E(this,"routeIndex",0);E(this,"path");E(this,"bodyCache",{});T(this,te,e=>{const{bodyCache:t,raw:s}=this,r=t[e];if(r)return r;const a=Object.keys(t)[0];return a?t[a].then(n=>(a==="json"&&(n=JSON.stringify(n)),new Response(n)[e]())):t[e]=s[e]()});this.raw=e,this.path=t,w(this,H,s),w(this,we,{})}param(e){return e?D(this,ee,ft).call(this,e):D(this,ee,yt).call(this)}query(e){return Yt(this.url,e)}queries(e){return Vt(this.url,e)}header(e){if(e)return this.raw.headers.get(e)??void 0;const t={};return this.raw.headers.forEach((s,r)=>{t[r]=s}),t}async parseBody(e){var t;return(t=this.bodyCache).parsedBody??(t.parsedBody=await Ot(this,e))}json(){return x(this,te).call(this,"text").then(e=>JSON.parse(e))}text(){return x(this,te).call(this,"text")}arrayBuffer(){return x(this,te).call(this,"arrayBuffer")}blob(){return x(this,te).call(this,"blob")}formData(){return x(this,te).call(this,"formData")}addValidatedData(e,t){x(this,we)[e]=t}valid(e){return x(this,we)[e]}get url(){return this.raw.url}get method(){return this.raw.method}get[Mt](){return x(this,H)}get matchedRoutes(){return x(this,H)[0].map(([[,e]])=>e)}get routePath(){return x(this,H)[0].map(([[,e]])=>e)[this.routeIndex].path}},we=new WeakMap,H=new WeakMap,ee=new WeakSet,ft=function(e){const t=x(this,H)[0][this.routeIndex][1][e],s=D(this,ee,Ze).call(this,t);return s&&/\%/.test(s)?at(s):s},yt=function(){const e={},t=Object.keys(x(this,H)[0][this.routeIndex][1]);for(const s of t){const r=D(this,ee,Ze).call(this,x(this,H)[0][this.routeIndex][1][s]);r!==void 0&&(e[s]=/\%/.test(r)?at(r):r)}return e},Ze=function(e){return x(this,H)[1]?x(this,H)[1][e]:e},te=new WeakMap,it),Xt={Stringify:1},wt=async(e,t,s,r,a)=>{typeof e=="object"&&!(e instanceof String)&&(e instanceof Promise||(e=e.toString()),e instanceof Promise&&(e=await e));const n=e.callbacks;return n!=null&&n.length?(a?a[0]+=e:a=[e],Promise.all(n.map(l=>l({phase:t,buffer:a,context:r}))).then(l=>Promise.all(l.filter(Boolean).map(i=>wt(i,t,!1,r,a))).then(()=>a[0]))):Promise.resolve(e)},Jt="text/plain; charset=UTF-8",Xe=(e,t)=>({"Content-Type":e,...t}),je,Le,J,Ee,K,F,Be,_e,Te,ce,Ne,Me,se,fe,dt,Kt=(dt=class{constructor(e,t){T(this,se);T(this,je);T(this,Le);E(this,"env",{});T(this,J);E(this,"finalized",!1);E(this,"error");T(this,Ee);T(this,K);T(this,F);T(this,Be);T(this,_e);T(this,Te);T(this,ce);T(this,Ne);T(this,Me);E(this,"render",(...e)=>(x(this,_e)??w(this,_e,t=>this.html(t)),x(this,_e).call(this,...e)));E(this,"setLayout",e=>w(this,Be,e));E(this,"getLayout",()=>x(this,Be));E(this,"setRenderer",e=>{w(this,_e,e)});E(this,"header",(e,t,s)=>{this.finalized&&w(this,F,new Response(x(this,F).body,x(this,F)));const r=x(this,F)?x(this,F).headers:x(this,ce)??w(this,ce,new Headers);t===void 0?r.delete(e):s!=null&&s.append?r.append(e,t):r.set(e,t)});E(this,"status",e=>{w(this,Ee,e)});E(this,"set",(e,t)=>{x(this,J)??w(this,J,new Map),x(this,J).set(e,t)});E(this,"get",e=>x(this,J)?x(this,J).get(e):void 0);E(this,"newResponse",(...e)=>D(this,se,fe).call(this,...e));E(this,"body",(e,t,s)=>D(this,se,fe).call(this,e,t,s));E(this,"text",(e,t,s)=>!x(this,ce)&&!x(this,Ee)&&!t&&!s&&!this.finalized?new Response(e):D(this,se,fe).call(this,e,t,Xe(Jt,s)));E(this,"json",(e,t,s)=>D(this,se,fe).call(this,JSON.stringify(e),t,Xe("application/json",s)));E(this,"html",(e,t,s)=>{const r=a=>D(this,se,fe).call(this,a,t,Xe("text/html; charset=UTF-8",s));return typeof e=="object"?wt(e,Xt.Stringify,!1,{}).then(r):r(e)});E(this,"redirect",(e,t)=>{const s=String(e);return this.header("Location",/[^\x00-\xFF]/.test(s)?encodeURI(s):s),this.newResponse(null,t??302)});E(this,"notFound",()=>(x(this,Te)??w(this,Te,()=>new Response),x(this,Te).call(this,this)));w(this,je,e),t&&(w(this,K,t.executionCtx),this.env=t.env,w(this,Te,t.notFoundHandler),w(this,Me,t.path),w(this,Ne,t.matchResult))}get req(){return x(this,Le)??w(this,Le,new ht(x(this,je),x(this,Me),x(this,Ne))),x(this,Le)}get event(){if(x(this,K)&&"respondWith"in x(this,K))return x(this,K);throw Error("This context has no FetchEvent")}get executionCtx(){if(x(this,K))return x(this,K);throw Error("This context has no ExecutionContext")}get res(){return x(this,F)||w(this,F,new Response(null,{headers:x(this,ce)??w(this,ce,new Headers)}))}set res(e){if(x(this,F)&&e){e=new Response(e.body,e);for(const[t,s]of x(this,F).headers.entries())if(t!=="content-type")if(t==="set-cookie"){const r=x(this,F).headers.getSetCookie();e.headers.delete("set-cookie");for(const a of r)e.headers.append("set-cookie",a)}else e.headers.set(t,s)}w(this,F,e),this.finalized=!0}get var(){return x(this,J)?Object.fromEntries(x(this,J)):{}}},je=new WeakMap,Le=new WeakMap,J=new WeakMap,Ee=new WeakMap,K=new WeakMap,F=new WeakMap,Be=new WeakMap,_e=new WeakMap,Te=new WeakMap,ce=new WeakMap,Ne=new WeakMap,Me=new WeakMap,se=new WeakSet,fe=function(e,t,s){const r=x(this,F)?new Headers(x(this,F).headers):x(this,ce)??new Headers;if(typeof t=="object"&&"headers"in t){const n=t.headers instanceof Headers?t.headers:new Headers(t.headers);for(const[o,l]of n)o.toLowerCase()==="set-cookie"?r.append(o,l):r.set(o,l)}if(s)for(const[n,o]of Object.entries(s))if(typeof o=="string")r.set(n,o);else{r.delete(n);for(const l of o)r.append(n,l)}const a=typeof t=="number"?t:(t==null?void 0:t.status)??x(this,Ee);return new Response(e,{status:a,headers:r})},dt),M="ALL",Zt="all",Qt=["get","post","put","delete","options","patch"],Et="Can not add a route since the matcher is already built.",_t=class extends Error{},es="__COMPOSED_HANDLER",ts=e=>e.text("404 Not Found",404),nt=(e,t)=>{if("getResponse"in e){const s=e.getResponse();return t.newResponse(s.body,s)}return console.error(e),t.text("Internal Server Error",500)},W,O,Tt,G,ie,Fe,$e,Ie,ss=(Ie=class{constructor(t={}){T(this,O);E(this,"get");E(this,"post");E(this,"put");E(this,"delete");E(this,"options");E(this,"patch");E(this,"all");E(this,"on");E(this,"use");E(this,"router");E(this,"getPath");E(this,"_basePath","/");T(this,W,"/");E(this,"routes",[]);T(this,G,ts);E(this,"errorHandler",nt);E(this,"onError",t=>(this.errorHandler=t,this));E(this,"notFound",t=>(w(this,G,t),this));E(this,"fetch",(t,...s)=>D(this,O,$e).call(this,t,s[1],s[0],t.method));E(this,"request",(t,s,r,a)=>t instanceof Request?this.fetch(s?new Request(t,s):t,r,a):(t=t.toString(),this.fetch(new Request(/^https?:\/\//.test(t)?t:`http://localhost${he("/",t)}`,s),r,a)));E(this,"fire",()=>{addEventListener("fetch",t=>{t.respondWith(D(this,O,$e).call(this,t.request,t,void 0,t.request.method))})});[...Qt,Zt].forEach(n=>{this[n]=(o,...l)=>(typeof o=="string"?w(this,W,o):D(this,O,ie).call(this,n,x(this,W),o),l.forEach(i=>{D(this,O,ie).call(this,n,x(this,W),i)}),this)}),this.on=(n,o,...l)=>{for(const i of[o].flat()){w(this,W,i);for(const c of[n].flat())l.map(p=>{D(this,O,ie).call(this,c.toUpperCase(),x(this,W),p)})}return this},this.use=(n,...o)=>(typeof n=="string"?w(this,W,n):(w(this,W,"*"),o.unshift(n)),o.forEach(l=>{D(this,O,ie).call(this,M,x(this,W),l)}),this);const{strict:r,...a}=t;Object.assign(this,a),this.getPath=r??!0?t.getPath??xt:zt}route(t,s){const r=this.basePath(t);return s.routes.map(a=>{var o;let n;s.errorHandler===nt?n=a.handler:(n=async(l,i)=>(await rt([],s.errorHandler)(l,()=>a.handler(l,i))).res,n[es]=a.handler),D(o=r,O,ie).call(o,a.method,a.path,n)}),this}basePath(t){const s=D(this,O,Tt).call(this);return s._basePath=he(this._basePath,t),s}mount(t,s,r){let a,n;r&&(typeof r=="function"?n=r:(n=r.optionHandler,r.replaceRequest===!1?a=i=>i:a=r.replaceRequest));const o=n?i=>{const c=n(i);return Array.isArray(c)?c:[c]}:i=>{let c;try{c=i.executionCtx}catch{}return[i.env,c]};a||(a=(()=>{const i=he(this._basePath,t),c=i==="/"?0:i.length;return p=>{const u=new URL(p.url);return u.pathname=u.pathname.slice(c)||"/",new Request(u,p)}})());const l=async(i,c)=>{const p=await s(a(i.req.raw),...o(i));if(p)return p;await c()};return D(this,O,ie).call(this,M,he(t,"*"),l),this}},W=new WeakMap,O=new WeakSet,Tt=function(){const t=new Ie({router:this.router,getPath:this.getPath});return t.errorHandler=this.errorHandler,w(t,G,x(this,G)),t.routes=this.routes,t},G=new WeakMap,ie=function(t,s,r){t=t.toUpperCase(),s=he(this._basePath,s);const a={basePath:this._basePath,path:s,method:t,handler:r};this.router.add(t,s,[r,a]),this.routes.push(a)},Fe=function(t,s){if(t instanceof Error)return this.errorHandler(t,s);throw t},$e=function(t,s,r,a){if(a==="HEAD")return(async()=>new Response(null,await D(this,O,$e).call(this,t,s,r,"GET")))();const n=this.getPath(t,{env:r}),o=this.router.match(a,n),l=new Kt(t,{path:n,matchResult:o,env:r,executionCtx:s,notFoundHandler:x(this,G)});if(o[0].length===1){let c;try{c=o[0][0][0][0](l,async()=>{l.res=await x(this,G).call(this,l)})}catch(p){return D(this,O,Fe).call(this,p,l)}return c instanceof Promise?c.then(p=>p||(l.finalized?l.res:x(this,G).call(this,l))).catch(p=>D(this,O,Fe).call(this,p,l)):c??x(this,G).call(this,l)}const i=rt(o[0],this.errorHandler,x(this,G));return(async()=>{try{const c=await i(l);if(!c.finalized)throw new Error("Context is not finalized. Did you forget to return a Response object or `await next()`?");return c.res}catch(c){return D(this,O,Fe).call(this,c,l)}})()},Ie),It=[];function rs(e,t){const s=this.buildAllMatchers(),r=((a,n)=>{const o=s[a]||s[M],l=o[2][n];if(l)return l;const i=n.match(o[0]);if(!i)return[[],It];const c=i.indexOf("",1);return[o[1][c],i]});return this.match=r,r(e,t)}var He="[^/]+",Ce=".*",Re="(?:|/.*)",ye=Symbol(),as=new Set(".\\+*[^]$()");function ns(e,t){return e.length===1?t.length===1?e<t?-1:1:-1:t.length===1||e===Ce||e===Re?1:t===Ce||t===Re?-1:e===He?1:t===He?-1:e.length===t.length?e<t?-1:1:t.length-e.length}var pe,ue,z,xe,os=(xe=class{constructor(){T(this,pe);T(this,ue);T(this,z,Object.create(null))}insert(t,s,r,a,n){if(t.length===0){if(x(this,pe)!==void 0)throw ye;if(n)return;w(this,pe,s);return}const[o,...l]=t,i=o==="*"?l.length===0?["","",Ce]:["","",He]:o==="/*"?["","",Re]:o.match(/^\:([^\{\}]+)(?:\{(.+)\})?$/);let c;if(i){const p=i[1];let u=i[2]||He;if(p&&i[2]&&(u===".*"||(u=u.replace(/^\((?!\?:)(?=[^)]+\)$)/,"(?:"),/\((?!\?:)/.test(u))))throw ye;if(c=x(this,z)[u],!c){if(Object.keys(x(this,z)).some(m=>m!==Ce&&m!==Re))throw ye;if(n)return;c=x(this,z)[u]=new xe,p!==""&&w(c,ue,a.varIndex++)}!n&&p!==""&&r.push([p,x(c,ue)])}else if(c=x(this,z)[o],!c){if(Object.keys(x(this,z)).some(p=>p.length>1&&p!==Ce&&p!==Re))throw ye;if(n)return;c=x(this,z)[o]=new xe}c.insert(l,s,r,a,n)}buildRegExpStr(){const s=Object.keys(x(this,z)).sort(ns).map(r=>{const a=x(this,z)[r];return(typeof x(a,ue)=="number"?`(${r})@${x(a,ue)}`:as.has(r)?`\\${r}`:r)+a.buildRegExpStr()});return typeof x(this,pe)=="number"&&s.unshift(`#${x(this,pe)}`),s.length===0?"":s.length===1?s[0]:"(?:"+s.join("|")+")"}},pe=new WeakMap,ue=new WeakMap,z=new WeakMap,xe),We,Oe,ct,ls=(ct=class{constructor(){T(this,We,{varIndex:0});T(this,Oe,new os)}insert(e,t,s){const r=[],a=[];for(let o=0;;){let l=!1;if(e=e.replace(/\{[^}]+\}/g,i=>{const c=`@\\${o}`;return a[o]=[c,i],o++,l=!0,c}),!l)break}const n=e.match(/(?::[^\/]+)|(?:\/\*$)|./g)||[];for(let o=a.length-1;o>=0;o--){const[l]=a[o];for(let i=n.length-1;i>=0;i--)if(n[i].indexOf(l)!==-1){n[i]=n[i].replace(l,a[o][1]);break}}return x(this,Oe).insert(n,t,r,x(this,We),s),r}buildRegExp(){let e=x(this,Oe).buildRegExpStr();if(e==="")return[/^$/,[],[]];let t=0;const s=[],r=[];return e=e.replace(/#(\d+)|@(\d+)|\.\*\$/g,(a,n,o)=>n!==void 0?(s[++t]=Number(n),"$()"):(o!==void 0&&(r[Number(o)]=++t),"")),[new RegExp(`^${e}`),s,r]}},We=new WeakMap,Oe=new WeakMap,ct),is=[/^$/,[],Object.create(null)],qe=Object.create(null);function kt(e){return qe[e]??(qe[e]=new RegExp(e==="*"?"":`^${e.replace(/\/\*$|([.\\+*[^\]$()])/g,(t,s)=>s?`\\${s}`:"(?:|/.*)")}$`))}function ds(){qe=Object.create(null)}function cs(e){var c;const t=new ls,s=[];if(e.length===0)return is;const r=e.map(p=>[!/\*|\/:/.test(p[0]),...p]).sort(([p,u],[m,g])=>p?1:m?-1:u.length-g.length),a=Object.create(null);for(let p=0,u=-1,m=r.length;p<m;p++){const[g,b,h]=r[p];g?a[b]=[h.map(([y])=>[y,Object.create(null)]),It]:u++;let v;try{v=t.insert(b,u,g)}catch(y){throw y===ye?new _t(b):y}g||(s[u]=h.map(([y,f])=>{const I=Object.create(null);for(f-=1;f>=0;f--){const[k,S]=v[f];I[k]=S}return[y,I]}))}const[n,o,l]=t.buildRegExp();for(let p=0,u=s.length;p<u;p++)for(let m=0,g=s[p].length;m<g;m++){const b=(c=s[p][m])==null?void 0:c[1];if(!b)continue;const h=Object.keys(b);for(let v=0,y=h.length;v<y;v++)b[h[v]]=l[b[h[v]]]}const i=[];for(const p in o)i[p]=s[o[p]];return[n,i,a]}function ve(e,t){if(e){for(const s of Object.keys(e).sort((r,a)=>a.length-r.length))if(kt(s).test(t))return[...e[s]]}}var re,ae,Ge,St,pt,ps=(pt=class{constructor(){T(this,Ge);E(this,"name","RegExpRouter");T(this,re);T(this,ae);E(this,"match",rs);w(this,re,{[M]:Object.create(null)}),w(this,ae,{[M]:Object.create(null)})}add(e,t,s){var l;const r=x(this,re),a=x(this,ae);if(!r||!a)throw new Error(Et);r[e]||[r,a].forEach(i=>{i[e]=Object.create(null),Object.keys(i[M]).forEach(c=>{i[e][c]=[...i[M][c]]})}),t==="/*"&&(t="*");const n=(t.match(/\/:/g)||[]).length;if(/\*$/.test(t)){const i=kt(t);e===M?Object.keys(r).forEach(c=>{var p;(p=r[c])[t]||(p[t]=ve(r[c],t)||ve(r[M],t)||[])}):(l=r[e])[t]||(l[t]=ve(r[e],t)||ve(r[M],t)||[]),Object.keys(r).forEach(c=>{(e===M||e===c)&&Object.keys(r[c]).forEach(p=>{i.test(p)&&r[c][p].push([s,n])})}),Object.keys(a).forEach(c=>{(e===M||e===c)&&Object.keys(a[c]).forEach(p=>i.test(p)&&a[c][p].push([s,n]))});return}const o=bt(t)||[t];for(let i=0,c=o.length;i<c;i++){const p=o[i];Object.keys(a).forEach(u=>{var m;(e===M||e===u)&&((m=a[u])[p]||(m[p]=[...ve(r[u],p)||ve(r[M],p)||[]]),a[u][p].push([s,n-c+i+1]))})}}buildAllMatchers(){const e=Object.create(null);return Object.keys(x(this,ae)).concat(Object.keys(x(this,re))).forEach(t=>{e[t]||(e[t]=D(this,Ge,St).call(this,t))}),w(this,re,w(this,ae,void 0)),ds(),e}},re=new WeakMap,ae=new WeakMap,Ge=new WeakSet,St=function(e){const t=[];let s=e===M;return[x(this,re),x(this,ae)].forEach(r=>{const a=r[e]?Object.keys(r[e]).map(n=>[n,r[e][n]]):[];a.length!==0?(s||(s=!0),t.push(...a)):e!==M&&t.push(...Object.keys(r[M]).map(n=>[n,r[M][n]]))}),s?cs(t):null},pt),ne,Z,ut,us=(ut=class{constructor(e){E(this,"name","SmartRouter");T(this,ne,[]);T(this,Z,[]);w(this,ne,e.routers)}add(e,t,s){if(!x(this,Z))throw new Error(Et);x(this,Z).push([e,t,s])}match(e,t){if(!x(this,Z))throw new Error("Fatal error");const s=x(this,ne),r=x(this,Z),a=s.length;let n=0,o;for(;n<a;n++){const l=s[n];try{for(let i=0,c=r.length;i<c;i++)l.add(...r[i]);o=l.match(e,t)}catch(i){if(i instanceof _t)continue;throw i}this.match=l.match.bind(l),w(this,ne,[l]),w(this,Z,void 0);break}if(n===a)throw new Error("Fatal error");return this.name=`SmartRouter + ${this.activeRouter.name}`,o}get activeRouter(){if(x(this,Z)||x(this,ne).length!==1)throw new Error("No active router has been determined yet.");return x(this,ne)[0]}},ne=new WeakMap,Z=new WeakMap,ut),De=Object.create(null),oe,U,me,ke,A,Q,de,Se,ms=(Se=class{constructor(t,s,r){T(this,Q);T(this,oe);T(this,U);T(this,me);T(this,ke,0);T(this,A,De);if(w(this,U,r||Object.create(null)),w(this,oe,[]),t&&s){const a=Object.create(null);a[t]={handler:s,possibleKeys:[],score:0},w(this,oe,[a])}w(this,me,[])}insert(t,s,r){w(this,ke,++st(this,ke)._);let a=this;const n=$t(s),o=[];for(let l=0,i=n.length;l<i;l++){const c=n[l],p=n[l+1],u=Wt(c,p),m=Array.isArray(u)?u[0]:c;if(m in x(a,U)){a=x(a,U)[m],u&&o.push(u[1]);continue}x(a,U)[m]=new Se,u&&(x(a,me).push(u),o.push(u[1])),a=x(a,U)[m]}return x(a,oe).push({[t]:{handler:r,possibleKeys:o.filter((l,i,c)=>c.indexOf(l)===i),score:x(this,ke)}}),a}search(t,s){var i;const r=[];w(this,A,De);let n=[this];const o=gt(s),l=[];for(let c=0,p=o.length;c<p;c++){const u=o[c],m=c===p-1,g=[];for(let b=0,h=n.length;b<h;b++){const v=n[b],y=x(v,U)[u];y&&(w(y,A,x(v,A)),m?(x(y,U)["*"]&&r.push(...D(this,Q,de).call(this,x(y,U)["*"],t,x(v,A))),r.push(...D(this,Q,de).call(this,y,t,x(v,A)))):g.push(y));for(let f=0,I=x(v,me).length;f<I;f++){const k=x(v,me)[f],S=x(v,A)===De?{}:{...x(v,A)};if(k==="*"){const N=x(v,U)["*"];N&&(r.push(...D(this,Q,de).call(this,N,t,x(v,A))),w(N,A,S),g.push(N));continue}const[C,j,B]=k;if(!u&&!(B instanceof RegExp))continue;const L=x(v,U)[C],le=o.slice(c).join("/");if(B instanceof RegExp){const N=B.exec(le);if(N){if(S[j]=N[0],r.push(...D(this,Q,de).call(this,L,t,x(v,A),S)),Object.keys(x(L,U)).length){w(L,A,S);const V=((i=N[0].match(/\//))==null?void 0:i.length)??0;(l[V]||(l[V]=[])).push(L)}continue}}(B===!0||B.test(u))&&(S[j]=u,m?(r.push(...D(this,Q,de).call(this,L,t,S,x(v,A))),x(L,U)["*"]&&r.push(...D(this,Q,de).call(this,x(L,U)["*"],t,S,x(v,A)))):(w(L,A,S),g.push(L)))}}n=g.concat(l.shift()??[])}return r.length>1&&r.sort((c,p)=>c.score-p.score),[r.map(({handler:c,params:p})=>[c,p])]}},oe=new WeakMap,U=new WeakMap,me=new WeakMap,ke=new WeakMap,A=new WeakMap,Q=new WeakSet,de=function(t,s,r,a){const n=[];for(let o=0,l=x(t,oe).length;o<l;o++){const i=x(t,oe)[o],c=i[s]||i[M],p={};if(c!==void 0&&(c.params=Object.create(null),n.push(c),r!==De||a&&a!==De))for(let u=0,m=c.possibleKeys.length;u<m;u++){const g=c.possibleKeys[u],b=p[c.score];c.params[g]=a!=null&&a[g]&&!b?a[g]:r[g]??(a==null?void 0:a[g]),p[c.score]=!0}}return n},Se),ge,mt,gs=(mt=class{constructor(){E(this,"name","TrieRouter");T(this,ge);w(this,ge,new ms)}add(e,t,s){const r=bt(t);if(r){for(let a=0,n=r.length;a<n;a++)x(this,ge).insert(e,r[a],s);return}x(this,ge).insert(e,t,s)}match(e,t){return x(this,ge).search(e,t)}},ge=new WeakMap,mt),et=class extends ss{constructor(e={}){super(e),this.router=e.router??new us({routers:[new ps,new gs]})}},xs=e=>{const s={...{origin:"*",allowMethods:["GET","HEAD","PUT","POST","DELETE","PATCH"],allowHeaders:[],exposeHeaders:[]},...e},r=(n=>typeof n=="string"?n==="*"?()=>n:o=>n===o?o:null:typeof n=="function"?n:o=>n.includes(o)?o:null)(s.origin),a=(n=>typeof n=="function"?n:Array.isArray(n)?()=>n:()=>[])(s.allowMethods);return async function(o,l){var p;function i(u,m){o.res.headers.set(u,m)}const c=await r(o.req.header("origin")||"",o);if(c&&i("Access-Control-Allow-Origin",c),s.credentials&&i("Access-Control-Allow-Credentials","true"),(p=s.exposeHeaders)!=null&&p.length&&i("Access-Control-Expose-Headers",s.exposeHeaders.join(",")),o.req.method==="OPTIONS"){s.origin!=="*"&&i("Vary","Origin"),s.maxAge!=null&&i("Access-Control-Max-Age",s.maxAge.toString());const u=await a(o.req.header("origin")||"",o);u.length&&i("Access-Control-Allow-Methods",u.join(","));let m=s.allowHeaders;if(!(m!=null&&m.length)){const g=o.req.header("Access-Control-Request-Headers");g&&(m=g.split(/\s*,\s*/))}return m!=null&&m.length&&(i("Access-Control-Allow-Headers",m.join(",")),o.res.headers.append("Vary","Access-Control-Request-Headers")),o.res.headers.delete("Content-Length"),o.res.headers.delete("Content-Type"),new Response(null,{headers:o.res.headers,status:204,statusText:"No Content"})}await l(),s.origin!=="*"&&o.header("Vary","Origin",{append:!0})}},bs=/^[\w!#$%&'*.^`|~+-]+$/,vs=/^[ !#-:<-[\]-~]*$/,hs=(e,t)=>{if(e.indexOf(t)===-1)return{};const s=e.trim().split(";"),r={};for(let a of s){a=a.trim();const n=a.indexOf("=");if(n===-1)continue;const o=a.substring(0,n).trim();if(t!==o||!bs.test(o))continue;let l=a.substring(n+1).trim();if(l.startsWith('"')&&l.endsWith('"')&&(l=l.slice(1,-1)),vs.test(l)){r[o]=l.indexOf("%")!==-1?ze(l,Qe):l;break}}return r},X=(e,t,s)=>{const r=e.req.raw.headers.get("Cookie");{if(!r)return;let a=t;return hs(r,a)[a]}},fs=/^\s*(?:text\/(?!event-stream(?:[;\s]|$))[^;\s]+|application\/(?:javascript|json|xml|xml-dtd|ecmascript|dart|postscript|rtf|tar|toml|vnd\.dart|vnd\.ms-fontobject|vnd\.ms-opentype|wasm|x-httpd-php|x-javascript|x-ns-proxy-autoconfig|x-sh|x-tar|x-virtualbox-hdd|x-virtualbox-ova|x-virtualbox-ovf|x-virtualbox-vbox|x-virtualbox-vdi|x-virtualbox-vhd|x-virtualbox-vmdk|x-www-form-urlencoded)|font\/(?:otf|ttf)|image\/(?:bmp|vnd\.adobe\.photoshop|vnd\.microsoft\.icon|vnd\.ms-dds|x-icon|x-ms-bmp)|message\/rfc822|model\/gltf-binary|x-shader\/x-fragment|x-shader\/x-vertex|[^;\s]+?\+(?:json|text|xml|yaml))(?:[;\s]|$)/i,ot=(e,t=ws)=>{const s=/\.([a-zA-Z0-9]+?)$/,r=e.match(s);if(!r)return;let a=t[r[1]];return a&&a.startsWith("text")&&(a+="; charset=utf-8"),a},ys={aac:"audio/aac",avi:"video/x-msvideo",avif:"image/avif",av1:"video/av1",bin:"application/octet-stream",bmp:"image/bmp",css:"text/css",csv:"text/csv",eot:"application/vnd.ms-fontobject",epub:"application/epub+zip",gif:"image/gif",gz:"application/gzip",htm:"text/html",html:"text/html",ico:"image/x-icon",ics:"text/calendar",jpeg:"image/jpeg",jpg:"image/jpeg",js:"text/javascript",json:"application/json",jsonld:"application/ld+json",map:"application/json",mid:"audio/x-midi",midi:"audio/x-midi",mjs:"text/javascript",mp3:"audio/mpeg",mp4:"video/mp4",mpeg:"video/mpeg",oga:"audio/ogg",ogv:"video/ogg",ogx:"application/ogg",opus:"audio/opus",otf:"font/otf",pdf:"application/pdf",png:"image/png",rtf:"application/rtf",svg:"image/svg+xml",tif:"image/tiff",tiff:"image/tiff",ts:"video/mp2t",ttf:"font/ttf",txt:"text/plain",wasm:"application/wasm",webm:"video/webm",weba:"audio/webm",webmanifest:"application/manifest+json",webp:"image/webp",woff:"font/woff",woff2:"font/woff2",xhtml:"application/xhtml+xml",xml:"application/xml",zip:"application/zip","3gp":"video/3gpp","3g2":"video/3gpp2",gltf:"model/gltf+json",glb:"model/gltf-binary"},ws=ys,Es=(...e)=>{let t=e.filter(a=>a!=="").join("/");t=t.replace(new RegExp("(?<=\\/)\\/+","g"),"");const s=t.split("/"),r=[];for(const a of s)a===".."&&r.length>0&&r.at(-1)!==".."?r.pop():a!=="."&&r.push(a);return r.join("/")||"."},Dt={br:".br",zstd:".zst",gzip:".gz"},_s=Object.keys(Dt),Ts="index.html",Is=e=>{const t=e.root??"./",s=e.path,r=e.join??Es;return async(a,n)=>{var p,u,m,g;if(a.finalized)return n();let o;if(e.path)o=e.path;else try{if(o=decodeURIComponent(a.req.path),/(?:^|[\/\\])\.\.(?:$|[\/\\])/.test(o))throw new Error}catch{return await((p=e.onNotFound)==null?void 0:p.call(e,a.req.path,a)),n()}let l=r(t,!s&&e.rewriteRequestPath?e.rewriteRequestPath(o):o);e.isDir&&await e.isDir(l)&&(l=r(l,Ts));const i=e.getContent;let c=await i(l,a);if(c instanceof Response)return a.newResponse(c.body,c);if(c){const b=e.mimes&&ot(l,e.mimes)||ot(l);if(a.header("Content-Type",b||"application/octet-stream"),e.precompressed&&(!b||fs.test(b))){const h=new Set((u=a.req.header("Accept-Encoding"))==null?void 0:u.split(",").map(v=>v.trim()));for(const v of _s){if(!h.has(v))continue;const y=await i(l+Dt[v],a);if(y){c=y,a.header("Content-Encoding",v),a.header("Vary","Accept-Encoding",{append:!0});break}}}return await((m=e.onFound)==null?void 0:m.call(e,l,a)),a.body(c)}await((g=e.onNotFound)==null?void 0:g.call(e,l,a)),await n()}},ks=async(e,t)=>{let s;t&&t.manifest?typeof t.manifest=="string"?s=JSON.parse(t.manifest):s=t.manifest:typeof __STATIC_CONTENT_MANIFEST=="string"?s=JSON.parse(__STATIC_CONTENT_MANIFEST):s=__STATIC_CONTENT_MANIFEST;let r;t&&t.namespace?r=t.namespace:r=__STATIC_CONTENT;const a=s[e]||e;if(!a)return null;const n=await r.get(a,{type:"stream"});return n||null},Ss=e=>async function(s,r){return Is({...e,getContent:async n=>ks(n,{manifest:e.manifest,namespace:e.namespace?e.namespace:s.env?s.env.__STATIC_CONTENT:void 0})})(s,r)},Ds=e=>Ss(e);const Cs=`
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -3353,7 +3353,7 @@ var Bt=Object.defineProperty;var tt=e=>{throw TypeError(e)};var Mt=(e,t,s)=>t in
 
 생성된 랜딩페이지: ${b}개 / 한도: ${h}개
 
-더 많은 랜딩페이지를 생성하시려면 상위 플랜으로 업그레이드해주세요.`},403);const v=Math.random().toString(36).substring(2,10),y=Ms(s,r),f=`${e.req.header("origin")||"https://example.com"}/landing/${v}`,I=`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(f)}`,S=await e.env.DB.prepare(`
+더 많은 랜딩페이지를 생성하시려면 상위 플랜으로 업그레이드해주세요.`},403);const v=Math.random().toString(36).substring(2,10),y=Ns(s,r),f=`${e.req.header("origin")||"https://example.com"}/landing/${v}`,I=`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(f)}`,S=await e.env.DB.prepare(`
       INSERT INTO landing_pages (user_id, slug, title, template_type, content_json, html_content, qr_code_url, thumbnail_url, og_title, og_description, folder_id, status)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active')
     `).bind(c.id,v,t,s,JSON.stringify(r),y,I,a||null,n||null,o||null,l||null).run();return await e.env.DB.prepare(`
@@ -3361,7 +3361,7 @@ var Bt=Object.defineProperty;var tt=e=>{throw TypeError(e)};var Mt=(e,t,s)=>t in
       SET landing_pages_created = landing_pages_created + 1, 
           updated_at = CURRENT_TIMESTAMP
       WHERE subscription_id = ?
-    `).bind(m.id).run(),console.log("✅ Landing page created and usage incremented:",b+1,"/",h),e.json({success:!0,message:"랜딩페이지가 생성되었습니다.",slug:v,url:`/landing/${v}`,usage:{current:b+1,limit:h},qrCodeUrl:I,id:S.meta.last_row_id})}catch(t){return console.error("Landing page creation error:",t),e.json({success:!1,error:"랜딩페이지 생성 실패: "+error.message},500)}});d.get("/api/landing/my-pages",async e=>{try{const t=e.req.query("userId"),s=e.req.query("folderId");let r="SELECT id, slug, title, template_type, view_count, status, folder_id, created_at FROM landing_pages WHERE user_id = ?",a=[t];s?(r+=" AND folder_id = ?",a.push(s)):(s===null||s==="null")&&(r+=" AND folder_id IS NULL"),r+=" ORDER BY created_at DESC";const{results:n}=await e.env.DB.prepare(r).bind(...a).all();return e.json({success:!0,pages:n})}catch(t){return console.error("목록 조회 실패:",t),e.json({success:!1,error:"목록 조회 실패"},500)}});d.get("/api/landing/folders",async e=>{try{const t=e.req.query("userId"),s="SELECT id, name, created_at FROM landing_folders WHERE user_id = ? ORDER BY created_at DESC",{results:r}=await e.env.DB.prepare(s).bind(t).all(),a=await Promise.all(r.map(async l=>{const c=await e.env.DB.prepare("SELECT COUNT(*) as count FROM landing_pages WHERE folder_id = ?").bind(l.id).first();return{...l,page_count:c.count||0}})),o=await e.env.DB.prepare("SELECT COUNT(*) as count FROM landing_pages WHERE user_id = ?").bind(t).first();return e.json({success:!0,folders:a,totalPages:o.count||0})}catch(t){return console.error("폴더 목록 조회 실패:",t),e.json({success:!1,error:"폴더 목록 조회 실패"},500)}});d.post("/api/landing/folders",async e=>{try{const{userId:t,name:s,description:r}=await e.req.json();if(!s||!s.trim())return e.json({success:!1,error:"폴더 이름을 입력하세요."},400);const n=await e.env.DB.prepare("INSERT INTO landing_folders (user_id, name, description) VALUES (?, ?, ?)").bind(t,s.trim(),r||null).run();return e.json({success:!0,folderId:n.meta.last_row_id,message:"폴더가 생성되었습니다."})}catch(t){return console.error("폴더 생성 실패:",t),e.json({success:!1,error:"폴더 생성 실패"},500)}});d.put("/api/landing/folders/:id",async e=>{try{const t=e.req.param("id"),{name:s,description:r}=await e.req.json();return!s||!s.trim()?e.json({success:!1,error:"폴더 이름을 입력하세요."},400):(await e.env.DB.prepare("UPDATE landing_folders SET name = ?, description = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?").bind(s.trim(),r||null,t).run(),e.json({success:!0,message:"폴더가 수정되었습니다."}))}catch(t){return console.error("폴더 수정 실패:",t),e.json({success:!1,error:"폴더 수정 실패"},500)}});d.delete("/api/landing/folders/:id",async e=>{try{const t=e.req.param("id"),s=e.req.query("userId");return await e.env.DB.prepare("UPDATE landing_pages SET folder_id = NULL WHERE folder_id = ?").bind(t).run(),await e.env.DB.prepare("DELETE FROM landing_folders WHERE id = ? AND user_id = ?").bind(t,s).run(),e.json({success:!0,message:"폴더가 삭제되었습니다."})}catch(t){return console.error("폴더 삭제 실패:",t),e.json({success:!1,error:"폴더 삭제 실패"},500)}});d.put("/api/landing/move-to-folder",async e=>{try{const{pageId:t,folderId:s}=await e.req.json();return await e.env.DB.prepare("UPDATE landing_pages SET folder_id = ? WHERE id = ?").bind(s,t).run(),e.json({success:!0,message:"폴더로 이동되었습니다."})}catch(t){return console.error("폴더 이동 실패:",t),e.json({success:!1,error:"폴더 이동 실패"},500)}});d.get("/api/landing/:slug",async e=>{try{const t=e.req.param("slug"),r=await e.env.DB.prepare("SELECT * FROM landing_pages WHERE slug = ? AND status = ?").bind(t,"active").first();return r?(await e.env.DB.prepare("UPDATE landing_pages SET view_count = view_count + 1 WHERE slug = ?").bind(t).run(),await e.env.DB.prepare("INSERT INTO landing_page_views (landing_page_id, user_agent, referrer) VALUES (?, ?, ?)").bind(r.id,e.req.header("user-agent")||"",e.req.header("referer")||"").run(),e.json({success:!0,page:r})):e.json({success:!1,error:"페이지를 찾을 수 없습니다."},404)}catch{return e.json({success:!1,error:"페이지 조회 실패"},500)}});d.get("/api/landing/stats/summary",async e=>{try{const t=e.req.header("X-User-Data"),s=t?JSON.parse(t):{id:1},r=await e.env.DB.prepare("SELECT COUNT(*) as count FROM landing_pages WHERE user_id = ?").bind(s.id).first(),a=await e.env.DB.prepare("SELECT SUM(view_count) as total FROM landing_pages WHERE user_id = ?").bind(s.id).first(),n=await e.env.DB.prepare("SELECT id, title, slug, view_count FROM landing_pages WHERE user_id = ? ORDER BY view_count DESC LIMIT 5").bind(s.id).all();return e.json({success:!0,stats:{totalPages:(r==null?void 0:r.count)||0,totalViews:(a==null?void 0:a.total)||0,topPages:n.results||[]}})}catch{return e.json({success:!1,error:"통계 조회 실패"},500)}});d.delete("/api/landing/:id",async e=>{try{const t=e.req.param("id"),s=e.req.query("userId"),r=e.req.header("X-User-Data");let a;if(s)a={id:parseInt(s)};else if(r)a=JSON.parse(r);else return e.json({success:!1,error:"사용자 인증 정보가 없습니다."},401);console.log("Deleting landing page:",{id:t,userId:a.id});const n=await e.env.DB.prepare("DELETE FROM landing_pages WHERE id = ? AND user_id = ?").bind(t,a.id).run();return console.log("Delete result:",n),n.meta.changes===0?e.json({success:!1,error:"삭제할 페이지를 찾을 수 없거나 권한이 없습니다."},404):e.json({success:!0,message:"삭제되었습니다."})}catch(t){return console.error("Landing page delete error:",t),e.json({success:!1,error:t.message||"삭제 실패"},500)}});function Ms(e,t){const s={"academy-intro":Ns,"program-promo":Os,"event-promo":As,"parent-letter":Us,"student-report":Ps,"admission-info":Fs,"academy-stats":$s,"teacher-intro":qs};return(s[e]||s["academy-intro"])(t)}function Ns(e){const{academyName:t,location:s,features:r,specialties:a,contact:n}=e;return`
+    `).bind(m.id).run(),console.log("✅ Landing page created and usage incremented:",b+1,"/",h),e.json({success:!0,message:"랜딩페이지가 생성되었습니다.",slug:v,url:`/landing/${v}`,usage:{current:b+1,limit:h},qrCodeUrl:I,id:S.meta.last_row_id})}catch(t){return console.error("Landing page creation error:",t),e.json({success:!1,error:"랜딩페이지 생성 실패: "+error.message},500)}});d.get("/api/landing/my-pages",async e=>{try{const t=e.req.query("userId"),s=e.req.query("folderId");let r="SELECT id, slug, title, template_type, view_count, status, folder_id, created_at FROM landing_pages WHERE user_id = ?",a=[t];s?(r+=" AND folder_id = ?",a.push(s)):(s===null||s==="null")&&(r+=" AND folder_id IS NULL"),r+=" ORDER BY created_at DESC";const{results:n}=await e.env.DB.prepare(r).bind(...a).all();return e.json({success:!0,pages:n})}catch(t){return console.error("목록 조회 실패:",t),e.json({success:!1,error:"목록 조회 실패"},500)}});d.get("/api/landing/folders",async e=>{try{const t=e.req.query("userId"),s="SELECT id, name, created_at FROM landing_folders WHERE user_id = ? ORDER BY created_at DESC",{results:r}=await e.env.DB.prepare(s).bind(t).all(),a=await Promise.all(r.map(async l=>{const c=await e.env.DB.prepare("SELECT COUNT(*) as count FROM landing_pages WHERE folder_id = ?").bind(l.id).first();return{...l,page_count:c.count||0}})),o=await e.env.DB.prepare("SELECT COUNT(*) as count FROM landing_pages WHERE user_id = ?").bind(t).first();return e.json({success:!0,folders:a,totalPages:o.count||0})}catch(t){return console.error("폴더 목록 조회 실패:",t),e.json({success:!1,error:"폴더 목록 조회 실패"},500)}});d.post("/api/landing/folders",async e=>{try{const{userId:t,name:s,description:r}=await e.req.json();if(!s||!s.trim())return e.json({success:!1,error:"폴더 이름을 입력하세요."},400);const n=await e.env.DB.prepare("INSERT INTO landing_folders (user_id, name, description) VALUES (?, ?, ?)").bind(t,s.trim(),r||null).run();return e.json({success:!0,folderId:n.meta.last_row_id,message:"폴더가 생성되었습니다."})}catch(t){return console.error("폴더 생성 실패:",t),e.json({success:!1,error:"폴더 생성 실패"},500)}});d.put("/api/landing/folders/:id",async e=>{try{const t=e.req.param("id"),{name:s,description:r}=await e.req.json();return!s||!s.trim()?e.json({success:!1,error:"폴더 이름을 입력하세요."},400):(await e.env.DB.prepare("UPDATE landing_folders SET name = ?, description = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?").bind(s.trim(),r||null,t).run(),e.json({success:!0,message:"폴더가 수정되었습니다."}))}catch(t){return console.error("폴더 수정 실패:",t),e.json({success:!1,error:"폴더 수정 실패"},500)}});d.delete("/api/landing/folders/:id",async e=>{try{const t=e.req.param("id"),s=e.req.query("userId");return await e.env.DB.prepare("UPDATE landing_pages SET folder_id = NULL WHERE folder_id = ?").bind(t).run(),await e.env.DB.prepare("DELETE FROM landing_folders WHERE id = ? AND user_id = ?").bind(t,s).run(),e.json({success:!0,message:"폴더가 삭제되었습니다."})}catch(t){return console.error("폴더 삭제 실패:",t),e.json({success:!1,error:"폴더 삭제 실패"},500)}});d.put("/api/landing/move-to-folder",async e=>{try{const{pageId:t,folderId:s}=await e.req.json();return await e.env.DB.prepare("UPDATE landing_pages SET folder_id = ? WHERE id = ?").bind(s,t).run(),e.json({success:!0,message:"폴더로 이동되었습니다."})}catch(t){return console.error("폴더 이동 실패:",t),e.json({success:!1,error:"폴더 이동 실패"},500)}});d.get("/api/landing/:slug",async e=>{try{const t=e.req.param("slug"),r=await e.env.DB.prepare("SELECT * FROM landing_pages WHERE slug = ? AND status = ?").bind(t,"active").first();return r?(await e.env.DB.prepare("UPDATE landing_pages SET view_count = view_count + 1 WHERE slug = ?").bind(t).run(),await e.env.DB.prepare("INSERT INTO landing_page_views (landing_page_id, user_agent, referrer) VALUES (?, ?, ?)").bind(r.id,e.req.header("user-agent")||"",e.req.header("referer")||"").run(),e.json({success:!0,page:r})):e.json({success:!1,error:"페이지를 찾을 수 없습니다."},404)}catch{return e.json({success:!1,error:"페이지 조회 실패"},500)}});d.get("/api/landing/stats/summary",async e=>{try{const t=e.req.header("X-User-Data"),s=t?JSON.parse(t):{id:1},r=await e.env.DB.prepare("SELECT COUNT(*) as count FROM landing_pages WHERE user_id = ?").bind(s.id).first(),a=await e.env.DB.prepare("SELECT SUM(view_count) as total FROM landing_pages WHERE user_id = ?").bind(s.id).first(),n=await e.env.DB.prepare("SELECT id, title, slug, view_count FROM landing_pages WHERE user_id = ? ORDER BY view_count DESC LIMIT 5").bind(s.id).all();return e.json({success:!0,stats:{totalPages:(r==null?void 0:r.count)||0,totalViews:(a==null?void 0:a.total)||0,topPages:n.results||[]}})}catch{return e.json({success:!1,error:"통계 조회 실패"},500)}});d.delete("/api/landing/:id",async e=>{try{const t=e.req.param("id"),s=e.req.query("userId"),r=e.req.header("X-User-Data");let a;if(s)a={id:parseInt(s)};else if(r)a=JSON.parse(r);else return e.json({success:!1,error:"사용자 인증 정보가 없습니다."},401);console.log("Deleting landing page:",{id:t,userId:a.id});const n=await e.env.DB.prepare("DELETE FROM landing_pages WHERE id = ? AND user_id = ?").bind(t,a.id).run();return console.log("Delete result:",n),n.meta.changes===0?e.json({success:!1,error:"삭제할 페이지를 찾을 수 없거나 권한이 없습니다."},404):e.json({success:!0,message:"삭제되었습니다."})}catch(t){return console.error("Landing page delete error:",t),e.json({success:!1,error:t.message||"삭제 실패"},500)}});function Ns(e,t){const s={"academy-intro":Ms,"program-promo":Os,"event-promo":As,"parent-letter":Us,"student-report":Ps,"admission-info":Fs,"academy-stats":$s,"teacher-intro":qs};return(s[e]||s["academy-intro"])(t)}function Ms(e){const{academyName:t,location:s,features:r,specialties:a,contact:n}=e;return`
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -13582,24 +13582,24 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
 
 현재 학생 수: ${le}명 / 한도: ${B.student_limit}명
 
-더 많은 학생을 등록하시려면 상위 플랜으로 업그레이드해주세요.`},403);console.log(`✅ [AddStudent] Limit check passed: ${le}/${B.student_limit}`);let M;try{M=await e.env.DB.prepare(`
+더 많은 학생을 등록하시려면 상위 플랜으로 업그레이드해주세요.`},403);console.log(`✅ [AddStudent] Limit check passed: ${le}/${B.student_limit}`);let N;try{N=await e.env.DB.prepare(`
         INSERT INTO students (
           name, phone, grade, subjects, school, parent_name, parent_phone, 
           academy_id, class_id, notes, status, created_at
         )
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', datetime('now'))
-      `).bind(s,r||null,a,n||"",o||null,I,k,f,C||null,S||null).run()}catch(P){console.error("➕ [AddStudent] First attempt failed:",P.message);try{M=await e.env.DB.prepare(`
+      `).bind(s,r||null,a,n||"",o||null,I,k,f,C||null,S||null).run()}catch(P){console.error("➕ [AddStudent] First attempt failed:",P.message);try{N=await e.env.DB.prepare(`
           INSERT INTO students (
             name, phone, grade, subjects, school, parent_name, parent_phone, 
             academy_id, enrollment_date, notes, status, class_id
           )
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', ?)
-        `).bind(s,r||null,a,n||"",o||null,I,k,f,j,S||null,C||null).run()}catch(be){if(console.error("➕ [AddStudent] Second attempt failed:",be.message),M=await e.env.DB.prepare(`
+        `).bind(s,r||null,a,n||"",o||null,I,k,f,j,S||null,C||null).run()}catch(be){if(console.error("➕ [AddStudent] Second attempt failed:",be.message),N=await e.env.DB.prepare(`
           INSERT INTO students (
             name, grade, parent_name, parent_phone, academy_id, status
           )
           VALUES (?, ?, ?, ?, ?, 'active')
-        `).bind(s,a,I,k,f).run(),C&&M.meta.last_row_id)try{await e.env.DB.prepare("UPDATE students SET class_id = ? WHERE id = ?").bind(C,M.meta.last_row_id).run()}catch(Ue){console.error("➕ [AddStudent] Class ID update failed:",Ue.message)}}}const V=M.meta.last_row_id;console.log("✅ [AddStudent] Success! Student ID:",V),console.log("✅ [AddStudent] Changes:",M.meta.changes);try{const P=await e.env.DB.prepare("SELECT id, name, grade, academy_id FROM students WHERE id = ?").bind(V).first();console.log("✅ [AddStudent] Verified student:",P)}catch(P){console.error("⚠️ [AddStudent] Verification failed:",P.message)}console.log("➕ [AddStudent] ==================== END ====================");try{await e.env.DB.prepare(`
+        `).bind(s,a,I,k,f).run(),C&&N.meta.last_row_id)try{await e.env.DB.prepare("UPDATE students SET class_id = ? WHERE id = ?").bind(C,N.meta.last_row_id).run()}catch(Ue){console.error("➕ [AddStudent] Class ID update failed:",Ue.message)}}}const V=N.meta.last_row_id;console.log("✅ [AddStudent] Success! Student ID:",V),console.log("✅ [AddStudent] Changes:",N.meta.changes);try{const P=await e.env.DB.prepare("SELECT id, name, grade, academy_id FROM students WHERE id = ?").bind(V).first();console.log("✅ [AddStudent] Verified student:",P)}catch(P){console.error("⚠️ [AddStudent] Verification failed:",P.message)}console.log("➕ [AddStudent] ==================== END ====================");try{await e.env.DB.prepare(`
         UPDATE usage_tracking 
         SET current_students = current_students + 1, updated_at = CURRENT_TIMESTAMP
         WHERE academy_id = ? AND subscription_id = ?
@@ -14818,7 +14818,7 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
 
 출석 데이터를 먼저 입력한 후 리포트를 생성해주세요.`},400);console.log("📊 [GenerateReport] Attendance rate:",h+"%","(source:",f+")");let I=null,k="none";if(p.length>0)I=(p.reduce((_,R)=>_+R.score/R.max_score*100,0)/p.length).toFixed(1),k="grades";else if(g.length>0){const _=g.filter(q=>q.lesson_understanding).map(q=>parseFloat(q.lesson_understanding)),R=g.filter(q=>q.lesson_participation).map(q=>parseFloat(q.lesson_participation));if(_.length>0||R.length>0){const q=[..._,...R];I=(q.reduce((jt,Lt)=>jt+Lt,0)/q.length*10).toFixed(1),k="daily_records"}}if(I===null)return console.error("❌ [GenerateReport] No score data available"),e.json({success:!1,error:`${a}에 성적/학습 데이터가 없습니다.
 
-성적 데이터 또는 일일 성과 기록을 먼저 입력한 후 리포트를 생성해주세요.`},400);console.log("📊 [GenerateReport] Average score:",I,"(source:",k+")");let S="평가 불가";h>=95&&I>=85?S="매우 우수":h>=90&&I>=80?S="우수":h>=80&&I>=70?S="양호":S="개선 필요";let C="";const j=p.length>0?p.reduce((_,R)=>R.score/R.max_score>_.score/_.max_score?R:_):null;j?C=j.subject+" 과목에서 "+(j.score/j.max_score*100).toFixed(1)+"점으로 우수한 성적을 보였습니다. 꾸준한 노력이 돋보입니다.":g.length>0&&g.filter(_=>_.lesson_participation).length>0?C="수업 참여도가 평균 "+(g.filter(R=>R.lesson_participation).reduce((R,q)=>R+parseFloat(q.lesson_participation),0)/g.filter(R=>R.lesson_participation).length).toFixed(1)+"점으로 적극적인 학습 태도를 보이고 있습니다.":C="현재 기간의 성적 데이터가 부족하여 강점을 파악하기 어렵습니다. 지속적인 학습 활동 기록이 필요합니다.";let B="";const L=p.length>0?p.reduce((_,R)=>R.score/R.max_score<_.score/_.max_score?R:_):null;L&&L.score/L.max_score*100<75?B=L.subject+" 과목에서 "+(L.score/L.max_score*100).toFixed(1)+"점으로 보완이 필요합니다.":g.length>0&&g.filter(_=>_.homework_status==="미완료").length>0?B="과제 완성률이 낮습니다. 복습 시간을 늘려 과제를 완료하는 습관을 기르면 좋겠습니다.":B="전반적으로 균형잡힌 학습을 하고 있습니다.";const le=h<90?"출석률 개선이 필요합니다. 규칙적인 수업 참여가 성적 향상의 기본입니다.":I<80?"기본 개념 복습에 더 많은 시간을 투자하면 좋겠습니다.":"현재 학습 패턴을 유지하면서 심화 학습으로 나아가면 좋겠습니다.",M=I>=85?"상위권 유지를 위해 심화 문제 풀이를 추천합니다. 경시대회 준비도 고려해볼 만합니다.":I>=75?"기본기 강화와 함께 문제 풀이 속도를 높이는 연습이 필요합니다.":"개념 이해를 위한 1:1 보충 수업을 추천합니다. 기초부터 차근차근 다져가면 충분히 성적이 오를 수 있습니다.",V=I>=85?"현재 평균 "+I+"점 수준을 유지하면서, "+((L==null?void 0:L.subject)||"취약 과목")+"에서 5점 이상 향상 목표":"평균 점수 "+I+"점에서 "+Math.min(100,parseFloat(I)+10).toFixed(0)+"점으로 향상, 출석률 "+h+"%에서 95% 이상 달성",P=o.name+" 학생은 이번 달 평균 "+I+"점의 성적을 기록했으며, 출석률은 "+h+"%입니다. "+(S==="매우 우수"||S==="우수"?"전반적으로 성실하게 학업에 임하고 있으며, 지속적인 성장이 기대됩니다.":"학습 태도와 출석 관리에 더 많은 관심이 필요합니다.")+(j?" 특히 "+j.subject+" 과목에서 강점을 보이고 있습니다.":"")+" 꾸준한 노력으로 더욱 발전할 수 있습니다.",be=`학부모님, 안녕하세요.
+성적 데이터 또는 일일 성과 기록을 먼저 입력한 후 리포트를 생성해주세요.`},400);console.log("📊 [GenerateReport] Average score:",I,"(source:",k+")");let S="평가 불가";h>=95&&I>=85?S="매우 우수":h>=90&&I>=80?S="우수":h>=80&&I>=70?S="양호":S="개선 필요";let C="";const j=p.length>0?p.reduce((_,R)=>R.score/R.max_score>_.score/_.max_score?R:_):null;j?C=j.subject+" 과목에서 "+(j.score/j.max_score*100).toFixed(1)+"점으로 우수한 성적을 보였습니다. 꾸준한 노력이 돋보입니다.":g.length>0&&g.filter(_=>_.lesson_participation).length>0?C="수업 참여도가 평균 "+(g.filter(R=>R.lesson_participation).reduce((R,q)=>R+parseFloat(q.lesson_participation),0)/g.filter(R=>R.lesson_participation).length).toFixed(1)+"점으로 적극적인 학습 태도를 보이고 있습니다.":C="현재 기간의 성적 데이터가 부족하여 강점을 파악하기 어렵습니다. 지속적인 학습 활동 기록이 필요합니다.";let B="";const L=p.length>0?p.reduce((_,R)=>R.score/R.max_score<_.score/_.max_score?R:_):null;L&&L.score/L.max_score*100<75?B=L.subject+" 과목에서 "+(L.score/L.max_score*100).toFixed(1)+"점으로 보완이 필요합니다.":g.length>0&&g.filter(_=>_.homework_status==="미완료").length>0?B="과제 완성률이 낮습니다. 복습 시간을 늘려 과제를 완료하는 습관을 기르면 좋겠습니다.":B="전반적으로 균형잡힌 학습을 하고 있습니다.";const le=h<90?"출석률 개선이 필요합니다. 규칙적인 수업 참여가 성적 향상의 기본입니다.":I<80?"기본 개념 복습에 더 많은 시간을 투자하면 좋겠습니다.":"현재 학습 패턴을 유지하면서 심화 학습으로 나아가면 좋겠습니다.",N=I>=85?"상위권 유지를 위해 심화 문제 풀이를 추천합니다. 경시대회 준비도 고려해볼 만합니다.":I>=75?"기본기 강화와 함께 문제 풀이 속도를 높이는 연습이 필요합니다.":"개념 이해를 위한 1:1 보충 수업을 추천합니다. 기초부터 차근차근 다져가면 충분히 성적이 오를 수 있습니다.",V=I>=85?"현재 평균 "+I+"점 수준을 유지하면서, "+((L==null?void 0:L.subject)||"취약 과목")+"에서 5점 이상 향상 목표":"평균 점수 "+I+"점에서 "+Math.min(100,parseFloat(I)+10).toFixed(0)+"점으로 향상, 출석률 "+h+"%에서 95% 이상 달성",P=o.name+" 학생은 이번 달 평균 "+I+"점의 성적을 기록했으며, 출석률은 "+h+"%입니다. "+(S==="매우 우수"||S==="우수"?"전반적으로 성실하게 학업에 임하고 있으며, 지속적인 성장이 기대됩니다.":"학습 태도와 출석 관리에 더 많은 관심이 필요합니다.")+(j?" 특히 "+j.subject+" 과목에서 강점을 보이고 있습니다.":"")+" 꾸준한 노력으로 더욱 발전할 수 있습니다.",be=`학부모님, 안녕하세요.
 
 ${o.name} 학생의 ${a} 학습 분석 리포트를 전달드립니다.
 
@@ -14834,7 +14834,7 @@ ${C}
 ${B}
 
 📝 선생님의 추천
-${M}
+${N}
 
 다음 달 목표: ${V}
 
@@ -14845,7 +14845,7 @@ ${M}
       INSERT INTO learning_reports 
       (student_id, report_month, overall_score, study_attitude, strengths, weaknesses, improvements, recommendations, next_month_goals, ai_analysis, parent_message, folder_id)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).bind(r,a,I,S,C,B,le,M,V,P,be,n||null).run();console.log("✅ [GenerateReport] Report saved successfully, ID:",Ue.meta.last_row_id);try{await e.env.DB.prepare(`
+    `).bind(r,a,I,S,C,B,le,N,V,P,be,n||null).run();console.log("✅ [GenerateReport] Report saved successfully, ID:",Ue.meta.last_row_id);try{await e.env.DB.prepare(`
         UPDATE usage_tracking 
         SET ai_reports_used_this_month = ai_reports_used_this_month + 1, updated_at = CURRENT_TIMESTAMP
         WHERE academy_id = ? AND subscription_id = ?
@@ -18760,10 +18760,179 @@ ${M}
         <title>사용자 관리 - 슈퍼플레이스</title>
         <script src="https://cdn.tailwindcss.com"><\/script>
         <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
-        <script src="/static/admin-users.js" defer><\/script>
         <style>
             .gradient-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
         </style>
+        <script>
+            // 전역 변수
+            var currentUsageUserId = null;
+            
+            // 즉시 함수 정의
+            window.manageUsageLimits = function(userId, userName) {
+                console.log('manageUsageLimits called:', userId, userName);
+                currentUsageUserId = userId;
+                document.getElementById('usageModalUserName').textContent = userName + '님의 사용 한도';
+                document.getElementById('usageLimitsModal').classList.remove('hidden');
+                
+                fetch('/api/admin/usage/' + userId)
+                    .then(res => res.json())
+                    .then(data => {
+                        var content = document.getElementById('usageLimitsContent');
+                        if (!data.success || !data.hasSubscription) {
+                            content.innerHTML = '<div class="space-y-6">' +
+                                '<div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">' +
+                                '<p class="text-sm text-yellow-800"><i class="fas fa-exclamation-triangle mr-2"></i><strong>안내:</strong> 활성 구독이 없습니다. 수동으로 한도를 설정할 수 있습니다.</p></div>' +
+                                '<div class="bg-indigo-50 border-2 border-indigo-200 rounded-lg p-4 mb-4">' +
+                                '<div class="flex items-center mb-3"><span class="text-sm font-semibold text-gray-800">📅 구독 기간 (개월)</span></div>' +
+                                '<div><input type="number" id="subscriptionMonths" value="1" min="1" max="120" placeholder="예: 3" class="w-full px-3 py-2 text-sm border-2 border-indigo-300 rounded-lg focus:ring-2 focus:ring-indigo-500">' +
+                                '<p class="text-xs text-gray-600 mt-2">💡 설정한 개월 수만큼 구독이 유지됩니다.</p></div></div>' +
+                                '<div class="grid grid-cols-1 md:grid-cols-2 gap-4">' +
+                                '<div class="border-2 border-blue-200 rounded-lg p-4 bg-blue-50"><div class="flex items-center mb-3"><span class="text-sm font-semibold text-gray-800">👥 학생 수 한도</span></div>' +
+                                '<div><input type="number" id="studentLimit" value="30" min="0" class="w-full px-3 py-2 text-sm border-2 border-blue-300 rounded-lg"></div></div>' +
+                                '<div class="border-2 border-green-200 rounded-lg p-4 bg-green-50"><div class="flex items-center mb-3"><span class="text-sm font-semibold text-gray-800">📊 AI 리포트 한도</span></div>' +
+                                '<div><input type="number" id="aiReportLimit" value="30" min="0" class="w-full px-3 py-2 text-sm border-2 border-green-300 rounded-lg"></div></div>' +
+                                '<div class="border-2 border-purple-200 rounded-lg p-4 bg-purple-50"><div class="flex items-center mb-3"><span class="text-sm font-semibold text-gray-800">🎨 랜딩페이지 한도</span></div>' +
+                                '<div><input type="number" id="landingPageLimit" value="40" min="0" class="w-full px-3 py-2 text-sm border-2 border-purple-300 rounded-lg"></div></div>' +
+                                '<div class="border-2 border-orange-200 rounded-lg p-4 bg-orange-50"><div class="flex items-center mb-3"><span class="text-sm font-semibold text-gray-800">👨‍🏫 선생님 한도</span></div>' +
+                                '<div><input type="number" id="teacherLimit" value="2" min="0" class="w-full px-3 py-2 text-sm border-2 border-orange-300 rounded-lg"></div></div></div></div>';
+                        } else {
+                            var sub = data.subscription;
+                            var use = data.usage;
+                            content.innerHTML = '<div class="space-y-6"><div class="bg-gradient-to-br from-teal-50 to-cyan-50 rounded-xl p-4 border border-teal-200">' +
+                                '<div class="flex justify-between items-start"><div><h4 class="text-lg font-bold text-gray-900">' + sub.planName + '</h4>' +
+                                '<p class="text-sm text-gray-600 mt-1">' + sub.startDate + ' ~ ' + sub.endDate + '</p></div>' +
+                                '<span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">활성</span></div></div>' +
+                                '<div class="bg-indigo-50 border-2 border-indigo-200 rounded-lg p-4"><div class="flex items-center mb-3"><span class="text-sm font-semibold text-gray-800">📅 구독 기간 (개월)</span></div>' +
+                                '<div><input type="number" id="subscriptionMonths" value="1" min="1" max="120" class="w-full px-3 py-2 text-sm border-2 border-indigo-300 rounded-lg"></div></div>' +
+                                '<div class="grid grid-cols-1 md:grid-cols-2 gap-4">' +
+                                '<div class="border-2 border-blue-200 rounded-lg p-4 bg-blue-50"><input type="number" id="studentLimit" value="' + sub.studentLimit + '" min="0" class="w-full px-3 py-2 text-sm border-2 border-blue-300 rounded-lg"></div>' +
+                                '<div class="border-2 border-green-200 rounded-lg p-4 bg-green-50"><input type="number" id="aiReportLimit" value="' + sub.aiReportLimit + '" min="0" class="w-full px-3 py-2 text-sm border-2 border-green-300 rounded-lg"></div>' +
+                                '<div class="border-2 border-purple-200 rounded-lg p-4 bg-purple-50"><input type="number" id="landingPageLimit" value="' + sub.landingPageLimit + '" min="0" class="w-full px-3 py-2 text-sm border-2 border-purple-300 rounded-lg"></div>' +
+                                '<div class="border-2 border-orange-200 rounded-lg p-4 bg-orange-50"><input type="number" id="teacherLimit" value="' + sub.teacherLimit + '" min="0" class="w-full px-3 py-2 text-sm border-2 border-orange-300 rounded-lg"></div></div></div>';
+                        }
+                        
+                        setTimeout(function() {
+                            var saveBtn = document.getElementById('saveUsageLimitsBtn');
+                            if (saveBtn) {
+                                console.log('✅ Save button found and ready');
+                                saveBtn.onclick = function() {
+                                    window.saveUsageLimits();
+                                };
+                            }
+                        }, 300);
+                    })
+                    .catch(function(err) {
+                        console.error('Error:', err);
+                        document.getElementById('usageLimitsContent').innerHTML = '<div class="text-center py-12 text-red-500">오류가 발생했습니다</div>';
+                    });
+            };
+            
+            window.saveUsageLimits = function() {
+                console.log('💾 saveUsageLimits called');
+                if (!currentUsageUserId) {
+                    alert('❌ 사용자 정보를 찾을 수 없습니다');
+                    return;
+                }
+                
+                var studentLimit = parseInt(document.getElementById('studentLimit').value);
+                var aiReportLimit = parseInt(document.getElementById('aiReportLimit').value);
+                var landingPageLimit = parseInt(document.getElementById('landingPageLimit').value);
+                var teacherLimit = parseInt(document.getElementById('teacherLimit').value);
+                var subscriptionMonths = parseInt(document.getElementById('subscriptionMonths').value) || 1;
+                
+                if (isNaN(studentLimit) || isNaN(aiReportLimit) || isNaN(landingPageLimit) || isNaN(teacherLimit)) {
+                    alert('❌ 모든 한도를 올바르게 입력해주세요');
+                    return;
+                }
+                
+                if (!confirm('정말 사용 한도를 변경하시겠습니까?\\n\\n구독 기간: ' + subscriptionMonths + '개월\\n학생: ' + studentLimit + '\\nAI 리포트: ' + aiReportLimit + '\\n랜딩페이지: ' + landingPageLimit + '\\n선생님: ' + teacherLimit)) {
+                    return;
+                }
+                
+                fetch('/api/admin/usage/' + currentUsageUserId + '/update-limits', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ studentLimit: studentLimit, aiReportLimit: aiReportLimit, landingPageLimit: landingPageLimit, teacherLimit: teacherLimit, subscriptionMonths: subscriptionMonths })
+                })
+                .then(function(res) { return res.json(); })
+                .then(function(data) {
+                    if (data.success) {
+                        alert('✅ 사용 한도가 성공적으로 업데이트되었습니다!');
+                        window.closeUsageLimitsModal();
+                        location.reload();
+                    } else {
+                        alert('❌ 업데이트 실패: ' + (data.error || '알 수 없는 오류'));
+                    }
+                })
+                .catch(function(err) {
+                    alert('❌ 네트워크 오류: ' + err.message);
+                });
+            };
+            
+            window.closeUsageLimitsModal = function() {
+                document.getElementById('usageLimitsModal').classList.add('hidden');
+                currentUsageUserId = null;
+            };
+            
+            window.changePassword = function(userId, userName) {
+                var newPassword = prompt(userName + '님의 새 비밀번호를 입력하세요:');
+                if (newPassword && newPassword.trim()) {
+                    fetch('/api/admin/users/' + userId + '/password', {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ newPassword: newPassword.trim() })
+                    }).then(function(res) { return res.json(); }).then(function(data) {
+                        alert(data.success ? '✅ 비밀번호가 변경되었습니다!' : '❌ 변경 실패');
+                    });
+                }
+            };
+            
+            window.givePoints = function(userId, userName, currentPoints) {
+                var amount = prompt(userName + '님에게 지급할 포인트:');
+                if (amount && !isNaN(amount) && parseInt(amount) > 0) {
+                    fetch('/api/admin/users/' + userId + '/points', {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ amount: parseInt(amount) })
+                    }).then(function(res) { return res.json(); }).then(function(data) {
+                        if (data.success) { alert('✅ 지급 완료'); location.reload(); }
+                    });
+                }
+            };
+            
+            window.deductPoints = function(userId, userName, currentPoints) {
+                var amount = prompt(userName + '님에서 차감할 포인트:');
+                if (amount && !isNaN(amount) && parseInt(amount) > 0) {
+                    fetch('/api/admin/users/' + userId + '/points/deduct', {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ amount: parseInt(amount) })
+                    }).then(function(res) { return res.json(); }).then(function(data) {
+                        if (data.success) { alert('✅ 차감 완료'); location.reload(); }
+                    });
+                }
+            };
+            
+            window.loginAs = function(userId, userName) { alert('🚧 준비 중'); };
+            window.managePermissions = function(userId, userName) { alert('🚧 준비 중'); };
+            window.deleteUser = function(userId, userName) {
+                if (confirm('⚠️ 정말 ' + userName + '님을 삭제하시겠습니까?')) {
+                    fetch('/api/admin/users/' + userId, { method: 'DELETE' })
+                        .then(function(res) { return res.json(); })
+                        .then(function(data) {
+                            if (data.success) { alert('✅ 삭제 완료'); location.reload(); }
+                        });
+                }
+            };
+            window.logout = function() {
+                if (confirm('로그아웃하시겠습니까?')) {
+                    document.cookie = 'session_id=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+                    window.location.href = '/login';
+                }
+            };
+            
+            console.log('✅ All functions loaded in head');
+        <\/script>
     </head>
     <body class="bg-gray-50">
         <!-- 헤더 -->
@@ -18964,423 +19133,22 @@ ${M}
                 </div>
             </div>
         </div>
-    </body>
-    <script>
-        let currentUsageUserId = null;
         
-        // 사용 한도 관리 모달 열기
-        async function manageUsageLimits(userId, userName) {
-            currentUsageUserId = userId;
-            document.getElementById('usageModalUserName').textContent = userName + '님의 사용 한도';
-            document.getElementById('usageLimitsModal').classList.remove('hidden');
+        <script>
+        // filterUsers와 clearSearch만 정의
+        window.filterUsers = function() {
+            var searchInput = document.getElementById('searchInput').value.toLowerCase().trim();
+            var rows = document.querySelectorAll('tbody tr[data-user]');
+            var visibleCount = 0;
             
-            try {
-                const response = await fetch('/api/admin/usage/' + userId);
-                const data = await response.json();
+            rows.forEach(function(row) {
+                var email = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+                var name = row.querySelector('td:nth-child(3)').textContent.toLowerCase();
+                var phone = (row.querySelector('td:nth-child(4)').textContent || '').toLowerCase();
+                var academy = (row.querySelector('td:nth-child(5)').textContent || '').toLowerCase();
                 
-                const content = document.getElementById('usageLimitsContent');
-                
-                if (!data.success || !data.hasSubscription) {
-                    // 구독 없을 때 - 수동으로 한도 설정 가능
-                    content.innerHTML = '<div class="space-y-6">' +
-                        '<div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">' +
-                        '<p class="text-sm text-yellow-800">' +
-                        '<i class="fas fa-exclamation-triangle mr-2"></i>' +
-                        '<strong>안내:</strong> 활성 구독이 없습니다. 수동으로 한도를 설정할 수 있습니다.' +
-                        '</p>' +
-                        '</div>' +
-                        '<!-- 구독 기간 설정 -->' +
-                        '<div class="bg-indigo-50 border-2 border-indigo-200 rounded-lg p-4 mb-4">' +
-                        '<div class="flex items-center mb-3">' +
-                        '<span class="text-sm font-semibold text-gray-800">📅 구독 기간 (개월)</span>' +
-                        '</div>' +
-                        '<div>' +
-                        '<input type="number" id="subscriptionMonths" value="1" min="1" max="120" placeholder="예: 3" ' +
-                        'class="w-full px-3 py-2 text-sm border-2 border-indigo-300 rounded-lg focus:ring-2 focus:ring-indigo-500">' +
-                        '<p class="text-xs text-gray-600 mt-2">💡 설정한 개월 수만큼 구독이 유지됩니다. (예: 3개월 = 오늘부터 3개월 후 전날까지)</p>' +
-                        '</div>' +
-                        '</div>' +
-                        '<div class="grid grid-cols-1 md:grid-cols-2 gap-4">' +
-                        '<!-- 학생 수 -->' +
-                        '<div class="border-2 border-blue-200 rounded-lg p-4 bg-blue-50">' +
-                        '<div class="flex items-center mb-3">' +
-                        '<span class="text-sm font-semibold text-gray-800">👥 학생 수 한도</span>' +
-                        '</div>' +
-                        '<div>' +
-                        '<input type="number" id="studentLimit" value="30" min="0" placeholder="예: 30" ' +
-                        'class="w-full px-3 py-2 text-sm border-2 border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500">' +
-                        '</div>' +
-                        '</div>' +
-                        '<!-- AI 리포트 -->' +
-                        '<div class="border-2 border-green-200 rounded-lg p-4 bg-green-50">' +
-                        '<div class="flex items-center mb-3">' +
-                        '<span class="text-sm font-semibold text-gray-800">📊 AI 리포트 한도</span>' +
-                        '</div>' +
-                        '<div>' +
-                        '<input type="number" id="aiReportLimit" value="30" min="0" placeholder="예: 30" ' +
-                        'class="w-full px-3 py-2 text-sm border-2 border-green-300 rounded-lg focus:ring-2 focus:ring-green-500">' +
-                        '</div>' +
-                        '</div>' +
-                        '<!-- 랜딩페이지 -->' +
-                        '<div class="border-2 border-purple-200 rounded-lg p-4 bg-purple-50">' +
-                        '<div class="flex items-center mb-3">' +
-                        '<span class="text-sm font-semibold text-gray-800">🎨 랜딩페이지 한도</span>' +
-                        '</div>' +
-                        '<div>' +
-                        '<input type="number" id="landingPageLimit" value="40" min="0" placeholder="예: 40" ' +
-                        'class="w-full px-3 py-2 text-sm border-2 border-purple-300 rounded-lg focus:ring-2 focus:ring-purple-500">' +
-                        '</div>' +
-                        '</div>' +
-                        '<!-- 선생님 -->' +
-                        '<div class="border-2 border-orange-200 rounded-lg p-4 bg-orange-50">' +
-                        '<div class="flex items-center mb-3">' +
-                        '<span class="text-sm font-semibold text-gray-800">👨‍🏫 선생님 한도</span>' +
-                        '</div>' +
-                        '<div>' +
-                        '<input type="number" id="teacherLimit" value="2" min="0" placeholder="예: 2" ' +
-                        'class="w-full px-3 py-2 text-sm border-2 border-orange-300 rounded-lg focus:ring-2 focus:ring-orange-500">' +
-                        '</div>' +
-                        '</div>' +
-                        '</div>' +
-                        '<div class="bg-blue-50 border border-blue-200 rounded-lg p-4">' +
-                        '<p class="text-sm text-blue-800">' +
-                        '<i class="fas fa-info-circle mr-2"></i>' +
-                        '<strong>안내:</strong> 구독 없이도 한도를 설정하면 해당 사용자가 기능을 이용할 수 있습니다.' +
-                        '</p>' +
-                        '</div>' +
-                        '</div>';
-                    return;
-                }
-                
-                const sub = data.subscription;
-                const use = data.usage;
-                
-                const studentPercent = Math.min((use.currentStudents / sub.studentLimit) * 100, 100);
-                const reportPercent = Math.min((use.aiReportsUsed / sub.aiReportLimit) * 100, 100);
-                const landingPercent = Math.min((use.landingPagesCreated / sub.landingPageLimit) * 100, 100);
-                const teacherPercent = Math.min((use.currentTeachers / sub.teacherLimit) * 100, 100);
-                
-                content.innerHTML = '<div class="space-y-6">' +
-                    '<!-- 플랜 정보 -->' +
-                    '<div class="bg-gradient-to-br from-teal-50 to-cyan-50 rounded-xl p-4 border border-teal-200">' +
-                    '<div class="flex justify-between items-start">' +
-                    '<div>' +
-                    '<h4 class="text-lg font-bold text-gray-900">' + sub.planName + '</h4>' +
-                    '<p class="text-sm text-gray-600 mt-1">' + sub.startDate + ' ~ ' + sub.endDate + '</p>' +
-                    '</div>' +
-                    '<div class="flex items-center gap-2">' +
-                    '<span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">활성</span>' +
-                    '<button onclick="revokePlan(' + userId + ', '' + userName + '')" class="px-3 py-1 bg-red-600 text-white rounded-full text-sm font-medium hover:bg-red-700 transition">' +
-                    '<i class="fas fa-times mr-1"></i>플랜 회수' +
-                    '</button>' +
-                    '</div>' +
-                    '</div>' +
-                    '</div>' +
-                    '<!-- 구독 기간 설정 -->' +
-                    '<div class="bg-indigo-50 border-2 border-indigo-200 rounded-lg p-4">' +
-                    '<div class="flex items-center mb-3">' +
-                    '<span class="text-sm font-semibold text-gray-800">📅 구독 기간 (개월)</span>' +
-                    '</div>' +
-                    '<div>' +
-                    '<input type="number" id="subscriptionMonths" value="1" min="1" max="120" placeholder="예: 3" ' +
-                    'class="w-full px-3 py-2 text-sm border-2 border-indigo-300 rounded-lg focus:ring-2 focus:ring-indigo-500">' +
-                    '<p class="text-xs text-gray-600 mt-2">💡 설정한 개월 수만큼 구독이 유지됩니다. (예: 3개월 = 오늘부터 3개월 후 전날까지)</p>' +
-                    '</div>' +
-                    '</div>' +
-                    '<!-- 사용량 & 한도 조절 -->' +
-                    '<div class="grid grid-cols-1 md:grid-cols-2 gap-4">' +
-                    '<!-- 학생 수 -->' +
-                    '<div class="border-2 border-blue-200 rounded-lg p-4 bg-blue-50">' +
-                    '<div class="flex items-center justify-between mb-3">' +
-                    '<span class="text-sm font-semibold text-gray-800">👥 학생 수</span>' +
-                    '<span class="text-sm font-bold ' + (use.currentStudents >= sub.studentLimit ? 'text-red-600' : 'text-blue-600') + '">' +
-                    use.currentStudents + ' / ' + sub.studentLimit +
-                    '</span>' +
-                    '</div>' +
-                    '<div class="w-full bg-gray-200 rounded-full h-2 mb-3">' +
-                    '<div class="bg-blue-600 h-2 rounded-full transition-all" style="width: ' + studentPercent + '%"></div>' +
-                    '</div>' +
-                    '<div>' +
-                    '<label class="text-xs font-medium text-gray-700 mb-1 block">한도 설정:</label>' +
-                    '<input type="number" id="studentLimit" value="' + sub.studentLimit + '" min="0" ' +
-                    'class="w-full px-3 py-2 text-sm border-2 border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">' +
-                    '</div>' +
-                    '</div>' +
-                    '<!-- AI 리포트 -->' +
-                    '<div class="border-2 border-green-200 rounded-lg p-4 bg-green-50">' +
-                    '<div class="flex items-center justify-between mb-3">' +
-                    '<span class="text-sm font-semibold text-gray-800">📊 AI 리포트</span>' +
-                    '<span class="text-sm font-bold ' + (use.aiReportsUsed >= sub.aiReportLimit ? 'text-red-600' : 'text-green-600') + '">' +
-                    use.aiReportsUsed + ' / ' + sub.aiReportLimit +
-                    '</span>' +
-                    '</div>' +
-                    '<div class="w-full bg-gray-200 rounded-full h-2 mb-3">' +
-                    '<div class="bg-green-600 h-2 rounded-full transition-all" style="width: ' + reportPercent + '%"></div>' +
-                    '</div>' +
-                    '<div>' +
-                    '<label class="text-xs font-medium text-gray-700 mb-1 block">한도 설정:</label>' +
-                    '<input type="number" id="aiReportLimit" value="' + sub.aiReportLimit + '" min="0" ' +
-                    'class="w-full px-3 py-2 text-sm border-2 border-green-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">' +
-                    '</div>' +
-                    '</div>' +
-                    '<!-- 랜딩페이지 -->' +
-                    '<div class="border-2 border-purple-200 rounded-lg p-4 bg-purple-50">' +
-                    '<div class="flex items-center justify-between mb-3">' +
-                    '<span class="text-sm font-semibold text-gray-800">🎨 랜딩페이지</span>' +
-                    '<span class="text-sm font-bold ' + (use.landingPagesCreated >= sub.landingPageLimit ? 'text-red-600' : 'text-purple-600') + '">' +
-                    use.landingPagesCreated + ' / ' + sub.landingPageLimit +
-                    '</span>' +
-                    '</div>' +
-                    '<div class="w-full bg-gray-200 rounded-full h-2 mb-3">' +
-                    '<div class="bg-purple-600 h-2 rounded-full transition-all" style="width: ' + landingPercent + '%"></div>' +
-                    '</div>' +
-                    '<div>' +
-                    '<label class="text-xs font-medium text-gray-700 mb-1 block">한도 설정:</label>' +
-                    '<input type="number" id="landingPageLimit" value="' + sub.landingPageLimit + '" min="0" ' +
-                    'class="w-full px-3 py-2 text-sm border-2 border-purple-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500">' +
-                    '</div>' +
-                    '</div>' +
-                    '<!-- 선생님 계정 -->' +
-                    '<div class="border-2 border-orange-200 rounded-lg p-4 bg-orange-50">' +
-                    '<div class="flex items-center justify-between mb-3">' +
-                    '<span class="text-sm font-semibold text-gray-800">👨‍🏫 선생님</span>' +
-                    '<span class="text-sm font-bold ' + (use.currentTeachers >= sub.teacherLimit ? 'text-red-600' : 'text-orange-600') + '">' +
-                    use.currentTeachers + ' / ' + sub.teacherLimit +
-                    '</span>' +
-                    '</div>' +
-                    '<div class="w-full bg-gray-200 rounded-full h-2 mb-3">' +
-                    '<div class="bg-orange-600 h-2 rounded-full transition-all" style="width: ' + teacherPercent + '%"></div>' +
-                    '</div>' +
-                    '<div>' +
-                    '<label class="text-xs font-medium text-gray-700 mb-1 block">한도 설정:</label>' +
-                    '<input type="number" id="teacherLimit" value="' + sub.teacherLimit + '" min="0" ' +
-                    'class="w-full px-3 py-2 text-sm border-2 border-orange-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500">' +
-                    '</div>' +
-                    '</div>' +
-                    '</div>' +
-                    '<div class="bg-blue-50 border border-blue-200 rounded-lg p-4">' +
-                    '<p class="text-sm text-blue-800">' +
-                    '<i class="fas fa-info-circle mr-2"></i>' +
-                    '<strong>안내:</strong> 한도를 변경하면 즉시 적용되며, 사용자는 새로운 한도까지 기능을 이용할 수 있습니다.' +
-                    '</p>' +
-                    '</div>' +
-                    '</div>';
-            } catch (error) {
-                console.error('Failed to load usage limits:', error);
-                document.getElementById('usageLimitsContent').innerHTML =
-                    '<div class="text-center py-12 text-red-500">' +
-                    '<div class="text-6xl mb-4">⚠️</div>' +
-                    '<p class="text-lg">정보를 불러오는데 실패했습니다</p>' +
-                    '<p class="text-sm mt-2">' + error.message + '</p>' +
-                    '</div>';
-            }
-            
-            // 모달이 열린 후 버튼 이벤트 확인 및 재설정
-            setTimeout(() => {
-                console.log('🔧 [Modal] Setting up button click handlers...');
-                
-                // 닫기 버튼
-                const closeBtn = document.getElementById('closeUsageLimitsBtn');
-                if (closeBtn) {
-                    // 기존 이벤트 제거
-                    const newCloseBtn = closeBtn.cloneNode(true);
-                    closeBtn.parentNode.replaceChild(newCloseBtn, closeBtn);
-                    
-                    // 새 이벤트 추가
-                    newCloseBtn.addEventListener('click', function(e) {
-                        console.log('🖱️ [Button] Close button clicked');
-                        e.preventDefault();
-                        e.stopPropagation();
-                        closeUsageLimitsModal();
-                    });
-                    
-                    console.log('✅ [Modal] Close button event added');
-                }
-                
-                // 저장 버튼
-                const saveBtn = document.getElementById('saveUsageLimitsBtn');
-                if (saveBtn) {
-                    console.log('🔧 [Modal] Save button found');
-                    
-                    // 기존 이벤트 제거 (cloneNode로 깨끗하게)
-                    const newSaveBtn = saveBtn.cloneNode(true);
-                    saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
-                    
-                    // 스타일 강제 적용
-                    newSaveBtn.style.pointerEvents = 'auto';
-                    newSaveBtn.style.cursor = 'pointer';
-                    newSaveBtn.style.zIndex = '10000';
-                    newSaveBtn.style.position = 'relative';
-                    
-                    // click 이벤트 추가
-                    newSaveBtn.addEventListener('click', function(e) {
-                        console.log('🖱️ [Button] Save button clicked via addEventListener!');
-                        e.preventDefault();
-                        e.stopPropagation();
-                        saveUsageLimits();
-                    });
-                    
-                    // mousedown 이벤트도 추가 (더 확실하게)
-                    newSaveBtn.addEventListener('mousedown', function(e) {
-                        console.log('🖱️ [Button] Save button mousedown detected!');
-                    });
-                    
-                    // 터치 이벤트도 추가
-                    newSaveBtn.addEventListener('touchstart', function(e) {
-                        console.log('🖱️ [Button] Save button touchstart detected!');
-                        e.preventDefault();
-                        saveUsageLimits();
-                    });
-                    
-                    console.log('✅ [Modal] Save button is now fully interactive with multiple event handlers');
-                } else {
-                    console.error('❌ [Modal] Save button not found!');
-                }
-            }, 500);
-        }
-        
-        // 사용 한도 저장
-        async function saveUsageLimits() {
-            console.log('💾 [SaveUsageLimits] Function called');
-            console.log('💾 [SaveUsageLimits] currentUsageUserId:', currentUsageUserId);
-            
-            if (!currentUsageUserId) {
-                alert('❌ 사용자 정보를 찾을 수 없습니다. 모달을 닫고 다시 시도해주세요.');
-                console.error('❌ [SaveUsageLimits] currentUsageUserId is null or undefined');
-                return;
-            }
-            
-            const studentLimitEl = document.getElementById('studentLimit');
-            const aiReportLimitEl = document.getElementById('aiReportLimit');
-            const landingPageLimitEl = document.getElementById('landingPageLimit');
-            const teacherLimitEl = document.getElementById('teacherLimit');
-            const subscriptionMonthsEl = document.getElementById('subscriptionMonths');
-            
-            console.log('📋 [SaveUsageLimits] Input elements:', {
-                studentLimitEl: !!studentLimitEl,
-                aiReportLimitEl: !!aiReportLimitEl,
-                landingPageLimitEl: !!landingPageLimitEl,
-                teacherLimitEl: !!teacherLimitEl,
-                subscriptionMonthsEl: !!subscriptionMonthsEl
-            });
-            
-            if (!studentLimitEl || !aiReportLimitEl || !landingPageLimitEl || !teacherLimitEl || !subscriptionMonthsEl) {
-                alert('❌ 입력 필드를 찾을 수 없습니다. 페이지를 새로고침해주세요.');
-                return;
-            }
-            
-            const studentLimit = parseInt(studentLimitEl.value);
-            const aiReportLimit = parseInt(aiReportLimitEl.value);
-            const landingPageLimit = parseInt(landingPageLimitEl.value);
-            const teacherLimit = parseInt(teacherLimitEl.value);
-            const subscriptionMonths = parseInt(subscriptionMonthsEl.value) || 1;
-            
-            console.log('📊 [SaveUsageLimits] Parsed values:', {
-                studentLimit,
-                aiReportLimit,
-                landingPageLimit,
-                teacherLimit,
-                subscriptionMonths
-            });
-            
-            if (isNaN(studentLimit) || isNaN(aiReportLimit) || isNaN(landingPageLimit) || isNaN(teacherLimit)) {
-                alert('❌ 모든 한도를 올바르게 입력해주세요 (숫자만 입력 가능)');
-                return;
-            }
-            
-            if (studentLimit < 0 || aiReportLimit < 0 || landingPageLimit < 0 || teacherLimit < 0) {
-                alert('❌ 한도는 0 이상이어야 합니다');
-                return;
-            }
-            
-            if (subscriptionMonths < 1 || subscriptionMonths > 120) {
-                alert('❌ 구독 기간은 1~120개월 사이여야 합니다');
-                return;
-            }
-            
-            if (!confirm('정말 사용 한도를 변경하시겠습니까?\\n\\n구독 기간: ' + subscriptionMonths + '개월\\n학생: ' + studentLimit + '명\\nAI 리포트: ' + aiReportLimit + '개\\n랜딩페이지: ' + landingPageLimit + '개\\n선생님: ' + teacherLimit + '명')) {
-                console.log('❌ [SaveUsageLimits] User cancelled');
-                return;
-            }
-            
-            try {
-                console.log('🚀 [SaveUsageLimits] Sending API request...');
-                const response = await fetch('/api/admin/usage/' + currentUsageUserId + '/update-limits', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        studentLimit,
-                        aiReportLimit,
-                        landingPageLimit,
-                        teacherLimit,
-                        subscriptionMonths
-                    })
-                });
-                
-                console.log('📡 [SaveUsageLimits] Response status:', response.status);
-                const data = await response.json();
-                console.log('📦 [SaveUsageLimits] Response data:', data);
-                
-                if (data.success) {
-                    alert('✅ 사용 한도가 성공적으로 업데이트되었습니다!\\n\\n구독 기간: ' + subscriptionMonths + '개월\\n학생: ' + studentLimit + '명\\nAI 리포트: ' + aiReportLimit + '개\\n랜딩페이지: ' + landingPageLimit + '개\\n선생님: ' + teacherLimit + '명');
-                    closeUsageLimitsModal();
-                    console.log('✅ [SaveUsageLimits] Reloading page...');
-                    window.location.reload();
-                } else {
-                    alert('❌ 업데이트 실패: ' + (data.error || '알 수 없는 오류'));
-                }
-            } catch (error) {
-                console.error('❌ [SaveUsageLimits] Error:', error);
-                alert('❌ 네트워크 오류가 발생했습니다: ' + error.message);
-            }
-        }
-        
-        // 플랜 회수 함수
-        async function revokePlan(userId, userName) {
-            if (!confirm('정말 ' + userName + '님의 플랜을 회수하시겠습니까?\\n\\n회수 후:\\n- 모든 구독이 비활성화됩니다\\n- 등록된 프로그램이 모두 삭제됩니다\\n- 사용자는 프로그램을 이용할 수 없게 됩니다')) {
-                return;
-            }
-            
-            try {
-                const response = await fetch('/api/admin/revoke-plan/' + userId, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    alert('✅ 플랜이 성공적으로 회수되었습니다!');
-                    closeUsageLimitsModal();
-                    location.reload(); // 페이지 새로고침
-                } else {
-                    alert('❌ 회수 실패: ' + (data.error || '알 수 없는 오류'));
-                }
-            } catch (error) {
-                console.error('Revoke error:', error);
-                alert('❌ 네트워크 오류가 발생했습니다');
-            }
-        }
-        
-        // 사용 한도 모달 닫기
-        function closeUsageLimitsModal() {
-            document.getElementById('usageLimitsModal').classList.add('hidden');
-            currentUsageUserId = null;
-        }
-        
-        // 사용자 검색 필터링
-        function filterUsers() {
-            const searchInput = document.getElementById('searchInput').value.toLowerCase().trim();
-            const rows = document.querySelectorAll('tbody tr[data-user]');
-            let visibleCount = 0;
-            
-            rows.forEach(row => {
-                const email = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
-                const name = row.querySelector('td:nth-child(3)').textContent.toLowerCase();
-                const phone = row.querySelector('td:nth-child(4)').textContent.toLowerCase();
-                const academy = row.querySelector('td:nth-child(5)').textContent.toLowerCase();
-                
-                if (email.includes(searchInput) || name.includes(searchInput) || phone.includes(searchInput) || academy.includes(searchInput)) {
+                if (email.includes(searchInput) || name.includes(searchInput) || 
+                    phone.includes(searchInput) || academy.includes(searchInput)) {
                     row.style.display = '';
                     visibleCount++;
                 } else {
@@ -19389,20 +19157,21 @@ ${M}
             });
             
             document.getElementById('filteredUsers').textContent = visibleCount;
-        }
+        };
         
-        function clearSearch() {
+        window.clearSearch = function() {
             document.getElementById('searchInput').value = '';
-            filterUsers();
-        }
+            window.filterUsers();
+        };
         
         // 페이지 로드시 전체 사용자 수 설정
-        window.addEventListener('DOMContentLoaded', () => {
-            const rows = document.querySelectorAll('tbody tr[data-user]');
+        document.addEventListener('DOMContentLoaded', function() {
+            var rows = document.querySelectorAll('tbody tr[data-user]');
             document.getElementById('totalUsers').textContent = rows.length;
             document.getElementById('filteredUsers').textContent = rows.length;
         });
     <\/script>
+    </body>
     </html>
   `)});d.get("/my-deposits",e=>e.html(`
     <!DOCTYPE html>
