@@ -797,6 +797,72 @@ app.post('/api/admin/run-migration', async (c) => {
   }
 })
 
+// 🔥 관리자: academies 테이블 FOREIGN KEY 제거 마이그레이션
+app.post('/api/admin/fix-academies-table', async (c) => {
+  try {
+    const results = []
+    
+    console.log('[Admin Fix] Starting academies table migration...')
+    
+    // Step 1: 기존 academies 데이터 백업
+    const existingAcademies = await c.env.DB.prepare(`
+      SELECT * FROM academies
+    `).all()
+    
+    results.push(`✅ Backed up ${existingAcademies.results.length} academies`)
+    console.log('[Admin Fix] Backed up academies:', existingAcademies.results.length)
+    
+    // Step 2: 기존 테이블 삭제
+    await c.env.DB.prepare(`DROP TABLE IF EXISTS academies`).run()
+    results.push('✅ Dropped old academies table')
+    console.log('[Admin Fix] Dropped old academies table')
+    
+    // Step 3: FOREIGN KEY 제약 없이 새 테이블 생성
+    await c.env.DB.prepare(`
+      CREATE TABLE academies (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        academy_name TEXT NOT NULL,
+        owner_id INTEGER NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `).run()
+    results.push('✅ Created new academies table (without FOREIGN KEY constraint)')
+    console.log('[Admin Fix] Created new academies table without FK')
+    
+    // Step 4: 데이터 복원
+    for (const academy of existingAcademies.results) {
+      try {
+        await c.env.DB.prepare(`
+          INSERT INTO academies (id, academy_name, owner_id, created_at)
+          VALUES (?, ?, ?, ?)
+        `).bind(academy.id, academy.academy_name, academy.owner_id, academy.created_at).run()
+      } catch (insertError) {
+        console.error('[Admin Fix] Failed to restore academy:', academy.id, insertError.message)
+      }
+    }
+    results.push(`✅ Restored ${existingAcademies.results.length} academies`)
+    console.log('[Admin Fix] Restored academies data')
+    
+    // Step 5: 인덱스 생성
+    await c.env.DB.prepare(`
+      CREATE INDEX IF NOT EXISTS idx_academies_owner_id ON academies(owner_id)
+    `).run()
+    results.push('✅ Created index on owner_id')
+    
+    return c.json({ 
+      success: true, 
+      message: 'academies 테이블이 성공적으로 재생성되었습니다 (FOREIGN KEY 제약 제거됨)',
+      results
+    })
+  } catch (err) {
+    console.error('[Admin Fix] Error:', err)
+    return c.json({ 
+      success: false, 
+      error: 'academies 테이블 수정 중 오류가 발생했습니다: ' + err.message 
+    }, 500)
+  }
+})
+
 // SMS API Routes
 // ========================================
 

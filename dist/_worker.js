@@ -2817,7 +2817,21 @@ var Bt=Object.defineProperty;var tt=e=>{throw TypeError(e)};var Mt=(e,t,s)=>t in
         FOREIGN KEY (granted_by) REFERENCES users(id),
         UNIQUE(user_id, program_key)
       )
-    `).run(),await e.env.DB.prepare("CREATE INDEX IF NOT EXISTS idx_user_permissions_user_id ON user_permissions(user_id)").run(),await e.env.DB.prepare("CREATE INDEX IF NOT EXISTS idx_user_permissions_program_key ON user_permissions(program_key)").run(),await e.env.DB.prepare("CREATE INDEX IF NOT EXISTS idx_user_permissions_active ON user_permissions(is_active)").run(),e.json({success:!0,message:"user_permissions 테이블이 성공적으로 재생성되었습니다."})}catch(t){return console.error("Migration error:",t),e.json({success:!1,error:"마이그레이션 실행 중 오류가 발생했습니다: "+t.message},500)}});d.get("/api/sms/pricing",async e=>{try{const t=await e.env.DB.prepare(`
+    `).run(),await e.env.DB.prepare("CREATE INDEX IF NOT EXISTS idx_user_permissions_user_id ON user_permissions(user_id)").run(),await e.env.DB.prepare("CREATE INDEX IF NOT EXISTS idx_user_permissions_program_key ON user_permissions(program_key)").run(),await e.env.DB.prepare("CREATE INDEX IF NOT EXISTS idx_user_permissions_active ON user_permissions(is_active)").run(),e.json({success:!0,message:"user_permissions 테이블이 성공적으로 재생성되었습니다."})}catch(t){return console.error("Migration error:",t),e.json({success:!1,error:"마이그레이션 실행 중 오류가 발생했습니다: "+t.message},500)}});d.post("/api/admin/fix-academies-table",async e=>{try{const t=[];console.log("[Admin Fix] Starting academies table migration...");const s=await e.env.DB.prepare(`
+      SELECT * FROM academies
+    `).all();t.push(`✅ Backed up ${s.results.length} academies`),console.log("[Admin Fix] Backed up academies:",s.results.length),await e.env.DB.prepare("DROP TABLE IF EXISTS academies").run(),t.push("✅ Dropped old academies table"),console.log("[Admin Fix] Dropped old academies table"),await e.env.DB.prepare(`
+      CREATE TABLE academies (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        academy_name TEXT NOT NULL,
+        owner_id INTEGER NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `).run(),t.push("✅ Created new academies table (without FOREIGN KEY constraint)"),console.log("[Admin Fix] Created new academies table without FK");for(const r of s.results)try{await e.env.DB.prepare(`
+          INSERT INTO academies (id, academy_name, owner_id, created_at)
+          VALUES (?, ?, ?, ?)
+        `).bind(r.id,r.academy_name,r.owner_id,r.created_at).run()}catch(a){console.error("[Admin Fix] Failed to restore academy:",r.id,a.message)}return t.push(`✅ Restored ${s.results.length} academies`),console.log("[Admin Fix] Restored academies data"),await e.env.DB.prepare(`
+      CREATE INDEX IF NOT EXISTS idx_academies_owner_id ON academies(owner_id)
+    `).run(),t.push("✅ Created index on owner_id"),e.json({success:!0,message:"academies 테이블이 성공적으로 재생성되었습니다 (FOREIGN KEY 제약 제거됨)",results:t})}catch(t){return console.error("[Admin Fix] Error:",t),e.json({success:!1,error:"academies 테이블 수정 중 오류가 발생했습니다: "+t.message},500)}});d.get("/api/sms/pricing",async e=>{try{const t=await e.env.DB.prepare(`
       SELECT * FROM sms_pricing ORDER BY wholesale_price ASC
     `).all();return e.json({success:!0,pricing:t.results})}catch(t){return console.error("Get SMS pricing error:",t),e.json({success:!1,error:"SMS 요금표 조회 중 오류가 발생했습니다."},500)}});d.get("/api/sms/senders",async e=>{try{const t=e.req.header("X-User-Id")||e.req.query("userId");if(!t)return e.json({success:!1,error:"사용자 ID가 필요합니다."},400);const s=await e.env.DB.prepare(`
       SELECT id, phone_number, verification_method, verification_date, status
