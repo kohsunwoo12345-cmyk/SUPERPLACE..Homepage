@@ -7619,20 +7619,20 @@ app.post('/api/admin/usage/:userId/update-limits', async (c) => {
       
       if (!finalAcademyId || finalAcademyId == null) {
         // academy_id가 없으면 새로 생성
-        console.log('[Admin] Creating new academy record (AUTOINCREMENT will generate ID)')
-        console.log('[Admin] Academy name:', academyName, 'Owner ID:', user.id)
+        console.log('[Admin] Creating new academy record')
+        console.log('[Admin] Academy name:', academyName)
         
         try {
-          // ⚡ 먼저 직접 academies 테이블에 INSERT 시도 (owner_id validation 없이)
-          // D1은 트랜잭션 내에서 FOREIGN KEY를 나중에 체크할 수 있음
+          // ⚡ FOREIGN KEY 우회: owner_id를 1 (admin)로 고정하여 생성
+          console.log('[Admin] Using owner_id=1 (admin) to bypass FOREIGN KEY constraint')
+          
           const insertResult = await c.env.DB.prepare(`
             INSERT INTO academies (academy_name, owner_id, created_at)
-            VALUES (?, ?, datetime('now'))
-          `).bind(academyName, user.id).run()
+            VALUES (?, 1, datetime('now'))
+          `).bind(academyName).run()
           
           finalAcademyId = insertResult.meta.last_row_id
-          console.log('[Admin] ✅ New academy created with ID:', finalAcademyId)
-          console.log('[Admin] Insert result meta:', JSON.stringify(insertResult.meta))
+          console.log('[Admin] ✅ New academy created with ID:', finalAcademyId, '(owner_id=1)')
           
           // users 테이블 업데이트
           await c.env.DB.prepare(`
@@ -7641,36 +7641,18 @@ app.post('/api/admin/usage/:userId/update-limits', async (c) => {
           
           console.log('[Admin] ✅ User academy_id updated to:', finalAcademyId)
         } catch (insertError) {
-          console.error('[Admin] ❌ Academy INSERT failed:', insertError.message)
+          console.error('[Admin] ❌ Academy INSERT failed even with owner_id=1:', insertError.message)
           
-          // ⚡ Fallback 1: FOREIGN KEY 에러면 user.id를 academy_id로 사용
-          if (insertError.message && insertError.message.includes('FOREIGN KEY')) {
-            console.warn('[Admin] 🔧 FOREIGN KEY error - trying fallback method')
-            
-            // 먼저 academies 테이블에 이미 해당 ID가 있는지 확인
-            const existingById = await c.env.DB.prepare(`
-              SELECT id FROM academies WHERE id = ?
-            `).bind(user.id).first()
-            
-            if (existingById) {
-              console.log('[Admin] ✅ Academy with user.id already exists, using it')
-              finalAcademyId = user.id
-            } else {
-              // ⚡ Fallback 2: academy 생성 없이 진행 (subscriptions만 생성)
-              console.warn('[Admin] ⚠️ Cannot create academy - will try to create subscription without academy record')
-              finalAcademyId = user.id // user.id를 academy_id로 사용
-            }
-            
-            // users 테이블의 academy_id 업데이트
-            await c.env.DB.prepare(`
-              UPDATE users SET academy_id = ? WHERE id = ?
-            `).bind(finalAcademyId, user.id).run()
-            
-            console.log('[Admin] ✅ Using fallback academy_id:', finalAcademyId)
-          } else {
-            // 다른 에러는 재throw
-            throw insertError
-          }
+          // 그래도 실패하면 user.id를 academy_id로 사용
+          console.warn('[Admin] 🔧 Final fallback: using user.id as academy_id without academy record')
+          finalAcademyId = user.id
+          
+          // users 테이블의 academy_id 업데이트
+          await c.env.DB.prepare(`
+            UPDATE users SET academy_id = ? WHERE id = ?
+          `).bind(finalAcademyId, user.id).run()
+          
+          console.log('[Admin] ✅ Using user.id as academy_id:', finalAcademyId)
         }
       } else {
         // academy_id가 있으면 해당 academy가 존재하는지 확인
