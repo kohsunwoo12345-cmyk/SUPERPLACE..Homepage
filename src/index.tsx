@@ -7500,6 +7500,32 @@ app.post('/api/admin/usage/:userId/update-limits', async (c) => {
   }
 })
 
+// 🔥 디버그: 권한 강제 부여 API (테스트용)
+app.post('/api/debug/force-grant-permissions/:userId', async (c) => {
+  try {
+    const userId = c.req.param('userId')
+    console.log('[Debug] Force granting permissions for user:', userId)
+    
+    const result = await grantDefaultPermissions(c.env.DB, userId)
+    
+    // 부여된 권한 확인
+    const permissions = await c.env.DB.prepare(`
+      SELECT program_key, is_active 
+      FROM user_permissions 
+      WHERE user_id = ?
+    `).bind(userId).all()
+    
+    return c.json({ 
+      success: true, 
+      grantResult: result,
+      permissions: permissions.results
+    })
+  } catch (err) {
+    console.error('[Debug] Force grant error:', err)
+    return c.json({ success: false, error: err.message }, 500)
+  }
+})
+
 // 🔥 관리자: 플랜 회수 API
 app.post('/api/admin/revoke-plan/:userId', async (c) => {
   try {
