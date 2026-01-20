@@ -7705,60 +7705,87 @@ app.post('/api/admin/seed-test-data', async (c) => {
     
     console.log('[Admin Seed] Starting test data creation')
     
-    // Step 1: 테스트 사용자 생성 (academy_id는 기본값 1 사용)
-    await DB.prepare(`
-      INSERT OR IGNORE INTO users (id, email, name, password, role, created_at)
-      VALUES 
-      (100, 'test1@example.com', '테스트사용자1', 'dummy_hash', 'teacher', datetime('now', '-30 days')),
-      (101, 'test2@example.com', '테스트사용자2', 'dummy_hash', 'teacher', datetime('now', '-20 days')),
-      (102, 'test3@example.com', '테스트사용자3', 'dummy_hash', 'teacher', datetime('now', '-10 days'))
-    `).run()
-    
-    // Step 2: 테스트 학원 생성
-    await DB.prepare(`
-      INSERT OR IGNORE INTO academies (id, owner_id, academy_name, created_at)
-      VALUES
-      (100, 100, '테스트학원1', datetime('now', '-30 days')),
-      (101, 101, '테스트학원2', datetime('now', '-20 days')),
-      (102, 102, '테스트학원3', datetime('now', '-10 days'))
-    `).run()
-    
-    // Step 3: 사용자의 academy_id 업데이트
-    await DB.prepare(`UPDATE users SET academy_id = 100 WHERE id = 100`).run()
-    await DB.prepare(`UPDATE users SET academy_id = 101 WHERE id = 101`).run()
-    await DB.prepare(`UPDATE users SET academy_id = 102 WHERE id = 102`).run()
-    
-    // 테스트 구독 생성
-    await DB.prepare(`
-      INSERT OR IGNORE INTO subscriptions (
-        id, academy_id, plan_name, plan_price, student_limit, ai_report_limit, 
-        landing_page_limit, teacher_limit, subscription_start_date, subscription_end_date, 
-        status, created_at
-      )
-      VALUES
-      (100, 100, '스타터 플랜', 55000, 30, 30, 40, 2, date('now', '-30 days'), date('now', '+335 days'), 'active', datetime('now', '-30 days')),
-      (101, 101, '베이직 플랜', 77000, 50, 50, 70, 4, date('now', '-20 days'), date('now', '+345 days'), 'active', datetime('now', '-20 days')),
-      (102, 102, '프로 플랜', 147000, 100, 100, 140, 6, date('now', '-10 days'), date('now', '+355 days'), 'active', datetime('now', '-10 days'))
-    `).run()
-    
-    // 테스트 결제 데이터 추가
-    const payments = [
-      ['payment_test_001', 100, 100, 55000, 'card', 'academy_100_starter_001', 'imp_001', 'completed', "datetime('now', '-30 days')"],
-      ['payment_test_002', 100, 100, 55000, 'card', 'academy_100_starter_002', 'imp_002', 'completed', "datetime('now', '-25 days')"],
-      ['payment_test_003', 101, 101, 77000, 'bank_transfer', 'academy_101_basic_001', null, 'completed', "datetime('now', '-20 days')"],
-      ['payment_test_004', 101, 101, 77000, 'bank_transfer', 'academy_101_basic_002', null, 'completed', "datetime('now', '-15 days')"],
-      ['payment_test_005', 102, 102, 147000, 'card', 'academy_102_pro_001', 'imp_005', 'completed', "datetime('now', '-10 days')"],
-      ['payment_test_006', 102, 102, 147000, 'card', 'academy_102_pro_002', 'imp_006', 'completed', "datetime('now', '-5 days')"],
-      ['payment_test_007', 100, 100, 55000, 'card', 'academy_100_starter_003', 'imp_007', 'completed', "datetime('now', '-3 days')"],
-      ['payment_test_008', 101, 101, 77000, 'bank_transfer', 'academy_101_basic_003', null, 'completed', "datetime('now', '-2 days')"],
-      ['payment_test_009', 102, 102, 147000, 'card', 'academy_102_pro_003', 'imp_009', 'completed', "datetime('now', '-1 days')"]
-    ]
-    
-    for (const payment of payments) {
+    try {
+      // Step 1: 테스트 사용자 생성 (academy_id는 기본값 1 사용)
+      console.log('[Admin Seed] Creating users...')
       await DB.prepare(`
-        INSERT OR IGNORE INTO payments (id, subscription_id, user_id, amount, payment_method, merchant_uid, imp_uid, status, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ${payment[8]})
-      `).bind(...payment.slice(0, 8)).run()
+        INSERT OR IGNORE INTO users (id, email, name, password, role, created_at)
+        VALUES 
+        (100, 'test1@example.com', '테스트사용자1', 'dummy_hash', 'teacher', datetime('now', '-30 days')),
+        (101, 'test2@example.com', '테스트사용자2', 'dummy_hash', 'teacher', datetime('now', '-20 days')),
+        (102, 'test3@example.com', '테스트사용자3', 'dummy_hash', 'teacher', datetime('now', '-10 days'))
+      `).run()
+      console.log('[Admin Seed] Users created')
+      
+      // Step 2: 테스트 학원 생성
+      console.log('[Admin Seed] Creating academies...')
+      await DB.prepare(`
+        INSERT OR IGNORE INTO academies (id, owner_id, academy_name, created_at)
+        VALUES
+        (100, 100, '테스트학원1', datetime('now', '-30 days')),
+        (101, 101, '테스트학원2', datetime('now', '-20 days')),
+        (102, 102, '테스트학원3', datetime('now', '-10 days'))
+      `).run()
+      console.log('[Admin Seed] Academies created')
+      
+      // Step 3: 사용자의 academy_id 업데이트
+      console.log('[Admin Seed] Updating user academy_id...')
+      await DB.prepare(`UPDATE users SET academy_id = 100 WHERE id = 100`).run()
+      await DB.prepare(`UPDATE users SET academy_id = 101 WHERE id = 101`).run()
+      await DB.prepare(`UPDATE users SET academy_id = 102 WHERE id = 102`).run()
+      console.log('[Admin Seed] User academy_id updated')
+    } catch (e) {
+      console.error('[Admin Seed] Error in user/academy creation:', e)
+      throw e
+    }
+    
+    try {
+      // 테스트 구독 생성
+      console.log('[Admin Seed] Creating subscriptions...')
+      await DB.prepare(`
+        INSERT OR IGNORE INTO subscriptions (
+          id, academy_id, plan_name, plan_price, student_limit, ai_report_limit, 
+          landing_page_limit, teacher_limit, subscription_start_date, subscription_end_date, 
+          status, created_at
+        )
+        VALUES
+        (100, 100, '스타터 플랜', 55000, 30, 30, 40, 2, date('now', '-30 days'), date('now', '+335 days'), 'active', datetime('now', '-30 days')),
+        (101, 101, '베이직 플랜', 77000, 50, 50, 70, 4, date('now', '-20 days'), date('now', '+345 days'), 'active', datetime('now', '-20 days')),
+        (102, 102, '프로 플랜', 147000, 100, 100, 140, 6, date('now', '-10 days'), date('now', '+355 days'), 'active', datetime('now', '-10 days'))
+      `).run()
+      console.log('[Admin Seed] Subscriptions created')
+    } catch (e) {
+      console.error('[Admin Seed] Error in subscription creation:', e)
+      throw e
+    }
+    
+    try {
+      // 테스트 결제 데이터 추가
+      console.log('[Admin Seed] Creating payments...')
+      const payments = [
+        ['payment_test_001', 100, 100, 55000, 'card', 'academy_100_starter_001', 'imp_001', 'completed', "datetime('now', '-30 days')"],
+        ['payment_test_002', 100, 100, 55000, 'card', 'academy_100_starter_002', 'imp_002', 'completed', "datetime('now', '-25 days')"],
+        ['payment_test_003', 101, 101, 77000, 'bank_transfer', 'academy_101_basic_001', null, 'completed', "datetime('now', '-20 days')"],
+        ['payment_test_004', 101, 101, 77000, 'bank_transfer', 'academy_101_basic_002', null, 'completed', "datetime('now', '-15 days')"],
+        ['payment_test_005', 102, 102, 147000, 'card', 'academy_102_pro_001', 'imp_005', 'completed', "datetime('now', '-10 days')"],
+        ['payment_test_006', 102, 102, 147000, 'card', 'academy_102_pro_002', 'imp_006', 'completed', "datetime('now', '-5 days')"],
+        ['payment_test_007', 100, 100, 55000, 'card', 'academy_100_starter_003', 'imp_007', 'completed', "datetime('now', '-3 days')"],
+        ['payment_test_008', 101, 101, 77000, 'bank_transfer', 'academy_101_basic_003', null, 'completed', "datetime('now', '-2 days')"],
+        ['payment_test_009', 102, 102, 147000, 'card', 'academy_102_pro_003', 'imp_009', 'completed', "datetime('now', '-1 days')"]
+      ]
+      
+      for (let i = 0; i < payments.length; i++) {
+        const payment = payments[i]
+        console.log(`[Admin Seed] Creating payment ${i + 1}/${payments.length}...`)
+        await DB.prepare(`
+          INSERT OR IGNORE INTO payments (id, subscription_id, user_id, amount, payment_method, merchant_uid, imp_uid, status, created_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ${payment[8]})
+        `).bind(...payment.slice(0, 8)).run()
+      }
+      console.log('[Admin Seed] Payments created')
+    } catch (e) {
+      console.error('[Admin Seed] Error in payment creation:', e)
+      throw e
     }
     
     console.log('[Admin Seed] Test data created successfully')
