@@ -6512,6 +6512,11 @@ app.post('/api/payments/webhook', async (c) => {
         return c.json({ success: false, error: 'Invalid plan' }, 400)
       }
 
+      // users 테이블에서 academy_id 업데이트 (본인 ID로)
+      await c.env.DB.prepare(`
+        UPDATE users SET academy_id = ? WHERE id = ?
+      `).bind(academyId, academyId).run()
+
       // 구독 시작일과 종료일 계산 (1개월)
       const now = new Date()
       const startDate = now.toISOString().split('T')[0]
@@ -6553,6 +6558,28 @@ app.post('/api/payments/webhook', async (c) => {
         endDate
       })
 
+      // 🔥 프로그램 자동 등록 (4개 기본 프로그램)
+      const programs = [
+        { route: '/students', name: '학생 관리' },
+        { route: '/tools/ai-learning-report', name: 'AI학습 분석 리포트' },
+        { route: '/tools/dashboard-analytics', name: '통합 분석 대시보드' },
+        { route: '/tools/search-volume', name: '네이버 검색량 조회' }
+      ]
+      
+      // user_programs 테이블에 기본 4개 프로그램 추가
+      for (const program of programs) {
+        try {
+          await c.env.DB.prepare(`
+            INSERT OR IGNORE INTO user_programs (user_id, program_route, program_name, enabled, created_at)
+            VALUES (?, ?, ?, 1, CURRENT_TIMESTAMP)
+          `).bind(academyId, program.route, program.name).run()
+        } catch (e) {
+          console.error('[Payment Webhook] Failed to add program:', program.name, e)
+        }
+      }
+      
+      console.log('[Payment Webhook] Added 4 basic programs for user:', academyId)
+
       return c.json({ success: true, subscriptionId: result.meta.last_row_id })
     }
 
@@ -6579,6 +6606,11 @@ app.post('/api/payments/complete', async (c) => {
     if (!planInfo) {
       return c.json({ success: false, error: 'Invalid plan' }, 400)
     }
+
+    // users 테이블에서 academy_id 업데이트 (본인 ID로)
+    await c.env.DB.prepare(`
+      UPDATE users SET academy_id = ? WHERE id = ?
+    `).bind(academyId, academyId).run()
 
     // 구독 시작일과 종료일 계산
     const now = new Date()
@@ -6657,6 +6689,28 @@ app.post('/api/payments/complete', async (c) => {
     console.log('[Payment Complete] Usage tracking initialized:', {
       usageId: usageResult.meta.last_row_id
     })
+
+    // 🔥 프로그램 자동 등록 (4개 기본 프로그램)
+    const programs = [
+      { route: '/students', name: '학생 관리' },
+      { route: '/tools/ai-learning-report', name: 'AI학습 분석 리포트' },
+      { route: '/tools/dashboard-analytics', name: '통합 분석 대시보드' },
+      { route: '/tools/search-volume', name: '네이버 검색량 조회' }
+    ]
+    
+    // user_programs 테이블에 기본 4개 프로그램 추가
+    for (const program of programs) {
+      try {
+        await c.env.DB.prepare(`
+          INSERT OR IGNORE INTO user_programs (user_id, program_route, program_name, enabled, created_at)
+          VALUES (?, ?, ?, 1, CURRENT_TIMESTAMP)
+        `).bind(academyId, program.route, program.name).run()
+      } catch (e) {
+        console.error('[Payment Complete] Failed to add program:', program.name, e)
+      }
+    }
+    
+    console.log('[Payment Complete] Added 4 basic programs for user:', academyId)
 
     return c.json({ 
       success: true, 
@@ -7415,22 +7469,20 @@ app.post('/api/bank-transfer/approve', async (c) => {
 
     const limits = planLimits[request.plan_name] || planLimits['스타터 플랜']
 
-    // 사용자의 academy_id 확인 (없으면 생성)
-    let academy: any = await c.env.DB.prepare(`
-      SELECT id FROM academies WHERE owner_id = ?
-    `).bind(request.user_id).first()
+    // 사용자의 academy_id는 user.id와 동일하게 설정
+    const academyId = request.user_id
+    
+    // users 테이블에서 academy_id 업데이트 (본인 ID로)
+    await c.env.DB.prepare(`
+      UPDATE users SET academy_id = ? WHERE id = ?
+    `).bind(academyId, request.user_id).run()
 
-    if (!academy) {
-      // 학원 생성
-      const academyResult = await c.env.DB.prepare(`
-        INSERT INTO academies (academy_name, owner_id, created_at)
-        VALUES (?, ?, CURRENT_TIMESTAMP)
-      `).bind(request.user_name + ' 학원', request.user_id).run()
-      
-      academy = { id: academyResult.meta.last_row_id }
-    }
-
-    const academyId = academy.id
+    // 기존 활성 구독 비활성화
+    await c.env.DB.prepare(`
+      UPDATE subscriptions 
+      SET status = 'expired', updated_at = CURRENT_TIMESTAMP
+      WHERE academy_id = ? AND status = 'active'
+    `).bind(academyId).run()
 
     // 구독 시작일과 종료일 계산 (1개월)
     const startDate = new Date()
