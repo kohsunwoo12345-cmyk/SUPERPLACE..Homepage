@@ -1155,6 +1155,45 @@ app.get('/api/db/migrate', async (c) => {
       results.push('⚠️ Drop failed: ' + e.message.substring(0, 50))
     }
     
+    // 🔥 긴급 수정: subscriptions 테이블도 FK 없이 재생성
+    try {
+      await c.env.DB.prepare(`DROP TABLE IF EXISTS subscriptions`).run()
+      console.log('✅ [Migration] Dropped old subscriptions table')
+      results.push('✅ Dropped old subscriptions table')
+    } catch (e) {
+      console.log('⚠️ [Migration] Drop subscriptions:', e.message)
+      results.push('⚠️ Drop subscriptions failed: ' + e.message.substring(0, 50))
+    }
+    
+    // subscriptions 테이블 재생성 (FK 없이)
+    try {
+      await c.env.DB.prepare(`
+        CREATE TABLE IF NOT EXISTS subscriptions (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          academy_id INTEGER NOT NULL,
+          plan_name TEXT NOT NULL,
+          plan_price INTEGER NOT NULL DEFAULT 0,
+          student_limit INTEGER NOT NULL DEFAULT 30,
+          ai_report_limit INTEGER NOT NULL DEFAULT 30,
+          landing_page_limit INTEGER NOT NULL DEFAULT 40,
+          teacher_limit INTEGER NOT NULL DEFAULT 2,
+          subscription_start_date TEXT NOT NULL,
+          subscription_end_date TEXT NOT NULL,
+          status TEXT DEFAULT 'active',
+          payment_method TEXT,
+          merchant_uid TEXT,
+          imp_uid TEXT,
+          created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+          updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )
+      `).run()
+      console.log('✅ [Migration] Created new subscriptions table (no FK)')
+      results.push('✅ Created new subscriptions table (no FK)')
+    } catch (e) {
+      console.log('⚠️ [Migration] Create subscriptions:', e.message)
+      results.push('⚠️ Create subscriptions failed: ' + e.message.substring(0, 50))
+    }
+    
     // usage_tracking 테이블 재생성 (FK 없이)
     try {
       await c.env.DB.prepare(`
