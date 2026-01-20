@@ -9342,9 +9342,20 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
             // 구독 상태 로드 함수
             async function loadSubscriptionStatus() {
                 try {
+                    console.log('[Dashboard] 🔍 Starting subscription status check...')
+                    console.log('[Dashboard] Current user from localStorage:', user)
+                    
                     const response = await fetch('/api/subscriptions/status')
+                    console.log('[Dashboard] API Response Status:', response.status, response.statusText)
+                    
                     const data = await response.json()
                     
+                    console.log('[Dashboard] ========== SUBSCRIPTION STATUS API RESPONSE ==========')
+                    console.log('[Dashboard] Full Response:', JSON.stringify(data, null, 2))
+                    console.log('[Dashboard] success:', data.success)
+                    console.log('[Dashboard] hasSubscription:', data.hasSubscription)
+                    console.log('[Dashboard] error:', data.error)
+                    console.log('[Dashboard] ==========================================================')
                     console.log('[Dashboard] Subscription Status Response:', data)
                     
                     const statusDiv = document.getElementById('subscriptionStatusMain')
@@ -9362,8 +9373,14 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
                     console.log('[Dashboard] hasSubscription:', hasSubscription, 'isAdminPlan:', isAdminPlan)
                     
                     // 구독이 없으면 경고 배너 표시 (관리자 플랜 포함 모든 구독이 있으면 배너 숨김)
-                    if (!hasSubscription && warningBanner) {
+                    if (!hasSubscription) {
                         console.log('[Dashboard] Showing warning banner - no subscription')
+                        console.log('[Dashboard] 🔴 No subscription found! Data:', {
+                            userId: user.id,
+                            userName: user.name,
+                            apiResponse: data,
+                            message: 'This user needs to log in with their account to see subscription data'
+                        })
                         warningBanner.classList.remove('hidden')
                         // 배너 높이만큼 컨텐츠 영역을 아래로 밀기
                         const mainContent = document.querySelector('.pt-32')
