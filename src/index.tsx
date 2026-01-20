@@ -7303,15 +7303,23 @@ app.get('/api/usage/check', async (c) => {
     }
     
     // 🔥 실제 데이터 조회: users 테이블에서 실제 선생님 수 계산
-    // academy_id가 현재 사용자인 선생님들 (user_type='teacher' AND academy_id=userId)
+    // academy_id가 원장 ID인 선생님들 (user_type='teacher' AND academy_id=academyId)
     let actualTeachersCount = 0
     try {
       const result = await c.env.DB.prepare(`
         SELECT COUNT(*) as count FROM users 
         WHERE academy_id = ? AND user_type = 'teacher'
-      `).bind(userId).first()
+      `).bind(academyId).first()
       actualTeachersCount = result?.count || 0
-      console.log('[Usage Check] Actual teachers count:', actualTeachersCount, 'for academy:', userId)
+      console.log('[Usage Check] Actual teachers count:', actualTeachersCount, 'for academy:', academyId)
+      
+      // 디버깅: 선생님 목록 확인
+      const teachersList = await c.env.DB.prepare(`
+        SELECT id, name, email, user_type, academy_id FROM users 
+        WHERE academy_id = ? AND user_type = 'teacher'
+        LIMIT 10
+      `).bind(academyId).all()
+      console.log('[Usage Check] Teachers list:', JSON.stringify(teachersList.results))
     } catch (err) {
       console.error('[Usage] teachers count error:', err.message)
     }
@@ -7490,13 +7498,38 @@ app.post('/api/usage/check-landing-page-limit', async (c) => {
 // 선생님 추가 전 한도 체크
 app.post('/api/usage/check-teacher-limit', async (c) => {
   try {
-    const session = getCookie(c, 'session_id')
-    if (!session) {
+    const sessionId = getCookie(c, 'session_id')
+    if (!sessionId) {
       return c.json({ success: false, error: 'Not authenticated' }, 401)
     }
 
-    const sessionData = JSON.parse(session)
-    const academyId = sessionData.id
+    // 세션에서 user_id 조회
+    const session = await c.env.DB.prepare(`
+      SELECT user_id FROM sessions WHERE session_id = ? AND expires_at > datetime('now')
+    `).bind(sessionId).first()
+    
+    if (!session) {
+      return c.json({ success: false, error: 'Session expired' }, 401)
+    }
+
+    const userId = session.user_id
+    
+    // 사용자 정보 조회
+    const user = await c.env.DB.prepare(`
+      SELECT id, academy_id, user_type FROM users WHERE id = ?
+    `).bind(userId).first()
+    
+    if (!user) {
+      return c.json({ success: false, error: 'User not found' }, 404)
+    }
+
+    // 🔥 플랜 상속: 선생님은 원장 ID 사용
+    let academyId
+    if (user.user_type === 'teacher') {
+      academyId = user.academy_id
+    } else {
+      academyId = user.id
+    }
 
     const subscription = await c.env.DB.prepare(`
       SELECT * FROM subscriptions 
@@ -7511,13 +7544,16 @@ app.post('/api/usage/check-teacher-limit', async (c) => {
       }, 403)
     }
 
-    const usage = await c.env.DB.prepare(`
-      SELECT * FROM usage_tracking 
-      WHERE academy_id = ? AND subscription_id = ?
-    `).bind(academyId, subscription.id).first()
-
-    const currentTeachers = usage?.current_teachers || 0
+    // 🔥 실제 선생님 수 조회 (users 테이블에서 직접 카운트)
+    const result = await c.env.DB.prepare(`
+      SELECT COUNT(*) as count FROM users 
+      WHERE academy_id = ? AND user_type = 'teacher'
+    `).bind(academyId).first()
+    
+    const currentTeachers = result?.count || 0
     const canAdd = currentTeachers < subscription.teacher_limit
+
+    console.log('[Teacher Limit Check] Academy:', academyId, 'Current:', currentTeachers, 'Limit:', subscription.teacher_limit, 'Can add:', canAdd)
 
     return c.json({
       success: true,
@@ -7527,6 +7563,7 @@ app.post('/api/usage/check-teacher-limit', async (c) => {
       message: canAdd ? '선생님을 추가할 수 있습니다' : '선생님 계정 한도에 도달했습니다'
     })
   } catch (error) {
+    console.error('[Teacher Limit Check] Error:', error)
     return c.json({ success: false, error: error.message }, 500)
   }
 })
@@ -25038,10 +25075,49 @@ app.post('/api/teachers/applications/:id/approve', async (c) => {
       return c.json({ success: false, error: '원장님 정보를 찾을 수 없습니다.' }, 404)
     }
     
-    // 기존 사용자인지 확인
+    // 🔥 선생님 한도 체크 (신규 선생님만, 기존 사용자는 제외)
     const existingUser = await c.env.DB.prepare(
       'SELECT id, email, name, user_type, parent_user_id FROM users WHERE email = ?'
     ).bind(application.email).first()
+    
+    if (!existingUser) {
+      // 신규 선생님만 한도 체크
+      console.log('[ApproveTeacher] New teacher - checking limit')
+      
+      // 구독 조회
+      const subscription = await c.env.DB.prepare(`
+        SELECT * FROM subscriptions 
+        WHERE academy_id = ? AND status = 'active'
+        ORDER BY created_at DESC LIMIT 1
+      `).bind(directorId).first()
+      
+      if (!subscription) {
+        return c.json({ 
+          success: false, 
+          error: '활성 구독이 없습니다. 플랜을 먼저 구독해주세요.' 
+        }, 403)
+      }
+      
+      // 현재 선생님 수 조회
+      const result = await c.env.DB.prepare(`
+        SELECT COUNT(*) as count FROM users 
+        WHERE academy_id = ? AND user_type = 'teacher'
+      `).bind(directorId).first()
+      
+      const currentTeachers = result?.count || 0
+      const teacherLimit = subscription.teacher_limit
+      
+      console.log('[ApproveTeacher] Current teachers:', currentTeachers, 'Limit:', teacherLimit)
+      
+      if (currentTeachers >= teacherLimit) {
+        return c.json({ 
+          success: false, 
+          error: `선생님 계정 한도에 도달했습니다. (${currentTeachers}/${teacherLimit})\n플랜을 업그레이드하거나 기존 선생님을 삭제해주세요.`,
+          currentTeachers,
+          teacherLimit
+        }, 403)
+      }
+    }
     
     let teacherId
     
@@ -25051,13 +25127,12 @@ app.post('/api/teachers/applications/:id/approve', async (c) => {
       
       teacherId = existingUser.id
       
-      // parent_user_id 업데이트 (학원 연결)
-      // ✅ role과 user_type 모두 'teacher'로 설정 (일관성)
+      // parent_user_id, academy_id, user_type 모두 업데이트
       await c.env.DB.prepare(`
         UPDATE users 
-        SET parent_user_id = ?, academy_name = ?, role = 'teacher'
+        SET parent_user_id = ?, academy_name = ?, academy_id = ?, user_type = 'teacher', role = 'teacher'
         WHERE id = ?
-      `).bind(directorId, director.academy_name, existingUser.id).run()
+      `).bind(directorId, director.academy_name, directorId, existingUser.id).run()
       
       console.log('[ApproveTeacher] User connected to academy')
       
@@ -25067,20 +25142,22 @@ app.post('/api/teachers/applications/:id/approve', async (c) => {
       
       const userResult = await c.env.DB.prepare(`
         INSERT INTO users (
-          email, password, name, phone, role, 
-          parent_user_id, academy_name, created_at
+          email, password, name, phone, role, user_type,
+          parent_user_id, academy_name, academy_id, created_at
         )
-        VALUES (?, ?, ?, ?, 'teacher', ?, ?, datetime('now'))
+        VALUES (?, ?, ?, ?, 'teacher', 'teacher', ?, ?, ?, datetime('now'))
       `).bind(
         application.email,
         application.password,
         application.name,
         application.phone,
         directorId,
-        director.academy_name
+        director.academy_name,
+        directorId
       ).run()
       
       teacherId = userResult.meta.last_row_id
+      console.log('[ApproveTeacher] New teacher created with ID:', teacherId)
     }
     
     // 신청 상태 업데이트
@@ -25201,14 +25278,16 @@ app.post('/api/teachers/add', async (c) => {
       }, 403)
     }
     
-    const usage = await c.env.DB.prepare(`
-      SELECT current_teachers 
-      FROM usage_tracking 
-      WHERE subscription_id = ?
-    `).bind(activeSubscription.id).first()
+    // 🔥 현재 선생님 수 조회 (users 테이블에서 직접 카운트)
+    const teacherCountResult = await c.env.DB.prepare(`
+      SELECT COUNT(*) as count FROM users 
+      WHERE academy_id = ? AND user_type = 'teacher'
+    `).bind(academyIdToUse).first()
     
-    const currentTeachers = usage?.current_teachers || 0
+    const currentTeachers = teacherCountResult?.count || 0
     const teacherLimit = activeSubscription.teacher_limit
+    
+    console.log('[AddTeacher] Current teachers:', currentTeachers, 'Limit:', teacherLimit)
     
     if (currentTeachers >= teacherLimit) {
       return c.json({ 
@@ -25247,19 +25326,11 @@ app.post('/api/teachers/add', async (c) => {
       // 기존 사용자를 이 학원의 선생님으로 연결
       await c.env.DB.prepare(`
         UPDATE users 
-        SET parent_user_id = ?, academy_name = ?, user_type = 'teacher', assigned_class = ?, updated_at = datetime('now')
+        SET parent_user_id = ?, academy_name = ?, academy_id = ?, user_type = 'teacher', assigned_class = ?, updated_at = datetime('now')
         WHERE id = ?
-      `).bind(userId, director.academy_name, assigned_class || null, existingUser.id).run()
+      `).bind(userId, director.academy_name, academyIdToUse, assigned_class || null, existingUser.id).run()
       
-      // 🔥 사용량 증가
-      await c.env.DB.prepare(`
-        UPDATE usage_tracking 
-        SET current_teachers = current_teachers + 1, 
-            updated_at = CURRENT_TIMESTAMP
-        WHERE subscription_id = ?
-      `).bind(activeSubscription.id).run()
-      
-      console.log('✅ Existing teacher connected and usage incremented:', currentTeachers + 1, '/', teacherLimit)
+      console.log('✅ [AddTeacher] Existing teacher connected. Total teachers:', currentTeachers + 1, '/', teacherLimit)
       
       return c.json({ 
         success: true, 
@@ -25278,9 +25349,9 @@ app.post('/api/teachers/add', async (c) => {
     const result = await c.env.DB.prepare(`
       INSERT INTO users (
         email, password, name, phone, role, user_type, 
-        parent_user_id, academy_name, assigned_class, created_at
+        parent_user_id, academy_name, academy_id, assigned_class, created_at
       )
-      VALUES (?, ?, ?, ?, 'user', 'teacher', ?, ?, ?, datetime('now'))
+      VALUES (?, ?, ?, ?, 'user', 'teacher', ?, ?, ?, ?, datetime('now'))
     `).bind(
       email,
       defaultPassword,
@@ -25288,20 +25359,13 @@ app.post('/api/teachers/add', async (c) => {
       phone || null,
       userId,
       director.academy_name,
+      academyIdToUse,
       assigned_class || null
     ).run()
     
     teacherId = result.meta.last_row_id
     
-    // 🔥 사용량 증가
-    await c.env.DB.prepare(`
-      UPDATE usage_tracking 
-      SET current_teachers = current_teachers + 1, 
-          updated_at = CURRENT_TIMESTAMP
-      WHERE subscription_id = ?
-    `).bind(activeSubscription.id).run()
-    
-    console.log('✅ Teacher added and usage incremented:', currentTeachers + 1, '/', teacherLimit)
+    console.log('✅ [AddTeacher] New teacher added. Total teachers:', currentTeachers + 1, '/', teacherLimit)
     
     return c.json({ 
       success: true, 
