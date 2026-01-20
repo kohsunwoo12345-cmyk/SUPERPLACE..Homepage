@@ -7806,6 +7806,46 @@ app.post('/api/admin/seed-test-data', async (c) => {
   }
 })
 
+// 🔍 관리자: DB 디버그 API (결제 데이터 확인)
+app.get('/api/admin/debug/payments', async (c) => {
+  try {
+    const DB = c.env.DB
+    
+    // 모든 결제 데이터 확인
+    const allPayments = await DB.prepare(`
+      SELECT * FROM payments ORDER BY created_at DESC LIMIT 10
+    `).all()
+    
+    // payments 테이블 스키마 확인
+    const schema = await DB.prepare(`
+      PRAGMA table_info(payments)
+    `).all()
+    
+    // 결제 건수 확인
+    const counts = await DB.prepare(`
+      SELECT 
+        status,
+        COUNT(*) as count,
+        SUM(amount) as total
+      FROM payments
+      GROUP BY status
+    `).all()
+    
+    return c.json({
+      success: true,
+      data: {
+        schema: schema.results,
+        counts: counts.results,
+        recentPayments: allPayments.results,
+        totalCount: allPayments.results.length
+      }
+    })
+  } catch (error) {
+    console.error('[Admin Debug] Error:', error)
+    return c.json({ success: false, error: error.message }, 500)
+  }
+})
+
 // 💰 관리자: 매출 통계 조회 API
 app.get('/api/admin/revenue/stats', async (c) => {
   try {
