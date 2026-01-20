@@ -7698,6 +7698,68 @@ app.post('/api/admin/revoke-plan/:userId', async (c) => {
   }
 })
 
+// 🧪 관리자: 테스트 데이터 생성 API (임시)
+app.post('/api/admin/seed-test-data', async (c) => {
+  try {
+    const DB = c.env.DB
+    
+    console.log('[Admin Seed] Starting test data creation')
+    
+    // 테스트 사용자 생성
+    await DB.prepare(`
+      INSERT OR IGNORE INTO users (id, email, name, password_hash, role, created_at)
+      VALUES 
+      (100, 'test1@example.com', '테스트사용자1', 'dummy_hash', 'user', datetime('now', '-30 days')),
+      (101, 'test2@example.com', '테스트사용자2', 'dummy_hash', 'user', datetime('now', '-20 days')),
+      (102, 'test3@example.com', '테스트사용자3', 'dummy_hash', 'user', datetime('now', '-10 days'))
+    `).run()
+    
+    // 테스트 구독 생성
+    await DB.prepare(`
+      INSERT OR IGNORE INTO subscriptions (id, user_id, academy_id, plan_name, status, start_date, created_at)
+      VALUES
+      (100, 100, 100, '스타터 플랜', 'active', datetime('now', '-30 days'), datetime('now', '-30 days')),
+      (101, 101, 101, '베이직 플랜', 'active', datetime('now', '-20 days'), datetime('now', '-20 days')),
+      (102, 102, 102, '프로 플랜', 'active', datetime('now', '-10 days'), datetime('now', '-10 days'))
+    `).run()
+    
+    // 테스트 결제 데이터 추가
+    const payments = [
+      ['payment_test_001', 100, 100, 55000, 'card', 'academy_100_starter_001', 'imp_001', 'completed', "datetime('now', '-30 days')"],
+      ['payment_test_002', 100, 100, 55000, 'card', 'academy_100_starter_002', 'imp_002', 'completed', "datetime('now', '-25 days')"],
+      ['payment_test_003', 101, 101, 77000, 'bank_transfer', 'academy_101_basic_001', null, 'completed', "datetime('now', '-20 days')"],
+      ['payment_test_004', 101, 101, 77000, 'bank_transfer', 'academy_101_basic_002', null, 'completed', "datetime('now', '-15 days')"],
+      ['payment_test_005', 102, 102, 147000, 'card', 'academy_102_pro_001', 'imp_005', 'completed', "datetime('now', '-10 days')"],
+      ['payment_test_006', 102, 102, 147000, 'card', 'academy_102_pro_002', 'imp_006', 'completed', "datetime('now', '-5 days')"],
+      ['payment_test_007', 100, 100, 55000, 'card', 'academy_100_starter_003', 'imp_007', 'completed', "datetime('now', '-3 days')"],
+      ['payment_test_008', 101, 101, 77000, 'bank_transfer', 'academy_101_basic_003', null, 'completed', "datetime('now', '-2 days')"],
+      ['payment_test_009', 102, 102, 147000, 'card', 'academy_102_pro_003', 'imp_009', 'completed', "datetime('now', '-1 days')"]
+    ]
+    
+    for (const payment of payments) {
+      await DB.prepare(`
+        INSERT OR IGNORE INTO payments (id, subscription_id, user_id, amount, payment_method, merchant_uid, imp_uid, status, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ${payment[8]})
+      `).bind(...payment.slice(0, 8)).run()
+    }
+    
+    console.log('[Admin Seed] Test data created successfully')
+    
+    return c.json({ 
+      success: true, 
+      message: '테스트 데이터가 생성되었습니다.',
+      data: {
+        users: 3,
+        subscriptions: 3,
+        payments: 9
+      }
+    })
+  } catch (error) {
+    console.error('[Admin Seed] Error:', error)
+    return c.json({ success: false, error: error.message }, 500)
+  }
+})
+
 // 💰 관리자: 매출 통계 조회 API
 app.get('/api/admin/revenue/stats', async (c) => {
   try {

@@ -5508,7 +5508,22 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
           landing_pages_created = 0, current_teachers = 0,
           updated_at = CURRENT_TIMESTAMP
       WHERE academy_id = ?
-    `).bind(r).run(),console.log("[Admin Revoke] Reset usage_tracking for academy:",r),e.json({success:!0,message:"플랜이 성공적으로 회수되었습니다"})}catch(t){return console.error("[Admin Revoke] Error:",t),e.json({success:!1,error:t.message},500)}});d.get("/api/admin/revenue/stats",async e=>{try{const t=e.env.DB,s=await t.prepare(`
+    `).bind(r).run(),console.log("[Admin Revoke] Reset usage_tracking for academy:",r),e.json({success:!0,message:"플랜이 성공적으로 회수되었습니다"})}catch(t){return console.error("[Admin Revoke] Error:",t),e.json({success:!1,error:t.message},500)}});d.post("/api/admin/seed-test-data",async e=>{try{const t=e.env.DB;console.log("[Admin Seed] Starting test data creation"),await t.prepare(`
+      INSERT OR IGNORE INTO users (id, email, name, password_hash, role, created_at)
+      VALUES 
+      (100, 'test1@example.com', '테스트사용자1', 'dummy_hash', 'user', datetime('now', '-30 days')),
+      (101, 'test2@example.com', '테스트사용자2', 'dummy_hash', 'user', datetime('now', '-20 days')),
+      (102, 'test3@example.com', '테스트사용자3', 'dummy_hash', 'user', datetime('now', '-10 days'))
+    `).run(),await t.prepare(`
+      INSERT OR IGNORE INTO subscriptions (id, user_id, academy_id, plan_name, status, start_date, created_at)
+      VALUES
+      (100, 100, 100, '스타터 플랜', 'active', datetime('now', '-30 days'), datetime('now', '-30 days')),
+      (101, 101, 101, '베이직 플랜', 'active', datetime('now', '-20 days'), datetime('now', '-20 days')),
+      (102, 102, 102, '프로 플랜', 'active', datetime('now', '-10 days'), datetime('now', '-10 days'))
+    `).run();const s=[["payment_test_001",100,100,55e3,"card","academy_100_starter_001","imp_001","completed","datetime('now', '-30 days')"],["payment_test_002",100,100,55e3,"card","academy_100_starter_002","imp_002","completed","datetime('now', '-25 days')"],["payment_test_003",101,101,77e3,"bank_transfer","academy_101_basic_001",null,"completed","datetime('now', '-20 days')"],["payment_test_004",101,101,77e3,"bank_transfer","academy_101_basic_002",null,"completed","datetime('now', '-15 days')"],["payment_test_005",102,102,147e3,"card","academy_102_pro_001","imp_005","completed","datetime('now', '-10 days')"],["payment_test_006",102,102,147e3,"card","academy_102_pro_002","imp_006","completed","datetime('now', '-5 days')"],["payment_test_007",100,100,55e3,"card","academy_100_starter_003","imp_007","completed","datetime('now', '-3 days')"],["payment_test_008",101,101,77e3,"bank_transfer","academy_101_basic_003",null,"completed","datetime('now', '-2 days')"],["payment_test_009",102,102,147e3,"card","academy_102_pro_003","imp_009","completed","datetime('now', '-1 days')"]];for(const r of s)await t.prepare(`
+        INSERT OR IGNORE INTO payments (id, subscription_id, user_id, amount, payment_method, merchant_uid, imp_uid, status, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ${r[8]})
+      `).bind(...r.slice(0,8)).run();return console.log("[Admin Seed] Test data created successfully"),e.json({success:!0,message:"테스트 데이터가 생성되었습니다.",data:{users:3,subscriptions:3,payments:9}})}catch(t){return console.error("[Admin Seed] Error:",t),e.json({success:!1,error:t.message},500)}});d.get("/api/admin/revenue/stats",async e=>{try{const t=e.env.DB,s=await t.prepare(`
       SELECT 
         COUNT(*) as total_count,
         SUM(amount) as total_revenue
