@@ -6879,24 +6879,35 @@ app.get('/api/subscriptions/status', async (c) => {
     
     console.log('[Subscription Status] userId:', userId)
     
-    // 사용자의 academy_id 조회
-    const user = await c.env.DB.prepare(`SELECT id, academy_id FROM users WHERE id = ?`).bind(userId).first()
+    // 사용자의 user_type과 academy_id 조회
+    const user = await c.env.DB.prepare(`
+      SELECT id, academy_id, user_type FROM users WHERE id = ?
+    `).bind(userId).first()
     
     console.log('[Subscription Status] user:', user)
     
-    // 🔥 핵심 변경: academy_id를 항상 user.id로 강제 설정
-    let academyId = user.id
-    
-    if (user?.academy_id !== user.id) {
-      console.log(`[Subscription Status] Fixing academy_id from ${user?.academy_id} to ${user.id}`)
-      try {
-        await c.env.DB.prepare(`UPDATE users SET academy_id = ? WHERE id = ?`).bind(academyId, userId).run()
-      } catch (e) {
-        console.error('[Subscription Status] Failed to update academy_id:', e)
+    // 🔥 플랜 상속 시스템: 선생님은 원장의 플랜을 상속받음
+    let academyId
+    if (user.user_type === 'teacher') {
+      // 선생님인 경우 academy_id (원장 ID)로 구독 조회
+      academyId = user.academy_id
+      console.log('[Subscription Status] Teacher detected, using owner academy_id:', academyId)
+    } else {
+      // 원장인 경우 자신의 ID로 구독 조회
+      academyId = user.id
+      
+      // academy_id가 자신의 ID와 다르면 수정
+      if (user?.academy_id !== user.id) {
+        console.log(`[Subscription Status] Owner: Fixing academy_id from ${user?.academy_id} to ${user.id}`)
+        try {
+          await c.env.DB.prepare(`UPDATE users SET academy_id = ? WHERE id = ?`).bind(academyId, userId).run()
+        } catch (e) {
+          console.error('[Subscription Status] Failed to update academy_id:', e)
+        }
       }
     }
 
-    console.log('[Subscription Status] Using academy_id:', academyId)
+    console.log('[Subscription Status] Using academy_id:', academyId, 'for user_type:', user.user_type)
 
     // 활성 구독 조회
     const subscription = await c.env.DB.prepare(`
@@ -7024,10 +7035,11 @@ app.get('/api/subscriptions/check-expired', async (c) => {
       })
     }
     
-    // 각 만료된 구독을 비활성화
+    // 각 만료된 구독을 비활성화하고 관련 데이터 회수
     let expiredCount = 0
     for (const sub of expiredSubscriptions.results) {
       try {
+        // 1. 구독 상태를 expired로 변경
         await c.env.DB.prepare(`
           UPDATE subscriptions 
           SET status = 'expired', updated_at = CURRENT_TIMESTAMP
@@ -7040,6 +7052,43 @@ app.get('/api/subscriptions/check-expired', async (c) => {
           plan_name: sub.plan_name,
           end_date: sub.subscription_end_date
         })
+        
+        // 🔥 2. 플랜 자동 회수: 권한 및 프로그램 삭제
+        try {
+          // 원장과 해당 학원의 모든 선생님 찾기
+          const academyUsers = await c.env.DB.prepare(`
+            SELECT id FROM users WHERE academy_id = ?
+          `).bind(sub.academy_id).all()
+          
+          // 모든 사용자의 권한 및 프로그램 삭제
+          for (const academyUser of academyUsers.results) {
+            // user_permissions 삭제
+            await c.env.DB.prepare(`
+              DELETE FROM user_permissions WHERE user_id = ?
+            `).bind(academyUser.id).run()
+            
+            // user_programs 삭제
+            await c.env.DB.prepare(`
+              DELETE FROM user_programs WHERE user_id = ?
+            `).bind(academyUser.id).run()
+          }
+          
+          // usage_tracking 리셋
+          await c.env.DB.prepare(`
+            UPDATE usage_tracking 
+            SET current_students = 0, 
+                ai_reports_used_this_month = 0, 
+                landing_pages_created = 0, 
+                current_teachers = 0,
+                sms_sent_this_month = 0,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE academy_id = ?
+          `).bind(sub.academy_id).run()
+          
+          console.log('[Subscription Cron] ✅ Auto-revoked plan for academy:', sub.academy_id)
+        } catch (revokeErr) {
+          console.error('[Subscription Cron] Failed to auto-revoke for academy', sub.academy_id, ':', revokeErr.message)
+        }
         
         expiredCount++
       } catch (err) {
@@ -7085,22 +7134,33 @@ app.get('/api/usage/check', async (c) => {
     
     const userId = session.user_id
     
-    // 사용자의 academy_id 조회
-    const user = await c.env.DB.prepare(`SELECT id, academy_id FROM users WHERE id = ?`).bind(userId).first()
+    // 사용자의 user_type과 academy_id 조회
+    const user = await c.env.DB.prepare(`
+      SELECT id, academy_id, user_type FROM users WHERE id = ?
+    `).bind(userId).first()
     
     if (!user) {
       return c.json({ success: false, error: 'User not found' }, 404)
     }
     
-    // 🔥 핵심 변경: academy_id를 항상 user.id로 강제 설정
-    let academyId = user.id
-    
-    if (user?.academy_id !== user.id) {
-      try {
-        await c.env.DB.prepare(`UPDATE users SET academy_id = ? WHERE id = ?`).bind(academyId, userId).run()
-        console.log('[Usage Check] Fixed academy_id to:', userId)
-      } catch (e) {
-        console.error('[Usage Check] Failed to update academy_id:', e)
+    // 🔥 플랜 상속 시스템: 선생님은 원장의 플랜을 상속받음
+    let academyId
+    if (user.user_type === 'teacher') {
+      // 선생님인 경우 academy_id (원장 ID)로 구독 조회
+      academyId = user.academy_id
+      console.log('[Usage Check] Teacher detected, using owner academy_id:', academyId)
+    } else {
+      // 원장인 경우 자신의 ID로 구독 조회
+      academyId = user.id
+      
+      // academy_id가 자신의 ID와 다르면 수정
+      if (user?.academy_id !== user.id) {
+        try {
+          await c.env.DB.prepare(`UPDATE users SET academy_id = ? WHERE id = ?`).bind(academyId, userId).run()
+          console.log('[Usage Check] Owner: Fixed academy_id to:', userId)
+        } catch (e) {
+          console.error('[Usage Check] Failed to update academy_id:', e)
+        }
       }
     }
 
