@@ -9352,10 +9352,39 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
                     console.log('[Dashboard] 🔍 Starting subscription status check...')
                     console.log('[Dashboard] Current user from localStorage:', user)
                     
-                    const response = await fetch('/api/subscriptions/status')
+                    // 🔥 Try session-based API first
+                    let response = await fetch('/api/subscriptions/status')
                     console.log('[Dashboard] API Response Status:', response.status, response.statusText)
                     
-                    const data = await response.json()
+                    let data = await response.json()
+                    
+                    // 🔥 If session failed, try direct user ID lookup
+                    if (!data.success || !data.hasSubscription) {
+                        console.log('[Dashboard] ⚠️ Session-based API failed, trying direct lookup with user.id:', user.id)
+                        const directResponse = await fetch('/api/debug/user/' + user.id + '/subscription')
+                        const directData = await directResponse.json()
+                        
+                        console.log('[Dashboard] Direct lookup response:', directData)
+                        
+                        if (directData.subscriptions && directData.subscriptions.active) {
+                            const sub = directData.subscriptions.active
+                            data = {
+                                success: true,
+                                hasSubscription: true,
+                                subscription: {
+                                    id: sub.id,
+                                    planName: sub.plan_name,
+                                    startDate: sub.subscription_start_date,
+                                    endDate: sub.subscription_end_date,
+                                    studentLimit: sub.student_limit,
+                                    aiReportLimit: sub.ai_report_limit,
+                                    landingPageLimit: sub.landing_page_limit,
+                                    teacherLimit: sub.teacher_limit
+                                }
+                            }
+                            console.log('[Dashboard] ✅ Converted to subscription format:', data)
+                        }
+                    }
                     
                     console.log('[Dashboard] ========== SUBSCRIPTION STATUS API RESPONSE ==========')
                     console.log('[Dashboard] Full Response:', JSON.stringify(data, null, 2))
@@ -9423,19 +9452,49 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
                         let usageHtml = ''
                         try {
                             console.log('[Dashboard] Fetching usage data...')
-                            const usageRes = await fetch('/api/usage/check', {
+                            let usageRes = await fetch('/api/usage/check', {
                                 method: 'GET',
                                 credentials: 'include',
                                 cache: 'no-cache'
                             })
                             console.log('[Dashboard] Usage API status:', usageRes.status)
                             
-                            const usageData = await usageRes.json()
+                            let usageData = await usageRes.json()
                             console.log('[Dashboard] ========== USAGE API RESPONSE ==========')
                             console.log('[Dashboard] Full Response:', JSON.stringify(usageData, null, 2))
                             console.log('[Dashboard] success:', usageData.success)
                             console.log('[Dashboard] error:', usageData.error)
                             console.log('[Dashboard] ==========================================')
+                            
+                            // 🔥 If usage check failed, use debug API
+                            if (!usageData.success) {
+                                console.log('[Dashboard] ⚠️ Usage API failed, using debug data for user.id:', user.id)
+                                const debugResponse = await fetch('/api/debug/user/' + user.id + '/subscription')
+                                const debugData = await debugResponse.json()
+                                
+                                if (debugData.subscriptions && debugData.subscriptions.active) {
+                                    const activeSub = debugData.subscriptions.active
+                                    const actualData = debugData.actualData || {}
+                                    
+                                    usageData = {
+                                        success: true,
+                                        limits: {
+                                            students: activeSub.student_limit || 0,
+                                            aiReports: activeSub.ai_report_limit || 0,
+                                            landingPages: activeSub.landing_page_limit || 0,
+                                            teachers: activeSub.teacher_limit || 0
+                                        },
+                                        usage: {
+                                            students: actualData.students || 0,
+                                            aiReports: 0,
+                                            landingPages: actualData.landingPages || 0,
+                                            teachers: actualData.teachers === 'table_not_found' ? 0 : (actualData.teachers || 0),
+                                            sms: 0
+                                        }
+                                    }
+                                    console.log('[Dashboard] ✅ Converted debug data to usage format:', usageData)
+                                }
+                            }
                             
                             if (usageData.success) {
                                 const { limits, usage } = usageData
