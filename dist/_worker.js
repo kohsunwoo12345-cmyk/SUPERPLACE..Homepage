@@ -9294,29 +9294,6 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
                             </div>
                         </a>
 
-                        <a href="/tools/sms-sender" class="block bg-gradient-to-br from-green-500 to-green-700 rounded-2xl p-8 hover:shadow-2xl transition-all hover:-translate-y-1">
-                            <div class="flex items-center gap-4 mb-4">
-                                <div class="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-                                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-                                    </svg>
-                                </div>
-                                <div>
-                                    <h3 class="text-2xl font-bold text-white">자동 문자 발송</h3>
-                                    <p class="text-green-100 text-sm">학부모 일괄 문자 발송</p>
-                                </div>
-                            </div>
-                            <p class="text-white/90 leading-relaxed mb-4">
-                                수업 공지, 결석 안내, 상담 요청을 템플릿으로 간편하게 발송하세요. 예약 발송도 가능합니다.
-                            </p>
-                            <div class="flex items-center text-white font-medium">
-                                <span>바로 사용하기</span>
-                                <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                                </svg>
-                            </div>
-                        </a>
-
                         <a href="/students" class="block bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-2xl p-8 hover:shadow-2xl transition-all hover:-translate-y-1">
                             <div class="flex items-center gap-4 mb-4">
                                 <div class="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
