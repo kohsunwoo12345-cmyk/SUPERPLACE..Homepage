@@ -23500,12 +23500,13 @@ app.get('/admin/users', async (c) => {
                 </div>
             </div>
         </div>
-    </body>
-    <script>
+        
+        <script>
+        // 전역 변수
         let currentUsageUserId = null;
         
         // 사용 한도 관리 모달 열기
-        async function manageUsageLimits(userId, userName) {
+        window.manageUsageLimits = async function(userId, userName) {
             currentUsageUserId = userId;
             document.getElementById('usageModalUserName').textContent = userName + '님의 사용 한도';
             document.getElementById('usageLimitsModal').classList.remove('hidden');
@@ -23776,7 +23777,7 @@ app.get('/admin/users', async (c) => {
         }
         
         // 사용 한도 저장
-        async function saveUsageLimits() {
+        window.saveUsageLimits = async function() {
             console.log('💾 [SaveUsageLimits] Function called');
             console.log('💾 [SaveUsageLimits] currentUsageUserId:', currentUsageUserId);
             
@@ -23872,7 +23873,7 @@ app.get('/admin/users', async (c) => {
         }
         
         // 플랜 회수 함수
-        async function revokePlan(userId, userName) {
+        window.revokePlan = async function(userId, userName) {
             if (!confirm('정말 ' + userName + '님의 플랜을 회수하시겠습니까?\\n\\n회수 후:\\n- 모든 구독이 비활성화됩니다\\n- 등록된 프로그램이 모두 삭제됩니다\\n- 사용자는 프로그램을 이용할 수 없게 됩니다')) {
                 return;
             }
@@ -23899,13 +23900,13 @@ app.get('/admin/users', async (c) => {
         }
         
         // 사용 한도 모달 닫기
-        function closeUsageLimitsModal() {
+        window.closeUsageLimitsModal = function() {
             document.getElementById('usageLimitsModal').classList.add('hidden');
             currentUsageUserId = null;
         }
         
         // 사용자 검색 필터링
-        function filterUsers() {
+        window.filterUsers = function() {
             const searchInput = document.getElementById('searchInput').value.toLowerCase().trim();
             const rows = document.querySelectorAll('tbody tr[data-user]');
             let visibleCount = 0;
@@ -23927,9 +23928,113 @@ app.get('/admin/users', async (c) => {
             document.getElementById('filteredUsers').textContent = visibleCount;
         }
         
-        function clearSearch() {
+        window.clearSearch = function() {
             document.getElementById('searchInput').value = '';
             filterUsers();
+        }
+        
+        // 비밀번호 변경
+        window.changePassword = function(userId, userName) {
+            const newPassword = prompt(userName + '님의 새 비밀번호를 입력하세요:');
+            if (newPassword && newPassword.trim()) {
+                fetch('/api/admin/users/' + userId + '/password', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ newPassword: newPassword.trim() })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('✅ 비밀번호가 변경되었습니다!');
+                    } else {
+                        alert('❌ 변경 실패: ' + (data.error || '알 수 없는 오류'));
+                    }
+                })
+                .catch(err => alert('❌ 네트워크 오류: ' + err.message));
+            }
+        }
+        
+        // 포인트 지급
+        window.givePoints = function(userId, userName, currentPoints) {
+            const amount = prompt(userName + '님 (현재: ' + currentPoints + 'P)에게 지급할 포인트:');
+            if (amount && !isNaN(amount) && parseInt(amount) > 0) {
+                fetch('/api/admin/users/' + userId + '/points', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ amount: parseInt(amount) })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('✅ ' + amount + 'P가 지급되었습니다!');
+                        location.reload();
+                    } else {
+                        alert('❌ 지급 실패: ' + (data.error || '알 수 없는 오류'));
+                    }
+                })
+                .catch(err => alert('❌ 네트워크 오류: ' + err.message));
+            }
+        }
+        
+        // 포인트 차감
+        window.deductPoints = function(userId, userName, currentPoints) {
+            const amount = prompt(userName + '님 (현재: ' + currentPoints + 'P)에서 차감할 포인트:');
+            if (amount && !isNaN(amount) && parseInt(amount) > 0) {
+                fetch('/api/admin/users/' + userId + '/points/deduct', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ amount: parseInt(amount) })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('✅ ' + amount + 'P가 차감되었습니다!');
+                        location.reload();
+                    } else {
+                        alert('❌ 차감 실패: ' + (data.error || '알 수 없는 오류'));
+                    }
+                })
+                .catch(err => alert('❌ 네트워크 오류: ' + err.message));
+            }
+        }
+        
+        // 사용자로 로그인
+        window.loginAs = function(userId, userName) {
+            if (confirm(userName + '님의 계정으로 로그인하시겠습니까?')) {
+                alert('🚧 이 기능은 아직 구현되지 않았습니다.');
+            }
+        }
+        
+        // 권한 관리
+        window.managePermissions = function(userId, userName) {
+            alert('🚧 권한 관리 기능은 별도 모달에서 구현 예정입니다.');
+        }
+        
+        // 사용자 삭제
+        window.deleteUser = function(userId, userName) {
+            if (confirm('⚠️ 정말 ' + userName + '님을 삭제하시겠습니까?\\n\\n이 작업은 되돌릴 수 없습니다.')) {
+                fetch('/api/admin/users/' + userId, {
+                    method: 'DELETE'
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('✅ 사용자가 삭제되었습니다!');
+                        location.reload();
+                    } else {
+                        alert('❌ 삭제 실패: ' + (data.error || '알 수 없는 오류'));
+                    }
+                })
+                .catch(err => alert('❌ 네트워크 오류: ' + err.message));
+            }
+        }
+        
+        // logout 함수
+        window.logout = function() {
+            if (confirm('로그아웃하시겠습니까?')) {
+                document.cookie = 'session_id=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+                window.location.href = '/login';
+            }
         }
         
         // 페이지 로드시 전체 사용자 수 설정
@@ -23939,6 +24044,7 @@ app.get('/admin/users', async (c) => {
             document.getElementById('filteredUsers').textContent = rows.length;
         });
     </script>
+    </body>
     </html>
   `)
 })
