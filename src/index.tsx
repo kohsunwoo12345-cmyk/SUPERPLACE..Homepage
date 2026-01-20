@@ -7707,11 +7707,11 @@ app.post('/api/admin/seed-test-data', async (c) => {
     
     // 테스트 사용자 생성
     await DB.prepare(`
-      INSERT OR IGNORE INTO users (id, email, name, password_hash, role, created_at)
+      INSERT OR IGNORE INTO users (id, email, name, password, role, created_at)
       VALUES 
-      (100, 'test1@example.com', '테스트사용자1', 'dummy_hash', 'user', datetime('now', '-30 days')),
-      (101, 'test2@example.com', '테스트사용자2', 'dummy_hash', 'user', datetime('now', '-20 days')),
-      (102, 'test3@example.com', '테스트사용자3', 'dummy_hash', 'user', datetime('now', '-10 days'))
+      (100, 'test1@example.com', '테스트사용자1', 'dummy_hash', 'teacher', datetime('now', '-30 days')),
+      (101, 'test2@example.com', '테스트사용자2', 'dummy_hash', 'teacher', datetime('now', '-20 days')),
+      (102, 'test3@example.com', '테스트사용자3', 'dummy_hash', 'teacher', datetime('now', '-10 days'))
     `).run()
     
     // 테스트 구독 생성
