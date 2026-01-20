@@ -5462,9 +5462,15 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
     `).bind(c).first(),u=new Date,m=new Date(u.getTime()+540*60*1e3),g=m.toISOString().split("T")[0],b=new Date(m);b.setMonth(b.getMonth()+l),b.setDate(b.getDate()-1);const h=b.toISOString().split("T")[0];if(console.log(`[Admin] Subscription period: ${g} to ${h} (${l} months)`),!await e.env.DB.prepare(`
       SELECT id FROM academies WHERE id = ?
     `).bind(c).first()){console.log("[Admin] Creating academy record for academy_id:",c);try{const f=i.academy_name||i.name+"학원";await e.env.DB.prepare(`
-          INSERT OR REPLACE INTO academies (id, academy_name, owner_id, created_at)
+          INSERT OR IGNORE INTO academies (id, academy_name, owner_id, created_at)
           VALUES (?, ?, ?, datetime('now'))
-        `).bind(c,f,i.id).run(),console.log("✅ [Admin] Academy record created with INSERT OR REPLACE")}catch(f){console.warn("[Admin] Academy creation failed:",f.message)}}if(p){console.log("[Admin] Updating existing admin subscription:",p.id),await e.env.DB.prepare(`
+        `).bind(c,f,i.id).run(),await e.env.DB.prepare(`
+          SELECT id FROM academies WHERE id = ?
+        `).bind(c).first()?console.log("✅ [Admin] Academy record created successfully"):(console.log("[Admin] Academy not found after INSERT, trying direct creation"),await e.env.DB.prepare(`
+            INSERT INTO academies (id, academy_name, owner_id, created_at)
+            SELECT ?, ?, ?, datetime('now')
+            WHERE NOT EXISTS (SELECT 1 FROM academies WHERE id = ?)
+          `).bind(c,f,i.id,c).run())}catch(f){return console.error("[Admin] Academy creation failed:",f.message),e.json({success:!1,error:`Academy 생성 실패: ${f.message}`},500)}}if(p){console.log("[Admin] Updating existing admin subscription:",p.id),await e.env.DB.prepare(`
         UPDATE subscriptions 
         SET student_limit = ?, 
             ai_report_limit = ?, 
