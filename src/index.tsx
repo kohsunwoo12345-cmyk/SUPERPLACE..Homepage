@@ -611,21 +611,12 @@ app.get('/api/user/permissions', async (c) => {
       all: false
     }
 
-    // 라우트와 권한 키 매핑
+    // 라우트와 권한 키 매핑 (4개 기본 프로그램)
     const routeToPermission: any = {
-      '/programs/naver-place': 'search_volume',
-      '/programs/consulting': 'consultation_script',
-      '/programs/naver-form-register': 'parent_message',
-      '/programs/video-editing': 'photo_optimizer',
-      '/programs/consulting-automation': 'consultation_script',
-      '/programs/online-consulting': 'consultation_script',
-      '/programs/sns-management': 'content_calendar',
-      '/programs/naver-blog': 'blog_writer',
-      '/programs/ai-teacher': 'ai_learning_report',
-      '/programs/landing-builder': 'landing_builder',
-      '/programs/attendance': 'student_management',
-      '/programs/student-report': 'ai_learning_report',
-      '/programs/operation-consulting': 'consultation_script'
+      '/tools/parent-message': 'parent_message',
+      '/tools/landing-builder': 'landing_builder',
+      '/students': 'student_management',
+      '/tools/ai-learning-report': 'ai_learning_report'
     }
 
     // 프로그램이 있으면 해당 권한 활성화
@@ -7409,24 +7400,15 @@ app.post('/api/bank-transfer/approve', async (c) => {
       ) VALUES (?, ?, 0, 0, 0, 0, CURRENT_TIMESTAMP)
     `).bind(academyId, subscriptionId).run()
 
-    // 🔥 프로그램 자동 등록 (13개 전체 프로그램)
+    // 🔥 프로그램 자동 등록 (4개 기본 프로그램)
     const programs = [
-      { route: '/programs/naver-place', name: '네이버 플레이스 상위노출' },
-      { route: '/programs/consulting', name: '컨설팅 서비스' },
-      { route: '/programs/naver-form-register', name: '네이버 폼 등록' },
-      { route: '/programs/video-editing', name: '영상 편집' },
-      { route: '/programs/consulting-automation', name: '상담 자동화' },
-      { route: '/programs/online-consulting', name: '온라인 상담' },
-      { route: '/programs/sns-management', name: 'SNS 관리' },
-      { route: '/programs/naver-blog', name: '네이버 블로그' },
-      { route: '/programs/ai-teacher', name: 'AI 선생님' },
-      { route: '/programs/landing-builder', name: '랜딩페이지 빌더' },
-      { route: '/programs/attendance', name: '출결 관리' },
-      { route: '/programs/student-report', name: '학생 리포트' },
-      { route: '/programs/operation-consulting', name: '운영 컨설팅' }
+      { route: '/tools/parent-message', name: '학부모 소통 시스템' },
+      { route: '/tools/landing-builder', name: '랜딩페이지 생성기' },
+      { route: '/students', name: '학생 관리' },
+      { route: '/tools/ai-learning-report', name: 'AI학습 분석 리포트' }
     ]
     
-    // user_programs 테이블에 모든 프로그램 추가
+    // user_programs 테이블에 기본 4개 프로그램 추가
     for (const program of programs) {
       try {
         await c.env.DB.prepare(`
@@ -7438,7 +7420,7 @@ app.post('/api/bank-transfer/approve', async (c) => {
       }
     }
     
-    console.log('[Bank Transfer Approve] Added all programs for user:', request.user_id)
+    console.log('[Bank Transfer Approve] Added 4 basic programs for user:', request.user_id)
 
     // 신청 상태 업데이트
     await c.env.DB.prepare(`
@@ -7659,6 +7641,59 @@ app.post('/api/admin/usage/:userId/update-limits', async (c) => {
     })
   } catch (error) {
     console.error('[Admin] Update limits error:', error)
+    return c.json({ success: false, error: error.message }, 500)
+  }
+})
+
+// 🔥 관리자: 플랜 회수 API
+app.post('/api/admin/revoke-plan/:userId', async (c) => {
+  try {
+    const userId = c.req.param('userId')
+    
+    console.log('[Admin Revoke] Revoking plan for user:', userId)
+    
+    // 사용자 정보 조회
+    const user: any = await c.env.DB.prepare('SELECT id, academy_id, name FROM users WHERE id = ?').bind(userId).first()
+    
+    if (!user) {
+      return c.json({ success: false, error: '사용자를 찾을 수 없습니다' }, 404)
+    }
+    
+    const academyId = user.academy_id || user.id
+    
+    // 1. 모든 활성 구독을 비활성화
+    await c.env.DB.prepare(`
+      UPDATE subscriptions 
+      SET status = 'cancelled', updated_at = CURRENT_TIMESTAMP
+      WHERE academy_id = ? AND status = 'active'
+    `).bind(academyId).run()
+    
+    console.log('[Admin Revoke] Cancelled all active subscriptions for academy:', academyId)
+    
+    // 2. 모든 프로그램 삭제
+    await c.env.DB.prepare(`
+      DELETE FROM user_programs WHERE user_id = ?
+    `).bind(userId).run()
+    
+    console.log('[Admin Revoke] Deleted all programs for user:', userId)
+    
+    // 3. usage_tracking 초기화 (삭제하지 않고 0으로 리셋)
+    await c.env.DB.prepare(`
+      UPDATE usage_tracking
+      SET current_students = 0, ai_reports_used_this_month = 0, 
+          landing_pages_created = 0, current_teachers = 0,
+          updated_at = CURRENT_TIMESTAMP
+      WHERE academy_id = ?
+    `).bind(academyId).run()
+    
+    console.log('[Admin Revoke] Reset usage_tracking for academy:', academyId)
+    
+    return c.json({ 
+      success: true, 
+      message: '플랜이 성공적으로 회수되었습니다'
+    })
+  } catch (error) {
+    console.error('[Admin Revoke] Error:', error)
     return c.json({ success: false, error: error.message }, 500)
   }
 })
@@ -11960,6 +11995,26 @@ app.get('/dashboard', (c) => {
             // 권한 체크 함수
             async function checkPermissions() {
                 try {
+                    // 먼저 구독 상태 확인
+                    const subResponse = await fetch('/api/subscriptions/status')
+                    const subData = await subResponse.json()
+                    const hasSubscription = subData.success && subData.hasSubscription
+                    
+                    console.log('[checkPermissions] Subscription status:', hasSubscription)
+                    
+                    // 구독이 없으면 모든 프로그램 카드 숨기기
+                    if (!hasSubscription && user.role !== 'admin') {
+                        console.log('❌ 구독 없음 - 모든 프로그램 숨김')
+                        const allToolCards = document.querySelectorAll('.tool-card, [href*="/tools/"], [href*="/programs/"], .program-card')
+                        allToolCards.forEach(card => {
+                            card.style.display = 'none'
+                        })
+                        // SMS 섹션도 숨김
+                        const smsSection = document.getElementById('smsSection')
+                        if (smsSection) smsSection.style.display = 'none'
+                        return
+                    }
+                    
                     const response = await fetch('/api/user/permissions?userId=' + user.id)
                     const data = await response.json()
                     
@@ -23362,7 +23417,12 @@ app.get('/admin/users', async (c) => {
                     '<h4 class="text-lg font-bold text-gray-900">' + sub.planName + '</h4>' +
                     '<p class="text-sm text-gray-600 mt-1">' + sub.startDate + ' ~ ' + sub.endDate + '</p>' +
                     '</div>' +
+                    '<div class="flex items-center gap-2">' +
                     '<span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">활성</span>' +
+                    '<button onclick="revokePlan(' + userId + ', \'' + userName + '\')" class="px-3 py-1 bg-red-600 text-white rounded-full text-sm font-medium hover:bg-red-700 transition">' +
+                    '<i class="fas fa-times mr-1"></i>플랜 회수' +
+                    '</button>' +
+                    '</div>' +
                     '</div>' +
                     '</div>' +
                     '<!-- 구독 기간 설정 -->' +
@@ -23514,6 +23574,33 @@ app.get('/admin/users', async (c) => {
                     console.error('Update error:', error);
                     alert('❌ 네트워크 오류가 발생했습니다');
                 }
+            }
+        }
+        
+        // 플랜 회수 함수
+        async function revokePlan(userId, userName) {
+            if (!confirm('정말 ' + userName + '님의 플랜을 회수하시겠습니까?\\n\\n회수 후:\\n- 모든 구독이 비활성화됩니다\\n- 등록된 프로그램이 모두 삭제됩니다\\n- 사용자는 프로그램을 이용할 수 없게 됩니다')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/admin/revoke-plan/' + userId, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('✅ 플랜이 성공적으로 회수되었습니다!');
+                    closeUsageLimitsModal();
+                    location.reload(); // 페이지 새로고침
+                } else {
+                    alert('❌ 회수 실패: ' + (data.error || '알 수 없는 오류'));
+                }
+            } catch (error) {
+                console.error('Revoke error:', error);
+                alert('❌ 네트워크 오류가 발생했습니다');
             }
         }
         
@@ -26665,24 +26752,15 @@ app.post('/api/payment/verify', async (c) => {
       VALUES (?, ?, ?, ?, 'card', ?, ?, 'completed', datetime('now'))
     `).bind(paymentId, subscriptionId, user_id, amount, merchant_uid, imp_uid).run()
     
-    // 🔥 프로그램 자동 등록 (13개 전체 프로그램)
+    // 🔥 프로그램 자동 등록 (4개 기본 프로그램)
     const programs = [
-      { route: '/programs/naver-place', name: '네이버 플레이스 상위노출' },
-      { route: '/programs/consulting', name: '컨설팅 서비스' },
-      { route: '/programs/naver-form-register', name: '네이버 폼 등록' },
-      { route: '/programs/video-editing', name: '영상 편집' },
-      { route: '/programs/consulting-automation', name: '상담 자동화' },
-      { route: '/programs/online-consulting', name: '온라인 상담' },
-      { route: '/programs/sns-management', name: 'SNS 관리' },
-      { route: '/programs/naver-blog', name: '네이버 블로그' },
-      { route: '/programs/ai-teacher', name: 'AI 선생님' },
-      { route: '/programs/landing-builder', name: '랜딩페이지 빌더' },
-      { route: '/programs/attendance', name: '출결 관리' },
-      { route: '/programs/student-report', name: '학생 리포트' },
-      { route: '/programs/operation-consulting', name: '운영 컨설팅' }
+      { route: '/tools/parent-message', name: '학부모 소통 시스템' },
+      { route: '/tools/landing-builder', name: '랜딩페이지 생성기' },
+      { route: '/students', name: '학생 관리' },
+      { route: '/tools/ai-learning-report', name: 'AI학습 분석 리포트' }
     ]
     
-    // user_programs 테이블에 모든 프로그램 추가
+    // user_programs 테이블에 기본 4개 프로그램 추가
     for (const program of programs) {
       try {
         await DB.prepare(`
@@ -26694,7 +26772,7 @@ app.post('/api/payment/verify', async (c) => {
       }
     }
     
-    console.log('[Payment Verify] Added all programs for user:', user_id)
+    console.log('[Payment Verify] Added 4 basic programs for user:', user_id)
     
     return c.json({
       success: true,

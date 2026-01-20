@@ -2790,7 +2790,7 @@ var Bt=Object.defineProperty;var tt=e=>{throw TypeError(e)};var Mt=(e,t,s)=>t in
       SELECT program_route, program_name, enabled
       FROM user_programs
       WHERE user_id = ? AND enabled = 1
-    `).bind(t).all();console.log("[User Permissions] Programs for user",t,":",r);const a={search_volume:!1,sms:!1,sms_sender:!1,landing_builder:!1,analytics:!1,parent_message:!1,blog_writer:!1,student_management:!1,dashboard_analytics:!1,ai_learning_report:!1,keyword_analyzer:!1,review_template:!1,ad_copy_generator:!1,photo_optimizer:!1,competitor_analysis:!1,blog_checklist:!1,content_calendar:!1,consultation_script:!1,place_optimization:!1,roi_calculator:!1,all:!1},n={"/programs/naver-place":"search_volume","/programs/consulting":"consultation_script","/programs/naver-form-register":"parent_message","/programs/video-editing":"photo_optimizer","/programs/consulting-automation":"consultation_script","/programs/online-consulting":"consultation_script","/programs/sns-management":"content_calendar","/programs/naver-blog":"blog_writer","/programs/ai-teacher":"ai_learning_report","/programs/landing-builder":"landing_builder","/programs/attendance":"student_management","/programs/student-report":"ai_learning_report","/programs/operation-consulting":"consultation_script"};return r.forEach(o=>{const l=n[o.program_route];l&&(a[l]=!0,console.log("[User Permissions] Enabled:",l,"from program:",o.program_name))}),a.sms_sender&&(a.sms=!0),e.json({success:!0,permissions:a})}catch(t){return console.error("Get user permissions error:",t),e.json({success:!1,error:"권한 조회 중 오류가 발생했습니다."},500)}});d.post("/api/admin/grant-permission",async e=>{try{const t=await e.req.json(),{userId:s,programKey:r,expiresAt:a}=t,n=t.adminId||t.grantedBy;if(!s||!r||!n)return e.json({success:!1,error:"필수 정보를 입력해주세요."},400);const o=await e.env.DB.prepare("SELECT role FROM users WHERE id = ?").bind(n).first();return!o||o.role!=="admin"?e.json({success:!1,error:"관리자 권한이 필요합니다."},403):(await e.env.DB.prepare(`
+    `).bind(t).all();console.log("[User Permissions] Programs for user",t,":",r);const a={search_volume:!1,sms:!1,sms_sender:!1,landing_builder:!1,analytics:!1,parent_message:!1,blog_writer:!1,student_management:!1,dashboard_analytics:!1,ai_learning_report:!1,keyword_analyzer:!1,review_template:!1,ad_copy_generator:!1,photo_optimizer:!1,competitor_analysis:!1,blog_checklist:!1,content_calendar:!1,consultation_script:!1,place_optimization:!1,roi_calculator:!1,all:!1},n={"/tools/parent-message":"parent_message","/tools/landing-builder":"landing_builder","/students":"student_management","/tools/ai-learning-report":"ai_learning_report"};return r.forEach(o=>{const l=n[o.program_route];l&&(a[l]=!0,console.log("[User Permissions] Enabled:",l,"from program:",o.program_name))}),a.sms_sender&&(a.sms=!0),e.json({success:!0,permissions:a})}catch(t){return console.error("Get user permissions error:",t),e.json({success:!1,error:"권한 조회 중 오류가 발생했습니다."},500)}});d.post("/api/admin/grant-permission",async e=>{try{const t=await e.req.json(),{userId:s,programKey:r,expiresAt:a}=t,n=t.adminId||t.grantedBy;if(!s||!r||!n)return e.json({success:!1,error:"필수 정보를 입력해주세요."},400);const o=await e.env.DB.prepare("SELECT role FROM users WHERE id = ?").bind(n).first();return!o||o.role!=="admin"?e.json({success:!1,error:"관리자 권한이 필요합니다."},403):(await e.env.DB.prepare(`
       INSERT OR REPLACE INTO user_permissions (user_id, program_key, granted_by, is_active, expires_at)
       VALUES (?, ?, ?, 1, ?)
     `).bind(s,r,n,a||null).run(),e.json({success:!0,message:"권한이 부여되었습니다."}))}catch(t){return console.error("Grant permission error:",t),e.json({success:!1,error:"권한 부여 중 오류가 발생했습니다."},500)}});d.post("/api/admin/revoke-permission",async e=>{try{const{userId:t,programKey:s,adminId:r}=await e.req.json();if(!t||!s||!r)return e.json({success:!1,error:"필수 정보를 입력해주세요."},400);const a=await e.env.DB.prepare("SELECT role FROM users WHERE id = ?").bind(r).first();return!a||a.role!=="admin"?e.json({success:!1,error:"관리자 권한이 필요합니다."},403):(await e.env.DB.prepare(`
@@ -5434,10 +5434,10 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
         academy_id, subscription_id, current_students, ai_reports_used_this_month,
         landing_pages_created, current_teachers, updated_at
       ) VALUES (?, ?, 0, 0, 0, 0, CURRENT_TIMESTAMP)
-    `).bind(l,u).run();const m=[{route:"/programs/naver-place",name:"네이버 플레이스 상위노출"},{route:"/programs/consulting",name:"컨설팅 서비스"},{route:"/programs/naver-form-register",name:"네이버 폼 등록"},{route:"/programs/video-editing",name:"영상 편집"},{route:"/programs/consulting-automation",name:"상담 자동화"},{route:"/programs/online-consulting",name:"온라인 상담"},{route:"/programs/sns-management",name:"SNS 관리"},{route:"/programs/naver-blog",name:"네이버 블로그"},{route:"/programs/ai-teacher",name:"AI 선생님"},{route:"/programs/landing-builder",name:"랜딩페이지 빌더"},{route:"/programs/attendance",name:"출결 관리"},{route:"/programs/student-report",name:"학생 리포트"},{route:"/programs/operation-consulting",name:"운영 컨설팅"}];for(const x of m)try{await e.env.DB.prepare(`
+    `).bind(l,u).run();const m=[{route:"/tools/parent-message",name:"학부모 소통 시스템"},{route:"/tools/landing-builder",name:"랜딩페이지 생성기"},{route:"/students",name:"학생 관리"},{route:"/tools/ai-learning-report",name:"AI학습 분석 리포트"}];for(const x of m)try{await e.env.DB.prepare(`
           INSERT OR IGNORE INTO user_programs (user_id, program_route, program_name, enabled, created_at)
           VALUES (?, ?, ?, 1, CURRENT_TIMESTAMP)
-        `).bind(r.user_id,x.route,x.name).run()}catch(b){console.error("[Bank Transfer Approve] Failed to add program:",x.name,b)}return console.log("[Bank Transfer Approve] Added all programs for user:",r.user_id),await e.env.DB.prepare(`
+        `).bind(r.user_id,x.route,x.name).run()}catch(b){console.error("[Bank Transfer Approve] Failed to add program:",x.name,b)}return console.log("[Bank Transfer Approve] Added 4 basic programs for user:",r.user_id),await e.env.DB.prepare(`
       UPDATE bank_transfer_requests
       SET status = 'approved', approved_at = CURRENT_TIMESTAMP, approved_by = ?
       WHERE id = ?
@@ -5496,7 +5496,19 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
             created_at, updated_at
           )
           VALUES (?, ?, 0, 0, 0, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-        `).bind(c,y).run(),console.log("✅ [Admin] New admin subscription created with usage_tracking")}catch(f){console.warn("[Admin] Failed to create usage_tracking:",f.message),console.log("✅ [Admin] New admin subscription created (usage_tracking will be auto-created on first use)")}}return e.json({success:!0,message:"사용 한도가 업데이트되었습니다",limits:{studentLimit:s,aiReportLimit:r,landingPageLimit:a,teacherLimit:n}})}catch(t){return console.error("[Admin] Update limits error:",t),e.json({success:!1,error:t.message},500)}});d.get("/api/admin/usage/:userId",async e=>{try{const t=e.req.param("userId"),s=await e.env.DB.prepare("SELECT id, academy_id, name, academy_name FROM users WHERE id = ?").bind(t).first();if(!s)return e.json({success:!1,hasSubscription:!1,message:"사용자를 찾을 수 없습니다"});let r=s.academy_id;if(!r){r=s.id;try{await e.env.DB.prepare(`
+        `).bind(c,y).run(),console.log("✅ [Admin] New admin subscription created with usage_tracking")}catch(f){console.warn("[Admin] Failed to create usage_tracking:",f.message),console.log("✅ [Admin] New admin subscription created (usage_tracking will be auto-created on first use)")}}return e.json({success:!0,message:"사용 한도가 업데이트되었습니다",limits:{studentLimit:s,aiReportLimit:r,landingPageLimit:a,teacherLimit:n}})}catch(t){return console.error("[Admin] Update limits error:",t),e.json({success:!1,error:t.message},500)}});d.post("/api/admin/revoke-plan/:userId",async e=>{try{const t=e.req.param("userId");console.log("[Admin Revoke] Revoking plan for user:",t);const s=await e.env.DB.prepare("SELECT id, academy_id, name FROM users WHERE id = ?").bind(t).first();if(!s)return e.json({success:!1,error:"사용자를 찾을 수 없습니다"},404);const r=s.academy_id||s.id;return await e.env.DB.prepare(`
+      UPDATE subscriptions 
+      SET status = 'cancelled', updated_at = CURRENT_TIMESTAMP
+      WHERE academy_id = ? AND status = 'active'
+    `).bind(r).run(),console.log("[Admin Revoke] Cancelled all active subscriptions for academy:",r),await e.env.DB.prepare(`
+      DELETE FROM user_programs WHERE user_id = ?
+    `).bind(t).run(),console.log("[Admin Revoke] Deleted all programs for user:",t),await e.env.DB.prepare(`
+      UPDATE usage_tracking
+      SET current_students = 0, ai_reports_used_this_month = 0, 
+          landing_pages_created = 0, current_teachers = 0,
+          updated_at = CURRENT_TIMESTAMP
+      WHERE academy_id = ?
+    `).bind(r).run(),console.log("[Admin Revoke] Reset usage_tracking for academy:",r),e.json({success:!0,message:"플랜이 성공적으로 회수되었습니다"})}catch(t){return console.error("[Admin Revoke] Error:",t),e.json({success:!1,error:t.message},500)}});d.get("/api/admin/usage/:userId",async e=>{try{const t=e.req.param("userId"),s=await e.env.DB.prepare("SELECT id, academy_id, name, academy_name FROM users WHERE id = ?").bind(t).first();if(!s)return e.json({success:!1,hasSubscription:!1,message:"사용자를 찾을 수 없습니다"});let r=s.academy_id;if(!r){r=s.id;try{await e.env.DB.prepare(`
           UPDATE users SET academy_id = ? WHERE id = ?
         `).bind(r,s.id).run(),console.log("[Admin] Auto-created academy_id:",r)}catch(o){console.error("[Admin] Failed to set academy_id:",o)}}let a=null;try{a=await e.env.DB.prepare(`
         SELECT * FROM subscriptions 
@@ -9615,6 +9627,26 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
             // 권한 체크 함수
             async function checkPermissions() {
                 try {
+                    // 먼저 구독 상태 확인
+                    const subResponse = await fetch('/api/subscriptions/status')
+                    const subData = await subResponse.json()
+                    const hasSubscription = subData.success && subData.hasSubscription
+                    
+                    console.log('[checkPermissions] Subscription status:', hasSubscription)
+                    
+                    // 구독이 없으면 모든 프로그램 카드 숨기기
+                    if (!hasSubscription && user.role !== 'admin') {
+                        console.log('❌ 구독 없음 - 모든 프로그램 숨김')
+                        const allToolCards = document.querySelectorAll('.tool-card, [href*="/tools/"], [href*="/programs/"], .program-card')
+                        allToolCards.forEach(card => {
+                            card.style.display = 'none'
+                        })
+                        // SMS 섹션도 숨김
+                        const smsSection = document.getElementById('smsSection')
+                        if (smsSection) smsSection.style.display = 'none'
+                        return
+                    }
+                    
                     const response = await fetch('/api/user/permissions?userId=' + user.id)
                     const data = await response.json()
                     
@@ -18968,7 +19000,12 @@ ${M}
                     '<h4 class="text-lg font-bold text-gray-900">' + sub.planName + '</h4>' +
                     '<p class="text-sm text-gray-600 mt-1">' + sub.startDate + ' ~ ' + sub.endDate + '</p>' +
                     '</div>' +
+                    '<div class="flex items-center gap-2">' +
                     '<span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">활성</span>' +
+                    '<button onclick="revokePlan(' + userId + ', '' + userName + '')" class="px-3 py-1 bg-red-600 text-white rounded-full text-sm font-medium hover:bg-red-700 transition">' +
+                    '<i class="fas fa-times mr-1"></i>플랜 회수' +
+                    '</button>' +
+                    '</div>' +
                     '</div>' +
                     '</div>' +
                     '<!-- 구독 기간 설정 -->' +
@@ -19120,6 +19157,33 @@ ${M}
                     console.error('Update error:', error);
                     alert('❌ 네트워크 오류가 발생했습니다');
                 }
+            }
+        }
+        
+        // 플랜 회수 함수
+        async function revokePlan(userId, userName) {
+            if (!confirm('정말 ' + userName + '님의 플랜을 회수하시겠습니까?\\n\\n회수 후:\\n- 모든 구독이 비활성화됩니다\\n- 등록된 프로그램이 모두 삭제됩니다\\n- 사용자는 프로그램을 이용할 수 없게 됩니다')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/admin/revoke-plan/' + userId, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('✅ 플랜이 성공적으로 회수되었습니다!');
+                    closeUsageLimitsModal();
+                    location.reload(); // 페이지 새로고침
+                } else {
+                    alert('❌ 회수 실패: ' + (data.error || '알 수 없는 오류'));
+                }
+            } catch (error) {
+                console.error('Revoke error:', error);
+                alert('❌ 네트워크 오류가 발생했습니다');
             }
         }
         
@@ -20125,10 +20189,10 @@ ${l.director_name} 원장님의 승인을 기다려주세요.`,directorName:l.di
     `).bind(u,h).run(),console.log("[Payment Verify] Created usage_tracking");const v="PAY_"+Date.now();await o.prepare(`
       INSERT INTO payments (id, subscription_id, user_id, amount, payment_method, merchant_uid, imp_uid, status, created_at)
       VALUES (?, ?, ?, ?, 'card', ?, ?, 'completed', datetime('now'))
-    `).bind(v,h,n,a,s,t).run();const y=[{route:"/programs/naver-place",name:"네이버 플레이스 상위노출"},{route:"/programs/consulting",name:"컨설팅 서비스"},{route:"/programs/naver-form-register",name:"네이버 폼 등록"},{route:"/programs/video-editing",name:"영상 편집"},{route:"/programs/consulting-automation",name:"상담 자동화"},{route:"/programs/online-consulting",name:"온라인 상담"},{route:"/programs/sns-management",name:"SNS 관리"},{route:"/programs/naver-blog",name:"네이버 블로그"},{route:"/programs/ai-teacher",name:"AI 선생님"},{route:"/programs/landing-builder",name:"랜딩페이지 빌더"},{route:"/programs/attendance",name:"출결 관리"},{route:"/programs/student-report",name:"학생 리포트"},{route:"/programs/operation-consulting",name:"운영 컨설팅"}];for(const f of y)try{await o.prepare(`
+    `).bind(v,h,n,a,s,t).run();const y=[{route:"/tools/parent-message",name:"학부모 소통 시스템"},{route:"/tools/landing-builder",name:"랜딩페이지 생성기"},{route:"/students",name:"학생 관리"},{route:"/tools/ai-learning-report",name:"AI학습 분석 리포트"}];for(const f of y)try{await o.prepare(`
           INSERT OR IGNORE INTO user_programs (user_id, program_route, program_name, enabled, created_at)
           VALUES (?, ?, ?, 1, CURRENT_TIMESTAMP)
-        `).bind(n,f.route,f.name).run()}catch(I){console.error("[Payment Verify] Failed to add program:",f.name,I)}return console.log("[Payment Verify] Added all programs for user:",n),e.json({success:!0,message:"결제가 성공적으로 처리되었습니다",subscription_id:h,academy_id:u,subscription:{id:h,plan:r,startDate:m.toISOString(),endDate:x.toISOString()}})}catch(t){return console.error("Payment verification error:",t),e.json({success:!1,error:t.message||"결제 검증에 실패했습니다"},500)}});d.get("/api/subscription/:userId",async e=>{try{const t=e.req.param("userId"),{DB:s}=e.env,r=await s.prepare(`
+        `).bind(n,f.route,f.name).run()}catch(I){console.error("[Payment Verify] Failed to add program:",f.name,I)}return console.log("[Payment Verify] Added 4 basic programs for user:",n),e.json({success:!0,message:"결제가 성공적으로 처리되었습니다",subscription_id:h,academy_id:u,subscription:{id:h,plan:r,startDate:m.toISOString(),endDate:x.toISOString()}})}catch(t){return console.error("Payment verification error:",t),e.json({success:!1,error:t.message||"결제 검증에 실패했습니다"},500)}});d.get("/api/subscription/:userId",async e=>{try{const t=e.req.param("userId"),{DB:s}=e.env,r=await s.prepare(`
       SELECT * FROM subscriptions WHERE user_id = ? AND status = 'active' ORDER BY created_at DESC LIMIT 1
     `).bind(t).first();return e.json({success:!0,subscription:r||null})}catch(t){return console.error("Get subscription error:",t),e.json({success:!1,error:t.message},500)}});d.get("/api/payments/:userId",async e=>{try{const t=e.req.param("userId"),{DB:s}=e.env,{results:r}=await s.prepare(`
       SELECT p.*, s.plan_type FROM payments p
