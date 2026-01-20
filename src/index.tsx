@@ -23861,6 +23861,7 @@ app.get('/admin/users', async (c) => {
                     alert('❌ 권한 관리 기능을 로드할 수 없습니다.');
                 }
             };
+            
             window.deleteUser = function(userId, userName) {
                 if (confirm('⚠️ 정말 ' + userName + '님을 삭제하시겠습니까?')) {
                     fetch('/api/admin/users/' + userId, { method: 'DELETE' })
