@@ -5515,11 +5515,11 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
       (101, 'test2@example.com', '테스트사용자2', 'dummy_hash', 'teacher', datetime('now', '-20 days')),
       (102, 'test3@example.com', '테스트사용자3', 'dummy_hash', 'teacher', datetime('now', '-10 days'))
     `).run(),await t.prepare(`
-      INSERT OR IGNORE INTO academies (id, owner_id, name, phone, address, created_at)
+      INSERT OR IGNORE INTO academies (id, owner_id, academy_name, created_at)
       VALUES
-      (100, 100, '테스트학원1', '010-1111-1111', '서울시 강남구', datetime('now', '-30 days')),
-      (101, 101, '테스트학원2', '010-2222-2222', '서울시 서초구', datetime('now', '-20 days')),
-      (102, 102, '테스트학원3', '010-3333-3333', '서울시 송파구', datetime('now', '-10 days'))
+      (100, 100, '테스트학원1', datetime('now', '-30 days')),
+      (101, 101, '테스트학원2', datetime('now', '-20 days')),
+      (102, 102, '테스트학원3', datetime('now', '-10 days'))
     `).run(),await t.prepare(`
       INSERT OR IGNORE INTO subscriptions (
         id, academy_id, plan_name, plan_price, student_limit, ai_report_limit, 
