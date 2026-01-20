@@ -23626,7 +23626,6 @@ app.get('/admin/users', async (c) => {
         <title>사용자 관리 - 슈퍼플레이스</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
-        <script src="/static/admin-users.js"></script>
         <style>
             .gradient-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
         </style>
@@ -24131,6 +24130,8 @@ app.get('/admin/users', async (c) => {
             document.getElementById('filteredUsers').textContent = rows.length;
         });
     </script>
+    <!-- admin-users.js를 body 끝에 로드하여 모든 함수가 준비된 후 실행 -->
+    <script src="/static/admin-users.js"></script>
     </body>
     </html>
   `)
