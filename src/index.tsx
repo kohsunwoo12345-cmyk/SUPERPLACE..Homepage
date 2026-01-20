@@ -6576,6 +6576,23 @@ app.post('/api/payments/webhook', async (c) => {
         return c.json({ success: false, error: 'Invalid plan' }, 400)
       }
 
+      // academies 테이블에 레코드가 있는지 확인하고 없으면 생성 (FOREIGN KEY 제약 조건 만족)
+      const existingAcademy = await c.env.DB.prepare(`
+        SELECT id FROM academies WHERE id = ?
+      `).bind(academyId).first()
+      
+      if (!existingAcademy) {
+        console.log('[Payment Webhook] Creating academy record with id:', academyId)
+        // 사용자 정보 조회
+        const user = await c.env.DB.prepare(`SELECT name FROM users WHERE id = ?`).bind(academyId).first()
+        const academyName = user?.name ? user.name + ' 학원' : '학원'
+        
+        await c.env.DB.prepare(`
+          INSERT INTO academies (id, academy_name, owner_id, created_at)
+          VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+        `).bind(academyId, academyName, academyId).run()
+      }
+
       // users 테이블에서 academy_id 업데이트 (본인 ID로)
       await c.env.DB.prepare(`
         UPDATE users SET academy_id = ? WHERE id = ?
@@ -6669,6 +6686,23 @@ app.post('/api/payments/complete', async (c) => {
     const planInfo = PLAN_INFO[planId]
     if (!planInfo) {
       return c.json({ success: false, error: 'Invalid plan' }, 400)
+    }
+
+    // academies 테이블에 레코드가 있는지 확인하고 없으면 생성 (FOREIGN KEY 제약 조건 만족)
+    const existingAcademy = await c.env.DB.prepare(`
+      SELECT id FROM academies WHERE id = ?
+    `).bind(academyId).first()
+    
+    if (!existingAcademy) {
+      console.log('[Payment Complete] Creating academy record with id:', academyId)
+      // 사용자 정보 조회
+      const user = await c.env.DB.prepare(`SELECT name FROM users WHERE id = ?`).bind(academyId).first()
+      const academyName = user?.name ? user.name + ' 학원' : '학원'
+      
+      await c.env.DB.prepare(`
+        INSERT INTO academies (id, academy_name, owner_id, created_at)
+        VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+      `).bind(academyId, academyName, academyId).run()
     }
 
     // users 테이블에서 academy_id 업데이트 (본인 ID로)
@@ -7536,6 +7570,19 @@ app.post('/api/bank-transfer/approve', async (c) => {
     // 사용자의 academy_id는 user.id와 동일하게 설정
     const academyId = request.user_id
     console.log('[Bank Transfer Approve] Using academyId:', academyId, 'for user:', request.user_id)
+    
+    // academies 테이블에 레코드가 있는지 확인하고 없으면 생성 (FOREIGN KEY 제약 조건 만족)
+    const existingAcademy = await c.env.DB.prepare(`
+      SELECT id FROM academies WHERE id = ?
+    `).bind(academyId).first()
+    
+    if (!existingAcademy) {
+      console.log('[Bank Transfer Approve] Creating academy record with id:', academyId)
+      await c.env.DB.prepare(`
+        INSERT INTO academies (id, academy_name, owner_id, created_at)
+        VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+      `).bind(academyId, request.user_name + ' 학원', request.user_id).run()
+    }
     
     // users 테이블에서 academy_id 업데이트 (본인 ID로)
     await c.env.DB.prepare(`

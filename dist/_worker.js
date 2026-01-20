@@ -5339,34 +5339,44 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
         <\/script>
     </body>
     </html>
-  `));const Ct={starter:{name:"스타터 플랜",price:55e3,studentLimit:30,aiReportLimit:30,landingPageLimit:40,teacherLimit:2},basic:{name:"베이직 플랜",price:77e3,studentLimit:50,aiReportLimit:50,landingPageLimit:70,teacherLimit:4},pro:{name:"프로 플랜",price:147e3,studentLimit:100,aiReportLimit:100,landingPageLimit:140,teacherLimit:6},business:{name:"비즈니스 플랜",price:297e3,studentLimit:300,aiReportLimit:600,landingPageLimit:550,teacherLimit:10},premium:{name:"프리미엄 플랜",price:44e4,studentLimit:500,aiReportLimit:1e3,landingPageLimit:900,teacherLimit:15},enterprise:{name:"엔터프라이즈 플랜",price:75e4,studentLimit:1e3,aiReportLimit:3e3,landingPageLimit:2e3,teacherLimit:20}};d.post("/api/payments/webhook",async e=>{try{const{imp_uid:t,merchant_uid:s,status:r}=await e.req.json();if(console.log("[Payment Webhook] Received:",{imp_uid:t,merchant_uid:s,status:r}),r==="paid"){const a=s.split("_"),n=parseInt(a[1]),o=a[2],l=Ct[o];if(!l)return console.error("[Payment Webhook] Invalid plan ID:",o),e.json({success:!1,error:"Invalid plan"},400);await e.env.DB.prepare(`
+  `));const Ct={starter:{name:"스타터 플랜",price:55e3,studentLimit:30,aiReportLimit:30,landingPageLimit:40,teacherLimit:2},basic:{name:"베이직 플랜",price:77e3,studentLimit:50,aiReportLimit:50,landingPageLimit:70,teacherLimit:4},pro:{name:"프로 플랜",price:147e3,studentLimit:100,aiReportLimit:100,landingPageLimit:140,teacherLimit:6},business:{name:"비즈니스 플랜",price:297e3,studentLimit:300,aiReportLimit:600,landingPageLimit:550,teacherLimit:10},premium:{name:"프리미엄 플랜",price:44e4,studentLimit:500,aiReportLimit:1e3,landingPageLimit:900,teacherLimit:15},enterprise:{name:"엔터프라이즈 플랜",price:75e4,studentLimit:1e3,aiReportLimit:3e3,landingPageLimit:2e3,teacherLimit:20}};d.post("/api/payments/webhook",async e=>{try{const{imp_uid:t,merchant_uid:s,status:r}=await e.req.json();if(console.log("[Payment Webhook] Received:",{imp_uid:t,merchant_uid:s,status:r}),r==="paid"){const a=s.split("_"),n=parseInt(a[1]),o=a[2],l=Ct[o];if(!l)return console.error("[Payment Webhook] Invalid plan ID:",o),e.json({success:!1,error:"Invalid plan"},400);if(!await e.env.DB.prepare(`
+        SELECT id FROM academies WHERE id = ?
+      `).bind(n).first()){console.log("[Payment Webhook] Creating academy record with id:",n);const b=await e.env.DB.prepare("SELECT name FROM users WHERE id = ?").bind(n).first(),h=b!=null&&b.name?b.name+" 학원":"학원";await e.env.DB.prepare(`
+          INSERT INTO academies (id, academy_name, owner_id, created_at)
+          VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+        `).bind(n,h,n).run()}await e.env.DB.prepare(`
         UPDATE users SET academy_id = ? WHERE id = ?
-      `).bind(n,n).run();const i=new Date,c=i.toISOString().split("T")[0],p=new Date(i.setMonth(i.getMonth()+1)).toISOString().split("T")[0];await e.env.DB.prepare(`
+      `).bind(n,n).run();const c=new Date,p=c.toISOString().split("T")[0],u=new Date(c.setMonth(c.getMonth()+1)).toISOString().split("T")[0];await e.env.DB.prepare(`
         UPDATE subscriptions 
         SET status = 'expired', updated_at = CURRENT_TIMESTAMP
         WHERE academy_id = ? AND status = 'active'
-      `).bind(n).run();const u=await e.env.DB.prepare(`
+      `).bind(n).run();const m=await e.env.DB.prepare(`
         INSERT INTO subscriptions (
           academy_id, plan_name, plan_price, student_limit, ai_report_limit,
           landing_page_limit, teacher_limit, subscription_start_date, 
           subscription_end_date, status, payment_method, merchant_uid, imp_uid
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', 'card', ?, ?)
-      `).bind(n,l.name,l.price,l.studentLimit,l.aiReportLimit,l.landingPageLimit,l.teacherLimit,c,p,s,t).run();console.log("[Payment Webhook] Subscription created:",{subscriptionId:u.meta.last_row_id,academyId:n,plan:l.name,startDate:c,endDate:p});const m=[{route:"/students",name:"학생 관리"},{route:"/tools/ai-learning-report",name:"AI학습 분석 리포트"},{route:"/tools/dashboard-analytics",name:"통합 분석 대시보드"},{route:"/tools/search-volume",name:"네이버 검색량 조회"}];for(const g of m)try{await e.env.DB.prepare(`
+      `).bind(n,l.name,l.price,l.studentLimit,l.aiReportLimit,l.landingPageLimit,l.teacherLimit,p,u,s,t).run();console.log("[Payment Webhook] Subscription created:",{subscriptionId:m.meta.last_row_id,academyId:n,plan:l.name,startDate:p,endDate:u});const g=[{route:"/students",name:"학생 관리"},{route:"/tools/ai-learning-report",name:"AI학습 분석 리포트"},{route:"/tools/dashboard-analytics",name:"통합 분석 대시보드"},{route:"/tools/search-volume",name:"네이버 검색량 조회"}];for(const b of g)try{await e.env.DB.prepare(`
             INSERT OR IGNORE INTO user_programs (user_id, program_route, program_name, enabled, created_at)
             VALUES (?, ?, ?, 1, CURRENT_TIMESTAMP)
-          `).bind(n,g.route,g.name).run()}catch(b){console.error("[Payment Webhook] Failed to add program:",g.name,b)}return console.log("[Payment Webhook] Added 4 basic programs for user:",n),e.json({success:!0,subscriptionId:u.meta.last_row_id})}return e.json({success:!0,message:"Status not paid"})}catch(t){return console.error("[Payment Webhook] Error:",t),e.json({success:!1,error:t.message},500)}});d.post("/api/payments/complete",async e=>{try{const{imp_uid:t,merchant_uid:s}=await e.req.json();console.log("[Payment Complete] Client callback:",{imp_uid:t,merchant_uid:s});const r=s.split("_"),a=parseInt(r[1]),n=r[2],o=Ct[n];if(!o)return e.json({success:!1,error:"Invalid plan"},400);await e.env.DB.prepare(`
+          `).bind(n,b.route,b.name).run()}catch(h){console.error("[Payment Webhook] Failed to add program:",b.name,h)}return console.log("[Payment Webhook] Added 4 basic programs for user:",n),e.json({success:!0,subscriptionId:m.meta.last_row_id})}return e.json({success:!0,message:"Status not paid"})}catch(t){return console.error("[Payment Webhook] Error:",t),e.json({success:!1,error:t.message},500)}});d.post("/api/payments/complete",async e=>{try{const{imp_uid:t,merchant_uid:s}=await e.req.json();console.log("[Payment Complete] Client callback:",{imp_uid:t,merchant_uid:s});const r=s.split("_"),a=parseInt(r[1]),n=r[2],o=Ct[n];if(!o)return e.json({success:!1,error:"Invalid plan"},400);if(!await e.env.DB.prepare(`
+      SELECT id FROM academies WHERE id = ?
+    `).bind(a).first()){console.log("[Payment Complete] Creating academy record with id:",a);const b=await e.env.DB.prepare("SELECT name FROM users WHERE id = ?").bind(a).first(),h=b!=null&&b.name?b.name+" 학원":"학원";await e.env.DB.prepare(`
+        INSERT INTO academies (id, academy_name, owner_id, created_at)
+        VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+      `).bind(a,h,a).run()}await e.env.DB.prepare(`
       UPDATE users SET academy_id = ? WHERE id = ?
-    `).bind(a,a).run();const l=new Date,i=l.toISOString().split("T")[0],c=new Date(l.setMonth(l.getMonth()+1)).toISOString().split("T")[0];await e.env.DB.prepare(`
+    `).bind(a,a).run();const i=new Date,c=i.toISOString().split("T")[0],p=new Date(i.setMonth(i.getMonth()+1)).toISOString().split("T")[0];await e.env.DB.prepare(`
       UPDATE subscriptions 
       SET status = 'expired', updated_at = CURRENT_TIMESTAMP
       WHERE academy_id = ? AND status = 'active'
-    `).bind(a).run();const p=await e.env.DB.prepare(`
+    `).bind(a).run();const u=await e.env.DB.prepare(`
       INSERT INTO subscriptions (
         academy_id, plan_name, plan_price, student_limit, ai_report_limit,
         landing_page_limit, teacher_limit, subscription_start_date, 
         subscription_end_date, status, payment_method, merchant_uid, imp_uid
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', 'card', ?, ?)
-    `).bind(a,o.name,o.price,o.studentLimit,o.aiReportLimit,o.landingPageLimit,o.teacherLimit,i,c,s,t).run();console.log("[Payment Complete] Subscription created:",{subscriptionId:p.meta.last_row_id,academyId:a,plan:o.name,startDate:i,endDate:c}),await e.env.DB.prepare(`
+    `).bind(a,o.name,o.price,o.studentLimit,o.aiReportLimit,o.landingPageLimit,o.teacherLimit,c,p,s,t).run();console.log("[Payment Complete] Subscription created:",{subscriptionId:u.meta.last_row_id,academyId:a,plan:o.name,startDate:c,endDate:p}),await e.env.DB.prepare(`
       CREATE TABLE IF NOT EXISTS usage_tracking (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         academy_id INTEGER NOT NULL,
@@ -5381,17 +5391,17 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
         created_at TEXT DEFAULT CURRENT_TIMESTAMP,
         updated_at TEXT DEFAULT CURRENT_TIMESTAMP
       )
-    `).run();const u=await e.env.DB.prepare(`
+    `).run();const m=await e.env.DB.prepare(`
       INSERT INTO usage_tracking (
         academy_id, subscription_id, current_students, 
         ai_reports_used_this_month, landing_pages_created, 
         current_teachers, sms_sent_this_month,
         last_ai_report_reset_date, last_sms_reset_date
       ) VALUES (?, ?, 0, 0, 0, 0, 0, ?, ?)
-    `).bind(a,p.meta.last_row_id,i,i).run();console.log("[Payment Complete] Usage tracking initialized:",{usageId:u.meta.last_row_id});const m=[{route:"/students",name:"학생 관리"},{route:"/tools/ai-learning-report",name:"AI학습 분석 리포트"},{route:"/tools/dashboard-analytics",name:"통합 분석 대시보드"},{route:"/tools/search-volume",name:"네이버 검색량 조회"}];for(const g of m)try{await e.env.DB.prepare(`
+    `).bind(a,u.meta.last_row_id,c,c).run();console.log("[Payment Complete] Usage tracking initialized:",{usageId:m.meta.last_row_id});const g=[{route:"/students",name:"학생 관리"},{route:"/tools/ai-learning-report",name:"AI학습 분석 리포트"},{route:"/tools/dashboard-analytics",name:"통합 분석 대시보드"},{route:"/tools/search-volume",name:"네이버 검색량 조회"}];for(const b of g)try{await e.env.DB.prepare(`
           INSERT OR IGNORE INTO user_programs (user_id, program_route, program_name, enabled, created_at)
           VALUES (?, ?, ?, 1, CURRENT_TIMESTAMP)
-        `).bind(a,g.route,g.name).run()}catch(b){console.error("[Payment Complete] Failed to add program:",g.name,b)}return console.log("[Payment Complete] Added 4 basic programs for user:",a),e.json({success:!0,subscription:{id:p.meta.last_row_id,planName:o.name,startDate:i,endDate:c}})}catch(t){return console.error("[Payment Complete] Error:",t),e.json({success:!1,error:t.message},500)}});d.get("/api/subscriptions/status",async e=>{try{const t=X(e,"session_id");if(!t)return console.log("[Subscription Status] No session_id cookie found"),e.json({success:!1,error:"Not authenticated"},401);const s=await e.env.DB.prepare(`
+        `).bind(a,b.route,b.name).run()}catch(h){console.error("[Payment Complete] Failed to add program:",b.name,h)}return console.log("[Payment Complete] Added 4 basic programs for user:",a),e.json({success:!0,subscription:{id:u.meta.last_row_id,planName:o.name,startDate:c,endDate:p}})}catch(t){return console.error("[Payment Complete] Error:",t),e.json({success:!1,error:t.message},500)}});d.get("/api/subscriptions/status",async e=>{try{const t=X(e,"session_id");if(!t)return console.log("[Subscription Status] No session_id cookie found"),e.json({success:!1,error:"Not authenticated"},401);const s=await e.env.DB.prepare(`
       SELECT user_id FROM sessions WHERE session_id = ? AND expires_at > datetime('now')
     `).bind(t).first();if(!s)return console.log("[Subscription Status] Session not found or expired"),e.json({success:!1,error:"Session expired"},401);const r=s.user_id;console.log("[Subscription Status] userId:",r);const a=await e.env.DB.prepare("SELECT id, academy_id FROM users WHERE id = ?").bind(r).first();console.log("[Subscription Status] user:",a);let n=a.id;if((a==null?void 0:a.academy_id)!==a.id){console.log(`[Subscription Status] Fixing academy_id from ${a==null?void 0:a.academy_id} to ${a.id}`);try{await e.env.DB.prepare("UPDATE users SET academy_id = ? WHERE id = ?").bind(n,r).run()}catch(m){console.error("[Subscription Status] Failed to update academy_id:",m)}}console.log("[Subscription Status] Using academy_id:",n);const o=await e.env.DB.prepare(`
       SELECT * FROM subscriptions 
@@ -5507,18 +5517,23 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
     `).all();return e.json({success:!0,requests:s.results||[]})}catch(t){return console.error("신청 목록 조회 실패:",t),e.json({success:!1,error:"목록 조회 중 오류가 발생했습니다."},500)}});d.post("/api/bank-transfer/approve",async e=>{try{const{requestId:t,adminEmail:s}=await e.req.json();if(s!=="admin@superplace.co.kr")return e.json({success:!1,error:"관리자 권한이 필요합니다."},403);const r=await e.env.DB.prepare(`
       SELECT * FROM bank_transfer_requests WHERE id = ?
     `).bind(t).first();if(!r)return e.json({success:!1,error:"신청 정보를 찾을 수 없습니다."},404);if(r.status==="approved")return e.json({success:!1,error:"이미 승인된 신청입니다."},400);const a={"스타터 플랜":{student:30,ai_report:30,landing_page:40,teacher:2,price:55e3},"베이직 플랜":{student:50,ai_report:50,landing_page:70,teacher:3,price:77e3},"프로 플랜":{student:100,ai_report:100,landing_page:140,teacher:6,price:147e3},"비즈니스 플랜":{student:300,ai_report:600,landing_page:550,teacher:10,price:297e3},"프리미엄 플랜":{student:500,ai_report:1e3,landing_page:900,teacher:15,price:44e4},"엔터프라이즈 플랜":{student:1e3,ai_report:3e3,landing_page:2e3,teacher:20,price:75e4}},n=a[r.plan_name]||a["스타터 플랜"],o=r.user_id;console.log("[Bank Transfer Approve] Using academyId:",o,"for user:",r.user_id),await e.env.DB.prepare(`
+      SELECT id FROM academies WHERE id = ?
+    `).bind(o).first()||(console.log("[Bank Transfer Approve] Creating academy record with id:",o),await e.env.DB.prepare(`
+        INSERT INTO academies (id, academy_name, owner_id, created_at)
+        VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+      `).bind(o,r.user_name+" 학원",r.user_id).run()),await e.env.DB.prepare(`
       UPDATE users SET academy_id = ? WHERE id = ?
     `).bind(o,r.user_id).run(),console.log("[Bank Transfer Approve] Updated users.academy_id"),await e.env.DB.prepare(`
       UPDATE subscriptions 
       SET status = 'expired', updated_at = CURRENT_TIMESTAMP
       WHERE academy_id = ? AND status = 'active'
-    `).bind(o).run(),console.log("[Bank Transfer Approve] Deactivated existing subscriptions");const l=new Date,i=new Date;i.setMonth(i.getMonth()+1);const c=l.toISOString().split("T")[0],p=i.toISOString().split("T")[0];console.log("[Bank Transfer Approve] Date range:",c,"to",p);const m=(await e.env.DB.prepare(`
+    `).bind(o).run(),console.log("[Bank Transfer Approve] Deactivated existing subscriptions");const i=new Date,c=new Date;c.setMonth(c.getMonth()+1);const p=i.toISOString().split("T")[0],u=c.toISOString().split("T")[0];console.log("[Bank Transfer Approve] Date range:",p,"to",u);const g=(await e.env.DB.prepare(`
       INSERT INTO subscriptions (
         academy_id, plan_name, plan_price, student_limit, ai_report_limit, 
         landing_page_limit, teacher_limit, subscription_start_date, 
         subscription_end_date, status, payment_method, created_at, updated_at
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', 'bank_transfer', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-    `).bind(o,r.plan_name,n.price,n.student,n.ai_report,n.landing_page,n.teacher,c,p).run()).meta.last_row_id;console.log("[Bank Transfer Approve] Created subscription:",m),await e.env.DB.prepare(`
+    `).bind(o,r.plan_name,n.price,n.student,n.ai_report,n.landing_page,n.teacher,p,u).run()).meta.last_row_id;console.log("[Bank Transfer Approve] Created subscription:",g),await e.env.DB.prepare(`
       DELETE FROM usage_tracking WHERE academy_id = ?
     `).bind(o).run(),console.log("[Bank Transfer Approve] Deleted old usage_tracking"),await e.env.DB.prepare(`
       INSERT INTO usage_tracking (
@@ -5526,14 +5541,14 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
         landing_pages_created, current_teachers, sms_sent_this_month,
         last_ai_report_reset_date, last_sms_reset_date, created_at, updated_at
       ) VALUES (?, ?, 0, 0, 0, 0, 0, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-    `).bind(o,m,c,c).run(),console.log("[Bank Transfer Approve] Created usage_tracking");const g=[{route:"/students",name:"학생 관리"},{route:"/tools/ai-learning-report",name:"AI학습 분석 리포트"},{route:"/tools/dashboard-analytics",name:"통합 분석 대시보드"},{route:"/tools/search-volume",name:"네이버 검색량 조회"}];for(const b of g)try{await e.env.DB.prepare(`
+    `).bind(o,g,p,p).run(),console.log("[Bank Transfer Approve] Created usage_tracking");const b=[{route:"/students",name:"학생 관리"},{route:"/tools/ai-learning-report",name:"AI학습 분석 리포트"},{route:"/tools/dashboard-analytics",name:"통합 분석 대시보드"},{route:"/tools/search-volume",name:"네이버 검색량 조회"}];for(const h of b)try{await e.env.DB.prepare(`
           INSERT OR IGNORE INTO user_programs (user_id, program_route, program_name, enabled, created_at)
           VALUES (?, ?, ?, 1, CURRENT_TIMESTAMP)
-        `).bind(r.user_id,b.route,b.name).run()}catch(h){console.error("[Bank Transfer Approve] Failed to add program:",b.name,h)}return console.log("[Bank Transfer Approve] Added 4 basic programs for user:",r.user_id),await e.env.DB.prepare(`
+        `).bind(r.user_id,h.route,h.name).run()}catch(v){console.error("[Bank Transfer Approve] Failed to add program:",h.name,v)}return console.log("[Bank Transfer Approve] Added 4 basic programs for user:",r.user_id),await e.env.DB.prepare(`
       UPDATE bank_transfer_requests
       SET status = 'approved', approved_at = CURRENT_TIMESTAMP, approved_by = ?
       WHERE id = ?
-    `).bind(s,t).run(),e.json({success:!0,message:"계좌이체가 승인되고 구독이 활성화되었습니다.",subscription_id:m,academy_id:o})}catch(t){return console.error("[Bank Transfer Approve] Error:",t),console.error("[Bank Transfer Approve] Error stack:",t.stack),console.error("[Bank Transfer Approve] Error message:",t.message),e.json({success:!1,error:"승인 처리 중 오류가 발생했습니다: "+t.message},500)}});d.post("/api/bank-transfer/reject",async e=>{try{const{requestId:t,adminEmail:s,reason:r}=await e.req.json();return s!=="admin@superplace.co.kr"?e.json({success:!1,error:"관리자 권한이 필요합니다."},403):(await e.env.DB.prepare(`
+    `).bind(s,t).run(),e.json({success:!0,message:"계좌이체가 승인되고 구독이 활성화되었습니다.",subscription_id:g,academy_id:o})}catch(t){return console.error("[Bank Transfer Approve] Error:",t),console.error("[Bank Transfer Approve] Error stack:",t.stack),console.error("[Bank Transfer Approve] Error message:",t.message),e.json({success:!1,error:"승인 처리 중 오류가 발생했습니다: "+t.message},500)}});d.post("/api/bank-transfer/reject",async e=>{try{const{requestId:t,adminEmail:s,reason:r}=await e.req.json();return s!=="admin@superplace.co.kr"?e.json({success:!1,error:"관리자 권한이 필요합니다."},403):(await e.env.DB.prepare(`
       UPDATE bank_transfer_requests
       SET status = 'rejected', rejected_at = CURRENT_TIMESTAMP, rejected_by = ?, rejection_reason = ?
       WHERE id = ?
