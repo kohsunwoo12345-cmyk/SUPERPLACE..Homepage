@@ -7705,13 +7705,13 @@ app.post('/api/admin/seed-test-data', async (c) => {
     
     console.log('[Admin Seed] Starting test data creation')
     
-    // 테스트 사용자 생성
+    // 테스트 사용자 생성 (academy_id를 자기 자신의 ID로 설정)
     await DB.prepare(`
-      INSERT OR IGNORE INTO users (id, email, name, password, role, created_at)
+      INSERT OR IGNORE INTO users (id, email, name, password, academy_id, role, created_at)
       VALUES 
-      (100, 'test1@example.com', '테스트사용자1', 'dummy_hash', 'teacher', datetime('now', '-30 days')),
-      (101, 'test2@example.com', '테스트사용자2', 'dummy_hash', 'teacher', datetime('now', '-20 days')),
-      (102, 'test3@example.com', '테스트사용자3', 'dummy_hash', 'teacher', datetime('now', '-10 days'))
+      (100, 'test1@example.com', '테스트사용자1', 'dummy_hash', 100, 'teacher', datetime('now', '-30 days')),
+      (101, 'test2@example.com', '테스트사용자2', 'dummy_hash', 101, 'teacher', datetime('now', '-20 days')),
+      (102, 'test3@example.com', '테스트사용자3', 'dummy_hash', 102, 'teacher', datetime('now', '-10 days'))
     `).run()
     
     // 테스트 학원 생성 (먼저 academy가 있어야 함)

@@ -5509,11 +5509,11 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
           updated_at = CURRENT_TIMESTAMP
       WHERE academy_id = ?
     `).bind(r).run(),console.log("[Admin Revoke] Reset usage_tracking for academy:",r),e.json({success:!0,message:"플랜이 성공적으로 회수되었습니다"})}catch(t){return console.error("[Admin Revoke] Error:",t),e.json({success:!1,error:t.message},500)}});d.post("/api/admin/seed-test-data",async e=>{try{const t=e.env.DB;console.log("[Admin Seed] Starting test data creation"),await t.prepare(`
-      INSERT OR IGNORE INTO users (id, email, name, password, role, created_at)
+      INSERT OR IGNORE INTO users (id, email, name, password, academy_id, role, created_at)
       VALUES 
-      (100, 'test1@example.com', '테스트사용자1', 'dummy_hash', 'teacher', datetime('now', '-30 days')),
-      (101, 'test2@example.com', '테스트사용자2', 'dummy_hash', 'teacher', datetime('now', '-20 days')),
-      (102, 'test3@example.com', '테스트사용자3', 'dummy_hash', 'teacher', datetime('now', '-10 days'))
+      (100, 'test1@example.com', '테스트사용자1', 'dummy_hash', 100, 'teacher', datetime('now', '-30 days')),
+      (101, 'test2@example.com', '테스트사용자2', 'dummy_hash', 101, 'teacher', datetime('now', '-20 days')),
+      (102, 'test3@example.com', '테스트사용자3', 'dummy_hash', 102, 'teacher', datetime('now', '-10 days'))
     `).run(),await t.prepare(`
       INSERT OR IGNORE INTO academies (id, owner_id, academy_name, created_at)
       VALUES
