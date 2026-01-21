@@ -28859,7 +28859,7 @@ ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.di
             }
             
             // 권한 저장
-            document.getElementById('permissionsForm').addEventListener('submit', async (e) => {
+            document.getElementById('permissionsForm').addEventListener('submit', /* v1768961716 */ async (e) => {
                 e.preventDefault();
                 
                 console.log('🔒 [SavePermissions] Form submitted');

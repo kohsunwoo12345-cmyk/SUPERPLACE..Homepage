@@ -36979,7 +36979,7 @@ app.get('/students', (c) => {
             }
             
             // 권한 저장
-            document.getElementById('permissionsForm').addEventListener('submit', async (e) => {
+            document.getElementById('permissionsForm').addEventListener('submit', /* v1768961716 */ async (e) => {
                 e.preventDefault();
                 
                 console.log('🔒 [SavePermissions] Form submitted');
