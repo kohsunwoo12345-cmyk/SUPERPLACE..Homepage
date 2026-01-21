@@ -17592,7 +17592,7 @@ app.get('/api/students', async (c) => {
       
       // 배정된 반의 학생만 조회
       const placeholders = userPermissions.assignedClasses.map(() => '?').join(',')
-      const query = `SELECT * FROM students WHERE class_id IN (${placeholders}) AND (status = 'active' OR status IS NULL) ORDER BY id DESC`
+      const query = `SELECT * FROM students WHERE class_id IN (${placeholders}) AND (status IS NULL OR status != 'deleted') ORDER BY id DESC`
       
       try {
         const result = await c.env.DB.prepare(query)
@@ -17615,7 +17615,7 @@ app.get('/api/students', async (c) => {
       try {
         console.log('👥 [GetStudents] Query: WHERE academy_id =', academyId)
         const result1 = await c.env.DB.prepare(
-          "SELECT * FROM students WHERE academy_id = ? AND (status = 'active' OR status IS NULL) ORDER BY id DESC"
+          "SELECT * FROM students WHERE academy_id = ? AND (status IS NULL OR status != 'deleted') ORDER BY id DESC"
         ).bind(academyId).all()
         
         students = result1.results || []
@@ -17644,7 +17644,7 @@ app.get('/api/students', async (c) => {
         try {
           console.log('👥 [GetStudents] Try 2: All active students')
           const result2 = await c.env.DB.prepare(
-            "SELECT * FROM students WHERE (status = 'active' OR status IS NULL) ORDER BY id DESC LIMIT 1000"
+            "SELECT * FROM students WHERE (status IS NULL OR status != 'deleted') ORDER BY id DESC LIMIT 1000"
           ).all()
           
           students = result2.results || []
@@ -18238,7 +18238,7 @@ app.delete('/api/students/:id', async (c) => {
         email: userData.email
       })
       
-      academyId = userData.id || userData.academy_id
+      academyId = userData.academy_id || userData.id
       console.log('[DeleteStudent] 🏫 Extracted academy ID:', academyId)
       
     } catch (err) {
