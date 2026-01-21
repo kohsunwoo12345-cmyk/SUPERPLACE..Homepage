@@ -36244,6 +36244,7 @@ app.get('/students', (c) => {
         </div>
 
         <script>
+        (function() {
             // 로그인 사용자 정보 확인
             const userStr = localStorage.getItem('user');
             let currentUser = null;
@@ -36265,7 +36266,7 @@ app.get('/students', (c) => {
                         localStorage.removeItem('user');
                         alert('세션이 만료되었습니다. 다시 로그인해주세요.');
                         window.location.href = '/login';
-                        throw new Error('academy_id missing'); // 스크립트 실행 중단
+                        return; // IIFE 내부이므로 안전함
                     }
                     
                     academyId = currentUser.academy_id; // ✅ academy_id를 사용
@@ -36278,13 +36279,13 @@ app.get('/students', (c) => {
                     localStorage.removeItem('user');
                     alert('로그인 정보가 손상되었습니다. 다시 로그인해주세요.');
                     window.location.href = '/login';
-                    throw e; // 스크립트 실행 중단
+                    return; // IIFE 내부이므로 안전함
                 }
             } else {
                 console.warn('⚠️ Not logged in - redirecting to login');
                 alert('로그인이 필요한 페이지입니다.');
                 window.location.href = '/login';
-                throw new Error('Not logged in'); // 스크립트 실행 중단
+                return; // IIFE 내부이므로 안전함
             }
 
             // 페이지 로드 시 권한 확인 및 UI 제한
@@ -37293,6 +37294,7 @@ app.get('/students', (c) => {
 
             // 페이지 초기화
             initializePage();
+        })(); // End of IIFE
         </script>
     </body>
     </html>
