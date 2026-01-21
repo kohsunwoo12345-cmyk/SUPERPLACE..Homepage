@@ -162,7 +162,8 @@ app.post('/api/login', async (c) => {
 
     // 사용자 조회 (실제 데이터베이스 컬럼에 맞춰 수정)
     const user = await c.env.DB.prepare(`
-      SELECT id, email, name, role, points, academy_name FROM users WHERE email = ? AND password = ?
+      SELECT id, email, name, role, points, academy_name, user_type, academy_id, parent_user_id 
+      FROM users WHERE email = ? AND password = ?
     `).bind(email, password).first()
 
     if (!user) {
@@ -191,7 +192,9 @@ app.post('/api/login', async (c) => {
         role: user.role, 
         points: user.points || 0,
         academy_name: user.academy_name || '',
-        user_type: 'director' // 기본값 (컴럼 없음)
+        user_type: user.user_type || 'director', // DB에서 가져온 값 사용
+        academy_id: user.academy_id, // 중요!
+        parent_user_id: user.parent_user_id // 중요!
       }
     })
   } catch (err) {
@@ -23171,12 +23174,15 @@ app.post('/api/login', async (c) => {
       academy_id: user.academy_id,
       academy_name: user.academy_name,
       role: user.role,
-      user_type: user.role,
+      user_type: user.user_type || user.role, // user_type 우선, 없으면 role 사용
       parent_user_id: user.parent_user_id || null
     }
     
     // ✅ STEP 1: 원장님인데 academy_id가 없으면 user.id로 설정하고 DB 업데이트
-    if ((user.role === 'director' || !user.role || user.role === 'user') && !userInfo.academy_id) {
+    const isDirector = (user.user_type === 'director' || user.role === 'director' || !user.user_type || user.role === 'user');
+    const isTeacher = (user.user_type === 'teacher' || user.role === 'teacher');
+    
+    if (isDirector && !userInfo.academy_id) {
       console.log('🔧 [Login] Director without academy_id, setting to user.id:', user.id)
       userInfo.academy_id = user.id
       
@@ -23191,7 +23197,7 @@ app.post('/api/login', async (c) => {
     }
     
     // ✅ STEP 2: 선생님인데 academy_id가 없으면 원장님에게서 가져오기
-    if (user.role === 'teacher' && !userInfo.academy_id && user.parent_user_id) {
+    if (isTeacher && !userInfo.academy_id && user.parent_user_id) {
       try {
         const director = await env.DB.prepare(
           'SELECT id, academy_id FROM users WHERE id = ?'
@@ -23230,7 +23236,7 @@ app.post('/api/login', async (c) => {
     })
     
     // 선생님인 경우 권한 정보 조회
-    if (user.role === 'teacher') {
+    if (isTeacher) {
       try {
         const permData = await env.DB.prepare(`
           SELECT permissions 
