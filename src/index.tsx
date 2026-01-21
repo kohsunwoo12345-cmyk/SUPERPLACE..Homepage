@@ -17523,6 +17523,8 @@ app.get('/api/students', async (c) => {
     }
     
     console.log('👥 [GetStudents] Final userId:', userId, 'academyId:', academyId)
+    console.log('👥 [GetStudents] userType:', userType)
+    console.log('👥 [GetStudents] Query will use academyId:', academyId)
     
     // Step 3: 권한에 따른 학생 조회
     let students = []
@@ -36254,11 +36256,27 @@ app.get('/students', (c) => {
             
             if (userStr) {
                 currentUser = JSON.parse(userStr);
-                academyId = currentUser.id; // ⭐ 로그인한 사용자의 ID를 academyId로 사용
+                
+                // ✅ academy_id가 없으면 localStorage를 클리어하고 재로그인 요구
+                if (!currentUser.academy_id) {
+                    console.error('❌ CRITICAL: academy_id missing in localStorage!');
+                    console.log('Clearing localStorage and redirecting to login...');
+                    localStorage.removeItem('user');
+                    alert('세션이 만료되었습니다. 다시 로그인해주세요.');
+                    window.location.href = '/login';
+                    return;
+                }
+                
+                academyId = currentUser.academy_id; // ✅ academy_id를 사용
                 console.log('✅ Current user:', currentUser);
+                console.log('✅ User ID:', currentUser.id);
                 console.log('✅ Academy ID:', academyId);
+                console.log('✅ User Type:', currentUser.user_type);
             } else {
-                console.warn('⚠️ Not logged in - using default academyId');
+                console.warn('⚠️ Not logged in - redirecting to login');
+                alert('로그인이 필요한 페이지입니다.');
+                window.location.href = '/login';
+                return;
             }
 
             // 페이지 로드 시 권한 확인 및 UI 제한
