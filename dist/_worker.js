@@ -7231,18 +7231,27 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
                         messageEl.className = 'mt-4 p-4 rounded-xl bg-green-50 text-green-800 border border-green-200'
                         messageEl.textContent = result.message
                         
-                        // ✅ academy_id 체크 및 fallback 설정
+                        // ✅ academy_id 완벽한 fallback 로직
                         if (!result.user.academy_id) {
-                            if (result.user.user_type === 'teacher' && result.user.parent_user_id) {
-                                // 선생님: parent_user_id(원장님 ID)를 임시로 사용
-                                console.warn('⚠️ Teacher academy_id missing, will fetch from director');
-                                // 일단 parent_user_id를 임시로 사용 (나중에 API에서 수정 필요)
-                                result.user.academy_id = result.user.parent_user_id;
+                            console.warn('⚠️ [Login] academy_id missing in response');
+                            
+                            if (result.user.user_type === 'teacher') {
+                                // 선생님: parent_user_id 사용
+                                if (result.user.parent_user_id) {
+                                    result.user.academy_id = result.user.parent_user_id;
+                                    console.log('✅ [Login] Teacher: Using parent_user_id as academy_id:', result.user.parent_user_id);
+                                } else {
+                                    console.error('❌ [Login] Teacher has no parent_user_id!');
+                                    alert('선생님 계정 정보가 올바르지 않습니다. 원장님께 문의해주세요.');
+                                    return;
+                                }
                             } else {
-                                // 원장님/기타: user.id를 사용
-                                console.warn('⚠️ academy_id missing, using user.id as fallback');
+                                // 원장님/기타: user.id 사용
                                 result.user.academy_id = result.user.id;
+                                console.log('✅ [Login] Director: Using user.id as academy_id:', result.user.id);
                             }
+                        } else {
+                            console.log('✅ [Login] academy_id exists:', result.user.academy_id);
                         }
                         
                         localStorage.setItem('user', JSON.stringify(result.user))
@@ -17763,7 +17772,7 @@ ${N}
           `).bind(t,s,r||"",JSON.stringify(l)).run()}catch(p){console.error("DB save error:",p)}return e.json(l)}catch(n){console.error("Crawler API error:",n);const o={success:!1,error:"크롤링 서버 연결 실패",message:`오류: ${n instanceof Error?n.message:"알 수 없는 오류"}`,searchVolume:{monthlyAvg:0,competition:"분석 불가",recommendation:"서버 오류"},ranking:{myRank:null,competitors:[]},keywords:[]};return e.json(o)}}catch(t){return console.error("Search analysis error:",t),e.json({success:!1,error:"분석 중 오류가 발생했습니다"},500)}});c.post("/api/contact",async e=>{try{const{type:t,academy:s,name:r,phone:a,email:n,programs:o,message:i}=await e.req.json(),{env:l}=e;return await l.DB.prepare(`
       INSERT INTO contacts (inquiry, academy, name, phone, email, programs, message, created_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))
-    `).bind(t,s,r,a,n||"",JSON.stringify(o||[]),i).run(),e.json({success:!0,message:"문의가 접수되었습니다"})}catch(t){return console.error("Contact error:",t),e.json({success:!1,error:"문의 접수 실패"},500)}});c.post("/api/login",async e=>{try{const{email:t,password:s}=await e.req.json(),{env:r}=e,a=await r.DB.prepare("SELECT * FROM users WHERE email = ?").bind(t).first();if(!a)return e.json({success:!1,error:"이메일 또는 비밀번호가 일치하지 않습니다"},401);if(a.password!==s)return e.json({success:!1,error:"이메일 또는 비밀번호가 일치하지 않습니다"},401);const n={id:a.id,email:a.email,name:a.name,phone:a.phone,academy_id:a.academy_id,academy_name:a.academy_name,role:a.role,user_type:a.role,parent_user_id:a.parent_user_id||null};if(a.role==="teacher"&&!n.academy_id&&a.parent_user_id)try{const o=await r.DB.prepare("SELECT academy_id FROM users WHERE id = ?").bind(a.parent_user_id).first();o&&o.academy_id&&(n.academy_id=o.academy_id,console.log("🔧 [Login] Set teacher academy_id from director:",o.academy_id),await r.DB.prepare("UPDATE users SET academy_id = ? WHERE id = ?").bind(o.academy_id,a.id).run(),console.log("✅ [Login] Updated teacher academy_id in DB"))}catch(o){console.error("Failed to fetch director academy_id:",o)}if(console.log("🔐 [Login] User info:",{id:n.id,academy_id:n.academy_id,user_type:n.user_type,role:n.role}),a.role==="teacher")try{const o=await r.DB.prepare(`
+    `).bind(t,s,r,a,n||"",JSON.stringify(o||[]),i).run(),e.json({success:!0,message:"문의가 접수되었습니다"})}catch(t){return console.error("Contact error:",t),e.json({success:!1,error:"문의 접수 실패"},500)}});c.post("/api/login",async e=>{try{const{email:t,password:s}=await e.req.json(),{env:r}=e,a=await r.DB.prepare("SELECT * FROM users WHERE email = ?").bind(t).first();if(!a)return e.json({success:!1,error:"이메일 또는 비밀번호가 일치하지 않습니다"},401);if(a.password!==s)return e.json({success:!1,error:"이메일 또는 비밀번호가 일치하지 않습니다"},401);const n={id:a.id,email:a.email,name:a.name,phone:a.phone,academy_id:a.academy_id,academy_name:a.academy_name,role:a.role,user_type:a.role,parent_user_id:a.parent_user_id||null};if((a.role==="director"||!a.role||a.role==="user")&&!n.academy_id){console.log("🔧 [Login] Director without academy_id, setting to user.id:",a.id),n.academy_id=a.id;try{await r.DB.prepare("UPDATE users SET academy_id = ? WHERE id = ?").bind(a.id,a.id).run(),console.log("✅ [Login] Updated director academy_id in DB:",a.id)}catch(o){console.error("Failed to update director academy_id:",o)}}if(a.role==="teacher"&&!n.academy_id&&a.parent_user_id)try{const o=await r.DB.prepare("SELECT id, academy_id FROM users WHERE id = ?").bind(a.parent_user_id).first();if(o){const i=o.academy_id||o.id;n.academy_id=i,console.log("🔧 [Login] Set teacher academy_id from director:",i),await r.DB.prepare("UPDATE users SET academy_id = ? WHERE id = ?").bind(i,a.id).run(),console.log("✅ [Login] Updated teacher academy_id in DB"),o.academy_id||(await r.DB.prepare("UPDATE users SET academy_id = ? WHERE id = ?").bind(o.id,o.id).run(),console.log("✅ [Login] Also updated director academy_id in DB:",o.id))}}catch(o){console.error("Failed to fetch director academy_id:",o)}if(console.log("🔐 [Login] Final user info:",{id:n.id,academy_id:n.academy_id,user_type:n.user_type,role:n.role}),a.role==="teacher")try{const o=await r.DB.prepare(`
           SELECT permissions 
           FROM teacher_permissions 
           WHERE teacher_id = ?

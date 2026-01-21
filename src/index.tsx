@@ -10462,18 +10462,27 @@ app.get('/login', (c) => {
                         messageEl.className = 'mt-4 p-4 rounded-xl bg-green-50 text-green-800 border border-green-200'
                         messageEl.textContent = result.message
                         
-                        // ✅ academy_id 체크 및 fallback 설정
+                        // ✅ academy_id 완벽한 fallback 로직
                         if (!result.user.academy_id) {
-                            if (result.user.user_type === 'teacher' && result.user.parent_user_id) {
-                                // 선생님: parent_user_id(원장님 ID)를 임시로 사용
-                                console.warn('⚠️ Teacher academy_id missing, will fetch from director');
-                                // 일단 parent_user_id를 임시로 사용 (나중에 API에서 수정 필요)
-                                result.user.academy_id = result.user.parent_user_id;
+                            console.warn('⚠️ [Login] academy_id missing in response');
+                            
+                            if (result.user.user_type === 'teacher') {
+                                // 선생님: parent_user_id 사용
+                                if (result.user.parent_user_id) {
+                                    result.user.academy_id = result.user.parent_user_id;
+                                    console.log('✅ [Login] Teacher: Using parent_user_id as academy_id:', result.user.parent_user_id);
+                                } else {
+                                    console.error('❌ [Login] Teacher has no parent_user_id!');
+                                    alert('선생님 계정 정보가 올바르지 않습니다. 원장님께 문의해주세요.');
+                                    return;
+                                }
                             } else {
-                                // 원장님/기타: user.id를 사용
-                                console.warn('⚠️ academy_id missing, using user.id as fallback');
+                                // 원장님/기타: user.id 사용
                                 result.user.academy_id = result.user.id;
+                                console.log('✅ [Login] Director: Using user.id as academy_id:', result.user.id);
                             }
+                        } else {
+                            console.log('✅ [Login] academy_id exists:', result.user.academy_id);
                         }
                         
                         localStorage.setItem('user', JSON.stringify(result.user))
@@ -22824,36 +22833,61 @@ app.post('/api/login', async (c) => {
       email: user.email,
       name: user.name,
       phone: user.phone,
-      academy_id: user.academy_id,  // ✅ academy_id 추가!
+      academy_id: user.academy_id,
       academy_name: user.academy_name,
       role: user.role,
-      user_type: user.role, // API에서 user_type을 기대함
+      user_type: user.role,
       parent_user_id: user.parent_user_id || null
     }
     
-    // ✅ 선생님인데 academy_id가 없으면 원장님에게서 가져오기
+    // ✅ STEP 1: 원장님인데 academy_id가 없으면 user.id로 설정하고 DB 업데이트
+    if ((user.role === 'director' || !user.role || user.role === 'user') && !userInfo.academy_id) {
+      console.log('🔧 [Login] Director without academy_id, setting to user.id:', user.id)
+      userInfo.academy_id = user.id
+      
+      try {
+        await env.DB.prepare(
+          'UPDATE users SET academy_id = ? WHERE id = ?'
+        ).bind(user.id, user.id).run()
+        console.log('✅ [Login] Updated director academy_id in DB:', user.id)
+      } catch (err) {
+        console.error('Failed to update director academy_id:', err)
+      }
+    }
+    
+    // ✅ STEP 2: 선생님인데 academy_id가 없으면 원장님에게서 가져오기
     if (user.role === 'teacher' && !userInfo.academy_id && user.parent_user_id) {
       try {
         const director = await env.DB.prepare(
-          'SELECT academy_id FROM users WHERE id = ?'
+          'SELECT id, academy_id FROM users WHERE id = ?'
         ).bind(user.parent_user_id).first()
         
-        if (director && director.academy_id) {
-          userInfo.academy_id = director.academy_id
-          console.log('🔧 [Login] Set teacher academy_id from director:', director.academy_id)
+        if (director) {
+          // 원장님의 academy_id 또는 원장님의 id 사용
+          const directorAcademyId = director.academy_id || director.id
+          userInfo.academy_id = directorAcademyId
+          console.log('🔧 [Login] Set teacher academy_id from director:', directorAcademyId)
           
-          // DB도 업데이트
+          // 선생님 DB 업데이트
           await env.DB.prepare(
             'UPDATE users SET academy_id = ? WHERE id = ?'
-          ).bind(director.academy_id, user.id).run()
+          ).bind(directorAcademyId, user.id).run()
           console.log('✅ [Login] Updated teacher academy_id in DB')
+          
+          // 원장님도 academy_id가 없었다면 원장님 DB도 업데이트
+          if (!director.academy_id) {
+            await env.DB.prepare(
+              'UPDATE users SET academy_id = ? WHERE id = ?'
+            ).bind(director.id, director.id).run()
+            console.log('✅ [Login] Also updated director academy_id in DB:', director.id)
+          }
         }
       } catch (err) {
         console.error('Failed to fetch director academy_id:', err)
       }
     }
     
-    console.log('🔐 [Login] User info:', {
+    console.log('🔐 [Login] Final user info:', {
       id: userInfo.id,
       academy_id: userInfo.academy_id,
       user_type: userInfo.user_type,
