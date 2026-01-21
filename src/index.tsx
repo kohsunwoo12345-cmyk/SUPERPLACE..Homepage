@@ -36244,7 +36244,6 @@ app.get('/students', (c) => {
         </div>
 
         <script>
-        (function() {
             // 로그인 사용자 정보 확인
             const userStr = localStorage.getItem('user');
             let currentUser = null;
@@ -36255,37 +36254,42 @@ app.get('/students', (c) => {
                 assignedClasses: []
             };
             
-            if (userStr) {
+            // ✅ 로그인 체크 및 academy_id 검증
+            let shouldRedirect = false;
+            
+            if (!userStr) {
+                console.warn('⚠️ Not logged in - redirecting to login');
+                alert('로그인이 필요한 페이지입니다.');
+                shouldRedirect = true;
+            } else {
                 try {
                     currentUser = JSON.parse(userStr);
                     
-                    // ✅ academy_id가 없으면 localStorage를 클리어하고 재로그인 요구
+                    // academy_id가 없으면 재로그인 요구
                     if (!currentUser.academy_id) {
                         console.error('❌ CRITICAL: academy_id missing in localStorage!');
                         console.log('Clearing localStorage and redirecting to login...');
                         localStorage.removeItem('user');
                         alert('세션이 만료되었습니다. 다시 로그인해주세요.');
-                        window.location.href = '/login';
-                        return; // IIFE 내부이므로 안전함
+                        shouldRedirect = true;
+                    } else {
+                        academyId = currentUser.academy_id;
+                        console.log('✅ Current user:', currentUser);
+                        console.log('✅ User ID:', currentUser.id);
+                        console.log('✅ Academy ID:', academyId);
+                        console.log('✅ User Type:', currentUser.user_type);
                     }
-                    
-                    academyId = currentUser.academy_id; // ✅ academy_id를 사용
-                    console.log('✅ Current user:', currentUser);
-                    console.log('✅ User ID:', currentUser.id);
-                    console.log('✅ Academy ID:', academyId);
-                    console.log('✅ User Type:', currentUser.user_type);
                 } catch (e) {
                     console.error('Failed to parse user data:', e);
                     localStorage.removeItem('user');
                     alert('로그인 정보가 손상되었습니다. 다시 로그인해주세요.');
-                    window.location.href = '/login';
-                    return; // IIFE 내부이므로 안전함
+                    shouldRedirect = true;
                 }
-            } else {
-                console.warn('⚠️ Not logged in - redirecting to login');
-                alert('로그인이 필요한 페이지입니다.');
+            }
+            
+            // 리다이렉트가 필요하면 즉시 실행
+            if (shouldRedirect) {
                 window.location.href = '/login';
-                return; // IIFE 내부이므로 안전함
             }
 
             // 페이지 로드 시 권한 확인 및 UI 제한
@@ -37292,9 +37296,10 @@ app.get('/students', (c) => {
                 }
             });
 
-            // 페이지 초기화
-            initializePage();
-        })(); // End of IIFE
+            // 페이지 초기화 (로그인된 경우에만)
+            if (!shouldRedirect && currentUser) {
+                initializePage();
+            }
         </script>
     </body>
     </html>
