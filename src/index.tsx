@@ -37155,6 +37155,92 @@ app.get('/students', (c) => {
   `)
 })
 
+// 캐시 강제 삭제 페이지
+app.get('/clear-cache', (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>캐시 삭제 중...</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+    </head>
+    <body class="bg-gray-50 flex items-center justify-center min-h-screen">
+        <div class="text-center p-8 bg-white rounded-xl shadow-lg max-w-md">
+            <div class="mb-6">
+                <i class="fas fa-sync-alt fa-spin text-6xl text-purple-600"></i>
+            </div>
+            <h1 class="text-2xl font-bold text-gray-900 mb-4">브라우저 캐시 삭제 중...</h1>
+            <p class="text-gray-600 mb-6">잠시만 기다려주세요.</p>
+            <div id="status" class="text-sm text-gray-500"></div>
+        </div>
+        
+        <script>
+            const statusEl = document.getElementById('status');
+            let step = 1;
+            
+            async function clearCache() {
+                try {
+                    // Step 1: Service Worker 제거
+                    statusEl.textContent = 'Step 1/4: Service Worker 제거 중...';
+                    if ('serviceWorker' in navigator) {
+                        const registrations = await navigator.serviceWorker.getRegistrations();
+                        for(let registration of registrations) {
+                            await registration.unregister();
+                        }
+                    }
+                    
+                    await sleep(500);
+                    
+                    // Step 2: 모든 캐시 삭제
+                    statusEl.textContent = 'Step 2/4: 캐시 스토리지 삭제 중...';
+                    if ('caches' in window) {
+                        const names = await caches.keys();
+                        for (let name of names) {
+                            await caches.delete(name);
+                        }
+                    }
+                    
+                    await sleep(500);
+                    
+                    // Step 3: localStorage/sessionStorage 정리
+                    statusEl.textContent = 'Step 3/4: 로컬 스토리지 정리 중...';
+                    localStorage.clear();
+                    sessionStorage.clear();
+                    
+                    await sleep(500);
+                    
+                    // Step 4: 완료
+                    statusEl.textContent = 'Step 4/4: 완료!';
+                    
+                    await sleep(1000);
+                    
+                    alert('✅ 캐시가 완전히 삭제되었습니다!
+
+확인을 누르면 학생 관리 페이지로 이동합니다.');
+                    window.location.href = '/students?nocache=' + Date.now();
+                    
+                } catch (error) {
+                    console.error('Cache clear error:', error);
+                    alert('캐시 삭제 중 오류가 발생했습니다. 브라우저를 직접 새로고침해주세요 (Ctrl+Shift+R)');
+                }
+            }
+            
+            function sleep(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+            
+            // 페이지 로드 시 자동 실행
+            clearCache();
+        </script>
+        <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    </body>
+    </html>
+  `)
+})
+
+
 // 반 관리 페이지
 app.get('/students/classes', (c) => {
   return c.html(studentPages.classesPage)
