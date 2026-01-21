@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>포인트 충전 - 슈퍼플레이스</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: #f5f7fa;
+            color: #212529;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        /* 헤더 */
+        .header {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 4px solid #6366f1;
+        }
+        
+        .header-left {
+            flex: 1;
+        }
+        
+        .logo-text {
+            font-size: 24px;
+            font-weight: 800;
+            color: #6366f1;
+            margin-bottom: 4px;
+        }
+        
+        .header-subtitle {
+            font-size: 14px;
+            color: #6c757d;
+        }
+        
+        .points-display {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 18px;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+        
+        /* 콘텐츠 */
+        .content {
+            background: white;
+            padding: 32px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        
+        .page-title {
+            font-size: 26px;
+            font-weight: 800;
+            color: #212529;
+            margin-bottom: 8px;
+        }
+        
+        .page-description {
+            font-size: 14px;
+            color: #6c757d;
+            margin-bottom: 32px;
+        }
+        
+        /* 폼 */
+        .form-group {
+            margin-bottom: 24px;
+        }
+        
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #212529;
+            margin-bottom: 8px;
+        }
+        
+        .required {
+            color: #dc3545;
+            margin-left: 2px;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: all 0.2s;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+        
+        .form-input:disabled {
+            background: #e9ecef;
+            cursor: not-allowed;
+        }
+        
+        .form-hint {
+            font-size: 12px;
+            color: #6c757d;
+            margin-top: 6px;
+        }
+        
+        /* 금액 선택 버튼 */
+        .amount-buttons {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        
+        .amount-btn {
+            padding: 16px;
+            background: white;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+        
+        .amount-btn:hover {
+            border-color: #6366f1;
+            background: #f8f9fe;
+        }
+        
+        .amount-btn.active {
+            border-color: #6366f1;
+            background: #6366f1;
+            color: white;
+        }
+        
+        .amount-btn-value {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        
+        .amount-btn-label {
+            font-size: 12px;
+            color: #6c757d;
+        }
+        
+        .amount-btn.active .amount-btn-label {
+            color: rgba(255,255,255,0.9);
+        }
+        
+        /* 부가세 정보 */
+        .tax-info {
+            background: #fff8e1;
+            border: 1px solid #ffd54f;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 20px 0;
+        }
+        
+        .tax-info-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #f57c00;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .tax-info-text {
+            font-size: 13px;
+            color: #e65100;
+            line-height: 1.6;
+        }
+        
+        /* 가격 표시 */
+        .price-summary {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .price-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 15px;
+        }
+        
+        .price-row:last-child {
+            margin-bottom: 0;
+            padding-top: 12px;
+            border-top: 2px solid #dee2e6;
+            font-size: 18px;
+            font-weight: 700;
+        }
+        
+        .price-label {
+            color: #6c757d;
+        }
+        
+        .price-value {
+            color: #212529;
+            font-weight: 600;
+        }
+        
+        .price-total {
+            color: #6366f1;
+            font-size: 24px;
+        }
+        
+        /* 입금 정보 */
+        .bank-info {
+            background: #f0f4ff;
+            border: 2px solid #6366f1;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .bank-info-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #212529;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .bank-detail {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: white;
+            border-radius: 6px;
+            margin-bottom: 8px;
+        }
+        
+        .bank-detail:last-child {
+            margin-bottom: 0;
+        }
+        
+        .bank-label {
+            font-size: 13px;
+            color: #6c757d;
+            font-weight: 600;
+        }
+        
+        .bank-value {
+            font-size: 15px;
+            color: #212529;
+            font-weight: 700;
+        }
+        
+        /* 버튼 */
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: #6366f1;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #4f46e5;
+        }
+        
+        .btn-primary:disabled {
+            background: #dee2e6;
+            cursor: not-allowed;
+        }
+        
+        .btn-secondary {
+            background: white;
+            color: #6366f1;
+            border: 2px solid #6366f1;
+            margin-top: 12px;
+        }
+        
+        .btn-secondary:hover {
+            background: #f8f9fe;
+        }
+        
+        /* 푸터 */
+        .footer {
+            background: white;
+            border-radius: 8px;
+            padding: 32px 24px;
+            margin-top: 48px;
+            border: 1px solid #dee2e6;
+            text-align: center;
+        }
+        
+        .footer-company {
+            font-size: 16px;
+            font-weight: 700;
+            color: #212529;
+            margin-bottom: 16px;
+        }
+        
+        .footer-info {
+            font-size: 13px;
+            color: #6c757d;
+            line-height: 1.8;
+        }
+        
+        .footer-info div {
+            margin-bottom: 4px;
+        }
+        
+        .footer-copyright {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid #dee2e6;
+            font-size: 12px;
+            color: #adb5bd;
+        }
+        
+        /* 반응형 */
+        @media (max-width: 768px) {
+            body {
+                padding: 12px;
+            }
+            
+            .header {
+                flex-direction: column;
+                gap: 16px;
+                align-items: flex-start;
+            }
+            
+            .points-display {
+                width: 100%;
+                text-align: center;
+            }
+            
+            .content {
+                padding: 24px;
+            }
+            
+            .amount-buttons {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 헤더 -->
+        <div class="header">
+            <div class="header-left">
+                <div class="logo-text">SUPERPLACE</div>
+                <div class="header-subtitle">소셜 미디어 마케팅 서비스</div>
+            </div>
+            <div class="points-display" id="current-points">보유 포인트: 0 P</div>
+        </div>
+        
+        <!-- 메인 콘텐츠 -->
+        <div class="content">
+            <h1 class="page-title">💰 포인트 충전</h1>
+            <p class="page-description">원하시는 금액을 선택하시고 입금해주세요. 입금 확인 후 자동으로 충전됩니다.</p>
+            
+            <form id="charge-form">
+                <!-- 금액 선택 -->
+                <div class="form-group">
+                    <label class="form-label">충전 금액 선택<span class="required">*</span></label>
+                    <div class="amount-buttons">
+                        <button type="button" class="amount-btn" data-amount="10000">
+                            <div class="amount-btn-value">10,000원</div>
+                            <div class="amount-btn-label">10,000P</div>
+                        </button>
+                        <button type="button" class="amount-btn" data-amount="30000">
+                            <div class="amount-btn-value">30,000원</div>
+                            <div class="amount-btn-label">30,000P</div>
+                        </button>
+                        <button type="button" class="amount-btn" data-amount="50000">
+                            <div class="amount-btn-value">50,000원</div>
+                            <div class="amount-btn-label">50,000P</div>
+                        </button>
+                        <button type="button" class="amount-btn" data-amount="100000">
+                            <div class="amount-btn-value">100,000원</div>
+                            <div class="amount-btn-label">100,000P</div>
+                        </button>
+                        <button type="button" class="amount-btn" data-amount="300000">
+                            <div class="amount-btn-value">300,000원</div>
+                            <div class="amount-btn-label">300,000P</div>
+                        </button>
+                        <button type="button" class="amount-btn" data-amount="500000">
+                            <div class="amount-btn-value">500,000원</div>
+                            <div class="amount-btn-label">500,000P</div>
+                        </button>
+                    </div>
+                    <input type="number" class="form-input" id="custom-amount" placeholder="직접 입력 (최소 10,000원)" min="10000" step="1000">
+                    <div class="form-hint">버튼을 클릭하거나 직접 금액을 입력하세요</div>
+                </div>
+                
+                <!-- 부가세 안내 -->
+                <div class="tax-info">
+                    <div class="tax-info-title">⚠️ 부가세 안내</div>
+                    <div class="tax-info-text">
+                        입금하실 금액에는 부가세 10%가 포함됩니다.<br>
+                        예) 10,000원 충전 시 → 11,000원 입금
+                    </div>
+                </div>
+                
+                <!-- 가격 요약 -->
+                <div class="price-summary">
+                    <div class="price-row">
+                        <span class="price-label">충전 포인트</span>
+                        <span class="price-value" id="points-amount">0 P</span>
+                    </div>
+                    <div class="price-row">
+                        <span class="price-label">부가세 (10%)</span>
+                        <span class="price-value" id="tax-amount">0원</span>
+                    </div>
+                    <div class="price-row">
+                        <span class="price-label">실제 입금액</span>
+                        <span class="price-total" id="total-amount">0원</span>
+                    </div>
+                </div>
+                
+                <!-- 입금 정보 -->
+                <div class="bank-info">
+                    <div class="bank-info-title">🏦 입금 정보</div>
+                    <div class="bank-detail">
+                        <span class="bank-label">은행</span>
+                        <span class="bank-value">카카오뱅크</span>
+                    </div>
+                    <div class="bank-detail">
+                        <span class="bank-label">계좌번호</span>
+                        <span class="bank-value">3333-09-0742854</span>
+                    </div>
+                    <div class="bank-detail">
+                        <span class="bank-label">예금주</span>
+                        <span class="bank-value">고희준</span>
+                    </div>
+                </div>
+                
+                <!-- 입금자명 -->
+                <div class="form-group">
+                    <label class="form-label">입금자명<span class="required">*</span></label>
+                    <input type="text" class="form-input" id="depositor-name" placeholder="입금하실 때 사용할 이름을 입력하세요" required>
+                    <div class="form-hint">입금자명을 정확히 입력해주세요. 이름 확인 후 포인트가 충전됩니다.</div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary" id="submit-btn" disabled>충전 신청하기</button>
+                <button type="button" class="btn btn-secondary" onclick="location.href='/store/'">스토어로 돌아가기</button>
+            </form>
+        </div>
+        
+        <!-- 푸터 -->
+        <div class="footer">
+            <div class="footer-company">주식회사 우리는 슈퍼플레이스다</div>
+            <div class="footer-info">
+                <div>사업자등록번호: 142-88-02445</div>
+                <div>주소: 인천광역시 서구 청라커낼로 270, 2층</div>
+                <div>이메일: wangholy1@naver.com | 전화: 010-8739-9697</div>
+            </div>
+            <div class="footer-copyright">© 2024 우리는 슈퍼플레이스다. All rights reserved.</div>
+        </div>
+    </div>
+    
+    <script>
+        const API_KEY = '14644c03bef19a85e4867e6d1d7939a1';
+        let selectedAmount = 0;
+        
+        // 금액 버튼 클릭
+        document.querySelectorAll('.amount-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                // 모든 버튼 비활성화
+                document.querySelectorAll('.amount-btn').forEach(b => b.classList.remove('active'));
+                // 현재 버튼 활성화
+                this.classList.add('active');
+                
+                // 금액 설정
+                selectedAmount = parseInt(this.dataset.amount);
+                document.getElementById('custom-amount').value = '';
+                
+                updatePriceSummary();
+            });
+        });
+        
+        // 직접 입력
+        document.getElementById('custom-amount').addEventListener('input', function() {
+            // 모든 버튼 비활성화
+            document.querySelectorAll('.amount-btn').forEach(b => b.classList.remove('active'));
+            
+            selectedAmount = parseInt(this.value) || 0;
+            updatePriceSummary();
+        });
+        
+        // 입금자명 입력
+        document.getElementById('depositor-name').addEventListener('input', function() {
+            checkFormValid();
+        });
+        
+        // 가격 요약 업데이트
+        function updatePriceSummary() {
+            const tax = Math.floor(selectedAmount * 0.1);
+            const total = selectedAmount + tax;
+            
+            document.getElementById('points-amount').textContent = `${selectedAmount.toLocaleString()} P`;
+            document.getElementById('tax-amount').textContent = `${tax.toLocaleString()}원`;
+            document.getElementById('total-amount').textContent = `${total.toLocaleString()}원`;
+            
+            checkFormValid();
+        }
+        
+        // 폼 유효성 검사
+        function checkFormValid() {
+            const depositorName = document.getElementById('depositor-name').value.trim();
+            const submitBtn = document.getElementById('submit-btn');
+            
+            if (selectedAmount >= 10000 && depositorName) {
+                submitBtn.disabled = false;
+            } else {
+                submitBtn.disabled = true;
+            }
+        }
+        
+        // 폼 제출
+        document.getElementById('charge-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const depositorName = document.getElementById('depositor-name').value.trim();
+            
+            if (selectedAmount < 10000) {
+                alert('최소 충전 금액은 10,000원입니다.');
+                return;
+            }
+            
+            if (!depositorName) {
+                alert('입금자명을 입력해주세요.');
+                return;
+            }
+            
+            try {
+                const tax = Math.floor(selectedAmount * 0.1);
+                const totalAmount = selectedAmount + tax;
+                
+                const response = await fetch('/api/store/charge', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-api-key': API_KEY
+                    },
+                    body: JSON.stringify({
+                        amount: selectedAmount,
+                        tax: tax,
+                        total_amount: totalAmount,
+                        depositor_name: depositorName
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    alert(`충전 신청이 완료되었습니다!\n\n입금하실 금액: ${totalAmount.toLocaleString()}원\n입금자명: ${depositorName}\n\n입금 확인 후 자동으로 포인트가 충전됩니다.`);
+                    location.href = '/store/';
+                } else {
+                    alert(data.message || '충전 신청에 실패했습니다.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('충전 신청 중 오류가 발생했습니다.');
+            }
+        });
+        
+        // 초기화
+        function init() {
+            // 현재 포인트 로드 (실제로는 API에서 가져와야 함)
+            // TODO: 로그인 후 사용자 포인트 표시
+        }
+        
+        init();
+    </script>
+</body>
+</html>

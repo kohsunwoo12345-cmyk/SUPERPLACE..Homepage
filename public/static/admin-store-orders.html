@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>스토어 결제 관리 - 관리자</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
+        * { font-family: 'Pretendard Variable', sans-serif; }
+        
+        .status-pending { background: #fef3c7; color: #92400e; }
+        .status-processing { background: #dbeafe; color: #1e40af; }
+        .status-completed { background: #d1fae5; color: #065f46; }
+        .status-failed { background: #fee2e2; color: #991b1b; }
+        .status-cancelled { background: #f3f4f6; color: #4b5563; }
+        
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <!-- 헤더 -->
+        <div class="mb-8 flex items-center justify-between">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">
+                    <i class="fas fa-shopping-cart text-indigo-600"></i> 스토어 결제 관리
+                </h1>
+                <p class="text-gray-600">스토어 주문 및 결제 내역을 관리합니다</p>
+            </div>
+            <div class="flex gap-3">
+                <a href="/dashboard" class="inline-flex items-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition font-medium">
+                    <i class="fas fa-arrow-left mr-2"></i> 대시보드
+                </a>
+                <button onclick="location.reload()" class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition font-medium">
+                    <i class="fas fa-sync-alt mr-2"></i> 새로고침
+                </button>
+            </div>
+        </div>
+        
+        <!-- 통계 -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-gray-600 text-sm font-medium">전체 주문</span>
+                    <i class="fas fa-shopping-bag text-gray-400"></i>
+                </div>
+                <div class="text-2xl font-bold text-gray-900" id="stat-total">0</div>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-gray-600 text-sm font-medium">대기중</span>
+                    <i class="fas fa-clock text-yellow-500"></i>
+                </div>
+                <div class="text-2xl font-bold text-yellow-600" id="stat-pending">0</div>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-gray-600 text-sm font-medium">완료</span>
+                    <i class="fas fa-check-circle text-green-500"></i>
+                </div>
+                <div class="text-2xl font-bold text-green-600" id="stat-completed">0</div>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-gray-600 text-sm font-medium">총 거래액</span>
+                    <i class="fas fa-won-sign text-indigo-500"></i>
+                </div>
+                <div class="text-2xl font-bold text-indigo-600" id="stat-revenue">0 P</div>
+            </div>
+        </div>
+        
+        <!-- 필터 및 검색 -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">상태</label>
+                    <select id="filter-status" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                        <option value="">전체</option>
+                        <option value="pending">대기중</option>
+                        <option value="processing">처리중</option>
+                        <option value="completed">완료</option>
+                        <option value="failed">실패</option>
+                        <option value="cancelled">취소</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">날짜 범위</label>
+                    <input type="date" id="filter-date-from" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">~</label>
+                    <input type="date" id="filter-date-to" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">검색</label>
+                    <input type="text" id="search-input" placeholder="사용자명, 상품명, URL..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+            </div>
+            <div class="mt-4 flex gap-3">
+                <button onclick="applyFilters()" class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition font-medium">
+                    <i class="fas fa-filter mr-2"></i> 필터 적용
+                </button>
+                <button onclick="resetFilters()" class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition font-medium">
+                    <i class="fas fa-times mr-2"></i> 초기화
+                </button>
+            </div>
+        </div>
+        
+        <!-- 결제 내역 테이블 -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50 border-b border-gray-200">
+                        <tr>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">주문일시</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">사용자</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">상품</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">옵션</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">수량</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">금액</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">대상 URL</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">상태</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">액션</th>
+                        </tr>
+                    </thead>
+                    <tbody id="orderList" class="divide-y divide-gray-200">
+                        <tr>
+                            <td colspan="9" class="px-6 py-12 text-center text-gray-500">
+                                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+                                로딩 중...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const API_KEY = '14644c03bef19a85e4867e6d1d7939a1';
+        let allOrders = [];
+        let filteredOrders = [];
+        
+        // 초기화
+        async function init() {
+            await loadOrders();
+        }
+        
+        // 주문 내역 로드
+        async function loadOrders() {
+            try {
+                const response = await fetch('/api/store/orders', {
+                    headers: {
+                        'x-api-key': API_KEY
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.orders) {
+                    allOrders = data.orders;
+                    filteredOrders = allOrders;
+                    renderOrders();
+                    updateStats();
+                } else {
+                    throw new Error(data.message || '주문 내역을 불러올 수 없습니다.');
+                }
+            } catch (error) {
+                console.error('Error loading orders:', error);
+                document.getElementById('orderList').innerHTML = 
+                    '<tr><td colspan="9" class="px-6 py-12 text-center text-red-500"><i class="fas fa-exclamation-circle text-4xl mb-4"></i><div>주문 내역을 불러오는데 실패했습니다.</div></td></tr>';
+            }
+        }
+        
+        // 주문 렌더링
+        function renderOrders() {
+            const orderList = document.getElementById('orderList');
+            
+            if (filteredOrders.length === 0) {
+                orderList.innerHTML = '<tr><td colspan="9" class="px-6 py-12 text-center text-gray-500"><i class="fas fa-inbox text-4xl text-gray-300 mb-4"></i><div>주문 내역이 없습니다</div></td></tr>';
+                return;
+            }
+            
+            orderList.innerHTML = filteredOrders.map(order => {
+                const orderDate = new Date(order.created_at);
+                const totalPrice = (order.price_per_unit * order.quantity).toLocaleString();
+                
+                let statusClass = '';
+                let statusText = '';
+                
+                switch(order.status) {
+                    case 'pending':
+                        statusClass = 'status-pending';
+                        statusText = '⏳ 대기중';
+                        break;
+                    case 'processing':
+                        statusClass = 'status-processing';
+                        statusText = '🔄 처리중';
+                        break;
+                    case 'completed':
+                        statusClass = 'status-completed';
+                        statusText = '✅ 완료';
+                        break;
+                    case 'failed':
+                        statusClass = 'status-failed';
+                        statusText = '❌ 실패';
+                        break;
+                    case 'cancelled':
+                        statusClass = 'status-cancelled';
+                        statusText = '🚫 취소';
+                        break;
+                    default:
+                        statusClass = 'status-pending';
+                        statusText = order.status;
+                }
+                
+                return `<tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 text-sm text-gray-900">${orderDate.toLocaleString('ko-KR', { 
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    })}</td>
+                    <td class="px-6 py-4 text-sm text-gray-700">${order.username || order.user_id || '-'}</td>
+                    <td class="px-6 py-4 text-sm font-medium text-gray-900">${order.product_name || order.product_id}</td>
+                    <td class="px-6 py-4 text-sm text-gray-600">${order.option_name}</td>
+                    <td class="px-6 py-4 text-sm text-gray-900">${order.quantity}개</td>
+                    <td class="px-6 py-4 text-sm font-bold text-indigo-600">${totalPrice} P</td>
+                    <td class="px-6 py-4 text-sm">
+                        <a href="${order.target_url}" target="_blank" class="text-blue-600 hover:underline max-w-[200px] truncate inline-block">
+                            ${order.target_url}
+                        </a>
+                    </td>
+                    <td class="px-6 py-4">
+                        <span class="px-3 py-1 rounded-full text-sm font-medium ${statusClass}">
+                            ${statusText}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4">
+                        <button onclick="viewOrderDetail('${order.id}')" class="text-indigo-600 hover:text-indigo-800 font-medium text-sm">
+                            <i class="fas fa-eye mr-1"></i> 상세
+                        </button>
+                    </td>
+                </tr>`;
+            }).join('');
+        }
+        
+        // 통계 업데이트
+        function updateStats() {
+            const total = allOrders.length;
+            const pending = allOrders.filter(o => o.status === 'pending').length;
+            const completed = allOrders.filter(o => o.status === 'completed').length;
+            const revenue = allOrders
+                .filter(o => o.status === 'completed')
+                .reduce((sum, o) => sum + (o.price_per_unit * o.quantity), 0);
+            
+            document.getElementById('stat-total').textContent = total;
+            document.getElementById('stat-pending').textContent = pending;
+            document.getElementById('stat-completed').textContent = completed;
+            document.getElementById('stat-revenue').textContent = revenue.toLocaleString() + ' P';
+        }
+        
+        // 필터 적용
+        function applyFilters() {
+            const status = document.getElementById('filter-status').value;
+            const dateFrom = document.getElementById('filter-date-from').value;
+            const dateTo = document.getElementById('filter-date-to').value;
+            const searchText = document.getElementById('search-input').value.toLowerCase();
+            
+            filteredOrders = allOrders.filter(order => {
+                // 상태 필터
+                if (status && order.status !== status) return false;
+                
+                // 날짜 필터
+                const orderDate = new Date(order.created_at);
+                if (dateFrom && orderDate < new Date(dateFrom)) return false;
+                if (dateTo && orderDate > new Date(dateTo + ' 23:59:59')) return false;
+                
+                // 검색 필터
+                if (searchText) {
+                    const searchFields = [
+                        order.username,
+                        order.user_id,
+                        order.product_name,
+                        order.product_id,
+                        order.option_name,
+                        order.target_url
+                    ].filter(Boolean).map(f => f.toString().toLowerCase());
+                    
+                    if (!searchFields.some(field => field.includes(searchText))) {
+                        return false;
+                    }
+                }
+                
+                return true;
+            });
+            
+            renderOrders();
+        }
+        
+        // 필터 초기화
+        function resetFilters() {
+            document.getElementById('filter-status').value = '';
+            document.getElementById('filter-date-from').value = '';
+            document.getElementById('filter-date-to').value = '';
+            document.getElementById('search-input').value = '';
+            
+            filteredOrders = allOrders;
+            renderOrders();
+        }
+        
+        // 주문 상세 보기
+        function viewOrderDetail(orderId) {
+            const order = allOrders.find(o => o.id === orderId);
+            if (!order) return;
+            
+            const modal = document.createElement('div');
+            modal.className = 'modal-overlay';
+            modal.onclick = (e) => {
+                if (e.target === modal) modal.remove();
+            };
+            
+            const orderDate = new Date(order.created_at);
+            const totalPrice = (order.price_per_unit * order.quantity).toLocaleString();
+            
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <div class="p-6 border-b border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <h2 class="text-2xl font-bold text-gray-900">주문 상세</h2>
+                            <button onclick="this.closest('.modal-overlay').remove()" class="text-gray-400 hover:text-gray-600">
+                                <i class="fas fa-times text-xl"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="p-6">
+                        <div class="space-y-4">
+                            <div class="flex justify-between py-3 border-b border-gray-100">
+                                <span class="text-gray-600 font-medium">주문 ID</span>
+                                <span class="text-gray-900 font-mono text-sm">${order.id}</span>
+                            </div>
+                            <div class="flex justify-between py-3 border-b border-gray-100">
+                                <span class="text-gray-600 font-medium">주문 일시</span>
+                                <span class="text-gray-900">${orderDate.toLocaleString('ko-KR')}</span>
+                            </div>
+                            <div class="flex justify-between py-3 border-b border-gray-100">
+                                <span class="text-gray-600 font-medium">사용자</span>
+                                <span class="text-gray-900">${order.username || order.user_id}</span>
+                            </div>
+                            <div class="flex justify-between py-3 border-b border-gray-100">
+                                <span class="text-gray-600 font-medium">상품</span>
+                                <span class="text-gray-900 font-semibold">${order.product_name || order.product_id}</span>
+                            </div>
+                            <div class="flex justify-between py-3 border-b border-gray-100">
+                                <span class="text-gray-600 font-medium">옵션</span>
+                                <span class="text-gray-900">${order.option_name}</span>
+                            </div>
+                            <div class="flex justify-between py-3 border-b border-gray-100">
+                                <span class="text-gray-600 font-medium">수량</span>
+                                <span class="text-gray-900 font-semibold">${order.quantity}개</span>
+                            </div>
+                            <div class="flex justify-between py-3 border-b border-gray-100">
+                                <span class="text-gray-600 font-medium">단가</span>
+                                <span class="text-gray-900">${order.price_per_unit.toLocaleString()} P</span>
+                            </div>
+                            <div class="flex justify-between py-3 border-b border-gray-100">
+                                <span class="text-gray-600 font-medium">총 금액</span>
+                                <span class="text-indigo-600 font-bold text-lg">${totalPrice} P</span>
+                            </div>
+                            <div class="py-3 border-b border-gray-100">
+                                <div class="text-gray-600 font-medium mb-2">대상 URL</div>
+                                <a href="${order.target_url}" target="_blank" class="text-blue-600 hover:underline break-all">
+                                    ${order.target_url}
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 flex gap-3">
+                            <button onclick="updateOrderStatus('${order.id}', 'processing')" class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                                처리중으로 변경
+                            </button>
+                            <button onclick="updateOrderStatus('${order.id}', 'completed')" class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
+                                완료 처리
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+        }
+        
+        // 주문 상태 업데이트
+        async function updateOrderStatus(orderId, status) {
+            if (!confirm(`주문 상태를 "${status}"로 변경하시겠습니까?`)) return;
+            
+            try {
+                const response = await fetch(`/api/store/orders/${orderId}/status`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-api-key': API_KEY
+                    },
+                    body: JSON.stringify({ status })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    alert('상태가 변경되었습니다.');
+                    document.querySelector('.modal-overlay')?.remove();
+                    await loadOrders();
+                } else {
+                    alert(data.message || '상태 변경에 실패했습니다.');
+                }
+            } catch (error) {
+                console.error('Error updating status:', error);
+                alert('상태 변경 중 오류가 발생했습니다.');
+            }
+        }
+        
+        // 초기화 실행
+        init();
+    </script>
+</body>
+</html>
