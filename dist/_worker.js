@@ -28268,17 +28268,23 @@ ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.di
                 console.log('Current user:', currentUser);
                 console.log('User permissions:', userPermissions);
                 
-                // ✅ 권한 확인: assignedClasses가 비어있으면 권한 없음
-                const hasAnyPermission = userPermissions && 
-                                        userPermissions.assignedClasses && 
-                                        userPermissions.assignedClasses.length > 0;
-                
+                // ✅ 권한 확인 로직 개선
+                // 1. canViewAllStudents가 true이면 전체 권한 (모든 학생 볼 수 있음)
+                // 2. assignedClasses가 있으면 제한적 권한 (배정된 반만)
+                // 3. 둘 다 없으면 권한 없음
                 const hasFullAccess = userPermissions && userPermissions.canViewAllStudents === true;
+                const hasAssignedClasses = userPermissions && 
+                                          userPermissions.assignedClasses && 
+                                          Array.isArray(userPermissions.assignedClasses) &&
+                                          userPermissions.assignedClasses.length > 0;
+                const hasAnyPermission = hasFullAccess || hasAssignedClasses;
                 
                 console.log('🔍 Permission check:');
-                console.log('   - hasAnyPermission (assigned classes):', hasAnyPermission);
-                console.log('   - hasFullAccess (canViewAllStudents):', hasFullAccess);
-                console.log('   - assignedClasses:', userPermissions.assignedClasses);
+                console.log('   - canViewAllStudents:', userPermissions?.canViewAllStudents);
+                console.log('   - assignedClasses:', userPermissions?.assignedClasses);
+                console.log('   - hasFullAccess (can view all):', hasFullAccess);
+                console.log('   - hasAssignedClasses (assigned classes):', hasAssignedClasses);
+                console.log('   - hasAnyPermission (any access):', hasAnyPermission);
                 
                 // ✅ 선생님 관리 카드는 선생님에게 항상 숨김
                 const teacherCard = document.getElementById('teacherManagementCard');
@@ -28287,49 +28293,47 @@ ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.di
                     console.log('✅ Hidden: Teacher management card');
                 }
                 
-                // ✅ 권한이 없으면 모든 카드 숨기고 "권한 없음" 메시지 표시
-                if (!hasAnyPermission && !hasFullAccess) {
-                    console.log('❌ No permissions - hiding ALL cards and showing no-permission message');
+                // ✅ 권한이 아예 없으면 모든 카드 숨기고 "권한 없음" 메시지 표시
+                if (!hasAnyPermission) {
+                    console.log('❌ No permissions at all - showing no-permission message');
                     
-                    // 모든 카드 요소 찾기
-                    const gridContainer = document.getElementById('dashboardCardGrid');
+                    // 학생 관리 관련 카드만 숨기고 메시지 표시
+                    const studentCard = document.querySelector('a[href="/students/list"]');
+                    const dailyCard = document.querySelector('a[href="/students/daily-record"]');
+                    const classCard = document.querySelector('a[href="/students/classes"]');
+                    const courseCard = document.querySelector('a[href="/students/courses"]');
                     
-                    if (gridContainer) {
-                        // 기존 모든 카드 제거
-                        gridContainer.innerHTML = '';
-                        
-                        // 권한 없음 메시지 추가
-                        const noPermissionHTML = '<div class="col-span-full">' +
-                            '<div class="text-center py-20">' +
-                            '<div class="bg-yellow-50 border-2 border-yellow-200 rounded-2xl p-12 max-w-lg mx-auto shadow-lg">' +
-                            '<div class="mb-6">' +
-                            '<i class="fas fa-lock text-7xl text-yellow-600 mb-4"></i>' +
-                            '</div>' +
-                            '<h3 class="text-2xl font-bold text-gray-900 mb-4">' +
-                            '접근 권한이 필요합니다' +
-                            '</h3>' +
-                            '<p class="text-gray-600 text-lg mb-6 leading-relaxed">' +
-                            '원장님이 권한을 부여하면<br>' +
-                            '학생 관리 기능을 사용할 수 있습니다.' +
-                            '</p>' +
-                            '<div class="bg-white rounded-lg p-4 text-sm text-gray-500">' +
-                            '<i class="fas fa-info-circle mr-2"></i>' +
-                            '권한 문의는 원장님께 요청해주세요.' +
-                            '</div>' +
-                            '</div>' +
+                    // 학생 관리 카드들 숨김
+                    if (studentCard) studentCard.style.display = 'none';
+                    if (dailyCard) dailyCard.style.display = 'none';
+                    if (classCard) classCard.style.display = 'none';
+                    if (courseCard) courseCard.style.display = 'none';
+                    
+                    // 학생 관리 영역에 권한 없음 메시지 추가
+                    const dashboardGrid = document.getElementById('dashboardCardGrid');
+                    if (dashboardGrid) {
+                        const noPermissionCard = document.createElement('div');
+                        noPermissionCard.className = 'col-span-full';
+                        noPermissionCard.innerHTML = '<div class="bg-yellow-50 border-2 border-yellow-200 rounded-2xl p-8 text-center">' +
+                            '<i class="fas fa-lock text-5xl text-yellow-600 mb-4"></i>' +
+                            '<h3 class="text-xl font-bold text-gray-900 mb-3">학생 관리 권한이 필요합니다</h3>' +
+                            '<p class="text-gray-600 mb-4">원장님이 권한을 부여하면<br>학생 관리 기능을 사용할 수 있습니다.</p>' +
+                            '<div class="bg-white rounded-lg p-3 text-sm text-gray-500">' +
+                            '<i class="fas fa-info-circle mr-2"></i>권한 문의는 원장님께 요청해주세요.' +
                             '</div>' +
                             '</div>';
-                        gridContainer.innerHTML = noPermissionHTML;
-                        console.log('✅ Displayed: No permission message');
+                        dashboardGrid.insertBefore(noPermissionCard, dashboardGrid.firstChild);
+                        console.log('✅ Added: No permission message for student management');
                     }
                     
-                    // 선생님 관리 섹션도 숨김
+                    // 선생님 관리 섹션 숨김
                     const teacherSection = document.getElementById('teacherSection');
                     if (teacherSection) {
                         teacherSection.style.display = 'none';
                     }
                     
-                    return; // 더 이상 처리하지 않음
+                    // 랜딩페이지, 네이버 검색량, AI 리포트 등 다른 기능은 그대로 표시
+                    // return을 제거하여 아래 로직 계속 실행
                 }
                 
                 // ✅ 반 관리와 과목 관리는 전체 권한이 있을 때만 표시
@@ -28355,39 +28359,45 @@ ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.di
                     }
                 }
                 
-                // ✅ 학생 목록과 일일 성과는 권한이 있으면 표시 (배정된 반만)
+                // ✅ 학생 목록과 일일 성과는 권한이 있으면 표시
                 const studentCard = document.querySelector('a[href="/students/list"]');
-                if (studentCard) {
-                    if (hasAnyPermission || hasFullAccess) {
-                        studentCard.style.display = 'block';
-                        console.log('✅ Showing: Student list (has permission)');
-                    } else {
-                        studentCard.style.display = 'none';
-                        console.log('✅ Hidden: Student list (no permission)');
+                if (studentCard && hasAnyPermission) {
+                    studentCard.style.display = 'block';
+                    if (hasFullAccess) {
+                        console.log('✅ Showing: Student list (full access - all students)');
+                    } else if (hasAssignedClasses) {
+                        console.log('✅ Showing: Student list (assigned classes only)');
                     }
                 }
                 
                 const dailyCard = document.querySelector('a[href="/students/daily-record"]');
-                if (dailyCard) {
-                    if (hasAnyPermission || hasFullAccess) {
-                        dailyCard.style.display = 'block';
-                        console.log('✅ Showing: Daily records (has permission)');
-                    } else {
-                        dailyCard.style.display = 'none';
-                        console.log('✅ Hidden: Daily records (no permission)');
+                if (dailyCard && hasAnyPermission) {
+                    dailyCard.style.display = 'block';
+                    if (hasFullAccess) {
+                        console.log('✅ Showing: Daily records (full access)');
+                    } else if (hasAssignedClasses) {
+                        console.log('✅ Showing: Daily records (assigned classes only)');
                     }
                 }
                 
-                // ✅ 랜딩페이지 섹션은 관리자가 권한을 부여한 경우에만 표시
+                // ✅ 랜딩페이지, 네이버 검색량, AI 리포트는 학생 관리 권한이 없어도 항상 표시
+                // (학생 관리와 별개의 기능)
                 const landingSection = document.getElementById('landingPagesSection');
                 if (landingSection) {
-                    if (hasFullAccess) {
-                        landingSection.style.display = 'block';
-                        console.log('✅ Showing: Landing pages section (full access)');
-                    } else {
-                        landingSection.style.display = 'none';
-                        console.log('✅ Hidden: Landing pages section (restricted)');
-                    }
+                    landingSection.style.display = 'block';
+                    console.log('✅ Showing: Landing pages section (always visible)');
+                }
+                
+                const naverSection = document.getElementById('naverSearchSection');
+                if (naverSection) {
+                    naverSection.style.display = 'block';
+                    console.log('✅ Showing: Naver search section (always visible)');
+                }
+                
+                const aiReportSection = document.getElementById('aiReportSection');
+                if (aiReportSection) {
+                    aiReportSection.style.display = 'block';
+                    console.log('✅ Showing: AI report section (always visible)');
                 }
                 
                 console.log('✅ Teacher restrictions applied');

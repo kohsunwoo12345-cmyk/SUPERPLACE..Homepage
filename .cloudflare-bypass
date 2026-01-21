@@ -1,0 +1,4 @@
+# Cloudflare Pages Build Bypass
+# This file forces Cloudflare to use pre-built dist folder
+SKIP_BUILD=true
+NODE_VERSION=20
