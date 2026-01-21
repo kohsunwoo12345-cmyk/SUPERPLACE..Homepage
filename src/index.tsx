@@ -36880,18 +36880,24 @@ app.get('/students', (c) => {
                     console.log('🔄 [loadDashboard] Starting... currentUser:', currentUser);
                     console.log('🔄 [loadDashboard] userPermissions:', userPermissions);
                     
-                    // ✅ 학생 데이터가 없으면 자동으로 테스트 데이터 생성 (원장님만)
-                    if (currentUser && currentUser.user_type !== 'teacher' && currentUser.academy_id) {
+                    // ✅ 학생 데이터가 없으면 자동으로 테스트 데이터 생성 (모든 사용자)
+                    if (currentUser && currentUser.academy_id) {
                         console.log('🚀 [loadDashboard] Checking if test data is needed...');
+                        console.log('🚀 [loadDashboard] currentUser:', currentUser);
+                        console.log('🚀 [loadDashboard] academy_id:', currentUser.academy_id);
+                        
                         const studentsCheckRes = await fetch('/api/students', {
                             headers: {
                                 'X-User-Data-Base64': btoa(unescape(encodeURIComponent(JSON.stringify(currentUser))))
                             }
                         });
                         const studentsCheckData = await studentsCheckRes.json();
+                        console.log('🚀 [loadDashboard] Students check result:', studentsCheckData);
                         
                         if (studentsCheckData.success && studentsCheckData.students.length === 0) {
                             console.log('⚠️ [loadDashboard] No students found! Creating test data...');
+                            console.log('⚠️ [loadDashboard] Using academy_id:', currentUser.academy_id);
+                            
                             const initRes = await fetch('/api/init-test-data', {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
@@ -36902,12 +36908,20 @@ app.get('/students', (c) => {
                             
                             if (initData.success) {
                                 console.log('✅ [loadDashboard] Test data created successfully!');
+                                alert(`✅ 테스트 데이터 생성 완료!\n\n반: ${initData.classes}개\n학생: ${initData.students}명`);
+                                // 페이지 새로고침하여 데이터 표시
+                                location.reload();
                             } else {
                                 console.error('❌ [loadDashboard] Test data creation failed:', initData.error);
+                                alert('❌ 데이터 생성 실패: ' + initData.error);
                             }
+                        } else if (studentsCheckData.success) {
+                            console.log('✅ [loadDashboard] Students already exist:', studentsCheckData.students.length);
                         } else {
-                            console.log('✅ [loadDashboard] Students already exist, skipping test data creation');
+                            console.error('❌ [loadDashboard] Students check failed:', studentsCheckData.error);
                         }
+                    } else {
+                        console.log('⚠️ [loadDashboard] No currentUser or academy_id, skipping test data check');
                     }
                     
                     // 선생님 수 (원장님만)
