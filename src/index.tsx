@@ -34829,7 +34829,7 @@ app.get('/store', (c) => {
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #f8f9fa;
             min-height: 100vh;
             padding: 20px;
         }
@@ -34841,7 +34841,8 @@ app.get('/store', (c) => {
             background: white;
             padding: 30px;
             border-radius: 20px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border: 1px solid #e5e7eb;
             margin-bottom: 30px;
             display: flex;
             justify-content: space-between;
@@ -34861,6 +34862,7 @@ app.get('/store', (c) => {
             border-radius: 50px;
             font-size: 24px;
             font-weight: bold;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
         }
         .categories {
             display: grid;
@@ -34875,12 +34877,21 @@ app.get('/store', (c) => {
             text-align: center;
             cursor: pointer;
             transition: all 0.3s;
-            border: 3px solid transparent;
+            border: 2px solid #e5e7eb;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
-        .category-btn:hover, .category-btn.active {
+        .category-btn:hover {
             border-color: #667eea;
             transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.2);
+        }
+        .category-btn.active {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .category-btn.active .icon,
+        .category-btn.active .name {
+            color: white;
         }
         .category-btn .icon { font-size: 40px; margin-bottom: 10px; }
         .category-btn .name { font-weight: 600; color: #333; }
@@ -34888,17 +34899,20 @@ app.get('/store', (c) => {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 20px;
+            margin-bottom: 30px;
         }
         .product-card {
             background: white;
             border-radius: 20px;
             padding: 25px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            border: 1px solid #e5e7eb;
             transition: all 0.3s;
         }
         .product-card:hover {
             transform: translateY(-10px);
-            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+            border-color: #667eea;
         }
         .product-icon {
             font-size: 48px;
