@@ -20452,12 +20452,20 @@ app.get('/api/user/profile', async (c) => {
     
     // 헤더에 없으면 세션에서 확인
     if (!userId) {
-      const sessionId = c.req.header('Cookie')?.split(';').find(c => c.trim().startsWith('session_id='))?.split('=')[1];
-      if (sessionId) {
-        const session = await c.env.DB.prepare('SELECT user_id FROM sessions WHERE id = ?').bind(sessionId).first();
-        if (session) {
-          userId = session.user_id.toString();
+      try {
+        const cookies = c.req.header('Cookie');
+        if (cookies) {
+          const sessionIdMatch = cookies.split(';').find(c => c.trim().startsWith('session_id='));
+          if (sessionIdMatch) {
+            const sessionId = sessionIdMatch.split('=')[1];
+            const session = await c.env.DB.prepare('SELECT user_id FROM sessions WHERE id = ?').bind(sessionId).first();
+            if (session) {
+              userId = session.user_id.toString();
+            }
+          }
         }
+      } catch (cookieErr) {
+        console.error('Error parsing cookies:', cookieErr);
       }
     }
     
@@ -20477,8 +20485,9 @@ app.get('/api/user/profile', async (c) => {
 
     return c.json({ success: true, user })
   } catch (err) {
-    console.error('Get profile error:', err)
-    return c.json({ success: false, error: '프로필 조회 실패' }, 500)
+    console.error('Get profile error:', err);
+    console.error('Error stack:', err.stack);
+    return c.json({ success: false, error: '프로필 조회 실패', details: err.message }, 500)
   }
 })
 
