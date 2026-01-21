@@ -36189,14 +36189,18 @@ app.get('/students', (c) => {
                 }
                 
                 // 선생님 계정 감지 (DB에 user_type='teacher'로 등록된 경우에만 선생님)
-                // ✅ 기본값 = 원장님 (모든 권한)
-                // ✅ 선생님으로 등록한 경우에만 제한된 권한
-                const isTeacher = currentUser.user_type === 'teacher' || currentUser.role === 'teacher';
+                // ✅ user_type을 우선적으로 체크 (role은 무시)
+                // ✅ user_type='teacher'인 경우에만 제한된 권한 적용
+                // ✅ user_type='director' 또는 다른 값이면 원장님으로 간주
+                const isTeacher = currentUser.user_type === 'teacher';
+                
+                console.log('🔍 Account type check:');
+                console.log('   - user_type:', currentUser.user_type);
+                console.log('   - role:', currentUser.role, '(ignored)');
+                console.log('   - isTeacher:', isTeacher);
                 
                 if (isTeacher) {
-                    console.log('🔍 Teacher account detected!');
-                    console.log('   - user_type:', currentUser.user_type);
-                    console.log('   - role:', currentUser.role);
+                    console.log('✅ Teacher account confirmed (user_type=teacher)');
                     console.log('   - id:', currentUser.id);
                     
                     // 항상 서버에서 최신 권한을 조회하여 localStorage 권한을 무시
