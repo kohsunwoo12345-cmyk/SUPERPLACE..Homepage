@@ -17735,6 +17735,67 @@ app.get('/api/debug/db-status', async (c) => {
   }
 })
 
+// 🔍 특정 이메일 사용자 디버그 API
+app.get('/api/debug/user-by-email', async (c) => {
+  try {
+    const email = c.req.query('email')
+    
+    if (!email) {
+      return c.json({ success: false, error: 'Email parameter required' }, 400)
+    }
+    
+    console.log('🔍 [DebugUser] Looking up user:', email)
+    
+    // 사용자 조회
+    const user = await c.env.DB.prepare(
+      'SELECT id, email, name, user_type, academy_id, parent_user_id, role FROM users WHERE email = ?'
+    ).bind(email).first()
+    
+    if (!user) {
+      return c.json({ success: false, error: 'User not found' }, 404)
+    }
+    
+    console.log('👤 [DebugUser] Found user:', user)
+    
+    // 해당 academy_id의 학생 수
+    const studentCount = await c.env.DB.prepare(
+      'SELECT COUNT(*) as count FROM students WHERE academy_id = ? AND status = \'active\''
+    ).bind(user.academy_id || user.id).first()
+    
+    // 해당 academy_id의 반 수
+    const classCount = await c.env.DB.prepare(
+      'SELECT COUNT(*) as count FROM classes WHERE academy_id = ?'
+    ).bind(user.academy_id || user.id).first()
+    
+    // 샘플 학생 데이터
+    const sampleStudents = await c.env.DB.prepare(
+      'SELECT id, name, academy_id, class_id FROM students WHERE academy_id = ? LIMIT 5'
+    ).bind(user.academy_id || user.id).all()
+    
+    // 샘플 반 데이터
+    const sampleClasses = await c.env.DB.prepare(
+      'SELECT id, class_name, academy_id FROM classes WHERE academy_id = ? LIMIT 5'
+    ).bind(user.academy_id || user.id).all()
+    
+    return c.json({
+      success: true,
+      user: user,
+      stats: {
+        studentCount: studentCount?.count || 0,
+        classCount: classCount?.count || 0
+      },
+      sampleStudents: sampleStudents.results || [],
+      sampleClasses: sampleClasses.results || []
+    })
+  } catch (error) {
+    console.error('❌ [DebugUser] Error:', error)
+    return c.json({ 
+      success: false, 
+      error: error.message 
+    }, 500)
+  }
+})
+
 // ✅ 데이터 초기화 API - 학생/반 데이터 자동 생성
 app.post('/api/init-test-data', async (c) => {
   try {
@@ -36908,7 +36969,7 @@ app.get('/students', (c) => {
                             
                             if (initData.success) {
                                 console.log('✅ [loadDashboard] Test data created successfully!');
-                                alert(`✅ 테스트 데이터 생성 완료!\n\n반: ${initData.classes}개\n학생: ${initData.students}명`);
+                                alert('테스트 데이터 생성 완료!\n\n반: ' + initData.classes + '개\n학생: ' + initData.students + '명');
                                 // 페이지 새로고침하여 데이터 표시
                                 location.reload();
                             } else {
