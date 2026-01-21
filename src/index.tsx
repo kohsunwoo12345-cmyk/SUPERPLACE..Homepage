@@ -34927,7 +34927,7 @@ app.get('/store', (c) => {
             box-sizing: border-box;
         }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Pretendard', 'Apple SD Gothic Neo', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Pretendard', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
             background: #fafbfc;
             color: #111827;
             min-height: 100vh;
@@ -34946,6 +34946,27 @@ app.get('/store', (c) => {
             margin-bottom: 40px;
             box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
             text-align: center;
+            position: relative;
+        }
+        .home-link {
+            position: absolute;
+            top: 24px;
+            left: 32px;
+            background: rgba(255, 255, 255, 0.95);
+            color: #667eea;
+            padding: 12px 24px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .home-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
         .header-title {
             font-size: 36px;
@@ -35312,6 +35333,10 @@ app.get('/store', (c) => {
             .header {
                 padding: 32px 24px;
             }
+            .home-link {
+                position: static;
+                margin-bottom: 20px;
+            }
             .header-title {
                 font-size: 28px;
             }
@@ -35328,6 +35353,9 @@ app.get('/store', (c) => {
     <div class="container">
         <!-- 헤더 -->
         <div class="header">
+            <a href="/" class="home-link">
+                🏠 홈으로
+            </a>
             <div class="header-title">🛒 소셜 트래픽 스토어</div>
             <div class="header-subtitle">인스타그램 팔로워, 좋아요, 조회수 등 다양한 소셜 서비스</div>
             <div class="points-display">
