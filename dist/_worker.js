@@ -28668,10 +28668,7 @@ ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.di
                             
                             if (initData.success) {
                                 console.log('✅ [loadDashboard] Test data created successfully!');
-                                alert('테스트 데이터 생성 완료!
-
-반: ' + initData.classes + '개
-학생: ' + initData.students + '명');
+                                alert('테스트 데이터 생성 완료!\\n\\n반: ' + initData.classes + '개\\n학생: ' + initData.students + '명');
                                 // 페이지 새로고침하여 데이터 표시
                                 location.reload();
                             } else {
