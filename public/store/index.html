@@ -1525,6 +1525,61 @@ A/S 기간: 최대 3개월
         // 제품 렌더링
         function renderProducts(products) {
             const grid = document.getElementById('products-grid');
+            
+            // 네이버 카테고리인 경우 특별 UI 표시
+            if (currentCategory === 'naver') {
+                grid.innerHTML = `
+                    <div style="text-align: center; padding: 60px 20px;">
+                        <div style="display: inline-block; text-align: left; max-width: 600px;">
+                            ${categoryLogos.naver}
+                            <h2 style="font-size: 28px; font-weight: 700; color: #212529; margin: 24px 0 16px;">네이버 마케팅 서비스</h2>
+                            <p style="font-size: 16px; color: #6c757d; line-height: 1.8; margin-bottom: 32px;">
+                                네이버 플레이스, 블로그 등 네이버 마케팅 서비스는<br>
+                                별도 문의를 통해 맞춤형 상담을 제공하고 있습니다.
+                            </p>
+                            
+                            <div style="background: linear-gradient(135deg, #03C75A 0%, #00B140 100%); padding: 32px; border-radius: 16px; margin-bottom: 24px; box-shadow: 0 8px 24px rgba(3, 199, 90, 0.25);">
+                                <h3 style="font-size: 20px; font-weight: 700; color: white; margin: 0 0 16px;">📋 문의 가능 서비스</h3>
+                                <ul style="list-style: none; padding: 0; margin: 0;">
+                                    <li style="color: white; font-size: 15px; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.2);">
+                                        ✓ 네이버 플레이스 리뷰 및 평점 관리
+                                    </li>
+                                    <li style="color: white; font-size: 15px; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.2);">
+                                        ✓ 네이버 블로그 체험단 및 포스팅
+                                    </li>
+                                    <li style="color: white; font-size: 15px; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.2);">
+                                        ✓ 네이버 카페 홍보 및 활동
+                                    </li>
+                                    <li style="color: white; font-size: 15px; padding: 10px 0;">
+                                        ✓ 네이버 검색 최적화 (SEO)
+                                    </li>
+                                </ul>
+                            </div>
+                            
+                            <div style="background: #f8f9fa; padding: 24px; border-radius: 12px; margin-bottom: 32px;">
+                                <p style="font-size: 14px; color: #495057; line-height: 1.6; margin: 0;">
+                                    💡 <strong>맞춤형 상담</strong><br>
+                                    귀하의 비즈니스에 최적화된 네이버 마케팅 전략을 제안해드립니다.<br>
+                                    빠른 답변과 견적을 원하시면 아래 문의하기 버튼을 클릭해주세요.
+                                </p>
+                            </div>
+                            
+                            <a href="https://open.kakao.com/o/sP3eMGRg" target="_blank" style="display: inline-block; width: 100%; max-width: 400px; background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); color: white; text-decoration: none; padding: 18px 32px; border-radius: 12px; font-size: 17px; font-weight: 700; box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3); transition: all 0.3s; text-align: center;" 
+                               onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(99, 102, 241, 0.4)';"
+                               onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 16px rgba(99, 102, 241, 0.3)';">
+                                💬 카카오톡 문의하기
+                            </a>
+                            
+                            <p style="font-size: 13px; color: #6c757d; margin-top: 16px;">
+                                평일 10:00 - 18:00 (주말 및 공휴일 휴무)
+                            </p>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+            
+            // 일반 제품 렌더링
             grid.innerHTML = products.map(product => `
                 <div class="product-card" onclick="openOrderForm('${product.id}')">
                     <div class="product-header">
