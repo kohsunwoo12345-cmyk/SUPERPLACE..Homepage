@@ -17685,6 +17685,108 @@ app.get('/api/students', async (c) => {
 })
 
 
+// ✅ 데이터 초기화 API - 학생/반 데이터 자동 생성
+app.post('/api/init-test-data', async (c) => {
+  try {
+    console.log('🚀 [InitTestData] Starting test data initialization...')
+    
+    const data = await c.req.json()
+    const { academyId } = data
+    
+    if (!academyId) {
+      return c.json({ success: false, error: 'academyId is required' }, 400)
+    }
+    
+    console.log('🚀 [InitTestData] Creating test data for academy_id:', academyId)
+    
+    // 1. 반 데이터 생성 (5개)
+    const classNames = ['중1 수학', '중2 영어', '중3 과학', '고1 국어', '고2 수학']
+    const classIds = []
+    
+    for (const className of classNames) {
+      // 이미 존재하는지 확인
+      const existing = await c.env.DB.prepare(
+        'SELECT id FROM classes WHERE academy_id = ? AND class_name = ?'
+      ).bind(academyId, className).first()
+      
+      if (!existing) {
+        const result = await c.env.DB.prepare(`
+          INSERT INTO classes (academy_id, class_name, grade, description, created_at) 
+          VALUES (?, ?, ?, ?, datetime('now'))
+        `).bind(
+          academyId,
+          className,
+          className.includes('중') ? className.substring(0, 2) : className.substring(0, 2),
+          `${className} 수업`,
+        ).run()
+        
+        classIds.push(result.meta.last_row_id)
+        console.log('✅ [InitTestData] Created class:', className, 'ID:', result.meta.last_row_id)
+      } else {
+        classIds.push(existing.id)
+        console.log('✅ [InitTestData] Class already exists:', className, 'ID:', existing.id)
+      }
+    }
+    
+    // 2. 학생 데이터 생성 (각 반에 10명씩, 총 50명)
+    let totalStudents = 0
+    const studentNames = [
+      '김민준', '이서연', '박지우', '최수아', '정예준',
+      '강하은', '조민서', '윤시우', '장서준', '임유나'
+    ]
+    
+    for (let classIdx = 0; classIdx < classIds.length; classIdx++) {
+      const classId = classIds[classIdx]
+      
+      for (let i = 0; i < 10; i++) {
+        const name = `${studentNames[i]} (${classNames[classIdx]})`
+        
+        // 이미 존재하는지 확인
+        const existing = await c.env.DB.prepare(
+          'SELECT id FROM students WHERE academy_id = ? AND name = ?'
+        ).bind(academyId, name).first()
+        
+        if (!existing) {
+          await c.env.DB.prepare(`
+            INSERT INTO students (
+              academy_id, name, phone, parent_name, parent_phone, 
+              grade, class_id, enrollment_date, status, created_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'active', datetime('now'))
+          `).bind(
+            academyId,
+            name,
+            `010-1234-${String(classIdx * 10 + i).padStart(4, '0')}`,
+            `${studentNames[i]} 학부모`,
+            `010-5678-${String(classIdx * 10 + i).padStart(4, '0')}`,
+            classNames[classIdx].includes('중') ? classNames[classIdx].substring(0, 2) : classNames[classIdx].substring(0, 2),
+            classId,
+            new Date().toISOString().split('T')[0]
+          ).run()
+          
+          totalStudents++
+        }
+      }
+    }
+    
+    console.log('🎉 [InitTestData] Test data created successfully!')
+    console.log('📊 [InitTestData] Total classes:', classIds.length)
+    console.log('📊 [InitTestData] Total new students:', totalStudents)
+    
+    return c.json({ 
+      success: true, 
+      message: `테스트 데이터 생성 완료! (반: ${classIds.length}개, 학생: ${totalStudents}명)`,
+      classes: classIds.length,
+      students: totalStudents
+    })
+  } catch (error) {
+    console.error('❌ [InitTestData] Error:', error)
+    return c.json({ 
+      success: false, 
+      error: '테스트 데이터 생성 실패: ' + error.message 
+    }, 500)
+  }
+})
+
 // 학생 추가
 app.post('/api/students', async (c) => {
   try {
@@ -36727,6 +36829,36 @@ app.get('/students', (c) => {
                 try {
                     console.log('🔄 [loadDashboard] Starting... currentUser:', currentUser);
                     console.log('🔄 [loadDashboard] userPermissions:', userPermissions);
+                    
+                    // ✅ 학생 데이터가 없으면 자동으로 테스트 데이터 생성 (원장님만)
+                    if (currentUser && currentUser.user_type !== 'teacher' && currentUser.academy_id) {
+                        console.log('🚀 [loadDashboard] Checking if test data is needed...');
+                        const studentsCheckRes = await fetch('/api/students', {
+                            headers: {
+                                'X-User-Data-Base64': btoa(unescape(encodeURIComponent(JSON.stringify(currentUser))))
+                            }
+                        });
+                        const studentsCheckData = await studentsCheckRes.json();
+                        
+                        if (studentsCheckData.success && studentsCheckData.students.length === 0) {
+                            console.log('⚠️ [loadDashboard] No students found! Creating test data...');
+                            const initRes = await fetch('/api/init-test-data', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ academyId: currentUser.academy_id })
+                            });
+                            const initData = await initRes.json();
+                            console.log('🎉 [loadDashboard] Test data creation result:', initData);
+                            
+                            if (initData.success) {
+                                console.log('✅ [loadDashboard] Test data created successfully!');
+                            } else {
+                                console.error('❌ [loadDashboard] Test data creation failed:', initData.error);
+                            }
+                        } else {
+                            console.log('✅ [loadDashboard] Students already exist, skipping test data creation');
+                        }
+                    }
                     
                     // 선생님 수 (원장님만)
                     if (currentUser && currentUser.user_type !== 'teacher') {
