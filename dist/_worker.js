@@ -28140,13 +28140,27 @@ ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.di
                 // ✅ user_type='teacher'인 경우에만 제한된 권한 적용
                 // ✅ user_type='director' 또는 다른 값이면 원장님으로 간주
                 const isTeacher = currentUser.user_type === 'teacher';
+                const isDirector = currentUser.user_type === 'director' || !currentUser.user_type;
                 
                 console.log('🔍 Account type check:');
                 console.log('   - user_type:', currentUser.user_type);
                 console.log('   - role:', currentUser.role, '(ignored)');
                 console.log('   - isTeacher:', isTeacher);
+                console.log('   - isDirector:', isDirector);
                 
-                if (isTeacher) {
+                if (isDirector) {
+                    // 원장님은 모든 권한 자동 부여
+                    console.log('✅ Director account - granting full access');
+                    userPermissions = {
+                        canViewAllStudents: true,
+                        canWriteDailyReports: true,
+                        assignedClasses: []
+                    };
+                    currentUser.permissions = userPermissions;
+                    localStorage.setItem('user', JSON.stringify(currentUser));
+                    console.log('✅ Full permissions granted to director:', userPermissions);
+                    
+                } else if (isTeacher) {
                     console.log('✅ Teacher account confirmed (user_type=teacher)');
                     console.log('   - id:', currentUser.id);
                     
@@ -28177,8 +28191,6 @@ ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.di
                     
                     // 선생님 UI 제한 적용
                     applyTeacherRestrictions();
-                } else {
-                    console.log('✅ Director account detected, no restrictions');
                 }
                 
                 await loadDashboard();
