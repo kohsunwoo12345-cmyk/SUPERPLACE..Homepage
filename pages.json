@@ -2,13 +2,13 @@
   "$schema": "https://developers.cloudflare.com/pages/platform/build-configuration/#schema",
   "version": 1,
   "build": {
-    "command": "npm run build",
+    "command": "echo 'Using pre-built dist folder'",
     "cwd": "",
     "watch_paths": []
   },
   "deploy": {
     "processing": {
-      "skip_build": false
+      "skip_build": true
     }
   }
 }
