@@ -9151,7 +9151,85 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
             </div>
         </div>
 
-        <div class="pt-32 pb-24 px-6">
+        <!-- 구독 없는 사용자용 메시지 -->
+        <div id="noSubscriptionMessage" class="hidden pt-32 pb-24 px-6">
+            <div class="max-w-4xl mx-auto">
+                <div class="bg-white rounded-2xl shadow-xl border-2 border-red-200 overflow-hidden">
+                    <div class="bg-gradient-to-r from-red-500 to-orange-500 p-8 text-center">
+                        <div class="w-24 h-24 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-16 h-16 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                            </svg>
+                        </div>
+                        <h1 class="text-4xl font-bold text-white mb-3">⚠️ 구독 플랜이 없습니다</h1>
+                        <p class="text-xl text-white text-opacity-90">대시보드를 사용하려면 플랜을 구독해주세요</p>
+                    </div>
+                    <div class="p-12">
+                        <div class="text-center mb-8">
+                            <p class="text-lg text-gray-600 mb-6">
+                                슈퍼플레이스의 강력한 학원 마케팅 도구를 사용하려면<br>
+                                먼저 구독 플랜을 선택해주세요.
+                            </p>
+                            <div class="bg-gray-50 rounded-xl p-6 mb-6">
+                                <h3 class="font-bold text-lg text-gray-900 mb-4">✨ 구독 시 이용 가능한 기능</h3>
+                                <div class="grid md:grid-cols-2 gap-4 text-left">
+                                    <div class="flex items-start gap-3">
+                                        <svg class="w-6 h-6 text-green-500 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                        </svg>
+                                        <span class="text-gray-700">학생 관리 시스템</span>
+                                    </div>
+                                    <div class="flex items-start gap-3">
+                                        <svg class="w-6 h-6 text-green-500 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                        </svg>
+                                        <span class="text-gray-700">AI 학습 분석 리포트</span>
+                                    </div>
+                                    <div class="flex items-start gap-3">
+                                        <svg class="w-6 h-6 text-green-500 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                        </svg>
+                                        <span class="text-gray-700">랜딩페이지 생성</span>
+                                    </div>
+                                    <div class="flex items-start gap-3">
+                                        <svg class="w-6 h-6 text-green-500 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                        </svg>
+                                        <span class="text-gray-700">SMS 자동 발송</span>
+                                    </div>
+                                    <div class="flex items-start gap-3">
+                                        <svg class="w-6 h-6 text-green-500 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                        </svg>
+                                        <span class="text-gray-700">선생님 권한 관리</span>
+                                    </div>
+                                    <div class="flex items-start gap-3">
+                                        <svg class="w-6 h-6 text-green-500 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                        </svg>
+                                        <span class="text-gray-700">마케팅 자동화</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                            <a href="/pricing" class="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-purple-600 to-purple-700 text-white px-8 py-4 rounded-xl hover:from-purple-700 hover:to-purple-800 transition-all shadow-lg hover:shadow-xl font-bold text-lg">
+                                <span>💎 플랜 선택하기</span>
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                                </svg>
+                            </a>
+                            <a href="/" class="inline-flex items-center justify-center gap-2 bg-gray-100 text-gray-700 px-8 py-4 rounded-xl hover:bg-gray-200 transition-all font-bold text-lg">
+                                <span>🏠 홈으로 돌아가기</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 구독한 사용자용 대시보드 콘텐츠 -->
+        <div id="dashboardContent" class="pt-32 pb-24 px-6">
             <div class="max-w-7xl mx-auto">
                 <div class="mb-10">
                     <h1 class="text-4xl font-bold text-gray-900 mb-2">안녕하세요, <span id="userNameDisplay"></span>님!</h1>
@@ -9650,28 +9728,32 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
                     
                     console.log('[Dashboard] hasSubscription:', hasSubscription, 'isAdminPlan:', isAdminPlan)
                     
-                    // 구독이 없으면 마케팅 도구 섹션 숨김
+                    // 대시보드 콘텐츠 요소
+                    const dashboardContent = document.getElementById('dashboardContent')
+                    const noSubscriptionMessage = document.getElementById('noSubscriptionMessage')
+                    
+                    // 구독 상태에 따라 표시/숨김
+                    if (!hasSubscription) {
+                        console.log('[Dashboard] No subscription - showing message, hiding dashboard')
+                        // 구독이 없으면 대시보드 숨기고 안내 메시지 표시
+                        if (dashboardContent) dashboardContent.style.display = 'none'
+                        if (noSubscriptionMessage) noSubscriptionMessage.classList.remove('hidden')
+                        if (warningBanner) warningBanner.classList.add('hidden') // 배너도 숨김 (메시지로 대체)
+                    } else {
+                        console.log('[Dashboard] Has subscription - showing dashboard, hiding message')
+                        // 구독이 있으면 대시보드 표시하고 안내 메시지 숨김
+                        if (dashboardContent) dashboardContent.style.display = 'block'
+                        if (noSubscriptionMessage) noSubscriptionMessage.classList.add('hidden')
+                        if (warningBanner) warningBanner.classList.add('hidden')
+                    }
+                    
+                    // 마케팅 도구 섹션 제어
                     if (!hasSubscription && marketingToolsSection) {
                         console.log('[Dashboard] Hiding marketing tools - no subscription')
                         marketingToolsSection.style.display = 'none'
                     } else if (marketingToolsSection) {
                         console.log('[Dashboard] Showing marketing tools - has subscription')
                         marketingToolsSection.style.display = 'block'
-                    }
-                    
-                    // 구독이 없으면 경고 배너 표시 (관리자 플랜 포함 모든 구독이 있으면 배너 숨김)
-                    if (!hasSubscription && warningBanner) {
-                        console.log('[Dashboard] Showing warning banner - no subscription')
-                        warningBanner.classList.remove('hidden')
-                        // 배너 높이만큼 컨텐츠 영역을 아래로 밀기
-                        const mainContent = document.querySelector('.pt-32')
-                        if (mainContent) {
-                            mainContent.classList.remove('pt-32')
-                            mainContent.classList.add('pt-48')
-                        }
-                    } else if (warningBanner) {
-                        console.log('[Dashboard] Hiding warning banner - has subscription')
-                        warningBanner.classList.add('hidden')
                     }
                     
                     if (hasSubscription) {
