@@ -28144,10 +28144,16 @@ ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.di
                     console.log('   - role:', currentUser.role);
                     console.log('   - id:', currentUser.id);
                     
-                    // localStorage에 permissions가 없으면 서버에서 조회
-                    if (!currentUser.permissions) {
-                        console.log('⚠️ No permissions in localStorage, fetching from server...');
-                        await loadTeacherPermissions();
+                    // 항상 서버에서 최신 권한을 조회하여 localStorage 권한을 무시
+                    console.log('🔄 Fetching latest permissions from server...');
+                    await loadTeacherPermissions();
+                    
+                    // 현재 로드된 권한으로 userPermissions 설정
+                    console.log('✅ Setting userPermissions from loadTeacherPermissions result');
+                    console.log('   - userPermissions:', userPermissions);
+                    
+                    // UI 제한 적용
+                    applyTeacherRestrictions();
                         
                         // 조회한 권한을 localStorage에 저장
                         if (userPermissions) {
