@@ -17837,6 +17837,47 @@ app.post('/api/debug/fix-user-type', async (c) => {
   }
 })
 
+// 🔧 academy_id 수정 API (디버깅용)
+app.post('/api/debug/fix-academy-id', async (c) => {
+  try {
+    const { email, academyId } = await c.req.json()
+    
+    if (!email || !academyId) {
+      return c.json({ success: false, error: 'Email and academyId required' }, 400)
+    }
+    
+    console.log('🔧 [FixAcademyId] Updating user:', email, 'academy_id to:', academyId)
+    
+    // 사용자 업데이트
+    const result = await c.env.DB.prepare(
+      'UPDATE users SET academy_id = ? WHERE email = ?'
+    ).bind(academyId, email).run()
+    
+    if (result.meta.changes === 0) {
+      return c.json({ success: false, error: 'User not found or not updated' }, 404)
+    }
+    
+    // 업데이트된 사용자 조회
+    const updatedUser = await c.env.DB.prepare(
+      'SELECT id, email, name, user_type, academy_id, parent_user_id FROM users WHERE email = ?'
+    ).bind(email).first()
+    
+    console.log('✅ [FixAcademyId] Updated user:', updatedUser)
+    
+    return c.json({
+      success: true,
+      message: 'Academy ID updated successfully',
+      user: updatedUser
+    })
+  } catch (error) {
+    console.error('❌ [FixAcademyId] Error:', error)
+    return c.json({ 
+      success: false, 
+      error: error.message 
+    }, 500)
+  }
+})
+
 // ✅ 데이터 초기화 API - 학생/반 데이터 자동 생성
 app.post('/api/init-test-data', async (c) => {
   try {
