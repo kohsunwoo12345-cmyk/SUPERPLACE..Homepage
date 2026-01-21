@@ -354,6 +354,37 @@
             font-size: 20px;
         }
         
+        /* 상품 상세 정보 */
+        .product-details {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #6366f1;
+        }
+        .detail-section {
+            margin-bottom: 16px;
+        }
+        .detail-section:last-child {
+            margin-bottom: 0;
+        }
+        .detail-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #212529;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .detail-text {
+            font-size: 13px;
+            color: #495057;
+            line-height: 1.6;
+            margin: 0;
+            white-space: pre-wrap;
+        }
+        
         /* 버튼 */
         .btn-primary {
             width: 100%;
@@ -696,17 +727,23 @@
                 name: '인스타그램 팔로워',
                 category: 'instagram',
                 description: '한국인 팔로워 (성별/연령 타겟 가능)',
+                detailedInfo: {
+                    service: '100% 실제 활동하는 한국인 계정이 방문하여 팔로우를 진행합니다. 성별, 연령대별로 타겟팅이 가능하며, 계정의 신뢰도와 초기 성장에 기여합니다.',
+                    orderGuide: '인스타그램 아이디를 입력해주세요.\n예시) snsmeme 또는 https://www.instagram.com/snsmeme',
+                    asPolicy: 'A/S 기간: 최대 3개월\n구매 날짜로부터 24시간 / 7일 / 30일 / 60일 / 90일 경과 시 이탈 수량 자동 리필 처리됩니다.',
+                    foreignAsPolicy: 'A/S 기간: 1회 처리\n이탈 건 확인 후 A/S 처리가 진행됩니다.'
+                },
                 options: [
-                    { name: '실제 한국인 팔로워', price: 220 },
-                    { name: '[남성] 한국인 팔로워', price: 280 },
-                    { name: '[여성] 한국인 팔로워', price: 280 },
-                    { name: '[20대] 한국인 팔로워', price: 280 },
-                    { name: '[30대] 한국인 팔로워', price: 280 },
-                    { name: '[20대/남성] 한국인 팔로워', price: 440 },
-                    { name: '[20대/여성] 한국인 팔로워', price: 440 },
-                    { name: '[30대/남성] 한국인 팔로워', price: 440 },
-                    { name: '[30대/여성] 한국인 팔로워', price: 440 },
-                    { name: '외국인 팔로워', price: 20 }
+                    { name: '실제 한국인 팔로워', price: 220, type: 'korean' },
+                    { name: '[남성] 한국인 팔로워', price: 280, type: 'korean', target: '남성' },
+                    { name: '[여성] 한국인 팔로워', price: 280, type: 'korean', target: '여성' },
+                    { name: '[20대] 한국인 팔로워', price: 280, type: 'korean', target: '20대' },
+                    { name: '[30대] 한국인 팔로워', price: 280, type: 'korean', target: '30대' },
+                    { name: '[20대/남성] 한국인 팔로워', price: 440, type: 'korean', target: '20대 남성' },
+                    { name: '[20대/여성] 한국인 팔로워', price: 440, type: 'korean', target: '20대 여성' },
+                    { name: '[30대/남성] 한국인 팔로워', price: 440, type: 'korean', target: '30대 남성' },
+                    { name: '[30대/여성] 한국인 팔로워', price: 440, type: 'korean', target: '30대 여성' },
+                    { name: '외국인 팔로워', price: 20, type: 'foreign' }
                 ]
             },
             {
@@ -714,17 +751,22 @@
                 name: '인스타그램 좋아요',
                 category: 'instagram',
                 description: '게시물 좋아요 (타겟 가능)',
+                detailedInfo: {
+                    service: '게시물에 100% 실제 활동하는 한국인/외국인 계정이 좋아요를 진행합니다. 성별, 연령대별 타겟팅이 가능합니다.',
+                    orderGuide: '게시물 링크를 입력해주세요.\n예시) https://www.instagram.com/p/ABC123/',
+                    asPolicy: '좋아요는 이탈이 거의 없으나, 이탈 시 확인 후 A/S 처리됩니다.'
+                },
                 options: [
-                    { name: '외국인 좋아요', price: 2.5 },
-                    { name: '한국인 좋아요', price: 25 },
-                    { name: '[남성] 한국인 좋아요', price: 33 },
-                    { name: '[여성] 한국인 좋아요', price: 33 },
-                    { name: '[20대] 한국인 좋아요', price: 33 },
-                    { name: '[30대] 한국인 좋아요', price: 33 },
-                    { name: '[20대/남성] 한국인 좋아요', price: 44 },
-                    { name: '[20대/여성] 한국인 좋아요', price: 44 },
-                    { name: '[30대/남성] 한국인 좋아요', price: 44 },
-                    { name: '[30대/여성] 한국인 좋아요', price: 44 }
+                    { name: '외국인 좋아요', price: 2.5, type: 'foreign' },
+                    { name: '한국인 좋아요', price: 25, type: 'korean' },
+                    { name: '[남성] 한국인 좋아요', price: 33, type: 'korean', target: '남성' },
+                    { name: '[여성] 한국인 좋아요', price: 33, type: 'korean', target: '여성' },
+                    { name: '[20대] 한국인 좋아요', price: 33, type: 'korean', target: '20대' },
+                    { name: '[30대] 한국인 좋아요', price: 33, type: 'korean', target: '30대' },
+                    { name: '[20대/남성] 한국인 좋아요', price: 44, type: 'korean', target: '20대 남성' },
+                    { name: '[20대/여성] 한국인 좋아요', price: 44, type: 'korean', target: '20대 여성' },
+                    { name: '[30대/남성] 한국인 좋아요', price: 44, type: 'korean', target: '30대 남성' },
+                    { name: '[30대/여성] 한국인 좋아요', price: 44, type: 'korean', target: '30대 여성' }
                 ]
             },
             {
@@ -732,19 +774,29 @@
                 name: '인스타그램 조회수',
                 category: 'instagram',
                 description: '릴스 조회수',
-                options: [{ name: '한국인 릴스 조회수', price: 2 }]
+                detailedInfo: {
+                    service: '릴스 영상에 100% 실제 한국인 계정의 조회수를 제공합니다.',
+                    orderGuide: '릴스 링크를 입력해주세요.\n예시) https://www.instagram.com/reel/ABC123/',
+                    asPolicy: '조회수는 이탈이 없습니다.'
+                },
+                options: [{ name: '한국인 릴스 조회수', price: 2, type: 'korean' }]
             },
             {
                 id: 'ig_comments',
                 name: '인스타그램 댓글',
                 category: 'instagram',
                 description: '한국인 댓글 (타겟 가능)',
+                detailedInfo: {
+                    service: '게시물에 100% 실제 한국인 계정이 자연스러운 댓글을 작성합니다. 성별, 연령대별 타겟팅이 가능합니다.',
+                    orderGuide: '게시물 링크를 입력해주세요.\n예시) https://www.instagram.com/p/ABC123/\n\n원하시는 댓글 내용이 있다면 주문 후 고객센터로 연락주세요.',
+                    asPolicy: '댓글은 삭제되지 않으나, 계정 정지 등으로 인한 삭제 시 확인 후 A/S 처리됩니다.'
+                },
                 options: [
-                    { name: '한국인 댓글', price: 880 },
-                    { name: '[남성] 한국인 댓글', price: 1100 },
-                    { name: '[여성] 한국인 댓글', price: 1100 },
-                    { name: '[20대] 한국인 댓글', price: 1100 },
-                    { name: '[30대] 한국인 댓글', price: 1100 }
+                    { name: '한국인 댓글', price: 880, type: 'korean' },
+                    { name: '[남성] 한국인 댓글', price: 1100, type: 'korean', target: '남성' },
+                    { name: '[여성] 한국인 댓글', price: 1100, type: 'korean', target: '여성' },
+                    { name: '[20대] 한국인 댓글', price: 1100, type: 'korean', target: '20대' },
+                    { name: '[30대] 한국인 댓글', price: 1100, type: 'korean', target: '30대' }
                 ]
             },
             {
@@ -752,7 +804,12 @@
                 name: '인스타그램 저장',
                 category: 'instagram',
                 description: '게시물 저장',
-                options: [{ name: '한국인 저장', price: 88 }]
+                detailedInfo: {
+                    service: '게시물에 100% 실제 한국인 계정이 저장을 진행합니다. 저장 수가 많은 게시물은 알고리즘에서 더 높은 평가를 받습니다.',
+                    orderGuide: '게시물 링크를 입력해주세요.\n예시) https://www.instagram.com/p/ABC123/',
+                    asPolicy: '저장은 이탈이 거의 없으나, 이탈 시 확인 후 A/S 처리됩니다.'
+                },
+                options: [{ name: '한국인 저장', price: 88, type: 'korean' }]
             }
         ];
 
@@ -911,6 +968,29 @@
 
             const modal = document.createElement('div');
             modal.className = 'modal-overlay';
+            
+            // 상세 정보 HTML 생성
+            let detailedInfoHtml = '';
+            if (product.detailedInfo) {
+                const info = product.detailedInfo;
+                detailedInfoHtml = `
+                    <div class="product-details">
+                        <div class="detail-section">
+                            <h4 class="detail-title">📌 서비스 설명</h4>
+                            <p class="detail-text">${info.service}</p>
+                        </div>
+                        <div class="detail-section">
+                            <h4 class="detail-title">🔗 주문 링크 입력 방법</h4>
+                            <p class="detail-text">${info.orderGuide.replace(/\\n/g, '<br>')}</p>
+                        </div>
+                        <div class="detail-section">
+                            <h4 class="detail-title">💎 A/S 정책</h4>
+                            <p class="detail-text" id="as-policy-text">${info.asPolicy.replace(/\\n/g, '<br>')}</p>
+                        </div>
+                    </div>
+                `;
+            }
+            
             modal.innerHTML = `
                 <div class="modal-content">
                     <div class="modal-header">
@@ -919,13 +999,15 @@
                         <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">×</button>
                     </div>
                     
+                    ${detailedInfoHtml}
+                    
                     <form id="order-form">
                         <div class="form-group">
                             <label class="form-label">옵션 선택<span class="required">*</span></label>
-                            <select class="form-select" id="option-select" required onchange="updatePrice()">
+                            <select class="form-select" id="option-select" required onchange="updatePrice(); updateAsPolicy();">
                                 <option value="">옵션을 선택하세요</option>
                                 ${product.options.map((opt, idx) => `
-                                    <option value="${idx}" data-price="${opt.price}">
+                                    <option value="${idx}" data-price="${opt.price}" data-type="${opt.type || ''}">
                                         ${opt.name} - ${opt.price.toLocaleString()}P/개
                                     </option>
                                 `).join('')}
@@ -999,6 +1081,30 @@
             document.getElementById('unit-price').textContent = `${price.toLocaleString()} P`;
             document.getElementById('quantity-display').textContent = `${quantity}개`;
             document.getElementById('total-price').textContent = `${total.toLocaleString()} P`;
+        }
+        
+        // A/S 정책 업데이트
+        function updateAsPolicy() {
+            const select = document.getElementById('option-select');
+            const policyElement = document.getElementById('as-policy-text');
+            
+            if (!select || !select.value || !policyElement) return;
+            
+            const modal = document.querySelector('.modal-overlay');
+            const productId = modal.dataset.productId;
+            const product = allProducts.find(p => p.id === productId);
+            
+            if (!product || !product.detailedInfo) return;
+            
+            const option = select.options[select.selectedIndex];
+            const optionType = option.dataset.type;
+            
+            // 외국인 옵션인 경우 외국인 A/S 정책 표시
+            if (optionType === 'foreign' && product.detailedInfo.foreignAsPolicy) {
+                policyElement.innerHTML = product.detailedInfo.foreignAsPolicy.replace(/\\n/g, '<br>');
+            } else {
+                policyElement.innerHTML = product.detailedInfo.asPolicy.replace(/\\n/g, '<br>');
+            }
         }
 
         // 주문 제출
