@@ -313,6 +313,12 @@
             text-align: center;
             font-size: 15px;
             font-weight: 600;
+            transition: all 0.2s;
+        }
+        .quantity-input:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
         }
         
         /* 가격 표시 */
@@ -611,7 +617,7 @@
         const instagramProducts = [
             {
                 id: 'ig_follower',
-                name: '팔로워',
+                name: '인스타그램 팔로워',
                 category: 'instagram',
                 description: '한국인 팔로워 (성별/연령 타겟 가능)',
                 options: [
@@ -629,7 +635,7 @@
             },
             {
                 id: 'ig_likes',
-                name: '좋아요',
+                name: '인스타그램 좋아요',
                 category: 'instagram',
                 description: '게시물 좋아요 (타겟 가능)',
                 options: [
@@ -647,14 +653,14 @@
             },
             {
                 id: 'ig_views',
-                name: '조회수',
+                name: '인스타그램 조회수',
                 category: 'instagram',
                 description: '릴스 조회수',
                 options: [{ name: '한국인 릴스 조회수', price: 2 }]
             },
             {
                 id: 'ig_comments',
-                name: '댓글',
+                name: '인스타그램 댓글',
                 category: 'instagram',
                 description: '한국인 댓글 (타겟 가능)',
                 options: [
@@ -667,7 +673,7 @@
             },
             {
                 id: 'ig_saves',
-                name: '저장',
+                name: '인스타그램 저장',
                 category: 'instagram',
                 description: '게시물 저장',
                 options: [{ name: '한국인 저장', price: 88 }]
@@ -677,21 +683,21 @@
         const youtubeProducts = [
             {
                 id: 'yt_subscribers',
-                name: '구독자',
+                name: '유튜브 구독자',
                 category: 'youtube',
                 description: '한국인 구독자',
                 options: [{ name: '한국인 구독자', price: 440 }]
             },
             {
                 id: 'yt_views',
-                name: '조회수',
+                name: '유튜브 조회수',
                 category: 'youtube',
                 description: '동영상 조회수',
                 options: [{ name: '한국인 조회수', price: 11 }]
             },
             {
                 id: 'yt_likes',
-                name: '좋아요',
+                name: '유튜브 좋아요',
                 category: 'youtube',
                 description: '동영상 좋아요',
                 options: [{ name: '한국인 좋아요', price: 110 }]
@@ -701,14 +707,14 @@
         const facebookProducts = [
             {
                 id: 'fb_followers',
-                name: '팔로워',
+                name: '페이스북 팔로워',
                 category: 'facebook',
                 description: '페이지 팔로워',
                 options: [{ name: '한국인 팔로워', price: 220 }]
             },
             {
                 id: 'fb_likes',
-                name: '좋아요',
+                name: '페이스북 좋아요',
                 category: 'facebook',
                 description: '게시물 좋아요',
                 options: [{ name: '한국인 좋아요', price: 55 }]
@@ -718,14 +724,14 @@
         const threadsProducts = [
             {
                 id: 'th_followers',
-                name: '팔로워',
+                name: '쓰레드 팔로워',
                 category: 'threads',
                 description: '쓰레드 팔로워',
                 options: [{ name: '한국인 팔로워', price: 220 }]
             },
             {
                 id: 'th_likes',
-                name: '좋아요',
+                name: '쓰레드 좋아요',
                 category: 'threads',
                 description: '게시물 좋아요',
                 options: [{ name: '한국인 좋아요', price: 44 }]
