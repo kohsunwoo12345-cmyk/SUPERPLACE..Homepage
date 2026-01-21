@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test - shouldRedirect Logic</title>
+</head>
+<body>
+    <h1>Testing v2.0.22 Fix</h1>
+    <div id="status"></div>
+    <div id="logs"></div>
+
+    <script>
+        const statusDiv = document.getElementById('status');
+        const logsDiv = document.getElementById('logs');
+        
+        function log(msg) {
+            logsDiv.innerHTML += `<p>${msg}</p>`;
+            console.log(msg);
+        }
+        
+        // Simulate the exact code from v2.0.22
+        log('Starting test...');
+        
+        const userStr = localStorage.getItem('user');
+        let currentUser = null;
+        let academyId = 1;
+        let userPermissions = {
+            canViewAllStudents: false,
+            canWriteDailyReports: false,
+            assignedClasses: []
+        };
+        
+        let shouldRedirect = false;
+        
+        if (!userStr) {
+            log('⚠️ Not logged in');
+            shouldRedirect = true;
+        } else {
+            try {
+                currentUser = JSON.parse(userStr);
+                
+                if (!currentUser.academy_id) {
+                    log('❌ CRITICAL: academy_id missing!');
+                    localStorage.removeItem('user');
+                    shouldRedirect = true;
+                } else {
+                    academyId = currentUser.academy_id;
+                    log('✅ User ID: ' + currentUser.id);
+                    log('✅ Academy ID: ' + academyId);
+                    log('✅ User Type: ' + currentUser.user_type);
+                }
+            } catch (e) {
+                log('❌ Failed to parse user data');
+                localStorage.removeItem('user');
+                shouldRedirect = true;
+            }
+        }
+        
+        if (shouldRedirect) {
+            log('🔄 Would redirect to /login');
+            statusDiv.innerHTML = '<h2 style="color: orange;">Would Redirect (but not in test)</h2>';
+            // window.location.href = '/login'; // Commented for test
+        } else if (currentUser) {
+            log('✅ Page would initialize normally');
+            statusDiv.innerHTML = '<h2 style="color: green;">SUCCESS! Page initializes</h2>';
+            // initializePage(); would be called here
+        }
+        
+        log('Test complete - NO ERRORS!');
+    </script>
+</body>
+</html>

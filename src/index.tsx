@@ -10314,6 +10314,12 @@ app.get('/login', (c) => {
                     const data = await result.json()
                     
                     if (data.success) {
+                        // ✅ academy_id가 없으면 user.id를 기본값으로 설정 (원장님인 경우)
+                        if (!data.user.academy_id && data.user.user_type !== 'teacher') {
+                            console.warn('⚠️ academy_id missing, using user.id as fallback');
+                            data.user.academy_id = data.user.id;
+                        }
+                        
                         localStorage.setItem('user', JSON.stringify(data.user))
                         showMessage('success', data.message)
                         setTimeout(() => {
@@ -10368,6 +10374,12 @@ app.get('/login', (c) => {
                                     const data = await result.json()
                                     
                                     if (data.success) {
+                                        // ✅ academy_id가 없으면 user.id를 기본값으로 설정 (원장님인 경우)
+                                        if (!data.user.academy_id && data.user.user_type !== 'teacher') {
+                                            console.warn('⚠️ academy_id missing, using user.id as fallback');
+                                            data.user.academy_id = data.user.id;
+                                        }
+                                        
                                         localStorage.setItem('user', JSON.stringify(data.user))
                                         showMessage('success', data.message)
                                         setTimeout(() => {
@@ -10439,6 +10451,13 @@ app.get('/login', (c) => {
                     if (result.success) {
                         messageEl.className = 'mt-4 p-4 rounded-xl bg-green-50 text-green-800 border border-green-200'
                         messageEl.textContent = result.message
+                        
+                        // ✅ academy_id가 없으면 user.id를 기본값으로 설정 (원장님인 경우)
+                        if (!result.user.academy_id && result.user.user_type !== 'teacher') {
+                            console.warn('⚠️ academy_id missing, using user.id as fallback');
+                            result.user.academy_id = result.user.id;
+                        }
+                        
                         localStorage.setItem('user', JSON.stringify(result.user))
                         
                         // 역할에 따라 자동 리다이렉트
