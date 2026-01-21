@@ -20478,7 +20478,7 @@ app.get('/api/user/profile', async (c) => {
 
     const user = await c.env.DB.prepare(`
       SELECT id, email, name, phone, academy_name, role, created_at, 
-             user_type, academy_id, parent_user_id
+             user_type, academy_id, parent_user_id, points
       FROM users WHERE id = ?
     `).bind(userId).first()
 

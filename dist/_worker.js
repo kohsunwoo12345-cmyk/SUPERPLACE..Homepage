@@ -15426,7 +15426,7 @@ ${N}
     </html>
   `));c.get("/api/user/profile",async e=>{try{let t=e.req.header("X-User-Id");if(!t)try{const r=e.req.header("Cookie");if(r){const a=r.split(";").find(n=>n.trim().startsWith("session_id="));if(a){const n=a.split("=")[1],o=await e.env.DB.prepare("SELECT user_id FROM sessions WHERE id = ?").bind(n).first();o&&(t=o.user_id.toString())}}}catch(r){console.error("Error parsing cookies:",r)}if(!t)return e.json({success:!1,error:"로그인이 필요합니다."},401);const s=await e.env.DB.prepare(`
       SELECT id, email, name, phone, academy_name, role, created_at, 
-             user_type, academy_id, parent_user_id
+             user_type, academy_id, parent_user_id, points
       FROM users WHERE id = ?
     `).bind(t).first();return s?e.json({success:!0,user:s}):e.json({success:!1,error:"사용자를 찾을 수 없습니다."},404)}catch(t){return console.error("Get profile error:",t),console.error("Error stack:",t.stack),e.json({success:!1,error:"프로필 조회 실패",details:t.message},500)}});c.put("/api/user/profile",async e=>{try{const t=e.req.header("X-User-Id");if(!t)return e.json({success:!1,error:"로그인이 필요합니다."},401);const{name:s,phone:r,academy_name:a,academy_location:n}=await e.req.json();return!s||!r||!a||!n?e.json({success:!1,error:"모든 필드를 입력해주세요."},400):(await e.env.DB.prepare(`
       UPDATE users 
