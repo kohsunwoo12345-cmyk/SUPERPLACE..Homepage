@@ -1,4 +1,6 @@
 #!/bin/bash
-# Cloudflare Pages가 이 스크립트를 실행하도록 함
-echo "Using pre-built dist folder - no build needed"
+# Cloudflare Pages 빌드 스크립트
+echo "Building project for Cloudflare Pages..."
+npm run build
+echo "Build completed successfully"
 exit 0
