@@ -28537,9 +28537,32 @@ ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.di
                 try {
                     console.log('🔄 [loadDashboard] Starting... currentUser:', currentUser);
                     console.log('🔄 [loadDashboard] userPermissions:', userPermissions);
+                    console.log('🔄 [loadDashboard] academy_id:', currentUser?.academy_id);
+                    console.log('🔄 [loadDashboard] user_type:', currentUser?.user_type);
+                    
+                    // ✅ academy_id 확인 및 자동 수정
+                    let academyId = currentUser?.academy_id;
+                    
+                    // 선생님의 경우 academy_id가 없으면 parent_user_id 사용
+                    if (!academyId && currentUser?.user_type === 'teacher' && currentUser?.parent_user_id) {
+                        console.log('⚠️ [loadDashboard] Teacher without academy_id, using parent_user_id:', currentUser.parent_user_id);
+                        academyId = currentUser.parent_user_id;
+                        currentUser.academy_id = academyId;
+                        localStorage.setItem('user', JSON.stringify(currentUser));
+                    }
+                    
+                    // 원장님의 경우 academy_id가 없으면 자신의 ID 사용
+                    if (!academyId && currentUser?.user_type !== 'teacher') {
+                        console.log('⚠️ [loadDashboard] Director without academy_id, using own ID:', currentUser.id);
+                        academyId = currentUser.id;
+                        currentUser.academy_id = academyId;
+                        localStorage.setItem('user', JSON.stringify(currentUser));
+                    }
+                    
+                    console.log('✅ [loadDashboard] Final academy_id to use:', academyId);
                     
                     // ✅ 학생 데이터가 없으면 자동으로 테스트 데이터 생성 (모든 사용자)
-                    if (currentUser && currentUser.academy_id) {
+                    if (currentUser && academyId) {
                         console.log('🚀 [loadDashboard] Checking if test data is needed...');
                         console.log('🚀 [loadDashboard] currentUser:', currentUser);
                         console.log('🚀 [loadDashboard] academy_id:', currentUser.academy_id);
