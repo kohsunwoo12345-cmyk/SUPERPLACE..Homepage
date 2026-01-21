@@ -10314,10 +10314,15 @@ app.get('/login', (c) => {
                     const data = await result.json()
                     
                     if (data.success) {
-                        // ✅ academy_id가 없으면 user.id를 기본값으로 설정 (원장님인 경우)
-                        if (!data.user.academy_id && data.user.user_type !== 'teacher') {
-                            console.warn('⚠️ academy_id missing, using user.id as fallback');
-                            data.user.academy_id = data.user.id;
+                        // ✅ academy_id 체크 및 fallback 설정
+                        if (!data.user.academy_id) {
+                            if (data.user.user_type === 'teacher' && data.user.parent_user_id) {
+                                console.warn('⚠️ Teacher academy_id missing, using parent_user_id');
+                                data.user.academy_id = data.user.parent_user_id;
+                            } else {
+                                console.warn('⚠️ academy_id missing, using user.id as fallback');
+                                data.user.academy_id = data.user.id;
+                            }
                         }
                         
                         localStorage.setItem('user', JSON.stringify(data.user))
@@ -10374,10 +10379,15 @@ app.get('/login', (c) => {
                                     const data = await result.json()
                                     
                                     if (data.success) {
-                                        // ✅ academy_id가 없으면 user.id를 기본값으로 설정 (원장님인 경우)
-                                        if (!data.user.academy_id && data.user.user_type !== 'teacher') {
-                                            console.warn('⚠️ academy_id missing, using user.id as fallback');
-                                            data.user.academy_id = data.user.id;
+                                        // ✅ academy_id 체크 및 fallback 설정
+                                        if (!data.user.academy_id) {
+                                            if (data.user.user_type === 'teacher' && data.user.parent_user_id) {
+                                                console.warn('⚠️ Teacher academy_id missing, using parent_user_id');
+                                                data.user.academy_id = data.user.parent_user_id;
+                                            } else {
+                                                console.warn('⚠️ academy_id missing, using user.id as fallback');
+                                                data.user.academy_id = data.user.id;
+                                            }
                                         }
                                         
                                         localStorage.setItem('user', JSON.stringify(data.user))
@@ -10452,10 +10462,18 @@ app.get('/login', (c) => {
                         messageEl.className = 'mt-4 p-4 rounded-xl bg-green-50 text-green-800 border border-green-200'
                         messageEl.textContent = result.message
                         
-                        // ✅ academy_id가 없으면 user.id를 기본값으로 설정 (원장님인 경우)
-                        if (!result.user.academy_id && result.user.user_type !== 'teacher') {
-                            console.warn('⚠️ academy_id missing, using user.id as fallback');
-                            result.user.academy_id = result.user.id;
+                        // ✅ academy_id 체크 및 fallback 설정
+                        if (!result.user.academy_id) {
+                            if (result.user.user_type === 'teacher' && result.user.parent_user_id) {
+                                // 선생님: parent_user_id(원장님 ID)를 임시로 사용
+                                console.warn('⚠️ Teacher academy_id missing, will fetch from director');
+                                // 일단 parent_user_id를 임시로 사용 (나중에 API에서 수정 필요)
+                                result.user.academy_id = result.user.parent_user_id;
+                            } else {
+                                // 원장님/기타: user.id를 사용
+                                console.warn('⚠️ academy_id missing, using user.id as fallback');
+                                result.user.academy_id = result.user.id;
+                            }
                         }
                         
                         localStorage.setItem('user', JSON.stringify(result.user))
@@ -22811,6 +22829,28 @@ app.post('/api/login', async (c) => {
       role: user.role,
       user_type: user.role, // API에서 user_type을 기대함
       parent_user_id: user.parent_user_id || null
+    }
+    
+    // ✅ 선생님인데 academy_id가 없으면 원장님에게서 가져오기
+    if (user.role === 'teacher' && !userInfo.academy_id && user.parent_user_id) {
+      try {
+        const director = await env.DB.prepare(
+          'SELECT academy_id FROM users WHERE id = ?'
+        ).bind(user.parent_user_id).first()
+        
+        if (director && director.academy_id) {
+          userInfo.academy_id = director.academy_id
+          console.log('🔧 [Login] Set teacher academy_id from director:', director.academy_id)
+          
+          // DB도 업데이트
+          await env.DB.prepare(
+            'UPDATE users SET academy_id = ? WHERE id = ?'
+          ).bind(director.academy_id, user.id).run()
+          console.log('✅ [Login] Updated teacher academy_id in DB')
+        }
+      } catch (err) {
+        console.error('Failed to fetch director academy_id:', err)
+      }
     }
     
     console.log('🔐 [Login] User info:', {

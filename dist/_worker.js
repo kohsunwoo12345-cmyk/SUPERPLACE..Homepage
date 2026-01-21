@@ -7083,10 +7083,15 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
                     const data = await result.json()
                     
                     if (data.success) {
-                        // ✅ academy_id가 없으면 user.id를 기본값으로 설정 (원장님인 경우)
-                        if (!data.user.academy_id && data.user.user_type !== 'teacher') {
-                            console.warn('⚠️ academy_id missing, using user.id as fallback');
-                            data.user.academy_id = data.user.id;
+                        // ✅ academy_id 체크 및 fallback 설정
+                        if (!data.user.academy_id) {
+                            if (data.user.user_type === 'teacher' && data.user.parent_user_id) {
+                                console.warn('⚠️ Teacher academy_id missing, using parent_user_id');
+                                data.user.academy_id = data.user.parent_user_id;
+                            } else {
+                                console.warn('⚠️ academy_id missing, using user.id as fallback');
+                                data.user.academy_id = data.user.id;
+                            }
                         }
                         
                         localStorage.setItem('user', JSON.stringify(data.user))
@@ -7143,10 +7148,15 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
                                     const data = await result.json()
                                     
                                     if (data.success) {
-                                        // ✅ academy_id가 없으면 user.id를 기본값으로 설정 (원장님인 경우)
-                                        if (!data.user.academy_id && data.user.user_type !== 'teacher') {
-                                            console.warn('⚠️ academy_id missing, using user.id as fallback');
-                                            data.user.academy_id = data.user.id;
+                                        // ✅ academy_id 체크 및 fallback 설정
+                                        if (!data.user.academy_id) {
+                                            if (data.user.user_type === 'teacher' && data.user.parent_user_id) {
+                                                console.warn('⚠️ Teacher academy_id missing, using parent_user_id');
+                                                data.user.academy_id = data.user.parent_user_id;
+                                            } else {
+                                                console.warn('⚠️ academy_id missing, using user.id as fallback');
+                                                data.user.academy_id = data.user.id;
+                                            }
                                         }
                                         
                                         localStorage.setItem('user', JSON.stringify(data.user))
@@ -7221,10 +7231,18 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
                         messageEl.className = 'mt-4 p-4 rounded-xl bg-green-50 text-green-800 border border-green-200'
                         messageEl.textContent = result.message
                         
-                        // ✅ academy_id가 없으면 user.id를 기본값으로 설정 (원장님인 경우)
-                        if (!result.user.academy_id && result.user.user_type !== 'teacher') {
-                            console.warn('⚠️ academy_id missing, using user.id as fallback');
-                            result.user.academy_id = result.user.id;
+                        // ✅ academy_id 체크 및 fallback 설정
+                        if (!result.user.academy_id) {
+                            if (result.user.user_type === 'teacher' && result.user.parent_user_id) {
+                                // 선생님: parent_user_id(원장님 ID)를 임시로 사용
+                                console.warn('⚠️ Teacher academy_id missing, will fetch from director');
+                                // 일단 parent_user_id를 임시로 사용 (나중에 API에서 수정 필요)
+                                result.user.academy_id = result.user.parent_user_id;
+                            } else {
+                                // 원장님/기타: user.id를 사용
+                                console.warn('⚠️ academy_id missing, using user.id as fallback');
+                                result.user.academy_id = result.user.id;
+                            }
                         }
                         
                         localStorage.setItem('user', JSON.stringify(result.user))
@@ -17745,7 +17763,7 @@ ${N}
           `).bind(t,s,r||"",JSON.stringify(l)).run()}catch(p){console.error("DB save error:",p)}return e.json(l)}catch(n){console.error("Crawler API error:",n);const o={success:!1,error:"크롤링 서버 연결 실패",message:`오류: ${n instanceof Error?n.message:"알 수 없는 오류"}`,searchVolume:{monthlyAvg:0,competition:"분석 불가",recommendation:"서버 오류"},ranking:{myRank:null,competitors:[]},keywords:[]};return e.json(o)}}catch(t){return console.error("Search analysis error:",t),e.json({success:!1,error:"분석 중 오류가 발생했습니다"},500)}});c.post("/api/contact",async e=>{try{const{type:t,academy:s,name:r,phone:a,email:n,programs:o,message:i}=await e.req.json(),{env:l}=e;return await l.DB.prepare(`
       INSERT INTO contacts (inquiry, academy, name, phone, email, programs, message, created_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))
-    `).bind(t,s,r,a,n||"",JSON.stringify(o||[]),i).run(),e.json({success:!0,message:"문의가 접수되었습니다"})}catch(t){return console.error("Contact error:",t),e.json({success:!1,error:"문의 접수 실패"},500)}});c.post("/api/login",async e=>{try{const{email:t,password:s}=await e.req.json(),{env:r}=e,a=await r.DB.prepare("SELECT * FROM users WHERE email = ?").bind(t).first();if(!a)return e.json({success:!1,error:"이메일 또는 비밀번호가 일치하지 않습니다"},401);if(a.password!==s)return e.json({success:!1,error:"이메일 또는 비밀번호가 일치하지 않습니다"},401);const n={id:a.id,email:a.email,name:a.name,phone:a.phone,academy_id:a.academy_id,academy_name:a.academy_name,role:a.role,user_type:a.role,parent_user_id:a.parent_user_id||null};if(console.log("🔐 [Login] User info:",{id:n.id,academy_id:n.academy_id,user_type:n.user_type,role:n.role}),a.role==="teacher")try{const o=await r.DB.prepare(`
+    `).bind(t,s,r,a,n||"",JSON.stringify(o||[]),i).run(),e.json({success:!0,message:"문의가 접수되었습니다"})}catch(t){return console.error("Contact error:",t),e.json({success:!1,error:"문의 접수 실패"},500)}});c.post("/api/login",async e=>{try{const{email:t,password:s}=await e.req.json(),{env:r}=e,a=await r.DB.prepare("SELECT * FROM users WHERE email = ?").bind(t).first();if(!a)return e.json({success:!1,error:"이메일 또는 비밀번호가 일치하지 않습니다"},401);if(a.password!==s)return e.json({success:!1,error:"이메일 또는 비밀번호가 일치하지 않습니다"},401);const n={id:a.id,email:a.email,name:a.name,phone:a.phone,academy_id:a.academy_id,academy_name:a.academy_name,role:a.role,user_type:a.role,parent_user_id:a.parent_user_id||null};if(a.role==="teacher"&&!n.academy_id&&a.parent_user_id)try{const o=await r.DB.prepare("SELECT academy_id FROM users WHERE id = ?").bind(a.parent_user_id).first();o&&o.academy_id&&(n.academy_id=o.academy_id,console.log("🔧 [Login] Set teacher academy_id from director:",o.academy_id),await r.DB.prepare("UPDATE users SET academy_id = ? WHERE id = ?").bind(o.academy_id,a.id).run(),console.log("✅ [Login] Updated teacher academy_id in DB"))}catch(o){console.error("Failed to fetch director academy_id:",o)}if(console.log("🔐 [Login] User info:",{id:n.id,academy_id:n.academy_id,user_type:n.user_type,role:n.role}),a.role==="teacher")try{const o=await r.DB.prepare(`
           SELECT permissions 
           FROM teacher_permissions 
           WHERE teacher_id = ?
