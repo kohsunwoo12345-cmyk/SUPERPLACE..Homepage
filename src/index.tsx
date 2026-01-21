@@ -34816,6 +34816,419 @@ app.get('/teachers-old', (c) => {
   `)
 })
 
+// 🛒 소셜 트래픽 스토어 페이지
+app.get('/store', (c) => {
+  return c.html(`
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>소셜 트래픽 스토어 - 슈퍼플레이스</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 {
+            color: #667eea;
+            font-size: 32px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .points-display {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .categories {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .category-btn {
+            background: white;
+            padding: 15px;
+            border-radius: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 3px solid transparent;
+        }
+        .category-btn:hover, .category-btn.active {
+            border-color: #667eea;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+        .category-btn .icon { font-size: 40px; margin-bottom: 10px; }
+        .category-btn .name { font-weight: 600; color: #333; }
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .product-card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+        .product-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+        .product-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+        .product-name {
+            font-size: 20px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .product-description {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        .product-price {
+            font-size: 28px;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+        .buy-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .buy-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.5);
+        }
+        .my-orders {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            margin-top: 30px;
+        }
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        .order-item:last-child { border-bottom: none; }
+        .status-pending { color: #f59e0b; }
+        .status-processing { color: #3b82f6; }
+        .status-completed { color: #10b981; }
+        .access-denied {
+            background: white;
+            padding: 60px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+        .access-denied h2 {
+            font-size: 32px;
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+        .access-denied p {
+            font-size: 18px;
+            color: #666;
+        }
+        .back-btn {
+            margin-top: 30px;
+            padding: 15px 40px;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>
+                <span>🛒</span> 소셜 트래픽 스토어
+            </h1>
+            <div class="points-display">
+                <span id="points-balance">0</span> P
+            </div>
+        </div>
+
+        <div id="store-content">
+            <!-- 카테고리 -->
+            <div class="categories">
+                <div class="category-btn active" data-category="all">
+                    <div class="icon">🌟</div>
+                    <div class="name">전체</div>
+                </div>
+                <div class="category-btn" data-category="instagram">
+                    <div class="icon">📸</div>
+                    <div class="name">인스타그램</div>
+                </div>
+                <div class="category-btn" data-category="youtube">
+                    <div class="icon">▶️</div>
+                    <div class="name">유튜브</div>
+                </div>
+                <div class="category-btn" data-category="facebook">
+                    <div class="icon">👥</div>
+                    <div class="name">페이스북</div>
+                </div>
+                <div class="category-btn" data-category="threads">
+                    <div class="icon">🧵</div>
+                    <div class="name">쓰레드</div>
+                </div>
+                <div class="category-btn" data-category="naver">
+                    <div class="icon">🟢</div>
+                    <div class="name">네이버</div>
+                </div>
+            </div>
+
+            <!-- 상품 목록 -->
+            <div class="products-grid" id="products-grid">
+                <!-- 동적으로 로드 -->
+            </div>
+
+            <!-- 내 주문 내역 -->
+            <div class="my-orders">
+                <h2 style="margin-bottom: 20px;">📦 최근 주문 내역</h2>
+                <div id="orders-list">
+                    <!-- 동적으로 로드 -->
+                </div>
+            </div>
+        </div>
+
+        <div id="access-denied" style="display: none;">
+            <div class="access-denied">
+                <h2>🔒 접근 권한이 없습니다</h2>
+                <p>현재 이 스토어는 관리자만 이용 가능합니다.</p>
+                <p>자세한 사항은 관리자에게 문의해주세요.</p>
+                <a href="/dashboard" class="back-btn">대시보드로 돌아가기</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let allProducts = [];
+        let currentCategory = 'all';
+
+        // 페이지 로드 시 초기화
+        async function init() {
+            await loadPoints();
+            await loadProducts();
+            await loadOrders();
+        }
+
+        // 포인트 조회
+        async function loadPoints() {
+            try {
+                const res = await fetch('/api/points/balance');
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById('points-balance').textContent = data.balance.toLocaleString();
+                }
+            } catch (err) {
+                console.error('Failed to load points:', err);
+            }
+        }
+
+        // 상품 목록 조회
+        async function loadProducts() {
+            try {
+                const res = await fetch('/api/store/products');
+                const data = await res.json();
+                
+                if (!data.success) {
+                    if (res.status === 403) {
+                        // 접근 권한 없음
+                        document.getElementById('store-content').style.display = 'none';
+                        document.getElementById('access-denied').style.display = 'block';
+                    }
+                    return;
+                }
+
+                allProducts = data.products;
+                renderProducts();
+            } catch (err) {
+                console.error('Failed to load products:', err);
+            }
+        }
+
+        // 상품 렌더링
+        function renderProducts() {
+            const grid = document.getElementById('products-grid');
+            const filtered = currentCategory === 'all' 
+                ? allProducts 
+                : allProducts.filter(p => p.category === currentCategory);
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; padding: 40px; color: #999;">상품이 없습니다.</p>';
+                return;
+            }
+
+            grid.innerHTML = filtered.map(product => \`
+                <div class="product-card">
+                    <div class="product-icon">\${getCategoryIcon(product.category)}</div>
+                    <div class="product-name">\${product.name}</div>
+                    <div class="product-description">\${product.description}</div>
+                    <div class="product-price">\${product.price.toLocaleString()} P</div>
+                    <button class="buy-btn" onclick="buyProduct(\${product.id})">
+                        구매하기
+                    </button>
+                </div>
+            \`).join('');
+        }
+
+        // 카테고리 아이콘
+        function getCategoryIcon(category) {
+            const icons = {
+                instagram: '📸',
+                youtube: '▶️',
+                facebook: '👥',
+                threads: '🧵',
+                naver: '🟢'
+            };
+            return icons[category] || '🌟';
+        }
+
+        // 카테고리 선택
+        document.querySelectorAll('.category-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentCategory = btn.dataset.category;
+                renderProducts();
+            });
+        });
+
+        // 상품 구매
+        async function buyProduct(productId) {
+            const product = allProducts.find(p => p.id === productId);
+            if (!product) return;
+
+            const targetUrl = prompt(\`구매하실 상품: \${product.name}\\n\\n대상 URL을 입력해주세요:\\n(예: https://instagram.com/yourpage)\`);
+            if (!targetUrl) return;
+
+            const quantity = parseInt(prompt('수량을 입력해주세요:', '1000'));
+            if (!quantity || quantity <= 0) return;
+
+            const totalCost = product.price * quantity;
+            if (!confirm(\`\${product.name} x \${quantity.toLocaleString()}개\\n총 \${totalCost.toLocaleString()} P\\n\\n구매하시겠습니까?\`)) {
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/store/purchase', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ productId, quantity, targetUrl })
+                });
+
+                const data = await res.json();
+                
+                if (data.success) {
+                    alert('✅ 구매가 완료되었습니다!\\n\\n' + 
+                          \`사용된 포인트: \${totalCost.toLocaleString()} P\\n\` +
+                          \`남은 포인트: \${data.order.remainingPoints.toLocaleString()} P\`);
+                    await loadPoints();
+                    await loadOrders();
+                } else {
+                    alert('❌ 구매 실패: ' + data.error);
+                }
+            } catch (err) {
+                alert('구매 중 오류가 발생했습니다.');
+                console.error(err);
+            }
+        }
+
+        // 주문 내역 조회
+        async function loadOrders() {
+            try {
+                const res = await fetch('/api/store/orders');
+                const data = await res.json();
+                
+                if (data.success) {
+                    const ordersList = document.getElementById('orders-list');
+                    
+                    if (data.orders.length === 0) {
+                        ordersList.innerHTML = '<p style="text-align: center; color: #999;">주문 내역이 없습니다.</p>';
+                        return;
+                    }
+
+                    ordersList.innerHTML = data.orders.slice(0, 10).map(order => \`
+                        <div class="order-item">
+                            <div>
+                                <strong>\${order.product_name}</strong> x \${order.quantity.toLocaleString()}
+                                <br>
+                                <small style="color: #999;">\${new Date(order.created_at).toLocaleString('ko-KR')}</small>
+                            </div>
+                            <div style="text-align: right;">
+                                <div>\${order.total_price.toLocaleString()} P</div>
+                                <div class="status-\${order.status}">\${getStatusText(order.status)}</div>
+                            </div>
+                        </div>
+                    \`).join('');
+                }
+            } catch (err) {
+                console.error('Failed to load orders:', err);
+            }
+        }
+
+        function getStatusText(status) {
+            const statusMap = {
+                pending: '대기 중',
+                processing: '처리 중',
+                completed: '완료',
+                failed: '실패'
+            };
+            return statusMap[status] || status;
+        }
+
+        // 초기화
+        init();
+    </script>
+</body>
+</html>
+  `)
+})
+
 app.get('/students', (c) => {
   return c.html(`
     <!DOCTYPE html>
@@ -36833,6 +37246,403 @@ app.get('/api/debug/user/:userId/subscription', async (c) => {
   }
 })
 
+// ==================== 💰 포인트 & 소셜 트래픽 스토어 시스템 ====================
+
+// 📊 포인트 내역 조회 API
+app.get('/api/points/balance', async (c) => {
+  try {
+    const sessionId = getCookie(c, 'session_id')
+    if (!sessionId) {
+      return c.json({ success: false, error: 'Not authenticated' }, 401)
+    }
+
+    const session = await c.env.DB.prepare(`
+      SELECT user_id FROM sessions WHERE session_id = ? AND expires_at > datetime('now')
+    `).bind(sessionId).first()
+    
+    if (!session) {
+      return c.json({ success: false, error: 'Session expired' }, 401)
+    }
+
+    const userId = session.user_id
+
+    // 사용자 포인트 조회 (users 테이블에 points 컬럼 추가 필요)
+    const user = await c.env.DB.prepare(`
+      SELECT id, email, name, points FROM users WHERE id = ?
+    `).bind(userId).first()
+
+    if (!user) {
+      return c.json({ success: false, error: 'User not found' }, 404)
+    }
+
+    // 포인트 내역 조회
+    const history = await c.env.DB.prepare(`
+      SELECT * FROM point_transactions 
+      WHERE user_id = ? 
+      ORDER BY created_at DESC 
+      LIMIT 50
+    `).bind(userId).all()
+
+    return c.json({
+      success: true,
+      balance: user.points || 0,
+      history: history.results || []
+    })
+  } catch (error) {
+    console.error('[Points Balance] Error:', error)
+    return c.json({ success: false, error: error.message }, 500)
+  }
+})
+
+// 🛒 스토어 상품 목록 조회 API
+app.get('/api/store/products', async (c) => {
+  try {
+    const sessionId = getCookie(c, 'session_id')
+    if (!sessionId) {
+      return c.json({ success: false, error: 'Not authenticated' }, 401)
+    }
+
+    const session = await c.env.DB.prepare(`
+      SELECT user_id FROM sessions WHERE session_id = ? AND expires_at > datetime('now')
+    `).bind(sessionId).first()
+    
+    if (!session) {
+      return c.json({ success: false, error: 'Session expired' }, 401)
+    }
+
+    const userId = session.user_id
+
+    // 사용자 정보 조회 (관리자 여부 확인)
+    const user = await c.env.DB.prepare(`
+      SELECT id, email, role FROM users WHERE id = ?
+    `).bind(userId).first()
+
+    if (!user) {
+      return c.json({ success: false, error: 'User not found' }, 404)
+    }
+
+    // 스토어 접근 권한 확인
+    const storeAccess = await c.env.DB.prepare(`
+      SELECT * FROM store_access WHERE user_id = ?
+    `).bind(userId).first()
+
+    const isAdmin = user.email === 'admin@superplace.co.kr'
+    const hasAccess = isAdmin || storeAccess?.enabled === 1
+
+    if (!hasAccess) {
+      return c.json({ 
+        success: false, 
+        error: '스토어 접근 권한이 없습니다.',
+        message: '관리자에게 문의하세요.'
+      }, 403)
+    }
+
+    // 상품 목록 조회
+    const products = await c.env.DB.prepare(`
+      SELECT * FROM store_products 
+      WHERE enabled = 1 
+      ORDER BY category, display_order, id
+    `).all()
+
+    return c.json({
+      success: true,
+      products: products.results || [],
+      isAdmin
+    })
+  } catch (error) {
+    console.error('[Store Products] Error:', error)
+    return c.json({ success: false, error: error.message }, 500)
+  }
+})
+
+// 🛍️ 상품 구매 API
+app.post('/api/store/purchase', async (c) => {
+  try {
+    const sessionId = getCookie(c, 'session_id')
+    if (!sessionId) {
+      return c.json({ success: false, error: 'Not authenticated' }, 401)
+    }
+
+    const session = await c.env.DB.prepare(`
+      SELECT user_id FROM sessions WHERE session_id = ? AND expires_at > datetime('now')
+    `).bind(sessionId).first()
+    
+    if (!session) {
+      return c.json({ success: false, error: 'Session expired' }, 401)
+    }
+
+    const userId = session.user_id
+    const { productId, quantity, targetUrl } = await c.req.json()
+
+    if (!productId || !quantity || quantity <= 0) {
+      return c.json({ success: false, error: '잘못된 요청입니다.' }, 400)
+    }
+
+    // 사용자 정보 조회
+    const user = await c.env.DB.prepare(`
+      SELECT id, email, points FROM users WHERE id = ?
+    `).bind(userId).first()
+
+    if (!user) {
+      return c.json({ success: false, error: 'User not found' }, 404)
+    }
+
+    // 상품 정보 조회
+    const product = await c.env.DB.prepare(`
+      SELECT * FROM store_products WHERE id = ? AND enabled = 1
+    `).bind(productId).first()
+
+    if (!product) {
+      return c.json({ success: false, error: '상품을 찾을 수 없습니다.' }, 404)
+    }
+
+    const totalCost = product.price * quantity
+    const currentPoints = user.points || 0
+
+    // 포인트 부족 확인
+    if (currentPoints < totalCost) {
+      return c.json({ 
+        success: false, 
+        error: '포인트가 부족합니다.',
+        required: totalCost,
+        current: currentPoints,
+        shortage: totalCost - currentPoints
+      }, 400)
+    }
+
+    // 트랜잭션 시작
+    const newPoints = currentPoints - totalCost
+
+    // 포인트 차감
+    await c.env.DB.prepare(`
+      UPDATE users SET points = ? WHERE id = ?
+    `).bind(newPoints, userId).run()
+
+    // 포인트 거래 내역 추가
+    await c.env.DB.prepare(`
+      INSERT INTO point_transactions (
+        user_id, type, amount, balance_after, description, created_at
+      ) VALUES (?, 'purchase', ?, ?, ?, datetime('now'))
+    `).bind(userId, -totalCost, newPoints, `${product.name} x${quantity} 구매`).run()
+
+    // 주문 생성
+    const orderResult = await c.env.DB.prepare(`
+      INSERT INTO store_orders (
+        user_id, product_id, product_name, quantity, 
+        price_per_unit, total_price, target_url, 
+        status, created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', datetime('now'))
+    `).bind(
+      userId, 
+      productId, 
+      product.name, 
+      quantity, 
+      product.price, 
+      totalCost, 
+      targetUrl || null
+    ).run()
+
+    const orderId = orderResult.meta.last_row_id
+
+    return c.json({
+      success: true,
+      message: '구매가 완료되었습니다.',
+      order: {
+        id: orderId,
+        product: product.name,
+        quantity,
+        totalCost,
+        remainingPoints: newPoints
+      }
+    })
+  } catch (error) {
+    console.error('[Store Purchase] Error:', error)
+    return c.json({ success: false, error: error.message }, 500)
+  }
+})
+
+// 📦 내 주문 내역 조회 API
+app.get('/api/store/orders', async (c) => {
+  try {
+    const sessionId = getCookie(c, 'session_id')
+    if (!sessionId) {
+      return c.json({ success: false, error: 'Not authenticated' }, 401)
+    }
+
+    const session = await c.env.DB.prepare(`
+      SELECT user_id FROM sessions WHERE session_id = ? AND expires_at > datetime('now')
+    `).bind(sessionId).first()
+    
+    if (!session) {
+      return c.json({ success: false, error: 'Session expired' }, 401)
+    }
+
+    const userId = session.user_id
+
+    const orders = await c.env.DB.prepare(`
+      SELECT * FROM store_orders 
+      WHERE user_id = ? 
+      ORDER BY created_at DESC 
+      LIMIT 100
+    `).bind(userId).all()
+
+    return c.json({
+      success: true,
+      orders: orders.results || []
+    })
+  } catch (error) {
+    console.error('[Store Orders] Error:', error)
+    return c.json({ success: false, error: error.message }, 500)
+  }
+})
+
+// 👨‍💼 관리자: 스토어 접근 권한 관리 API
+app.post('/api/admin/store-access', async (c) => {
+  try {
+    const sessionId = getCookie(c, 'session_id')
+    if (!sessionId) {
+      return c.json({ success: false, error: 'Not authenticated' }, 401)
+    }
+
+    const session = await c.env.DB.prepare(`
+      SELECT user_id FROM sessions WHERE session_id = ? AND expires_at > datetime('now')
+    `).bind(sessionId).first()
+    
+    if (!session) {
+      return c.json({ success: false, error: 'Session expired' }, 401)
+    }
+
+    const adminUserId = session.user_id
+
+    // 관리자 권한 확인
+    const admin = await c.env.DB.prepare(`
+      SELECT email FROM users WHERE id = ?
+    `).bind(adminUserId).first()
+
+    if (!admin || admin.email !== 'admin@superplace.co.kr') {
+      return c.json({ success: false, error: '관리자 권한이 없습니다.' }, 403)
+    }
+
+    const { targetUserId, enabled } = await c.req.json()
+
+    if (!targetUserId) {
+      return c.json({ success: false, error: '사용자 ID가 필요합니다.' }, 400)
+    }
+
+    // 기존 권한 확인
+    const existing = await c.env.DB.prepare(`
+      SELECT * FROM store_access WHERE user_id = ?
+    `).bind(targetUserId).first()
+
+    if (existing) {
+      // 업데이트
+      await c.env.DB.prepare(`
+        UPDATE store_access 
+        SET enabled = ?, updated_at = datetime('now'), updated_by = ?
+        WHERE user_id = ?
+      `).bind(enabled ? 1 : 0, adminUserId, targetUserId).run()
+    } else {
+      // 생성
+      await c.env.DB.prepare(`
+        INSERT INTO store_access (user_id, enabled, created_at, updated_by)
+        VALUES (?, ?, datetime('now'), ?)
+      `).bind(targetUserId, enabled ? 1 : 0, adminUserId).run()
+    }
+
+    return c.json({
+      success: true,
+      message: enabled ? '스토어 접근 권한이 부여되었습니다.' : '스토어 접근 권한이 제거되었습니다.'
+    })
+  } catch (error) {
+    console.error('[Admin Store Access] Error:', error)
+    return c.json({ success: false, error: error.message }, 500)
+  }
+})
+
+// 👨‍💼 관리자: 포인트 지급/회수 API
+app.post('/api/admin/points', async (c) => {
+  try {
+    const sessionId = getCookie(c, 'session_id')
+    if (!sessionId) {
+      return c.json({ success: false, error: 'Not authenticated' }, 401)
+    }
+
+    const session = await c.env.DB.prepare(`
+      SELECT user_id FROM sessions WHERE session_id = ? AND expires_at > datetime('now')
+    `).bind(sessionId).first()
+    
+    if (!session) {
+      return c.json({ success: false, error: 'Session expired' }, 401)
+    }
+
+    const adminUserId = session.user_id
+
+    // 관리자 권한 확인
+    const admin = await c.env.DB.prepare(`
+      SELECT email FROM users WHERE id = ?
+    `).bind(adminUserId).first()
+
+    if (!admin || admin.email !== 'admin@superplace.co.kr') {
+      return c.json({ success: false, error: '관리자 권한이 없습니다.' }, 403)
+    }
+
+    const { targetUserId, amount, description } = await c.req.json()
+
+    if (!targetUserId || !amount || amount === 0) {
+      return c.json({ success: false, error: '잘못된 요청입니다.' }, 400)
+    }
+
+    // 사용자 정보 조회
+    const user = await c.env.DB.prepare(`
+      SELECT id, points FROM users WHERE id = ?
+    `).bind(targetUserId).first()
+
+    if (!user) {
+      return c.json({ success: false, error: 'User not found' }, 404)
+    }
+
+    const currentPoints = user.points || 0
+    const newPoints = currentPoints + amount
+
+    if (newPoints < 0) {
+      return c.json({ 
+        success: false, 
+        error: '포인트가 부족합니다.',
+        current: currentPoints,
+        requested: amount
+      }, 400)
+    }
+
+    // 포인트 업데이트
+    await c.env.DB.prepare(`
+      UPDATE users SET points = ? WHERE id = ?
+    `).bind(newPoints, targetUserId).run()
+
+    // 포인트 거래 내역 추가
+    await c.env.DB.prepare(`
+      INSERT INTO point_transactions (
+        user_id, type, amount, balance_after, description, admin_id, created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, datetime('now'))
+    `).bind(
+      targetUserId, 
+      amount > 0 ? 'admin_grant' : 'admin_deduct', 
+      amount, 
+      newPoints, 
+      description || (amount > 0 ? '관리자 지급' : '관리자 회수'),
+      adminUserId
+    ).run()
+
+    return c.json({
+      success: true,
+      message: amount > 0 ? '포인트가 지급되었습니다.' : '포인트가 회수되었습니다.',
+      newBalance: newPoints
+    })
+  } catch (error) {
+    console.error('[Admin Points] Error:', error)
+    return c.json({ success: false, error: error.message }, 500)
+  }
+})
+
 // 🔧 디버깅: 선생님 데이터 확인 API
 app.get('/api/debug/teachers', async (c) => {
   try {
@@ -36927,6 +37737,162 @@ app.get('/api/debug/teachers', async (c) => {
     })
   } catch (error) {
     console.error('[Debug Teachers] Error:', error)
+    return c.json({ success: false, error: error.message }, 500)
+  }
+})
+
+// 🔧 DB 초기화: 스토어 시스템 테이블 생성
+app.get('/api/store/init-db', async (c) => {
+  try {
+    const results = []
+
+    // 1. users 테이블에 points 컬럼 추가
+    try {
+      await c.env.DB.prepare(`ALTER TABLE users ADD COLUMN points INTEGER DEFAULT 0`).run()
+      results.push('✅ Added points column to users')
+    } catch (e) {
+      results.push('ℹ️ points column: ' + e.message.substring(0, 50))
+    }
+
+    // 2. point_transactions 테이블 생성
+    try {
+      await c.env.DB.prepare(`
+        CREATE TABLE IF NOT EXISTS point_transactions (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          user_id INTEGER NOT NULL,
+          type TEXT NOT NULL,
+          amount INTEGER NOT NULL,
+          balance_after INTEGER NOT NULL,
+          description TEXT,
+          admin_id INTEGER,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (user_id) REFERENCES users(id)
+        )
+      `).run()
+      results.push('✅ Created point_transactions table')
+    } catch (e) {
+      results.push('❌ point_transactions: ' + e.message)
+    }
+
+    // 3. store_products 테이블 생성
+    try {
+      await c.env.DB.prepare(`
+        CREATE TABLE IF NOT EXISTS store_products (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL,
+          description TEXT,
+          category TEXT NOT NULL,
+          price INTEGER NOT NULL,
+          enabled INTEGER DEFAULT 1,
+          display_order INTEGER DEFAULT 0,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+      `).run()
+      results.push('✅ Created store_products table')
+    } catch (e) {
+      results.push('❌ store_products: ' + e.message)
+    }
+
+    // 4. store_orders 테이블 생성
+    try {
+      await c.env.DB.prepare(`
+        CREATE TABLE IF NOT EXISTS store_orders (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          user_id INTEGER NOT NULL,
+          product_id INTEGER NOT NULL,
+          product_name TEXT NOT NULL,
+          quantity INTEGER NOT NULL,
+          price_per_unit INTEGER NOT NULL,
+          total_price INTEGER NOT NULL,
+          target_url TEXT,
+          status TEXT DEFAULT 'pending',
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          completed_at DATETIME,
+          FOREIGN KEY (user_id) REFERENCES users(id),
+          FOREIGN KEY (product_id) REFERENCES store_products(id)
+        )
+      `).run()
+      results.push('✅ Created store_orders table')
+    } catch (e) {
+      results.push('❌ store_orders: ' + e.message)
+    }
+
+    // 5. store_access 테이블 생성
+    try {
+      await c.env.DB.prepare(`
+        CREATE TABLE IF NOT EXISTS store_access (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          user_id INTEGER NOT NULL UNIQUE,
+          enabled INTEGER DEFAULT 0,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          updated_by INTEGER,
+          FOREIGN KEY (user_id) REFERENCES users(id),
+          FOREIGN KEY (updated_by) REFERENCES users(id)
+        )
+      `).run()
+      results.push('✅ Created store_access table')
+    } catch (e) {
+      results.push('❌ store_access: ' + e.message)
+    }
+
+    // 6. 초기 상품 데이터 삽입
+    const initialProducts = [
+      // 인스타그램
+      { name: '인스타그램 팔로워', description: '실제 활성 팔로워 증가', category: 'instagram', price: 10, order: 1 },
+      { name: '인스타그램 좋아요', description: '게시물 좋아요 증가', category: 'instagram', price: 5, order: 2 },
+      { name: '인스타그램 조회수', description: '릴스/게시물 조회수', category: 'instagram', price: 3, order: 3 },
+      { name: '인스타그램 저장 수', description: '게시물 저장 수 증가', category: 'instagram', price: 8, order: 4 },
+      { name: '인스타그램 공유 수', description: '게시물 공유 수 증가', category: 'instagram', price: 7, order: 5 },
+      
+      // 유튜브
+      { name: '유튜브 구독자', description: '채널 구독자 증가', category: 'youtube', price: 15, order: 6 },
+      { name: '유튜브 조회수', description: '영상 조회수 증가', category: 'youtube', price: 5, order: 7 },
+      { name: '유튜브 좋아요', description: '영상 좋아요 증가', category: 'youtube', price: 6, order: 8 },
+      { name: '유튜브 댓글', description: '긍정적 댓글 작성', category: 'youtube', price: 20, order: 9 },
+      
+      // 페이스북
+      { name: '페이스북 팔로워', description: '페이지 팔로워 증가', category: 'facebook', price: 10, order: 10 },
+      { name: '페이스북 좋아요', description: '게시물 좋아요 증가', category: 'facebook', price: 5, order: 11 },
+      { name: '페이스북 공유', description: '게시물 공유 수 증가', category: 'facebook', price: 12, order: 12 },
+      
+      // 쓰레드
+      { name: '쓰레드 팔로워', description: '쓰레드 팔로워 증가', category: 'threads', price: 12, order: 13 },
+      { name: '쓰레드 좋아요', description: '게시물 좋아요 증가', category: 'threads', price: 6, order: 14 },
+      
+      // 네이버
+      { name: '네이버 블로그 방문자', description: '블로그 방문자 수 증가', category: 'naver', price: 8, order: 15 },
+      { name: '네이버 블로그 공감', description: '블로그 공감 수 증가', category: 'naver', price: 5, order: 16 },
+      { name: '네이버 플레이스 리뷰', description: '긍정적 리뷰 작성', category: 'naver', price: 50, order: 17 },
+    ]
+
+    let insertedCount = 0
+    for (const product of initialProducts) {
+      try {
+        const existing = await c.env.DB.prepare(`
+          SELECT id FROM store_products WHERE name = ?
+        `).bind(product.name).first()
+
+        if (!existing) {
+          await c.env.DB.prepare(`
+            INSERT INTO store_products (name, description, category, price, display_order, enabled)
+            VALUES (?, ?, ?, ?, ?, 1)
+          `).bind(product.name, product.description, product.category, product.price, product.order).run()
+          insertedCount++
+        }
+      } catch (e) {
+        console.error('Failed to insert product:', product.name, e)
+      }
+    }
+    results.push('✅ Inserted ' + insertedCount + ' initial products')
+
+    return c.json({
+      success: true,
+      message: '스토어 시스템 초기화 완료',
+      results
+    })
+  } catch (error) {
+    console.error('[Store Init] Error:', error)
     return c.json({ success: false, error: error.message }, 500)
   }
 })
