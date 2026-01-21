@@ -20447,13 +20447,27 @@ app.get('/profile', (c) => {
 // 회원 프로필 조회 API
 app.get('/api/user/profile', async (c) => {
   try {
-    const userId = c.req.header('X-User-Id')
+    // 세션 또는 헤더에서 사용자 ID 가져오기
+    let userId = c.req.header('X-User-Id');
+    
+    // 헤더에 없으면 세션에서 확인
+    if (!userId) {
+      const sessionId = c.req.header('Cookie')?.split(';').find(c => c.trim().startsWith('session_id='))?.split('=')[1];
+      if (sessionId) {
+        const session = await c.env.DB.prepare('SELECT user_id FROM sessions WHERE id = ?').bind(sessionId).first();
+        if (session) {
+          userId = session.user_id.toString();
+        }
+      }
+    }
+    
     if (!userId) {
       return c.json({ success: false, error: '로그인이 필요합니다.' }, 401)
     }
 
     const user = await c.env.DB.prepare(`
-      SELECT id, email, name, phone, academy_name, academy_location, role, created_at
+      SELECT id, email, name, phone, academy_name, academy_location, role, created_at, 
+             user_type, academy_id, parent_user_id
       FROM users WHERE id = ?
     `).bind(userId).first()
 
@@ -36709,10 +36723,69 @@ app.get('/students', (c) => {
                 
                 console.log('🔍 Initializing page for user:', currentUser);
                 
+                // ✅ 서버에서 최신 사용자 정보 가져오기
+                try {
+                    console.log('🔄 Fetching latest user info from server...');
+                    const userResponse = await fetch('/api/user/profile');
+                    if (userResponse.ok) {
+                        const userData = await userResponse.json();
+                        if (userData.success && userData.user) {
+                            console.log('✅ Latest user data from server:', userData.user);
+                            // localStorage 업데이트
+                            const updatedUser = {
+                                ...currentUser,
+                                ...userData.user,
+                                // 기존 세션 정보 유지
+                                permissions: currentUser.permissions
+                            };
+                            currentUser = updatedUser;
+                            localStorage.setItem('user', JSON.stringify(updatedUser));
+                            console.log('✅ localStorage updated with latest data');
+                        }
+                    } else {
+                        console.warn('⚠️ Failed to fetch latest user info, using cached data');
+                    }
+                } catch (error) {
+                    console.error('❌ Error fetching user info:', error);
+                    console.warn('⚠️ Continuing with cached user data');
+                }
+                
                 // user_type이 없으면 role을 사용 (하위 호환성)
                 if (!currentUser.user_type && currentUser.role) {
                     currentUser.user_type = currentUser.role;
                 }
+                
+                // ✅ 선생님의 경우 academy_id가 없으면 parent_user_id로 설정
+                if (currentUser.user_type === 'teacher' && !currentUser.academy_id && currentUser.parent_user_id) {
+                    console.log('⚠️ Teacher without academy_id, fixing with parent_user_id:', currentUser.parent_user_id);
+                    currentUser.academy_id = currentUser.parent_user_id;
+                    localStorage.setItem('user', JSON.stringify(currentUser));
+                    academyId = currentUser.academy_id;
+                    
+                    // 서버에도 업데이트
+                    try {
+                        await fetch('/api/debug/fix-academy-id', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                email: currentUser.email,
+                                academy_id: currentUser.academy_id
+                            })
+                        });
+                        console.log('✅ Academy ID updated on server');
+                    } catch (err) {
+                        console.warn('⚠️ Failed to update academy_id on server:', err);
+                    }
+                }
+                
+                // ✅ 원장님의 경우 academy_id가 없으면 자신의 ID 사용
+                if (currentUser.user_type !== 'teacher' && !currentUser.academy_id) {
+                    console.log('⚠️ Director without academy_id, using own ID:', currentUser.id);
+                    currentUser.academy_id = currentUser.id;
+                    localStorage.setItem('user', JSON.stringify(currentUser));
+                    academyId = currentUser.academy_id;
+                }
+                
                 
                 // 선생님 계정 감지 (DB에 user_type='teacher'로 등록된 경우에만 선생님)
                 // ✅ user_type을 우선적으로 체크 (role은 무시)
