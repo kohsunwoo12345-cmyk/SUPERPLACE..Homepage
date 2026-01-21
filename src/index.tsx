@@ -17504,45 +17504,91 @@ app.get('/api/students', async (c) => {
     
     console.log('👥 [GetStudents] Final userId:', userId)
     
-    // Step 3: 가장 단순한 쿼리 - 모든 active 학생
+    // Step 3: 사용자 정보 조회하여 권한 확인
     let students = []
+    let userType = null
+    let userPermissions = null
     
-    // Try 1: academy_id로 조회
+    // 사용자 타입 확인 (선생님인지 원장님인지)
     try {
-      console.log('👥 [GetStudents] Try 1: WHERE academy_id =', userId)
-      const result1 = await c.env.DB.prepare(
-        "SELECT * FROM students WHERE academy_id = ? AND status = 'active' ORDER BY id DESC"
-      ).bind(userId).all()
+      const userHeader = c.req.header('X-User-Data-Base64')
+      if (userHeader) {
+        const userData = JSON.parse(decodeURIComponent(escape(atob(userHeader))))
+        userType = userData.user_type
+        userPermissions = userData.permissions
+        console.log('👥 [GetStudents] User type:', userType)
+        console.log('👥 [GetStudents] User permissions:', userPermissions)
+      }
+    } catch (e) {
+      console.log('⚠️  [GetStudents] Could not parse user data')
+    }
+    
+    // 선생님이고 배정된 반만 허용된 경우
+    if (userType === 'teacher' && 
+        userPermissions && 
+        !userPermissions.canViewAllStudents && 
+        userPermissions.assignedClasses && 
+        userPermissions.assignedClasses.length > 0) {
       
-      students = result1.results || []
-      console.log('✅ [GetStudents] SUCCESS! Found', students.length, 'students')
-    } catch (err1) {
-      console.log('⚠️  [GetStudents] Try 1 failed:', err1.message)
+      console.log('👥 [GetStudents] Teacher with assigned classes only:', userPermissions.assignedClasses)
       
-      // Try 2: 모든 active 학생
+      // 배정된 반의 학생만 조회
+      const placeholders = userPermissions.assignedClasses.map(() => '?').join(',')
+      const query = `SELECT * FROM students WHERE class_id IN (${placeholders}) AND status = 'active' ORDER BY id DESC`
+      
       try {
-        console.log('👥 [GetStudents] Try 2: All active students')
-        const result2 = await c.env.DB.prepare(
-          "SELECT * FROM students WHERE status = 'active' ORDER BY id DESC LIMIT 1000"
-        ).all()
+        const result = await c.env.DB.prepare(query)
+          .bind(...userPermissions.assignedClasses)
+          .all()
         
-        students = result2.results || []
-        console.log('✅ [GetStudents] Found', students.length, 'active students')
-      } catch (err2) {
-        console.log('⚠️  [GetStudents] Try 2 failed:', err2.message)
+        students = result.results || []
+        console.log('✅ [GetStudents] Found', students.length, 'students in assigned classes')
+      } catch (err) {
+        console.error('❌ [GetStudents] Assigned classes query failed:', err.message)
+        students = []
+      }
+      
+    } else {
+      // 원장님 또는 모든 권한이 있는 선생님 - 모든 학생 조회
+      console.log('👥 [GetStudents] Full access - loading all students')
+      
+      // Try 1: academy_id로 조회
+      try {
+        console.log('👥 [GetStudents] Try 1: WHERE academy_id =', userId)
+        const result1 = await c.env.DB.prepare(
+          "SELECT * FROM students WHERE academy_id = ? AND status = 'active' ORDER BY id DESC"
+        ).bind(userId).all()
         
-        // Try 3: 모든 학생 (필터 없이)
+        students = result1.results || []
+        console.log('✅ [GetStudents] SUCCESS! Found', students.length, 'students')
+      } catch (err1) {
+        console.log('⚠️  [GetStudents] Try 1 failed:', err1.message)
+        
+        // Try 2: 모든 active 학생
         try {
-          console.log('👥 [GetStudents] Try 3: All students (no filter)')
-          const result3 = await c.env.DB.prepare(
-            'SELECT * FROM students ORDER BY id DESC LIMIT 1000'
+          console.log('👥 [GetStudents] Try 2: All active students')
+          const result2 = await c.env.DB.prepare(
+            "SELECT * FROM students WHERE status = 'active' ORDER BY id DESC LIMIT 1000"
           ).all()
           
-          students = result3.results || []
-          console.log('✅ [GetStudents] Found', students.length, 'total students')
-        } catch (err3) {
-          console.error('❌ [GetStudents] ALL queries failed!')
-          throw err3
+          students = result2.results || []
+          console.log('✅ [GetStudents] Found', students.length, 'active students')
+        } catch (err2) {
+          console.log('⚠️  [GetStudents] Try 2 failed:', err2.message)
+          
+          // Try 3: 모든 학생 (필터 없이)
+          try {
+            console.log('👥 [GetStudents] Try 3: All students (no filter)')
+            const result3 = await c.env.DB.prepare(
+              'SELECT * FROM students ORDER BY id DESC LIMIT 1000'
+            ).all()
+            
+            students = result3.results || []
+            console.log('✅ [GetStudents] Found', students.length, 'total students')
+          } catch (err3) {
+            console.error('❌ [GetStudents] ALL queries failed!')
+            throw err3
+          }
         }
       }
     }
@@ -36454,37 +36500,38 @@ app.get('/students', (c) => {
                     }
                 }
                 
-                // ✅ 랜딩페이지, 네이버 검색량, AI 리포트는 권한에 따라 제어
+                // ✅ 랜딩페이지, 네이버 검색량, AI 리포트는 전체 권한일 때만 표시
+                // 배정된 반만 허용된 경우에는 숨김
                 const landingSection = document.getElementById('landingPagesSection');
                 if (landingSection) {
-                    if (hasAnyPermission) {
+                    if (hasFullAccess) {
                         landingSection.style.display = 'block';
-                        console.log('✅ Showing: Landing pages section (has permission)');
+                        console.log('✅ Showing: Landing pages section (full access)');
                     } else {
                         landingSection.style.display = 'none';
-                        console.log('✅ Hidden: Landing pages section (no permission)');
+                        console.log('✅ Hidden: Landing pages section (restricted or no permission)');
                     }
                 }
                 
                 const naverSection = document.getElementById('naverSearchSection');
                 if (naverSection) {
-                    if (hasAnyPermission) {
+                    if (hasFullAccess) {
                         naverSection.style.display = 'block';
-                        console.log('✅ Showing: Naver search section (has permission)');
+                        console.log('✅ Showing: Naver search section (full access)');
                     } else {
                         naverSection.style.display = 'none';
-                        console.log('✅ Hidden: Naver search section (no permission)');
+                        console.log('✅ Hidden: Naver search section (restricted or no permission)');
                     }
                 }
                 
                 const aiReportSection = document.getElementById('aiReportSection');
                 if (aiReportSection) {
-                    if (hasAnyPermission) {
+                    if (hasFullAccess) {
                         aiReportSection.style.display = 'block';
-                        console.log('✅ Showing: AI report section (has permission)');
+                        console.log('✅ Showing: AI report section (full access)');
                     } else {
                         aiReportSection.style.display = 'none';
-                        console.log('✅ Hidden: AI report section (no permission)');
+                        console.log('✅ Hidden: AI report section (restricted or no permission)');
                     }
                 }
                 
