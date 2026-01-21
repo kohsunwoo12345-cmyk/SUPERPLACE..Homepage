@@ -467,6 +467,72 @@
             background: #4f46e5;
         }
         
+        /* 액션 버튼 */
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .btn-action {
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border: none;
+        }
+        .btn-home {
+            background: white;
+            color: #6366f1;
+            border: 1px solid #6366f1;
+        }
+        .btn-home:hover {
+            background: #6366f1;
+            color: white;
+        }
+        .btn-charge {
+            background: #6366f1;
+            color: white;
+        }
+        .btn-charge:hover {
+            background: #4f46e5;
+        }
+        
+        /* 푸터 */
+        .footer {
+            background: white;
+            border-radius: 8px;
+            padding: 32px 24px;
+            margin-top: 48px;
+            border: 1px solid #dee2e6;
+            text-align: center;
+        }
+        .footer-company {
+            font-size: 16px;
+            font-weight: 700;
+            color: #212529;
+            margin-bottom: 16px;
+        }
+        .footer-info {
+            font-size: 13px;
+            color: #6c757d;
+            line-height: 1.8;
+            margin-bottom: 4px;
+        }
+        .footer-copyright {
+            font-size: 12px;
+            color: #adb5bd;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #f8f9fa;
+        }
+        
         /* 반응형 */
         @media (max-width: 768px) {
             .container {
@@ -507,6 +573,16 @@
         </div>
 
         <div id="store-content">
+            <!-- 액션 버튼 -->
+            <div class="action-buttons">
+                <a href="https://superplace-academy.pages.dev/" class="btn-action btn-home">
+                    🏠 홈으로 가기
+                </a>
+                <a href="/store/charge" class="btn-action btn-charge">
+                    💰 포인트 충전하기
+                </a>
+            </div>
+            
             <!-- 카테고리 -->
             <div class="categories">
                 <button class="category-btn active" data-category="all">
@@ -902,80 +978,6 @@
         }
 
         // 수량 변경
-        function changeQuantity(delta) {
-            const input = document.getElementById('quantity');
-            const newValue = Math.max(1, parseInt(input.value || 1) + delta);
-            input.value = newValue;
-            updatePrice();
-        }
-
-        // 가격 업데이트
-        function updatePrice() {
-            const select = document.getElementById('option-select');
-            const quantity = parseInt(document.getElementById('quantity').value || 1);
-            
-            if (!select || !select.value) return;
-            
-            const option = select.options[select.selectedIndex];
-            const price = parseFloat(option.dataset.price);
-            const total = price * quantity;
-            
-            document.getElementById('unit-price').textContent = `${price.toLocaleString()} P`;
-            document.getElementById('quantity-display').textContent = `${quantity}개`;
-            document.getElementById('total-price').textContent = `${total.toLocaleString()} P`;
-        }
-
-        // 주문 제출
-        async function submitOrder(productId) {
-            const product = allProducts.find(p => p.id === productId);
-            const selectElement = document.getElementById('option-select');
-            const optionIndex = parseInt(selectElement.value);
-            const option = product.options[optionIndex];
-            const quantity = parseInt(document.getElementById('quantity').value);
-            const url = document.getElementById('target-url').value.trim();
-
-            if (!option || !url) {
-                alert('모든 필드를 입력해주세요.');
-                return;
-            }
-
-            try {
-                const response = await fetch('/api/store/purchase', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'x-api-key': API_KEY
-                    },
-                    body: JSON.stringify({
-                        product_id: productId,
-                        option_name: option.name,
-                        quantity: quantity,
-                        price_per_unit: option.price,
-                        target_url: url
-                    })
-                });
-
-                const data = await response.json();
-                
-                if (response.ok) {
-                    alert('주문이 완료되었습니다!');
-                    document.querySelector('.modal-overlay').remove();
-                    await loadUserPoints();
-                } else {
-                    alert(data.error || '주문에 실패했습니다.');
-                }
-            } catch (error) {
-                console.error('주문 실패:', error);
-                alert('주문 중 오류가 발생했습니다.');
-            }
-        }
-
-        // 접근 거부 표시
-        function showAccessDenied() {
-            document.getElementById('store-content').innerHTML = `
-                <div class="access-denied">
-                    <h2>🔒 로그인이 필요합니다</h2>
-                    <p>스토어를 이용하시려면 로그인해주세요.</p>
                     <a href="/login" class="back-btn">로그인하기</a>
                 </div>
             `;
@@ -984,5 +986,17 @@
         // 초기화 실행
         init();
     </script>
+    
+    <!-- 푸터 -->
+    <div class="footer">
+        <div class="footer-company">주식회사 우리는 슈퍼플레이스다</div>
+        <div class="footer-info">사업자등록번호: 142-88-02445</div>
+        <div class="footer-info">주소: 인천광역시 서구 청라커낼로 270, 2층</div>
+        <div class="footer-info">이메일: wangholy1@naver.com</div>
+        <div class="footer-info">전화: 010-8739-9697</div>
+        <div class="footer-copyright">© 2024 우리는 슈퍼플레이스다. All rights reserved.</div>
+    </div>
+</div>
+
 </body>
 </html>
