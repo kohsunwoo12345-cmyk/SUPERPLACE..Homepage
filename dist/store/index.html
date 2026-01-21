@@ -362,6 +362,48 @@
             border-radius: 8px;
             border-left: 4px solid #6366f1;
         }
+        
+        /* 옵션별 상세 설명 팝업 */
+        .option-description-popup {
+            margin-top: 20px;
+            padding: 20px;
+            background: #fff;
+            border: 2px solid #6366f1;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+            animation: slideDown 0.3s ease-out;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .option-description-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #6366f1;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .option-description-content {
+            font-size: 13px;
+            color: #495057;
+            line-height: 1.8;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
         .detail-section {
             margin-bottom: 16px;
         }
@@ -382,6 +424,42 @@
             color: #495057;
             line-height: 1.6;
             margin: 0;
+            white-space: pre-wrap;
+        }
+        
+        /* 옵션 설명 팝업 */
+        .option-description-popup {
+            margin-top: 16px;
+            animation: slideDown 0.3s ease-out;
+        }
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .option-popup-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25);
+        }
+        .option-popup-header {
+            font-size: 14px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+        }
+        .option-popup-body {
+            font-size: 13px;
+            color: white;
+            line-height: 1.8;
             white-space: pre-wrap;
         }
         
@@ -733,17 +811,29 @@
                     asPolicy: 'A/S 기간: 최대 3개월\n구매 날짜로부터 24시간 / 7일 / 30일 / 60일 / 90일 경과 시 이탈 수량 자동 리필 처리됩니다.',
                     foreignAsPolicy: 'A/S 기간: 1회 처리\n이탈 건 확인 후 A/S 처리가 진행됩니다.'
                 },
+                optionDescriptions: {
+                    'korean': `💡 팔로워 서비스는 계정 성장의 기초입니다. 실제 한국인 사용자가 팔로우하여 계정의 신뢰도를 높입니다.`,
+                    'korean_male': `💡 [남성] 한국인 팔로워 - 남성 타겟 계정에 최적화된 팔로워 서비스입니다.`,
+                    'korean_female': `💡 [여성] 한국인 팔로워 - 여성 타겟 계정에 최적화된 팔로워 서비스입니다.`,
+                    'korean_20s': `💡 [20대] 한국인 팔로워 - 20대 타겟 계정에 최적화된 팔로워 서비스입니다.`,
+                    'korean_30s': `💡 [30대] 한국인 팔로워 - 30대 타겟 계정에 최적화된 팔로워 서비스입니다.`,
+                    'korean_20s_male': `💡 [20대/남성] 한국인 팔로워 - 20대 남성 타겟에 최적화된 팔로워 서비스입니다.`,
+                    'korean_20s_female': `💡 [20대/여성] 한국인 팔로워 - 20대 여성 타겟에 최적화된 팔로워 서비스입니다.`,
+                    'korean_30s_male': `💡 [30대/남성] 한국인 팔로워 - 30대 남성 타겟에 최적화된 팔로워 서비스입니다.`,
+                    'korean_30s_female': `💡 [30대/여성] 한국인 팔로워 - 30대 여성 타겟에 최적화된 팔로워 서비스입니다.`,
+                    'foreign': `💡 외국인 팔로워 - 저렴한 가격으로 팔로워 수를 빠르게 늘릴 수 있습니다. 이탈이 발생할 수 있습니다.`
+                },
                 options: [
-                    { name: '실제 한국인 팔로워', price: 220, type: 'korean' },
-                    { name: '[남성] 한국인 팔로워', price: 280, type: 'korean', target: '남성' },
-                    { name: '[여성] 한국인 팔로워', price: 280, type: 'korean', target: '여성' },
-                    { name: '[20대] 한국인 팔로워', price: 280, type: 'korean', target: '20대' },
-                    { name: '[30대] 한국인 팔로워', price: 280, type: 'korean', target: '30대' },
-                    { name: '[20대/남성] 한국인 팔로워', price: 440, type: 'korean', target: '20대 남성' },
-                    { name: '[20대/여성] 한국인 팔로워', price: 440, type: 'korean', target: '20대 여성' },
-                    { name: '[30대/남성] 한국인 팔로워', price: 440, type: 'korean', target: '30대 남성' },
-                    { name: '[30대/여성] 한국인 팔로워', price: 440, type: 'korean', target: '30대 여성' },
-                    { name: '외국인 팔로워', price: 20, type: 'foreign' }
+                    { name: '실제 한국인 팔로워', price: 220, type: 'korean', descKey: 'korean' },
+                    { name: '[남성] 한국인 팔로워', price: 280, type: 'korean', target: '남성', descKey: 'korean_male' },
+                    { name: '[여성] 한국인 팔로워', price: 280, type: 'korean', target: '여성', descKey: 'korean_female' },
+                    { name: '[20대] 한국인 팔로워', price: 280, type: 'korean', target: '20대', descKey: 'korean_20s' },
+                    { name: '[30대] 한국인 팔로워', price: 280, type: 'korean', target: '30대', descKey: 'korean_30s' },
+                    { name: '[20대/남성] 한국인 팔로워', price: 440, type: 'korean', target: '20대 남성', descKey: 'korean_20s_male' },
+                    { name: '[20대/여성] 한국인 팔로워', price: 440, type: 'korean', target: '20대 여성', descKey: 'korean_20s_female' },
+                    { name: '[30대/남성] 한국인 팔로워', price: 440, type: 'korean', target: '30대 남성', descKey: 'korean_30s_male' },
+                    { name: '[30대/여성] 한국인 팔로워', price: 440, type: 'korean', target: '30대 여성', descKey: 'korean_30s_female' },
+                    { name: '외국인 팔로워', price: 20, type: 'foreign', descKey: 'foreign' }
                 ]
             },
             {
@@ -1102,10 +1192,29 @@ SUPERPLACE에서 제공하는 한국인 좋아요 구매 서비스는 실제 활
                 description: '게시물 저장',
                 detailedInfo: {
                     service: '게시물에 100% 실제 한국인 계정이 저장을 진행합니다. 저장 수가 많은 게시물은 알고리즘에서 더 높은 평가를 받습니다.',
-                    orderGuide: '게시물 링크를 입력해주세요.\n예시) https://www.instagram.com/p/ABC123/',
+                    orderGuide: '게시물 링크를 입력해주세요.\n예시) https://www.instagram.com/p/@@@@@@@',
                     asPolicy: '저장은 이탈이 거의 없으나, 이탈 시 확인 후 A/S 처리됩니다.'
                 },
-                options: [{ name: '한국인 저장', price: 88, type: 'korean' }]
+                optionDescriptions: {
+                    'korean': `🔖 <SUPERPLACE> 인스타그램 저장 서비스
+
+📌 서비스 설명
+100% 실제 활동하는 한국인 계정이 회원님의 게시물을 저장합니다. 저장은 인스타그램 알고리즘에서 가장 중요한 지표 중 하나로, 게시물의 가치를 평가하는 핵심 요소입니다.
+
+✨ 왜 저장이 중요한가요?
+• 알고리즘 최적화: 저장 수가 많은 게시물은 인스타그램 알고리즘에서 높은 평가를 받아 더 많은 사용자에게 노출됩니다
+• 탐색 탭 진입: 저장이 많은 게시물은 탐색 탭과 추천 피드에 더 자주 표시됩니다
+• 장기 효과: 좋아요나 댓글과 달리 저장은 사용자가 나중에 다시 보고 싶은 콘텐츠라는 신호를 보냅니다
+• 재방문 증가: 저장한 사용자들이 나중에 다시 게시물을 확인하면서 추가 참여가 발생합니다
+
+🔗 주문 링크 입력 방법
+게시물 링크를 복사하여 입력해주세요.
+예시) https://www.instagram.com/p/@@@@@@@
+
+💎 A/S 및 리필 정책
+저장은 이탈이 거의 없으나, 이탈 시 확인 후 A/S 처리됩니다.`
+                },
+                options: [{ name: '한국인 저장', price: 88, type: 'korean', descKey: 'korean' }]
             }
         ];
 
@@ -1115,21 +1224,95 @@ SUPERPLACE에서 제공하는 한국인 좋아요 구매 서비스는 실제 활
                 name: '유튜브 구독자',
                 category: 'youtube',
                 description: '한국인 구독자',
-                options: [{ name: '한국인 구독자', price: 440 }]
+                detailedInfo: {
+                    service: '100% 실제 활동하는 한국인 계정이 구독을 진행합니다. 구독자 수는 채널의 신뢰도와 성장에 핵심적인 역할을 합니다.',
+                    orderGuide: '채널 링크를 입력해주세요.\n예시) https://www.youtube.com/@channelname',
+                    asPolicy: 'A/S 기간: 최대 3개월\n구매 날짜로부터 7일 / 30일 / 60일 / 90일 경과 시 이탈 수량 자동 리필 처리됩니다.'
+                },
+                optionDescriptions: {
+                    'korean': `🎬 <SUPERPLACE> 유튜브 구독자 서비스
+
+📌 서비스 설명
+100% 실제 활동하는 한국인 계정이 회원님의 채널을 구독합니다. 구독자는 채널 성장과 수익화의 기초가 되는 핵심 지표입니다.
+
+✨ 구독자가 중요한 이유
+• 채널 신뢰도: 구독자가 많은 채널은 신규 방문자에게 신뢰감을 줍니다
+• 초기 성장: 초기 구독자 확보로 알고리즘 추천을 받기 시작합니다
+• 수익화 조건: 구독자 1,000명은 유튜브 수익화의 필수 조건입니다
+• 알림 기능: 구독자는 새 영상 업로드 시 알림을 받아 초기 조회수를 보장합니다
+
+🔗 주문 링크 입력 방법
+채널 링크를 복사하여 입력해주세요.
+예시) https://www.youtube.com/@channelname
+
+💎 A/S 및 리필 정책
+A/S 기간: 최대 3개월
+구매 날짜로부터 7일 / 30일 / 60일 / 90일 경과 시 이탈 수량 자동 리필 처리됩니다.`
+                },
+                options: [{ name: '한국인 구독자', price: 440, type: 'korean', descKey: 'korean' }]
             },
             {
                 id: 'yt_views',
                 name: '유튜브 조회수',
                 category: 'youtube',
                 description: '동영상 조회수',
-                options: [{ name: '한국인 조회수', price: 11 }]
+                detailedInfo: {
+                    service: '100% 실제 한국인 계정이 동영상을 시청합니다. 조회수는 동영상의 인기와 알고리즘 추천에 직접적인 영향을 미칩니다.',
+                    orderGuide: '동영상 링크를 입력해주세요.\n예시) https://www.youtube.com/watch?v=VIDEO_ID',
+                    asPolicy: '조회수는 이탈이 없습니다.'
+                },
+                optionDescriptions: {
+                    'korean': `📺 <SUPERPLACE> 유튜브 조회수 서비스
+
+📌 서비스 설명
+100% 실제 한국인 계정이 회원님의 동영상을 시청합니다. 조회수는 동영상의 인기를 나타내는 가장 직관적인 지표입니다.
+
+✨ 조회수가 중요한 이유
+• 알고리즘 추천: 조회수가 높은 영상은 유튜브 알고리즘의 추천을 받습니다
+• 초기 모멘텀: 업로드 초기에 조회수를 확보하면 추가 노출 기회가 증가합니다
+• 신뢰도 향상: 조회수가 많은 영상은 신규 방문자의 클릭률이 높습니다
+• 검색 노출: 조회수가 높을수록 유튜브 검색 결과 상위에 노출됩니다
+
+🔗 주문 링크 입력 방법
+동영상 링크를 복사하여 입력해주세요.
+예시) https://www.youtube.com/watch?v=VIDEO_ID
+
+💎 A/S 및 리필 정책
+조회수는 이탈이 없습니다.`
+                },
+                options: [{ name: '한국인 조회수', price: 11, type: 'korean', descKey: 'korean' }]
             },
             {
                 id: 'yt_likes',
                 name: '유튜브 좋아요',
                 category: 'youtube',
                 description: '동영상 좋아요',
-                options: [{ name: '한국인 좋아요', price: 110 }]
+                detailedInfo: {
+                    service: '100% 실제 한국인 계정이 동영상에 좋아요를 남깁니다. 좋아요는 동영상의 품질과 인기를 나타내는 중요한 지표입니다.',
+                    orderGuide: '동영상 링크를 입력해주세요.\n예시) https://www.youtube.com/watch?v=VIDEO_ID',
+                    asPolicy: 'A/S 기간: 최대 2개월\n이탈 시 확인 후 A/S 처리가 진행됩니다.'
+                },
+                optionDescriptions: {
+                    'korean': `👍 <SUPERPLACE> 유튜브 좋아요 서비스
+
+📌 서비스 설명
+100% 실제 한국인 계정이 회원님의 동영상에 좋아요를 남깁니다. 좋아요는 동영상의 품질을 나타내는 핵심 지표입니다.
+
+✨ 좋아요가 중요한 이유
+• 품질 신호: 좋아요 비율이 높은 영상은 유튜브 알고리즘의 긍정적인 평가를 받습니다
+• 추천 시스템: 좋아요가 많은 영상은 홈 피드와 추천 영상에 더 자주 노출됩니다
+• 시청자 참여: 좋아요는 시청자가 콘텐츠를 긍정적으로 평가했다는 명확한 신호입니다
+• 초기 반응: 업로드 초기에 좋아요를 확보하면 추가 시청자 유입이 증가합니다
+
+🔗 주문 링크 입력 방법
+동영상 링크를 복사하여 입력해주세요.
+예시) https://www.youtube.com/watch?v=VIDEO_ID
+
+💎 A/S 및 리필 정책
+A/S 기간: 최대 2개월
+이탈 시 확인 후 A/S 처리가 진행됩니다.`
+                },
+                options: [{ name: '한국인 좋아요', price: 110, type: 'korean', descKey: 'korean' }]
             }
         ];
 
@@ -1139,14 +1322,51 @@ SUPERPLACE에서 제공하는 한국인 좋아요 구매 서비스는 실제 활
                 name: '페이스북 팔로워',
                 category: 'facebook',
                 description: '페이지 팔로워',
-                options: [{ name: '한국인 팔로워', price: 220 }]
+                detailedInfo: {
+                    service: '100% 실제 활동하는 한국인 계정이 페이스북 페이지를 팔로우합니다.',
+                    orderGuide: '페이스북 페이지 링크를 입력해주세요.\n예시) https://www.facebook.com/pagename',
+                    asPolicy: 'A/S 기간: 최대 3개월\n구매 날짜로부터 30일 / 60일 / 90일 경과 시 이탈 수량 자동 리필 처리됩니다.'
+                },
+                optionDescriptions: {
+                    'korean': `👥 <SUPERPLACE> 페이스북 팔로워 서비스
+
+📌 서비스 설명
+100% 실제 활동하는 한국인 계정이 회원님의 페이스북 페이지를 팔로우합니다. 팔로워는 페이지의 신뢰도와 도달 범위를 확대하는 핵심 요소입니다.
+
+🔗 주문 링크 입력 방법
+페이스북 페이지 링크를 복사하여 입력해주세요.
+예시) https://www.facebook.com/pagename
+
+💎 A/S 및 리필 정책
+A/S 기간: 최대 3개월
+구매 날짜로부터 30일 / 60일 / 90일 경과 시 이탈 수량 자동 리필 처리됩니다.`
+                },
+                options: [{ name: '한국인 팔로워', price: 220, type: 'korean', descKey: 'korean' }]
             },
             {
                 id: 'fb_likes',
                 name: '페이스북 좋아요',
                 category: 'facebook',
                 description: '게시물 좋아요',
-                options: [{ name: '한국인 좋아요', price: 55 }]
+                detailedInfo: {
+                    service: '100% 실제 한국인 계정이 게시물에 좋아요를 남깁니다.',
+                    orderGuide: '게시물 링크를 입력해주세요.\n예시) https://www.facebook.com/post_id',
+                    asPolicy: '이탈 시 확인 후 A/S 처리가 진행됩니다.'
+                },
+                optionDescriptions: {
+                    'korean': `👍 <SUPERPLACE> 페이스북 좋아요 서비스
+
+📌 서비스 설명
+100% 실제 한국인 계정이 회원님의 페이스북 게시물에 좋아요를 남깁니다. 좋아요는 게시물의 노출 범위와 참여도를 높입니다.
+
+🔗 주문 링크 입력 방법
+게시물 링크를 복사하여 입력해주세요.
+예시) https://www.facebook.com/post_id
+
+💎 A/S 및 리필 정책
+이탈 시 확인 후 A/S 처리가 진행됩니다.`
+                },
+                options: [{ name: '한국인 좋아요', price: 55, type: 'korean', descKey: 'korean' }]
             }
         ];
 
@@ -1156,14 +1376,51 @@ SUPERPLACE에서 제공하는 한국인 좋아요 구매 서비스는 실제 활
                 name: '쓰레드 팔로워',
                 category: 'threads',
                 description: '쓰레드 팔로워',
-                options: [{ name: '한국인 팔로워', price: 220 }]
+                detailedInfo: {
+                    service: '100% 실제 활동하는 한국인 계정이 쓰레드 계정을 팔로우합니다.',
+                    orderGuide: '쓰레드 프로필 링크를 입력해주세요.\n예시) https://www.threads.net/@username',
+                    asPolicy: 'A/S 기간: 최대 3개월\n구매 날짜로부터 30일 / 60일 / 90일 경과 시 이탈 수량 자동 리필 처리됩니다.'
+                },
+                optionDescriptions: {
+                    'korean': `🧵 <SUPERPLACE> 쓰레드 팔로워 서비스
+
+📌 서비스 설명
+100% 실제 활동하는 한국인 계정이 회원님의 쓰레드 계정을 팔로우합니다. Meta의 새로운 플랫폼에서 초기 성장을 지원합니다.
+
+🔗 주문 링크 입력 방법
+쓰레드 프로필 링크를 복사하여 입력해주세요.
+예시) https://www.threads.net/@username
+
+💎 A/S 및 리필 정책
+A/S 기간: 최대 3개월
+구매 날짜로부터 30일 / 60일 / 90일 경과 시 이탈 수량 자동 리필 처리됩니다.`
+                },
+                options: [{ name: '한국인 팔로워', price: 220, type: 'korean', descKey: 'korean' }]
             },
             {
                 id: 'th_likes',
                 name: '쓰레드 좋아요',
                 category: 'threads',
                 description: '게시물 좋아요',
-                options: [{ name: '한국인 좋아요', price: 44 }]
+                detailedInfo: {
+                    service: '100% 실제 한국인 계정이 쓰레드 게시물에 좋아요를 남깁니다.',
+                    orderGuide: '게시물 링크를 입력해주세요.\n예시) https://www.threads.net/@username/post/POST_ID',
+                    asPolicy: '이탈 시 확인 후 A/S 처리가 진행됩니다.'
+                },
+                optionDescriptions: {
+                    'korean': `❤️ <SUPERPLACE> 쓰레드 좋아요 서비스
+
+📌 서비스 설명
+100% 실제 한국인 계정이 회원님의 쓰레드 게시물에 좋아요를 남깁니다. 쓰레드에서의 초기 반응을 만들어냅니다.
+
+🔗 주문 링크 입력 방법
+게시물 링크를 복사하여 입력해주세요.
+예시) https://www.threads.net/@username/post/POST_ID
+
+💎 A/S 및 리필 정책
+이탈 시 확인 후 A/S 처리가 진행됩니다.`
+                },
+                options: [{ name: '한국인 좋아요', price: 44, type: 'korean', descKey: 'korean' }]
             }
         ];
 
@@ -1173,14 +1430,60 @@ SUPERPLACE에서 제공하는 한국인 좋아요 구매 서비스는 실제 활
                 name: '블로그 조회수',
                 category: 'naver',
                 description: '블로그 포스팅',
-                options: [{ name: '블로그 조회수', price: 11 }]
+                detailedInfo: {
+                    service: '100% 실제 한국인 방문자가 네이버 블로그를 방문합니다.',
+                    orderGuide: '블로그 포스팅 링크를 입력해주세요.\n예시) https://blog.naver.com/blogid/postid',
+                    asPolicy: '조회수는 이탈이 없습니다.'
+                },
+                optionDescriptions: {
+                    'korean': `📝 <SUPERPLACE> 네이버 블로그 조회수 서비스
+
+📌 서비스 설명
+100% 실제 한국인 방문자가 회원님의 네이버 블로그 포스팅을 방문합니다. 블로그 조회수는 검색 노출과 신뢰도에 영향을 미칩니다.
+
+✨ 블로그 조회수가 중요한 이유
+• 검색 순위: 조회수가 많은 블로그는 네이버 검색 결과에서 상위 노출됩니다
+• 신뢰도 향상: 조회수가 높은 글은 방문자의 신뢰를 얻기 쉽습니다
+• 영향력 지수: 블로그 영향력 지수 상승에 기여합니다
+
+🔗 주문 링크 입력 방법
+블로그 포스팅 링크를 복사하여 입력해주세요.
+예시) https://blog.naver.com/blogid/postid
+
+💎 A/S 및 리필 정책
+조회수는 이탈이 없습니다.`
+                },
+                options: [{ name: '블로그 조회수', price: 11, type: 'korean', descKey: 'korean' }]
             },
             {
                 id: 'nv_cafe_views',
                 name: '카페 조회수',
                 category: 'naver',
                 description: '카페 게시글',
-                options: [{ name: '카페 조회수', price: 11 }]
+                detailedInfo: {
+                    service: '100% 실제 한국인 방문자가 네이버 카페 게시글을 방문합니다.',
+                    orderGuide: '카페 게시글 링크를 입력해주세요.\n예시) https://cafe.naver.com/cafename/articleid',
+                    asPolicy: '조회수는 이탈이 없습니다.'
+                },
+                optionDescriptions: {
+                    'korean': `☕ <SUPERPLACE> 네이버 카페 조회수 서비스
+
+📌 서비스 설명
+100% 실제 한국인 방문자가 회원님의 네이버 카페 게시글을 방문합니다. 카페 게시글 조회수는 인기글 등록과 활동 지수에 영향을 미칩니다.
+
+✨ 카페 조회수가 중요한 이유
+• 인기글 등록: 조회수가 많은 글은 카페 인기글로 등록됩니다
+• 활동 지수: 카페 내 활동 지수와 등급 상승에 기여합니다
+• 검색 노출: 네이버 통합 검색에서 카페 게시글 노출 기회가 증가합니다
+
+🔗 주문 링크 입력 방법
+카페 게시글 링크를 복사하여 입력해주세요.
+예시) https://cafe.naver.com/cafename/articleid
+
+💎 A/S 및 리필 정책
+조회수는 이탈이 없습니다.`
+                },
+                options: [{ name: '카페 조회수', price: 11, type: 'korean', descKey: 'korean' }]
             }
         ];
 
@@ -1406,9 +1709,15 @@ SUPERPLACE에서 제공하는 한국인 좋아요 구매 서비스는 실제 활
         // 옵션별 상세 설명 업데이트
         function updateOptionDescription() {
             const select = document.getElementById('option-select');
-            const container = document.getElementById('product-details-container');
+            let optionDescContainer = document.getElementById('option-description-popup');
             
-            if (!select || !select.value || !container) return;
+            if (!select || !select.value) {
+                // 옵션이 선택되지 않았으면 팝업 제거
+                if (optionDescContainer) {
+                    optionDescContainer.remove();
+                }
+                return;
+            }
             
             const modal = document.querySelector('.modal-overlay');
             const productId = modal.dataset.productId;
@@ -1424,35 +1733,29 @@ SUPERPLACE에서 제공하는 한국인 좋아요 구매 서비스는 실제 활
                 const optionDesc = product.optionDescriptions[selectedOption.descKey];
                 
                 if (optionDesc) {
-                    // 상세 설명으로 교체
-                    container.innerHTML = `
-                        <div class="product-details" style="max-height: 400px; overflow-y: auto;">
-                            <div class="detail-section">
-                                <p class="detail-text" style="white-space: pre-wrap; line-height: 1.8;">${optionDesc}</p>
+                    // 기존 팝업이 없으면 생성
+                    if (!optionDescContainer) {
+                        const container = document.getElementById('product-details-container');
+                        optionDescContainer = document.createElement('div');
+                        optionDescContainer.id = 'option-description-popup';
+                        optionDescContainer.className = 'option-description-popup';
+                        container.appendChild(optionDescContainer);
+                    }
+                    
+                    // 팝업 내용 업데이트
+                    optionDescContainer.innerHTML = `
+                        <div class="option-popup-content">
+                            <div class="option-popup-header">선택한 옵션 상세 설명</div>
+                            <div class="option-popup-body">
+                                ${optionDesc.replace(/\n/g, '<br>')}
                             </div>
                         </div>
                     `;
                 }
             } else {
-                // 기본 상세 정보로 복원
-                if (product.detailedInfo) {
-                    const info = product.detailedInfo;
-                    container.innerHTML = `
-                        <div class="product-details">
-                            <div class="detail-section">
-                                <h4 class="detail-title">📌 서비스 설명</h4>
-                                <p class="detail-text">${info.service}</p>
-                            </div>
-                            <div class="detail-section">
-                                <h4 class="detail-title">🔗 주문 링크 입력 방법</h4>
-                                <p class="detail-text">${info.orderGuide.replace(/\\n/g, '<br>')}</p>
-                            </div>
-                            <div class="detail-section">
-                                <h4 class="detail-title">💎 A/S 정책</h4>
-                                <p class="detail-text" id="as-policy-text">${info.asPolicy.replace(/\\n/g, '<br>')}</p>
-                            </div>
-                        </div>
-                    `;
+                // 옵션별 설명이 없으면 팝업 제거
+                if (optionDescContainer) {
+                    optionDescContainer.remove();
                 }
             }
         }
