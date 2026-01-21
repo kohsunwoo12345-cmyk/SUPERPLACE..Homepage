@@ -28227,24 +28227,29 @@ ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.di
             // 선생님 권한 로드
             async function loadTeacherPermissions() {
                 try {
-                    // parent_user_id가 없으면 원장 ID 조회
-                    let directorId = currentUser.parent_user_id;
-                    if (!directorId) {
-                        console.log('⚠️ No parent_user_id, trying to find director...');
-                        // 모든 원장의 ID를 1로 가정하거나, 현재 사용자의 academy 정보에서 가져오기
-                        // 임시로 1을 사용 (대부분의 경우 원장 ID가 1)
-                        directorId = 1;
-                    }
+                    // parent_user_id를 우선 사용, 없으면 현재 로그인한 원장님 ID 사용
+                    let directorId = currentUser.parent_user_id || currentUser.id;
                     
                     console.log(\`🔍 Fetching permissions for teacher \${currentUser.id} from director \${directorId}\`);
+                    console.log('   - currentUser.parent_user_id:', currentUser.parent_user_id);
+                    console.log('   - currentUser.id:', currentUser.id);
+                    console.log('   - Using directorId:', directorId);
+                    
                     const res = await fetch(\`/api/teachers/\${currentUser.id}/permissions?directorId=\${directorId}\`);
                     const data = await res.json();
+                    
+                    console.log('📋 Permission API response:', data);
                     
                     if (data.success && data.permissions) {
                         userPermissions = data.permissions;
                         console.log('✅ Teacher permissions loaded from server:', userPermissions);
+                        console.log('   - canViewAllStudents:', userPermissions.canViewAllStudents);
+                        console.log('   - assignedClasses:', userPermissions.assignedClasses);
+                        console.log('   - canWriteDailyReports:', userPermissions.canWriteDailyReports);
                     } else {
-                        console.warn('⚠️ No permissions found, using defaults');
+                        console.warn('⚠️ No permissions found or API failed');
+                        console.warn('   - API error:', data.error);
+                        console.warn('   - Using default restrictive permissions');
                         userPermissions = {
                             canViewAllStudents: false,
                             canWriteDailyReports: false,
