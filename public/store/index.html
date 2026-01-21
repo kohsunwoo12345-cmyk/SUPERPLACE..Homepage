@@ -1220,58 +1220,58 @@ SUPERPLACE에서 제공하는 한국인 좋아요 구매 서비스는 실제 활
 
         const youtubeProducts = [
             {
-                id: 'yt_subscribers',
-                name: '유튜브 구독자',
-                category: 'youtube',
-                description: '한국인 구독자',
-                detailedInfo: {
-                    service: '100% 실제 활동하는 한국인 계정이 구독을 진행합니다. 구독자 수는 채널의 신뢰도와 성장에 핵심적인 역할을 합니다.',
-                    orderGuide: '채널 링크를 입력해주세요.\n예시) https://www.youtube.com/@channelname',
-                    asPolicy: 'A/S 기간: 최대 3개월\n구매 날짜로부터 7일 / 30일 / 60일 / 90일 경과 시 이탈 수량 자동 리필 처리됩니다.'
-                },
-                optionDescriptions: {
-                    'korean': `🎬 <SUPERPLACE> 유튜브 구독자 서비스
-
-📌 서비스 설명
-100% 실제 활동하는 한국인 계정이 회원님의 채널을 구독합니다. 구독자는 채널 성장과 수익화의 기초가 되는 핵심 지표입니다.
-
-✨ 구독자가 중요한 이유
-• 채널 신뢰도: 구독자가 많은 채널은 신규 방문자에게 신뢰감을 줍니다
-• 초기 성장: 초기 구독자 확보로 알고리즘 추천을 받기 시작합니다
-• 수익화 조건: 구독자 1,000명은 유튜브 수익화의 필수 조건입니다
-• 알림 기능: 구독자는 새 영상 업로드 시 알림을 받아 초기 조회수를 보장합니다
-
-🔗 주문 링크 입력 방법
-채널 링크를 복사하여 입력해주세요.
-예시) https://www.youtube.com/@channelname
-
-💎 A/S 및 리필 정책
-A/S 기간: 최대 3개월
-구매 날짜로부터 7일 / 30일 / 60일 / 90일 경과 시 이탈 수량 자동 리필 처리됩니다.`
-                },
-                options: [{ name: '한국인 구독자', price: 440, type: 'korean', descKey: 'korean' }]
-            },
-            {
                 id: 'yt_views',
                 name: '유튜브 조회수',
                 category: 'youtube',
-                description: '동영상 조회수',
+                description: '조회수 (한국인/외국인)',
                 detailedInfo: {
-                    service: '100% 실제 한국인 계정이 동영상을 시청합니다. 조회수는 동영상의 인기와 알고리즘 추천에 직접적인 영향을 미칩니다.',
+                    service: '실제 계정이 동영상을 시청합니다. 조회수는 동영상의 인기와 알고리즘 추천에 직접적인 영향을 미칩니다.',
                     orderGuide: '동영상 링크를 입력해주세요.\n예시) https://www.youtube.com/watch?v=VIDEO_ID',
                     asPolicy: '조회수는 이탈이 없습니다.'
                 },
                 optionDescriptions: {
-                    'korean': `📺 <SUPERPLACE> 유튜브 조회수 서비스
+                    'foreign': `📺 <SUPERPLACE> 유튜브 외국인 조회수
 
 📌 서비스 설명
-100% 실제 한국인 계정이 회원님의 동영상을 시청합니다. 조회수는 동영상의 인기를 나타내는 가장 직관적인 지표입니다.
+실제 외국인 계정이 회원님의 동영상을 시청합니다. 조회수는 동영상의 인기를 나타내는 가장 직관적인 지표입니다.
 
-✨ 조회수가 중요한 이유
-• 알고리즘 추천: 조회수가 높은 영상은 유튜브 알고리즘의 추천을 받습니다
-• 초기 모멘텀: 업로드 초기에 조회수를 확보하면 추가 노출 기회가 증가합니다
-• 신뢰도 향상: 조회수가 많은 영상은 신규 방문자의 클릭률이 높습니다
-• 검색 노출: 조회수가 높을수록 유튜브 검색 결과 상위에 노출됩니다
+🔗 주문 링크 입력 방법
+동영상 링크를 복사하여 입력해주세요.
+예시) https://www.youtube.com/watch?v=VIDEO_ID
+
+💎 A/S 및 리필 정책
+조회수는 이탈이 없습니다.`,
+                    'foreign_shorts': `📱 <SUPERPLACE> 유튜브 외국인 쇼츠 조회수
+
+📌 서비스 설명
+실제 외국인 계정이 회원님의 쇼츠를 시청합니다. 쇼츠는 빠른 성장과 노출에 최적화된 콘텐츠 형식입니다.
+
+🔗 주문 링크 입력 방법
+쇼츠 링크를 복사하여 입력해주세요.
+예시) https://www.youtube.com/shorts/VIDEO_ID
+
+💎 A/S 및 리필 정책
+조회수는 이탈이 없습니다.`,
+                    'foreign_fast': `⚡ <SUPERPLACE> 유튜브 외국인 빠른 조회수
+
+📌 서비스 설명
+실제 외국인 계정이 빠른 시간 내에 동영상을 시청합니다. 초기 조회수 확보에 최적화된 서비스입니다.
+
+🔗 주문 링크 입력 방법
+동영상 링크를 복사하여 입력해주세요.
+예시) https://www.youtube.com/watch?v=VIDEO_ID
+
+💎 A/S 및 리필 정책
+조회수는 이탈이 없습니다.`,
+                    'korean': `🇰🇷 <SUPERPLACE> 유튜브 한국인 조회수
+
+📌 서비스 설명
+100% 실제 한국인 계정이 회원님의 동영상을 시청합니다. 한국 타겟 영상에 최적화된 조회수 서비스입니다.
+
+✨ 한국인 조회수의 장점
+• 한국 타겟 영상에 적합한 시청자
+• 알고리즘 추천에 긍정적 영향
+• 검색 노출 및 신뢰도 향상
 
 🔗 주문 링크 입력 방법
 동영상 링크를 복사하여 입력해주세요.
@@ -1280,23 +1280,77 @@ A/S 기간: 최대 3개월
 💎 A/S 및 리필 정책
 조회수는 이탈이 없습니다.`
                 },
-                options: [{ name: '한국인 조회수', price: 11, type: 'korean', descKey: 'korean' }]
+                options: [
+                    { name: '외국인 조회수', price: 7.5, type: 'foreign', descKey: 'foreign' },
+                    { name: '외국인 쇼츠 조회수', price: 7.5, type: 'foreign', descKey: 'foreign_shorts' },
+                    { name: '외국인 빠른 조회수', price: 8, type: 'foreign', descKey: 'foreign_fast' },
+                    { name: '한국인 조회수', price: 44, type: 'korean', descKey: 'korean' }
+                ]
+            },
+            {
+                id: 'yt_subscribers',
+                name: '유튜브 구독자',
+                category: 'youtube',
+                description: '외국인 구독자',
+                detailedInfo: {
+                    service: '실제 외국인 계정이 구독을 진행합니다. 구독자 수는 채널의 신뢰도와 성장에 핵심적인 역할을 합니다.',
+                    orderGuide: '채널 링크를 입력해주세요.\n예시) https://www.youtube.com/@channelname',
+                    asPolicy: 'A/S 기간: 최대 2개월\n이탈 시 확인 후 A/S 처리가 진행됩니다.'
+                },
+                optionDescriptions: {
+                    'foreign': `🎬 <SUPERPLACE> 유튜브 외국인 구독자
+
+📌 서비스 설명
+실제 외국인 계정이 회원님의 채널을 구독합니다. 구독자는 채널 성장과 수익화의 기초가 되는 핵심 지표입니다.
+
+✨ 구독자가 중요한 이유
+• 채널 신뢰도 향상
+• 수익화 조건 충족 (구독자 1,000명)
+• 알고리즘 추천 확률 증가
+• 새 영상 업로드 시 초기 조회수 확보
+
+🔗 주문 링크 입력 방법
+채널 링크를 복사하여 입력해주세요.
+예시) https://www.youtube.com/@channelname
+
+💎 A/S 및 리필 정책
+A/S 기간: 최대 2개월
+이탈 시 확인 후 A/S 처리가 진행됩니다.`
+                },
+                options: [{ name: '외국인 구독자', price: 110, type: 'foreign', descKey: 'foreign' }]
             },
             {
                 id: 'yt_likes',
                 name: '유튜브 좋아요',
                 category: 'youtube',
-                description: '동영상 좋아요',
+                description: '좋아요 (한국인/외국인)',
                 detailedInfo: {
-                    service: '100% 실제 한국인 계정이 동영상에 좋아요를 남깁니다. 좋아요는 동영상의 품질과 인기를 나타내는 중요한 지표입니다.',
+                    service: '실제 계정이 동영상에 좋아요를 남깁니다. 좋아요는 동영상의 품질과 인기를 나타내는 중요한 지표입니다.',
                     orderGuide: '동영상 링크를 입력해주세요.\n예시) https://www.youtube.com/watch?v=VIDEO_ID',
                     asPolicy: 'A/S 기간: 최대 2개월\n이탈 시 확인 후 A/S 처리가 진행됩니다.'
                 },
                 optionDescriptions: {
-                    'korean': `👍 <SUPERPLACE> 유튜브 좋아요 서비스
+                    'foreign': `👍 <SUPERPLACE> 유튜브 외국인 좋아요
 
 📌 서비스 설명
-100% 실제 한국인 계정이 회원님의 동영상에 좋아요를 남깁니다. 좋아요는 동영상의 품질을 나타내는 핵심 지표입니다.
+실제 외국인 계정이 회원님의 동영상에 좋아요를 남깁니다. 좋아요는 동영상의 품질을 나타내는 핵심 지표입니다.
+
+✨ 좋아요가 중요한 이유
+• 알고리즘 추천 시스템에 긍정적 신호
+• 시청자의 참여도를 나타냄
+• 검색 결과 및 추천 영상 노출 증가
+
+🔗 주문 링크 입력 방법
+동영상 링크를 복사하여 입력해주세요.
+예시) https://www.youtube.com/watch?v=VIDEO_ID
+
+💎 A/S 및 리필 정책
+A/S 기간: 최대 2개월
+이탈 시 확인 후 A/S 처리가 진행됩니다.`,
+                    'korean': `👍 <SUPERPLACE> 유튜브 한국인 좋아요
+
+📌 서비스 설명
+100% 실제 한국인 계정이 회원님의 동영상에 좋아요를 남깁니다. 한국 타겟 영상에 최적화된 좋아요 서비스입니다.
 
 ✨ 좋아요가 중요한 이유
 • 품질 신호: 좋아요 비율이 높은 영상은 유튜브 알고리즘의 긍정적인 평가를 받습니다
@@ -1312,7 +1366,212 @@ A/S 기간: 최대 3개월
 A/S 기간: 최대 2개월
 이탈 시 확인 후 A/S 처리가 진행됩니다.`
                 },
-                options: [{ name: '한국인 좋아요', price: 110, type: 'korean', descKey: 'korean' }]
+                options: [
+                    { name: '외국인 좋아요', price: 7, type: 'foreign', descKey: 'foreign' },
+                    { name: '한국인 좋아요', price: 20, type: 'korean', descKey: 'korean' }
+                ]
+            },
+            {
+                id: 'yt_comments',
+                name: '유튜브 댓글',
+                category: 'youtube',
+                description: '댓글 (한국인/외국인)',
+                detailedInfo: {
+                    service: '실제 계정이 동영상에 댓글을 작성합니다. 댓글은 시청자 참여도를 나타내는 중요한 지표입니다.',
+                    orderGuide: '동영상 링크를 입력해주세요.\n예시) https://www.youtube.com/watch?v=VIDEO_ID',
+                    asPolicy: '댓글은 삭제되지 않으나, 계정 정지 등으로 삭제 시 A/S 처리됩니다.'
+                },
+                optionDescriptions: {
+                    'korean': `💬 <SUPERPLACE> 유튜브 한국인 댓글
+
+📌 서비스 설명
+100% 실제 한국인 계정이 회원님의 동영상에 자연스러운 댓글을 남깁니다. 댓글은 시청자 참여도를 높이는 핵심 요소입니다.
+
+✨ 댓글이 중요한 이유
+• 알고리즘 우대: 댓글이 많은 영상은 유튜브 알고리즘에서 높은 평가를 받습니다
+• 커뮤니티 형성: 댓글은 시청자 간 소통과 커뮤니티 형성을 돕습니다
+• 초기 반응: 첫 댓글이 다른 시청자의 댓글 작성을 유도합니다
+
+🔗 주문 링크 입력 방법
+동영상 링크를 복사하여 입력해주세요.
+예시) https://www.youtube.com/watch?v=VIDEO_ID
+
+💎 A/S 및 리필 정책
+댓글은 삭제되지 않으나, 계정 정지 등으로 삭제 시 A/S 처리됩니다.`,
+                    'korean_male': `💬 <SUPERPLACE> 유튜브 [남성] 한국인 댓글
+
+📌 서비스 설명
+100% 실제 남성 한국인 계정이 회원님의 동영상에 자연스러운 댓글을 남깁니다. 남성 타겟 콘텐츠에 최적화된 댓글 서비스입니다.
+
+🔗 주문 링크 입력 방법
+동영상 링크를 복사하여 입력해주세요.
+예시) https://www.youtube.com/watch?v=VIDEO_ID
+
+💎 A/S 및 리필 정책
+댓글은 삭제되지 않으나, 계정 정지 등으로 삭제 시 A/S 처리됩니다.`,
+                    'korean_female': `💬 <SUPERPLACE> 유튜브 [여성] 한국인 댓글
+
+📌 서비스 설명
+100% 실제 여성 한국인 계정이 회원님의 동영상에 자연스러운 댓글을 남깁니다. 여성 타겟 콘텐츠에 최적화된 댓글 서비스입니다.
+
+🔗 주문 링크 입력 방법
+동영상 링크를 복사하여 입력해주세요.
+예시) https://www.youtube.com/watch?v=VIDEO_ID
+
+💎 A/S 및 리필 정책
+댓글은 삭제되지 않으나, 계정 정지 등으로 삭제 시 A/S 처리됩니다.`,
+                    'foreign': `💬 <SUPERPLACE> 유튜브 외국인 댓글 좋아요
+
+📌 서비스 설명
+실제 외국인 계정이 댓글에 좋아요를 남깁니다. 댓글 좋아요는 댓글의 가시성을 높이는 데 도움이 됩니다.
+
+🔗 주문 링크 입력 방법
+댓글 링크를 복사하여 입력해주세요.
+
+💎 A/S 및 리필 정책
+이탈 시 확인 후 A/S 처리가 진행됩니다.`
+                },
+                options: [
+                    { name: '한국인 댓글', price: 660, type: 'korean', descKey: 'korean' },
+                    { name: '[남성] 한국인 댓글', price: 1000, type: 'korean', target: '남성', descKey: 'korean_male' },
+                    { name: '[여성] 한국인 댓글', price: 1000, type: 'korean', target: '여성', descKey: 'korean_female' },
+                    { name: '외국인 댓글 좋아요', price: 12, type: 'foreign', descKey: 'foreign' }
+                ]
+            },
+            {
+                id: 'yt_watch_time',
+                name: '유튜브 시청시간',
+                category: 'youtube',
+                description: '동영상 시청시간',
+                detailedInfo: {
+                    service: '실제 계정이 동영상을 일정 시간 동안 시청합니다. 시청시간은 유튜브 수익화와 알고리즘에 중요한 지표입니다.',
+                    orderGuide: '동영상 링크를 입력해주세요.\n예시) https://www.youtube.com/watch?v=VIDEO_ID',
+                    asPolicy: '시청시간은 이탈이 없습니다.'
+                },
+                optionDescriptions: {
+                    'watch_time': `⏰ <SUPERPLACE> 유튜브 시청시간
+
+📌 서비스 설명
+실제 계정이 회원님의 동영상을 일정 시간 동안 시청합니다. 시청시간은 유튜브 수익화의 필수 조건이며 알고리즘에 매우 중요한 지표입니다.
+
+✨ 시청시간이 중요한 이유
+• 수익화 조건: 시청시간 4,000시간은 유튜브 수익화의 필수 조건입니다
+• 알고리즘 우대: 시청 유지율이 높은 영상은 알고리즘에서 높은 평가를 받습니다
+• 추천 시스템: 시청시간이 긴 영상은 추천 영상에 더 자주 노출됩니다
+
+🔗 주문 링크 입력 방법
+동영상 링크를 복사하여 입력해주세요.
+예시) https://www.youtube.com/watch?v=VIDEO_ID
+
+💎 A/S 및 리필 정책
+시청시간은 이탈이 없습니다.`
+                },
+                options: [{ name: '동영상 시청시간', price: 240, type: 'korean', descKey: 'watch_time' }]
+            },
+            {
+                id: 'yt_live_streaming',
+                name: '유튜브 라이브 스트리밍',
+                category: 'youtube',
+                description: '라이브 방송 시청',
+                detailedInfo: {
+                    service: '실제 계정이 라이브 스트리밍을 시청합니다. 라이브 방송의 동시 시청자 수를 증가시켜 인기 방송으로 만들 수 있습니다.',
+                    orderGuide: '라이브 스트리밍 링크를 입력해주세요.\n예시) https://www.youtube.com/watch?v=LIVE_VIDEO_ID',
+                    asPolicy: '라이브 시청은 이탈이 없습니다.'
+                },
+                optionDescriptions: {
+                    '15min': `🔴 <SUPERPLACE> 유튜브 라이브 스트리밍 (15분)
+
+📌 서비스 설명
+실제 계정이 15분 동안 라이브 스트리밍을 시청합니다. 동시 시청자 수를 증가시켜 라이브 방송의 인기도를 높입니다.
+
+🔗 주문 링크 입력 방법
+라이브 스트리밍 링크를 복사하여 입력해주세요.
+예시) https://www.youtube.com/watch?v=LIVE_VIDEO_ID
+
+💎 A/S 및 리필 정책
+라이브 시청은 이탈이 없습니다.`,
+                    '30min': `🔴 <SUPERPLACE> 유튜브 라이브 스트리밍 (30분)
+
+📌 서비스 설명
+실제 계정이 30분 동안 라이브 스트리밍을 시청합니다. 동시 시청자 수를 증가시켜 라이브 방송의 인기도를 높입니다.
+
+🔗 주문 링크 입력 방법
+라이브 스트리밍 링크를 복사하여 입력해주세요.
+예시) https://www.youtube.com/watch?v=LIVE_VIDEO_ID
+
+💎 A/S 및 리필 정책
+라이브 시청은 이탈이 없습니다.`,
+                    '1hour': `🔴 <SUPERPLACE> 유튜브 라이브 스트리밍 (1시간)
+
+📌 서비스 설명
+실제 계정이 1시간 동안 라이브 스트리밍을 시청합니다. 동시 시청자 수를 증가시켜 라이브 방송의 인기도를 높입니다.
+
+🔗 주문 링크 입력 방법
+라이브 스트리밍 링크를 복사하여 입력해주세요.
+예시) https://www.youtube.com/watch?v=LIVE_VIDEO_ID
+
+💎 A/S 및 리필 정책
+라이브 시청은 이탈이 없습니다.`,
+                    '2hours': `🔴 <SUPERPLACE> 유튜브 라이브 스트리밍 (2시간)
+
+📌 서비스 설명
+실제 계정이 2시간 동안 라이브 스트리밍을 시청합니다. 동시 시청자 수를 증가시켜 라이브 방송의 인기도를 높입니다.
+
+🔗 주문 링크 입력 방법
+라이브 스트리밍 링크를 복사하여 입력해주세요.
+예시) https://www.youtube.com/watch?v=LIVE_VIDEO_ID
+
+💎 A/S 및 리필 정책
+라이브 시청은 이탈이 없습니다.`,
+                    '3hours': `🔴 <SUPERPLACE> 유튜브 라이브 스트리밍 (3시간)
+
+📌 서비스 설명
+실제 계정이 3시간 동안 라이브 스트리밍을 시청합니다. 동시 시청자 수를 증가시켜 라이브 방송의 인기도를 높입니다.
+
+🔗 주문 링크 입력 방법
+라이브 스트리밍 링크를 복사하여 입력해주세요.
+예시) https://www.youtube.com/watch?v=LIVE_VIDEO_ID
+
+💎 A/S 및 리필 정책
+라이브 시청은 이탈이 없습니다.`
+                },
+                options: [
+                    { name: '라이브 스트리밍 (15분)', price: 10, type: 'korean', descKey: '15min' },
+                    { name: '라이브 스트리밍 (30분)', price: 20, type: 'korean', descKey: '30min' },
+                    { name: '라이브 스트리밍 (1시간)', price: 32, type: 'korean', descKey: '1hour' },
+                    { name: '라이브 스트리밍 (2시간)', price: 44, type: 'korean', descKey: '2hours' },
+                    { name: '라이브 스트리밍 (3시간)', price: 66, type: 'korean', descKey: '3hours' }
+                ]
+            },
+            {
+                id: 'yt_shares',
+                name: '유튜브 공유',
+                category: 'youtube',
+                description: '동영상 공유',
+                detailedInfo: {
+                    service: '실제 계정이 동영상을 공유합니다. 공유는 동영상의 확산과 바이럴에 중요한 역할을 합니다.',
+                    orderGuide: '동영상 링크를 입력해주세요.\n예시) https://www.youtube.com/watch?v=VIDEO_ID',
+                    asPolicy: '공유는 이탈이 없습니다.'
+                },
+                optionDescriptions: {
+                    'shares': `📤 <SUPERPLACE> 유튜브 공유
+
+📌 서비스 설명
+실제 계정이 회원님의 동영상을 공유합니다. 공유는 동영상의 확산과 바이럴 효과를 만들어내는 중요한 지표입니다.
+
+✨ 공유가 중요한 이유
+• 바이럴 효과: 공유는 동영상이 바이럴되는 시작점이 됩니다
+• 알고리즘 우대: 공유가 많은 영상은 유튜브 알고리즘에서 높은 평가를 받습니다
+• 확산 속도: 공유를 통해 더 많은 잠재 시청자에게 도달할 수 있습니다
+
+🔗 주문 링크 입력 방법
+동영상 링크를 복사하여 입력해주세요.
+예시) https://www.youtube.com/watch?v=VIDEO_ID
+
+💎 A/S 및 리필 정책
+공유는 이탈이 없습니다.`
+                },
+                options: [{ name: '공유', price: 9, type: 'korean', descKey: 'shares' }]
             }
         ];
 
