@@ -26855,72 +26855,8 @@ ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.di
                 document.getElementById('assignedOnlyOption').classList.remove('border-purple-500', 'bg-purple-50');
             }
             
-            document.getElementById('permissionsForm').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                
-                const teacherId = document.getElementById('permissionsTeacherId').value;
-                const teacherName = document.getElementById('permissionsTeacherName').textContent;
-                
-                // 라디오 버튼 값 확인
-                const accessLevel = document.querySelector('input[name="accessLevel"]:checked')?.value;
-                
-                if (!accessLevel) {
-                    alert('❌ 권한 레벨을 선택해주세요.');
-                    return;
-                }
-                
-                let permissions;
-                
-                if (accessLevel === 'all') {
-                    // 모두 다 공개
-                    permissions = {
-                        canViewAllStudents: true,
-                        canWriteDailyReports: true,
-                        assignedClasses: []
-                    };
-                    console.log('[Teachers Page] Selected: 모두 다 공개');
-                } else {
-                    // 배정된 반만 공개
-                    const assignedClasses = Array.from(document.querySelectorAll('.class-checkbox:checked'))
-                        .map(cb => parseInt(cb.value));
-                    
-                    if (assignedClasses.length === 0) {
-                        alert('❌ 최소 1개 이상의 반을 배정해주세요.');
-                        return;
-                    }
-                    
-                    permissions = {
-                        canViewAllStudents: false,
-                        canWriteDailyReports: true,
-                        assignedClasses: assignedClasses
-                    };
-                    console.log('[Teachers Page] Selected: 배정된 반만 공개, classes:', assignedClasses);
-                }
-                
-                try {
-                    const res = await fetch(\`/api/teachers/\${teacherId}/permissions\`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            directorId: currentUser.id,
-                            permissions: permissions
-                        })
-                    });
-                    
-                    const data = await res.json();
-                    
-                    if (data.success) {
-                        // 저장 후 실제 저장된 권한 확인
-                        alert(teacherName + " 선생님의 권한이 저장되었습니다!");
-                        closePermissionsModal();
-                        closePermissionsModal();
-                    } else {
-                        alert('권한 저장 실패: ' + data.error);
-                    }
-                } catch (error) {
-                    alert('권한 저장 중 오류가 발생했습니다.');
-                }
-            });
+            // 권한 저장 - 아래 37046번 줄에 더 상세한 버전이 있으므로 이 이벤트 리스너는 제거됨
+            
         <\/script>
     </body>
     </html>
