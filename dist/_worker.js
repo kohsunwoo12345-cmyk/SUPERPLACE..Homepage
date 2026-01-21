@@ -28121,28 +28121,36 @@ ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.di
             };
             
             if (userStr) {
-                currentUser = JSON.parse(userStr);
-                
-                // ✅ academy_id가 없으면 localStorage를 클리어하고 재로그인 요구
-                if (!currentUser.academy_id) {
-                    console.error('❌ CRITICAL: academy_id missing in localStorage!');
-                    console.log('Clearing localStorage and redirecting to login...');
+                try {
+                    currentUser = JSON.parse(userStr);
+                    
+                    // ✅ academy_id가 없으면 localStorage를 클리어하고 재로그인 요구
+                    if (!currentUser.academy_id) {
+                        console.error('❌ CRITICAL: academy_id missing in localStorage!');
+                        console.log('Clearing localStorage and redirecting to login...');
+                        localStorage.removeItem('user');
+                        alert('세션이 만료되었습니다. 다시 로그인해주세요.');
+                        window.location.href = '/login';
+                        throw new Error('academy_id missing'); // 스크립트 실행 중단
+                    }
+                    
+                    academyId = currentUser.academy_id; // ✅ academy_id를 사용
+                    console.log('✅ Current user:', currentUser);
+                    console.log('✅ User ID:', currentUser.id);
+                    console.log('✅ Academy ID:', academyId);
+                    console.log('✅ User Type:', currentUser.user_type);
+                } catch (e) {
+                    console.error('Failed to parse user data:', e);
                     localStorage.removeItem('user');
-                    alert('세션이 만료되었습니다. 다시 로그인해주세요.');
+                    alert('로그인 정보가 손상되었습니다. 다시 로그인해주세요.');
                     window.location.href = '/login';
-                    return;
+                    throw e; // 스크립트 실행 중단
                 }
-                
-                academyId = currentUser.academy_id; // ✅ academy_id를 사용
-                console.log('✅ Current user:', currentUser);
-                console.log('✅ User ID:', currentUser.id);
-                console.log('✅ Academy ID:', academyId);
-                console.log('✅ User Type:', currentUser.user_type);
             } else {
                 console.warn('⚠️ Not logged in - redirecting to login');
                 alert('로그인이 필요한 페이지입니다.');
                 window.location.href = '/login';
-                return;
+                throw new Error('Not logged in'); // 스크립트 실행 중단
             }
 
             // 페이지 로드 시 권한 확인 및 UI 제한
