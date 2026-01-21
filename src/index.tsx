@@ -36735,7 +36735,13 @@ app.get('/students', (c) => {
                 // ✅ 서버에서 최신 사용자 정보 가져오기
                 try {
                     console.log('🔄 Fetching latest user info from server...');
-                    const userResponse = await fetch('/api/user/profile');
+                    const userResponse = await fetch('/api/user/profile', {
+                        headers: {
+                            'X-User-Id': currentUser.id.toString()
+                        },
+                        credentials: 'include'  // 쿠키 포함
+                    });
+                    
                     if (userResponse.ok) {
                         const userData = await userResponse.json();
                         if (userData.success && userData.user) {
@@ -36750,7 +36756,19 @@ app.get('/students', (c) => {
                             currentUser = updatedUser;
                             localStorage.setItem('user', JSON.stringify(updatedUser));
                             console.log('✅ localStorage updated with latest data');
+                            
+                            // academy_id 업데이트
+                            if (currentUser.academy_id) {
+                                academyId = currentUser.academy_id;
+                            }
                         }
+                    } else if (userResponse.status === 401) {
+                        // 세션 만료
+                        console.error('❌ Session expired, redirecting to login');
+                        localStorage.removeItem('user');
+                        alert('세션이 만료되었습니다. 다시 로그인해주세요.');
+                        window.location.href = '/login';
+                        return;
                     } else {
                         console.warn('⚠️ Failed to fetch latest user info, using cached data');
                     }
