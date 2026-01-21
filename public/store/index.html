@@ -12,398 +12,479 @@
         }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Pretendard', 'Apple SD Gothic Neo', sans-serif;
-            background: #fafbfc;
-            color: #111827;
+            background: #f8f9fa;
+            color: #212529;
             min-height: 100vh;
+            line-height: 1.5;
         }
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             padding: 20px;
         }
         
         /* 헤더 */
         .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 24px;
-            padding: 48px 32px;
-            margin-bottom: 40px;
-            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
-            text-align: center;
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid #6366f1;
         }
-        .header-title {
-            font-size: 36px;
+        .logo-text {
+            font-size: 24px;
             font-weight: 800;
-            color: white;
-            margin-bottom: 12px;
-            letter-spacing: -0.5px;
+            color: #6366f1;
+            margin-bottom: 8px;
         }
         .header-subtitle {
-            font-size: 16px;
-            color: rgba(255, 255, 255, 0.9);
-            margin-bottom: 24px;
+            font-size: 13px;
+            color: #6c757d;
+            margin-bottom: 16px;
         }
         .points-display {
-            background: rgba(255, 255, 255, 0.95);
-            padding: 16px 28px;
-            border-radius: 50px;
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            font-size: 20px;
+            gap: 6px;
+            background: #f8f9fa;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #212529;
+            border: 1px solid #dee2e6;
+        }
+        .points-display span {
+            color: #6366f1;
             font-weight: 700;
-            color: #667eea;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
         
-        /* 카테고리 */
+        /* 카테고리 탭 */
         .categories {
             display: flex;
-            gap: 12px;
-            margin-bottom: 32px;
+            gap: 6px;
+            margin-bottom: 20px;
             overflow-x: auto;
-            padding-bottom: 8px;
+            padding-bottom: 4px;
         }
         .categories::-webkit-scrollbar {
-            display: none;
+            height: 3px;
+        }
+        .categories::-webkit-scrollbar-thumb {
+            background: #dee2e6;
+            border-radius: 2px;
         }
         .category-btn {
-            padding: 12px 28px;
-            border: 2px solid #e5e7eb;
+            padding: 8px 16px;
+            border: 1px solid #dee2e6;
             background: white;
-            border-radius: 50px;
+            border-radius: 6px;
             cursor: pointer;
-            transition: all 0.3s;
-            font-size: 15px;
-            font-weight: 600;
-            color: #6b7280;
+            transition: all 0.2s;
+            font-size: 13px;
+            font-weight: 500;
+            color: #495057;
             white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
         .category-btn:hover {
-            border-color: #667eea;
-            color: #667eea;
-            transform: translateY(-2px);
+            border-color: #6366f1;
+            color: #6366f1;
         }
         .category-btn.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-color: transparent;
+            background: #6366f1;
+            border-color: #6366f1;
             color: white;
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+        .category-icon {
+            width: 18px;
+            height: 18px;
+            border-radius: 4px;
         }
         
-        /* 상품 그리드 */
+        /* 제품 그리드 - 작게 */
         .products-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-            gap: 24px;
-            margin-bottom: 60px;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
         }
         .product-card {
             background: white;
-            border: 2px solid #f3f4f6;
-            border-radius: 20px;
-            padding: 0;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            overflow: hidden;
-            position: relative;
-        }
-        .product-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 6px;
-            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-        .product-card:hover::before {
-            opacity: 1;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 16px;
+            transition: all 0.2s;
+            cursor: pointer;
         }
         .product-card:hover {
-            border-color: #667eea;
-            box-shadow: 0 12px 40px rgba(102, 126, 234, 0.15);
-            transform: translateY(-4px);
+            border-color: #6366f1;
+            box-shadow: 0 2px 8px rgba(99, 102, 241, 0.1);
+            transform: translateY(-2px);
         }
-        .product-image {
-            width: 100%;
-            height: 220px;
-            object-fit: cover;
+        .product-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
         }
-        .product-content {
-            padding: 24px;
+        .product-logo {
+            width: 36px;
+            height: 36px;
+            border-radius: 6px;
+            flex-shrink: 0;
         }
         .product-name {
-            font-size: 20px;
-            font-weight: 700;
-            color: #111827;
-            margin-bottom: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            color: #212529;
+            line-height: 1.3;
         }
         .product-description {
-            font-size: 14px;
-            color: #6b7280;
-            line-height: 1.6;
-            margin-bottom: 20px;
-            min-height: 44px;
+            font-size: 12px;
+            color: #6c757d;
+            line-height: 1.4;
+            margin-bottom: 10px;
+            height: 34px;
+            overflow: hidden;
+        }
+        .product-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         .product-price {
-            font-size: 24px;
-            font-weight: 800;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 16px;
-        }
-        .product-options-count {
-            display: inline-block;
-            background: linear-gradient(135deg, #f0f4ff 0%, #faf5ff 100%);
-            color: #667eea;
-            padding: 8px 16px;
-            border-radius: 50px;
-            font-size: 13px;
-            font-weight: 600;
-            margin-bottom: 20px;
-        }
-        .buy-btn {
-            width: 100%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 16px;
-            border-radius: 12px;
             font-size: 16px;
             font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s;
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+            color: #6366f1;
         }
-        .buy-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
-        }
-        .buy-btn:active {
-            transform: translateY(0);
+        .product-options-badge {
+            font-size: 11px;
+            color: #6c757d;
+            background: #f8f9fa;
+            padding: 4px 8px;
+            border-radius: 4px;
         }
         
-        /* 모달 */
+        /* 주문 폼 모달 */
         .modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(8px);
+            background: rgba(0, 0, 0, 0.5);
             z-index: 10000;
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 20px;
-            animation: fadeIn 0.2s ease-out;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
         }
         .modal-content {
             background: white;
-            border-radius: 24px;
-            padding: 36px;
-            max-width: 600px;
+            border-radius: 12px;
+            padding: 28px;
+            max-width: 500px;
             width: 100%;
-            max-height: 90vh;
+            max-height: 85vh;
             overflow-y: auto;
-            animation: slideUp 0.3s ease-out;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-        }
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(40px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
         }
         .modal-header {
-            font-size: 28px;
-            font-weight: 800;
-            color: #111827;
-            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #dee2e6;
         }
-        .modal-subheader {
-            font-size: 15px;
-            color: #6b7280;
-            margin-bottom: 28px;
+        .modal-logo {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+        }
+        .modal-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #212529;
+            flex: 1;
+        }
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #6c757d;
+            cursor: pointer;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+        .modal-close:hover {
+            background: #f8f9fa;
         }
         
         /* 폼 스타일 */
         .form-group {
-            margin-bottom: 24px;
+            margin-bottom: 20px;
         }
         .form-label {
             display: block;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 600;
-            color: #374151;
+            color: #495057;
             margin-bottom: 8px;
         }
-        .form-input, .form-select {
-            width: 100%;
-            padding: 14px 16px;
-            border: 2px solid #e5e7eb;
-            border-radius: 12px;
-            font-size: 15px;
-            transition: all 0.2s;
-            font-family: inherit;
+        .form-label .required {
+            color: #dc3545;
+            margin-left: 2px;
         }
-        .form-input:focus, .form-select:focus {
+        .form-select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            font-size: 14px;
+            color: #212529;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .form-select:focus {
             outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+        .form-input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            font-size: 14px;
+            color: #212529;
+            transition: all 0.2s;
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
         }
         .form-input::placeholder {
-            color: #9ca3af;
+            color: #adb5bd;
         }
+        
+        /* 수량 조절 */
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .quantity-btn {
+            width: 36px;
+            height: 36px;
+            border: 1px solid #dee2e6;
+            background: white;
+            border-radius: 6px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .quantity-btn:hover {
+            border-color: #6366f1;
+            color: #6366f1;
+        }
+        .quantity-btn:active {
+            transform: scale(0.95);
+        }
+        .quantity-input {
+            width: 80px;
+            padding: 8px;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 15px;
+            font-weight: 600;
+        }
+        
+        /* 가격 표시 */
         .price-info {
-            background: linear-gradient(135deg, #f0f4ff 0%, #faf5ff 100%);
-            padding: 20px;
-            border-radius: 16px;
-            margin-bottom: 24px;
+            background: #f8f9fa;
+            padding: 16px;
+            border-radius: 8px;
+            margin: 20px 0;
         }
         .price-row {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 12px;
-            font-size: 15px;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 14px;
         }
         .price-row:last-child {
             margin-bottom: 0;
             padding-top: 12px;
-            border-top: 2px solid rgba(102, 126, 234, 0.2);
-            font-size: 18px;
-            font-weight: 700;
-            color: #667eea;
-        }
-        .price-label {
-            color: #6b7280;
-        }
-        .price-value {
-            font-weight: 600;
-            color: #111827;
-        }
-        
-        /* 버튼 그룹 */
-        .button-group {
-            display: flex;
-            gap: 12px;
-        }
-        .btn {
-            flex: 1;
-            padding: 16px;
-            border: none;
-            border-radius: 12px;
+            border-top: 1px solid #dee2e6;
             font-size: 16px;
             font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s;
         }
-        .btn-secondary {
-            background: #f3f4f6;
-            color: #6b7280;
+        .price-label {
+            color: #6c757d;
         }
-        .btn-secondary:hover {
-            background: #e5e7eb;
+        .price-value {
+            color: #212529;
+            font-weight: 600;
         }
+        .price-total {
+            color: #6366f1;
+            font-size: 20px;
+        }
+        
+        /* 버튼 */
         .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            width: 100%;
+            background: #6366f1;
             color: white;
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+            border: none;
+            padding: 14px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
         }
         .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+            background: #4f46e5;
+        }
+        .btn-primary:active {
+            transform: scale(0.98);
         }
         .btn-primary:disabled {
-            opacity: 0.5;
+            background: #dee2e6;
             cursor: not-allowed;
-            transform: none;
         }
         
         /* 주문 내역 */
         .my-orders {
-            margin-top: 80px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+            margin-top: 32px;
         }
         .my-orders h2 {
-            font-size: 28px;
-            font-weight: 800;
-            color: #111827;
-            margin-bottom: 24px;
+            font-size: 18px;
+            font-weight: 700;
+            color: #212529;
+            margin-bottom: 16px;
         }
         .order-item {
-            background: white;
-            border: 2px solid #f3f4f6;
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 16px;
-            transition: all 0.2s;
-        }
-        .order-item:hover {
-            border-color: #e5e7eb;
-        }
-        .order-header {
             display: flex;
             justify-content: space-between;
-            align-items: start;
-            margin-bottom: 12px;
+            align-items: center;
+            padding: 12px;
+            border-bottom: 1px solid #f8f9fa;
+        }
+        .order-item:last-child {
+            border-bottom: none;
+        }
+        .order-info {
+            flex: 1;
         }
         .order-name {
-            font-size: 16px;
+            font-size: 14px;
             font-weight: 600;
-            color: #111827;
+            color: #212529;
+            margin-bottom: 4px;
+        }
+        .order-date {
+            font-size: 12px;
+            color: #6c757d;
         }
         .order-status {
-            padding: 6px 12px;
-            border-radius: 50px;
+            padding: 4px 10px;
+            border-radius: 4px;
             font-size: 12px;
             font-weight: 600;
         }
         .status-pending {
-            background: #fef3c7;
-            color: #92400e;
+            background: #fff3cd;
+            color: #856404;
         }
         .status-processing {
-            background: #dbeafe;
-            color: #1e40af;
+            background: #d1ecf1;
+            color: #0c5460;
         }
         .status-completed {
-            background: #d1fae5;
-            color: #065f46;
-        }
-        .status-failed {
-            background: #fee2e2;
-            color: #991b1b;
-        }
-        .order-details {
-            font-size: 14px;
-            color: #6b7280;
+            background: #d4edda;
+            color: #155724;
         }
         
+        /* 접근 거부 */
+        .access-denied {
+            background: white;
+            padding: 48px 32px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #dee2e6;
+        }
+        .access-denied h2 {
+            font-size: 24px;
+            color: #212529;
+            margin-bottom: 12px;
+        }
+        .access-denied p {
+            font-size: 15px;
+            color: #6c757d;
+            margin-bottom: 20px;
+        }
+        .back-btn {
+            display: inline-block;
+            padding: 10px 28px;
+            background: #6366f1;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .back-btn:hover {
+            background: #4f46e5;
+        }
+        
+        /* 반응형 */
         @media (max-width: 768px) {
-            .header {
-                padding: 32px 24px;
+            .container {
+                padding: 12px;
             }
-            .header-title {
-                font-size: 28px;
+            .header {
+                padding: 16px;
             }
             .products-grid {
-                grid-template-columns: 1fr;
+                grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+                gap: 12px;
+            }
+            .product-card {
+                padding: 12px;
+            }
+            .product-logo {
+                width: 30px;
+                height: 30px;
+            }
+            .product-name {
+                font-size: 13px;
             }
             .modal-content {
-                padding: 24px;
+                padding: 20px;
             }
         }
     </style>
@@ -412,34 +493,68 @@
     <div class="container">
         <!-- 헤더 -->
         <div class="header">
-            <div class="header-title">🛒 소셜 트래픽 스토어</div>
-            <div class="header-subtitle">인스타그램 팔로워, 좋아요, 조회수 등 다양한 소셜 서비스</div>
+            <div class="logo-text">SUPERPLACE</div>
+            <div class="header-subtitle">소셜 미디어 마케팅 서비스</div>
             <div class="points-display">
-                💰 보유 포인트: <span id="points-balance">0</span> P
+                보유 포인트: <span id="points-balance">0</span> P
             </div>
         </div>
 
         <div id="store-content">
             <!-- 카테고리 -->
             <div class="categories">
-                <button class="category-btn active" data-category="all">전체</button>
-                <button class="category-btn" data-category="instagram">📸 인스타그램</button>
-                <button class="category-btn" data-category="youtube">▶️ 유튜브</button>
-                <button class="category-btn" data-category="facebook">👥 페이스북</button>
-                <button class="category-btn" data-category="threads">🧵 쓰레드</button>
-                <button class="category-btn" data-category="naver">🟢 네이버</button>
+                <button class="category-btn active" data-category="all">
+                    <span>전체</span>
+                </button>
+                <button class="category-btn" data-category="instagram">
+                    <svg class="category-icon" viewBox="0 0 24 24" fill="none">
+                        <rect width="24" height="24" rx="5" fill="url(#instagram-gradient)"/>
+                        <defs>
+                            <linearGradient id="instagram-gradient" x1="0" y1="0" x2="24" y2="24">
+                                <stop offset="0%" stop-color="#f09433"/>
+                                <stop offset="25%" stop-color="#e6683c"/>
+                                <stop offset="50%" stop-color="#dc2743"/>
+                                <stop offset="75%" stop-color="#cc2366"/>
+                                <stop offset="100%" stop-color="#bc1888"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                    <span>인스타그램</span>
+                </button>
+                <button class="category-btn" data-category="youtube">
+                    <svg class="category-icon" viewBox="0 0 24 24">
+                        <rect width="24" height="24" rx="5" fill="#FF0000"/>
+                    </svg>
+                    <span>유튜브</span>
+                </button>
+                <button class="category-btn" data-category="facebook">
+                    <svg class="category-icon" viewBox="0 0 24 24">
+                        <rect width="24" height="24" rx="5" fill="#1877F2"/>
+                    </svg>
+                    <span>페이스북</span>
+                </button>
+                <button class="category-btn" data-category="threads">
+                    <svg class="category-icon" viewBox="0 0 24 24">
+                        <rect width="24" height="24" rx="5" fill="#000000"/>
+                    </svg>
+                    <span>쓰레드</span>
+                </button>
+                <button class="category-btn" data-category="naver">
+                    <svg class="category-icon" viewBox="0 0 24 24">
+                        <rect width="24" height="24" rx="5" fill="#03C75A"/>
+                    </svg>
+                    <span>네이버</span>
+                </button>
             </div>
 
             <!-- 상품 그리드 -->
-            <div class="products-grid" id="products-grid">
-                <!-- 동적으로 로드 -->
-            </div>
+            <div class="products-grid" id="products-grid"></div>
 
             <!-- 주문 내역 -->
             <div class="my-orders">
                 <h2>최근 주문 내역</h2>
                 <div id="orders-list">
-                    <!-- 동적으로 로드 -->
+                    <p style="text-align: center; color: #6c757d; padding: 16px; font-size: 14px;">주문 내역이 없습니다.</p>
                 </div>
             </div>
         </div>
@@ -450,206 +565,232 @@
         let allProducts = [];
         let currentCategory = 'all';
         
-        // 인스타그램 제품 정의 (이미지 포함)
+        // SVG 로고 정의
+        const categoryLogos = {
+            instagram: `<svg width="36" height="36" viewBox="0 0 24 24"><rect width="24" height="24" rx="5" fill="url(#ig-grad)"/><defs><linearGradient id="ig-grad" x1="0" y1="0" x2="24" y2="24"><stop offset="0%" stop-color="#f09433"/><stop offset="25%" stop-color="#e6683c"/><stop offset="50%" stop-color="#dc2743"/><stop offset="75%" stop-color="#cc2366"/><stop offset="100%" stop-color="#bc1888"/></linearGradient></defs></svg>`,
+            youtube: `<svg width="36" height="36" viewBox="0 0 24 24"><rect width="24" height="24" rx="5" fill="#FF0000"/></svg>`,
+            facebook: `<svg width="36" height="36" viewBox="0 0 24 24"><rect width="24" height="24" rx="5" fill="#1877F2"/></svg>`,
+            threads: `<svg width="36" height="36" viewBox="0 0 24 24"><rect width="24" height="24" rx="5" fill="#000000"/></svg>`,
+            naver: `<svg width="36" height="36" viewBox="0 0 24 24"><rect width="24" height="24" rx="5" fill="#03C75A"/></svg>`
+        };
+
+        // 제품 데이터
         const instagramProducts = [
             {
                 id: 'ig_follower',
-                name: '인스타그램 팔로워',
+                name: '팔로워',
                 category: 'instagram',
-                description: '실제 한국인 팔로워부터 타겟팅된 팔로워까지',
-                image: 'https://www.genspark.ai/api/files/s/FiTBsr2a',
+                description: '한국인 팔로워 (성별/연령 타겟 가능)',
                 options: [
                     { name: '실제 한국인 팔로워', price: 220 },
                     { name: '[남성] 한국인 팔로워', price: 280 },
                     { name: '[여성] 한국인 팔로워', price: 280 },
                     { name: '[20대] 한국인 팔로워', price: 280 },
                     { name: '[30대] 한국인 팔로워', price: 280 },
-                    { name: '[20대/남성] 실제 한국인 팔로워', price: 440 },
-                    { name: '[20대/여성] 실제 한국인 팔로워', price: 440 },
-                    { name: '[30대/남성] 실제 한국인 팔로워', price: 440 },
-                    { name: '[30대/여성] 실제 한국인 팔로워', price: 440 },
+                    { name: '[20대/남성] 한국인 팔로워', price: 440 },
+                    { name: '[20대/여성] 한국인 팔로워', price: 440 },
+                    { name: '[30대/남성] 한국인 팔로워', price: 440 },
+                    { name: '[30대/여성] 한국인 팔로워', price: 440 },
                     { name: '외국인 팔로워', price: 20 }
                 ]
             },
             {
                 id: 'ig_likes',
-                name: '인스타그램 좋아요',
+                name: '좋아요',
                 category: 'instagram',
-                description: '게시물 좋아요 - 외국인부터 타겟 한국인까지',
-                image: 'https://www.genspark.ai/api/files/s/FiTBsr2a',
+                description: '게시물 좋아요 (타겟 가능)',
                 options: [
                     { name: '외국인 좋아요', price: 2.5 },
                     { name: '한국인 좋아요', price: 25 },
-                    { name: '[남성] 실제 한국인 좋아요', price: 33 },
-                    { name: '[여성] 실제 한국인 좋아요', price: 33 },
-                    { name: '[20대] 실제 한국인 좋아요', price: 33 },
-                    { name: '[30대] 실제 한국인 좋아요', price: 33 },
-                    { name: '[20대/남성] 실제 한국인 좋아요', price: 44 },
-                    { name: '[20대/여성] 실제 한국인 좋아요', price: 44 },
-                    { name: '[30대/남성] 실제 한국인 좋아요', price: 44 },
-                    { name: '[30대/여성] 실제 한국인 좋아요', price: 44 }
+                    { name: '[남성] 한국인 좋아요', price: 33 },
+                    { name: '[여성] 한국인 좋아요', price: 33 },
+                    { name: '[20대] 한국인 좋아요', price: 33 },
+                    { name: '[30대] 한국인 좋아요', price: 33 },
+                    { name: '[20대/남성] 한국인 좋아요', price: 44 },
+                    { name: '[20대/여성] 한국인 좋아요', price: 44 },
+                    { name: '[30대/남성] 한국인 좋아요', price: 44 },
+                    { name: '[30대/여성] 한국인 좋아요', price: 44 }
                 ]
             },
             {
                 id: 'ig_views',
-                name: '인스타그램 조회수',
+                name: '조회수',
                 category: 'instagram',
-                description: '실제 한국인 조회수',
-                image: 'https://www.genspark.ai/api/files/s/FiTBsr2a',
-                options: [
-                    { name: '실제 한국인 조회수', price: 0.4 }
-                ]
-            },
-            {
-                id: 'ig_engagement',
-                name: '인스타그램 공유/저장',
-                category: 'instagram',
-                description: '게시물 공유, 저장, 노출 등',
-                image: 'https://www.genspark.ai/api/files/s/FiTBsr2a',
-                options: [
-                    { name: '한국인 게시물 공유', price: 1 },
-                    { name: '한국인 게시물 저장', price: 4 },
-                    { name: '일반 게시물 저장', price: 0.6 },
-                    { name: '일반 게시물 노출/도달', price: 0.6 },
-                    { name: '일반 게시물 프로필방문', price: 0.9 }
-                ]
+                description: '릴스 조회수',
+                options: [{ name: '한국인 릴스 조회수', price: 2 }]
             },
             {
                 id: 'ig_comments',
-                name: '인스타그램 댓글',
+                name: '댓글',
                 category: 'instagram',
-                description: '실제 한국인 댓글 - 타겟팅 가능',
-                image: 'https://www.genspark.ai/api/files/s/FiTBsr2a',
+                description: '한국인 댓글 (타겟 가능)',
                 options: [
-                    { name: '실제 한국인 댓글', price: 280 },
-                    { name: '한국인 커스텀 댓글', price: 280 },
-                    { name: '[남성] 실제 한국인 댓글', price: 420 },
-                    { name: '[여성] 실제 한국인 댓글', price: 420 },
-                    { name: '[20대] 실제 한국인 댓글', price: 420 },
-                    { name: '[30대] 실제 한국인 댓글', price: 420 },
-                    { name: '[20대/남성] 실제 한국인 댓글', price: 480 },
-                    { name: '[20대/여성] 실제 한국인 댓글', price: 480 },
-                    { name: '[30대/남성] 실제 한국인 댓글', price: 480 },
-                    { name: '[30대/여성] 실제 한국인 댓글', price: 480 }
+                    { name: '한국인 댓글', price: 880 },
+                    { name: '[남성] 한국인 댓글', price: 1100 },
+                    { name: '[여성] 한국인 댓글', price: 1100 },
+                    { name: '[20대] 한국인 댓글', price: 1100 },
+                    { name: '[30대] 한국인 댓글', price: 1100 }
                 ]
+            },
+            {
+                id: 'ig_saves',
+                name: '저장',
+                category: 'instagram',
+                description: '게시물 저장',
+                options: [{ name: '한국인 저장', price: 88 }]
             }
+        ];
+
+        const youtubeProducts = [
+            {
+                id: 'yt_subscribers',
+                name: '구독자',
+                category: 'youtube',
+                description: '한국인 구독자',
+                options: [{ name: '한국인 구독자', price: 440 }]
+            },
+            {
+                id: 'yt_views',
+                name: '조회수',
+                category: 'youtube',
+                description: '동영상 조회수',
+                options: [{ name: '한국인 조회수', price: 11 }]
+            },
+            {
+                id: 'yt_likes',
+                name: '좋아요',
+                category: 'youtube',
+                description: '동영상 좋아요',
+                options: [{ name: '한국인 좋아요', price: 110 }]
+            }
+        ];
+
+        const facebookProducts = [
+            {
+                id: 'fb_followers',
+                name: '팔로워',
+                category: 'facebook',
+                description: '페이지 팔로워',
+                options: [{ name: '한국인 팔로워', price: 220 }]
+            },
+            {
+                id: 'fb_likes',
+                name: '좋아요',
+                category: 'facebook',
+                description: '게시물 좋아요',
+                options: [{ name: '한국인 좋아요', price: 55 }]
+            }
+        ];
+
+        const threadsProducts = [
+            {
+                id: 'th_followers',
+                name: '팔로워',
+                category: 'threads',
+                description: '쓰레드 팔로워',
+                options: [{ name: '한국인 팔로워', price: 220 }]
+            },
+            {
+                id: 'th_likes',
+                name: '좋아요',
+                category: 'threads',
+                description: '게시물 좋아요',
+                options: [{ name: '한국인 좋아요', price: 44 }]
+            }
+        ];
+
+        const naverProducts = [
+            {
+                id: 'nv_blog_views',
+                name: '블로그 조회수',
+                category: 'naver',
+                description: '블로그 포스팅',
+                options: [{ name: '블로그 조회수', price: 11 }]
+            },
+            {
+                id: 'nv_cafe_views',
+                name: '카페 조회수',
+                category: 'naver',
+                description: '카페 게시글',
+                options: [{ name: '카페 조회수', price: 11 }]
+            }
+        ];
+
+        allProducts = [
+            ...instagramProducts,
+            ...youtubeProducts,
+            ...facebookProducts,
+            ...threadsProducts,
+            ...naverProducts
         ];
 
         // 초기화
         async function init() {
-            await loadPoints();
-            await loadProducts();
-            await loadOrders();
+            try {
+                await loadUserPoints();
+                renderProducts(allProducts);
+                setupCategoryButtons();
+            } catch (error) {
+                console.error('초기화 실패:', error);
+                showAccessDenied();
+            }
         }
 
-        // 포인트 조회
-        async function loadPoints() {
+        // 사용자 포인트 로드
+        async function loadUserPoints() {
             try {
-                const res = await fetch('/api/points/balance');
-                const data = await res.json();
-                if (data.success) {
+                const response = await fetch('/api/store/balance', {
+                    headers: { 'x-api-key': API_KEY }
+                });
+                if (response.ok) {
+                    const data = await response.json();
                     document.getElementById('points-balance').textContent = data.balance.toLocaleString();
                 }
-            } catch (err) {
-                console.error('Failed to load points:', err);
+            } catch (error) {
+                console.error('포인트 로드 실패:', error);
             }
         }
 
-        // 상품 목록 조회
-        async function loadProducts() {
-            try {
-                allProducts = [...instagramProducts];
-                
-                // DB 제품도 불러오기 (다른 카테고리용)
-                try {
-                    const res = await fetch('/api/store/products');
-                    const data = await res.json();
-                    
-                    if (data.success && data.products) {
-                        const otherProducts = data.products.filter(p => p.category !== 'instagram');
-                        allProducts = [...allProducts, ...otherProducts];
-                    }
-                } catch (err) {
-                    console.log('DB products not available');
-                }
-                
-                renderProducts();
-            } catch (err) {
-                console.error('Failed to load products:', err);
-                allProducts = [...instagramProducts];
-                renderProducts();
-            }
-        }
-
-        // 상품 렌더링
-        function renderProducts() {
+        // 제품 렌더링
+        function renderProducts(products) {
             const grid = document.getElementById('products-grid');
-            const filtered = currentCategory === 'all' 
-                ? allProducts 
-                : allProducts.filter(p => p.category === currentCategory);
-
-            if (filtered.length === 0) {
-                grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; padding: 60px; color: #9ca3af; font-size: 16px;">상품이 없습니다.</p>';
-                return;
-            }
-
-            grid.innerHTML = filtered.map(product => {
-                if (product.options) {
-                    // 옵션이 있는 제품 (인스타그램)
-                    const minPrice = Math.min(...product.options.map(o => o.price));
-                    const maxPrice = Math.max(...product.options.map(o => o.price));
-                    const priceText = minPrice === maxPrice ? 
-                        minPrice.toLocaleString() + '원' : 
-                        minPrice.toLocaleString() + '원 ~ ' + maxPrice.toLocaleString() + '원';
-                    
-                    return `
-                        <div class="product-card">
-                            <img src="${product.image}" alt="${product.name}" class="product-image">
-                            <div class="product-content">
-                                <div class="product-name">${product.name}</div>
-                                <div class="product-description">${product.description}</div>
-                                <div class="product-price">${priceText}</div>
-                                <div class="product-options-count">
-                                    ${product.options.length}개 옵션
-                                </div>
-                                <button class="buy-btn" onclick="openPurchaseModal('${product.id}')">
-                                    옵션 선택하고 구매하기
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                } else {
-                    // 일반 제품
-                    return `
-                        <div class="product-card">
-                            <div class="product-content">
-                                <div class="product-name">${product.name}</div>
-                                <div class="product-description">${product.description}</div>
-                                <div class="product-price">${product.price.toLocaleString()}원</div>
-                                <button class="buy-btn" onclick="buyProduct('${product.id}')">
-                                    구매하기
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                }
-            }).join('');
+            grid.innerHTML = products.map(product => `
+                <div class="product-card" onclick="openOrderForm('${product.id}')">
+                    <div class="product-header">
+                        ${categoryLogos[product.category]}
+                        <div class="product-name">${product.name}</div>
+                    </div>
+                    <div class="product-description">${product.description}</div>
+                    <div class="product-footer">
+                        <div class="product-price">${product.options[0].price.toLocaleString()}P~</div>
+                        <div class="product-options-badge">${product.options.length}개 옵션</div>
+                    </div>
+                </div>
+            `).join('');
         }
 
-        // 카테고리 버튼 이벤트
-        document.addEventListener('DOMContentLoaded', () => {
+        // 카테고리 버튼 설정
+        function setupCategoryButtons() {
             document.querySelectorAll('.category-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
                     document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
-                    currentCategory = btn.dataset.category;
-                    renderProducts();
+                    
+                    const category = btn.dataset.category;
+                    currentCategory = category;
+                    
+                    if (category === 'all') {
+                        renderProducts(allProducts);
+                    } else {
+                        const filtered = allProducts.filter(p => p.category === category);
+                        renderProducts(filtered);
+                    }
                 });
             });
-        });
+        }
 
-        // 구매 모달 열기 (인스타그램 옵션 선택 폼)
-        function openPurchaseModal(productId) {
+        // 주문 폼 열기
+        function openOrderForm(productId) {
             const product = allProducts.find(p => p.id === productId);
             if (!product) return;
 
@@ -657,185 +798,151 @@
             modal.className = 'modal-overlay';
             modal.innerHTML = `
                 <div class="modal-content">
-                    <div class="modal-header">${product.name}</div>
-                    <div class="modal-subheader">${product.description}</div>
-                    
-                    <div class="form-group">
-                        <label class="form-label">옵션 선택</label>
-                        <select class="form-select" id="option-select">
-                            <option value="">옵션을 선택하세요</option>
-                            ${product.options.map((opt, idx) => 
-                                `<option value="${idx}">${opt.name} - ${opt.price.toLocaleString()}원</option>`
-                            ).join('')}
-                        </select>
+                    <div class="modal-header">
+                        ${categoryLogos[product.category]}
+                        <div class="modal-title">${product.name}</div>
+                        <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">×</button>
                     </div>
                     
-                    <div class="form-group">
-                        <label class="form-label">인스타그램 URL</label>
-                        <input type="text" class="form-input" id="target-url" 
-                               placeholder="예: https://instagram.com/yourpage">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label">수량</label>
-                        <input type="number" class="form-input" id="quantity" 
-                               value="1000" min="1" step="1">
-                    </div>
-                    
-                    <div class="price-info" id="price-info" style="display: none;">
-                        <div class="price-row">
-                            <span class="price-label">단가</span>
-                            <span class="price-value" id="unit-price">-</span>
+                    <form id="order-form">
+                        <div class="form-group">
+                            <label class="form-label">옵션 선택<span class="required">*</span></label>
+                            <select class="form-select" id="option-select" required onchange="updatePrice()">
+                                <option value="">옵션을 선택하세요</option>
+                                ${product.options.map((opt, idx) => `
+                                    <option value="${idx}" data-price="${opt.price}">
+                                        ${opt.name} - ${opt.price.toLocaleString()}P/개
+                                    </option>
+                                `).join('')}
+                            </select>
                         </div>
-                        <div class="price-row">
-                            <span class="price-label">수량</span>
-                            <span class="price-value" id="quantity-display">-</span>
+
+                        <div class="form-group">
+                            <label class="form-label">수량<span class="required">*</span></label>
+                            <div class="quantity-controls">
+                                <button type="button" class="quantity-btn" onclick="changeQuantity(-1)">-</button>
+                                <input type="number" class="quantity-input" id="quantity" value="1" min="1" required onchange="updatePrice()">
+                                <button type="button" class="quantity-btn" onclick="changeQuantity(1)">+</button>
+                            </div>
                         </div>
-                        <div class="price-row">
-                            <span class="price-label">총 금액</span>
-                            <span class="price-value" id="total-price">-</span>
+
+                        <div class="form-group">
+                            <label class="form-label">대상 URL<span class="required">*</span></label>
+                            <input type="url" class="form-input" id="target-url" placeholder="https://instagram.com/..." required>
+                            <div style="font-size: 12px; color: #6c757d; margin-top: 6px;">프로필 또는 게시물 링크를 입력하세요</div>
                         </div>
-                    </div>
-                    
-                    <div class="button-group">
-                        <button class="btn btn-secondary" onclick="closeModal()">취소</button>
-                        <button class="btn btn-primary" id="purchase-btn" disabled 
-                                onclick="completePurchase('${productId}')">구매하기</button>
-                    </div>
+
+                        <div class="price-info">
+                            <div class="price-row">
+                                <span class="price-label">단가</span>
+                                <span class="price-value" id="unit-price">0 P</span>
+                            </div>
+                            <div class="price-row">
+                                <span class="price-label">수량</span>
+                                <span class="price-value" id="quantity-display">1개</span>
+                            </div>
+                            <div class="price-row">
+                                <span class="price-label">총 금액</span>
+                                <span class="price-total" id="total-price">0 P</span>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn-primary">주문하기</button>
+                    </form>
                 </div>
             `;
             
+            modal.dataset.productId = productId;
             document.body.appendChild(modal);
-            
-            // 옵션, 수량 변경 시 가격 업데이트
-            const optionSelect = modal.querySelector('#option-select');
-            const quantityInput = modal.querySelector('#quantity');
-            const purchaseBtn = modal.querySelector('#purchase-btn');
-            
-            function updatePrice() {
-                const optionIdx = optionSelect.value;
-                const quantity = parseInt(quantityInput.value) || 0;
-                
-                if (optionIdx !== '' && quantity > 0) {
-                    const option = product.options[parseInt(optionIdx)];
-                    const total = option.price * quantity;
-                    
-                    modal.querySelector('#unit-price').textContent = option.price.toLocaleString() + '원';
-                    modal.querySelector('#quantity-display').textContent = quantity.toLocaleString() + '개';
-                    modal.querySelector('#total-price').textContent = total.toLocaleString() + '원';
-                    modal.querySelector('#price-info').style.display = 'block';
-                    purchaseBtn.disabled = false;
-                } else {
-                    modal.querySelector('#price-info').style.display = 'none';
-                    purchaseBtn.disabled = true;
-                }
-            }
-            
-            optionSelect.addEventListener('change', updatePrice);
-            quantityInput.addEventListener('input', updatePrice);
+
+            // 폼 제출 이벤트
+            document.getElementById('order-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                submitOrder(productId);
+            });
         }
 
-        // 모달 닫기
-        function closeModal() {
-            const modal = document.querySelector('.modal-overlay');
-            if (modal) modal.remove();
+        // 수량 변경
+        function changeQuantity(delta) {
+            const input = document.getElementById('quantity');
+            const newValue = Math.max(1, parseInt(input.value || 1) + delta);
+            input.value = newValue;
+            updatePrice();
         }
 
-        // 구매 완료
-        async function completePurchase(productId) {
+        // 가격 업데이트
+        function updatePrice() {
+            const select = document.getElementById('option-select');
+            const quantity = parseInt(document.getElementById('quantity').value || 1);
+            
+            if (!select || !select.value) return;
+            
+            const option = select.options[select.selectedIndex];
+            const price = parseFloat(option.dataset.price);
+            const total = price * quantity;
+            
+            document.getElementById('unit-price').textContent = `${price.toLocaleString()} P`;
+            document.getElementById('quantity-display').textContent = `${quantity}개`;
+            document.getElementById('total-price').textContent = `${total.toLocaleString()} P`;
+        }
+
+        // 주문 제출
+        async function submitOrder(productId) {
             const product = allProducts.find(p => p.id === productId);
-            const optionIdx = document.getElementById('option-select').value;
-            const targetUrl = document.getElementById('target-url').value;
+            const selectElement = document.getElementById('option-select');
+            const optionIndex = parseInt(selectElement.value);
+            const option = product.options[optionIndex];
             const quantity = parseInt(document.getElementById('quantity').value);
-            
-            if (optionIdx === '' || !targetUrl || !quantity) {
-                alert('모든 항목을 입력해주세요.');
+            const url = document.getElementById('target-url').value.trim();
+
+            if (!option || !url) {
+                alert('모든 필드를 입력해주세요.');
                 return;
             }
-            
-            const option = product.options[parseInt(optionIdx)];
-            const totalCost = option.price * quantity;
-            
-            if (!confirm(`${product.name} - ${option.name}\n수량: ${quantity.toLocaleString()}개\n총 ${totalCost.toLocaleString()}원을 결제하시겠습니까?`)) {
-                return;
-            }
-            
+
             try {
-                const res = await fetch('/api/store/purchase-instagram', {
+                const response = await fetch('/api/store/purchase', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-api-key': API_KEY
+                    },
                     body: JSON.stringify({
-                        productKey: productId,
-                        optionName: option.name,
-                        price: option.price,
+                        product_id: productId,
+                        option_name: option.name,
                         quantity: quantity,
-                        targetUrl: targetUrl,
-                        apiKey: API_KEY
+                        price_per_unit: option.price,
+                        target_url: url
                     })
                 });
+
+                const data = await response.json();
                 
-                const data = await res.json();
-                
-                if (data.success) {
-                    alert(`구매 완료!\n사용 포인트: ${totalCost.toLocaleString()}원\n남은 포인트: ${data.remainingPoints.toLocaleString()}원`);
-                    closeModal();
-                    await loadPoints();
-                    await loadOrders();
+                if (response.ok) {
+                    alert('주문이 완료되었습니다!');
+                    document.querySelector('.modal-overlay').remove();
+                    await loadUserPoints();
                 } else {
-                    alert('구매 실패: ' + data.error);
+                    alert(data.error || '주문에 실패했습니다.');
                 }
-            } catch (err) {
-                alert('구매 중 오류가 발생했습니다: ' + err.message);
+            } catch (error) {
+                console.error('주문 실패:', error);
+                alert('주문 중 오류가 발생했습니다.');
             }
         }
 
-        // 주문 내역 조회
-        async function loadOrders() {
-            try {
-                const res = await fetch('/api/store/orders');
-                const data = await res.json();
-                
-                if (data.success && data.orders && data.orders.length > 0) {
-                    const ordersList = document.getElementById('orders-list');
-                    ordersList.innerHTML = data.orders.slice(0, 10).map(order => {
-                        const statusClass = {
-                            'pending': 'status-pending',
-                            'processing': 'status-processing',
-                            'completed': 'status-completed',
-                            'failed': 'status-failed'
-                        }[order.status] || 'status-pending';
-                        
-                        const statusText = {
-                            'pending': '대기 중',
-                            'processing': '처리 중',
-                            'completed': '완료',
-                            'failed': '실패'
-                        }[order.status] || order.status;
-                        
-                        return `
-                            <div class="order-item">
-                                <div class="order-header">
-                                    <div class="order-name">${order.product_name}</div>
-                                    <div class="order-status ${statusClass}">${statusText}</div>
-                                </div>
-                                <div class="order-details">
-                                    수량: ${order.quantity.toLocaleString()}개 | 
-                                    금액: ${order.total_price.toLocaleString()}원 | 
-                                    ${new Date(order.created_at).toLocaleString('ko-KR')}
-                                </div>
-                            </div>
-                        `;
-                    }).join('');
-                } else {
-                    document.getElementById('orders-list').innerHTML = 
-                        '<p style="text-align: center; padding: 40px; color: #9ca3af;">주문 내역이 없습니다.</p>';
-                }
-            } catch (err) {
-                console.error('Failed to load orders:', err);
-            }
+        // 접근 거부 표시
+        function showAccessDenied() {
+            document.getElementById('store-content').innerHTML = `
+                <div class="access-denied">
+                    <h2>🔒 로그인이 필요합니다</h2>
+                    <p>스토어를 이용하시려면 로그인해주세요.</p>
+                    <a href="/login" class="back-btn">로그인하기</a>
+                </div>
+            `;
         }
 
-        // 페이지 로드 시 초기화
+        // 초기화 실행
         init();
     </script>
 </body>
