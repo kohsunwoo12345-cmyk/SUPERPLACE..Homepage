@@ -126,8 +126,10 @@
             box-shadow: 0 4px 12px rgba(99, 102, 241, 0.1);
         }
         .product-icon {
-            font-size: 40px;
+            width: 60px;
+            height: 60px;
             margin-bottom: 16px;
+            object-fit: contain;
         }
         .product-name {
             font-size: 18px;
@@ -510,13 +512,13 @@
         let allProducts = [];
         let currentCategory = 'all';
         
-        // 제품 아이콘 매핑
+        // 제품 이미지 매핑
         const categoryIcons = {
-            instagram: '📸',
-            youtube: '▶️',
-            facebook: '👥',
-            threads: '🧵',
-            naver: '🟢'
+            instagram: 'https://www.genspark.ai/api/files/s/0D3vsOqg',
+            youtube: 'https://www.genspark.ai/api/files/s/rm7kS0Ns',
+            facebook: 'https://www.genspark.ai/api/files/s/XpkXVpMm',
+            threads: 'https://www.genspark.ai/api/files/s/BHVuxlwh',
+            naver: 'https://www.genspark.ai/api/files/s/SzSUpwLf'
         };
         
         // 인스타그램 제품 정의
@@ -728,7 +730,7 @@
             const grid = document.getElementById('products-grid');
             grid.innerHTML = products.map(product => `
                 <div class="product-card">
-                    <div class="product-icon">${categoryIcons[product.category] || '📦'}</div>
+                    <img src="${categoryIcons[product.category] || ''}" alt="${product.category}" class="product-icon" onerror="this.style.display='none'">
                     <div class="product-name">${product.name}</div>
                     <div class="product-description">${product.description}</div>
                     <div class="product-price">${product.options[0].price.toLocaleString()}P ~</div>
