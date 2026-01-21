@@ -28121,10 +28121,10 @@ ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.di
             // 페이지 로드 시 권한 확인 및 UI 제한
             async function initializePage() {
                 if (!currentUser) {
-                    console.log('⚠️ No user logged in, showing public read-only view');
-                    // 비로그인 사용자를 위한 공개 읽기 전용 모드
-                    applyPublicViewRestrictions();
-                    await loadDashboard();
+                    console.log('⚠️ No user logged in, redirecting to login page');
+                    // 로그인되지 않은 경우 로그인 페이지로 리다이렉트
+                    alert('로그인이 필요한 페이지입니다.');
+                    window.location.href = '/login';
                     return;
                 }
                 
@@ -28154,28 +28154,21 @@ ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.di
                     console.log('✅ Setting userPermissions from loadTeacherPermissions result');
                     console.log('   - userPermissions:', userPermissions);
                     
-                    // UI 제한 적용
-                    applyTeacherRestrictions();
-                        
-                        // 조회한 권한을 localStorage에 저장
-                        if (userPermissions) {
-                            currentUser.permissions = userPermissions;
-                            localStorage.setItem('user', JSON.stringify(currentUser));
-                            console.log('✅ Permissions saved to localStorage:', userPermissions);
-                        } else {
-                            // 권한 조회 실패 시 기본 제한적 권한
-                            currentUser.permissions = {
-                                canViewAllStudents: false,
-                                canWriteDailyReports: false,
-                                assignedClasses: []
-                            };
-                            userPermissions = currentUser.permissions;
-                            localStorage.setItem('user', JSON.stringify(currentUser));
-                            console.log('⚠️ Using default restrictive permissions');
-                        }
+                    // 조회한 권한을 localStorage에 저장
+                    if (userPermissions) {
+                        currentUser.permissions = userPermissions;
+                        localStorage.setItem('user', JSON.stringify(currentUser));
+                        console.log('✅ Permissions saved to localStorage:', userPermissions);
                     } else {
+                        // 권한 조회 실패 시 기본 제한적 권한
+                        currentUser.permissions = {
+                            canViewAllStudents: false,
+                            canWriteDailyReports: false,
+                            assignedClasses: []
+                        };
                         userPermissions = currentUser.permissions;
-                        console.log('✅ Using permissions from localStorage:', userPermissions);
+                        localStorage.setItem('user', JSON.stringify(currentUser));
+                        console.log('⚠️ Using default restrictive permissions');
                     }
                     
                     // 선생님 UI 제한 적용
@@ -28402,20 +28395,32 @@ ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.di
 
             async function loadDashboard() {
                 try {
+                    console.log('🔄 [loadDashboard] Starting... currentUser:', currentUser);
+                    console.log('🔄 [loadDashboard] userPermissions:', userPermissions);
+                    
                     // 선생님 수 (원장님만)
                     if (currentUser && currentUser.user_type !== 'teacher') {
+                        console.log('📊 [loadDashboard] Loading teachers...');
                         const teachersRes = await fetch('/api/teachers/list?directorId=' + currentUser.id);
                         const teachersData = await teachersRes.json();
+                        console.log('📊 [loadDashboard] Teachers response:', teachersData);
                         if (teachersData.success) {
-                            document.getElementById('totalTeachers').textContent = teachersData.teachers.length;
+                            const count = teachersData.teachers.length;
+                            document.getElementById('totalTeachers').textContent = count;
+                            console.log('✅ [loadDashboard] Teachers count:', count);
+                        } else {
+                            console.error('❌ [loadDashboard] Teachers load failed:', teachersData.error);
                         }
                     }
                 
                     // 반 개수 (선생님은 자신의 배정된 반만)
                     if (currentUser && currentUser.user_type === 'teacher' && !userPermissions.canViewAllStudents) {
                         // 배정된 반만 표시
-                        document.getElementById('totalClasses').textContent = userPermissions.assignedClasses.length;
+                        const count = userPermissions.assignedClasses ? userPermissions.assignedClasses.length : 0;
+                        document.getElementById('totalClasses').textContent = count;
+                        console.log('✅ [loadDashboard] Assigned classes count:', count);
                     } else {
+                        console.log('📊 [loadDashboard] Loading classes...');
                         const userDataHeader = currentUser ? btoa(unescape(encodeURIComponent(JSON.stringify(currentUser)))) : btoa(JSON.stringify({id: academyId}));
                         const classesRes = await fetch('/api/classes', {
                             headers: {
@@ -28423,13 +28428,18 @@ ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.di
                             }
                         });
                         const classesData = await classesRes.json();
-                        console.log('📊 Classes data:', classesData);
+                        console.log('📊 [loadDashboard] Classes response:', classesData);
                         if (classesData.success) {
-                            document.getElementById('totalClasses').textContent = classesData.classes.length;
+                            const count = classesData.classes.length;
+                            document.getElementById('totalClasses').textContent = count;
+                            console.log('✅ [loadDashboard] Classes count:', count);
+                        } else {
+                            console.error('❌ [loadDashboard] Classes load failed:', classesData.error);
                         }
                     }
 
                     // 학생 수 (API가 자동으로 권한 필터링함)
+                    console.log('📊 [loadDashboard] Loading students...');
                     const studentsUserDataHeader = currentUser ? btoa(unescape(encodeURIComponent(JSON.stringify(currentUser)))) : btoa(JSON.stringify({id: academyId}));
                     const studentsRes = await fetch('/api/students', {
                         headers: {
@@ -28437,28 +28447,48 @@ ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.di
                         }
                     });
                     const studentsData = await studentsRes.json();
+                    console.log('📊 [loadDashboard] Students response:', studentsData);
                     if (studentsData.success) {
-                        document.getElementById('totalStudents').textContent = studentsData.students.length;
+                        const count = studentsData.students.length;
+                        document.getElementById('totalStudents').textContent = count;
+                        console.log('✅ [loadDashboard] Students count:', count);
                         // 최근 활동 표시
                         showRecentActivity(studentsData.students.slice(0, 5));
+                    } else {
+                        console.error('❌ [loadDashboard] Students load failed:', studentsData.error);
                     }
 
                     // 과목 수
+                    console.log('📊 [loadDashboard] Loading courses...');
                     const coursesRes = await fetch('/api/courses?academyId=' + academyId);
                     const coursesData = await coursesRes.json();
+                    console.log('📊 [loadDashboard] Courses response:', coursesData);
                     if (coursesData.success) {
-                        document.getElementById('totalCourses').textContent = coursesData.courses.length;
+                        const count = coursesData.courses.length;
+                        document.getElementById('totalCourses').textContent = count;
+                        console.log('✅ [loadDashboard] Courses count:', count);
+                    } else {
+                        console.error('❌ [loadDashboard] Courses load failed:', coursesData.error);
                     }
 
                     // 오늘 기록 수
+                    console.log('📊 [loadDashboard] Loading daily records...');
                     const today = new Date().toISOString().split('T')[0];
                     const recordsRes = await fetch('/api/daily-records?date=' + today);
                     const recordsData = await recordsRes.json();
+                    console.log('📊 [loadDashboard] Records response:', recordsData);
                     if (recordsData.success) {
-                        document.getElementById('todayRecords').textContent = recordsData.records.length;
+                        const count = recordsData.records.length;
+                        document.getElementById('todayRecords').textContent = count;
+                        console.log('✅ [loadDashboard] Records count:', count);
+                    } else {
+                        console.error('❌ [loadDashboard] Records load failed:', recordsData.error);
                     }
+                    
+                    console.log('✅ [loadDashboard] Complete!');
                 } catch (error) {
-                    console.error('대시보드 로딩 실패:', error);
+                    console.error('❌ [loadDashboard] Exception:', error);
+                    console.error('❌ [loadDashboard] Stack:', error.stack);
                 }
             }
 
