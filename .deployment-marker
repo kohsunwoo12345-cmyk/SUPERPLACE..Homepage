@@ -1,0 +1,4 @@
+# Deployment trigger
+Timestamp: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+Version: 2.0.5
+Purpose: Force Cloudflare Pages deployment with fixed teacher permissions
