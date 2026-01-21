@@ -17796,6 +17796,47 @@ app.get('/api/debug/user-by-email', async (c) => {
   }
 })
 
+// 🔧 사용자 타입 변경 API (디버깅용)
+app.post('/api/debug/fix-user-type', async (c) => {
+  try {
+    const { email, userType } = await c.req.json()
+    
+    if (!email || !userType) {
+      return c.json({ success: false, error: 'Email and userType required' }, 400)
+    }
+    
+    console.log('🔧 [FixUserType] Updating user:', email, 'to:', userType)
+    
+    // 사용자 업데이트
+    const result = await c.env.DB.prepare(
+      'UPDATE users SET user_type = ? WHERE email = ?'
+    ).bind(userType, email).run()
+    
+    if (result.meta.changes === 0) {
+      return c.json({ success: false, error: 'User not found or not updated' }, 404)
+    }
+    
+    // 업데이트된 사용자 조회
+    const updatedUser = await c.env.DB.prepare(
+      'SELECT id, email, name, user_type, academy_id FROM users WHERE email = ?'
+    ).bind(email).first()
+    
+    console.log('✅ [FixUserType] Updated user:', updatedUser)
+    
+    return c.json({
+      success: true,
+      message: 'User type updated successfully',
+      user: updatedUser
+    })
+  } catch (error) {
+    console.error('❌ [FixUserType] Error:', error)
+    return c.json({ 
+      success: false, 
+      error: error.message 
+    }, 500)
+  }
+})
+
 // ✅ 데이터 초기화 API - 학생/반 데이터 자동 생성
 app.post('/api/init-test-data', async (c) => {
   try {
