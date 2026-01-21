@@ -28385,24 +28385,38 @@ ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.di
                     }
                 }
                 
-                // ✅ 랜딩페이지, 네이버 검색량, AI 리포트는 학생 관리 권한이 없어도 항상 표시
-                // (학생 관리와 별개의 기능)
+                // ✅ 랜딩페이지, 네이버 검색량, AI 리포트는 권한에 따라 제어
                 const landingSection = document.getElementById('landingPagesSection');
                 if (landingSection) {
-                    landingSection.style.display = 'block';
-                    console.log('✅ Showing: Landing pages section (always visible)');
+                    if (hasAnyPermission) {
+                        landingSection.style.display = 'block';
+                        console.log('✅ Showing: Landing pages section (has permission)');
+                    } else {
+                        landingSection.style.display = 'none';
+                        console.log('✅ Hidden: Landing pages section (no permission)');
+                    }
                 }
                 
                 const naverSection = document.getElementById('naverSearchSection');
                 if (naverSection) {
-                    naverSection.style.display = 'block';
-                    console.log('✅ Showing: Naver search section (always visible)');
+                    if (hasAnyPermission) {
+                        naverSection.style.display = 'block';
+                        console.log('✅ Showing: Naver search section (has permission)');
+                    } else {
+                        naverSection.style.display = 'none';
+                        console.log('✅ Hidden: Naver search section (no permission)');
+                    }
                 }
                 
                 const aiReportSection = document.getElementById('aiReportSection');
                 if (aiReportSection) {
-                    aiReportSection.style.display = 'block';
-                    console.log('✅ Showing: AI report section (always visible)');
+                    if (hasAnyPermission) {
+                        aiReportSection.style.display = 'block';
+                        console.log('✅ Showing: AI report section (has permission)');
+                    } else {
+                        aiReportSection.style.display = 'none';
+                        console.log('✅ Hidden: AI report section (no permission)');
+                    }
                 }
                 
                 console.log('✅ Teacher restrictions applied');
@@ -28476,14 +28490,31 @@ ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.di
                     // 과목 수
                     console.log('📊 [loadDashboard] Loading courses...');
                     const coursesRes = await fetch('/api/courses?academyId=' + academyId);
-                    const coursesData = await coursesRes.json();
-                    console.log('📊 [loadDashboard] Courses response:', coursesData);
-                    if (coursesData.success) {
-                        const count = coursesData.courses.length;
-                        document.getElementById('totalCourses').textContent = count;
-                        console.log('✅ [loadDashboard] Courses count:', count);
+                    console.log('📊 [loadDashboard] Courses response status:', coursesRes.status, coursesRes.ok);
+                    
+                    if (!coursesRes.ok) {
+                        console.error('❌ [loadDashboard] Courses API failed with status:', coursesRes.status);
+                        document.getElementById('totalCourses').textContent = '0';
                     } else {
-                        console.error('❌ [loadDashboard] Courses load failed:', coursesData.error);
+                        const coursesText = await coursesRes.text();
+                        console.log('📊 [loadDashboard] Courses raw response (first 100 chars):', coursesText.substring(0, 100));
+                        
+                        try {
+                            const coursesData = JSON.parse(coursesText);
+                            console.log('📊 [loadDashboard] Courses response:', coursesData);
+                            if (coursesData.success) {
+                                const count = coursesData.courses.length;
+                                document.getElementById('totalCourses').textContent = count;
+                                console.log('✅ [loadDashboard] Courses count:', count);
+                            } else {
+                                console.error('❌ [loadDashboard] Courses load failed:', coursesData.error);
+                                document.getElementById('totalCourses').textContent = '0';
+                            }
+                        } catch (jsonError) {
+                            console.error('❌ [loadDashboard] JSON parse error:', jsonError.message);
+                            console.error('❌ [loadDashboard] Invalid response text:', coursesText);
+                            document.getElementById('totalCourses').textContent = '0';
+                        }
                     }
 
                     // 오늘 기록 수
