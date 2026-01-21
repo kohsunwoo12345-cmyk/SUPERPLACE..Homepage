@@ -978,6 +978,80 @@
         }
 
         // 수량 변경
+        function changeQuantity(delta) {
+            const input = document.getElementById('quantity');
+            const newValue = Math.max(1, parseInt(input.value || 1) + delta);
+            input.value = newValue;
+            updatePrice();
+        }
+
+        // 가격 업데이트
+        function updatePrice() {
+            const select = document.getElementById('option-select');
+            const quantity = parseInt(document.getElementById('quantity').value || 1);
+            
+            if (!select || !select.value) return;
+            
+            const option = select.options[select.selectedIndex];
+            const price = parseFloat(option.dataset.price);
+            const total = price * quantity;
+            
+            document.getElementById('unit-price').textContent = `${price.toLocaleString()} P`;
+            document.getElementById('quantity-display').textContent = `${quantity}개`;
+            document.getElementById('total-price').textContent = `${total.toLocaleString()} P`;
+        }
+
+        // 주문 제출
+        async function submitOrder(productId) {
+            const product = allProducts.find(p => p.id === productId);
+            const selectElement = document.getElementById('option-select');
+            const optionIndex = parseInt(selectElement.value);
+            const option = product.options[optionIndex];
+            const quantity = parseInt(document.getElementById('quantity').value);
+            const url = document.getElementById('target-url').value.trim();
+
+            if (!option || !url) {
+                alert('모든 필드를 입력해주세요.');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/store/purchase', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-api-key': API_KEY
+                    },
+                    body: JSON.stringify({
+                        product_id: productId,
+                        option_name: option.name,
+                        quantity: quantity,
+                        price_per_unit: option.price,
+                        target_url: url
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    alert('주문이 완료되었습니다!');
+                    document.querySelector('.modal-overlay').remove();
+                    await loadUserPoints();
+                } else {
+                    alert(data.error || '주문에 실패했습니다.');
+                }
+            } catch (error) {
+                console.error('주문 실패:', error);
+                alert('주문 중 오류가 발생했습니다.');
+            }
+        }
+
+        // 접근 거부 표시
+        function showAccessDenied() {
+            document.getElementById('store-content').innerHTML = `
+                <div class="access-denied">
+                    <h2>🔒 로그인이 필요합니다</h2>
+                    <p>스토어를 이용하시려면 로그인해주세요.</p>
                     <a href="/login" class="back-btn">로그인하기</a>
                 </div>
             `;
@@ -985,6 +1059,7 @@
 
         // 초기화 실행
         init();
+    </script>
     </script>
     
     <!-- 푸터 -->
