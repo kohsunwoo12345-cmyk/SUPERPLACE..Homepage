@@ -34816,6 +34816,102 @@ app.get('/teachers-old', (c) => {
   `)
 })
 
+// 🛒 인스타그램 상품 구매 API
+app.post('/api/store/purchase-instagram', async (c) => {
+  try {
+    const sessionId = getCookie(c, 'session_id')
+    if (!sessionId) {
+      return c.json({ success: false, error: '로그인이 필요합니다' }, 401)
+    }
+
+    const DB = c.env.DB
+    
+    // 세션에서 사용자 조회
+    const session = await DB.prepare(`
+      SELECT user_id FROM sessions WHERE session_id = ?
+    `).bind(sessionId).first()
+
+    if (!session) {
+      return c.json({ success: false, error: '유효하지 않은 세션입니다' }, 401)
+    }
+
+    const userId = session.user_id
+
+    // 요청 데이터
+    const { productKey, optionName, price, quantity, targetUrl, apiKey } = await c.req.json()
+
+    if (!productKey || !optionName || !price || !quantity || !targetUrl) {
+      return c.json({ success: false, error: '필수 정보가 누락되었습니다' }, 400)
+    }
+
+    // 총 비용 계산
+    const totalCost = price * quantity
+
+    // 사용자 포인트 조회
+    const user = await DB.prepare(`
+      SELECT balance FROM users WHERE id = ?
+    `).bind(userId).first()
+
+    if (!user) {
+      return c.json({ success: false, error: '사용자를 찾을 수 없습니다' }, 404)
+    }
+
+    if (user.balance < totalCost) {
+      return c.json({ 
+        success: false, 
+        error: `포인트가 부족합니다. (보유: ${user.balance.toLocaleString()}원, 필요: ${totalCost.toLocaleString()}원)` 
+      }, 400)
+    }
+
+    // 포인트 차감
+    const newBalance = user.balance - totalCost
+    await DB.prepare(`
+      UPDATE users SET balance = ? WHERE id = ?
+    `).bind(newBalance, userId).run()
+
+    // 주문 생성
+    const productName = `인스타그램 ${productKey} - ${optionName}`
+    const orderInsert = await DB.prepare(`
+      INSERT INTO store_orders (
+        user_id, product_name, product_key, option_name, 
+        quantity, unit_price, total_price, target_url,
+        status, created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', CURRENT_TIMESTAMP)
+    `).bind(
+      userId, productName, productKey, optionName,
+      quantity, price, totalCost, targetUrl
+    ).run()
+
+    const orderId = orderInsert.meta.last_row_id
+
+    // 포인트 거래 기록
+    const balanceBefore = user.balance
+    const balanceAfter = newBalance
+    await DB.prepare(`
+      INSERT INTO point_transactions (
+        user_id, amount, balance_before, balance_after,
+        transaction_type, description, created_at
+      ) VALUES (?, ?, ?, ?, 'purchase', ?, CURRENT_TIMESTAMP)
+    `).bind(
+      userId, -totalCost, balanceBefore, balanceAfter,
+      `스토어 구매: ${productName}`
+    ).run()
+
+    console.log(`[Store] Instagram purchase - User: ${userId}, Product: ${productName}, Quantity: ${quantity}, Cost: ${totalCost}`)
+
+    return c.json({
+      success: true,
+      message: '구매가 완료되었습니다',
+      orderId,
+      remainingPoints: newBalance
+    })
+
+  } catch (err: any) {
+    console.error('[Store] Purchase error:', err)
+    return c.json({ success: false, error: '구매 처리 중 오류가 발생했습니다: ' + err.message }, 500)
+  }
+})
+
 // 🛒 소셜 트래픽 스토어 페이지
 app.get('/store', (c) => {
   return c.html(`

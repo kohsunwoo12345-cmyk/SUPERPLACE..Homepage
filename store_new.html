@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>소셜 트래픽 스토어 - 슈퍼플레이스</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f8f9fa;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border: 1px solid #e5e7eb;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 {
+            color: #667eea;
+            font-size: 32px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .points-display {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 24px;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        .categories {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .category-btn {
+            display: inline-block;
+            padding: 12px 24px;
+            margin: 5px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid #e5e7eb;
+            background: white;
+            font-size: 16px;
+            font-weight: 500;
+        }
+        .category-btn:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+        .category-btn.active {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+        .product-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+            border: 2px solid #e5e7eb;
+            transition: all 0.3s;
+        }
+        .product-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.12);
+            border-color: #667eea;
+        }
+        .product-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .product-icon {
+            font-size: 48px;
+        }
+        .product-info {
+            flex: 1;
+        }
+        .product-name {
+            font-size: 24px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        .product-category {
+            font-size: 13px;
+            color: #667eea;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .product-description {
+            color: #666;
+            font-size: 15px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            min-height: 48px;
+        }
+        .options-container {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        .options-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 15px;
+        }
+        .option-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            margin-bottom: 8px;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        .option-item:hover {
+            border-color: #667eea;
+            transform: translateX(5px);
+        }
+        .option-item.selected {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+        .option-name {
+            font-size: 14px;
+            color: #333;
+            font-weight: 500;
+        }
+        .option-price {
+            font-size: 16px;
+            font-weight: 700;
+            color: #667eea;
+        }
+        .buy-section {
+            display: flex;
+            gap: 10px;
+        }
+        .buy-btn {
+            flex: 1;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 17px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .buy-btn:hover {
+            transform: scale(1.03);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+        .buy-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal.active {
+            display: flex;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .modal-header {
+            font-size: 26px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .modal-subtitle {
+            font-size: 14px;
+            color: #667eea;
+            margin-bottom: 25px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-label {
+            display: block;
+            font-size: 15px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 15px;
+            transition: all 0.3s;
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .modal-option-selected {
+            background: #f0f4ff;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 2px solid #667eea;
+        }
+        .modal-option-name {
+            font-size: 16px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        .modal-option-price {
+            font-size: 18px;
+            font-weight: 700;
+            color: #667eea;
+        }
+        .price-calculation {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+        }
+        .price-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 15px;
+        }
+        .price-row.total {
+            border-top: 2px solid #ddd;
+            padding-top: 10px;
+            margin-top: 10px;
+            font-size: 20px;
+            font-weight: 700;
+            color: #667eea;
+        }
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 25px;
+        }
+        .modal-btn {
+            flex: 1;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s;
+        }
+        .modal-btn-confirm {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .modal-btn-confirm:hover {
+            transform: scale(1.03);
+        }
+        .modal-btn-cancel {
+            background: #f1f3f5;
+            color: #666;
+        }
+        .modal-btn-cancel:hover {
+            background: #e5e7eb;
+        }
+        
+        .my-orders {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            margin-top: 40px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+        }
+        .my-orders h2 {
+            font-size: 26px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+            transition: all 0.3s;
+        }
+        .order-item:hover {
+            background: #f8f9fa;
+        }
+        .order-item:last-child { border-bottom: none; }
+        .order-info strong {
+            font-size: 16px;
+            color: #333;
+        }
+        .order-meta {
+            font-size: 13px;
+            color: #999;
+            margin-top: 5px;
+        }
+        .order-price {
+            text-align: right;
+        }
+        .order-amount {
+            font-size: 18px;
+            font-weight: 700;
+            color: #667eea;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 5px;
+        }
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-processing { background: #cfe2ff; color: #084298; }
+        .status-completed { background: #d1e7dd; color: #0f5132; }
+        .status-failed { background: #f8d7da; color: #842029; }
+        
+        .access-denied {
+            background: white;
+            padding: 60px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+        .access-denied h2 {
+            font-size: 32px;
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+        .access-denied p {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        .back-btn {
+            margin-top: 30px;
+            padding: 15px 40px;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            display: inline-block;
+            font-weight: 600;
+        }
+        .back-btn:hover {
+            background: #764ba2;
+        }
+        
+        @media (max-width: 768px) {
+            .products-grid {
+                grid-template-columns: 1fr;
+            }
+            .header {
+                flex-direction: column;
+                gap: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>
+                <span>🛒</span> 소셜 트래픽 스토어
+            </h1>
+            <div class="points-display">
+                <span id="points-balance">0</span> P
+            </div>
+        </div>
+
+        <div id="store-content">
+            <!-- 카테고리 -->
+            <div class="categories">
+                <button class="category-btn active" data-category="all">🌟 전체</button>
+                <button class="category-btn" data-category="instagram">📸 인스타그램</button>
+                <button class="category-btn" data-category="youtube">▶️ 유튜브</button>
+                <button class="category-btn" data-category="facebook">👥 페이스북</button>
+                <button class="category-btn" data-category="threads">🧵 쓰레드</button>
+                <button class="category-btn" data-category="naver">🟢 네이버</button>
+            </div>
+
+            <!-- 상품 목록 -->
+            <div class="products-grid" id="products-grid">
+                <!-- 동적으로 로드 -->
+            </div>
+
+            <!-- 내 주문 내역 -->
+            <div class="my-orders">
+                <h2>📦 최근 주문 내역</h2>
+                <div id="orders-list">
+                    <!-- 동적으로 로드 -->
+                </div>
+            </div>
+        </div>
+
+        <div id="access-denied" style="display: none;">
+            <div class="access-denied">
+                <h2>🔒 접근 권한이 없습니다</h2>
+                <p>현재 이 스토어는 관리자만 이용 가능합니다.</p>
+                <p>자세한 사항은 관리자에게 문의해주세요.</p>
+                <a href="/dashboard" class="back-btn">대시보드로 돌아가기</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 구매 모달 -->
+    <div class="modal" id="purchase-modal">
+        <div class="modal-content">
+            <div class="modal-header" id="modal-title">상품 구매</div>
+            <div class="modal-subtitle" id="modal-category"></div>
+            
+            <div class="modal-option-selected" id="modal-option-info">
+                <div class="modal-option-name" id="modal-option-name">옵션을 선택해주세요</div>
+                <div class="modal-option-price" id="modal-option-price">0원</div>
+            </div>
+            
+            <form id="purchase-form">
+                <div class="form-group">
+                    <label class="form-label">대상 URL *</label>
+                    <input type="url" class="form-input" id="target-url" placeholder="예: https://instagram.com/yourpage" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">수량 *</label>
+                    <input type="number" class="form-input" id="quantity" min="1" value="1000" required>
+                </div>
+                
+                <div class="price-calculation">
+                    <div class="price-row">
+                        <span>단가:</span>
+                        <span id="unit-price">0원</span>
+                    </div>
+                    <div class="price-row">
+                        <span>수량:</span>
+                        <span id="calc-quantity">0개</span>
+                    </div>
+                    <div class="price-row total">
+                        <span>총 금액:</span>
+                        <span id="total-price">0원</span>
+                    </div>
+                </div>
+                
+                <div class="modal-buttons">
+                    <button type="button" class="modal-btn modal-btn-cancel" onclick="closePurchaseModal()">취소</button>
+                    <button type="submit" class="modal-btn modal-btn-confirm">구매하기</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const API_KEY = '14644c03bef19a85e4867e6d1d7939a1';
+        let currentProducts = [];
+        let selectedProduct = null;
+        let selectedOption = null;
+        let currentCategory = 'all';
+
+        // 인스타그램 제품 정의
+        const instagramProducts = {
+            follower: {
+                name: '팔로워',
+                icon: '👥',
+                description: '실제 한국인 팔로워부터 타겟팅된 팔로워까지',
+                options: [
+                    { name: '실제 한국인 팔로워', price: 220 },
+                    { name: '[남성] 한국인 팔로워', price: 280 },
+                    { name: '[여성] 한국인 팔로워', price: 280 },
+                    { name: '[20대] 한국인 팔로워', price: 280 },
+                    { name: '[30대] 한국인 팔로워', price: 280 },
+                    { name: '[20대/남성] 실제 한국인 팔로워', price: 440 },
+                    { name: '[20대/여성] 실제 한국인 팔로워', price: 440 },
+                    { name: '[30대/남성] 실제 한국인 팔로워', price: 440 },
+                    { name: '[30대/여성] 실제 한국인 팔로워', price: 440 },
+                    { name: '외국인 팔로워', price: 20 }
+                ]
+            },
+            likes: {
+                name: '좋아요',
+                icon: '❤️',
+                description: '게시물 좋아요 - 외국인부터 타겟 한국인까지',
+                options: [
+                    { name: '외국인 좋아요', price: 2.5 },
+                    { name: '한국인 좋아요', price: 25 },
+                    { name: '[남성] 실제 한국인 좋아요', price: 33 },
+                    { name: '[여성] 실제 한국인 좋아요', price: 33 },
+                    { name: '[20대] 실제 한국인 좋아요', price: 33 },
+                    { name: '[30대] 실제 한국인 좋아요', price: 33 },
+                    { name: '[20대/남성] 실제 한국인 좋아요', price: 44 },
+                    { name: '[20대/여성] 실제 한국인 좋아요', price: 44 },
+                    { name: '[30대/남성] 실제 한국인 좋아요', price: 44 },
+                    { name: '[30대/여성] 실제 한국인 좋아요', price: 44 }
+                ]
+            },
+            views: {
+                name: '조회수',
+                icon: '👁️',
+                description: '실제 한국인 조회수',
+                options: [
+                    { name: '실제 한국인 조회수', price: 0.4 }
+                ]
+            },
+            engagement: {
+                name: '공유/저장',
+                icon: '🔄',
+                description: '게시물 공유, 저장, 노출 등',
+                options: [
+                    { name: '한국인 게시물 공유', price: 1 },
+                    { name: '한국인 게시물 저장', price: 4 },
+                    { name: '일반 게시물 저장', price: 0.6 },
+                    { name: '일반 게시물 노출/도달', price: 0.6 },
+                    { name: '일반 게시물 프로필방문', price: 0.9 }
+                ]
+            },
+            comments: {
+                name: '댓글',
+                icon: '💬',
+                description: '실제 한국인 댓글 - 타겟팅 가능',
+                options: [
+                    { name: '실제 한국인 댓글', price: 280 },
+                    { name: '한국인 커스텀 댓글', price: 280 },
+                    { name: '[남성] 실제 한국인 댓글', price: 420 },
+                    { name: '[여성] 실제 한국인 댓글', price: 420 },
+                    { name: '[20대] 실제 한국인 댓글', price: 420 },
+                    { name: '[30대] 실제 한국인 댓글', price: 420 },
+                    { name: '[20대/남성] 실제 한국인 댓글', price: 480 },
+                    { name: '[20대/여성] 실제 한국인 댓글', price: 480 },
+                    { name: '[30대/남성] 실제 한국인 댓글', price: 480 },
+                    { name: '[30대/여성] 실제 한국인 댓글', price: 480 }
+                ]
+            }
+        };
+
+        // 페이지 로드 시 초기화
+        async function init() {
+            await loadPoints();
+            loadInstagramProducts();
+            await loadOrders();
+            setupCategoryButtons();
+            setupQuantityListener();
+        }
+
+        // 포인트 조회
+        async function loadPoints() {
+            try {
+                const res = await fetch('/api/points/balance');
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById('points-balance').textContent = data.balance.toLocaleString();
+                }
+            } catch (err) {
+                console.error('Failed to load points:', err);
+            }
+        }
+
+        // 인스타그램 상품 로드
+        function loadInstagramProducts() {
+            currentProducts = Object.entries(instagramProducts).map(([key, product]) => ({
+                key,
+                category: 'instagram',
+                ...product
+            }));
+            renderProducts();
+        }
+
+        // 상품 렌더링
+        function renderProducts() {
+            const grid = document.getElementById('products-grid');
+            const filtered = currentCategory === 'all' || currentCategory === 'instagram'
+                ? currentProducts 
+                : [];
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; padding: 40px; color: #999;">해당 카테고리의 상품이 준비 중입니다.</p>';
+                return;
+            }
+
+            grid.innerHTML = filtered.map(product => `
+                <div class="product-card">
+                    <div class="product-header">
+                        <div class="product-icon">${product.icon}</div>
+                        <div class="product-info">
+                            <div class="product-name">${product.name}</div>
+                            <div class="product-category">인스타그램</div>
+                        </div>
+                    </div>
+                    <div class="product-description">${product.description}</div>
+                    <div class="options-container">
+                        <div class="options-title">옵션 선택 (${product.options.length}개)</div>
+                        ${product.options.map((option, idx) => `
+                            <div class="option-item" onclick="selectOption('${product.key}', ${idx})">
+                                <span class="option-name">${option.name}</span>
+                                <span class="option-price">${option.price.toLocaleString()}원</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="buy-section">
+                        <button class="buy-btn" onclick="openPurchaseModal('${product.key}')">
+                            구매하기
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 옵션 선택
+        function selectOption(productKey, optionIndex) {
+            const product = currentProducts.find(p => p.key === productKey);
+            if (!product) return;
+
+            selectedProduct = product;
+            selectedOption = product.options[optionIndex];
+
+            // 모든 옵션 아이템의 선택 상태 제거
+            document.querySelectorAll('.option-item').forEach(el => {
+                el.classList.remove('selected');
+            });
+
+            // 클릭된 옵션 선택
+            event.target.closest('.option-item').classList.add('selected');
+
+            // 모달 열기
+            openPurchaseModal(productKey, optionIndex);
+        }
+
+        // 구매 모달 열기
+        function openPurchaseModal(productKey, optionIndex = 0) {
+            const product = currentProducts.find(p => p.key === productKey);
+            if (!product) return;
+
+            selectedProduct = product;
+            selectedOption = product.options[optionIndex];
+
+            document.getElementById('modal-title').textContent = product.name + ' 구매';
+            document.getElementById('modal-category').textContent = '📸 인스타그램';
+            document.getElementById('modal-option-name').textContent = selectedOption.name;
+            document.getElementById('modal-option-price').textContent = selectedOption.price.toLocaleString() + '원';
+            
+            document.getElementById('target-url').value = '';
+            document.getElementById('quantity').value = '1000';
+            
+            updatePriceCalculation();
+            
+            document.getElementById('purchase-modal').classList.add('active');
+        }
+
+        // 구매 모달 닫기
+        function closePurchaseModal() {
+            document.getElementById('purchase-modal').classList.remove('active');
+            selectedProduct = null;
+            selectedOption = null;
+        }
+
+        // 가격 계산 업데이트
+        function updatePriceCalculation() {
+            if (!selectedOption) return;
+
+            const quantity = parseInt(document.getElementById('quantity').value) || 0;
+            const unitPrice = selectedOption.price;
+            const totalPrice = unitPrice * quantity;
+
+            document.getElementById('unit-price').textContent = unitPrice.toLocaleString() + '원';
+            document.getElementById('calc-quantity').textContent = quantity.toLocaleString() + '개';
+            document.getElementById('total-price').textContent = totalPrice.toLocaleString() + '원';
+        }
+
+        // 수량 변경 리스너
+        function setupQuantityListener() {
+            document.getElementById('quantity').addEventListener('input', updatePriceCalculation);
+        }
+
+        // 구매 폼 제출
+        document.getElementById('purchase-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            if (!selectedProduct || !selectedOption) {
+                alert('옵션을 선택해주세요.');
+                return;
+            }
+
+            const targetUrl = document.getElementById('target-url').value;
+            const quantity = parseInt(document.getElementById('quantity').value);
+
+            if (!targetUrl || !quantity || quantity <= 0) {
+                alert('모든 필드를 올바르게 입력해주세요.');
+                return;
+            }
+
+            const totalCost = selectedOption.price * quantity;
+
+            if (!confirm(`${selectedProduct.name} - ${selectedOption.name}\n수량: ${quantity.toLocaleString()}개\n총 금액: ${totalCost.toLocaleString()}원\n\n구매하시겠습니까?`)) {
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/store/purchase-instagram', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        productKey: selectedProduct.key,
+                        optionName: selectedOption.name,
+                        price: selectedOption.price,
+                        quantity,
+                        targetUrl,
+                        apiKey: API_KEY
+                    })
+                });
+
+                const data = await res.json();
+
+                if (data.success) {
+                    alert(`✅ 구매가 완료되었습니다!\n\n사용된 포인트: ${totalCost.toLocaleString()}원\n남은 포인트: ${data.remainingPoints.toLocaleString()}원\n\n주문 ID: ${data.orderId}`);
+                    closePurchaseModal();
+                    await loadPoints();
+                    await loadOrders();
+                } else {
+                    alert('❌ 구매 실패: ' + data.error);
+                }
+            } catch (err) {
+                alert('구매 중 오류가 발생했습니다.');
+                console.error(err);
+            }
+        });
+
+        // 카테고리 버튼 설정
+        function setupCategoryButtons() {
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentCategory = btn.dataset.category;
+                    renderProducts();
+                });
+            });
+        }
+
+        // 주문 내역 조회
+        async function loadOrders() {
+            try {
+                const res = await fetch('/api/store/orders');
+                const data = await res.json();
+
+                if (data.success) {
+                    const ordersList = document.getElementById('orders-list');
+
+                    if (data.orders.length === 0) {
+                        ordersList.innerHTML = '<p style="text-align: center; color: #999; padding: 20px;">주문 내역이 없습니다.</p>';
+                        return;
+                    }
+
+                    ordersList.innerHTML = data.orders.slice(0, 10).map(order => `
+                        <div class="order-item">
+                            <div class="order-info">
+                                <strong>${order.product_name}</strong>
+                                <div class="order-meta">
+                                    수량: ${order.quantity.toLocaleString()}개 • 
+                                    ${new Date(order.created_at).toLocaleString('ko-KR')}
+                                </div>
+                            </div>
+                            <div class="order-price">
+                                <div class="order-amount">${order.total_price.toLocaleString()}원</div>
+                                <span class="status-badge status-${order.status}">${getStatusText(order.status)}</span>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch (err) {
+                console.error('Failed to load orders:', err);
+            }
+        }
+
+        function getStatusText(status) {
+            const statusMap = {
+                pending: '대기 중',
+                processing: '처리 중',
+                completed: '완료',
+                failed: '실패'
+            };
+            return statusMap[status] || status;
+        }
+
+        // 모달 외부 클릭 시 닫기
+        document.getElementById('purchase-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'purchase-modal') {
+                closePurchaseModal();
+            }
+        });
+
+        // 초기화
+        init();
+    </script>
+</body>
+</html>
