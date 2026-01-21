@@ -27089,8 +27089,89 @@ ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.di
     </div>
 
     <script>
+        const API_KEY = '14644c03bef19a85e4867e6d1d7939a1';
         let allProducts = [];
         let currentCategory = 'all';
+        
+        // 인스타그램 제품 정의
+        const instagramProducts = [
+            {
+                id: 'ig_follower',
+                name: '인스타그램 팔로워',
+                category: 'instagram',
+                description: '실제 한국인 팔로워부터 타겟팅된 팔로워까지',
+                options: [
+                    { name: '실제 한국인 팔로워', price: 220 },
+                    { name: '[남성] 한국인 팔로워', price: 280 },
+                    { name: '[여성] 한국인 팔로워', price: 280 },
+                    { name: '[20대] 한국인 팔로워', price: 280 },
+                    { name: '[30대] 한국인 팔로워', price: 280 },
+                    { name: '[20대/남성] 실제 한국인 팔로워', price: 440 },
+                    { name: '[20대/여성] 실제 한국인 팔로워', price: 440 },
+                    { name: '[30대/남성] 실제 한국인 팔로워', price: 440 },
+                    { name: '[30대/여성] 실제 한국인 팔로워', price: 440 },
+                    { name: '외국인 팔로워', price: 20 }
+                ]
+            },
+            {
+                id: 'ig_likes',
+                name: '인스타그램 좋아요',
+                category: 'instagram',
+                description: '게시물 좋아요 - 외국인부터 타겟 한국인까지',
+                options: [
+                    { name: '외국인 좋아요', price: 2.5 },
+                    { name: '한국인 좋아요', price: 25 },
+                    { name: '[남성] 실제 한국인 좋아요', price: 33 },
+                    { name: '[여성] 실제 한국인 좋아요', price: 33 },
+                    { name: '[20대] 실제 한국인 좋아요', price: 33 },
+                    { name: '[30대] 실제 한국인 좋아요', price: 33 },
+                    { name: '[20대/남성] 실제 한국인 좋아요', price: 44 },
+                    { name: '[20대/여성] 실제 한국인 좋아요', price: 44 },
+                    { name: '[30대/남성] 실제 한국인 좋아요', price: 44 },
+                    { name: '[30대/여성] 실제 한국인 좋아요', price: 44 }
+                ]
+            },
+            {
+                id: 'ig_views',
+                name: '인스타그램 조회수',
+                category: 'instagram',
+                description: '실제 한국인 조회수',
+                options: [
+                    { name: '실제 한국인 조회수', price: 0.4 }
+                ]
+            },
+            {
+                id: 'ig_engagement',
+                name: '인스타그램 공유/저장',
+                category: 'instagram',
+                description: '게시물 공유, 저장, 노출 등',
+                options: [
+                    { name: '한국인 게시물 공유', price: 1 },
+                    { name: '한국인 게시물 저장', price: 4 },
+                    { name: '일반 게시물 저장', price: 0.6 },
+                    { name: '일반 게시물 노출/도달', price: 0.6 },
+                    { name: '일반 게시물 프로필방문', price: 0.9 }
+                ]
+            },
+            {
+                id: 'ig_comments',
+                name: '인스타그램 댓글',
+                category: 'instagram',
+                description: '실제 한국인 댓글 - 타겟팅 가능',
+                options: [
+                    { name: '실제 한국인 댓글', price: 280 },
+                    { name: '한국인 커스텀 댓글', price: 280 },
+                    { name: '[남성] 실제 한국인 댓글', price: 420 },
+                    { name: '[여성] 실제 한국인 댓글', price: 420 },
+                    { name: '[20대] 실제 한국인 댓글', price: 420 },
+                    { name: '[30대] 실제 한국인 댓글', price: 420 },
+                    { name: '[20대/남성] 실제 한국인 댓글', price: 480 },
+                    { name: '[20대/여성] 실제 한국인 댓글', price: 480 },
+                    { name: '[30대/남성] 실제 한국인 댓글', price: 480 },
+                    { name: '[30대/여성] 실제 한국인 댓글', price: 480 }
+                ]
+            }
+        ];
 
         // 페이지 로드 시 초기화
         async function init() {
@@ -27115,22 +27196,29 @@ ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.di
         // 상품 목록 조회
         async function loadProducts() {
             try {
-                const res = await fetch('/api/store/products');
-                const data = await res.json();
+                // 인스타그램 제품을 먼저 추가
+                allProducts = [...instagramProducts];
                 
-                if (!data.success) {
-                    if (res.status === 403) {
-                        // 접근 권한 없음
-                        document.getElementById('store-content').style.display = 'none';
-                        document.getElementById('access-denied').style.display = 'block';
+                // DB 제품도 불러오기 (다른 카테고리용)
+                try {
+                    const res = await fetch('/api/store/products');
+                    const data = await res.json();
+                    
+                    if (data.success && data.products) {
+                        // 인스타그램이 아닌 제품만 추가
+                        const otherProducts = data.products.filter(p => p.category !== 'instagram');
+                        allProducts = [...allProducts, ...otherProducts];
                     }
-                    return;
+                } catch (err) {
+                    console.log('DB products not available, using Instagram products only');
                 }
-
-                allProducts = data.products;
+                
                 renderProducts();
             } catch (err) {
                 console.error('Failed to load products:', err);
+                // 에러가 나도 인스타그램 제품은 표시
+                allProducts = [...instagramProducts];
+                renderProducts();
             }
         }
 
@@ -27146,17 +27234,44 @@ ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.di
                 return;
             }
 
-            grid.innerHTML = filtered.map(product => \`
-                <div class="product-card">
-                    <div class="product-icon">\${getCategoryIcon(product.category)}</div>
-                    <div class="product-name">\${product.name}</div>
-                    <div class="product-description">\${product.description}</div>
-                    <div class="product-price">\${product.price.toLocaleString()} P</div>
-                    <button class="buy-btn" onclick="buyProduct(\${product.id})">
-                        구매하기
-                    </button>
-                </div>
-            \`).join('');
+            grid.innerHTML = filtered.map(product => {
+                if (product.options) {
+                    // 옵션이 있는 제품 (인스타그램)
+                    const minPrice = Math.min(...product.options.map(o => o.price));
+                    const maxPrice = Math.max(...product.options.map(o => o.price));
+                    const priceText = minPrice === maxPrice ? 
+                        minPrice.toLocaleString() + '원' : 
+                        minPrice.toLocaleString() + '원 ~ ' + maxPrice.toLocaleString() + '원';
+                    
+                    return \`
+                        <div class="product-card">
+                            <div class="product-icon">\${getCategoryIcon(product.category)}</div>
+                            <div class="product-name">\${product.name}</div>
+                            <div class="product-description">\${product.description}</div>
+                            <div class="product-price">\${priceText}</div>
+                            <div style="font-size: 13px; color: #667eea; margin-bottom: 15px; font-weight: 600;">
+                                \${product.options.length}개 옵션 선택 가능
+                            </div>
+                            <button class="buy-btn" onclick="selectInstagramOption('\${product.id}')">
+                                옵션 선택하기
+                            </button>
+                        </div>
+                    \`;
+                } else {
+                    // 일반 제품
+                    return \`
+                        <div class="product-card">
+                            <div class="product-icon">\${getCategoryIcon(product.category)}</div>
+                            <div class="product-name">\${product.name}</div>
+                            <div class="product-description">\${product.description}</div>
+                            <div class="product-price">\${product.price.toLocaleString()} P</div>
+                            <button class="buy-btn" onclick="buyProduct(\${product.id})">
+                                구매하기
+                            </button>
+                        </div>
+                    \`;
+                }
+            }).join('');
         }
 
         // 카테고리 아이콘
@@ -27210,6 +27325,123 @@ ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.di
                     alert('✅ 구매가 완료되었습니다!\\n\\n' + 
                           \`사용된 포인트: \${totalCost.toLocaleString()} P\\n\` +
                           \`남은 포인트: \${data.order.remainingPoints.toLocaleString()} P\`);
+                    await loadPoints();
+                    await loadOrders();
+                } else {
+                    alert('❌ 구매 실패: ' + data.error);
+                }
+            } catch (err) {
+                alert('구매 중 오류가 발생했습니다.');
+                console.error(err);
+            }
+        }
+        
+        // 인스타그램 옵션 선택
+        function selectInstagramOption(productId) {
+            const product = allProducts.find(p => p.id === productId);
+            if (!product || !product.options) return;
+            
+            let optionsHtml = '<div style="max-height: 400px; overflow-y: auto;">';
+            product.options.forEach((option, index) => {
+                optionsHtml += \`
+                    <div style="padding: 12px; margin: 8px 0; background: white; border: 2px solid #e5e7eb; border-radius: 8px; cursor: pointer; transition: all 0.2s;"
+                         onclick="this.style.background='#f0f4ff'; this.style.borderColor='#667eea';"
+                         onmouseout="if(!this.dataset.selected) { this.style.background='white'; this.style.borderColor='#e5e7eb'; }"
+                         onmouseover="this.style.borderColor='#667eea';"
+                         data-option-index="\${index}">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 15px; font-weight: 500;">\${option.name}</span>
+                            <span style="font-size: 17px; font-weight: 700; color: #667eea;">\${option.price.toLocaleString()}원</span>
+                        </div>
+                    </div>
+                \`;
+            });
+            optionsHtml += '</div>';
+            
+            const modal = \`
+                <div id="option-modal" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 10000; display: flex; align-items: center; justify-content: center;">
+                    <div style="background: white; border-radius: 20px; padding: 40px; max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto;">
+                        <h2 style="font-size: 26px; font-weight: 700; margin-bottom: 10px; color: #333;">\${product.name}</h2>
+                        <p style="font-size: 14px; color: #667eea; margin-bottom: 25px;">\${product.description}</p>
+                        <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 15px; color: #333;">옵션을 선택해주세요</h3>
+                        \${optionsHtml}
+                        <div style="margin-top: 30px; display: flex; gap: 10px;">
+                            <button onclick="closeOptionModal()" style="flex: 1; padding: 15px; background: #f1f3f5; color: #666; border: none; border-radius: 10px; font-size: 16px; font-weight: 700; cursor: pointer;">
+                                취소
+                            </button>
+                            <button onclick="proceedToInstagramPurchase('\${productId}')" style="flex: 1; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: 700; cursor: pointer;">
+                                다음
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            \`;
+            
+            document.body.insertAdjacentHTML('beforeend', modal);
+            
+            // 옵션 선택 이벤트
+            document.querySelectorAll('[data-option-index]').forEach(el => {
+                el.addEventListener('click', function() {
+                    document.querySelectorAll('[data-option-index]').forEach(e => {
+                        e.style.background = 'white';
+                        e.style.borderColor = '#e5e7eb';
+                        e.dataset.selected = '';
+                    });
+                    this.style.background = '#f0f4ff';
+                    this.style.borderColor = '#667eea';
+                    this.dataset.selected = 'true';
+                });
+            });
+        }
+        
+        function closeOptionModal() {
+            const modal = document.getElementById('option-modal');
+            if (modal) modal.remove();
+        }
+        
+        async function proceedToInstagramPurchase(productId) {
+            const selectedEl = document.querySelector('[data-option-index][data-selected="true"]');
+            if (!selectedEl) {
+                alert('옵션을 선택해주세요.');
+                return;
+            }
+            
+            const product = allProducts.find(p => p.id === productId);
+            const optionIndex = parseInt(selectedEl.dataset.optionIndex);
+            const selectedOption = product.options[optionIndex];
+            
+            closeOptionModal();
+            
+            // 구매 정보 입력
+            const targetUrl = prompt(\`\${product.name} - \${selectedOption.name}\\n\\n대상 URL을 입력해주세요:\\n(예: https://instagram.com/yourpage)\`);
+            if (!targetUrl) return;
+            
+            const quantity = parseInt(prompt('수량을 입력해주세요:', '1000'));
+            if (!quantity || quantity <= 0) return;
+            
+            const totalCost = selectedOption.price * quantity;
+            if (!confirm(\`\${product.name}\\n\${selectedOption.name}\\n수량: \${quantity.toLocaleString()}개\\n총 금액: \${totalCost.toLocaleString()}원\\n\\n구매하시겠습니까?\`)) {
+                return;
+            }
+            
+            try {
+                const res = await fetch('/api/store/purchase-instagram', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        productKey: productId,
+                        optionName: selectedOption.name,
+                        price: selectedOption.price,
+                        quantity: quantity,
+                        targetUrl: targetUrl,
+                        apiKey: API_KEY
+                    })
+                });
+                
+                const data = await res.json();
+                
+                if (data.success) {
+                    alert(\`✅ 구매가 완료되었습니다!\\n\\n사용된 포인트: \${totalCost.toLocaleString()}원\\n남은 포인트: \${data.remainingPoints.toLocaleString()}원\\n\\n주문 ID: \${data.orderId}\`);
                     await loadPoints();
                     await loadOrders();
                 } else {
