@@ -763,39 +763,11 @@
         
         // SVG 로고 정의
         const categoryLogos = {
-            instagram: `<svg width="36" height="36" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                    <linearGradient id="ig-grad" x1="0%" y1="100%" x2="100%" y2="0%">
-                        <stop offset="0%" style="stop-color:#FFD521;stop-opacity:1" />
-                        <stop offset="5%" style="stop-color:#FFD521;stop-opacity:1" />
-                        <stop offset="50.1119%" style="stop-color:#F50000;stop-opacity:1" />
-                        <stop offset="95%" style="stop-color:#B900B4;stop-opacity:1" />
-                        <stop offset="95.0079%" style="stop-color:#B900B4;stop-opacity:1" />
-                        <stop offset="100%" style="stop-color:#B900B4;stop-opacity:1" />
-                    </linearGradient>
-                </defs>
-                <rect width="48" height="48" rx="12" fill="url(#ig-grad)"/>
-                <circle cx="24" cy="24" r="10" fill="none" stroke="white" stroke-width="3"/>
-                <circle cx="24" cy="24" r="6" fill="none" stroke="white" stroke-width="3"/>
-                <circle cx="35" cy="13" r="2.5" fill="white"/>
-            </svg>`,
-            youtube: `<svg width="36" height="36" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-                <rect width="48" height="48" rx="12" fill="#FF0000"/>
-                <path d="M19 16L32 24L19 32V16Z" fill="white"/>
-            </svg>`,
-            facebook: `<svg width="36" height="36" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-                <rect width="48" height="48" rx="12" fill="#1877F2"/>
-                <path d="M26 38V26H30L31 21H26V18C26 16.9 26.3 16 28 16H31V12H27C23.7 12 22 14 22 17V21H18V26H22V38H26Z" fill="white"/>
-            </svg>`,
-            threads: `<svg width="36" height="36" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-                <rect width="48" height="48" rx="12" fill="#000000"/>
-                <path d="M24 16C19.6 16 16 19.6 16 24C16 28.4 19.6 32 24 32C28.4 32 32 28.4 32 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"/>
-                <circle cx="24" cy="14" r="2" fill="white"/>
-            </svg>`,
-            naver: `<svg width="36" height="36" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-                <rect width="48" height="48" rx="12" fill="#03C75A"/>
-                <path d="M16 13H22L26 24V13H32V35H26L22 24V35H16V13Z" fill="white"/>
-            </svg>`
+            instagram: '<span style="font-size:24px">📸</span>',
+            youtube: '<span style="font-size:24px">▶️</span>',
+            facebook: '<span style="font-size:24px">👍</span>',
+            threads: '<span style="font-size:24px">🧵</span>',
+            naver: '<span style="font-size:24px;font-weight:bold">N</span>'
         };
 
         // 제품 데이터
@@ -807,9 +779,9 @@
                 description: '한국인 팔로워 (성별/연령 타겟 가능)',
                 detailedInfo: {
                     service: '100% 실제 활동하는 한국인 계정이 방문하여 팔로우를 진행합니다. 성별, 연령대별로 타겟팅이 가능하며, 계정의 신뢰도와 초기 성장에 기여합니다.',
-                    orderGuide: '인스타그램 아이디를 입력해주세요.\n예시) snsmeme 또는 https://www.instagram.com/snsmeme',
-                    asPolicy: 'A/S 기간: 최대 3개월\n구매 날짜로부터 24시간 / 7일 / 30일 / 60일 / 90일 경과 시 이탈 수량 자동 리필 처리됩니다.',
-                    foreignAsPolicy: 'A/S 기간: 1회 처리\n이탈 건 확인 후 A/S 처리가 진행됩니다.'
+                    orderGuide: `인스타그램 아이디를 입력해주세요.\n예시) snsmeme 또는 https://www.instagram.com/snsmeme`,
+                    asPolicy: `A/S 기간: 최대 3개월\n구매 날짜로부터 24시간 / 7일 / 30일 / 60일 / 90일 경과 시 이탈 수량 자동 리필 처리됩니다.`,
+                    foreignAsPolicy: `A/S 기간: 1회 처리\n이탈 건 확인 후 A/S 처리가 진행됩니다.`
                 },
                 optionDescriptions: {},
                 options: [
@@ -832,7 +804,7 @@
                 description: '게시물 좋아요 (타겟 가능)',
                 detailedInfo: {
                     service: '게시물에 100% 실제 활동하는 한국인/외국인 계정이 좋아요를 진행합니다. 성별, 연령대별 타겟팅이 가능합니다.',
-                    orderGuide: '게시물 링크를 입력해주세요.\n예시) https://www.instagram.com/p/ABC123/',
+                    orderGuide: `게시물 링크를 입력해주세요.\n예시) https://www.instagram.com/p/ABC123/`,
                     asPolicy: '좋아요는 이탈이 거의 없으나, 이탈 시 확인 후 A/S 처리됩니다.'
                 },
                 optionDescriptions: {},
@@ -856,7 +828,7 @@
                 description: '릴스 조회수',
                 detailedInfo: {
                     service: '릴스 영상에 100% 실제 한국인 계정의 조회수를 제공합니다.',
-                    orderGuide: '릴스 링크를 입력해주세요.\n예시) https://www.instagram.com/reel/ABC123/',
+                    orderGuide: `릴스 링크를 입력해주세요.\n예시) https://www.instagram.com/reel/ABC123/`,
                     asPolicy: '조회수는 이탈이 없습니다.'
                 },
                 optionDescriptions: {},
@@ -869,7 +841,7 @@
                 description: '한국인 댓글 (타겟 가능)',
                 detailedInfo: {
                     service: '게시물에 100% 실제 한국인 계정이 자연스러운 댓글을 작성합니다. 성별, 연령대별 타겟팅이 가능합니다.',
-                    orderGuide: '게시물 링크를 입력해주세요.\n예시) https://www.instagram.com/p/ABC123/\n\n원하시는 댓글 내용이 있다면 주문 후 고객센터로 연락주세요.',
+                    orderGuide: `게시물 링크를 입력해주세요.\n예시) https://www.instagram.com/p/ABC123/\n\n원하시는 댓글 내용이 있다면 주문 후 고객센터로 연락주세요.`,
                     asPolicy: '댓글은 삭제되지 않으나, 계정 정지 등으로 인한 삭제 시 확인 후 A/S 처리됩니다.'
                 },
                 optionDescriptions: {},
@@ -888,7 +860,7 @@
                 description: '게시물 저장',
                 detailedInfo: {
                     service: '게시물에 100% 실제 한국인 계정이 저장을 진행합니다. 저장 수가 많은 게시물은 알고리즘에서 더 높은 평가를 받습니다.',
-                    orderGuide: '게시물 링크를 입력해주세요.\n예시) https://www.instagram.com/p/@@@@@@@',
+                    orderGuide: `게시물 링크를 입력해주세요.\n예시) https://www.instagram.com/p/@@@@@@@`,
                     asPolicy: '저장은 이탈이 거의 없으나, 이탈 시 확인 후 A/S 처리됩니다.'
                 },
                 optionDescriptions: {},
@@ -904,7 +876,7 @@
                 description: '조회수 (한국인/외국인)',
                 detailedInfo: {
                     service: '실제 계정이 동영상을 시청합니다. 조회수는 동영상의 인기와 알고리즘 추천에 직접적인 영향을 미칩니다.',
-                    orderGuide: '동영상 링크를 입력해주세요.\n예시) https://www.youtube.com/watch?v=VIDEO_ID',
+                    orderGuide: `동영상 링크를 입력해주세요.\n예시) https://www.youtube.com/watch?v=VIDEO_ID`,
                     asPolicy: '조회수는 이탈이 없습니다.'
                 },
                 optionDescriptions: {},
@@ -922,8 +894,8 @@
                 description: '외국인 구독자',
                 detailedInfo: {
                     service: '실제 외국인 계정이 구독을 진행합니다. 구독자 수는 채널의 신뢰도와 성장에 핵심적인 역할을 합니다.',
-                    orderGuide: '채널 링크를 입력해주세요.\n예시) https://www.youtube.com/@channelname',
-                    asPolicy: 'A/S 기간: 최대 2개월\n이탈 시 확인 후 A/S 처리가 진행됩니다.'
+                    orderGuide: `채널 링크를 입력해주세요.\n예시) https://www.youtube.com/@channelname`,
+                    asPolicy: `A/S 기간: 최대 2개월\n이탈 시 확인 후 A/S 처리가 진행됩니다.`
                 },
                 optionDescriptions: {},
                 options: [{ name: '외국인 구독자', price: 110, type: 'foreign', descKey: 'foreign' }]
@@ -935,8 +907,8 @@
                 description: '좋아요 (한국인/외국인)',
                 detailedInfo: {
                     service: '실제 계정이 동영상에 좋아요를 남깁니다. 좋아요는 동영상의 품질과 인기를 나타내는 중요한 지표입니다.',
-                    orderGuide: '동영상 링크를 입력해주세요.\n예시) https://www.youtube.com/watch?v=VIDEO_ID',
-                    asPolicy: 'A/S 기간: 최대 2개월\n이탈 시 확인 후 A/S 처리가 진행됩니다.'
+                    orderGuide: `동영상 링크를 입력해주세요.\n예시) https://www.youtube.com/watch?v=VIDEO_ID`,
+                    asPolicy: `A/S 기간: 최대 2개월\n이탈 시 확인 후 A/S 처리가 진행됩니다.`
                 },
                 optionDescriptions: {},
                 options: [
@@ -951,7 +923,7 @@
                 description: '댓글 (한국인/외국인)',
                 detailedInfo: {
                     service: '실제 계정이 동영상에 댓글을 작성합니다. 댓글은 시청자 참여도를 나타내는 중요한 지표입니다.',
-                    orderGuide: '동영상 링크를 입력해주세요.\n예시) https://www.youtube.com/watch?v=VIDEO_ID',
+                    orderGuide: `동영상 링크를 입력해주세요.\n예시) https://www.youtube.com/watch?v=VIDEO_ID`,
                     asPolicy: '댓글은 삭제되지 않으나, 계정 정지 등으로 삭제 시 A/S 처리됩니다.'
                 },
                 optionDescriptions: {},
@@ -969,7 +941,7 @@
                 description: '동영상 시청시간',
                 detailedInfo: {
                     service: '실제 계정이 동영상을 일정 시간 동안 시청합니다. 시청시간은 유튜브 수익화와 알고리즘에 중요한 지표입니다.',
-                    orderGuide: '동영상 링크를 입력해주세요.\n예시) https://www.youtube.com/watch?v=VIDEO_ID',
+                    orderGuide: `동영상 링크를 입력해주세요.\n예시) https://www.youtube.com/watch?v=VIDEO_ID`,
                     asPolicy: '시청시간은 이탈이 없습니다.'
                 },
                 optionDescriptions: {},
@@ -982,7 +954,7 @@
                 description: '라이브 방송 시청',
                 detailedInfo: {
                     service: '실제 계정이 라이브 스트리밍을 시청합니다. 라이브 방송의 동시 시청자 수를 증가시켜 인기 방송으로 만들 수 있습니다.',
-                    orderGuide: '라이브 스트리밍 링크를 입력해주세요.\n예시) https://www.youtube.com/watch?v=LIVE_VIDEO_ID',
+                    orderGuide: `라이브 스트리밍 링크를 입력해주세요.\n예시) https://www.youtube.com/watch?v=LIVE_VIDEO_ID`,
                     asPolicy: '라이브 시청은 이탈이 없습니다.'
                 },
                 optionDescriptions: {},
@@ -1001,7 +973,7 @@
                 description: '동영상 공유',
                 detailedInfo: {
                     service: '실제 계정이 동영상을 공유합니다. 공유는 동영상의 확산과 바이럴에 중요한 역할을 합니다.',
-                    orderGuide: '동영상 링크를 입력해주세요.\n예시) https://www.youtube.com/watch?v=VIDEO_ID',
+                    orderGuide: `동영상 링크를 입력해주세요.\n예시) https://www.youtube.com/watch?v=VIDEO_ID`,
                     asPolicy: '공유는 이탈이 없습니다.'
                 },
                 optionDescriptions: {},
@@ -1017,7 +989,7 @@
                 description: '게시물 좋아요 (한국인/외국인)',
                 detailedInfo: {
                     service: '실제 한국인 계정이 게시물에 좋아요를 남깁니다.',
-                    orderGuide: '게시물 링크를 입력해주세요.\n예시) https://www.facebook.com/post_id',
+                    orderGuide: `게시물 링크를 입력해주세요.\n예시) https://www.facebook.com/post_id`,
                     asPolicy: '이탈 시 확인 후 A/S 처리가 진행됩니다.'
                 },
                 optionDescriptions: {},
@@ -1041,8 +1013,8 @@
                 description: '프로필 팔로워 (한국인/외국인)',
                 detailedInfo: {
                     service: '실제 한국인 계정이 프로필을 팔로우합니다.',
-                    orderGuide: '프로필 링크를 입력해주세요.\n예시) https://www.facebook.com/username',
-                    asPolicy: 'A/S 기간: 최대 3개월\n구매 날짜로부터 30일 / 60일 / 90일 경과 시 이탈 수량 자동 리필 처리됩니다.'
+                    orderGuide: `프로필 링크를 입력해주세요.\n예시) https://www.facebook.com/username`,
+                    asPolicy: `A/S 기간: 최대 3개월\n구매 날짜로부터 30일 / 60일 / 90일 경과 시 이탈 수량 자동 리필 처리됩니다.`
                 },
                 optionDescriptions: {},
                 options: [
@@ -1065,8 +1037,8 @@
                 description: '프로필 좋아요&팔로워 (한국인/외국인)',
                 detailedInfo: {
                     service: '실제 한국인 계정이 프로필 페이지에 좋아요와 팔로우를 동시에 진행합니다.',
-                    orderGuide: '프로필 페이지 링크를 입력해주세요.\n예시) https://www.facebook.com/pagename',
-                    asPolicy: 'A/S 기간: 최대 3개월\n구매 날짜로부터 30일 / 60일 / 90일 경과 시 이탈 수량 자동 리필 처리됩니다.'
+                    orderGuide: `프로필 페이지 링크를 입력해주세요.\n예시) https://www.facebook.com/pagename`,
+                    asPolicy: `A/S 기간: 최대 3개월\n구매 날짜로부터 30일 / 60일 / 90일 경과 시 이탈 수량 자동 리필 처리됩니다.`
                 },
                 optionDescriptions: {},
                 options: [
@@ -1089,7 +1061,7 @@
                 description: '게시물 댓글 (한국인)',
                 detailedInfo: {
                     service: '실제 한국인 계정이 게시물에 댓글을 작성합니다.',
-                    orderGuide: '게시물 링크를 입력해주세요.\n예시) https://www.facebook.com/post_id',
+                    orderGuide: `게시물 링크를 입력해주세요.\n예시) https://www.facebook.com/post_id`,
                     asPolicy: '댓글은 삭제되지 않으나, 계정 정지 등으로 삭제 시 A/S 처리됩니다.'
                 },
                 optionDescriptions: {},
@@ -1138,8 +1110,8 @@
                 description: '실제 한국인 팔로워',
                 detailedInfo: {
                     service: '100% 실제 활동하는 한국인 계정이 쓰레드 계정을 팔로우합니다.',
-                    orderGuide: '쓰레드 프로필 링크를 입력해주세요.\n예시) https://www.threads.net/@username',
-                    asPolicy: 'A/S 기간: 최대 3개월\n구매 날짜로부터 30일 / 60일 / 90일 경과 시 이탈 수량 자동 리필 처리됩니다.'
+                    orderGuide: `쓰레드 프로필 링크를 입력해주세요.\n예시) https://www.threads.net/@username`,
+                    asPolicy: `A/S 기간: 최대 3개월\n구매 날짜로부터 30일 / 60일 / 90일 경과 시 이탈 수량 자동 리필 처리됩니다.`
                 },
                 optionDescriptions: {},
                 options: [{ name: '실제 한국인 팔로워', price: 100, type: 'korean', descKey: 'korean' }]
@@ -1151,7 +1123,7 @@
                 description: '실제 한국인 좋아요',
                 detailedInfo: {
                     service: '100% 실제 한국인 계정이 쓰레드 게시물에 좋아요를 남깁니다.',
-                    orderGuide: '게시물 링크를 입력해주세요.\n예시) https://www.threads.net/@username/post/POST_ID',
+                    orderGuide: `게시물 링크를 입력해주세요.\n예시) https://www.threads.net/@username/post/POST_ID`,
                     asPolicy: '이탈 시 확인 후 A/S 처리가 진행됩니다.'
                 },
                 optionDescriptions: {},
@@ -1170,7 +1142,7 @@
                 description: '블로그 포스팅',
                 detailedInfo: {
                     service: '100% 실제 한국인 방문자가 네이버 블로그를 방문합니다.',
-                    orderGuide: '블로그 포스팅 링크를 입력해주세요.\n예시) https://blog.naver.com/blogid/postid',
+                    orderGuide: `블로그 포스팅 링크를 입력해주세요.\n예시) https://blog.naver.com/blogid/postid`,
                     asPolicy: '조회수는 이탈이 없습니다.'
                 },
                 optionDescriptions: {},
@@ -1183,7 +1155,7 @@
                 description: '카페 게시글',
                 detailedInfo: {
                     service: '100% 실제 한국인 방문자가 네이버 카페 게시글을 방문합니다.',
-                    orderGuide: '카페 게시글 링크를 입력해주세요.\n예시) https://cafe.naver.com/cafename/articleid',
+                    orderGuide: `카페 게시글 링크를 입력해주세요.\n예시) https://cafe.naver.com/cafename/articleid`,
                     asPolicy: '조회수는 이탈이 없습니다.'
                 },
                 optionDescriptions: {},
