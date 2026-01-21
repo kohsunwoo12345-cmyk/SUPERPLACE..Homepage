@@ -34924,95 +34924,438 @@ app.get('/store', (c) => {
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: #f8f9fa;
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f5f6f8;
             min-height: 100vh;
-            padding: 20px;
         }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
+        
+        /* 헤더 */
         .header {
-            background: white;
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            border: 1px solid #e5e7eb;
-            margin-bottom: 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px 20px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
         }
         .header h1 {
-            color: #667eea;
+            color: white;
+            font-size: 36px;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+        .header .subtitle {
+            color: rgba(255,255,255,0.9);
+            font-size: 16px;
+            font-weight: 400;
+        }
+        .points-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+            padding: 12px 28px;
+            border-radius: 50px;
+            margin-top: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+        .points-badge .label {
+            color: rgba(255,255,255,0.8);
+            font-size: 13px;
+            margin-right: 8px;
+        }
+        .points-badge .amount {
+            color: white;
+            font-size: 22px;
+            font-weight: 700;
+        }
+        
+        /* 컨테이너 */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        /* 통계 */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 50px;
+        }
+        .stat-card {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            text-align: center;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            transition: all 0.3s;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+        }
+        .stat-card .icon {
+            font-size: 40px;
+            margin-bottom: 15px;
+        }
+        .stat-card .number {
             font-size: 32px;
+            font-weight: 800;
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+        .stat-card .label {
+            font-size: 14px;
+            color: #6b7280;
+            font-weight: 500;
+        }
+        
+        /* 카테고리 탭 */
+        .categories {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 40px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            flex-wrap: wrap;
+        }
+        .category-btn {
+            flex: 0 0 auto;
+            padding: 12px 28px;
+            border-radius: 50px;
+            border: 2px solid #e5e7eb;
+            background: white;
+            color: #6b7280;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+        .category-btn:hover {
+            border-color: #667eea;
+            color: #667eea;
+            transform: translateY(-2px);
+        }
+        .category-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: transparent;
+            color: white;
+            box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+        }
+        
+        /* 상품 그리드 */
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 24px;
+            margin-bottom: 50px;
+        }
+        .product-card {
+            background: white;
+            border-radius: 16px;
+            padding: 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            transition: all 0.3s;
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+        .product-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .product-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 32px rgba(0,0,0,0.12);
+            border-color: #667eea;
+        }
+        .product-card:hover::before {
+            opacity: 1;
+        }
+        .product-icon {
+            font-size: 56px;
+            margin-bottom: 16px;
+            display: inline-block;
+        }
+        .product-name {
+            font-size: 22px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 10px;
+        }
+        .product-description {
+            font-size: 14px;
+            color: #6b7280;
+            line-height: 1.6;
+            margin-bottom: 16px;
+            min-height: 42px;
+        }
+        .product-price {
+            font-size: 26px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 12px;
+        }
+        .product-options-count {
+            display: inline-block;
+            background: #f0f4ff;
+            color: #667eea;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        .buy-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+        }
+        .buy-btn:hover {
+            transform: scale(1.03);
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+        }
+        .buy-btn:active {
+            transform: scale(0.98);
+        }
+        
+        /* 주문 내역 */
+        .my-orders {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        }
+        .my-orders h2 {
+            font-size: 26px;
+            font-weight: 800;
+            color: #1f2937;
+            margin-bottom: 30px;
             display: flex;
             align-items: center;
             gap: 10px;
         }
-        .points-display {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 15px 30px;
-            border-radius: 50px;
-            font-size: 24px;
-            font-weight: bold;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-        }
-        .categories {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-            margin-bottom: 30px;
-        }
-        .category-btn {
-            background: white;
-            padding: 15px;
-            border-radius: 15px;
-            text-align: center;
-            cursor: pointer;
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid #f3f4f6;
             transition: all 0.3s;
-            border: 2px solid #e5e7eb;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
-        .category-btn:hover {
-            border-color: #667eea;
-            transform: translateY(-5px);
-            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.2);
+        .order-item:hover {
+            background: #f9fafb;
+            transform: translateX(5px);
         }
-        .category-btn.active {
-            border-color: #667eea;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        .order-item:last-child {
+            border-bottom: none;
         }
-        .category-btn.active .icon,
-        .category-btn.active .name {
-            color: white;
+        .order-info strong {
+            font-size: 16px;
+            color: #1f2937;
+            display: block;
+            margin-bottom: 6px;
         }
-        .category-btn .icon { font-size: 40px; margin-bottom: 10px; }
-        .category-btn .name { font-weight: 600; color: #333; }
-        .products-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
+        .order-meta {
+            font-size: 13px;
+            color: #9ca3af;
         }
-        .product-card {
+        .order-amount {
+            font-size: 20px;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 6px;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .status-pending {
+            background: #fef3c7;
+            color: #d97706;
+        }
+        .status-processing {
+            background: #dbeafe;
+            color: #2563eb;
+        }
+        .status-completed {
+            background: #d1fae5;
+            color: #059669;
+        }
+        .status-failed {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+        
+        /* 모달 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .modal-content {
             background: white;
             border-radius: 20px;
-            padding: 25px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-            border: 1px solid #e5e7eb;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        .modal-header {
+            font-size: 28px;
+            font-weight: 800;
+            color: #1f2937;
+            margin-bottom: 10px;
+        }
+        .modal-subtitle {
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 30px;
+        }
+        .option-item {
+            padding: 16px;
+            margin-bottom: 12px;
+            background: #f9fafb;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .option-item:hover {
+            border-color: #667eea;
+            background: white;
+            transform: translateX(5px);
+        }
+        .option-item.selected {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+        .option-name {
+            font-size: 15px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 4px;
+        }
+        .option-price {
+            font-size: 18px;
+            font-weight: 800;
+            color: #667eea;
+        }
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 30px;
+        }
+        .modal-btn {
+            flex: 1;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
             transition: all 0.3s;
         }
-        .product-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 12px 30px rgba(0,0,0,0.15);
-            border-color: #667eea;
+        .modal-btn-cancel {
+            background: #f3f4f6;
+            color: #6b7280;
         }
-        .product-icon {
-            font-size: 48px;
-            margin-bottom: 15px;
+        .modal-btn-cancel:hover {
+            background: #e5e7eb;
+        }
+        .modal-btn-confirm {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+        }
+        .modal-btn-confirm:hover {
+            transform: scale(1.03);
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+        }
+        
+        /* 접근 거부 */
+        .access-denied {
+            text-align: center;
+            padding: 80px 20px;
+        }
+        .access-denied h2 {
+            font-size: 36px;
+            font-weight: 800;
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+        .access-denied p {
+            font-size: 16px;
+            color: #6b7280;
+            margin-bottom: 30px;
+        }
+        .back-btn {
+            display: inline-block;
+            padding: 16px 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 12px;
+            font-weight: 700;
+            transition: all 0.3s;
+        }
+        .back-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+        }
+        
+        /* 반응형 */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 28px;
+            }
+            .stats {
+                grid-template-columns: 1fr;
+            }
+            .categories {
+                overflow-x: auto;
+                flex-wrap: nowrap;
+            }
+            .products-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
         }
         .product-name {
             font-size: 20px;
@@ -35092,53 +35435,56 @@ app.get('/store', (c) => {
     </style>
 </head>
 <body>
+    <!-- 헤더 -->
+    <div class="header">
+        <h1>🚀 소셜 트래픽 스토어</h1>
+        <p class="subtitle">인스타그램, 유튜브, 페이스북 등 소셜미디어 마케팅을 위한 프리미엄 서비스</p>
+        <div class="points-badge">
+            <span class="label">보유 포인트</span>
+            <span class="amount" id="points-balance">0</span>
+            <span class="label">P</span>
+        </div>
+    </div>
+
     <div class="container">
-        <div class="header">
-            <h1>
-                <span>🛒</span> 소셜 트래픽 스토어
-            </h1>
-            <div class="points-display">
-                <span id="points-balance">0</span> P
+        <!-- 통계 -->
+        <div class="stats">
+            <div class="stat-card">
+                <div class="icon">📦</div>
+                <div class="number" id="total-products">5</div>
+                <div class="label">제공 서비스</div>
+            </div>
+            <div class="stat-card">
+                <div class="icon">✅</div>
+                <div class="number" id="completed-orders">0</div>
+                <div class="label">완료된 주문</div>
+            </div>
+            <div class="stat-card">
+                <div class="icon">⭐</div>
+                <div class="number">4.9</div>
+                <div class="label">평균 만족도</div>
             </div>
         </div>
 
         <div id="store-content">
-            <!-- 카테고리 -->
+            <!-- 카테고리 탭 -->
             <div class="categories">
-                <div class="category-btn active" data-category="all">
-                    <div class="icon">🌟</div>
-                    <div class="name">전체</div>
-                </div>
-                <div class="category-btn" data-category="instagram">
-                    <div class="icon">📸</div>
-                    <div class="name">인스타그램</div>
-                </div>
-                <div class="category-btn" data-category="youtube">
-                    <div class="icon">▶️</div>
-                    <div class="name">유튜브</div>
-                </div>
-                <div class="category-btn" data-category="facebook">
-                    <div class="icon">👥</div>
-                    <div class="name">페이스북</div>
-                </div>
-                <div class="category-btn" data-category="threads">
-                    <div class="icon">🧵</div>
-                    <div class="name">쓰레드</div>
-                </div>
-                <div class="category-btn" data-category="naver">
-                    <div class="icon">🟢</div>
-                    <div class="name">네이버</div>
-                </div>
+                <button class="category-btn active" data-category="all">🌟 전체</button>
+                <button class="category-btn" data-category="instagram">📸 인스타그램</button>
+                <button class="category-btn" data-category="youtube">▶️ 유튜브</button>
+                <button class="category-btn" data-category="facebook">👥 페이스북</button>
+                <button class="category-btn" data-category="threads">🧵 쓰레드</button>
+                <button class="category-btn" data-category="naver">🟢 네이버</button>
             </div>
 
-            <!-- 상품 목록 -->
+            <!-- 상품 그리드 -->
             <div class="products-grid" id="products-grid">
                 <!-- 동적으로 로드 -->
             </div>
 
-            <!-- 내 주문 내역 -->
+            <!-- 주문 내역 -->
             <div class="my-orders">
-                <h2 style="margin-bottom: 20px;">📦 최근 주문 내역</h2>
+                <h2>📦 최근 주문 내역</h2>
                 <div id="orders-list">
                     <!-- 동적으로 로드 -->
                 </div>
@@ -35297,7 +35643,7 @@ app.get('/store', (c) => {
                 : allProducts.filter(p => p.category === currentCategory);
 
             if (filtered.length === 0) {
-                grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; padding: 40px; color: #999;">상품이 없습니다.</p>';
+                grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; padding: 60px; color: #9ca3af; font-size: 16px;">상품이 없습니다.</p>';
                 return;
             }
 
@@ -35316,8 +35662,8 @@ app.get('/store', (c) => {
                             <div class="product-name">\${product.name}</div>
                             <div class="product-description">\${product.description}</div>
                             <div class="product-price">\${priceText}</div>
-                            <div style="font-size: 13px; color: #667eea; margin-bottom: 15px; font-weight: 600;">
-                                \${product.options.length}개 옵션 선택 가능
+                            <div class="product-options-count">
+                                \${product.options.length}개 옵션
                             </div>
                             <button class="buy-btn" onclick="selectInstagramOption('\${product.id}')">
                                 옵션 선택하기
@@ -35408,17 +35754,13 @@ app.get('/store', (c) => {
             const product = allProducts.find(p => p.id === productId);
             if (!product || !product.options) return;
             
-            let optionsHtml = '<div style="max-height: 400px; overflow-y: auto;">';
+            let optionsHtml = '<div style="max-height: 450px; overflow-y: auto; padding: 5px;">';
             product.options.forEach((option, index) => {
                 optionsHtml += \`
-                    <div style="padding: 12px; margin: 8px 0; background: white; border: 2px solid #e5e7eb; border-radius: 8px; cursor: pointer; transition: all 0.2s;"
-                         onclick="this.style.background='#f0f4ff'; this.style.borderColor='#667eea';"
-                         onmouseout="if(!this.dataset.selected) { this.style.background='white'; this.style.borderColor='#e5e7eb'; }"
-                         onmouseover="this.style.borderColor='#667eea';"
-                         data-option-index="\${index}">
+                    <div class="option-item" data-option-index="\${index}">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span style="font-size: 15px; font-weight: 500;">\${option.name}</span>
-                            <span style="font-size: 17px; font-weight: 700; color: #667eea;">\${option.price.toLocaleString()}원</span>
+                            <span class="option-name">\${option.name}</span>
+                            <span class="option-price">\${option.price.toLocaleString()}원</span>
                         </div>
                     </div>
                 \`;
@@ -35426,17 +35768,17 @@ app.get('/store', (c) => {
             optionsHtml += '</div>';
             
             const modal = \`
-                <div id="option-modal" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 10000; display: flex; align-items: center; justify-content: center;">
-                    <div style="background: white; border-radius: 20px; padding: 40px; max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto;">
-                        <h2 style="font-size: 26px; font-weight: 700; margin-bottom: 10px; color: #333;">\${product.name}</h2>
-                        <p style="font-size: 14px; color: #667eea; margin-bottom: 25px;">\${product.description}</p>
-                        <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 15px; color: #333;">옵션을 선택해주세요</h3>
+                <div id="option-modal" class="modal-overlay">
+                    <div class="modal-content">
+                        <div class="modal-header">\${product.name}</div>
+                        <div class="modal-subtitle">\${product.description}</div>
+                        <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 20px; color: #1f2937;">옵션을 선택해주세요</h3>
                         \${optionsHtml}
-                        <div style="margin-top: 30px; display: flex; gap: 10px;">
-                            <button onclick="closeOptionModal()" style="flex: 1; padding: 15px; background: #f1f3f5; color: #666; border: none; border-radius: 10px; font-size: 16px; font-weight: 700; cursor: pointer;">
+                        <div class="modal-buttons">
+                            <button onclick="closeOptionModal()" class="modal-btn modal-btn-cancel">
                                 취소
                             </button>
-                            <button onclick="proceedToInstagramPurchase('\${productId}')" style="flex: 1; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: 700; cursor: pointer;">
+                            <button onclick="proceedToInstagramPurchase('\${productId}')" class="modal-btn modal-btn-confirm">
                                 다음
                             </button>
                         </div>
@@ -35450,12 +35792,10 @@ app.get('/store', (c) => {
             document.querySelectorAll('[data-option-index]').forEach(el => {
                 el.addEventListener('click', function() {
                     document.querySelectorAll('[data-option-index]').forEach(e => {
-                        e.style.background = 'white';
-                        e.style.borderColor = '#e5e7eb';
+                        e.classList.remove('selected');
                         e.dataset.selected = '';
                     });
-                    this.style.background = '#f0f4ff';
-                    this.style.borderColor = '#667eea';
+                    this.classList.add('selected');
                     this.dataset.selected = 'true';
                 });
             });
