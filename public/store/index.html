@@ -1577,55 +1577,175 @@ A/S 기간: 최대 2개월
 
         const facebookProducts = [
             {
-                id: 'fb_followers',
-                name: '페이스북 팔로워',
-                category: 'facebook',
-                description: '페이지 팔로워',
-                detailedInfo: {
-                    service: '100% 실제 활동하는 한국인 계정이 페이스북 페이지를 팔로우합니다.',
-                    orderGuide: '페이스북 페이지 링크를 입력해주세요.\n예시) https://www.facebook.com/pagename',
-                    asPolicy: 'A/S 기간: 최대 3개월\n구매 날짜로부터 30일 / 60일 / 90일 경과 시 이탈 수량 자동 리필 처리됩니다.'
-                },
-                optionDescriptions: {
-                    'korean': `👥 <SUPERPLACE> 페이스북 팔로워 서비스
-
-📌 서비스 설명
-100% 실제 활동하는 한국인 계정이 회원님의 페이스북 페이지를 팔로우합니다. 팔로워는 페이지의 신뢰도와 도달 범위를 확대하는 핵심 요소입니다.
-
-🔗 주문 링크 입력 방법
-페이스북 페이지 링크를 복사하여 입력해주세요.
-예시) https://www.facebook.com/pagename
-
-💎 A/S 및 리필 정책
-A/S 기간: 최대 3개월
-구매 날짜로부터 30일 / 60일 / 90일 경과 시 이탈 수량 자동 리필 처리됩니다.`
-                },
-                options: [{ name: '한국인 팔로워', price: 220, type: 'korean', descKey: 'korean' }]
-            },
-            {
                 id: 'fb_likes',
                 name: '페이스북 좋아요',
                 category: 'facebook',
-                description: '게시물 좋아요',
+                description: '게시물 좋아요 (한국인/외국인)',
                 detailedInfo: {
-                    service: '100% 실제 한국인 계정이 게시물에 좋아요를 남깁니다.',
+                    service: '실제 한국인 계정이 게시물에 좋아요를 남깁니다.',
                     orderGuide: '게시물 링크를 입력해주세요.\n예시) https://www.facebook.com/post_id',
                     asPolicy: '이탈 시 확인 후 A/S 처리가 진행됩니다.'
                 },
                 optionDescriptions: {
-                    'korean': `👍 <SUPERPLACE> 페이스북 좋아요 서비스
-
-📌 서비스 설명
-100% 실제 한국인 계정이 회원님의 페이스북 게시물에 좋아요를 남깁니다. 좋아요는 게시물의 노출 범위와 참여도를 높입니다.
-
-🔗 주문 링크 입력 방법
-게시물 링크를 복사하여 입력해주세요.
-예시) https://www.facebook.com/post_id
-
-💎 A/S 및 리필 정책
-이탈 시 확인 후 A/S 처리가 진행됩니다.`
+                    'korean': `👍 <SUPERPLACE> 실제 한국인 좋아요`,
+                    'korean_male': `👍 <SUPERPLACE> [남성] 실제 한국인 좋아요`,
+                    'korean_female': `👍 <SUPERPLACE> [여성] 실제 한국인 좋아요`,
+                    'korean_20s': `👍 <SUPERPLACE> [20대] 실제 한국인 좋아요`,
+                    'korean_30s': `👍 <SUPERPLACE> [30대] 실제 한국인 좋아요`,
+                    'korean_20s_male': `👍 <SUPERPLACE> [20대/남성] 실제 한국인 좋아요`,
+                    'korean_20s_female': `👍 <SUPERPLACE> [20대/여성] 실제 한국인 좋아요`,
+                    'korean_30s_male': `👍 <SUPERPLACE> [30대/남성] 실제 한국인 좋아요`,
+                    'korean_30s_female': `👍 <SUPERPLACE> [30대/여성] 실제 한국인 좋아요`,
+                    'foreign': `👍 <SUPERPLACE> 외국인 좋아요`
                 },
-                options: [{ name: '한국인 좋아요', price: 55, type: 'korean', descKey: 'korean' }]
+                options: [
+                    { name: '실제 한국인 좋아요', price: 40, type: 'korean', descKey: 'korean' },
+                    { name: '[남성] 실제 한국인 좋아요', price: 52, type: 'korean', target: '남성', descKey: 'korean_male' },
+                    { name: '[여성] 실제 한국인 좋아요', price: 52, type: 'korean', target: '여성', descKey: 'korean_female' },
+                    { name: '[20대] 실제 한국인 좋아요', price: 52, type: 'korean', target: '20대', descKey: 'korean_20s' },
+                    { name: '[30대] 실제 한국인 좋아요', price: 52, type: 'korean', target: '30대', descKey: 'korean_30s' },
+                    { name: '[20대/남성] 실제 한국인 좋아요', price: 64, type: 'korean', target: '20대 남성', descKey: 'korean_20s_male' },
+                    { name: '[20대/여성] 실제 한국인 좋아요', price: 64, type: 'korean', target: '20대 여성', descKey: 'korean_20s_female' },
+                    { name: '[30대/남성] 실제 한국인 좋아요', price: 64, type: 'korean', target: '30대 남성', descKey: 'korean_30s_male' },
+                    { name: '[30대/여성] 실제 한국인 좋아요', price: 64, type: 'korean', target: '30대 여성', descKey: 'korean_30s_female' },
+                    { name: '외국인 좋아요', price: 4, type: 'foreign', descKey: 'foreign' }
+                ]
+            },
+            {
+                id: 'fb_profile_followers',
+                name: '페이스북 프로필 팔로워',
+                category: 'facebook',
+                description: '프로필 팔로워 (한국인/외국인)',
+                detailedInfo: {
+                    service: '실제 한국인 계정이 프로필을 팔로우합니다.',
+                    orderGuide: '프로필 링크를 입력해주세요.\n예시) https://www.facebook.com/username',
+                    asPolicy: 'A/S 기간: 최대 3개월\n구매 날짜로부터 30일 / 60일 / 90일 경과 시 이탈 수량 자동 리필 처리됩니다.'
+                },
+                optionDescriptions: {
+                    'korean': `👥 <SUPERPLACE> 실제 한국인 프로필 팔로워`,
+                    'korean_male': `👥 <SUPERPLACE> [남성] 실제 한국인 프로필 팔로워`,
+                    'korean_female': `👥 <SUPERPLACE> [여성] 실제 한국인 프로필 팔로워`,
+                    'korean_20s': `👥 <SUPERPLACE> [20대] 실제 한국인 프로필 팔로워`,
+                    'korean_30s': `👥 <SUPERPLACE> [30대] 실제 한국인 프로필 팔로워`,
+                    'korean_20s_male': `👥 <SUPERPLACE> [20대/남성] 실제 한국인 프로필 팔로워`,
+                    'korean_20s_female': `👥 <SUPERPLACE> [20대/여성] 실제 한국인 프로필 팔로워`,
+                    'korean_30s_male': `👥 <SUPERPLACE> [30대/남성] 실제 한국인 프로필 팔로워`,
+                    'korean_30s_female': `👥 <SUPERPLACE> [30대/여성] 실제 한국인 프로필 팔로워`,
+                    'foreign': `👥 <SUPERPLACE> 외국인 프로필 팔로워`
+                },
+                options: [
+                    { name: '실제 한국인 프로필 팔로워', price: 280, type: 'korean', descKey: 'korean' },
+                    { name: '[남성] 실제 한국인 프로필 팔로워', price: 360, type: 'korean', target: '남성', descKey: 'korean_male' },
+                    { name: '[여성] 실제 한국인 프로필 팔로워', price: 360, type: 'korean', target: '여성', descKey: 'korean_female' },
+                    { name: '[20대] 실제 한국인 프로필 팔로워', price: 360, type: 'korean', target: '20대', descKey: 'korean_20s' },
+                    { name: '[30대] 실제 한국인 프로필 팔로워', price: 360, type: 'korean', target: '30대', descKey: 'korean_30s' },
+                    { name: '[20대/남성] 실제 한국인 프로필 팔로워', price: 440, type: 'korean', target: '20대 남성', descKey: 'korean_20s_male' },
+                    { name: '[20대/여성] 실제 한국인 프로필 팔로워', price: 360, type: 'korean', target: '20대 여성', descKey: 'korean_20s_female' },
+                    { name: '[30대/남성] 실제 한국인 프로필 팔로워', price: 360, type: 'korean', target: '30대 남성', descKey: 'korean_30s_male' },
+                    { name: '[30대/여성] 실제 한국인 프로필 팔로워', price: 360, type: 'korean', target: '30대 여성', descKey: 'korean_30s_female' },
+                    { name: '외국인 프로필 팔로워', price: 30, type: 'foreign', descKey: 'foreign' }
+                ]
+            },
+            {
+                id: 'fb_profile_likes_followers',
+                name: '페이스북 프로필 좋아요&팔로워',
+                category: 'facebook',
+                description: '프로필 좋아요&팔로워 (한국인/외국인)',
+                detailedInfo: {
+                    service: '실제 한국인 계정이 프로필 페이지에 좋아요와 팔로우를 동시에 진행합니다.',
+                    orderGuide: '프로필 페이지 링크를 입력해주세요.\n예시) https://www.facebook.com/pagename',
+                    asPolicy: 'A/S 기간: 최대 3개월\n구매 날짜로부터 30일 / 60일 / 90일 경과 시 이탈 수량 자동 리필 처리됩니다.'
+                },
+                optionDescriptions: {
+                    'korean': `❤️👥 <SUPERPLACE> 실제 한국인 프로필 좋아요&팔로워`,
+                    'korean_male': `❤️👥 <SUPERPLACE> [남성] 실제 한국인 프로필 좋아요&팔로워`,
+                    'korean_female': `❤️👥 <SUPERPLACE> [여성] 실제 한국인 프로필 좋아요&팔로워`,
+                    'korean_20s': `❤️👥 <SUPERPLACE> [20대] 실제 한국인 프로필 좋아요&팔로워`,
+                    'korean_30s': `❤️👥 <SUPERPLACE> [30대] 실제 한국인 프로필 좋아요&팔로워`,
+                    'korean_20s_male': `❤️👥 <SUPERPLACE> [20대/남성] 실제 한국인 프로필 좋아요&팔로워`,
+                    'korean_20s_female': `❤️👥 <SUPERPLACE> [20대/여성] 실제 한국인 프로필 좋아요&팔로워`,
+                    'korean_30s_male': `❤️👥 <SUPERPLACE> [30대/남성] 실제 한국인 프로필 좋아요&팔로워`,
+                    'korean_30s_female': `❤️👥 <SUPERPLACE> [30대/여성] 실제 한국인 프로필 좋아요&팔로워`,
+                    'foreign': `❤️👥 <SUPERPLACE> 외국인 프로필 좋아요&팔로워`
+                },
+                options: [
+                    { name: '실제 한국인 프로필 좋아요&팔로워', price: 280, type: 'korean', descKey: 'korean' },
+                    { name: '[남성] 실제 한국인 프로필 좋아요&팔로워', price: 360, type: 'korean', target: '남성', descKey: 'korean_male' },
+                    { name: '[여성] 실제 한국인 프로필 좋아요&팔로워', price: 360, type: 'korean', target: '여성', descKey: 'korean_female' },
+                    { name: '[20대] 실제 한국인 프로필 좋아요&팔로워', price: 360, type: 'korean', target: '20대', descKey: 'korean_20s' },
+                    { name: '[30대] 실제 한국인 프로필 좋아요&팔로워', price: 360, type: 'korean', target: '30대', descKey: 'korean_30s' },
+                    { name: '[20대/남성] 실제 한국인 프로필 좋아요&팔로워', price: 440, type: 'korean', target: '20대 남성', descKey: 'korean_20s_male' },
+                    { name: '[20대/여성] 실제 한국인 프로필 좋아요&팔로워', price: 360, type: 'korean', target: '20대 여성', descKey: 'korean_20s_female' },
+                    { name: '[30대/남성] 실제 한국인 프로필 좋아요&팔로워', price: 360, type: 'korean', target: '30대 남성', descKey: 'korean_30s_male' },
+                    { name: '[30대/여성] 실제 한국인 프로필 좋아요&팔로워', price: 360, type: 'korean', target: '30대 여성', descKey: 'korean_30s_female' },
+                    { name: '외국인 프로필 좋아요&팔로워', price: 30, type: 'foreign', descKey: 'foreign' }
+                ]
+            },
+            {
+                id: 'fb_comments',
+                name: '페이스북 댓글',
+                category: 'facebook',
+                description: '게시물 댓글 (한국인)',
+                detailedInfo: {
+                    service: '실제 한국인 계정이 게시물에 댓글을 작성합니다.',
+                    orderGuide: '게시물 링크를 입력해주세요.\n예시) https://www.facebook.com/post_id',
+                    asPolicy: '댓글은 삭제되지 않으나, 계정 정지 등으로 삭제 시 A/S 처리됩니다.'
+                },
+                optionDescriptions: {
+                    'korean': `💬 <SUPERPLACE> 실제 한국인 댓글`,
+                    'korean_male': `💬 <SUPERPLACE> [남성] 실제 한국인 댓글`,
+                    'korean_female': `💬 <SUPERPLACE> [여성] 실제 한국인 댓글`,
+                    'korean_20s': `💬 <SUPERPLACE> [20대] 실제 한국인 댓글`,
+                    'korean_30s': `💬 <SUPERPLACE> [30대] 실제 한국인 댓글`,
+                    'korean_20s_male': `💬 <SUPERPLACE> [20대/남성] 실제 한국인 댓글`,
+                    'korean_20s_female': `💬 <SUPERPLACE> [20대/여성] 실제 한국인 댓글`,
+                    'korean_30s_male': `💬 <SUPERPLACE> [30대/남성] 실제 한국인 댓글`,
+                    'korean_30s_female': `💬 <SUPERPLACE> [30대/여성] 실제 한국인 댓글`
+                },
+                options: [
+                    { name: '실제 한국인 댓글', price: 280, type: 'korean', descKey: 'korean' },
+                    { name: '[남성] 실제 한국인 댓글', price: 360, type: 'korean', target: '남성', descKey: 'korean_male' },
+                    { name: '[여성] 실제 한국인 댓글', price: 360, type: 'korean', target: '여성', descKey: 'korean_female' },
+                    { name: '[20대] 실제 한국인 댓글', price: 360, type: 'korean', target: '20대', descKey: 'korean_20s' },
+                    { name: '[30대] 실제 한국인 댓글', price: 360, type: 'korean', target: '30대', descKey: 'korean_30s' },
+                    { name: '[20대/남성] 실제 한국인 댓글', price: 440, type: 'korean', target: '20대 남성', descKey: 'korean_20s_male' },
+                    { name: '[20대/여성] 실제 한국인 댓글', price: 360, type: 'korean', target: '20대 여성', descKey: 'korean_20s_female' },
+                    { name: '[30대/남성] 실제 한국인 댓글', price: 360, type: 'korean', target: '30대 남성', descKey: 'korean_30s_male' },
+                    { name: '[30대/여성] 실제 한국인 댓글', price: 360, type: 'korean', target: '30대 여성', descKey: 'korean_30s_female' }
+                ]
+            },
+            {
+                id: 'fb_comment_likes',
+                name: '페이스북 댓글 좋아요',
+                category: 'facebook',
+                description: '댓글 좋아요 (한국인)',
+                detailedInfo: {
+                    service: '실제 한국인 계정이 댓글에 좋아요를 남깁니다.',
+                    orderGuide: '댓글 링크를 입력해주세요.',
+                    asPolicy: '이탈 시 확인 후 A/S 처리가 진행됩니다.'
+                },
+                optionDescriptions: {
+                    'korean': `👍 <SUPERPLACE> 실제 한국인 댓글 좋아요`,
+                    'korean_male': `👍 <SUPERPLACE> [남성] 실제 한국인 댓글 좋아요`,
+                    'korean_female': `👍 <SUPERPLACE> [여성] 실제 한국인 댓글 좋아요`,
+                    'korean_20s': `👍 <SUPERPLACE> [20대] 실제 한국인 댓글 좋아요`,
+                    'korean_30s': `👍 <SUPERPLACE> [30대] 실제 한국인 댓글 좋아요`,
+                    'korean_20s_male': `👍 <SUPERPLACE> [20대/남성] 실제 한국인 댓글 좋아요`,
+                    'korean_20s_female': `👍 <SUPERPLACE> [20대/여성] 실제 한국인 댓글 좋아요`,
+                    'korean_30s_male': `👍 <SUPERPLACE> [30대/남성] 실제 한국인 댓글 좋아요`,
+                    'korean_30s_female': `👍 <SUPERPLACE> [30대/여성] 실제 한국인 댓글 좋아요`
+                },
+                options: [
+                    { name: '실제 한국인 댓글 좋아요', price: 70, type: 'korean', descKey: 'korean' },
+                    { name: '[남성] 실제 한국인 댓글 좋아요', price: 80, type: 'korean', target: '남성', descKey: 'korean_male' },
+                    { name: '[여성] 실제 한국인 댓글 좋아요', price: 80, type: 'korean', target: '여성', descKey: 'korean_female' },
+                    { name: '[20대] 실제 한국인 댓글 좋아요', price: 90, type: 'korean', target: '20대', descKey: 'korean_20s' },
+                    { name: '[30대] 실제 한국인 댓글 좋아요', price: 90, type: 'korean', target: '30대', descKey: 'korean_30s' },
+                    { name: '[20대/남성] 실제 한국인 댓글 좋아요', price: 90, type: 'korean', target: '20대 남성', descKey: 'korean_20s_male' },
+                    { name: '[20대/여성] 실제 한국인 댓글 좋아요', price: 90, type: 'korean', target: '20대 여성', descKey: 'korean_20s_female' },
+                    { name: '[30대/남성] 실제 한국인 댓글 좋아요', price: 90, type: 'korean', target: '30대 남성', descKey: 'korean_30s_male' },
+                    { name: '[30대/여성] 실제 한국인 댓글 좋아요', price: 90, type: 'korean', target: '30대 여성', descKey: 'korean_30s_female' }
+                ]
             }
         ];
 
