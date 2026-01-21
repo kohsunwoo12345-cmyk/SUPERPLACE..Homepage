@@ -35797,12 +35797,21 @@ app.get('/store', (c) => {
 });
 
 app.get('/students', (c) => {
+  // 캐시 무효화 헤더 추가
+  c.header('Cache-Control', 'no-cache, no-store, must-revalidate');
+  c.header('Pragma', 'no-cache');
+  c.header('Expires', '0');
+  c.header('X-Build-Version', '2.0.8');
+  c.header('X-Build-Time', new Date().toISOString());
+  
   return c.html(`
     <!DOCTYPE html>
     <html lang="ko">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="version" content="2.0.8">
+        <meta name="build-time" content="${new Date().toISOString()}">
         <title>학생 관리 - 꾸메땅학원</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">

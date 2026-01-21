@@ -27751,12 +27751,14 @@ ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.di
     <\/script>
 </body>
 </html>
-`));c.get("/students",e=>e.html(`
+`));c.get("/students",e=>(e.header("Cache-Control","no-cache, no-store, must-revalidate"),e.header("Pragma","no-cache"),e.header("Expires","0"),e.header("X-Build-Version","2.0.8"),e.header("X-Build-Time",new Date().toISOString()),e.html(`
     <!DOCTYPE html>
     <html lang="ko">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="version" content="2.0.8">
+        <meta name="build-time" content="${new Date().toISOString()}">
         <title>학생 관리 - 꾸메땅학원</title>
         <script src="https://cdn.tailwindcss.com"><\/script>
         <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
@@ -29032,7 +29034,7 @@ ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.di
         <\/script>
     </body>
     </html>
-  `));c.get("/clear-cache",e=>e.html(`
+  `)));c.get("/clear-cache",e=>e.html(`
     <!DOCTYPE html>
     <html lang="ko">
     <head>
