@@ -22785,11 +22785,19 @@ app.post('/api/login', async (c) => {
       email: user.email,
       name: user.name,
       phone: user.phone,
+      academy_id: user.academy_id,  // ✅ academy_id 추가!
       academy_name: user.academy_name,
       role: user.role,
       user_type: user.role, // API에서 user_type을 기대함
       parent_user_id: user.parent_user_id || null
     }
+    
+    console.log('🔐 [Login] User info:', {
+      id: userInfo.id,
+      academy_id: userInfo.academy_id,
+      user_type: userInfo.user_type,
+      role: userInfo.role
+    })
     
     // 선생님인 경우 권한 정보 조회
     if (user.role === 'teacher') {
