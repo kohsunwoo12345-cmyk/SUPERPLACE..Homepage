@@ -19870,19 +19870,31 @@ ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.di
       WHERE id = ?
     `).bind(s.courseId||null,s.recordDate,s.attendance||null,s.homeworkStatus||null,s.understandingLevel||null,s.participationLevel||null,s.achievement||null,s.memo||null,t).run(),e.json({success:!0,message:"일일 성과가 수정되었습니다."})}catch(t){return console.error("Update daily record error:",t),e.json({success:!1,error:"일일 성과 수정 중 오류가 발생했습니다."},500)}});c.delete("/api/daily-records/:id",async e=>{try{const t=e.req.param("id"),s=JSON.parse(e.req.header("X-User-Data-Base64")?decodeURIComponent(escape(atob(e.req.header("X-User-Data-Base64")||""))):'{"id":1}'),r=await e.env.DB.prepare("SELECT id, user_type, permissions FROM users WHERE id = ?").bind(s.id).first();if(r&&r.user_type==="teacher"){let a={canWriteDailyReports:!1,assignedClasses:[]};if(r.permissions)try{a=JSON.parse(r.permissions)}catch(l){console.error("Failed to parse permissions:",l)}if(!a.canWriteDailyReports)return e.json({success:!1,error:"일일 성과 삭제 권한이 없습니다."},403);const n=await e.env.DB.prepare("SELECT student_id FROM daily_records WHERE id = ?").bind(t).first();if(!n)return e.json({success:!1,error:"기록을 찾을 수 없습니다."},404);const o=await e.env.DB.prepare("SELECT class_id FROM students WHERE id = ?").bind(n.student_id).first(),i=a.assignedClasses||[];if(!a.canViewAllStudents&&!i.includes(o.class_id))return e.json({success:!1,error:"이 학생의 성과를 삭제할 권한이 없습니다."},403)}return await e.env.DB.prepare(`
       DELETE FROM daily_records WHERE id = ?
-    `).bind(t).run(),e.json({success:!0,message:"일일 성과가 삭제되었습니다."})}catch(t){return console.error("Delete daily record error:",t),e.json({success:!1,error:"일일 성과 삭제 중 오류가 발생했습니다."},500)}});c.get("/api/teachers/:id/permissions",async e=>{var t;try{const s=e.req.param("id"),r=e.req.query("directorId");if(console.log("🔍 [GetTeacherPermissions] teacherId:",s,"directorId:",r),!r)return e.json({success:!1,error:"원장님 ID가 필요합니다."},400);const a=await e.env.DB.prepare("SELECT id, user_type, parent_user_id FROM users WHERE id = ?").bind(s).first();if(!a)return e.json({success:!1,error:"선생님을 찾을 수 없습니다."},404);if(console.log("✅ [GetTeacherPermissions] Teacher found:",a),a.user_type!=="teacher")return e.json({success:!1,error:"선생님 계정이 아닙니다."},400);if(a.parent_user_id&&a.parent_user_id!==parseInt(r))return e.json({success:!1,error:"권한이 없습니다."},403);const n=await e.env.DB.prepare("SELECT permission_key, permission_value FROM teacher_permissions WHERE teacher_id = ?").bind(s).all();console.log("📋 [GetTeacherPermissions] Found",((t=n.results)==null?void 0:t.length)||0,"permissions");const o={};return n.results&&n.results.forEach(i=>{const l=i.permission_key,d=i.permission_value;if(l==="assignedClasses"&&typeof d=="string")try{o[l]=JSON.parse(d),console.log("  - [JSON]",l,"=",o[l])}catch(p){console.error("  - [JSON Parse Error]",l,p),o[l]=[]}else typeof d=="string"&&(d==="1"||d==="0")?(o[l]=d==="1",console.log("  -",l,"=",o[l])):typeof d=="number"?(o[l]=d===1,console.log("  -",l,"=",o[l])):(o[l]=!!d,console.log("  -",l,"=",o[l]))}),e.json({success:!0,permissions:o})}catch(s){return console.error("❌ [GetTeacherPermissions] Error:",s),e.json({success:!1,error:"권한 조회 중 오류가 발생했습니다."},500)}});c.get("/api/teachers/my-permissions",async e=>{try{const t=e.req.query("teacherId");if(!t)return e.json({success:!1,error:"선생님 ID가 필요합니다."},400);const s=await e.env.DB.prepare("SELECT permission_key, permission_value FROM teacher_permissions WHERE teacher_id = ?").bind(t).all(),r={};return s.results&&s.results.forEach(a=>{const n=a.permission_key,o=a.permission_value;if(n==="assignedClasses"&&typeof o=="string")try{r[n]=JSON.parse(o)}catch(i){console.error("JSON Parse Error:",n,i),r[n]=[]}else typeof o=="string"&&(o==="1"||o==="0")?r[n]=o==="1":typeof o=="number"?r[n]=o===1:r[n]=!!o}),e.json({success:!0,permissions:r})}catch(t){return console.error("Get my permissions error:",t),e.json({success:!1,error:"권한 조회 중 오류가 발생했습니다."},500)}});c.get("/api/students/list",async e=>{try{const t=e.req.query("userId"),s=e.req.query("userType"),r=e.req.query("classId");if(!t)return e.json({success:!1,error:"사용자 ID가 필요합니다."},400);let a="",n=[];s==="teacher"?r?(a=`
-          SELECT s.*, c.name as class_name
-          FROM students s
-          LEFT JOIN classes c ON s.class_id = c.id
-          WHERE c.teacher_id = ? AND s.class_id = ? AND s.status = 'active' AND s.id NOT IN (4)
-          ORDER BY s.name
-        `,n=[t,r]):(a=`
-          SELECT s.*, c.name as class_name
-          FROM students s
-          LEFT JOIN classes c ON s.class_id = c.id
-          WHERE c.teacher_id = ? AND s.status = 'active' AND s.id NOT IN (4)
-          ORDER BY c.name, s.name
-        `,n=[t]):r?(a=`
+    `).bind(t).run(),e.json({success:!0,message:"일일 성과가 삭제되었습니다."})}catch(t){return console.error("Delete daily record error:",t),e.json({success:!1,error:"일일 성과 삭제 중 오류가 발생했습니다."},500)}});c.get("/api/teachers/:id/permissions",async e=>{var t;try{const s=e.req.param("id"),r=e.req.query("directorId");if(console.log("🔍 [GetTeacherPermissions] teacherId:",s,"directorId:",r),!r)return e.json({success:!1,error:"원장님 ID가 필요합니다."},400);const a=await e.env.DB.prepare("SELECT id, user_type, parent_user_id FROM users WHERE id = ?").bind(s).first();if(!a)return e.json({success:!1,error:"선생님을 찾을 수 없습니다."},404);if(console.log("✅ [GetTeacherPermissions] Teacher found:",a),a.user_type!=="teacher")return e.json({success:!1,error:"선생님 계정이 아닙니다."},400);if(a.parent_user_id&&a.parent_user_id!==parseInt(r))return e.json({success:!1,error:"권한이 없습니다."},403);const n=await e.env.DB.prepare("SELECT permission_key, permission_value FROM teacher_permissions WHERE teacher_id = ?").bind(s).all();console.log("📋 [GetTeacherPermissions] Found",((t=n.results)==null?void 0:t.length)||0,"permissions");const o={};return n.results&&n.results.forEach(i=>{const l=i.permission_key,d=i.permission_value;if(l==="assignedClasses"&&typeof d=="string")try{o[l]=JSON.parse(d),console.log("  - [JSON]",l,"=",o[l])}catch(p){console.error("  - [JSON Parse Error]",l,p),o[l]=[]}else typeof d=="string"&&(d==="1"||d==="0")?(o[l]=d==="1",console.log("  -",l,"=",o[l])):typeof d=="number"?(o[l]=d===1,console.log("  -",l,"=",o[l])):(o[l]=!!d,console.log("  -",l,"=",o[l]))}),e.json({success:!0,permissions:o})}catch(s){return console.error("❌ [GetTeacherPermissions] Error:",s),e.json({success:!1,error:"권한 조회 중 오류가 발생했습니다."},500)}});c.get("/api/teachers/my-permissions",async e=>{try{const t=e.req.query("teacherId");if(!t)return e.json({success:!1,error:"선생님 ID가 필요합니다."},400);const s=await e.env.DB.prepare("SELECT permission_key, permission_value FROM teacher_permissions WHERE teacher_id = ?").bind(t).all(),r={};return s.results&&s.results.forEach(a=>{const n=a.permission_key,o=a.permission_value;if(n==="assignedClasses"&&typeof o=="string")try{r[n]=JSON.parse(o)}catch(i){console.error("JSON Parse Error:",n,i),r[n]=[]}else typeof o=="string"&&(o==="1"||o==="0")?r[n]=o==="1":typeof o=="number"?r[n]=o===1:r[n]=!!o}),e.json({success:!0,permissions:r})}catch(t){return console.error("Get my permissions error:",t),e.json({success:!1,error:"권한 조회 중 오류가 발생했습니다."},500)}});c.get("/api/students/list",async e=>{try{const t=e.req.query("userId"),s=e.req.query("userType"),r=e.req.query("classId");if(!t)return e.json({success:!1,error:"사용자 ID가 필요합니다."},400);let a="",n=[];if(s==="teacher"){console.log("👨‍🏫 [StudentsList] Loading permissions for teacher:",t);let i={canViewAllStudents:!1,assignedClasses:[]};try{const l=await e.env.DB.prepare("SELECT permission_key, permission_value FROM teacher_permissions WHERE teacher_id = ?").bind(t).all();l.results&&l.results.length>0&&l.results.forEach(d=>{if(d.permission_key==="canViewAllStudents")i.canViewAllStudents=d.permission_value==="1"||d.permission_value===1||d.permission_value===!0;else if(d.permission_key==="assignedClasses"&&typeof d.permission_value=="string")try{i.assignedClasses=JSON.parse(d.permission_value)}catch(p){console.error("Failed to parse assignedClasses:",p)}}),console.log("👨‍🏫 [StudentsList] Teacher permissions:",i)}catch(l){console.error("Failed to load teacher permissions:",l)}if(i.canViewAllStudents)console.log("👨‍🏫 [StudentsList] Teacher can view all students"),r?(a=`
+            SELECT s.*, c.name as class_name
+            FROM students s
+            LEFT JOIN classes c ON s.class_id = c.id
+            WHERE s.class_id = ? AND s.status = 'active' AND s.id NOT IN (4)
+            ORDER BY s.name
+          `,n=[r]):(a=`
+            SELECT s.*, c.name as class_name
+            FROM students s
+            LEFT JOIN classes c ON s.class_id = c.id
+            WHERE s.status = 'active' AND s.id NOT IN (4)
+            ORDER BY c.name, s.name
+          `,n=[]);else if(i.assignedClasses&&i.assignedClasses.length>0){console.log("👨‍🏫 [StudentsList] Teacher can view assigned classes:",i.assignedClasses);const l=i.assignedClasses,d=l.map(()=>"?").join(",");if(r){if(!l.includes(parseInt(r)))return console.log("👨‍🏫 [StudentsList] Class not assigned to teacher:",r),e.json({success:!0,students:[]});a=`
+            SELECT s.*, c.name as class_name
+            FROM students s
+            LEFT JOIN classes c ON s.class_id = c.id
+            WHERE s.class_id = ? AND s.status = 'active' AND s.id NOT IN (4)
+            ORDER BY s.name
+          `,n=[r]}else a=`
+            SELECT s.*, c.name as class_name
+            FROM students s
+            LEFT JOIN classes c ON s.class_id = c.id
+            WHERE s.class_id IN (${d}) AND s.status = 'active' AND s.id NOT IN (4)
+            ORDER BY c.name, s.name
+          `,n=l}else return console.log("👨‍🏫 [StudentsList] No permissions assigned, returning empty list"),e.json({success:!0,students:[]})}else r?(a=`
           SELECT s.*, c.name as class_name, u.name as teacher_name
           FROM students s
           LEFT JOIN classes c ON s.class_id = c.id
@@ -28996,10 +29008,11 @@ ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.di
                     
                     if (data.success) {
                         // 저장 후 실제 저장된 권한 확인
-                        alert(teacherName + " 선생님의 권한이 저장되었습니다!");
-                        alert(message);
                         console.log('✅ [SavePermissions] Success!');
+                        alert('✅ ' + teacherName + ' 선생님의 권한이 저장되었습니다!');
                         closePermissionsModal();
+                        // 선생님 목록 새로고침
+                        location.reload();
                     } else {
                         alert('❌ 권한 저장 실패: ' + data.error);
                         console.error('❌ [SavePermissions] Failed:', data.error);

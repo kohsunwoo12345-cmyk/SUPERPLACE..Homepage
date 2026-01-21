@@ -26998,25 +26998,90 @@ app.get('/api/students/list', async (c) => {
     let params = []
     
     if (userType === 'teacher') {
-      // 선생님은 자신이 담당하는 반의 학생만 조회
-      if (classId) {
-        query = `
-          SELECT s.*, c.name as class_name
-          FROM students s
-          LEFT JOIN classes c ON s.class_id = c.id
-          WHERE c.teacher_id = ? AND s.class_id = ? AND s.status = 'active' AND s.id NOT IN (4)
-          ORDER BY s.name
-        `
-        params = [userId, classId]
+      // 선생님 권한 확인
+      console.log('👨‍🏫 [StudentsList] Loading permissions for teacher:', userId)
+      
+      let permissions = { canViewAllStudents: false, assignedClasses: [] }
+      try {
+        const permRows = await c.env.DB.prepare(
+          'SELECT permission_key, permission_value FROM teacher_permissions WHERE teacher_id = ?'
+        ).bind(userId).all()
+        
+        if (permRows.results && permRows.results.length > 0) {
+          permRows.results.forEach(p => {
+            if (p.permission_key === 'canViewAllStudents') {
+              permissions.canViewAllStudents = p.permission_value === '1' || p.permission_value === 1 || p.permission_value === true
+            } else if (p.permission_key === 'assignedClasses' && typeof p.permission_value === 'string') {
+              try {
+                permissions.assignedClasses = JSON.parse(p.permission_value)
+              } catch (e) {
+                console.error('Failed to parse assignedClasses:', e)
+              }
+            }
+          })
+        }
+        console.log('👨‍🏫 [StudentsList] Teacher permissions:', permissions)
+      } catch (permErr) {
+        console.error('Failed to load teacher permissions:', permErr)
+      }
+      
+      // 선생님 권한에 따라 학생 조회
+      if (permissions.canViewAllStudents) {
+        // 모두 다 공개: 모든 학생 조회
+        console.log('👨‍🏫 [StudentsList] Teacher can view all students')
+        if (classId) {
+          query = `
+            SELECT s.*, c.name as class_name
+            FROM students s
+            LEFT JOIN classes c ON s.class_id = c.id
+            WHERE s.class_id = ? AND s.status = 'active' AND s.id NOT IN (4)
+            ORDER BY s.name
+          `
+          params = [classId]
+        } else {
+          query = `
+            SELECT s.*, c.name as class_name
+            FROM students s
+            LEFT JOIN classes c ON s.class_id = c.id
+            WHERE s.status = 'active' AND s.id NOT IN (4)
+            ORDER BY c.name, s.name
+          `
+          params = []
+        }
+      } else if (permissions.assignedClasses && permissions.assignedClasses.length > 0) {
+        // 배정된 반만 공개: 배정된 반의 학생만 조회
+        console.log('👨‍🏫 [StudentsList] Teacher can view assigned classes:', permissions.assignedClasses)
+        const classIds = permissions.assignedClasses
+        const placeholders = classIds.map(() => '?').join(',')
+        
+        if (classId) {
+          // 특정 반 조회 시 배정된 반인지 확인
+          if (!classIds.includes(parseInt(classId))) {
+            console.log('👨‍🏫 [StudentsList] Class not assigned to teacher:', classId)
+            return c.json({ success: true, students: [] })
+          }
+          query = `
+            SELECT s.*, c.name as class_name
+            FROM students s
+            LEFT JOIN classes c ON s.class_id = c.id
+            WHERE s.class_id = ? AND s.status = 'active' AND s.id NOT IN (4)
+            ORDER BY s.name
+          `
+          params = [classId]
+        } else {
+          query = `
+            SELECT s.*, c.name as class_name
+            FROM students s
+            LEFT JOIN classes c ON s.class_id = c.id
+            WHERE s.class_id IN (${placeholders}) AND s.status = 'active' AND s.id NOT IN (4)
+            ORDER BY c.name, s.name
+          `
+          params = classIds
+        }
       } else {
-        query = `
-          SELECT s.*, c.name as class_name
-          FROM students s
-          LEFT JOIN classes c ON s.class_id = c.id
-          WHERE c.teacher_id = ? AND s.status = 'active' AND s.id NOT IN (4)
-          ORDER BY c.name, s.name
-        `
-        params = [userId]
+        // 권한 없음: 빈 배열 반환
+        console.log('👨‍🏫 [StudentsList] No permissions assigned, returning empty list')
+        return c.json({ success: true, students: [] })
       }
     } else {
       // 원장님은 자신의 학원의 모든 학생 조회
@@ -37063,10 +37128,11 @@ app.get('/students', (c) => {
                     
                     if (data.success) {
                         // 저장 후 실제 저장된 권한 확인
-                        alert(teacherName + " 선생님의 권한이 저장되었습니다!");
-                        alert(message);
                         console.log('✅ [SavePermissions] Success!');
+                        alert('✅ ' + teacherName + ' 선생님의 권한이 저장되었습니다!');
                         closePermissionsModal();
+                        // 선생님 목록 새로고침
+                        location.reload();
                     } else {
                         alert('❌ 권한 저장 실패: ' + data.error);
                         console.error('❌ [SavePermissions] Failed:', data.error);
