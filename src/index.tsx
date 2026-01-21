@@ -17881,6 +17881,47 @@ app.post('/api/debug/fix-academy-id', async (c) => {
   }
 })
 
+// 🔧 Debug API - 학생 대량 삭제 (이름 기반)
+app.post('/api/debug/delete-students-by-name', async (c) => {
+  try {
+    const { academyId, names } = await c.req.json()
+    
+    if (!academyId || !names || !Array.isArray(names)) {
+      return c.json({ success: false, error: 'academyId and names array required' }, 400)
+    }
+    
+    console.log('🗑️ [DeleteStudentsByName] Deleting students:', { academyId, names })
+    
+    // 각 이름에 대해 삭제 처리
+    const results = []
+    for (const name of names) {
+      const result = await c.env.DB.prepare(
+        "UPDATE students SET status = 'deleted', updated_at = CURRENT_TIMESTAMP WHERE academy_id = ? AND name = ?"
+      ).bind(academyId, name).run()
+      
+      results.push({
+        name,
+        changes: result.meta.changes,
+        success: result.meta.changes > 0
+      })
+    }
+    
+    console.log('✅ [DeleteStudentsByName] Results:', results)
+    
+    return c.json({
+      success: true,
+      message: 'Students deleted',
+      results
+    })
+  } catch (error) {
+    console.error('❌ [DeleteStudentsByName] Error:', error)
+    return c.json({ 
+      success: false, 
+      error: error.message 
+    }, 500)
+  }
+})
+
 // ✅ 데이터 초기화 API - 학생/반 데이터 자동 생성
 app.post('/api/init-test-data', async (c) => {
   try {
