@@ -17617,6 +17617,23 @@ app.get('/api/students', async (c) => {
         
         students = result1.results || []
         console.log('✅ [GetStudents] SUCCESS! Found', students.length, 'students')
+        
+        // ✅ 디버그: 만약 0명이면 전체 학생 수 확인
+        if (students.length === 0) {
+          console.log('⚠️ [GetStudents] No students for academy_id:', academyId)
+          
+          // 전체 학생 수 확인
+          const totalResult = await c.env.DB.prepare(
+            "SELECT COUNT(*) as count FROM students"
+          ).first()
+          console.log('📊 [GetStudents] Total students in DB:', totalResult?.count || 0)
+          
+          // academy_id별 학생 수 확인
+          const byAcademyResult = await c.env.DB.prepare(
+            "SELECT academy_id, COUNT(*) as count FROM students GROUP BY academy_id"
+          ).all()
+          console.log('📊 [GetStudents] Students by academy_id:', byAcademyResult.results)
+        }
       } catch (err1) {
         console.log('⚠️  [GetStudents] Try 1 failed:', err1.message)
         
