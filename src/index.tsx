@@ -17685,6 +17685,56 @@ app.get('/api/students', async (c) => {
 })
 
 
+// 🔍 DB 디버그 API - 실제 DB 상태 확인
+app.get('/api/debug/db-status', async (c) => {
+  try {
+    console.log('🔍 [DebugDB] Checking database status...')
+    
+    // 1. 모든 사용자 조회
+    const users = await c.env.DB.prepare(
+      'SELECT id, email, name, user_type, academy_id, parent_user_id FROM users'
+    ).all()
+    
+    // 2. 모든 학생 조회
+    const students = await c.env.DB.prepare(
+      'SELECT id, academy_id, name, class_id FROM students LIMIT 100'
+    ).all()
+    
+    // 3. 모든 반 조회
+    const classes = await c.env.DB.prepare(
+      'SELECT id, academy_id, class_name FROM classes'
+    ).all()
+    
+    // 4. academy_id별 통계
+    const studentsByAcademy = await c.env.DB.prepare(
+      'SELECT academy_id, COUNT(*) as count FROM students GROUP BY academy_id'
+    ).all()
+    
+    const classesByAcademy = await c.env.DB.prepare(
+      'SELECT academy_id, COUNT(*) as count FROM classes GROUP BY academy_id'
+    ).all()
+    
+    console.log('📊 [DebugDB] Users:', users.results?.length || 0)
+    console.log('📊 [DebugDB] Students:', students.results?.length || 0)
+    console.log('📊 [DebugDB] Classes:', classes.results?.length || 0)
+    
+    return c.json({
+      success: true,
+      users: users.results || [],
+      students: students.results || [],
+      classes: classes.results || [],
+      studentsByAcademy: studentsByAcademy.results || [],
+      classesByAcademy: classesByAcademy.results || []
+    })
+  } catch (error) {
+    console.error('❌ [DebugDB] Error:', error)
+    return c.json({ 
+      success: false, 
+      error: error.message 
+    }, 500)
+  }
+})
+
 // ✅ 데이터 초기화 API - 학생/반 데이터 자동 생성
 app.post('/api/init-test-data', async (c) => {
   try {
