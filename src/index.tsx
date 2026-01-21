@@ -17471,15 +17471,25 @@ app.get('/api/students', async (c) => {
     }
     console.log('✅ [GetStudents] DB connection OK')
     
-    // Step 2: 사용자 ID 추출 (헤더 또는 세션)
+    // Step 2: 사용자 정보 추출 (academy_id 포함)
     let userId
+    let academyId
+    let userType
+    let userPermissions
     
     try {
       const userHeader = c.req.header('X-User-Data-Base64')
       if (userHeader) {
         const userData = JSON.parse(decodeURIComponent(escape(atob(userHeader))))
-        userId = userData.id || userData.academy_id
-        console.log('👥 [GetStudents] Got userId from header:', userId)
+        userId = userData.id
+        academyId = userData.academy_id || userData.id  // ✅ academy_id 우선 사용
+        userType = userData.user_type
+        userPermissions = userData.permissions
+        console.log('👥 [GetStudents] Got user from header:', {
+          userId,
+          academyId,
+          userType
+        })
       }
     } catch (headerErr) {
       console.log('⚠️  [GetStudents] Header parse failed, trying session')
@@ -17494,34 +17504,31 @@ app.get('/api/students', async (c) => {
         ).bind(sessionId).first()
         userId = session?.user_id
         console.log('👥 [GetStudents] Got userId from session:', userId)
+        
+        // ✅ 세션에서 가져온 경우 DB에서 academy_id 조회
+        if (userId) {
+          const user = await c.env.DB.prepare(
+            'SELECT academy_id, user_type FROM users WHERE id = ?'
+          ).bind(userId).first()
+          academyId = user?.academy_id || userId
+          userType = user?.user_type
+          console.log('👥 [GetStudents] Got academyId from DB:', academyId)
+        }
       }
     }
     
-    if (!userId) {
-      console.error('❌ [GetStudents] No userId')
+    if (!userId || !academyId) {
+      console.error('❌ [GetStudents] No userId or academyId')
       return c.json({ success: false, error: '로그인이 필요합니다.' }, 401)
     }
     
-    console.log('👥 [GetStudents] Final userId:', userId)
+    console.log('👥 [GetStudents] Final userId:', userId, 'academyId:', academyId)
     
-    // Step 3: 사용자 정보 조회하여 권한 확인
+    // Step 3: 권한에 따른 학생 조회
     let students = []
-    let userType = null
-    let userPermissions = null
     
-    // 사용자 타입 확인 (선생님인지 원장님인지)
-    try {
-      const userHeader = c.req.header('X-User-Data-Base64')
-      if (userHeader) {
-        const userData = JSON.parse(decodeURIComponent(escape(atob(userHeader))))
-        userType = userData.user_type
-        userPermissions = userData.permissions
-        console.log('👥 [GetStudents] User type:', userType)
-        console.log('👥 [GetStudents] User permissions:', userPermissions)
-      }
-    } catch (e) {
-      console.log('⚠️  [GetStudents] Could not parse user data')
-    }
+    console.log('👥 [GetStudents] User type:', userType)
+    console.log('👥 [GetStudents] User permissions:', userPermissions)
     
     // 선생님이고 배정된 반만 허용된 경우
     if (userType === 'teacher' && 
@@ -17549,15 +17556,16 @@ app.get('/api/students', async (c) => {
       }
       
     } else {
-      // 원장님 또는 모든 권한이 있는 선생님 - 모든 학생 조회
+      // 원장님 또는 모든 권한이 있는 선생님 - academy_id로 모든 학생 조회
       console.log('👥 [GetStudents] Full access - loading all students')
+      console.log('👥 [GetStudents] Using academyId:', academyId)
       
-      // Try 1: academy_id로 조회
+      // ✅ academy_id로 조회 (선생님도 원장님과 동일한 academy_id 사용)
       try {
-        console.log('👥 [GetStudents] Try 1: WHERE academy_id =', userId)
+        console.log('👥 [GetStudents] Query: WHERE academy_id =', academyId)
         const result1 = await c.env.DB.prepare(
           "SELECT * FROM students WHERE academy_id = ? AND status = 'active' ORDER BY id DESC"
-        ).bind(userId).all()
+        ).bind(academyId).all()
         
         students = result1.results || []
         console.log('✅ [GetStudents] SUCCESS! Found', students.length, 'students')
