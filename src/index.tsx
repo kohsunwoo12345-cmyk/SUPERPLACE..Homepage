@@ -25056,6 +25056,25 @@ app.post('/api/teachers/apply', async (c) => {
       // 컬럼이 이미 존재하면 에러 무시
     }
     
+    // ✅ 기존 선생님들의 academy_id를 원장님의 academy_id로 업데이트
+    try {
+      const result = await c.env.DB.prepare(`
+        UPDATE users 
+        SET academy_id = (
+          SELECT academy_id 
+          FROM users AS directors 
+          WHERE directors.id = users.parent_user_id 
+          LIMIT 1
+        )
+        WHERE user_type = 'teacher' 
+        AND parent_user_id IS NOT NULL 
+        AND (academy_id IS NULL OR academy_id = 1)
+      `).run()
+      console.log('[Migration] Updated academy_id for', result.meta.changes, 'teachers')
+    } catch (e) {
+      console.error('[Migration] Failed to update teacher academy_id:', e.message)
+    }
+    
     // teacher_applications 테이블 자동 생성
     try {
       await c.env.DB.prepare(`
@@ -25848,14 +25867,21 @@ app.post('/api/teachers/create', async (c) => {
       return c.json({ success: false, error: '필수 정보를 모두 입력해주세요.' }, 400)
     }
     
-    // 원장님 정보 확인
+    // 원장님 정보 확인 (academy_id 포함)
     const director = await c.env.DB.prepare(
-      'SELECT id, academy_name, user_type FROM users WHERE id = ?'
+      'SELECT id, academy_id, academy_name, user_type FROM users WHERE id = ?'
     ).bind(directorId).first()
     
     if (!director) {
       return c.json({ success: false, error: '원장님 정보를 찾을 수 없습니다.' }, 404)
     }
+    
+    console.log('🏫 [CreateTeacher] Director info:', {
+      id: director.id,
+      academy_id: director.academy_id,
+      academy_name: director.academy_name,
+      user_type: director.user_type
+    })
     
     // 이메일 중복 확인
     const existing = await c.env.DB.prepare(
@@ -25866,11 +25892,13 @@ app.post('/api/teachers/create', async (c) => {
       return c.json({ success: false, error: '이미 사용 중인 이메일입니다.' }, 400)
     }
     
-    // 선생님 계정 생성
+    // ✅ 선생님 계정 생성 - 원장님의 academy_id를 그대로 복사
     const result = await c.env.DB.prepare(`
-      INSERT INTO users (email, password, name, phone, role, user_type, parent_user_id, academy_name, created_at)
-      VALUES (?, ?, ?, ?, 'user', 'teacher', ?, ?, datetime('now'))
-    `).bind(email, password, name, phone || null, directorId, director.academy_name).run()
+      INSERT INTO users (email, password, name, phone, role, user_type, parent_user_id, academy_id, academy_name, created_at)
+      VALUES (?, ?, ?, ?, 'user', 'teacher', ?, ?, ?, datetime('now'))
+    `).bind(email, password, name, phone || null, directorId, director.academy_id, director.academy_name).run()
+    
+    console.log('✅ [CreateTeacher] Teacher created with academy_id:', director.academy_id)
     
     return c.json({ 
       success: true, 

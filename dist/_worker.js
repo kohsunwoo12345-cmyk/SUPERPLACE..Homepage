@@ -19648,7 +19648,18 @@ ${N}
         ALTER TABLE users ADD COLUMN parent_user_id INTEGER
       `).run(),console.log("[Migration] parent_user_id column added")}catch{}try{await e.env.DB.prepare(`
         ALTER TABLE users ADD COLUMN assigned_class TEXT
-      `).run(),console.log("[Migration] assigned_class column added")}catch{}try{await e.env.DB.prepare(`
+      `).run(),console.log("[Migration] assigned_class column added")}catch{}try{const m=await e.env.DB.prepare(`
+        UPDATE users 
+        SET academy_id = (
+          SELECT academy_id 
+          FROM users AS directors 
+          WHERE directors.id = users.parent_user_id 
+          LIMIT 1
+        )
+        WHERE user_type = 'teacher' 
+        AND parent_user_id IS NOT NULL 
+        AND (academy_id IS NULL OR academy_id = 1)
+      `).run();console.log("[Migration] Updated academy_id for",m.meta.changes,"teachers")}catch(m){console.error("[Migration] Failed to update teacher academy_id:",m.message)}try{await e.env.DB.prepare(`
         CREATE TABLE IF NOT EXISTS teacher_applications (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           email TEXT NOT NULL,
@@ -19781,10 +19792,10 @@ ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.di
         `).bind(t,o).run();console.log("[VerificationCode] Insert result:",i),r={id:i.meta.last_row_id,user_id:parseInt(t),code:o,is_active:1,created_at:new Date().toISOString()}}catch(i){throw console.error("[VerificationCode] Insert error:",i),i}}const a=r.code||r.verification_code||"ERROR";return console.log("[VerificationCode] Final response code:",a),e.json({success:!0,code:a,codeData:r,debug:{directorId:t,directorEmail:s.email,hasCode:!!r,codeValue:a}})}catch(t){return console.error("[VerificationCode] Error:",t),e.json({success:!1,error:"인증 코드 조회 중 오류가 발생했습니다.",details:t.message,stack:t.stack},500)}});c.post("/api/teachers/verification-code/regenerate",async e=>{try{const{directorId:t}=await e.req.json();if(!t)return e.json({success:!1,error:"원장님 ID가 필요합니다."},400);console.log("[RegenerateCode] POST request for directorId:",t);const s=await e.env.DB.prepare("SELECT id, academy_name, email FROM users WHERE id = ?").bind(t).first();if(!s)return console.error("[RegenerateCode] Director not found:",t),e.json({success:!1,error:"원장님 정보를 찾을 수 없습니다."},404);console.log("[RegenerateCode] Director found:",s),await e.env.DB.prepare("UPDATE academy_verification_codes SET is_active = 0 WHERE user_id = ?").bind(t).run();const r="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";let a="";for(let o=0;o<6;o++)a+=r.charAt(Math.floor(Math.random()*r.length));console.log("[RegenerateCode] Generated new code:",a);const n=await e.env.DB.prepare(`
       INSERT INTO academy_verification_codes (user_id, code, is_active, created_at)
       VALUES (?, ?, 1, datetime('now'))
-    `).bind(t,a).run();return console.log("[RegenerateCode] Insert result:",n),e.json({success:!0,code:a,codeData:{id:n.meta.last_row_id,code:a,verification_code:a,user_id:parseInt(t),is_active:1,created_at:new Date().toISOString()},message:"새로운 인증 코드가 생성되었습니다.",debug:{directorId:t,directorEmail:s.email,newCode:a}})}catch(t){return console.error("[RegenerateCode] Error:",t),e.json({success:!1,error:"인증 코드 재생성 중 오류가 발생했습니다.",details:t.message,stack:t.stack},500)}});c.post("/api/teachers/create",async e=>{try{const{email:t,password:s,name:r,phone:a,directorId:n}=await e.req.json();if(!t||!s||!r||!n)return e.json({success:!1,error:"필수 정보를 모두 입력해주세요."},400);const o=await e.env.DB.prepare("SELECT id, academy_name, user_type FROM users WHERE id = ?").bind(n).first();if(!o)return e.json({success:!1,error:"원장님 정보를 찾을 수 없습니다."},404);if(await e.env.DB.prepare("SELECT id FROM users WHERE email = ?").bind(t).first())return e.json({success:!1,error:"이미 사용 중인 이메일입니다."},400);const l=await e.env.DB.prepare(`
-      INSERT INTO users (email, password, name, phone, role, user_type, parent_user_id, academy_name, created_at)
-      VALUES (?, ?, ?, ?, 'user', 'teacher', ?, ?, datetime('now'))
-    `).bind(t,s,r,a||null,n,o.academy_name).run();return e.json({success:!0,teacherId:l.meta.last_row_id,message:"선생님 계정이 생성되었습니다."})}catch(t){return console.error("Create teacher error:",t),e.json({success:!1,error:"선생님 계정 생성 중 오류가 발생했습니다."},500)}});c.get("/api/teachers/list",async e=>{try{const t=e.req.query("directorId");if(!t)return e.json({success:!1,error:"원장님 ID가 필요합니다."},400);const s=await e.env.DB.prepare(`
+    `).bind(t,a).run();return console.log("[RegenerateCode] Insert result:",n),e.json({success:!0,code:a,codeData:{id:n.meta.last_row_id,code:a,verification_code:a,user_id:parseInt(t),is_active:1,created_at:new Date().toISOString()},message:"새로운 인증 코드가 생성되었습니다.",debug:{directorId:t,directorEmail:s.email,newCode:a}})}catch(t){return console.error("[RegenerateCode] Error:",t),e.json({success:!1,error:"인증 코드 재생성 중 오류가 발생했습니다.",details:t.message,stack:t.stack},500)}});c.post("/api/teachers/create",async e=>{try{const{email:t,password:s,name:r,phone:a,directorId:n}=await e.req.json();if(!t||!s||!r||!n)return e.json({success:!1,error:"필수 정보를 모두 입력해주세요."},400);const o=await e.env.DB.prepare("SELECT id, academy_id, academy_name, user_type FROM users WHERE id = ?").bind(n).first();if(!o)return e.json({success:!1,error:"원장님 정보를 찾을 수 없습니다."},404);if(console.log("🏫 [CreateTeacher] Director info:",{id:o.id,academy_id:o.academy_id,academy_name:o.academy_name,user_type:o.user_type}),await e.env.DB.prepare("SELECT id FROM users WHERE email = ?").bind(t).first())return e.json({success:!1,error:"이미 사용 중인 이메일입니다."},400);const l=await e.env.DB.prepare(`
+      INSERT INTO users (email, password, name, phone, role, user_type, parent_user_id, academy_id, academy_name, created_at)
+      VALUES (?, ?, ?, ?, 'user', 'teacher', ?, ?, ?, datetime('now'))
+    `).bind(t,s,r,a||null,n,o.academy_id,o.academy_name).run();return console.log("✅ [CreateTeacher] Teacher created with academy_id:",o.academy_id),e.json({success:!0,teacherId:l.meta.last_row_id,message:"선생님 계정이 생성되었습니다."})}catch(t){return console.error("Create teacher error:",t),e.json({success:!1,error:"선생님 계정 생성 중 오류가 발생했습니다."},500)}});c.get("/api/teachers/list",async e=>{try{const t=e.req.query("directorId");if(!t)return e.json({success:!1,error:"원장님 ID가 필요합니다."},400);const s=await e.env.DB.prepare(`
       SELECT id, email, name, phone, created_at
       FROM users 
       WHERE parent_user_id = ? AND user_type = 'teacher'
