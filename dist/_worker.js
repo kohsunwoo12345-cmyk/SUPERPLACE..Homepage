@@ -8061,7 +8061,7 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
         <\/script>
     </body>
     </html>
-  `));c.get("/consulting/:programId",async e=>(e.req.param("programId"),e.html(`
+  `));c.get("/consulting/:programId",async e=>{const t=e.req.param("programId");return e.html(`
     <!DOCTYPE html>
     <html lang="ko">
     <head>
@@ -8096,7 +8096,7 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
         </main>
 
         <script>
-          const programId = '\${programId}';
+          const programId = '${t}';
           
           // 하드코딩된 프로그램 데이터
           const programs = {
@@ -8200,7 +8200,7 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
         <\/script>
     </body>
     </html>
-  `)));c.get("/consulting/:programId/apply",async e=>(e.req.param("programId"),e.html(`
+  `)});c.get("/consulting/:programId/apply",async e=>{const t=e.req.param("programId");return e.html(`
     <!DOCTYPE html>
     <html lang="ko">
     <head>
@@ -8277,7 +8277,7 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
         </main>
 
         <script>
-          const programId = '\${programId}';
+          const programId = '${t}';
           
           // 프로그램 정보 로드
           async function loadProgram() {
@@ -8341,7 +8341,7 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
         <\/script>
     </body>
     </html>
-  `)));c.get("/admin/consulting-applications",async e=>e.html(`
+  `)});c.get("/admin/consulting-applications",async e=>e.html(`
     <!DOCTYPE html>
     <html lang="ko">
     <head>

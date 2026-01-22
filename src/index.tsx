@@ -11549,7 +11549,7 @@ app.get('/consulting/:programId', async (c) => {
         </main>
 
         <script>
-          const programId = '\${programId}';
+          const programId = '${programId}';
           
           // 하드코딩된 프로그램 데이터
           const programs = {
@@ -11737,7 +11737,7 @@ app.get('/consulting/:programId/apply', async (c) => {
         </main>
 
         <script>
-          const programId = '\${programId}';
+          const programId = '${programId}';
           
           // 프로그램 정보 로드
           async function loadProgram() {
