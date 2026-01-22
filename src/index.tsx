@@ -11645,6 +11645,45 @@ app.get('/consulting/:programId', async (c) => {
 
               const features = program.features;
               
+              let infoCardsHTML = '';
+              if (program.type === 'consulting') {
+                infoCardsHTML = \`
+                  <div class="text-center">
+                    <i class="fas fa-calendar-alt text-3xl text-blue-600 mb-2"></i>
+                    <p class="text-sm text-gray-500">컨설팅 횟수</p>
+                    <p class="text-2xl font-bold text-gray-900">\${program.sessions}회</p>
+                  </div>
+                  <div class="text-center">
+                    <i class="fas fa-won-sign text-3xl text-blue-600 mb-2"></i>
+                    <p class="text-sm text-gray-500">수강료</p>
+                    <p class="text-2xl font-bold text-blue-600">\${(program.price / 10000).toFixed(0)}만원</p>
+                  </div>
+                  <div class="text-center">
+                    <i class="fas fa-user-tie text-3xl text-blue-600 mb-2"></i>
+                    <p class="text-sm text-gray-500">컨설팅 방식</p>
+                    <p class="text-2xl font-bold text-gray-900">1:1 맞춤</p>
+                  </div>
+                \`;
+              } else {
+                infoCardsHTML = \`
+                  <div class="text-center">
+                    <i class="fas fa-rocket text-3xl text-blue-600 mb-2"></i>
+                    <p class="text-sm text-gray-500">제공 방식</p>
+                    <p class="text-2xl font-bold text-gray-900">맞춤형</p>
+                  </div>
+                  <div class="text-center">
+                    <i class="fas fa-won-sign text-3xl text-blue-600 mb-2"></i>
+                    <p class="text-sm text-gray-500">가격</p>
+                    <p class="text-2xl font-bold text-blue-600">문의</p>
+                  </div>
+                  <div class="text-center">
+                    <i class="fas fa-headset text-3xl text-blue-600 mb-2"></i>
+                    <p class="text-sm text-gray-500">상담</p>
+                    <p class="text-2xl font-bold text-gray-900">24시간</p>
+                  </div>
+                \`;
+              }
+              
               document.getElementById('programDetail').innerHTML = \`
                 <div class="aspect-w-16 aspect-h-9 bg-gray-200">
                   <img src="\${program.image_url}" alt="\${program.name}" class="w-full h-96 object-cover">
@@ -11656,39 +11695,7 @@ app.get('/consulting/:programId', async (c) => {
                   <div class="bg-blue-50 rounded-xl p-6 mb-8">
                     <h2 class="text-2xl font-bold text-gray-900 mb-4">\${program.type === 'consulting' ? '프로그램 정보' : '서비스 정보'}</h2>
                     <div class="grid md:grid-cols-3 gap-6">
-                      \${program.type === 'consulting' ? \`
-                        <div class="text-center">
-                          <i class="fas fa-calendar-alt text-3xl text-blue-600 mb-2"></i>
-                          <p class="text-sm text-gray-500">컨설팅 횟수</p>
-                          <p class="text-2xl font-bold text-gray-900">\${program.sessions}회</p>
-                        </div>
-                        <div class="text-center">
-                          <i class="fas fa-won-sign text-3xl text-blue-600 mb-2"></i>
-                          <p class="text-sm text-gray-500">수강료</p>
-                          <p class="text-2xl font-bold text-blue-600">\${(program.price / 10000).toFixed(0)}만원</p>
-                        </div>
-                        <div class="text-center">
-                          <i class="fas fa-user-tie text-3xl text-blue-600 mb-2"></i>
-                          <p class="text-sm text-gray-500">컨설팅 방식</p>
-                          <p class="text-2xl font-bold text-gray-900">1:1 맞춤</p>
-                        </div>
-                      \` : \`
-                        <div class="text-center">
-                          <i class="fas fa-rocket text-3xl text-blue-600 mb-2"></i>
-                          <p class="text-sm text-gray-500">제공 방식</p>
-                          <p class="text-2xl font-bold text-gray-900">맞춤형</p>
-                        </div>
-                        <div class="text-center">
-                          <i class="fas fa-won-sign text-3xl text-blue-600 mb-2"></i>
-                          <p class="text-sm text-gray-500">가격</p>
-                          <p class="text-2xl font-bold text-blue-600">문의</p>
-                        </div>
-                        <div class="text-center">
-                          <i class="fas fa-headset text-3xl text-blue-600 mb-2"></i>
-                          <p class="text-sm text-gray-500">상담</p>
-                          <p class="text-2xl font-bold text-gray-900">24시간</p>
-                        </div>
-                      \`}
+                      \${infoCardsHTML}
                     </div>
                   </div>
 
