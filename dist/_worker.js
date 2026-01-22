@@ -4565,22 +4565,22 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta name="naver-site-verification" content="f0716e4a61fc6144eec195ebe09f93fe452ada21" />
-        <title>우리는 슈퍼플레이스다 - 학원 전문 마케팅 | 슈퍼 플레이스</title>
-        <meta name="description" content="100% 현직 학원장이 알려주는 실전 마케팅! 네이버 플레이스 상위노출, 블로그 마케팅, 퍼널 마케팅 전문 교육. 대표이사 고희준, 제1팀장 고선우와 함께하는 학원 성장 컨설팅.">
+        <title>학원 마케팅 학원 관리 프로그램 우리는 슈퍼플레이스다</title>
+        <meta name="description" content="전국에서 유일합니다! 100% 현직 학원장이 알려주는 실전 마케팅! 네이버 플레이스 상위노출, 블로그 마케팅, 퍼널 마케팅 전문 교육. 대표이사 고희준, 제1팀장 고선우와 함께하는 학원 성장 컨설팅.">
         
         <!-- Open Graph / Facebook -->
         <meta property="og:type" content="website">
         <meta property="og:url" content="https://superplace-academy.pages.dev/">
-        <meta property="og:title" content="우리는 슈퍼플레이스다 - 학원 전문 마케팅">
-        <meta property="og:description" content="100% 현직 학원장이 알려주는 실전 마케팅! 네이버 플레이스 상위노출, 블로그 마케팅 전문 교육">
-        <meta property="og:image" content="https://superplace-academy.pages.dev/thumbnail-share.jpg">
+        <meta property="og:title" content="학원 마케팅 학원 관리 프로그램 우리는 슈퍼플레이스다">
+        <meta property="og:description" content="전국에서 유일합니다! 100% 현직 학원장이 알려주는 실전 마케팅!">
+        <meta property="og:image" content="https://superplace-academy.pages.dev/homepage-thumbnail.jpg">
         
         <!-- Twitter -->
         <meta property="twitter:card" content="summary_large_image">
         <meta property="twitter:url" content="https://superplace-academy.pages.dev/">
-        <meta property="twitter:title" content="우리는 슈퍼플레이스다 - 학원 전문 마케팅">
-        <meta property="twitter:description" content="100% 현직 학원장이 알려주는 실전 마케팅!">
-        <meta property="twitter:image" content="https://superplace-academy.pages.dev/thumbnail-share.jpg">
+        <meta property="twitter:title" content="학원 마케팅 학원 관리 프로그램 우리는 슈퍼플레이스다">
+        <meta property="twitter:description" content="전국에서 유일합니다! 100% 현직 학원장이 알려주는 실전 마케팅!">
+        <meta property="twitter:image" content="https://superplace-academy.pages.dev/homepage-thumbnail.jpg">
         
         <script src="https://cdn.tailwindcss.com"><\/script>
         <style>
@@ -7991,19 +7991,34 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
         </footer>
 
         <script>
-          async function loadPrograms() {
-            try {
-              const response = await fetch('/api/consulting/programs');
-              const data = await response.json();
-              
-              if (!data.success || !data.programs) {
-                console.error('프로그램 로드 실패');
-                return;
-              }
+          // 하드코딩된 프로그램 데이터
+          const programs = [
+            {
+              program_id: 'naver-place-consulting',
+              name: '네이버 플레이스 상위노출 컨설팅',
+              description: '실제 포스팅의 집중 컨설팅 시작하실 마케팅!',
+              image_url: '/static/images/naver-place-consulting.jpg',
+              price: 1210000,
+              sessions: 6,
+              details: '네이버 플레이스 상위노출을 위한 1:1 맞춤 컨설팅 프로그램입니다. 6회에 걸쳐 플레이스 등록부터 상위노출 전략, 리뷰 관리, 키워드 최적화까지 실전 노하우를 전수받으실 수 있습니다.',
+              features: ["플레이스 최적화 전략", "리뷰 관리 노하우", "키워드 분석 및 타겟팅", "경쟁사 분석", "상위노출 실전 기법", "1:1 맞춤 컨설팅"]
+            },
+            {
+              program_id: 'blog-consulting',
+              name: '블로그 1:1 컨설팅',
+              description: '실제 포스팅의 집중 컨설팅 시작하실 마케팅!',
+              image_url: '/static/images/blog-consulting.jpg',
+              price: 1210000,
+              sessions: 6,
+              details: '블로그 상위노출을 위한 1:1 맞춤 컨설팅 프로그램입니다. 6회에 걸쳐 SEO 최적화, 콘텐츠 작성법, 키워드 전략, 유입 증대 방법까지 블로그 마케팅의 모든 것을 배우실 수 있습니다.',
+              features: ["SEO 최적화 전략", "콘텐츠 기획 및 작성법", "키워드 리서치", "검색 상위노출 기법", "유입 분석 및 개선", "1:1 맞춤 컨설팅"]
+            }
+          ];
 
-              const grid = document.getElementById('productsGrid');
-              grid.innerHTML = data.programs.map(program => {
-                const features = JSON.parse(program.features || '[]');
+          function loadPrograms() {
+            const grid = document.getElementById('productsGrid');
+            grid.innerHTML = programs.map(program => {
+              const features = program.features;
                 return \`
                   <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition duration-300">
                     <div class="aspect-w-16 aspect-h-9 bg-gray-200">
@@ -8037,9 +8052,6 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
                   </div>
                 \`;
               }).join('');
-            } catch (err) {
-              console.error('프로그램 로드 오류:', err);
-            }
           }
 
           loadPrograms();
@@ -9019,55 +9031,67 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
         </footer>
 
         <script>
-          async function loadPrograms() {
-            try {
-              const response = await fetch('/api/consulting/programs');
-              const data = await response.json();
-              
-              if (!data.success || !data.programs) {
-                console.error('프로그램 로드 실패');
-                return;
-              }
+          // 하드코딩된 프로그램 데이터
+          const programs = [
+            {
+              program_id: 'naver-place-consulting',
+              name: '네이버 플레이스 상위노출 컨설팅',
+              description: '실제 포스팅의 집중 컨설팅 시작하실 마케팅!',
+              image_url: '/static/images/naver-place-consulting.jpg',
+              price: 1210000,
+              sessions: 6,
+              details: '네이버 플레이스 상위노출을 위한 1:1 맞춤 컨설팅 프로그램입니다. 6회에 걸쳐 플레이스 등록부터 상위노출 전략, 리뷰 관리, 키워드 최적화까지 실전 노하우를 전수받으실 수 있습니다.',
+              features: ["플레이스 최적화 전략", "리뷰 관리 노하우", "키워드 분석 및 타겟팅", "경쟁사 분석", "상위노출 실전 기법", "1:1 맞춤 컨설팅"]
+            },
+            {
+              program_id: 'blog-consulting',
+              name: '블로그 1:1 컨설팅',
+              description: '실제 포스팅의 집중 컨설팅 시작하실 마케팅!',
+              image_url: '/static/images/blog-consulting.jpg',
+              price: 1210000,
+              sessions: 6,
+              details: '블로그 상위노출을 위한 1:1 맞춤 컨설팅 프로그램입니다. 6회에 걸쳐 SEO 최적화, 콘텐츠 작성법, 키워드 전략, 유입 증대 방법까지 블로그 마케팅의 모든 것을 배우실 수 있습니다.',
+              features: ["SEO 최적화 전략", "콘텐츠 기획 및 작성법", "키워드 리서치", "검색 상위노출 기법", "유입 분석 및 개선", "1:1 맞춤 컨설팅"]
+            }
+          ];
 
-              const grid = document.getElementById('productsGrid');
-              grid.innerHTML = data.programs.map(program => {
-                const features = JSON.parse(program.features || '[]');
-                return \`
-                  <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition duration-300">
-                    <div class="aspect-w-16 aspect-h-9 bg-gray-200">
-                      <img src="\${program.image_url}" alt="\${program.name}" class="w-full h-64 object-cover">
+          function loadPrograms() {
+            const grid = document.getElementById('productsGrid');
+            grid.innerHTML = programs.map(program => {
+              const features = program.features;
+              return \`
+                <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition duration-300">
+                  <div class="aspect-w-16 aspect-h-9 bg-gray-200">
+                    <img src="\${program.image_url}" alt="\${program.name}" class="w-full h-64 object-cover">
+                  </div>
+                  <div class="p-8">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-3">\${program.name}</h2>
+                    <p class="text-gray-600 mb-4">\${program.description}</p>
+                    <div class="mb-6">
+                      <p class="text-sm text-gray-700 mb-3 leading-relaxed">\${program.details}</p>
+                      <div class="space-y-2">
+                        \${features.map(f => \`
+                          <div class="flex items-center text-sm text-gray-600">
+                            <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                            <span>\${f}</span>
+                          </div>
+                        \`).join('')}
+                      </div>
                     </div>
-                    <div class="p-8">
-                      <h2 class="text-2xl font-bold text-gray-900 mb-3">\${program.name}</h2>
-                      <p class="text-gray-600 mb-4">\${program.description}</p>
-                      <div class="mb-6">
-                        <p class="text-sm text-gray-700 mb-3 leading-relaxed">\${program.details}</p>
-                        <div class="space-y-2">
-                          \${features.map(f => \`
-                            <div class="flex items-center text-sm text-gray-600">
-                              <i class="fas fa-check-circle text-green-500 mr-2"></i>
-                              <span>\${f}</span>
-                            </div>
-                          \`).join('')}
-                        </div>
+                    <div class="flex items-center justify-between border-t pt-6">
+                      <div>
+                        <p class="text-sm text-gray-500">총 \${program.sessions}회 컨설팅</p>
+                        <p class="text-3xl font-bold text-blue-600">\${(program.price / 10000).toFixed(0)}만원</p>
                       </div>
-                      <div class="flex items-center justify-between border-t pt-6">
-                        <div>
-                          <p class="text-sm text-gray-500">총 \${program.sessions}회 컨설팅</p>
-                          <p class="text-3xl font-bold text-blue-600">\${(program.price / 10000).toFixed(0)}만원</p>
-                        </div>
-                        <a href="/consulting/\${program.program_id}" 
-                           class="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg font-semibold hover:from-blue-700 hover:to-indigo-700 transition">
-                          수강하기
-                        </a>
-                      </div>
+                      <a href="/consulting/\${program.program_id}" 
+                         class="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg font-semibold hover:from-blue-700 hover:to-indigo-700 transition">
+                        수강하기
+                      </a>
                     </div>
                   </div>
-                \`;
-              }).join('');
-            } catch (err) {
-              console.error('프로그램 로드 오류:', err);
-            }
+                </div>
+              \`;
+            }).join('');
           }
 
           loadPrograms();
