@@ -11845,6 +11845,21 @@ app.get('/consulting/:programId/apply', async (c) => {
             // 로그인한 사용자 정보 불러오기
             const user = JSON.parse(localStorage.getItem('user') || '{}');
             
+            // 로그인 체크
+            if (!user.id) {
+              document.querySelector('.application-form-container').innerHTML = \`
+                <div class="text-center py-16">
+                  <i class="fas fa-lock text-6xl text-gray-400 mb-4"></i>
+                  <h2 class="text-2xl font-bold text-gray-900 mb-4">로그인이 필요합니다</h2>
+                  <p class="text-gray-600 mb-8">서비스 신청을 하려면 먼저 로그인해주세요.</p>
+                  <a href="/login" class="inline-block px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg font-semibold hover:from-blue-700 hover:to-indigo-700 transition">
+                    로그인하기
+                  </a>
+                </div>
+              \`;
+              return;
+            }
+            
             // 랜딩페이지 제작의 경우 상세 폼 표시
             if (programId === 'landing-page-max') {
               document.querySelector('.application-form-container').innerHTML = \`
@@ -17022,26 +17037,95 @@ app.get('/tools/landing-builder', (c) => {
         function showForm(type) {
             const forms = {
                 'academy-intro': \`
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-900 mb-2">학원명 *</label>
-                            <input type="text" name="academyName" required class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                    <div class="space-y-6">
+                        <!-- 기본 정보 -->
+                        <div class="border-b pb-4">
+                            <h3 class="text-lg font-bold text-gray-900 mb-4">📋 기본 정보</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-900 mb-2">학원명 *</label>
+                                    <input type="text" name="academyName" required class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-900 mb-2">위치 *</label>
+                                    <input type="text" name="location" placeholder="예: 인천 서구 청라동" required class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-900 mb-2">한 줄 소개 *</label>
+                                    <input type="text" name="features" placeholder="예: 1:1 맞춤 교육으로 성적 향상을 책임집니다" required class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-900 mb-2">연락처 *</label>
+                                    <input type="text" name="contact" placeholder="예: 010-1234-5678" required class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                                </div>
+                            </div>
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-900 mb-2">위치 *</label>
-                            <input type="text" name="location" placeholder="예: 인천 서구 청라동" required class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                        
+                        <!-- 학원장 정보 -->
+                        <div class="border-b pb-4">
+                            <h3 class="text-lg font-bold text-gray-900 mb-4">👤 학원장 정보</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-900 mb-2">학원장 이름 *</label>
+                                    <input type="text" name="directorName" placeholder="예: 홍길동" required class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-900 mb-2">학원장 사진 URL *</label>
+                                    <input type="url" name="directorPhoto" placeholder="https://example.com/director.jpg" required class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                                    <p class="text-xs text-gray-500 mt-1">이미지 URL을 입력하세요</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-900 mb-2">학원장 경력 *</label>
+                                    <textarea name="directorCareer" rows="4" placeholder="서울대학교 교육학과 졸업&#10;전직 대치동 유명학원 강사 10년&#10;교육청 인증 우수강사&#10;입시컨설팅 자격증 보유" required class="w-full px-4 py-3 border border-gray-300 rounded-xl"></textarea>
+                                </div>
+                            </div>
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-900 mb-2">한 줄 소개 *</label>
-                            <input type="text" name="features" placeholder="예: 1:1 맞춤 교육으로 성적 향상을 책임집니다" required class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                        
+                        <!-- 학원 사진 -->
+                        <div class="border-b pb-4">
+                            <h3 class="text-lg font-bold text-gray-900 mb-4">📷 학원 사진 (3개)</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-900 mb-2">학원 사진 1 URL *</label>
+                                    <input type="url" name="academyPhoto1" placeholder="https://example.com/photo1.jpg" required class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-900 mb-2">학원 사진 2 URL *</label>
+                                    <input type="url" name="academyPhoto2" placeholder="https://example.com/photo2.jpg" required class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-900 mb-2">학원 사진 3 URL *</label>
+                                    <input type="url" name="academyPhoto3" placeholder="https://example.com/photo3.jpg" required class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                                </div>
+                            </div>
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-900 mb-2">특별한 강점 (1개당 한 줄, 최대 4개) *</label>
-                            <textarea name="specialties" rows="4" placeholder="10년 경력의 전문 강사진&#10;소규모 그룹 수업으로 집중 케어&#10;입시 전문 컨설팅 무료 제공&#10;내신 평균 2등급 향상 실적" required class="w-full px-4 py-3 border border-gray-300 rounded-xl"></textarea>
+                        
+                        <!-- 교육 정보 -->
+                        <div class="border-b pb-4">
+                            <h3 class="text-lg font-bold text-gray-900 mb-4">📚 교육 정보</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-900 mb-2">교육 철학 *</label>
+                                    <textarea name="educationPhilosophy" rows="4" placeholder="우리 학원은 학생 한 명 한 명의 꿈을 소중히 생각합니다.&#10;단순한 성적 향상을 넘어 진정한 학습 능력을 키웁니다.&#10;학생 맞춤형 교육으로 최고의 결과를 만들어갑니다." required class="w-full px-4 py-3 border border-gray-300 rounded-xl"></textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-900 mb-2">교육 프로그램 *</label>
+                                    <textarea name="educationPrograms" rows="4" placeholder="중등 내신 대비반 (주 3회)&#10;고등 수능 집중반 (주 5회)&#10;1:1 맞춤 과외 (협의)&#10;방학 특강 프로그램" required class="w-full px-4 py-3 border border-gray-300 rounded-xl"></textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-900 mb-2">커리큘럼 *</label>
+                                    <textarea name="curriculum" rows="4" placeholder="1단계: 기초 개념 확립 (4주)&#10;2단계: 심화 문제 풀이 (4주)&#10;3단계: 실전 모의고사 (4주)&#10;4단계: 최종 점검 및 보완 (2주)" required class="w-full px-4 py-3 border border-gray-300 rounded-xl"></textarea>
+                                </div>
+                            </div>
                         </div>
+                        
+                        <!-- 학원 강점 -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-900 mb-2">연락처 *</label>
-                            <input type="text" name="contact" placeholder="예: 010-1234-5678" required class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                            <h3 class="text-lg font-bold text-gray-900 mb-4">⭐ 학원 강점</h3>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-900 mb-2">특별한 강점 (1개당 한 줄, 최대 4개) *</label>
+                                <textarea name="specialties" rows="4" placeholder="10년 경력의 전문 강사진&#10;소규모 그룹 수업으로 집중 케어&#10;입시 전문 컨설팅 무료 제공&#10;내신 평균 2등급 향상 실적" required class="w-full px-4 py-3 border border-gray-300 rounded-xl"></textarea>
+                            </div>
                         </div>
                     </div>
                 \`,
@@ -17354,6 +17438,14 @@ app.get('/tools/landing-builder', (c) => {
             document.getElementById('landingForm').innerHTML = forms[type];
             document.getElementById('formArea').classList.remove('hidden');
             document.getElementById('formArea').scrollIntoView({ behavior: 'smooth' });
+            
+            // 학원명 자동 채우기
+            setTimeout(() => {
+                const academyNameInput = document.querySelector('input[name="academyName"]');
+                if (academyNameInput && user && user.academy_name) {
+                    academyNameInput.value = user.academy_name;
+                }
+            }, 100);
             
             // student-report 템플릿일 때 학생 목록 로드
             if (type === 'student-report') {
