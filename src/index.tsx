@@ -99,15 +99,13 @@ app.post('/api/signup', async (c) => {
     const consent = marketing_consent ? 1 : 0
     const consentDate = consent ? new Date().toISOString() : null
 
-    // DB 저장 (academy_name 컬럼 포함)
-    // ✅ 기본값: role = 'director' (원장님)
-    // ✅ 선생님으로 등록하는 것은 원장님이 별도로 추가해야 함
+    // 🔥 STEP 1: 먼저 사용자 생성 (academy_id는 NULL)
     const result = await c.env.DB.prepare(`
       INSERT INTO users (
-        email, password, name, phone, academy_name, role,
+        email, password, name, phone, academy_name, role, user_type,
         marketing_sms_consent, marketing_email_consent, marketing_kakao_consent, marketing_consent_date
       )
-      VALUES (?, ?, ?, ?, ?, 'director', ?, ?, ?, ?)
+      VALUES (?, ?, ?, ?, ?, 'director', 'director', ?, ?, ?, ?)
     `).bind(
       email, 
       hashedPassword, 
@@ -120,10 +118,22 @@ app.post('/api/signup', async (c) => {
       consentDate
     ).run()
 
+    const userId = result.meta.last_row_id
+
+    // 🔥 STEP 2: 원장님의 academy_id를 자신의 id로 설정
+    // 이렇게 하면 원장님과 선생님이 같은 academy_id를 공유하게 됨
+    await c.env.DB.prepare(`
+      UPDATE users 
+      SET academy_id = ?
+      WHERE id = ?
+    `).bind(userId, userId).run()
+
+    console.log(`[Signup] Director created with id=${userId}, academy_id=${userId}`)
+
     return c.json({ 
       success: true, 
       message: '회원가입이 완료되었습니다.',
-      id: result.meta.last_row_id 
+      id: userId 
     })
   } catch (err) {
     console.error('Signup error:', err)
