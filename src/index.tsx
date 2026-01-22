@@ -5963,6 +5963,9 @@ app.get('/', (c) => {
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta name="naver-site-verification" content="f0716e4a61fc6144eec195ebe09f93fe452ada21" />
+        <meta name="google-site-verification" content="WhKCP6gbVE2UVm3T9eXQ8beqCW16phA-ltSMFkSvlhg" />
+        <link rel="icon" type="image/x-icon" href="/favicon.ico">
+        <link rel="icon" type="image/png" href="/logo.png">
         <title>학원 마케팅 학원 관리 프로그램 우리는 슈퍼플레이스다</title>
         <meta name="description" content="전국에서 유일합니다! 100% 현직 학원장이 알려주는 실전 마케팅! 네이버 플레이스 상위노출, 블로그 마케팅, 퍼널 마케팅 전문 교육. 대표이사 고희준, 제1팀장 고선우와 함께하는 학원 성장 컨설팅.">
         
@@ -11401,7 +11404,7 @@ app.get('/consulting', async (c) => {
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
                 <h1 class="text-4xl md:text-5xl font-bold mb-4">학원 전문 마케팅 컨설팅</h1>
                 <p class="text-xl md:text-2xl text-blue-100 mb-8">실제 포스팅의 집중 컨설팅 시작하실 마케팅!</p>
-                <p class="text-lg text-blue-200">6회 컨설팅 / 121만원</p>
+                <p class="text-lg text-blue-200">맞춤형 1:1 컨설팅 프로그램</p>
             </div>
         </section>
 
@@ -12893,7 +12896,7 @@ app.get('/programs', async (c) => {
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
                 <h1 class="text-4xl md:text-5xl font-bold mb-4">학원 전문 마케팅 컨설팅</h1>
                 <p class="text-xl md:text-2xl text-blue-100 mb-8">실제 포스팅의 집중 컨설팅 시작하실 마케팅!</p>
-                <p class="text-lg text-blue-200">6회 컨설팅 / 121만원</p>
+                <p class="text-lg text-blue-200">맞춤형 1:1 컨설팅 프로그램</p>
             </div>
         </section>
 

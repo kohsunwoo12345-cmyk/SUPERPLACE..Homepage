@@ -14,6 +14,8 @@
     "/test-parent-message.html",
     "/thumbnail-share.jpg",
     "/thumbnail.jpg",
-    "/homepage-thumbnail.jpg"
+    "/homepage-thumbnail.jpg",
+    "/favicon.ico",
+    "/logo.png"
   ]
 }
