@@ -2747,13 +2747,17 @@ var Bt=Object.defineProperty;var tt=e=>{throw TypeError(e)};var Nt=(e,t,s)=>t in
       VALUES (?, ?, ?, ?, ?)
     `).bind(t,s,r,a||"",n).run();return e.json({success:!0,message:"문의가 접수되었습니다. 빠른 시일 내에 연락드리겠습니다.",id:o.meta.last_row_id})}catch(t){return console.error("Contact submission error:",t),e.json({success:!1,error:"문의 접수 중 오류가 발생했습니다."},500)}});c.post("/api/signup",async e=>{try{const{email:t,password:s,name:r,phone:a,academy_name:n,academy_location:o,marketing_consent:i}=await e.req.json();if(!t||!s||!r||!a||!n)return e.json({success:!1,error:"필수 항목을 입력해주세요."},400);if(await e.env.DB.prepare(`
       SELECT id FROM users WHERE email = ?
-    `).bind(t).first())return e.json({success:!1,error:"이미 가입된 이메일입니다."},400);const d=s,p=i?1:0,u=p?new Date().toISOString():null,m=await e.env.DB.prepare(`
+    `).bind(t).first())return e.json({success:!1,error:"이미 가입된 이메일입니다."},400);const d=s,p=i?1:0,u=p?new Date().toISOString():null,g=(await e.env.DB.prepare(`
       INSERT INTO users (
-        email, password, name, phone, academy_name, role,
+        email, password, name, phone, academy_name, role, user_type,
         marketing_sms_consent, marketing_email_consent, marketing_kakao_consent, marketing_consent_date
       )
-      VALUES (?, ?, ?, ?, ?, 'director', ?, ?, ?, ?)
-    `).bind(t,d,r,a,n||"",p,p,p,u).run();return e.json({success:!0,message:"회원가입이 완료되었습니다.",id:m.meta.last_row_id})}catch(t){return console.error("Signup error:",t),e.json({success:!1,error:"회원가입 중 오류가 발생했습니다."},500)}});c.get("/api/health",async e=>{try{if(!e.env.DB)return e.json({success:!1,error:"DB binding not found",env_keys:Object.keys(e.env)},500);const t=await e.env.DB.prepare("SELECT 1 as test").first(),s=await e.env.DB.prepare("PRAGMA table_info(users)").all();return e.json({success:!0,message:"DB connection is healthy",test_result:t,users_table_columns:s.results.map(r=>r.name)})}catch(t){return e.json({success:!1,error:t.message,stack:t.stack},500)}});c.post("/api/login",async e=>{try{if(!e.env.DB)return e.json({success:!1,error:"DB binding not configured. Please check Cloudflare Pages settings.",debug:{env_keys:Object.keys(e.env),has_db:!!e.env.DB}},500);const{email:t,password:s}=await e.req.json();if(!t||!s)return e.json({success:!1,error:"이메일과 비밀번호를 입력해주세요."},400);const r=await e.env.DB.prepare(`
+      VALUES (?, ?, ?, ?, ?, 'director', 'director', ?, ?, ?, ?)
+    `).bind(t,d,r,a,n||"",p,p,p,u).run()).meta.last_row_id;return await e.env.DB.prepare(`
+      UPDATE users 
+      SET academy_id = ?
+      WHERE id = ?
+    `).bind(g,g).run(),console.log(`[Signup] Director created with id=${g}, academy_id=${g}`),e.json({success:!0,message:"회원가입이 완료되었습니다.",id:g})}catch(t){return console.error("Signup error:",t),e.json({success:!1,error:"회원가입 중 오류가 발생했습니다."},500)}});c.get("/api/health",async e=>{try{if(!e.env.DB)return e.json({success:!1,error:"DB binding not found",env_keys:Object.keys(e.env)},500);const t=await e.env.DB.prepare("SELECT 1 as test").first(),s=await e.env.DB.prepare("PRAGMA table_info(users)").all();return e.json({success:!0,message:"DB connection is healthy",test_result:t,users_table_columns:s.results.map(r=>r.name)})}catch(t){return e.json({success:!1,error:t.message,stack:t.stack},500)}});c.post("/api/login",async e=>{try{if(!e.env.DB)return e.json({success:!1,error:"DB binding not configured. Please check Cloudflare Pages settings.",debug:{env_keys:Object.keys(e.env),has_db:!!e.env.DB}},500);const{email:t,password:s}=await e.req.json();if(!t||!s)return e.json({success:!1,error:"이메일과 비밀번호를 입력해주세요."},400);const r=await e.env.DB.prepare(`
       SELECT id, email, name, role, points, academy_name, user_type, academy_id, parent_user_id 
       FROM users WHERE email = ? AND password = ?
     `).bind(t,s).first();if(!r)return e.json({success:!1,error:"이메일 또는 비밀번호가 일치하지 않습니다."},401);const a=crypto.randomUUID(),n=new Date(Date.now()+10080*60*1e3);return await e.env.DB.prepare(`
