@@ -8382,6 +8382,9 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
           if (program) {
             document.getElementById('programName').textContent = program.name;
             
+            // 로그인한 사용자 정보 불러오기
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            
             // 랜딩페이지 제작의 경우 상세 폼 표시
             if (programId === 'landing-page-max') {
               document.querySelector('.application-form-container').innerHTML = \`
@@ -8592,6 +8595,38 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
               alert('신청 중 오류가 발생했습니다.');
             }
           }
+
+          // 폼 렌더링 후 사용자 정보 자동 채우기
+          setTimeout(() => {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            
+            if (user.name) {
+              const nameInput = document.getElementById('name');
+              if (nameInput) nameInput.value = user.name;
+            }
+            
+            if (user.email) {
+              const emailInput = document.getElementById('email');
+              if (emailInput) emailInput.value = user.email;
+            }
+            
+            if (user.phone) {
+              const phoneInput = document.getElementById('phone');
+              if (phoneInput) phoneInput.value = user.phone;
+            }
+            
+            if (user.academy_name) {
+              const academyNameInput = document.getElementById('academy_name');
+              if (academyNameInput) {
+                academyNameInput.value = user.academy_name;
+                // 랜딩페이지 제작 폼에서는 필수 필드이므로 읽기 전용으로 설정
+                if (programId === 'landing-page-max') {
+                  academyNameInput.readOnly = true;
+                  academyNameInput.classList.add('bg-gray-100');
+                }
+              }
+            }
+          }, 100);
         <\/script>
     </body>
     </html>
