@@ -13824,6 +13824,9 @@ app.get('/dashboard', (c) => {
                         <a href="/" class="flex items-center space-x-2 bg-gradient-to-r from-purple-600 to-purple-700 text-white px-5 py-2.5 rounded-lg hover:from-purple-700 hover:to-purple-800 transition-all shadow-md hover:shadow-lg font-medium">
                             <span>🏠 홈으로</span>
                         </a>
+                        <a href="/consulting" class="flex items-center space-x-2 text-gray-700 hover:text-purple-600 transition font-medium">
+                            <span>🎓 교육 프로그램</span>
+                        </a>
                         <div id="smsNavDropdown" class="relative group">
                             <button class="flex items-center space-x-1 text-gray-700 hover:text-purple-600 transition font-medium">
                                 <span>📱 SMS</span>
