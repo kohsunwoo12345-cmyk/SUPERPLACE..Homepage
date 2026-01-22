@@ -8305,7 +8305,7 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
         </header>
 
         <main class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-            <div class="bg-white rounded-2xl shadow-lg p-8 md:p-12">
+            <div class="bg-white rounded-2xl shadow-lg p-8 md:p-12 application-form-container">
                 <h1 class="text-3xl font-bold text-gray-900 mb-2">수강 신청</h1>
                 <p id="programName" class="text-lg text-gray-600 mb-8"></p>
                 
@@ -8358,36 +8358,213 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
         <script>
           const programId = '${t}';
           
-          // 프로그램 정보 로드
-          async function loadProgram() {
-            try {
-              const response = await fetch(\`/api/consulting/programs/\${programId}\`);
-              const data = await response.json();
+          // 하드코딩된 프로그램 데이터
+          const programs = {
+            'landing-page-max': {
+              name: '(Max) 랜딩페이지 제작',
+              type: 'inquiry'
+            },
+            'marketing-agency': {
+              name: '학원 마케팅 대행',
+              type: 'inquiry'
+            },
+            'naver-place-consulting': {
+              name: '네이버 플레이스 상위노출 컨설팅',
+              type: 'consulting'
+            },
+            'blog-consulting': {
+              name: '블로그 1:1 컨설팅',
+              type: 'consulting'
+            }
+          };
+
+          const program = programs[programId];
+          if (program) {
+            document.getElementById('programName').textContent = program.name;
+            
+            // 랜딩페이지 제작의 경우 상세 폼 표시
+            if (programId === 'landing-page-max') {
+              document.querySelector('.application-form-container').innerHTML = \`
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">랜딩페이지 제작 신청</h1>
+                <p class="text-lg text-gray-600 mb-8">\${program.name}</p>
+                
+                <form id="landingPageForm" class="space-y-8">
+                  <!-- 기본 정보 -->
+                  <div class="border-b pb-6">
+                    <h2 class="text-xl font-bold text-gray-900 mb-4">신청자 정보</h2>
+                    <div class="space-y-4">
+                      <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">신청자 이름 *</label>
+                        <input type="text" id="name" required 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                      </div>
+                      <div class="grid md:grid-cols-2 gap-4">
+                        <div>
+                          <label class="block text-sm font-semibold text-gray-700 mb-2">이메일 *</label>
+                          <input type="email" id="email" required 
+                                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                          <label class="block text-sm font-semibold text-gray-700 mb-2">연락처 *</label>
+                          <input type="tel" id="phone" required placeholder="010-0000-0000"
+                                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        </div>
+                      </div>
+                      <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">학원명 *</label>
+                        <input type="text" id="academy_name" required
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- 학원장 정보 -->
+                  <div class="border-b pb-6">
+                    <h2 class="text-xl font-bold text-gray-900 mb-4">학원장 정보</h2>
+                    <div class="space-y-4">
+                      <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">학원장 이름 *</label>
+                        <input type="text" id="director_name" required
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                      </div>
+                      <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">학원장 사진 URL *</label>
+                        <input type="url" id="director_photo" required placeholder="https://example.com/photo.jpg"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        <p class="text-xs text-gray-500 mt-1">이미지 URL을 입력해주세요 (예: https://...)</p>
+                      </div>
+                      <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">학원장 경력 *</label>
+                        <textarea id="director_career" rows="4" required placeholder="예: 서울대학교 교육학 석사&#10;○○학원 10년 운영&#10;교육청 우수학원 선정"
+                                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"></textarea>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- 학원 사진 -->
+                  <div class="border-b pb-6">
+                    <h2 class="text-xl font-bold text-gray-900 mb-4">학원 사진</h2>
+                    <div class="space-y-4">
+                      <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">학원 사진 1 URL *</label>
+                        <input type="url" id="academy_photo_1" required placeholder="https://example.com/photo1.jpg"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                      </div>
+                      <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">학원 사진 2 URL *</label>
+                        <input type="url" id="academy_photo_2" required placeholder="https://example.com/photo2.jpg"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                      </div>
+                      <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">학원 사진 3 URL *</label>
+                        <input type="url" id="academy_photo_3" required placeholder="https://example.com/photo3.jpg"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                      </div>
+                      <p class="text-xs text-gray-500">학원 내부, 수업 모습, 학생들 공부하는 사진 등을 넣어주세요</p>
+                    </div>
+                  </div>
+
+                  <!-- 교육 정보 -->
+                  <div class="border-b pb-6">
+                    <h2 class="text-xl font-bold text-gray-900 mb-4">교육 정보</h2>
+                    <div class="space-y-4">
+                      <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">교육 철학 *</label>
+                        <textarea id="education_philosophy" rows="4" required placeholder="우리 학원만의 교육 철학을 입력해주세요"
+                                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"></textarea>
+                      </div>
+                      <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">교육 프로그램 *</label>
+                        <textarea id="education_programs" rows="4" required placeholder="예: 1:1 맞춤 수업&#10;소그룹 토론 수업&#10;온라인 강의 제공"
+                                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"></textarea>
+                      </div>
+                      <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">커리큘럼 *</label>
+                        <textarea id="curriculum" rows="4" required placeholder="예: 1단계: 기초 다지기&#10;2단계: 실력 향상&#10;3단계: 심화 학습"
+                                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"></textarea>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- 추가 요청사항 -->
+                  <div>
+                    <h2 class="text-xl font-bold text-gray-900 mb-4">추가 요청사항</h2>
+                    <div>
+                      <label class="block text-sm font-semibold text-gray-700 mb-2">기타 요청사항</label>
+                      <textarea id="message" rows="4" placeholder="원하시는 디자인 스타일, 색상, 특별히 강조하고 싶은 내용 등을 자유롭게 작성해주세요"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"></textarea>
+                    </div>
+                  </div>
+
+                  <div class="bg-blue-50 p-4 rounded-lg">
+                    <p class="text-sm text-gray-700">
+                      <i class="fas fa-info-circle text-blue-600 mr-2"></i>
+                      신청하시면 1-2일 내로 연락드려 상세 상담을 진행하겠습니다.
+                    </p>
+                  </div>
+
+                  <button type="submit" 
+                          class="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-lg font-bold rounded-xl hover:from-blue-700 hover:to-indigo-700 transition">
+                    제작 신청하기
+                  </button>
+                </form>
+              \`;
               
-              if (data.success && data.program) {
-                document.getElementById('programName').textContent = data.program.name;
-              }
-            } catch (err) {
-              console.error('프로그램 로드 오류:', err);
+              // 랜딩페이지 폼 제출
+              document.getElementById('landingPageForm').addEventListener('submit', handleLandingPageSubmit);
+            } else {
+              // 기존 간단한 폼 유지 (다른 서비스용)
+              document.getElementById('applicationForm').addEventListener('submit', handleSimpleSubmit);
             }
           }
 
-          // 신청 폼 제출
-          document.getElementById('applicationForm').addEventListener('submit', async (e) => {
+          async function handleLandingPageSubmit(e) {
             e.preventDefault();
             
-            // 사용자 정보 확인
-            const user = JSON.parse(localStorage.getItem('user') || '{}');
-            if (!user.id) {
-              alert('로그인이 필요합니다.');
-              window.location.href = '/login';
-              return;
-            }
-
             const formData = {
               program_id: programId,
-              user_id: user.id,
-              academy_id: user.academy_id || user.id,
+              applicant_name: document.getElementById('name').value,
+              applicant_email: document.getElementById('email').value,
+              applicant_phone: document.getElementById('phone').value,
+              academy_name: document.getElementById('academy_name').value,
+              director_name: document.getElementById('director_name').value,
+              director_photo: document.getElementById('director_photo').value,
+              director_career: document.getElementById('director_career').value,
+              academy_photo_1: document.getElementById('academy_photo_1').value,
+              academy_photo_2: document.getElementById('academy_photo_2').value,
+              academy_photo_3: document.getElementById('academy_photo_3').value,
+              education_philosophy: document.getElementById('education_philosophy').value,
+              education_programs: document.getElementById('education_programs').value,
+              curriculum: document.getElementById('curriculum').value,
+              message: document.getElementById('message').value
+            };
+
+            try {
+              const response = await fetch('/api/consulting/apply', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+              });
+
+              const data = await response.json();
+              
+              if (data.success) {
+                alert('신청이 완료되었습니다! 빠른 시일 내로 연락드리겠습니다.');
+                window.location.href = '/consulting';
+              } else {
+                alert(data.error || '신청 중 오류가 발생했습니다.');
+              }
+            } catch (err) {
+              console.error('신청 오류:', err);
+              alert('신청 중 오류가 발생했습니다.');
+            }
+          }
+
+          async function handleSimpleSubmit(e) {
+            e.preventDefault();
+            
+            const formData = {
+              program_id: programId,
               applicant_name: document.getElementById('name').value,
               applicant_email: document.getElementById('email').value,
               applicant_phone: document.getElementById('phone').value,
@@ -8405,7 +8582,7 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
               const data = await response.json();
               
               if (data.success) {
-                alert(data.message);
+                alert(data.message || '신청이 완료되었습니다!');
                 window.location.href = '/consulting';
               } else {
                 alert(data.error || '신청 중 오류가 발생했습니다.');
@@ -8414,9 +8591,7 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
               console.error('신청 오류:', err);
               alert('신청 중 오류가 발생했습니다.');
             }
-          });
-
-          loadProgram();
+          }
         <\/script>
     </body>
     </html>
