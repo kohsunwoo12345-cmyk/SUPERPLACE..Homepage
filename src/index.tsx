@@ -4312,10 +4312,11 @@ function generateAcademyIntroHTML(data: any): string {
     curriculum
   } = data
   
-  const specialtiesList = specialties ? specialties.split('\n').filter((s: string) => s.trim()) : []
-  const directorCareerList = directorCareer ? directorCareer.split('\n').filter((c: string) => c.trim()) : []
-  const educationProgramsList = educationPrograms ? educationPrograms.split('\n').filter((p: string) => p.trim()) : []
-  const curriculumList = curriculum ? curriculum.split('\n').filter((c: string) => c.trim()) : []
+  // 배열이면 그대로 사용, 문자열이면 split
+  const specialtiesList = Array.isArray(specialties) ? specialties : (specialties ? specialties.split('\n').filter((s: string) => s.trim()) : [])
+  const directorCareerList = Array.isArray(directorCareer) ? directorCareer : (directorCareer ? directorCareer.split('\n').filter((c: string) => c.trim()) : [])
+  const educationProgramsList = Array.isArray(educationPrograms) ? educationPrograms : (educationPrograms ? educationPrograms.split('\n').filter((p: string) => p.trim()) : [])
+  const curriculumList = Array.isArray(curriculum) ? curriculum : (curriculum ? curriculum.split('\n').filter((c: string) => c.trim()) : [])
   
   return `
 <!DOCTYPE html>
