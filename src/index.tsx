@@ -4545,8 +4545,17 @@ function generateParentLetterHTML(data: any): string {
 function generateStudentReportHTML(data: any): string {
   const { 
     studentName, month, achievements, improvements, nextGoals, teacherName,
-    textbooks, attendanceRate, attendanceDays, totalDays
+    textbooks, attendanceRate, attendanceDays, totalDays,
+    understandingLevel, participationLevel, homeworkRate
   } = data
+  
+  // 그래프 데이터 생성
+  const chartData = {
+    attendance: attendanceRate || 95,
+    understanding: understandingLevel || 4,
+    participation: participationLevel || 4,
+    homework: homeworkRate || 90
+  }
   
   return `
 <!DOCTYPE html>
@@ -4556,6 +4565,7 @@ function generateStudentReportHTML(data: any): string {
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>${studentName} 학생 ${month} 학습 리포트</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
     <style>
       @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
@@ -4643,6 +4653,86 @@ function generateStudentReportHTML(data: any): string {
                         <div class="text-center">
                             <div class="text-sm sm:text-base text-gray-600 mb-2">출석 일수</div>
                             <div class="text-2xl sm:text-3xl font-bold text-blue-600">${attendanceDays || 19}일 / ${totalDays || 20}일</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 📊 학습 성과 그래프 -->
+            <div class="p-4 sm:p-6 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl sm:rounded-2xl border-2 border-purple-100">
+                <h2 class="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6 flex items-center gap-2 sm:gap-3">
+                    <i class="fas fa-chart-bar text-purple-600 text-2xl sm:text-3xl"></i>
+                    학습 성과 분석
+                </h2>
+                
+                <!-- 성과 지표 카드 -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-6">
+                    <div class="bg-white rounded-xl p-4 shadow-sm text-center">
+                        <div class="text-xs sm:text-sm text-gray-600 mb-2">출석률</div>
+                        <div class="text-2xl sm:text-3xl font-bold text-blue-600 mb-1">${chartData.attendance}%</div>
+                        <div class="text-xs text-gray-500">Attendance</div>
+                    </div>
+                    <div class="bg-white rounded-xl p-4 shadow-sm text-center">
+                        <div class="text-xs sm:text-sm text-gray-600 mb-2">이해도</div>
+                        <div class="text-2xl sm:text-3xl font-bold text-green-600 mb-1">${chartData.understanding}/5</div>
+                        <div class="text-xs text-gray-500">Understanding</div>
+                    </div>
+                    <div class="bg-white rounded-xl p-4 shadow-sm text-center">
+                        <div class="text-xs sm:text-sm text-gray-600 mb-2">참여도</div>
+                        <div class="text-2xl sm:text-3xl font-bold text-orange-600 mb-1">${chartData.participation}/5</div>
+                        <div class="text-xs text-gray-500">Participation</div>
+                    </div>
+                    <div class="bg-white rounded-xl p-4 shadow-sm text-center">
+                        <div class="text-xs sm:text-sm text-gray-600 mb-2">숙제 완료율</div>
+                        <div class="text-2xl sm:text-3xl font-bold text-purple-600 mb-1">${chartData.homework}%</div>
+                        <div class="text-xs text-gray-500">Homework</div>
+                    </div>
+                </div>
+                
+                <!-- 그래프 -->
+                <div class="bg-white rounded-xl p-4 sm:p-6 shadow-sm">
+                    <canvas id="performanceChart" class="w-full" style="max-height: 400px;"></canvas>
+                </div>
+                
+                <!-- 성과 설명 -->
+                <div class="mt-4 sm:mt-6 space-y-3">
+                    <div class="flex items-start gap-3 p-3 sm:p-4 bg-white rounded-lg">
+                        <div class="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-check text-blue-600 text-sm"></i>
+                        </div>
+                        <div>
+                            <div class="font-medium text-gray-900 text-sm sm:text-base">출석률 ${chartData.attendance}%</div>
+                            <div class="text-xs sm:text-sm text-gray-600 mt-1">
+                                ${chartData.attendance >= 90 ? '매우 우수한 출석률을 유지하고 있습니다! 🌟' : 
+                                  chartData.attendance >= 80 ? '양호한 출석률입니다. 조금만 더 노력해요! 💪' : 
+                                  '출석률 개선이 필요합니다. 함께 노력해봐요! 📚'}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-3 p-3 sm:p-4 bg-white rounded-lg">
+                        <div class="flex-shrink-0 w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-brain text-green-600 text-sm"></i>
+                        </div>
+                        <div>
+                            <div class="font-medium text-gray-900 text-sm sm:text-base">수업 이해도 ${chartData.understanding}/5</div>
+                            <div class="text-xs sm:text-sm text-gray-600 mt-1">
+                                ${chartData.understanding >= 4 ? '수업 내용을 잘 이해하고 있습니다! 훌륭해요! 🎯' : 
+                                  chartData.understanding >= 3 ? '평균 이상의 이해도를 보이고 있어요! 👍' : 
+                                  '조금 더 집중하면 더 좋은 결과가 있을 거예요! 💡'}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-3 p-3 sm:p-4 bg-white rounded-lg">
+                        <div class="flex-shrink-0 w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-hand-paper text-orange-600 text-sm"></i>
+                        </div>
+                        <div>
+                            <div class="font-medium text-gray-900 text-sm sm:text-base">수업 참여도 ${chartData.participation}/5</div>
+                            <div class="text-xs sm:text-sm text-gray-600 mt-1">
+                                ${chartData.participation >= 4 ? '적극적으로 수업에 참여하고 있어요! 멋져요! 🙋' : 
+                                  chartData.participation >= 3 ? '좋은 참여도를 보이고 있습니다! 😊' : 
+                                  '더 적극적으로 참여해보면 어떨까요? 🌈'}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -4747,6 +4837,111 @@ function generateStudentReportHTML(data: any): string {
             <p class="text-xs sm:text-sm text-gray-500">이 리포트는 학생의 학습 성장을 위한 기록입니다</p>
         </div>
     </div>
+    
+    <script>
+    // 📊 Chart.js로 학습 성과 그래프 생성
+    document.addEventListener('DOMContentLoaded', function() {
+        const ctx = document.getElementById('performanceChart');
+        if (ctx) {
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['출석률', '이해도', '참여도', '숙제 완료율'],
+                    datasets: [{
+                        label: '학습 성과 지표',
+                        data: [
+                            ${chartData.attendance},
+                            ${chartData.understanding * 20}, // 5점 만점을 100점 만점으로 변환
+                            ${chartData.participation * 20}, // 5점 만점을 100점 만점으로 변환
+                            ${chartData.homework}
+                        ],
+                        backgroundColor: [
+                            'rgba(59, 130, 246, 0.8)', // 파란색 - 출석률
+                            'rgba(34, 197, 94, 0.8)',  // 초록색 - 이해도
+                            'rgba(249, 115, 22, 0.8)', // 주황색 - 참여도
+                            'rgba(168, 85, 247, 0.8)'  // 보라색 - 숙제
+                        ],
+                        borderColor: [
+                            'rgb(59, 130, 246)',
+                            'rgb(34, 197, 94)',
+                            'rgb(249, 115, 22)',
+                            'rgb(168, 85, 247)'
+                        ],
+                        borderWidth: 2,
+                        borderRadius: 8,
+                        barThickness: 'flex',
+                        maxBarThickness: 80
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    aspectRatio: 2,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            padding: 12,
+                            titleFont: {
+                                size: 14,
+                                weight: 'bold'
+                            },
+                            bodyFont: {
+                                size: 13
+                            },
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    let value = context.parsed.y;
+                                    
+                                    if (label === '이해도' || label === '참여도') {
+                                        // 100점 만점을 다시 5점 만점으로 표시
+                                        return label + ': ' + (value / 20).toFixed(1) + '/5.0';
+                                    }
+                                    return label + ': ' + value + '%';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                },
+                                font: {
+                                    size: 12
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                font: {
+                                    size: 12,
+                                    weight: '500'
+                                }
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    animation: {
+                        duration: 1500,
+                        easing: 'easeInOutQuart'
+                    }
+                }
+            });
+        }
+    });
+    </script>
 </body>
 </html>
   `
@@ -15567,6 +15762,11 @@ app.get('/tools/landing-builder', (c) => {
                             <label class="block text-sm font-medium text-gray-900 mb-2">담당 선생님</label>
                             <input type="text" name="teacherName" placeholder="예: 김영희 선생님" class="w-full px-4 py-3 border border-gray-300 rounded-xl">
                         </div>
+                        
+                        <!-- Hidden fields for chart data -->
+                        <input type="hidden" name="understandingLevel" id="understandingLevelInput" value="0">
+                        <input type="hidden" name="participationLevel" id="participationLevelInput" value="0">
+                        <input type="hidden" name="homeworkRate" id="homeworkRateInput" value="0">
                     </div>
                 \`,
                 'admission-info': \`
@@ -15758,17 +15958,23 @@ app.get('/tools/landing-builder', (c) => {
                 button.textContent = '⏳ 계산 중...';
                 button.disabled = true;
                 
-                // API 호출
-                const response = await fetch(
+                // API 호출 - 출석 데이터
+                const attendanceResponse = await fetch(
                     \`/api/students/\${studentId}/attendance?startDate=\${startDate}&endDate=\${endDate}\`
                 );
-                const result = await response.json();
+                const attendanceResult = await attendanceResponse.json();
+                
+                // API 호출 - 성과 데이터 (이해도, 참여도)
+                const performanceResponse = await fetch(
+                    \`/api/students/\${studentId}/performance?startDate=\${startDate}&endDate=\${endDate}\`
+                );
+                const performanceResult = await performanceResponse.json();
                 
                 button.textContent = originalText;
                 button.disabled = false;
                 
-                if (result.success && result.data) {
-                    const summary = result.data.summary;
+                if (attendanceResult.success && attendanceResult.data) {
+                    const summary = attendanceResult.data.summary;
                     
                     // 통계 표시
                     document.getElementById('stat-attended').textContent = summary.attendedDays + '일';
@@ -15782,15 +15988,33 @@ app.get('/tools/landing-builder', (c) => {
                     document.getElementById('attendanceDaysInput').value = summary.attendedDays;
                     document.getElementById('totalDaysInput').value = summary.totalDays;
                     
-                    alert(
-                        \`✅ 출석 데이터가 자동으로 계산되었습니다!\\n\\n\` +
-                        \`📊 총 \${summary.totalDays}일 중:\\n\` +
+                    // 성과 데이터 저장
+                    if (performanceResult.success && performanceResult.data) {
+                        const perfSummary = performanceResult.data.summary;
+                        document.getElementById('understandingLevelInput').value = perfSummary.avgUnderstanding || 0;
+                        document.getElementById('participationLevelInput').value = perfSummary.avgParticipation || 0;
+                        document.getElementById('homeworkRateInput').value = perfSummary.homeworkRate || 0;
+                    }
+                    
+                    let alertMessage = 
+                        \`✅ 학습 데이터가 자동으로 계산되었습니다!\\n\\n\` +
+                        \`📊 출석 현황 (총 \${summary.totalDays}일):\\n\` +
                         \`✅ 출석: \${summary.attendedDays}일\\n\` +
                         \`❌ 결석: \${summary.absentDays}일\\n\` +
                         \`⏰ 지각: \${summary.lateDays}일\\n\` +
-                        \`🏃 조퇴: \${summary.earlyLeaveDays}일\\n\\n\` +
-                        \`📈 출석률: \${summary.attendanceRate}%\`
-                    );
+                        \`🏃 조퇴: \${summary.earlyLeaveDays}일\\n\` +
+                        \`📈 출석률: \${summary.attendanceRate}%\`;
+                    
+                    if (performanceResult.success && performanceResult.data) {
+                        const perfSummary = performanceResult.data.summary;
+                        alertMessage += 
+                            \`\\n\\n📚 학습 성과:\\n\` +
+                            \`🧠 평균 이해도: \${perfSummary.avgUnderstanding}/5.0\\n\` +
+                            \`🙋 평균 참여도: \${perfSummary.avgParticipation}/5.0\\n\` +
+                            \`📝 숙제 완료율: \${perfSummary.homeworkRate}%\`;
+                    }
+                    
+                    alert(alertMessage);
                 } else {
                     alert('⚠️ 출석 데이터를 찾을 수 없습니다.\\n\\n선택한 기간에 출석 기록이 없을 수 있습니다.');
                 }
@@ -17939,6 +18163,109 @@ app.get('/api/students/:studentId/attendance', async (c) => {
     return c.json({ 
       success: false, 
       error: '출석 데이터 조회 실패: ' + error.message 
+    }, 500)
+  }
+})
+
+// 📊 학생 학습 성과 데이터 조회 API (이해도, 참여도)
+app.get('/api/students/:studentId/performance', async (c) => {
+  try {
+    const studentId = c.req.param('studentId')
+    const startDate = c.req.query('startDate') // YYYY-MM-DD 형식
+    const endDate = c.req.query('endDate') // YYYY-MM-DD 형식
+    
+    if (!c.env.DB) {
+      return c.json({ success: false, error: 'DB 연결 실패' }, 500)
+    }
+    
+    if (!studentId || !startDate || !endDate) {
+      return c.json({ 
+        success: false, 
+        error: '학생 ID, 시작일, 종료일이 필요합니다.' 
+      }, 400)
+    }
+    
+    console.log('📊 [GetPerformance] Student:', studentId, 'Period:', startDate, '-', endDate)
+    
+    // daily_records에서 이해도와 참여도 데이터 조회
+    const query = `
+      SELECT 
+        record_date,
+        attendance,
+        understanding_level,
+        participation_level,
+        homework_status,
+        achievement,
+        memo
+      FROM daily_records
+      WHERE student_id = ?
+        AND record_date >= ?
+        AND record_date <= ?
+      ORDER BY record_date ASC
+    `
+    
+    const result = await c.env.DB.prepare(query)
+      .bind(studentId, startDate, endDate)
+      .all()
+    
+    const records = result.results || []
+    
+    // 통계 계산
+    let totalUnderstanding = 0
+    let totalParticipation = 0
+    let countUnderstanding = 0
+    let countParticipation = 0
+    let homeworkCompleted = 0
+    let homeworkTotal = 0
+    
+    records.forEach(record => {
+      if (record.understanding_level) {
+        totalUnderstanding += record.understanding_level
+        countUnderstanding++
+      }
+      if (record.participation_level) {
+        totalParticipation += record.participation_level
+        countParticipation++
+      }
+      if (record.homework_status) {
+        homeworkTotal++
+        if (record.homework_status === '완료') homeworkCompleted++
+      }
+    })
+    
+    const avgUnderstanding = countUnderstanding > 0 
+      ? (totalUnderstanding / countUnderstanding).toFixed(1)
+      : 0
+    
+    const avgParticipation = countParticipation > 0 
+      ? (totalParticipation / countParticipation).toFixed(1)
+      : 0
+    
+    const homeworkRate = homeworkTotal > 0
+      ? Math.round((homeworkCompleted / homeworkTotal) * 100)
+      : 0
+    
+    console.log('✅ [GetPerformance] Found', records.length, 'records')
+    console.log('   평균 이해도:', avgUnderstanding, '평균 참여도:', avgParticipation)
+    
+    return c.json({
+      success: true,
+      data: {
+        records,
+        summary: {
+          avgUnderstanding: parseFloat(avgUnderstanding),
+          avgParticipation: parseFloat(avgParticipation),
+          homeworkRate,
+          totalRecords: records.length
+        }
+      }
+    })
+    
+  } catch (error) {
+    console.error('❌ [GetPerformance] Error:', error)
+    return c.json({ 
+      success: false, 
+      error: '성과 데이터 조회 실패: ' + error.message 
     }, 500)
   }
 })
