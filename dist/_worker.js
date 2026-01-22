@@ -12384,9 +12384,9 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
                         </div>
                         
                         <div>
-                            <label class="block text-sm font-medium text-gray-900 mb-2">사용 교재 (1개당 한 줄)</label>
-                            <textarea name="textbooks" rows="2" placeholder="중등 수학 2-1&#10;문법이 쓰기다&#10;영단어 암기장 LEVEL 3" class="w-full px-4 py-3 border border-gray-300 rounded-xl"></textarea>
-                            <p class="text-xs text-gray-500 mt-1">💡 비워두면 표시되지 않습니다</p>
+                            <label class="block text-sm font-medium text-gray-900 mb-2">사용 교재 (1개당 한 줄, 최대 5개)</label>
+                            <textarea name="textbooks" rows="5" placeholder="중등 수학 2-1&#10;문법이 쓰기다&#10;영단어 암기장 LEVEL 3&#10;독해 실력 다지기&#10;기출 문제집 완성" class="w-full px-4 py-3 border border-gray-300 rounded-xl"></textarea>
+                            <p class="text-xs text-gray-500 mt-1">💡 최대 5개까지 입력 가능하며, 비워두면 표시되지 않습니다</p>
                         </div>
                         
                         <!-- 출석 통계 표시 -->
@@ -12908,7 +12908,14 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
             if (data.achievements) data.achievements = data.achievements.split('\\n').filter(s => s.trim());
             if (data.improvements) data.improvements = data.improvements.split('\\n').filter(s => s.trim());
             if (data.nextGoals) data.nextGoals = data.nextGoals.split('\\n').filter(s => s.trim());
-            if (data.textbooks) data.textbooks = data.textbooks.split('\\n').filter(s => s.trim());
+            if (data.textbooks) {
+                data.textbooks = data.textbooks.split('\\n').filter(s => s.trim());
+                // 최대 5개로 제한
+                if (data.textbooks.length > 5) {
+                    alert('⚠️ 사용 교재는 최대 5개까지만 입력 가능합니다. 처음 5개만 사용됩니다.');
+                    data.textbooks = data.textbooks.slice(0, 5);
+                }
+            }
 
             // 제목 생성
             let title = '';

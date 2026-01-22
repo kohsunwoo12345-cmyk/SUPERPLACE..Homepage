@@ -11057,7 +11057,66 @@ app.get('/signup', (c) => {
                             </p>
                         </div>
 
-                        <button type="submit" class="w-full gradient-purple text-white py-3 rounded-xl font-medium hover:shadow-xl transition-all">
+                        <!-- 서비스 이용약관 동의 -->
+                        <div class="border-t pt-5">
+                            <div class="space-y-4">
+                                <!-- 약관 전문 보기 -->
+                                <details class="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                                    <summary class="cursor-pointer font-medium text-gray-900 hover:text-purple-600 transition flex items-center justify-between">
+                                        <span>📄 서비스 이용약관 전문 보기</span>
+                                        <i class="fas fa-chevron-down text-sm"></i>
+                                    </summary>
+                                    <div class="mt-4 max-h-96 overflow-y-auto text-xs text-gray-700 leading-relaxed space-y-3 bg-white p-4 rounded-lg">
+                                        <h3 class="font-bold text-sm text-gray-900">서비스 이용약관</h3>
+                                        
+                                        <div class="space-y-2">
+                                            <p class="font-semibold">제 1 장 총 칙</p>
+                                            <p><strong>제 1 조 (목적)</strong> 이 약관은 주식회사 우리는 슈퍼플레이스다(이하 "회사"라 합니다)가 제공하는 학원 관리 플랫폼, AI 마케팅 자동화 솔루션, 문자 발송 서비스 및 기타 제반 서비스(이하 "서비스"라 합니다)의 이용과 관련하여 회사와 회원 간의 권리, 의무 및 책임사항, 기타 필요한 사항을 규정함을 목적으로 합니다.</p>
+                                            
+                                            <p><strong>제 2 조 (용어의 정의)</strong> 이 약관에서 사용하는 용어의 정의는 다음과 같습니다.</p>
+                                            <ul class="list-disc pl-5 space-y-1">
+                                                <li>"서비스"라 함은 구현되는 단말기(PC, 휴대형 단말기 등)와 상관없이 회원이 이용할 수 있는 '슈퍼플레이스 아카데미' 및 관련 제반 서비스를 의미합니다.</li>
+                                                <li>"회원"이라 함은 회사의 서비스에 접속하여 이 약관에 따라 회사와 이용계약을 체결하고 회사가 제공하는 서비스를 이용하는 고객(학원장 및 학원 관계자)을 말합니다.</li>
+                                                <li>"아이디(ID)"라 함은 회원의 식별과 서비스 이용을 위하여 회원이 정하고 회사가 승인하는 문자와 숫자의 조합을 의미합니다.</li>
+                                                <li>"비밀번호"라 함은 회원이 부여받은 ID와 일치된 회원임을 확인하고 비밀보호를 위해 회원 자신이 정한 문자 또는 숫자의 조합을 의미합니다.</li>
+                                                <li>"포인트"라 함은 서비스 내에서 문자 메시지(SMS/LMS) 발송 등을 이용하기 위해 회원이 유상으로 충전하거나 회사가 무상으로 지급하는 가상의 결제 수단을 의미합니다.</li>
+                                                <li>"AI 결과물"이라 함은 회원이 입력한 데이터를 기반으로 인공지능(OpenAI 등) 알고리즘을 통해 생성된 리포트, 랜딩페이지, 텍스트 등을 의미합니다.</li>
+                                            </ul>
+                                            
+                                            <p><strong>제 3 조 (약관의 효력 및 변경)</strong></p>
+                                            <p>① 이 약관은 서비스 화면에 게시하거나 기타의 방법으로 회원에게 공지함으로써 효력이 발생합니다.</p>
+                                            <p>② 회사는 필요하다고 인정되는 경우 「약관의 규제에 관한 법률」 등 관련 법령을 위배하지 않는 범위에서 이 약관을 변경할 수 있습니다.</p>
+                                            <p>③ 회사가 약관을 변경할 경우에는 적용일자 및 변경사유를 명시하여 현행약관과 함께 서비스 초기화면에 그 적용일자 7일 전부터 공지합니다.</p>
+                                            
+                                            <p class="font-semibold">제 2 장 이용계약의 체결</p>
+                                            <p><strong>제 4 조 (이용계약의 성립)</strong> 이용계약은 회원이 되고자 하는 자가 약관의 내용에 대하여 동의를 한 다음 회원가입 신청을 하고 회사가 이러한 신청에 대하여 승낙함으로써 체결됩니다.</p>
+                                            
+                                            <p><strong>제 9 조 (AI 서비스 이용 및 면책 특약)</strong> [중요]</p>
+                                            <p>① 회사가 제공하는 AI 기반 서비스(랜딩페이지 생성, 학생 리포트 등)는 확률적 생성 모델을 기반으로 하므로, 결과물의 완전한 정확성, 적법성, 무결성을 보장하지 않습니다.</p>
+                                            <p>② 회원은 AI가 생성한 결과물을 학부모 상담, 마케팅 등에 활용하기 전에 반드시 내용을 검수하여야 하며, 검수하지 않고 활용하여 발생한 문제에 대한 책임은 회원 본인에게 있습니다.</p>
+                                            
+                                            <p><strong>제 10 조 (문자 발송 서비스 이용 및 스팸 방지)</strong> [중요]</p>
+                                            <p>① 회원은 문자 메시지 발송 시 「정보통신망 이용촉진 및 정보보호 등에 관한 법률」을 준수하여야 합니다.</p>
+                                            <p>② 수신자의 사전 동의 없는 광고성 정보 전송으로 인해 발생하는 민·형사상 책임은 전적으로 회원이 부담합니다.</p>
+                                        </div>
+                                        
+                                        <p class="text-xs text-gray-500 pt-4 border-t">부칙: 이 약관은 2026년 1월 23일부터 시행합니다.</p>
+                                    </div>
+                                </details>
+                                
+                                <!-- 필수 동의 체크박스 -->
+                                <label class="flex items-start gap-3 cursor-pointer p-4 border-2 border-gray-300 rounded-xl hover:border-purple-500 transition bg-white" id="termsLabel">
+                                    <input type="checkbox" id="agreeTerms" required class="mt-1 w-5 h-5 text-purple-600 border-gray-300 rounded focus:ring-2 focus:ring-purple-500 cursor-pointer">
+                                    <span class="flex-1 text-sm">
+                                        <span class="font-medium text-gray-900">[필수]</span>
+                                        <span class="text-gray-700">서비스 이용약관에 동의합니다.</span>
+                                        <p class="text-xs text-gray-500 mt-1">위 약관을 읽고 내용을 확인하였으며, AI 서비스 면책사항 및 문자 발송 시 스팸 방지 의무를 이해하였습니다.</p>
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="w-full gradient-purple text-white py-3 rounded-xl font-medium hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed" id="submitBtn">
                             <span id="submitText">회원가입</span>
                         </button>
 
@@ -11105,10 +11164,56 @@ app.get('/signup', (c) => {
                     verificationCodeInput.required = false;
                 }
             }
+            
+            // 약관 동의 체크박스 상태 변경 시 제출 버튼 활성화/비활성화
+            document.addEventListener('DOMContentLoaded', () => {
+                const agreeTerms = document.getElementById('agreeTerms');
+                const submitBtn = document.getElementById('submitBtn');
+                const termsLabel = document.getElementById('termsLabel');
+                
+                function updateSubmitButton() {
+                    if (agreeTerms.checked) {
+                        submitBtn.disabled = false;
+                        submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                        termsLabel.classList.remove('border-red-300');
+                        termsLabel.classList.add('border-purple-300');
+                    } else {
+                        submitBtn.disabled = true;
+                        submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                        termsLabel.classList.remove('border-purple-300');
+                    }
+                }
+                
+                // 초기 상태 설정
+                updateSubmitButton();
+                
+                // 체크박스 변경 이벤트 리스너
+                agreeTerms.addEventListener('change', updateSubmitButton);
+            });
 
             // 폼 제출
             document.getElementById('signupForm').addEventListener('submit', async (e) => {
                 e.preventDefault()
+                
+                // 약관 동의 체크 검증
+                const agreeTerms = document.getElementById('agreeTerms');
+                if (!agreeTerms.checked) {
+                    const messageEl = document.getElementById('message');
+                    messageEl.classList.remove('hidden');
+                    messageEl.className = 'mt-4 p-4 rounded-xl bg-red-50 text-red-800 border border-red-200';
+                    messageEl.innerHTML = '<i class="fas fa-exclamation-triangle mr-2"></i>서비스 이용약관에 동의해주세요.';
+                    
+                    // 체크박스 영역 강조
+                    const termsLabel = document.getElementById('termsLabel');
+                    termsLabel.classList.add('border-red-500', 'bg-red-50');
+                    setTimeout(() => {
+                        termsLabel.classList.remove('border-red-500', 'bg-red-50');
+                    }, 2000);
+                    
+                    // 체크박스로 스크롤
+                    agreeTerms.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    return;
+                }
                 
                 const formData = new FormData(e.target)
                 const userTypeRadio = document.querySelector('input[name="userType"]:checked').value;
