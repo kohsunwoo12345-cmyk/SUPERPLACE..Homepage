@@ -76,9 +76,7 @@ app.post('/api/signup', async (c) => {
       phone, 
       academy_name, 
       academy_location,
-      marketing_sms_consent,
-      marketing_email_consent,
-      marketing_kakao_consent
+      marketing_consent
     } = await c.req.json()
     
     if (!email || !password || !name || !phone || !academy_name) {
@@ -97,11 +95,9 @@ app.post('/api/signup', async (c) => {
     // 비밀번호 해싱 (실제로는 bcrypt 등 사용 권장)
     const hashedPassword = password // TODO: 실제 프로젝트에서는 해싱 필요
 
-    // 마케팅 수신 동의 값 (0 또는 1)
-    const smsConsent = marketing_sms_consent ? 1 : 0
-    const emailConsent = marketing_email_consent ? 1 : 0
-    const kakaoConsent = marketing_kakao_consent ? 1 : 0
-    const consentDate = (smsConsent || emailConsent || kakaoConsent) ? new Date().toISOString() : null
+    // 마케팅 수신 동의 값 (통합 동의: 모든 채널에 동일하게 적용)
+    const consent = marketing_consent ? 1 : 0
+    const consentDate = consent ? new Date().toISOString() : null
 
     // DB 저장 (academy_name 컬럼 포함)
     // ✅ 기본값: role = 'director' (원장님)
@@ -118,9 +114,9 @@ app.post('/api/signup', async (c) => {
       name, 
       phone, 
       academy_name || '', 
-      smsConsent, 
-      emailConsent, 
-      kakaoConsent, 
+      consent,  // SMS
+      consent,  // Email
+      consent,  // Kakao (모두 동일한 값)
       consentDate
     ).run()
 
@@ -11403,35 +11399,15 @@ app.get('/signup', (c) => {
                                     </div>
                                 </details>
                                 
-                                <!-- 마케팅 수신 동의 체크박스 -->
-                                <div class="space-y-3">
-                                    <label class="flex items-start gap-3 cursor-pointer p-4 border-2 border-blue-200 rounded-xl hover:border-blue-400 transition bg-blue-50">
-                                        <input type="checkbox" id="agreeMarketingSMS" class="mt-1 w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500 cursor-pointer">
-                                        <span class="flex-1 text-sm">
-                                            <span class="font-medium text-blue-700">[선택]</span>
-                                            <span class="text-gray-700">문자메시지(SMS/LMS/MMS) 수신 동의</span>
-                                            <p class="text-xs text-gray-600 mt-1">이벤트, 할인 쿠폰, 신규 서비스 안내를 문자로 받아보실 수 있습니다.</p>
-                                        </span>
-                                    </label>
-                                    
-                                    <label class="flex items-start gap-3 cursor-pointer p-4 border-2 border-blue-200 rounded-xl hover:border-blue-400 transition bg-blue-50">
-                                        <input type="checkbox" id="agreeMarketingEmail" class="mt-1 w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500 cursor-pointer">
-                                        <span class="flex-1 text-sm">
-                                            <span class="font-medium text-blue-700">[선택]</span>
-                                            <span class="text-gray-700">이메일 수신 동의</span>
-                                            <p class="text-xs text-gray-600 mt-1">뉴스레터, 교육 자료, 마케팅 콘텐츠를 이메일로 받아보실 수 있습니다.</p>
-                                        </span>
-                                    </label>
-                                    
-                                    <label class="flex items-start gap-3 cursor-pointer p-4 border-2 border-blue-200 rounded-xl hover:border-blue-400 transition bg-blue-50">
-                                        <input type="checkbox" id="agreeMarketingKakao" class="mt-1 w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500 cursor-pointer">
-                                        <span class="flex-1 text-sm">
-                                            <span class="font-medium text-blue-700">[선택]</span>
-                                            <span class="text-gray-700">카카오톡 알림 수신 동의</span>
-                                            <p class="text-xs text-gray-600 mt-1">카카오톡 알림톡/친구톡으로 실시간 정보를 받아보실 수 있습니다.</p>
-                                        </span>
-                                    </label>
-                                </div>
+                                <!-- 통합 마케팅 수신 동의 체크박스 -->
+                                <label class="flex items-start gap-3 cursor-pointer p-4 border-2 border-blue-200 rounded-xl hover:border-blue-400 transition bg-blue-50">
+                                    <input type="checkbox" id="agreeMarketing" class="mt-1 w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500 cursor-pointer">
+                                    <span class="flex-1 text-sm">
+                                        <span class="font-medium text-blue-700">[선택]</span>
+                                        <span class="text-gray-700">마케팅 정보 수신 동의 (문자메시지, 이메일, 카카오톡)</span>
+                                        <p class="text-xs text-gray-600 mt-1">이벤트, 할인 쿠폰, 신규 서비스 안내, 뉴스레터, 교육 자료 등을 문자메시지(SMS/LMS/MMS), 이메일, 카카오톡 알림톡/친구톡으로 받아보실 수 있습니다.</p>
+                                    </span>
+                                </label>
                             </div>
                         </div>
 
@@ -11594,9 +11570,7 @@ app.get('/signup', (c) => {
                     phone: formData.get('phone'),
                     academy_name: formData.get('academy_name'),
                     academy_location: formData.get('academy_location'),
-                    marketing_sms_consent: document.getElementById('agreeMarketingSMS').checked,
-                    marketing_email_consent: document.getElementById('agreeMarketingEmail').checked,
-                    marketing_kakao_consent: document.getElementById('agreeMarketingKakao').checked
+                    marketing_consent: document.getElementById('agreeMarketing').checked
                 }
 
                 try {

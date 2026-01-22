@@ -2745,12 +2745,15 @@ var Bt=Object.defineProperty;var tt=e=>{throw TypeError(e)};var Nt=(e,t,s)=>t in
     `;const a=[t];s&&(r+=" AND fs.form_template_id = ?",a.push(s));const n=await e.env.DB.prepare(r).bind(...a).first();return e.json(n||{total:0,new_count:0,contacted_count:0,completed_count:0,rejected_count:0})}catch(t){return console.error("Error fetching stats:",t),e.json({error:"통계를 불러올 수 없습니다"},500)}});const c=new et;c.use("/api/*",xs());c.use("/static/*",Ds({root:"./public"}));c.route("/",H);c.post("/api/contact",async e=>{try{const{name:t,email:s,phone:r,academy_name:a,message:n}=await e.req.json();if(!t||!s||!r||!n)return e.json({success:!1,error:"필수 항목을 입력해주세요."},400);const o=await e.env.DB.prepare(`
       INSERT INTO contacts (name, email, phone, academy_name, message)
       VALUES (?, ?, ?, ?, ?)
-    `).bind(t,s,r,a||"",n).run();return e.json({success:!0,message:"문의가 접수되었습니다. 빠른 시일 내에 연락드리겠습니다.",id:o.meta.last_row_id})}catch(t){return console.error("Contact submission error:",t),e.json({success:!1,error:"문의 접수 중 오류가 발생했습니다."},500)}});c.post("/api/signup",async e=>{try{const{email:t,password:s,name:r,phone:a,academy_name:n,academy_location:o}=await e.req.json();if(!t||!s||!r||!a||!n)return e.json({success:!1,error:"필수 항목을 입력해주세요."},400);if(await e.env.DB.prepare(`
+    `).bind(t,s,r,a||"",n).run();return e.json({success:!0,message:"문의가 접수되었습니다. 빠른 시일 내에 연락드리겠습니다.",id:o.meta.last_row_id})}catch(t){return console.error("Contact submission error:",t),e.json({success:!1,error:"문의 접수 중 오류가 발생했습니다."},500)}});c.post("/api/signup",async e=>{try{const{email:t,password:s,name:r,phone:a,academy_name:n,academy_location:o,marketing_sms_consent:i,marketing_email_consent:l,marketing_kakao_consent:d}=await e.req.json();if(!t||!s||!r||!a||!n)return e.json({success:!1,error:"필수 항목을 입력해주세요."},400);if(await e.env.DB.prepare(`
       SELECT id FROM users WHERE email = ?
-    `).bind(t).first())return e.json({success:!1,error:"이미 가입된 이메일입니다."},400);const l=s,d=await e.env.DB.prepare(`
-      INSERT INTO users (email, password, name, phone, academy_name, role)
-      VALUES (?, ?, ?, ?, ?, 'director')
-    `).bind(t,l,r,a,n||"").run();return e.json({success:!0,message:"회원가입이 완료되었습니다.",id:d.meta.last_row_id})}catch(t){return console.error("Signup error:",t),e.json({success:!1,error:"회원가입 중 오류가 발생했습니다."},500)}});c.get("/api/health",async e=>{try{if(!e.env.DB)return e.json({success:!1,error:"DB binding not found",env_keys:Object.keys(e.env)},500);const t=await e.env.DB.prepare("SELECT 1 as test").first(),s=await e.env.DB.prepare("PRAGMA table_info(users)").all();return e.json({success:!0,message:"DB connection is healthy",test_result:t,users_table_columns:s.results.map(r=>r.name)})}catch(t){return e.json({success:!1,error:t.message,stack:t.stack},500)}});c.post("/api/login",async e=>{try{if(!e.env.DB)return e.json({success:!1,error:"DB binding not configured. Please check Cloudflare Pages settings.",debug:{env_keys:Object.keys(e.env),has_db:!!e.env.DB}},500);const{email:t,password:s}=await e.req.json();if(!t||!s)return e.json({success:!1,error:"이메일과 비밀번호를 입력해주세요."},400);const r=await e.env.DB.prepare(`
+    `).bind(t).first())return e.json({success:!1,error:"이미 가입된 이메일입니다."},400);const u=s,m=i?1:0,g=l?1:0,x=d?1:0,h=m||g||x?new Date().toISOString():null,b=await e.env.DB.prepare(`
+      INSERT INTO users (
+        email, password, name, phone, academy_name, role,
+        marketing_sms_consent, marketing_email_consent, marketing_kakao_consent, marketing_consent_date
+      )
+      VALUES (?, ?, ?, ?, ?, 'director', ?, ?, ?, ?)
+    `).bind(t,u,r,a,n||"",m,g,x,h).run();return e.json({success:!0,message:"회원가입이 완료되었습니다.",id:b.meta.last_row_id})}catch(t){return console.error("Signup error:",t),e.json({success:!1,error:"회원가입 중 오류가 발생했습니다."},500)}});c.get("/api/health",async e=>{try{if(!e.env.DB)return e.json({success:!1,error:"DB binding not found",env_keys:Object.keys(e.env)},500);const t=await e.env.DB.prepare("SELECT 1 as test").first(),s=await e.env.DB.prepare("PRAGMA table_info(users)").all();return e.json({success:!0,message:"DB connection is healthy",test_result:t,users_table_columns:s.results.map(r=>r.name)})}catch(t){return e.json({success:!1,error:t.message,stack:t.stack},500)}});c.post("/api/login",async e=>{try{if(!e.env.DB)return e.json({success:!1,error:"DB binding not configured. Please check Cloudflare Pages settings.",debug:{env_keys:Object.keys(e.env),has_db:!!e.env.DB}},500);const{email:t,password:s}=await e.req.json();if(!t||!s)return e.json({success:!1,error:"이메일과 비밀번호를 입력해주세요."},400);const r=await e.env.DB.prepare(`
       SELECT id, email, name, role, points, academy_name, user_type, academy_id, parent_user_id 
       FROM users WHERE email = ? AND password = ?
     `).bind(t,s).first();if(!r)return e.json({success:!1,error:"이메일 또는 비밀번호가 일치하지 않습니다."},401);const a=crypto.randomUUID(),n=new Date(Date.now()+10080*60*1e3);return await e.env.DB.prepare(`
@@ -8064,6 +8067,77 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
                                         <p class="text-xs text-gray-500 mt-1">위 약관을 읽고 내용을 확인하였으며, AI 서비스 면책사항 및 문자 발송 시 스팸 방지 의무를 이해하였습니다.</p>
                                     </span>
                                 </label>
+                                
+                                <!-- 마케팅 정보 수신 동의 (선택) -->
+                                <details class="bg-blue-50 rounded-xl p-4 border-2 border-blue-200">
+                                    <summary class="cursor-pointer font-medium text-gray-900 hover:text-blue-600 transition flex items-center justify-between">
+                                        <span>📢 [선택] 마케팅 정보 수신 동의</span>
+                                        <i class="fas fa-chevron-down text-sm"></i>
+                                    </summary>
+                                    <div class="mt-4 text-xs text-gray-700 leading-relaxed space-y-3 bg-white p-4 rounded-lg">
+                                        <p class="font-semibold text-sm text-gray-900">주식회사 우리는 슈퍼플레이스다(이하 "회사")는 회원님께 최적화된 맞춤형 서비스와 혜택을 제공하기 위해, 다음과 같이 개인정보를 수집·이용하고 광고성 정보를 전송하고자 합니다.</p>
+                                        
+                                        <div>
+                                            <p class="font-semibold text-gray-900 mb-2">1. 수집 및 이용 목적</p>
+                                            <ul class="list-disc pl-5 space-y-1">
+                                                <li>신규 서비스(AI Gems, 봇 등) 출시 및 업데이트 안내</li>
+                                                <li>학원 운영/마케팅 관련 교육, 세미나, 뉴스레터 발송</li>
+                                                <li>이벤트 정보 안내, 할인 쿠폰 및 경품 지급, 포인트 적립 혜택 제공</li>
+                                            </ul>
+                                        </div>
+                                        
+                                        <div>
+                                            <p class="font-semibold text-gray-900 mb-2">2. 수집 및 이용 항목</p>
+                                            <p>휴대전화번호, 이메일 주소, 이름, 학원명</p>
+                                        </div>
+                                        
+                                        <div>
+                                            <p class="font-semibold text-gray-900 mb-2">3. 보유 및 이용 기간</p>
+                                            <p>회원 탈퇴 시 또는 동의 철회 시까지</p>
+                                        </div>
+                                        
+                                        <div>
+                                            <p class="font-semibold text-gray-900 mb-2">4. 전송 방법</p>
+                                            <p>휴대폰 문자메시지(SMS/LMS/MMS), 이메일, 카카오톡 알림톡/친구톡</p>
+                                        </div>
+                                        
+                                        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mt-4">
+                                            <p class="text-gray-800">
+                                                <strong>※ 귀하는 동의를 거부할 권리가 있습니다.</strong> 동의를 거부하셔도 기본 서비스(학생 관리, 리포트 생성 등) 이용에는 제한이 없으나, 이벤트 및 할인 혜택 정보는 제공받으실 수 없습니다.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </details>
+                                
+                                <!-- 마케팅 수신 동의 체크박스 -->
+                                <div class="space-y-3">
+                                    <label class="flex items-start gap-3 cursor-pointer p-4 border-2 border-blue-200 rounded-xl hover:border-blue-400 transition bg-blue-50">
+                                        <input type="checkbox" id="agreeMarketingSMS" class="mt-1 w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500 cursor-pointer">
+                                        <span class="flex-1 text-sm">
+                                            <span class="font-medium text-blue-700">[선택]</span>
+                                            <span class="text-gray-700">문자메시지(SMS/LMS/MMS) 수신 동의</span>
+                                            <p class="text-xs text-gray-600 mt-1">이벤트, 할인 쿠폰, 신규 서비스 안내를 문자로 받아보실 수 있습니다.</p>
+                                        </span>
+                                    </label>
+                                    
+                                    <label class="flex items-start gap-3 cursor-pointer p-4 border-2 border-blue-200 rounded-xl hover:border-blue-400 transition bg-blue-50">
+                                        <input type="checkbox" id="agreeMarketingEmail" class="mt-1 w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500 cursor-pointer">
+                                        <span class="flex-1 text-sm">
+                                            <span class="font-medium text-blue-700">[선택]</span>
+                                            <span class="text-gray-700">이메일 수신 동의</span>
+                                            <p class="text-xs text-gray-600 mt-1">뉴스레터, 교육 자료, 마케팅 콘텐츠를 이메일로 받아보실 수 있습니다.</p>
+                                        </span>
+                                    </label>
+                                    
+                                    <label class="flex items-start gap-3 cursor-pointer p-4 border-2 border-blue-200 rounded-xl hover:border-blue-400 transition bg-blue-50">
+                                        <input type="checkbox" id="agreeMarketingKakao" class="mt-1 w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500 cursor-pointer">
+                                        <span class="flex-1 text-sm">
+                                            <span class="font-medium text-blue-700">[선택]</span>
+                                            <span class="text-gray-700">카카오톡 알림 수신 동의</span>
+                                            <p class="text-xs text-gray-600 mt-1">카카오톡 알림톡/친구톡으로 실시간 정보를 받아보실 수 있습니다.</p>
+                                        </span>
+                                    </label>
+                                </div>
                             </div>
                         </div>
 
@@ -8225,7 +8299,10 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
                     password: formData.get('password'),
                     phone: formData.get('phone'),
                     academy_name: formData.get('academy_name'),
-                    academy_location: formData.get('academy_location')
+                    academy_location: formData.get('academy_location'),
+                    marketing_sms_consent: document.getElementById('agreeMarketingSMS').checked,
+                    marketing_email_consent: document.getElementById('agreeMarketingEmail').checked,
+                    marketing_kakao_consent: document.getElementById('agreeMarketingKakao').checked
                 }
 
                 try {
