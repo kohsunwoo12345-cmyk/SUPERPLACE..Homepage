@@ -11450,7 +11450,8 @@ app.get('/consulting', async (c) => {
               price: 1210000,
               sessions: 6,
               details: '네이버 플레이스 상위노출을 위한 1:1 맞춤 컨설팅 프로그램입니다. 6회에 걸쳐 플레이스 등록부터 상위노출 전략, 리뷰 관리, 키워드 최적화까지 실전 노하우를 전수받으실 수 있습니다.',
-              features: ["플레이스 최적화 전략", "리뷰 관리 노하우", "키워드 분석 및 타겟팅", "경쟁사 분석", "상위노출 실전 기법", "1:1 맞춤 컨설팅"]
+              features: ["플레이스 최적화 전략", "리뷰 관리 노하우", "키워드 분석 및 타겟팅", "경쟁사 분석", "상위노출 실전 기법", "1:1 맞춤 컨설팅"],
+              type: 'consulting'
             },
             {
               program_id: 'blog-consulting',
@@ -11460,7 +11461,30 @@ app.get('/consulting', async (c) => {
               price: 1210000,
               sessions: 6,
               details: '블로그 상위노출을 위한 1:1 맞춤 컨설팅 프로그램입니다. 6회에 걸쳐 SEO 최적화, 콘텐츠 작성법, 키워드 전략, 유입 증대 방법까지 블로그 마케팅의 모든 것을 배우실 수 있습니다.',
-              features: ["SEO 최적화 전략", "콘텐츠 기획 및 작성법", "키워드 리서치", "검색 상위노출 기법", "유입 분석 및 개선", "1:1 맞춤 컨설팅"]
+              features: ["SEO 최적화 전략", "콘텐츠 기획 및 작성법", "키워드 리서치", "검색 상위노출 기법", "유입 분석 및 개선", "1:1 맞춤 컨설팅"],
+              type: 'consulting'
+            },
+            {
+              program_id: 'landing-page-max',
+              name: '(Max) 랜딩페이지 제작',
+              description: '전문가가 만드는 고퀄리티 랜딩페이지',
+              image_url: '/landing-page-service.jpg',
+              price: null,
+              sessions: null,
+              details: '학원 전문 마케팅 경험을 바탕으로 제작하는 프리미엄 랜딩페이지 서비스입니다. 반응형 디자인, SEO 최적화, 고객 전환율을 극대화한 페이지를 제공합니다.',
+              features: ["반응형 웹 디자인", "SEO 최적화 적용", "고객 전환율 극대화", "빠른 로딩 속도", "모바일 최적화", "관리자 페이지 제공", "무제한 수정 지원", "호스팅 1년 무료"],
+              type: 'inquiry'
+            },
+            {
+              program_id: 'marketing-agency',
+              name: '학원 마케팅 대행',
+              description: '학원 전문 마케팅 대행 서비스',
+              image_url: '/marketing-agency.jpg',
+              price: null,
+              sessions: null,
+              details: '네이버 플레이스, 블로그, SNS 등 다양한 채널을 통한 종합 마케팅 대행 서비스입니다. 학원에 최적화된 마케팅 전략으로 학생 모집을 도와드립니다.',
+              features: ["네이버 플레이스 관리", "블로그 콘텐츠 작성", "SNS 마케팅 대행", "키워드 광고 운영", "월간 리포트 제공", "실시간 상담 지원", "경쟁사 분석 리포트", "맞춤형 마케팅 전략"],
+              type: 'inquiry'
             }
           ];
 
@@ -11489,12 +11513,17 @@ app.get('/consulting', async (c) => {
                       </div>
                       <div class="flex items-center justify-between border-t pt-6">
                         <div>
-                          <p class="text-sm text-gray-500">총 \${program.sessions}회 컨설팅</p>
-                          <p class="text-3xl font-bold text-blue-600">\${(program.price / 10000).toFixed(0)}만원</p>
+                          \${program.type === 'consulting' ? \`
+                            <p class="text-sm text-gray-500">총 \${program.sessions}회 컨설팅</p>
+                            <p class="text-3xl font-bold text-blue-600">\${(program.price / 10000).toFixed(0)}만원</p>
+                          \` : \`
+                            <p class="text-sm text-gray-500">맞춤형 서비스</p>
+                            <p class="text-3xl font-bold text-blue-600">가격 문의</p>
+                          \`}
                         </div>
                         <a href="/consulting/\${program.program_id}" 
                            class="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg font-semibold hover:from-blue-700 hover:to-indigo-700 transition">
-                          수강하기
+                          \${program.type === 'consulting' ? '수강하기' : '문의하기'}
                         </a>
                       </div>
                     </div>
@@ -11561,7 +11590,8 @@ app.get('/consulting/:programId', async (c) => {
               price: 1210000,
               sessions: 6,
               details: '네이버 플레이스 상위노출을 위한 1:1 맞춤 컨설팅 프로그램입니다. 6회에 걸쳐 플레이스 등록부터 상위노출 전략, 리뷰 관리, 키워드 최적화까지 실전 노하우를 전수받으실 수 있습니다.',
-              features: ["플레이스 최적화 전략", "리뷰 관리 노하우", "키워드 분석 및 타겟팅", "경쟁사 분석", "상위노출 실전 기법", "1:1 맞춤 컨설팅"]
+              features: ["플레이스 최적화 전략", "리뷰 관리 노하우", "키워드 분석 및 타겟팅", "경쟁사 분석", "상위노출 실전 기법", "1:1 맞춤 컨설팅"],
+              type: 'consulting'
             },
             'blog-consulting': {
               program_id: 'blog-consulting',
@@ -11569,6 +11599,34 @@ app.get('/consulting/:programId', async (c) => {
               description: '실제 포스팅의 집중 컨설팅 시작하실 마케팅!',
               image_url: '/static/images/blog-consulting.jpg',
               price: 1210000,
+              sessions: 6,
+              details: '블로그 상위노출을 위한 1:1 맞춤 컨설팅 프로그램입니다. 6회에 걸쳐 SEO 최적화, 콘텐츠 작성법, 키워드 전략, 유입 증대 방법까지 블로그 마케팅의 모든 것을 배우실 수 있습니다.',
+              features: ["SEO 최적화 전략", "콘텐츠 기획 및 작성법", "키워드 리서치", "검색 상위노출 기법", "유입 분석 및 개선", "1:1 맞춤 컨설팅"],
+              type: 'consulting'
+            },
+            'landing-page-max': {
+              program_id: 'landing-page-max',
+              name: '(Max) 랜딩페이지 제작',
+              description: '전문가가 만드는 고퀄리티 랜딩페이지',
+              image_url: '/landing-page-service.jpg',
+              price: null,
+              sessions: null,
+              details: '학원 전문 마케팅 경험을 바탕으로 제작하는 프리미엄 랜딩페이지 서비스입니다. 반응형 디자인, SEO 최적화, 고객 전환율을 극대화한 페이지를 제공합니다.',
+              features: ["반응형 웹 디자인", "SEO 최적화 적용", "고객 전환율 극대화", "빠른 로딩 속도", "모바일 최적화", "관리자 페이지 제공", "무제한 수정 지원", "호스팅 1년 무료"],
+              type: 'inquiry'
+            },
+            'marketing-agency': {
+              program_id: 'marketing-agency',
+              name: '학원 마케팅 대행',
+              description: '학원 전문 마케팅 대행 서비스',
+              image_url: '/marketing-agency.jpg',
+              price: null,
+              sessions: null,
+              details: '네이버 플레이스, 블로그, SNS 등 다양한 채널을 통한 종합 마케팅 대행 서비스입니다. 학원에 최적화된 마케팅 전략으로 학생 모집을 도와드립니다.',
+              features: ["네이버 플레이스 관리", "블로그 콘텐츠 작성", "SNS 마케팅 대행", "키워드 광고 운영", "월간 리포트 제공", "실시간 상담 지원", "경쟁사 분석 리포트", "맞춤형 마케팅 전략"],
+              type: 'inquiry'
+            }
+          };
               sessions: 6,
               details: '블로그 상위노출을 위한 1:1 맞춤 컨설팅 프로그램입니다. 6회에 걸쳐 SEO 최적화, 콘텐츠 작성법, 키워드 전략, 유입 증대 방법까지 블로그 마케팅의 모든 것을 배우실 수 있습니다.',
               features: ["SEO 최적화 전략", "콘텐츠 기획 및 작성법", "키워드 리서치", "검색 상위노출 기법", "유입 분석 및 개선", "1:1 맞춤 컨설팅"]
@@ -11596,28 +11654,46 @@ app.get('/consulting/:programId', async (c) => {
                   <p class="text-xl text-gray-600 mb-8">\${program.description}</p>
                   
                   <div class="bg-blue-50 rounded-xl p-6 mb-8">
-                    <h2 class="text-2xl font-bold text-gray-900 mb-4">프로그램 정보</h2>
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">\${program.type === 'consulting' ? '프로그램 정보' : '서비스 정보'}</h2>
                     <div class="grid md:grid-cols-3 gap-6">
-                      <div class="text-center">
-                        <i class="fas fa-calendar-alt text-3xl text-blue-600 mb-2"></i>
-                        <p class="text-sm text-gray-500">컨설팅 횟수</p>
-                        <p class="text-2xl font-bold text-gray-900">\${program.sessions}회</p>
-                      </div>
-                      <div class="text-center">
-                        <i class="fas fa-won-sign text-3xl text-blue-600 mb-2"></i>
-                        <p class="text-sm text-gray-500">수강료</p>
-                        <p class="text-2xl font-bold text-blue-600">\${(program.price / 10000).toFixed(0)}만원</p>
-                      </div>
-                      <div class="text-center">
-                        <i class="fas fa-user-tie text-3xl text-blue-600 mb-2"></i>
-                        <p class="text-sm text-gray-500">컨설팅 방식</p>
-                        <p class="text-2xl font-bold text-gray-900">1:1 맞춤</p>
-                      </div>
+                      \${program.type === 'consulting' ? \`
+                        <div class="text-center">
+                          <i class="fas fa-calendar-alt text-3xl text-blue-600 mb-2"></i>
+                          <p class="text-sm text-gray-500">컨설팅 횟수</p>
+                          <p class="text-2xl font-bold text-gray-900">\${program.sessions}회</p>
+                        </div>
+                        <div class="text-center">
+                          <i class="fas fa-won-sign text-3xl text-blue-600 mb-2"></i>
+                          <p class="text-sm text-gray-500">수강료</p>
+                          <p class="text-2xl font-bold text-blue-600">\${(program.price / 10000).toFixed(0)}만원</p>
+                        </div>
+                        <div class="text-center">
+                          <i class="fas fa-user-tie text-3xl text-blue-600 mb-2"></i>
+                          <p class="text-sm text-gray-500">컨설팅 방식</p>
+                          <p class="text-2xl font-bold text-gray-900">1:1 맞춤</p>
+                        </div>
+                      \` : \`
+                        <div class="text-center">
+                          <i class="fas fa-rocket text-3xl text-blue-600 mb-2"></i>
+                          <p class="text-sm text-gray-500">제공 방식</p>
+                          <p class="text-2xl font-bold text-gray-900">맞춤형</p>
+                        </div>
+                        <div class="text-center">
+                          <i class="fas fa-won-sign text-3xl text-blue-600 mb-2"></i>
+                          <p class="text-sm text-gray-500">가격</p>
+                          <p class="text-2xl font-bold text-blue-600">문의</p>
+                        </div>
+                        <div class="text-center">
+                          <i class="fas fa-headset text-3xl text-blue-600 mb-2"></i>
+                          <p class="text-sm text-gray-500">상담</p>
+                          <p class="text-2xl font-bold text-gray-900">24시간</p>
+                        </div>
+                      \`}
                     </div>
                   </div>
 
                   <div class="mb-8">
-                    <h2 class="text-2xl font-bold text-gray-900 mb-4">커리큘럼</h2>
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">\${program.type === 'consulting' ? '커리큘럼' : '제공 서비스'}</h2>
                     <p class="text-gray-700 leading-relaxed mb-6">\${program.details}</p>
                     <div class="grid md:grid-cols-2 gap-4">
                       \${features.map((feature, index) => \`
@@ -11634,7 +11710,7 @@ app.get('/consulting/:programId', async (c) => {
                   <div class="border-t pt-8">
                     <button onclick="openApplicationForm()" 
                             class="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xl font-bold rounded-xl hover:from-blue-700 hover:to-indigo-700 transition">
-                      지금 수강 신청하기
+                      \${program.type === 'consulting' ? '지금 수강 신청하기' : '지금 문의하기'}
                     </button>
                   </div>
                 </div>
@@ -12964,7 +13040,8 @@ app.get('/programs', async (c) => {
               price: 1210000,
               sessions: 6,
               details: '네이버 플레이스 상위노출을 위한 1:1 맞춤 컨설팅 프로그램입니다. 6회에 걸쳐 플레이스 등록부터 상위노출 전략, 리뷰 관리, 키워드 최적화까지 실전 노하우를 전수받으실 수 있습니다.',
-              features: ["플레이스 최적화 전략", "리뷰 관리 노하우", "키워드 분석 및 타겟팅", "경쟁사 분석", "상위노출 실전 기법", "1:1 맞춤 컨설팅"]
+              features: ["플레이스 최적화 전략", "리뷰 관리 노하우", "키워드 분석 및 타겟팅", "경쟁사 분석", "상위노출 실전 기법", "1:1 맞춤 컨설팅"],
+              type: 'consulting'
             },
             {
               program_id: 'blog-consulting',
@@ -12974,7 +13051,30 @@ app.get('/programs', async (c) => {
               price: 1210000,
               sessions: 6,
               details: '블로그 상위노출을 위한 1:1 맞춤 컨설팅 프로그램입니다. 6회에 걸쳐 SEO 최적화, 콘텐츠 작성법, 키워드 전략, 유입 증대 방법까지 블로그 마케팅의 모든 것을 배우실 수 있습니다.',
-              features: ["SEO 최적화 전략", "콘텐츠 기획 및 작성법", "키워드 리서치", "검색 상위노출 기법", "유입 분석 및 개선", "1:1 맞춤 컨설팅"]
+              features: ["SEO 최적화 전략", "콘텐츠 기획 및 작성법", "키워드 리서치", "검색 상위노출 기법", "유입 분석 및 개선", "1:1 맞춤 컨설팅"],
+              type: 'consulting'
+            },
+            {
+              program_id: 'landing-page-max',
+              name: '(Max) 랜딩페이지 제작',
+              description: '전문가가 만드는 고퀄리티 랜딩페이지',
+              image_url: '/landing-page-service.jpg',
+              price: null,
+              sessions: null,
+              details: '학원 전문 마케팅 경험을 바탕으로 제작하는 프리미엄 랜딩페이지 서비스입니다. 반응형 디자인, SEO 최적화, 고객 전환율을 극대화한 페이지를 제공합니다.',
+              features: ["반응형 웹 디자인", "SEO 최적화 적용", "고객 전환율 극대화", "빠른 로딩 속도", "모바일 최적화", "관리자 페이지 제공", "무제한 수정 지원", "호스팅 1년 무료"],
+              type: 'inquiry'
+            },
+            {
+              program_id: 'marketing-agency',
+              name: '학원 마케팅 대행',
+              description: '학원 전문 마케팅 대행 서비스',
+              image_url: '/marketing-agency.jpg',
+              price: null,
+              sessions: null,
+              details: '네이버 플레이스, 블로그, SNS 등 다양한 채널을 통한 종합 마케팅 대행 서비스입니다. 학원에 최적화된 마케팅 전략으로 학생 모집을 도와드립니다.',
+              features: ["네이버 플레이스 관리", "블로그 콘텐츠 작성", "SNS 마케팅 대행", "키워드 광고 운영", "월간 리포트 제공", "실시간 상담 지원", "경쟁사 분석 리포트", "맞춤형 마케팅 전략"],
+              type: 'inquiry'
             }
           ];
 
@@ -13003,12 +13103,17 @@ app.get('/programs', async (c) => {
                     </div>
                     <div class="flex items-center justify-between border-t pt-6">
                       <div>
-                        <p class="text-sm text-gray-500">총 \${program.sessions}회 컨설팅</p>
-                        <p class="text-3xl font-bold text-blue-600">\${(program.price / 10000).toFixed(0)}만원</p>
+                        \${program.type === 'consulting' ? \`
+                          <p class="text-sm text-gray-500">총 \${program.sessions}회 컨설팅</p>
+                          <p class="text-3xl font-bold text-blue-600">\${(program.price / 10000).toFixed(0)}만원</p>
+                        \` : \`
+                          <p class="text-sm text-gray-500">맞춤형 서비스</p>
+                          <p class="text-3xl font-bold text-blue-600">가격 문의</p>
+                        \`}
                       </div>
                       <a href="/consulting/\${program.program_id}" 
                          class="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg font-semibold hover:from-blue-700 hover:to-indigo-700 transition">
-                        수강하기
+                        \${program.type === 'consulting' ? '수강하기' : '문의하기'}
                       </a>
                     </div>
                   </div>
