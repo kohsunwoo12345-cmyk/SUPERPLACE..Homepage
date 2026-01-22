@@ -4330,10 +4330,12 @@ function generateAcademyIntroHTML(data: any): string {
     <style>
       @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
       * { font-family: 'Pretendard Variable', sans-serif; }
-      .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+      .gradient-bg { background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); }
       .pattern-bg { background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.1) 1px, transparent 0); background-size: 40px 40px; }
       @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-20px); } }
       .float-animation { animation: float 3s ease-in-out infinite; }
+      img { max-width: 100%; height: auto; }
+      .img-error { display: none; }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -4371,7 +4373,7 @@ function generateAcademyIntroHTML(data: any): string {
                 <div class="flex flex-col md:flex-row items-center gap-8">
                     ${directorPhoto ? `
                     <div class="flex-shrink-0">
-                        <img src="${directorPhoto}" alt="${directorName}" class="w-48 h-48 rounded-full object-cover shadow-lg border-4 border-purple-200">
+                        <img src="${directorPhoto}" alt="${directorName}" class="w-48 h-48 rounded-full object-cover shadow-lg border-4 border-purple-200" onerror="this.onerror=null; this.src='https://via.placeholder.com/200x200?text=Director'; this.classList.add('img-error');">
                     </div>
                     ` : ''}
                     <div class="flex-1">
@@ -4403,17 +4405,17 @@ function generateAcademyIntroHTML(data: any): string {
             <div class="grid md:grid-cols-3 gap-6">
                 ${academyPhoto1 ? `
                 <div class="rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow">
-                    <img src="${academyPhoto1}" alt="학원 사진 1" class="w-full h-64 object-cover">
+                    <img src="${academyPhoto1}" alt="학원 사진 1" class="w-full h-64 object-cover" onerror="this.onerror=null; this.src='https://via.placeholder.com/400x300?text=Academy+Photo+1';">
                 </div>
                 ` : ''}
                 ${academyPhoto2 ? `
                 <div class="rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow">
-                    <img src="${academyPhoto2}" alt="학원 사진 2" class="w-full h-64 object-cover">
+                    <img src="${academyPhoto2}" alt="학원 사진 2" class="w-full h-64 object-cover" onerror="this.onerror=null; this.src='https://via.placeholder.com/400x300?text=Academy+Photo+2';">
                 </div>
                 ` : ''}
                 ${academyPhoto3 ? `
                 <div class="rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow">
-                    <img src="${academyPhoto3}" alt="학원 사진 3" class="w-full h-64 object-cover">
+                    <img src="${academyPhoto3}" alt="학원 사진 3" class="w-full h-64 object-cover" onerror="this.onerror=null; this.src='https://via.placeholder.com/400x300?text=Academy+Photo+3';">
                 </div>
                 ` : ''}
             </div>
