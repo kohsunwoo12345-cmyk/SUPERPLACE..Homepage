@@ -5963,22 +5963,22 @@ app.get('/', (c) => {
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta name="naver-site-verification" content="f0716e4a61fc6144eec195ebe09f93fe452ada21" />
-        <title>우리는 슈퍼플레이스다 - 학원 전문 마케팅 | 슈퍼 플레이스</title>
-        <meta name="description" content="100% 현직 학원장이 알려주는 실전 마케팅! 네이버 플레이스 상위노출, 블로그 마케팅, 퍼널 마케팅 전문 교육. 대표이사 고희준, 제1팀장 고선우와 함께하는 학원 성장 컨설팅.">
+        <title>학원 마케팅 학원 관리 프로그램 우리는 슈퍼플레이스다</title>
+        <meta name="description" content="전국에서 유일합니다! 100% 현직 학원장이 알려주는 실전 마케팅! 네이버 플레이스 상위노출, 블로그 마케팅, 퍼널 마케팅 전문 교육. 대표이사 고희준, 제1팀장 고선우와 함께하는 학원 성장 컨설팅.">
         
         <!-- Open Graph / Facebook -->
         <meta property="og:type" content="website">
         <meta property="og:url" content="https://superplace-academy.pages.dev/">
-        <meta property="og:title" content="우리는 슈퍼플레이스다 - 학원 전문 마케팅">
-        <meta property="og:description" content="100% 현직 학원장이 알려주는 실전 마케팅! 네이버 플레이스 상위노출, 블로그 마케팅 전문 교육">
-        <meta property="og:image" content="https://superplace-academy.pages.dev/thumbnail-share.jpg">
+        <meta property="og:title" content="학원 마케팅 학원 관리 프로그램 우리는 슈퍼플레이스다">
+        <meta property="og:description" content="전국에서 유일합니다! 100% 현직 학원장이 알려주는 실전 마케팅!">
+        <meta property="og:image" content="https://superplace-academy.pages.dev/homepage-thumbnail.jpg">
         
         <!-- Twitter -->
         <meta property="twitter:card" content="summary_large_image">
         <meta property="twitter:url" content="https://superplace-academy.pages.dev/">
-        <meta property="twitter:title" content="우리는 슈퍼플레이스다 - 학원 전문 마케팅">
-        <meta property="twitter:description" content="100% 현직 학원장이 알려주는 실전 마케팅!">
-        <meta property="twitter:image" content="https://superplace-academy.pages.dev/thumbnail-share.jpg">
+        <meta property="twitter:title" content="학원 마케팅 학원 관리 프로그램 우리는 슈퍼플레이스다">
+        <meta property="twitter:description" content="전국에서 유일합니다! 100% 현직 학원장이 알려주는 실전 마케팅!">
+        <meta property="twitter:image" content="https://superplace-academy.pages.dev/homepage-thumbnail.jpg">
         
         <script src="https://cdn.tailwindcss.com"></script>
         <style>
