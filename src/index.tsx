@@ -11498,7 +11498,7 @@ app.get('/consulting', async (c) => {
 app.get('/consulting/:programId', async (c) => {
   const programId = c.req.param('programId');
   
-  return c.html(\`
+  return c.html(`
     <!DOCTYPE html>
     <html lang="ko">
     <head>
@@ -11615,14 +11615,14 @@ app.get('/consulting/:programId', async (c) => {
         </script>
     </body>
     </html>
-  \`);
+  `);
 });
 
 // 컨설팅 수강 신청 페이지
 app.get('/consulting/:programId/apply', async (c) => {
   const programId = c.req.param('programId');
   
-  return c.html(\`
+  return c.html(`
     <!DOCTYPE html>
     <html lang="ko">
     <head>
@@ -11763,12 +11763,12 @@ app.get('/consulting/:programId/apply', async (c) => {
         </script>
     </body>
     </html>
-  \`);
+  `);
 });
 
 // 관리자 - 컨설팅 신청 관리 페이지
 app.get('/admin/consulting-applications', async (c) => {
-  return c.html(\`
+  return c.html(`
     <!DOCTYPE html>
     <html lang="ko">
     <head>
@@ -11993,7 +11993,7 @@ app.get('/admin/consulting-applications', async (c) => {
         </script>
     </body>
     </html>
-  \`);
+  `);
 });
 
 // 회원가입 페이지
