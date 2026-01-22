@@ -14952,6 +14952,11 @@ app.get('/tools/landing-builder', (c) => {
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>랜딩페이지 생성기 - 우리는 슈퍼플레이스다</title>
         <script src="https://cdn.tailwindcss.com"></script>
+        <!-- Flatpickr CSS & JS for Date Picker -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/airbnb.css">
+        <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+        <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ko.js"></script>
         <style>
           @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
           * { font-family: 'Pretendard Variable', sans-serif; }
@@ -15463,7 +15468,7 @@ app.get('/tools/landing-builder', (c) => {
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-900 mb-2">학생 선택 *</label>
-                                <select name="studentName" id="studentSelect" required class="w-full px-4 py-3 border border-gray-300 rounded-xl bg-white">
+                                <select name="studentName" id="studentSelect" required class="w-full px-4 py-3 border border-gray-300 rounded-xl bg-white" onchange="handleStudentChange()">
                                     <option value="">학생을 선택하세요</option>
                                 </select>
                                 <p class="text-xs text-gray-500 mt-1">💡 학생 목록에서 자동으로 불러옵니다</p>
@@ -15473,23 +15478,76 @@ app.get('/tools/landing-builder', (c) => {
                                 <input type="text" name="month" placeholder="예: 2024년 12월" required class="w-full px-4 py-3 border border-gray-300 rounded-xl">
                             </div>
                         </div>
+                        
+                        <!-- 📅 날짜 범위 선택 -->
+                        <div class="bg-blue-50 border-2 border-blue-200 rounded-xl p-6 space-y-4">
+                            <h3 class="text-lg font-bold text-blue-900 flex items-center gap-2">
+                                <span>📅</span>
+                                <span>출석 데이터 기간 설정</span>
+                            </h3>
+                            <p class="text-sm text-blue-700 mb-4">아래 날짜를 선택하면 해당 기간의 출석률이 자동으로 계산됩니다</p>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-900 mb-2">시작일 📆</label>
+                                    <input type="text" id="startDate" placeholder="날짜를 선택하세요" class="w-full px-4 py-3 border border-gray-300 rounded-xl bg-white">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-900 mb-2">종료일 📆</label>
+                                    <input type="text" id="endDate" placeholder="날짜를 선택하세요" class="w-full px-4 py-3 border border-gray-300 rounded-xl bg-white">
+                                </div>
+                            </div>
+                            <button type="button" onclick="calculateAttendance()" class="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-3 rounded-xl font-medium hover:from-blue-700 hover:to-blue-800 transition-all shadow-md hover:shadow-lg">
+                                🔄 출석률 자동 계산하기
+                            </button>
+                        </div>
+                        
                         <div>
                             <label class="block text-sm font-medium text-gray-900 mb-2">사용 교재 (1개당 한 줄)</label>
                             <textarea name="textbooks" rows="2" placeholder="중등 수학 2-1&#10;문법이 쓰기다&#10;영단어 암기장 LEVEL 3" class="w-full px-4 py-3 border border-gray-300 rounded-xl"></textarea>
                             <p class="text-xs text-gray-500 mt-1">💡 비워두면 표시되지 않습니다</p>
                         </div>
+                        
+                        <!-- 출석 통계 표시 -->
+                        <div id="attendanceStats" class="hidden bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200 rounded-xl p-6">
+                            <h3 class="text-lg font-bold text-green-900 mb-4 flex items-center gap-2">
+                                <span>✅</span>
+                                <span>자동 계산된 출석 통계</span>
+                            </h3>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                <div class="bg-white rounded-lg p-4 text-center">
+                                    <div class="text-sm text-gray-600 mb-1">출석</div>
+                                    <div id="stat-attended" class="text-2xl font-bold text-green-600">-</div>
+                                </div>
+                                <div class="bg-white rounded-lg p-4 text-center">
+                                    <div class="text-sm text-gray-600 mb-1">결석</div>
+                                    <div id="stat-absent" class="text-2xl font-bold text-red-600">-</div>
+                                </div>
+                                <div class="bg-white rounded-lg p-4 text-center">
+                                    <div class="text-sm text-gray-600 mb-1">지각</div>
+                                    <div id="stat-late" class="text-2xl font-bold text-yellow-600">-</div>
+                                </div>
+                                <div class="bg-white rounded-lg p-4 text-center">
+                                    <div class="text-sm text-gray-600 mb-1">조퇴</div>
+                                    <div id="stat-early" class="text-2xl font-bold text-orange-600">-</div>
+                                </div>
+                            </div>
+                        </div>
+                        
                         <div class="grid grid-cols-3 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-900 mb-2">출석률 (%)</label>
-                                <input type="number" name="attendanceRate" placeholder="95" min="0" max="100" class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                                <input type="number" name="attendanceRate" id="attendanceRateInput" placeholder="95" min="0" max="100" readonly class="w-full px-4 py-3 border border-gray-300 rounded-xl bg-gray-100">
+                                <p class="text-xs text-gray-500 mt-1">🤖 자동 계산됩니다</p>
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-900 mb-2">출석 일수</label>
-                                <input type="number" name="attendanceDays" placeholder="19" min="0" class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                                <input type="number" name="attendanceDays" id="attendanceDaysInput" placeholder="19" min="0" readonly class="w-full px-4 py-3 border border-gray-300 rounded-xl bg-gray-100">
+                                <p class="text-xs text-gray-500 mt-1">🤖 자동 계산됩니다</p>
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-900 mb-2">총 일수</label>
-                                <input type="number" name="totalDays" placeholder="20" min="0" class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                                <input type="number" name="totalDays" id="totalDaysInput" placeholder="20" min="0" readonly class="w-full px-4 py-3 border border-gray-300 rounded-xl bg-gray-100">
+                                <p class="text-xs text-gray-500 mt-1">🤖 자동 계산됩니다</p>
                             </div>
                         </div>
                         <div>
@@ -15626,6 +15684,120 @@ app.get('/tools/landing-builder', (c) => {
             // student-report 템플릿일 때 학생 목록 로드
             if (type === 'student-report') {
                 loadStudentsForSelect();
+                // 날짜 선택기 초기화
+                setTimeout(initDatePickers, 100);
+            }
+        }
+
+        // 📅 날짜 선택기 초기화
+        let startDatePicker, endDatePicker;
+        let selectedStudentId = null;
+        
+        function initDatePickers() {
+            // Flatpickr 한국어 설정
+            flatpickr.localize(flatpickr.l10ns.ko);
+            
+            // 시작일 선택기
+            startDatePicker = flatpickr('#startDate', {
+                dateFormat: 'Y-m-d',
+                locale: 'ko',
+                onChange: function(selectedDates, dateStr, instance) {
+                    console.log('시작일 선택:', dateStr);
+                }
+            });
+            
+            // 종료일 선택기
+            endDatePicker = flatpickr('#endDate', {
+                dateFormat: 'Y-m-d',
+                locale: 'ko',
+                onChange: function(selectedDates, dateStr, instance) {
+                    console.log('종료일 선택:', dateStr);
+                }
+            });
+        }
+        
+        // 학생 선택 변경 시 호출
+        function handleStudentChange() {
+            const select = document.getElementById('studentSelect');
+            const selectedOption = select.options[select.selectedIndex];
+            
+            // 선택된 학생의 ID를 data 속성에서 가져옴
+            selectedStudentId = selectedOption.getAttribute('data-student-id');
+            console.log('선택된 학생 ID:', selectedStudentId);
+        }
+        
+        // 🔄 출석률 자동 계산
+        async function calculateAttendance() {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            const select = document.getElementById('studentSelect');
+            
+            if (!select.value) {
+                alert('⚠️ 먼저 학생을 선택해주세요!');
+                return;
+            }
+            
+            if (!startDate || !endDate) {
+                alert('⚠️ 시작일과 종료일을 모두 선택해주세요!');
+                return;
+            }
+            
+            // 선택된 학생의 ID 가져오기
+            const selectedOption = select.options[select.selectedIndex];
+            const studentId = selectedOption.getAttribute('data-student-id');
+            
+            if (!studentId) {
+                alert('⚠️ 학생 ID를 찾을 수 없습니다. 다시 선택해주세요.');
+                return;
+            }
+            
+            try {
+                // 로딩 표시
+                const button = event.target;
+                const originalText = button.textContent;
+                button.textContent = '⏳ 계산 중...';
+                button.disabled = true;
+                
+                // API 호출
+                const response = await fetch(
+                    \`/api/students/\${studentId}/attendance?startDate=\${startDate}&endDate=\${endDate}\`
+                );
+                const result = await response.json();
+                
+                button.textContent = originalText;
+                button.disabled = false;
+                
+                if (result.success && result.data) {
+                    const summary = result.data.summary;
+                    
+                    // 통계 표시
+                    document.getElementById('stat-attended').textContent = summary.attendedDays + '일';
+                    document.getElementById('stat-absent').textContent = summary.absentDays + '일';
+                    document.getElementById('stat-late').textContent = summary.lateDays + '일';
+                    document.getElementById('stat-early').textContent = summary.earlyLeaveDays + '일';
+                    document.getElementById('attendanceStats').classList.remove('hidden');
+                    
+                    // 폼 입력 필드에 값 설정
+                    document.getElementById('attendanceRateInput').value = summary.attendanceRate;
+                    document.getElementById('attendanceDaysInput').value = summary.attendedDays;
+                    document.getElementById('totalDaysInput').value = summary.totalDays;
+                    
+                    alert(
+                        \`✅ 출석 데이터가 자동으로 계산되었습니다!\\n\\n\` +
+                        \`📊 총 \${summary.totalDays}일 중:\\n\` +
+                        \`✅ 출석: \${summary.attendedDays}일\\n\` +
+                        \`❌ 결석: \${summary.absentDays}일\\n\` +
+                        \`⏰ 지각: \${summary.lateDays}일\\n\` +
+                        \`🏃 조퇴: \${summary.earlyLeaveDays}일\\n\\n\` +
+                        \`📈 출석률: \${summary.attendanceRate}%\`
+                    );
+                } else {
+                    alert('⚠️ 출석 데이터를 찾을 수 없습니다.\\n\\n선택한 기간에 출석 기록이 없을 수 있습니다.');
+                }
+                
+            } catch (error) {
+                console.error('출석 계산 오류:', error);
+                alert('❌ 출석 데이터를 불러오는 중 오류가 발생했습니다.\\n\\n' + error.message);
             }
         }
 
@@ -15645,6 +15817,7 @@ app.get('/tools/landing-builder', (c) => {
                         data.students.forEach(student => {
                             const option = document.createElement('option');
                             option.value = student.name;
+                            option.setAttribute('data-student-id', student.id); // 학생 ID 저장
                             option.textContent = student.name + (student.grade ? ' (' + student.grade + ')' : '');
                             select.appendChild(option);
                         });
@@ -17687,6 +17860,88 @@ app.get('/api/students', async (c) => {
   }
 })
 
+// 📅 학생 출석 데이터 조회 API (날짜 범위)
+app.get('/api/students/:studentId/attendance', async (c) => {
+  try {
+    const studentId = c.req.param('studentId')
+    const startDate = c.req.query('startDate') // YYYY-MM-DD 형식
+    const endDate = c.req.query('endDate') // YYYY-MM-DD 형식
+    
+    if (!c.env.DB) {
+      return c.json({ success: false, error: 'DB 연결 실패' }, 500)
+    }
+    
+    if (!studentId || !startDate || !endDate) {
+      return c.json({ 
+        success: false, 
+        error: '학생 ID, 시작일, 종료일이 필요합니다.' 
+      }, 400)
+    }
+    
+    console.log('📅 [GetAttendance] Student:', studentId, 'Period:', startDate, '-', endDate)
+    
+    // 해당 기간의 출석 데이터 조회
+    const query = `
+      SELECT 
+        attendance_date,
+        status
+      FROM attendance
+      WHERE student_id = ?
+        AND attendance_date >= ?
+        AND attendance_date <= ?
+      ORDER BY attendance_date ASC
+    `
+    
+    const result = await c.env.DB.prepare(query)
+      .bind(studentId, startDate, endDate)
+      .all()
+    
+    const attendanceRecords = result.results || []
+    
+    // 출석 통계 계산
+    let attendedDays = 0
+    let absentDays = 0
+    let lateDays = 0
+    let earlyLeaveDays = 0
+    
+    attendanceRecords.forEach(record => {
+      if (record.status === '출석') attendedDays++
+      else if (record.status === '결석') absentDays++
+      else if (record.status === '지각') lateDays++
+      else if (record.status === '조퇴') earlyLeaveDays++
+    })
+    
+    const totalDays = attendanceRecords.length
+    const attendanceRate = totalDays > 0 
+      ? Math.round((attendedDays / totalDays) * 100) 
+      : 0
+    
+    console.log('✅ [GetAttendance] Found', totalDays, 'records')
+    console.log('   출석:', attendedDays, '결석:', absentDays, '지각:', lateDays)
+    
+    return c.json({
+      success: true,
+      data: {
+        records: attendanceRecords,
+        summary: {
+          totalDays,
+          attendedDays,
+          absentDays,
+          lateDays,
+          earlyLeaveDays,
+          attendanceRate
+        }
+      }
+    })
+    
+  } catch (error) {
+    console.error('❌ [GetAttendance] Error:', error)
+    return c.json({ 
+      success: false, 
+      error: '출석 데이터 조회 실패: ' + error.message 
+    }, 500)
+  }
+})
 
 // 🔍 DB 디버그 API - 실제 DB 상태 확인
 app.get('/api/debug/db-status', async (c) => {
