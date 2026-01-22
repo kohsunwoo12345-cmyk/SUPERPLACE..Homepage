@@ -17856,7 +17856,7 @@ app.get('/tools/landing-builder', (c) => {
                 }
             } catch (err) {
                 console.error('랜딩페이지 생성 에러:', err);
-                alert('랜딩페이지 생성 중 오류가 발생했습니다. 콘솔을 확인하세요: ' + error.message);
+                alert('랜딩페이지 생성 중 오류가 발생했습니다. 콘솔을 확인하세요: ' + err.message);
             }
         }
 
