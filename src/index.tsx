@@ -10939,6 +10939,225 @@ app.get('/teachers/register', (c) => {
   `)
 })
 
+// 개인정보처리방침 페이지
+app.get('/privacy-policy', (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>개인정보처리방침 - 우리는 슈퍼플레이스다</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <style>
+          @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
+          * {
+            font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+          }
+          .gradient-purple {
+            background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+          }
+        </style>
+    </head>
+    <body class="bg-gray-50">
+        <!-- Navigation -->
+        <nav class="fixed w-full top-0 z-50 bg-white border-b border-gray-100">
+            <div class="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
+                <a href="/" class="text-xl font-bold text-gray-900">우리는 슈퍼플레이스다</a>
+                <div class="flex items-center space-x-6">
+                    <a href="/" class="text-gray-600 hover:text-purple-600 transition">홈</a>
+                    <a href="/dashboard" class="gradient-purple text-white px-5 py-2.5 rounded-lg hover:shadow-lg transition font-medium">대시보드</a>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Content -->
+        <div class="pt-32 pb-24 px-6">
+            <div class="max-w-4xl mx-auto">
+                <div class="text-center mb-12">
+                    <h1 class="text-4xl font-bold text-gray-900 mb-4">개인정보처리방침</h1>
+                    <p class="text-gray-600">시행일: 2026년 1월 23일</p>
+                </div>
+
+                <div class="bg-white rounded-2xl border border-gray-200 p-8 md:p-12 shadow-sm">
+                    <div class="prose prose-lg max-w-none space-y-8">
+                        <section>
+                            <p class="text-gray-700 leading-relaxed">
+                                주식회사 우리는 슈퍼플레이스다(이하 "회사"라 합니다)는 이용자의 개인정보를 중요시하며, 「개인정보보호법」, 「정보통신망 이용촉진 및 정보보호 등에 관한 법률」 등 관련 법령을 준수하고 있습니다. 회사는 본 개인정보처리방침을 통하여 이용자가 제공하는 개인정보가 어떠한 용도와 방식으로 이용되고 있으며, 개인정보보호를 위해 어떠한 조치가 취해지고 있는지 알려드립니다.
+                            </p>
+                        </section>
+
+                        <section>
+                            <h2 class="text-2xl font-bold text-gray-900 mb-4">1. 개인정보의 수집 항목 및 수집 방법</h2>
+                            
+                            <h3 class="text-xl font-semibold text-gray-900 mb-3 mt-6">가. 수집하는 개인정보의 항목</h3>
+                            <p class="text-gray-700 mb-3">회사는 회원가입, 원활한 고객상담, 서비스 제공(AI 리포트, 문자 발송 등)을 위해 아래와 같은 개인정보를 수집하고 있습니다.</p>
+                            <ul class="list-disc pl-6 space-y-2 text-gray-700">
+                                <li><strong>[필수항목]</strong> 아이디, 비밀번호, 성명, 휴대전화번호, 이메일 주소, 학원명, 학원 주소</li>
+                                <li><strong>[유료 결제 시]</strong> 카드사명, 카드번호(일부), 은행계좌 정보, 사업자등록번호</li>
+                                <li><strong>[서비스 이용 과정]</strong> 서비스 이용기록, 접속 로그, 쿠키, 접속 IP 정보, 결제 기록, 불량 이용 기록</li>
+                                <li><strong>[AI 서비스 이용 시]</strong> 회원이 입력하는 학습 데이터(학생 이름(식별 불가 처리 권장), 성적, 평가 내용 등)</li>
+                            </ul>
+
+                            <h3 class="text-xl font-semibold text-gray-900 mb-3 mt-6">나. 수집방법</h3>
+                            <p class="text-gray-700">홈페이지(회원가입, 게시판, 결제창), 서면 양식, 전화/팩스, 생성형 AI 서비스 이용 과정</p>
+                        </section>
+
+                        <section>
+                            <h2 class="text-2xl font-bold text-gray-900 mb-4">2. 개인정보의 이용목적</h2>
+                            <p class="text-gray-700 mb-3">회사는 수집한 개인정보를 다음의 목적을 위해 활용합니다.</p>
+                            <ul class="list-disc pl-6 space-y-2 text-gray-700">
+                                <li><strong>서비스 제공 및 계약 이행:</strong> AI 기반 콘텐츠(리포트, 랜딩페이지) 생성, 문자 메시지(SMS/LMS) 발송, 네이버 검색량 조회, 요금 결제 및 정산</li>
+                                <li><strong>회원 관리:</strong> 회원제 서비스 이용에 따른 본인확인, 개인 식별, 불량 회원의 부정 이용 방지, 가입 의사 확인, 민원 처리, 고지사항 전달</li>
+                                <li><strong>마케팅 및 광고 (동의 시):</strong> 신규 서비스(Gems) 개발 및 맞춤 서비스 제공, 이벤트 및 광고성 정보 제공</li>
+                            </ul>
+                        </section>
+
+                        <section>
+                            <h2 class="text-2xl font-bold text-gray-900 mb-4">3. 개인정보의 제3자 제공</h2>
+                            <p class="text-gray-700 mb-3">회사는 이용자의 개인정보를 원칙적으로 외부에 제공하지 않습니다. 다만, 아래의 경우에는 예외로 합니다.</p>
+                            <ul class="list-disc pl-6 space-y-2 text-gray-700">
+                                <li>이용자들이 사전에 동의한 경우</li>
+                                <li>법령의 규정에 의거하거나, 수사 목적으로 법령에 정해진 절차와 방법에 따라 수사기관의 요구가 있는 경우</li>
+                            </ul>
+                        </section>
+
+                        <section>
+                            <h2 class="text-2xl font-bold text-gray-900 mb-4">4. 개인정보 처리의 위탁 ⭐</h2>
+                            <p class="text-gray-700 mb-4">회사는 서비스 향상 및 원활한 계약 이행을 위해 아래와 같이 개인정보 처리를 위탁하고 있습니다.</p>
+                            
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full border-collapse border border-gray-300">
+                                    <thead class="bg-gray-100">
+                                        <tr>
+                                            <th class="border border-gray-300 px-4 py-3 text-left font-semibold text-gray-900">수탁업체</th>
+                                            <th class="border border-gray-300 px-4 py-3 text-left font-semibold text-gray-900">위탁 업무 내용</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="border border-gray-300 px-4 py-3 text-gray-700">OpenAI, L.L.C., Google AI (미국)</td>
+                                            <td class="border border-gray-300 px-4 py-3 text-gray-700">AI 기반 리포트 및 랜딩페이지 생성을 위한 데이터 처리</td>
+                                        </tr>
+                                        <tr class="bg-gray-50">
+                                            <td class="border border-gray-300 px-4 py-3 text-gray-700">(주)길컴퍼니 또는 알리고</td>
+                                            <td class="border border-gray-300 px-4 py-3 text-gray-700">문자 메시지(SMS/LMS) 발송 시스템 운영</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="border border-gray-300 px-4 py-3 text-gray-700">Cloudflare / Vercel</td>
+                                            <td class="border border-gray-300 px-4 py-3 text-gray-700">서비스 데이터 호스팅 및 보안 서버 운영</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </section>
+
+                        <section>
+                            <h2 class="text-2xl font-bold text-gray-900 mb-4">5. 개인정보의 보유 및 이용기간</h2>
+                            <p class="text-gray-700 mb-3">회사는 원칙적으로 개인정보 수집 및 이용목적이 달성된 후에는 해당 정보를 지체 없이 파기합니다. 단, 관계법령의 규정에 의하여 보존할 필요가 있는 경우 아래와 같이 일정 기간 보관합니다.</p>
+                            <ul class="list-disc pl-6 space-y-2 text-gray-700">
+                                <li>계약 또는 청약철회 등에 관한 기록: 5년 (전자상거래법)</li>
+                                <li>대금결제 및 재화 등의 공급에 관한 기록: 5년 (전자상거래법)</li>
+                                <li>소비자의 불만 또는 분쟁처리에 관한 기록: 3년 (전자상거래법)</li>
+                                <li>웹사이트 방문 기록(로그): 3개월 (통신비밀보호법)</li>
+                            </ul>
+                        </section>
+
+                        <section>
+                            <h2 class="text-2xl font-bold text-gray-900 mb-4">6. 개인정보의 파기절차 및 방법</h2>
+                            
+                            <h3 class="text-xl font-semibold text-gray-900 mb-3 mt-4">가. 파기절차</h3>
+                            <p class="text-gray-700">이용자의 정보는 목적이 달성된 후 별도의 DB로 옮겨져(종이의 경우 별도의 서류함) 내부 방침 및 기타 관련 법령에 의한 정보보호 사유에 따라 일정 기간 저장된 후 파기됩니다.</p>
+
+                            <h3 class="text-xl font-semibold text-gray-900 mb-3 mt-4">나. 파기방법</h3>
+                            <p class="text-gray-700">전자적 파일 형태로 저장된 개인정보는 기록을 재생할 수 없는 기술적 방법을 사용하여 삭제하며, 종이 문서는 분쇄하거나 소각하여 파기합니다.</p>
+                        </section>
+
+                        <section>
+                            <h2 class="text-2xl font-bold text-gray-900 mb-4">7. 이용자 및 법정대리인의 권리와 그 행사방법</h2>
+                            <p class="text-gray-700">이용자는 언제든지 등록되어 있는 자신의 개인정보를 조회하거나 수정할 수 있으며 가입 해지를 요청할 수 있습니다. 개인정보 조회/수정을 위해서는 '개인정보변경'(또는 '회원정보수정')을, 가입 해지를 위해서는 '회원탈퇴'를 클릭하여 본인 확인 절차를 거친 후 직접 열람, 정정 또는 탈퇴가 가능합니다.</p>
+                        </section>
+
+                        <section>
+                            <h2 class="text-2xl font-bold text-gray-900 mb-4">8. 개인정보 자동 수집 장치의 설치/운영 및 거부에 관한 사항</h2>
+                            <p class="text-gray-700">회사는 이용자에게 특화된 맞춤서비스를 제공하기 위해서 이용자들의 정보를 수시로 저장하고 찾아내는 '쿠키(cookie)' 등을 운용합니다. 이용자는 쿠키 설치에 대한 선택권을 가지고 있으며, 웹브라우저 설정을 통해 쿠키 저장을 거부할 수 있습니다. 단, 쿠키 저장을 거부할 경우 로그인이 필요한 일부 서비스 이용에 어려움이 있을 수 있습니다.</p>
+                        </section>
+
+                        <section>
+                            <h2 class="text-2xl font-bold text-gray-900 mb-4">9. 개인정보의 기술적/관리적 보호 대책</h2>
+                            <p class="text-gray-700 mb-3">회사는 이용자의 개인정보를 처리함에 있어 분실, 도난, 유출, 변조 또는 훼손되지 않도록 다음과 같은 대책을 강구하고 있습니다.</p>
+                            <ul class="list-disc pl-6 space-y-2 text-gray-700">
+                                <li><strong>암호화:</strong> 비밀번호와 중요 데이터는 암호화되어 저장 및 관리됩니다.</li>
+                                <li><strong>해킹 대비:</strong> 해킹이나 컴퓨터 바이러스 등에 의한 피해를 방지하기 위해 보안 프로그램을 설치하고 주기적인 갱신·점검을 하며, 외부로부터 접근이 통제된 구역에 시스템을 설치하고 기술적/물리적으로 감시 및 차단하고 있습니다.</li>
+                                <li><strong>취급 직원의 최소화:</strong> 개인정보를 처리하는 직원을 최소한으로 지정하고 담당자에 대한 수시 교육을 통해 본 정책의 준수를 강조하고 있습니다.</li>
+                            </ul>
+                        </section>
+
+                        <section>
+                            <h2 class="text-2xl font-bold text-gray-900 mb-4">10. 개인정보보호책임자 및 연락처</h2>
+                            <p class="text-gray-700 mb-3">회사는 회원의 개인정보를 보호하고 개인정보와 관련한 불만을 처리하기 위하여 아래와 같이 관련 부서 및 개인정보보호책임자를 지정하고 있습니다.</p>
+                            <div class="bg-purple-50 border border-purple-200 rounded-lg p-6">
+                                <p class="font-semibold text-gray-900 mb-2">개인정보보호책임자(CPO): 고희준 (대표)</p>
+                                <p class="text-gray-700">연락처: 010-8739-9697</p>
+                                <p class="text-gray-700">이메일: wangholy1@naver.com</p>
+                            </div>
+
+                            <p class="text-gray-700 mt-4 mb-2">기타 개인정보침해에 대한 신고나 상담이 필요하신 경우에는 아래 기관에 문의하시기 바랍니다.</p>
+                            <ul class="list-disc pl-6 space-y-1 text-gray-700">
+                                <li>개인정보침해신고센터 (privacy.kisa.or.kr / 118)</li>
+                                <li>대검찰청 사이버수사과 (www.spo.go.kr / 1301)</li>
+                                <li>경찰청 사이버수사국 (ecrm.police.go.kr / 182)</li>
+                            </ul>
+                        </section>
+
+                        <section>
+                            <h2 class="text-2xl font-bold text-gray-900 mb-4">11. 고지의 의무</h2>
+                            <p class="text-gray-700">이 개인정보처리방침은 2026년 1월 23일부터 적용됩니다. 내용의 추가, 삭제 및 수정이 있을 시에는 개정 최소 7일 전부터 홈페이지의 '공지사항'을 통해 고지할 것입니다.</p>
+                        </section>
+                    </div>
+                </div>
+
+                <div class="mt-8 text-center">
+                    <a href="/" class="inline-flex items-center gap-2 text-purple-600 hover:text-purple-700 font-medium">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                        </svg>
+                        <span>홈으로 돌아가기</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="bg-gray-900 text-gray-300 py-12">
+            <div class="max-w-7xl mx-auto px-6">
+                <div class="grid md:grid-cols-2 gap-8 mb-8">
+                    <div>
+                        <h3 class="text-white font-bold text-lg mb-4">주식회사 우리는 슈퍼플레이스다</h3>
+                        <div class="space-y-2 text-sm">
+                            <p>사업자등록번호: 142-88-02445</p>
+                            <p>주소: 인천광역시 서구 청라커낼로 270, 2층</p>
+                            <p>이메일: wangholy1@naver.com | 전화: 010-8739-9697</p>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-white font-bold text-lg mb-4">법적 고지</h3>
+                        <div class="space-y-2 text-sm">
+                            <a href="/privacy-policy" class="block hover:text-white transition">개인정보처리방침</a>
+                            <a href="/signup" class="block hover:text-white transition">서비스 이용약관</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="border-t border-gray-700 pt-6 text-center text-sm">
+                    <p>© 2024 우리는 슈퍼플레이스다. All rights reserved.</p>
+                </div>
+            </div>
+        </footer>
+    </body>
+    </html>
+  `)
+})
+
 // 회원가입 페이지
 app.get('/signup', (c) => {
   return c.html(`
@@ -14193,6 +14412,32 @@ app.get('/dashboard', (c) => {
                 </div>
             </div>
         </div>
+        
+        <!-- Footer -->
+        <footer class="bg-gray-900 text-gray-300 py-12 mt-20">
+            <div class="max-w-7xl mx-auto px-6">
+                <div class="grid md:grid-cols-2 gap-8 mb-8">
+                    <div>
+                        <h3 class="text-white font-bold text-lg mb-4">주식회사 우리는 슈퍼플레이스다</h3>
+                        <div class="space-y-2 text-sm">
+                            <p>사업자등록번호: 142-88-02445</p>
+                            <p>주소: 인천광역시 서구 청라커낼로 270, 2층</p>
+                            <p>이메일: wangholy1@naver.com | 전화: 010-8739-9697</p>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-white font-bold text-lg mb-4">법적 고지</h3>
+                        <div class="space-y-2 text-sm">
+                            <a href="/privacy-policy" class="block hover:text-white transition">개인정보처리방침</a>
+                            <a href="/signup" class="block hover:text-white transition">서비스 이용약관</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="border-t border-gray-700 pt-6 text-center text-sm">
+                    <p>© 2024 우리는 슈퍼플레이스다. All rights reserved.</p>
+                </div>
+            </div>
+        </footer>
     </body>
     </html>
   `)
