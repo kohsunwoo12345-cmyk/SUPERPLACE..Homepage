@@ -11551,19 +11551,41 @@ app.get('/consulting/:programId', async (c) => {
         <script>
           const programId = '\${programId}';
           
-          async function loadProgramDetail() {
+          // 하드코딩된 프로그램 데이터
+          const programs = {
+            'naver-place-consulting': {
+              program_id: 'naver-place-consulting',
+              name: '네이버 플레이스 상위노출 컨설팅',
+              description: '실제 포스팅의 집중 컨설팅 시작하실 마케팅!',
+              image_url: '/static/images/naver-place-consulting.jpg',
+              price: 1210000,
+              sessions: 6,
+              details: '네이버 플레이스 상위노출을 위한 1:1 맞춤 컨설팅 프로그램입니다. 6회에 걸쳐 플레이스 등록부터 상위노출 전략, 리뷰 관리, 키워드 최적화까지 실전 노하우를 전수받으실 수 있습니다.',
+              features: ["플레이스 최적화 전략", "리뷰 관리 노하우", "키워드 분석 및 타겟팅", "경쟁사 분석", "상위노출 실전 기법", "1:1 맞춤 컨설팅"]
+            },
+            'blog-consulting': {
+              program_id: 'blog-consulting',
+              name: '블로그 1:1 컨설팅',
+              description: '실제 포스팅의 집중 컨설팅 시작하실 마케팅!',
+              image_url: '/static/images/blog-consulting.jpg',
+              price: 1210000,
+              sessions: 6,
+              details: '블로그 상위노출을 위한 1:1 맞춤 컨설팅 프로그램입니다. 6회에 걸쳐 SEO 최적화, 콘텐츠 작성법, 키워드 전략, 유입 증대 방법까지 블로그 마케팅의 모든 것을 배우실 수 있습니다.',
+              features: ["SEO 최적화 전략", "콘텐츠 기획 및 작성법", "키워드 리서치", "검색 상위노출 기법", "유입 분석 및 개선", "1:1 맞춤 컨설팅"]
+            }
+          };
+          
+          function loadProgramDetail() {
             try {
-              const response = await fetch(\`/api/consulting/programs/\${programId}\`);
-              const data = await response.json();
+              const program = programs[programId];
               
-              if (!data.success || !data.program) {
+              if (!program) {
                 alert('프로그램 정보를 불러올 수 없습니다.');
                 window.location.href = '/consulting';
                 return;
               }
 
-              const program = data.program;
-              const features = JSON.parse(program.features || '[]');
+              const features = program.features;
               
               document.getElementById('programDetail').innerHTML = \`
                 <div class="aspect-w-16 aspect-h-9 bg-gray-200">
