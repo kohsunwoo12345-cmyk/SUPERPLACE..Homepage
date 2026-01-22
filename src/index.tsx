@@ -5962,6 +5962,7 @@ app.get('/', (c) => {
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="naver-site-verification" content="f0716e4a61fc6144eec195ebe09f93fe452ada21" />
         <title>우리는 슈퍼플레이스다 - 학원 전문 마케팅 | 슈퍼 플레이스</title>
         <meta name="description" content="100% 현직 학원장이 알려주는 실전 마케팅! 네이버 플레이스 상위노출, 블로그 마케팅, 퍼널 마케팅 전문 교육. 대표이사 고희준, 제1팀장 고선우와 함께하는 학원 성장 컨설팅.">
         
@@ -12844,272 +12845,135 @@ app.get('/programs', (c) => {
 
 // 성공 사례 페이지
 // 프로그램 목록 페이지
-app.get('/programs', (c) => {
+app.get('/programs', async (c) => {
   return c.html(`
     <!DOCTYPE html>
     <html lang="ko">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>교육 프로그램 - 우리는 슈퍼플레이스다</title>
+        <title>교육 컨설팅 프로그램 - 우리는 슈퍼플레이스다</title>
         <script src="https://cdn.tailwindcss.com"></script>
-        <link rel="preconnect" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+        <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+        <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css" rel="stylesheet">
         <style>
-          body { font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
+          * { font-family: 'Pretendard Variable', Pretendard, sans-serif; }
         </style>
     </head>
     <body class="bg-gray-50">
-        <!-- 헤더 -->
-        <header class="bg-white shadow-sm border-b">
+        <!-- Header -->
+        <header class="bg-white shadow-sm border-b sticky top-0 z-50">
             <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
                 <div class="flex justify-between items-center">
-                    <a href="/" class="text-2xl font-bold text-blue-600">슈퍼플레이스</a>
-                    <div class="flex gap-8 items-center">
+                    <a href="/" class="text-2xl font-bold text-blue-600">SUPER PLACE</a>
+                    <div class="flex gap-6 items-center">
                         <a href="/" class="text-gray-600 hover:text-blue-600">홈</a>
+                        <a href="/dashboard" class="text-gray-600 hover:text-blue-600">대시보드</a>
                         <a href="/programs" class="text-blue-600 font-semibold">교육 프로그램</a>
-                        <a href="/tools" class="text-gray-600 hover:text-blue-600">마케팅 툴</a>
-                        <a href="/contact" class="text-gray-600 hover:text-blue-600">문의하기</a>
                         <a href="/login" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">로그인</a>
                     </div>
                 </div>
             </nav>
         </header>
 
-        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-            <!-- 페이지 헤더 -->
-            <div class="text-center mb-16">
-                <h1 class="text-4xl font-bold text-gray-900 mb-4">교육 프로그램</h1>
-                <p class="text-xl text-gray-600">학원 마케팅 전문가가 되기 위한 실전 교육 프로그램</p>
+        <!-- Hero Section -->
+        <section class="bg-gradient-to-r from-blue-600 to-indigo-700 text-white py-16">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <h1 class="text-4xl md:text-5xl font-bold mb-4">학원 전문 마케팅 컨설팅</h1>
+                <p class="text-xl md:text-2xl text-blue-100 mb-8">실제 포스팅의 집중 컨설팅 시작하실 마케팅!</p>
+                <p class="text-lg text-blue-200">6회 컨설팅 / 121만원</p>
             </div>
+        </section>
 
-            <!-- 프로그램 카드 그리드 -->
-            <div id="programsGrid" class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-                <!-- 프로그램 카드들이 여기에 동적으로 로드됩니다 -->
+        <!-- Products Grid -->
+        <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            <div id="productsGrid" class="grid md:grid-cols-2 gap-8">
+                <!-- 프로그램 카드가 여기 동적으로 로드됩니다 -->
             </div>
+        </section>
 
-            <!-- CTA 섹션 -->
-            <div class="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-12 text-center text-white">
-                <h2 class="text-3xl font-bold mb-4">프로그램 신청하기</h2>
-                <p class="text-xl mb-8 text-blue-100">원하시는 프로그램을 선택하고 지금 바로 시작하세요</p>
-                <a href="/contact" class="inline-block px-8 py-4 bg-white text-blue-600 rounded-lg font-semibold hover:bg-blue-50 transition">
-                    문의하기 →
-                </a>
+        <!-- Footer -->
+        <footer class="bg-gray-900 text-white py-12 mt-16">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid md:grid-cols-3 gap-8">
+                    <div>
+                        <h3 class="text-xl font-bold mb-4">주식회사 우리는 슈퍼플레이스다</h3>
+                        <p class="text-gray-400 text-sm">사업자등록번호: 142-88-02445</p>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold mb-2">주소</h4>
+                        <p class="text-gray-400 text-sm">인천광역시 서구 청라커낼로 270, 2층</p>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold mb-2">문의</h4>
+                        <p class="text-gray-400 text-sm">이메일: wangholy1@naver.com</p>
+                        <p class="text-gray-400 text-sm">전화: 010-8739-9697</p>
+                    </div>
+                </div>
+                <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-500 text-sm">
+                    © 2024 우리는 슈퍼플레이스다. All rights reserved.
+                </div>
             </div>
-        </main>
+        </footer>
 
         <script>
-          const user = JSON.parse(localStorage.getItem('user') || '{}');
-          
-          // 프로그램 목록 데이터
-          const programs = [
-            {
-              id: 'naver-place',
-              name: '네이버 플레이스 상위노출',
-              description: '지역 검색 1위를 위한 실전 노하우',
-              details: '네이버 플레이스 최적화, 리뷰 관리, 키워드 전략',
-              image: '/static/images/naver-place.png',
-              icon: '🗺️',
-              features: ['지역 검색 최적화', '리뷰 관리 전략', '키워드 분석', '경쟁사 분석']
-            },
-            {
-              id: 'blog',
-              name: '블로그 상위노출',
-              description: '검색 1페이지 진입을 위한 블로그 마케팅',
-              details: 'SEO 최적화, 콘텐츠 전략, 유입 증대 방법',
-              image: '/static/images/blog-marketing.png',
-              icon: '📝',
-              features: ['SEO 최적화', '콘텐츠 기획', '키워드 전략', '유입 분석']
-            },
-            {
-              id: 'funnel',
-              name: '퍼널 마케팅',
-              description: '자동화된 학생 모집 시스템 구축',
-              details: '랜딩페이지, 자동화 시스템, 전환율 최적화',
-              image: '/static/images/funnel-marketing.png',
-              icon: '🎯',
-              features: ['랜딩페이지 제작', '마케팅 자동화', '전환율 최적화', 'CRM 시스템']
-            },
-            {
-              id: 'sns',
-              name: 'SNS 마케팅',
-              description: '인스타그램, 페이스북 활용 전략',
-              details: '콘텐츠 제작, 광고 운영, 팔로워 확보',
-              icon: '📱',
-              features: ['콘텐츠 제작', '광고 운영', '팔로워 확보', '인플루언서 협업']
-            },
-            {
-              id: 'video',
-              name: '영상 마케팅',
-              description: '유튜브, 숏폼 콘텐츠 제작',
-              details: '영상 기획, 촬영/편집, 채널 운영',
-              icon: '🎥',
-              features: ['영상 기획', '촬영/편집', '채널 운영', '유튜브 SEO']
-            },
-            {
-              id: 'ad',
-              name: '온라인 광고',
-              description: '네이버, 구글 광고 운영 전략',
-              details: '광고 집행, 예산 관리, ROI 최적화',
-              icon: '💰',
-              features: ['광고 집행', '예산 관리', 'ROI 분석', 'A/B 테스트']
-            },
-            {
-              id: 'community',
-              name: '커뮤니티 마케팅',
-              description: '학부모 커뮤니티 활성화 전략',
-              details: '커뮤니티 운영, 이벤트 기획, 구전 마케팅',
-              icon: '👥',
-              features: ['커뮤니티 운영', '이벤트 기획', '구전 마케팅', '학부모 소통']
-            },
-            {
-              id: 'branding',
-              name: '브랜딩',
-              description: '학원 브랜드 아이덴티티 구축',
-              details: '브랜드 전략, 로고/디자인, 스토리텔링',
-              icon: '🎨',
-              features: ['브랜드 전략', '로고/디자인', '스토리텔링', 'BI/CI 구축']
-            },
-            {
-              id: 'data',
-              name: '검색량 조회',
-              description: '네이버 검색량 및 순위 분석',
-              details: '키워드 검색량, 플레이스 순위 조회, 경쟁사 분석',
-              icon: '🔍',
-              features: ['검색량 조회', '순위 확인', '경쟁사 분석', '키워드 추출']
-            },
-            {
-              id: 'carrot',
-              name: '당근 비즈니스 마케팅',
-              description: '지역 기반 당근마켓 활용 전략',
-              details: '당근 비즈니스 프로필, 지역 광고, 동네 홍보',
-              icon: '🥕',
-              features: ['비즈니스 프로필', '지역 타겟팅', '동네 광고', '직거래 유도']
-            },
-            {
-              id: 'meta',
-              name: '메타 광고',
-              description: 'Facebook/Instagram 광고 운영',
-              details: '메타 광고 관리자, 타겟팅, 성과 분석',
-              icon: '📘',
-              features: ['광고 계정 설정', '타겟 오디언스', '크리에이티브', 'ROI 최적화']
-            },
-            {
-              id: 'youtube-ad',
-              name: '유튜브 광고',
-              description: '유튜브 광고 캠페인 운영',
-              details: '유튜브 광고 유형, 타겟팅, 영상 제작',
-              icon: '📺',
-              features: ['광고 유형 선택', '타겟 설정', '영상 제작', '성과 측정']
-            },
-            {
-              id: 'threads',
-              name: '쓰레드 마케팅',
-              description: 'Meta Threads 활용 전략',
-              details: '쓰레드 콘텐츠, 커뮤니티 구축, 바이럴 마케팅',
-              icon: '🧵',
-              features: ['콘텐츠 전략', '팔로워 확보', '트렌드 활용', '인게이지먼트']
-            }
-          ];
-
-          // 사용자 권한 확인
           async function loadPrograms() {
-            const grid = document.getElementById('programsGrid');
-            
-            let userPermissions = [];
-            if (user.id) {
-              try {
-                const response = await fetch(\`/api/user/\${user.id}/permissions\`);
-                const data = await response.json();
-                userPermissions = data.permissions || [];
-              } catch (err) {
-                console.error('권한 조회 실패:', err);
+            try {
+              const response = await fetch('/api/consulting/programs');
+              const data = await response.json();
+              
+              if (!data.success || !data.programs) {
+                console.error('프로그램 로드 실패');
+                return;
               }
-            }
 
-            // 프로그램 권한 필터링
-            const programPermissions = userPermissions
-              .filter(p => p.permission_type === 'program')
-              .map(p => p.permission_name);
-
-            // 프로그램 카드 렌더링 (4개만 표시: 네이버 검색량, 랜딩페이지, 학생 관리, AI 리포트)
-            const allowedProgramIds = ['data', 'funnel', 'sms', 'blog'];  // data=검색량, funnel=랜딩페이지, sms=학생관리, blog=AI리포트로 임시 매핑
-            const filteredPrograms = programs.filter(p => allowedProgramIds.includes(p.id));
-            
-            filteredPrograms.forEach(program => {
-              const hasPermission = user.role === 'admin' || programPermissions.includes(program.id);
-              
-              const card = \`
-                <div class="bg-white rounded-xl shadow-sm hover:shadow-lg transition p-6 border border-gray-200">
-                  <div class="text-5xl mb-4">\${program.icon}</div>
-                  <h3 class="text-2xl font-bold text-gray-900 mb-3">\${program.name}</h3>
-                  <p class="text-gray-600 mb-4">\${program.description}</p>
-                  <p class="text-sm text-gray-500 mb-6">\${program.details}</p>
-                  
-                  <div class="mb-6">
-                    <p class="text-sm font-semibold text-gray-700 mb-2">주요 내용:</p>
-                    <ul class="space-y-1">
-                      \${program.features.map(f => \`
-                        <li class="text-sm text-gray-600 flex items-center">
-                          <span class="text-blue-600 mr-2">✓</span> \${f}
-                        </li>
-                      \`).join('')}
-                    </ul>
+              const grid = document.getElementById('productsGrid');
+              grid.innerHTML = data.programs.map(program => {
+                const features = JSON.parse(program.features || '[]');
+                return \`
+                  <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition duration-300">
+                    <div class="aspect-w-16 aspect-h-9 bg-gray-200">
+                      <img src="\${program.image_url}" alt="\${program.name}" class="w-full h-64 object-cover">
+                    </div>
+                    <div class="p-8">
+                      <h2 class="text-2xl font-bold text-gray-900 mb-3">\${program.name}</h2>
+                      <p class="text-gray-600 mb-4">\${program.description}</p>
+                      <div class="mb-6">
+                        <p class="text-sm text-gray-700 mb-3 leading-relaxed">\${program.details}</p>
+                        <div class="space-y-2">
+                          \${features.map(f => \`
+                            <div class="flex items-center text-sm text-gray-600">
+                              <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                              <span>\${f}</span>
+                            </div>
+                          \`).join('')}
+                        </div>
+                      </div>
+                      <div class="flex items-center justify-between border-t pt-6">
+                        <div>
+                          <p class="text-sm text-gray-500">총 \${program.sessions}회 컨설팅</p>
+                          <p class="text-3xl font-bold text-blue-600">\${(program.price / 10000).toFixed(0)}만원</p>
+                        </div>
+                        <a href="/consulting/\${program.program_id}" 
+                           class="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg font-semibold hover:from-blue-700 hover:to-indigo-700 transition">
+                          수강하기
+                        </a>
+                      </div>
+                    </div>
                   </div>
-                  
-                  \${hasPermission ? \`
-                    <a href="/programs/\${program.id}" 
-                       class="block w-full py-3 bg-blue-600 text-white text-center rounded-lg hover:bg-blue-700 transition font-semibold">
-                      프로그램 시작하기 →
-                    </a>
-                  \` : \`
-                    <button onclick="requestAccess('\${program.id}', '\${program.name}')" 
-                            class="w-full py-3 bg-gray-200 text-gray-600 rounded-lg hover:bg-gray-300 transition font-semibold">
-                      🔒 권한 요청하기
-                    </button>
-                  \`}
-                </div>
-              \`;
-              
-              grid.innerHTML += card;
-            });
+                \`;
+              }).join('');
+            } catch (err) {
+              console.error('프로그램 로드 오류:', err);
+            }
           }
 
-          // 권한 요청
-          function requestAccess(programId, programName) {
-            if (!user.id) {
-              alert('로그인이 필요합니다.');
-              window.location.href = '/login';
-              return;
-            }
-            
-            // 특정 프로그램은 직접 페이지로 이동
-            const programUrls = {
-              'data': '/tools/search-volume',
-              'sms': '/tools/sms-sender',
-              'blog': '/tools/blog-writer',
-              'landing': '/tools/landing-builder',
-              'student': '/students'
-            };
-            
-            if (programUrls[programId]) {
-              window.location.href = programUrls[programId];
-              return;
-            }
-            
-            alert(\`"\${programName}" 프로그램에 대한 권한 요청이 접수되었습니다.\\n관리자 승인 후 이용하실 수 있습니다.\`);
-            
-            // 실제로는 권한 요청 API 호출
-            // 예: POST /api/access-requests { userId, programId, programName }
-          }
-
-          // 페이지 로드 시 프로그램 목록 로드
           loadPrograms();
         </script>
     </body>
     </html>
-  `)
-})
-
+  `);
+});
 app.get('/success', (c) => {
   return c.html(`
     <!DOCTYPE html>
