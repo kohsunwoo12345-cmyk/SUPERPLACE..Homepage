@@ -4295,7 +4295,28 @@ function generateLandingPageHTML(template_type: string, data: any): string {
 
 // 학원 소개 페이지 템플릿 (전문적이고 상세한 버전)
 function generateAcademyIntroHTML(data: any): string {
-  const { academyName, location, features, specialties, contact } = data
+  const { 
+    academyName, 
+    location, 
+    features, 
+    specialties, 
+    contact,
+    directorName,
+    directorPhoto,
+    directorCareer,
+    academyPhoto1,
+    academyPhoto2,
+    academyPhoto3,
+    educationPhilosophy,
+    educationPrograms,
+    curriculum
+  } = data
+  
+  const specialtiesList = specialties ? specialties.split('\n').filter((s: string) => s.trim()) : []
+  const directorCareerList = directorCareer ? directorCareer.split('\n').filter((c: string) => c.trim()) : []
+  const educationProgramsList = educationPrograms ? educationPrograms.split('\n').filter((p: string) => p.trim()) : []
+  const curriculumList = curriculum ? curriculum.split('\n').filter((c: string) => c.trim()) : []
+  
   return `
 <!DOCTYPE html>
 <html lang="ko">
@@ -4330,80 +4351,138 @@ function generateAcademyIntroHTML(data: any): string {
                 </div>
                 <p class="text-2xl opacity-95 max-w-3xl mx-auto leading-relaxed">${features || '학생 한 명 한 명의 꿈을 응원하는 교육 파트너'}</p>
             </div>
-            
-            <!-- Quick Stats -->
-            <div class="grid md:grid-cols-4 gap-6 mt-12">
-                <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-6 text-center">
-                    <div class="text-4xl font-bold mb-2">500+</div>
-                    <div class="text-sm opacity-90">학생 수</div>
-                </div>
-                <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-6 text-center">
-                    <div class="text-4xl font-bold mb-2">98%</div>
-                    <div class="text-sm opacity-90">학부모 만족도</div>
-                </div>
-                <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-6 text-center">
-                    <div class="text-4xl font-bold mb-2">15년</div>
-                    <div class="text-sm opacity-90">교육 경력</div>
-                </div>
-                <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-6 text-center">
-                    <div class="text-4xl font-bold mb-2">1:1</div>
-                    <div class="text-sm opacity-90">맞춤 관리</div>
-                </div>
-            </div>
         </div>
     </div>
     
     <!-- Main Content -->
     <div class="max-w-6xl mx-auto px-6 py-20">
-        <!-- 학원 소개 -->
+        <!-- 학원장 소개 -->
+        ${directorName ? `
         <div class="mb-20">
             <div class="text-center mb-12">
                 <h2 class="text-4xl font-bold text-gray-900 mb-4">
-                    <i class="fas fa-school text-purple-600 mr-3"></i>
-                    우리 학원을 소개합니다
+                    <i class="fas fa-user-tie text-purple-600 mr-3"></i>
+                    학원장 소개
                 </h2>
-                <p class="text-xl text-gray-600">${academyName}는 학생 개개인의 성장을 최우선으로 생각합니다</p>
             </div>
             
-            <div class="grid md:grid-cols-2 gap-8">
-                <div class="bg-gradient-to-br from-purple-50 to-blue-50 rounded-2xl p-8 shadow-lg">
-                    <div class="flex items-center gap-4 mb-6">
-                        <div class="w-16 h-16 bg-purple-600 rounded-full flex items-center justify-center text-white text-2xl">
-                            <i class="fas fa-bullseye"></i>
-                        </div>
-                        <h3 class="text-2xl font-bold text-gray-900">우리의 목표</h3>
+            <div class="bg-white rounded-3xl shadow-2xl p-12">
+                <div class="flex flex-col md:flex-row items-center gap-8">
+                    ${directorPhoto ? `
+                    <div class="flex-shrink-0">
+                        <img src="${directorPhoto}" alt="${directorName}" class="w-48 h-48 rounded-full object-cover shadow-lg border-4 border-purple-200">
                     </div>
-                    <p class="text-gray-700 text-lg leading-relaxed">
-                        단순히 성적 향상을 넘어, 학생들이 스스로 학습하는 힘을 기르고 
-                        자신의 꿈을 향해 나아갈 수 있도록 돕는 것이 우리의 목표입니다. 
-                        체계적인 커리큘럼과 개별 맞춤 학습으로 최상의 결과를 만들어냅니다.
-                    </p>
-                </div>
-                
-                <div class="bg-gradient-to-br from-blue-50 to-green-50 rounded-2xl p-8 shadow-lg">
-                    <div class="flex items-center gap-4 mb-6">
-                        <div class="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center text-white text-2xl">
-                            <i class="fas fa-heart"></i>
+                    ` : ''}
+                    <div class="flex-1">
+                        <h3 class="text-3xl font-bold text-gray-900 mb-4">${directorName} 원장</h3>
+                        <div class="space-y-3">
+                            ${directorCareerList.map((career: string) => `
+                                <div class="flex items-start gap-3">
+                                    <i class="fas fa-check-circle text-purple-600 mt-1"></i>
+                                    <p class="text-lg text-gray-700">${career}</p>
+                                </div>
+                            `).join('')}
                         </div>
-                        <h3 class="text-2xl font-bold text-gray-900">우리의 약속</h3>
                     </div>
-                    <p class="text-gray-700 text-lg leading-relaxed">
-                        모든 학생을 내 자녀처럼 생각하며, 한 명 한 명에게 최선을 다합니다. 
-                        정기적인 학부모 상담과 실시간 학습 리포트를 통해 
-                        학생의 성장 과정을 투명하게 공유합니다.
-                    </p>
                 </div>
             </div>
         </div>
+        ` : ''}
+        
+        <!-- 학원 사진 갤러리 -->
+        ${academyPhoto1 || academyPhoto2 || academyPhoto3 ? `
+        <div class="mb-20">
+            <div class="text-center mb-12">
+                <h2 class="text-4xl font-bold text-gray-900 mb-4">
+                    <i class="fas fa-images text-purple-600 mr-3"></i>
+                    학원 둘러보기
+                </h2>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-6">
+                ${academyPhoto1 ? `
+                <div class="rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow">
+                    <img src="${academyPhoto1}" alt="학원 사진 1" class="w-full h-64 object-cover">
+                </div>
+                ` : ''}
+                ${academyPhoto2 ? `
+                <div class="rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow">
+                    <img src="${academyPhoto2}" alt="학원 사진 2" class="w-full h-64 object-cover">
+                </div>
+                ` : ''}
+                ${academyPhoto3 ? `
+                <div class="rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow">
+                    <img src="${academyPhoto3}" alt="학원 사진 3" class="w-full h-64 object-cover">
+                </div>
+                ` : ''}
+            </div>
+        </div>
+        ` : ''}
+        
+        <!-- 교육 철학 -->
+        ${educationPhilosophy ? `
+        <div class="mb-20">
+            <div class="bg-gradient-to-br from-purple-50 to-blue-50 rounded-3xl p-12 shadow-lg">
+                <h2 class="text-4xl font-bold text-gray-900 mb-8 text-center">
+                    <i class="fas fa-lightbulb text-purple-600 mr-3"></i>
+                    우리의 교육 철학
+                </h2>
+                <p class="text-xl text-gray-700 leading-relaxed text-center whitespace-pre-line">${educationPhilosophy}</p>
+            </div>
+        </div>
+        ` : ''}
+        
+        <!-- 교육 프로그램 -->
+        ${educationProgramsList.length > 0 ? `
+        <div class="mb-20">
+            <h2 class="text-4xl font-bold text-gray-900 mb-12 text-center">
+                <i class="fas fa-book-open text-purple-600 mr-3"></i>
+                교육 프로그램
+            </h2>
+            <div class="grid md:grid-cols-2 gap-6">
+                ${educationProgramsList.map((program: string, i: number) => `
+                    <div class="bg-white rounded-2xl p-8 shadow-lg border-l-4 border-purple-600">
+                        <div class="flex items-start gap-4">
+                            <div class="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0">
+                                ${i + 1}
+                            </div>
+                            <p class="text-lg text-gray-800 leading-relaxed">${program}</p>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+        ` : ''}
+        
+        <!-- 커리큘럼 -->
+        ${curriculumList.length > 0 ? `
+        <div class="mb-20">
+            <h2 class="text-4xl font-bold text-gray-900 mb-12 text-center">
+                <i class="fas fa-graduation-cap text-purple-600 mr-3"></i>
+                커리큘럼
+            </h2>
+            <div class="space-y-4">
+                ${curriculumList.map((item: string, i: number) => `
+                    <div class="bg-white rounded-2xl p-6 shadow-lg flex items-center gap-6 hover:shadow-xl transition-shadow">
+                        <div class="w-16 h-16 bg-gradient-to-br from-purple-600 to-purple-800 rounded-2xl flex items-center justify-center text-white font-bold text-2xl flex-shrink-0 shadow-lg">
+                            ${i + 1}
+                        </div>
+                        <p class="text-lg text-gray-800 leading-relaxed">${item}</p>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+        ` : ''}
         
         <!-- 특별한 강점 -->
+        ${specialtiesList.length > 0 ? `
         <div class="bg-white rounded-3xl shadow-2xl p-12 mb-20">
             <h2 class="text-4xl font-bold text-gray-900 mb-12 text-center">
                 <i class="fas fa-star text-yellow-500 mr-3"></i>
                 ${academyName}의 특별한 강점
             </h2>
             <div class="grid md:grid-cols-2 gap-8">
-                ${(specialties || []).map((s: string, i: number) => `
+                ${specialtiesList.map((s: string, i: number) => `
                     <div class="group hover:transform hover:scale-105 transition-all duration-300">
                         <div class="flex items-start gap-6 p-8 bg-gradient-to-br from-purple-50 to-white rounded-2xl border-2 border-purple-100 hover:border-purple-300 hover:shadow-xl">
                             <div class="w-14 h-14 bg-gradient-to-br from-purple-600 to-purple-800 rounded-2xl flex items-center justify-center text-white font-bold text-2xl flex-shrink-0 shadow-lg group-hover:scale-110 transition-transform">
@@ -4417,84 +4496,7 @@ function generateAcademyIntroHTML(data: any): string {
                 `).join('')}
             </div>
         </div>
-        
-        <!-- 학습 시스템 -->
-        <div class="mb-20">
-            <h2 class="text-4xl font-bold text-gray-900 mb-12 text-center">
-                <i class="fas fa-cogs text-purple-600 mr-3"></i>
-                체계적인 학습 시스템
-            </h2>
-            <div class="grid md:grid-cols-3 gap-8">
-                <div class="bg-white rounded-2xl p-8 shadow-lg border-t-4 border-purple-600">
-                    <div class="text-5xl mb-6 text-center">📝</div>
-                    <h3 class="text-2xl font-bold text-gray-900 mb-4 text-center">1단계: 진단 평가</h3>
-                    <p class="text-gray-600 text-center leading-relaxed">
-                        학생의 현재 실력과 학습 스타일을 정확히 파악하여 
-                        맞춤형 학습 계획을 수립합니다.
-                    </p>
-                </div>
-                <div class="bg-white rounded-2xl p-8 shadow-lg border-t-4 border-blue-600">
-                    <div class="text-5xl mb-6 text-center">📚</div>
-                    <h3 class="text-2xl font-bold text-gray-900 mb-4 text-center">2단계: 맞춤 수업</h3>
-                    <p class="text-gray-600 text-center leading-relaxed">
-                        개인별 맞춤 커리큘럼으로 약점을 집중 보완하고 
-                        강점을 더욱 발전시킵니다.
-                    </p>
-                </div>
-                <div class="bg-white rounded-2xl p-8 shadow-lg border-t-4 border-green-600">
-                    <div class="text-5xl mb-6 text-center">📊</div>
-                    <h3 class="text-2xl font-bold text-gray-900 mb-4 text-center">3단계: 성과 관리</h3>
-                    <p class="text-gray-600 text-center leading-relaxed">
-                        정기 테스트와 학습 리포트로 
-                        지속적인 성장을 확인하고 관리합니다.
-                    </p>
-                </div>
-            </div>
-        </div>
-        
-        <!-- 학부모 후기 -->
-        <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-3xl p-12 mb-20">
-            <h2 class="text-4xl font-bold text-gray-900 mb-12 text-center">
-                <i class="fas fa-comments text-purple-600 mr-3"></i>
-                학부모님들의 생생한 후기
-            </h2>
-            <div class="grid md:grid-cols-2 gap-8">
-                <div class="bg-white rounded-2xl p-8 shadow-lg">
-                    <div class="flex items-center gap-4 mb-6">
-                        <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 text-2xl font-bold">
-                            김
-                        </div>
-                        <div>
-                            <div class="font-bold text-lg">김지현 학부모님</div>
-                            <div class="text-gray-500 text-sm">중3 학생 어머니</div>
-                        </div>
-                    </div>
-                    <div class="text-yellow-400 text-xl mb-4">★★★★★</div>
-                    <p class="text-gray-700 leading-relaxed">
-                        "아이가 공부에 흥미를 잃어 고민이었는데, ${academyName}에서 
-                        1:1 맞춤 관리를 받으면서 성적도 오르고 자신감도 생겼어요. 
-                        선생님들의 세심한 관리에 정말 감사드립니다!"
-                    </p>
-                </div>
-                <div class="bg-white rounded-2xl p-8 shadow-lg">
-                    <div class="flex items-center gap-4 mb-6">
-                        <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 text-2xl font-bold">
-                            박
-                        </div>
-                        <div>
-                            <div class="font-bold text-lg">박준영 학부모님</div>
-                            <div class="text-gray-500 text-sm">고2 학생 아버지</div>
-                        </div>
-                    </div>
-                    <div class="text-yellow-400 text-xl mb-4">★★★★★</div>
-                    <p class="text-gray-700 leading-relaxed">
-                        "입시 컨설팅까지 함께해주셔서 정말 만족스럽습니다. 
-                        체계적인 학습 관리와 정기적인 피드백으로 
-                        아이의 성장을 눈으로 확인할 수 있어요."
-                    </p>
-                </div>
-            </div>
-        </div>
+        ` : ''}
         
         <!-- CTA Section -->
         <div class="bg-gradient-to-br from-purple-600 to-purple-900 rounded-3xl shadow-2xl p-12 text-white text-center">
