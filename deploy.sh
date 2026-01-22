@@ -1,9 +1,18 @@
 #!/bin/bash
-# Cloudflare 인증 정보 로드
-if [ -f .wrangler-auth.json ]; then
-  export CLOUDFLARE_API_TOKEN=$(jq -r '.api_token' .wrangler-auth.json)
-  export CLOUDFLARE_ACCOUNT_ID=$(jq -r '.account_id // "117379ce5c9d9af026b16c9cf21b10d5"' .wrangler-auth.json)
-fi
+set -e
 
-# 배포 실행
-npx wrangler pages deploy dist --project-name=superplace-academy --branch=main
+# Read API token from auth file
+API_TOKEN=$(cat .cloudflare-auth.json | grep api_token | cut -d'"' -f4)
+ACCOUNT_ID="117379ce5c9d9af026b16c9cf21b10d5"
+PROJECT_NAME="superplace-academy"
+
+echo "Building project..."
+npm run build
+
+echo "Deploying to Cloudflare Pages..."
+export CLOUDFLARE_API_TOKEN="$API_TOKEN"
+export CLOUDFLARE_ACCOUNT_ID="$ACCOUNT_ID"
+
+npx wrangler pages deploy dist --project-name=$PROJECT_NAME --commit-dirty=true
+
+echo "Deployment complete!"

@@ -174,6 +174,178 @@ app.get('/api/health', async (c) => {
   }
 })
 
+// 컨설팅 프로그램 목록 조회 API
+app.get('/api/consulting/programs', async (c) => {
+  try {
+    if (!c.env.DB) {
+      return c.json({ success: false, error: 'DB not configured' }, 500);
+    }
+
+    const programs = await c.env.DB.prepare(
+      'SELECT * FROM consulting_programs ORDER BY created_at DESC'
+    ).all();
+
+    return c.json({ success: true, programs: programs.results });
+  } catch (err) {
+    console.error('컨설팅 프로그램 조회 오류:', err);
+    return c.json({ success: false, error: err.message }, 500);
+  }
+});
+
+// 컨설팅 프로그램 상세 조회 API
+app.get('/api/consulting/programs/:programId', async (c) => {
+  try {
+    if (!c.env.DB) {
+      return c.json({ success: false, error: 'DB not configured' }, 500);
+    }
+
+    const programId = c.req.param('programId');
+    const program = await c.env.DB.prepare(
+      'SELECT * FROM consulting_programs WHERE program_id = ?'
+    ).bind(programId).first();
+
+    if (!program) {
+      return c.json({ success: false, error: 'Program not found' }, 404);
+    }
+
+    return c.json({ success: true, program });
+  } catch (err) {
+    console.error('컨설팅 프로그램 상세 조회 오류:', err);
+    return c.json({ success: false, error: err.message }, 500);
+  }
+});
+
+// 컨설팅 수강 신청 API
+app.post('/api/consulting/apply', async (c) => {
+  try {
+    if (!c.env.DB) {
+      return c.json({ success: false, error: 'DB not configured' }, 500);
+    }
+
+    const body = await c.req.json();
+    const { program_id, user_id, academy_id, applicant_name, applicant_email, applicant_phone, academy_name, message } = body;
+
+    // 필수 필드 검증
+    if (!program_id || !user_id || !applicant_name || !applicant_email || !applicant_phone) {
+      return c.json({ success: false, error: '필수 정보를 모두 입력해주세요.' }, 400);
+    }
+
+    // 프로그램 존재 확인
+    const program = await c.env.DB.prepare(
+      'SELECT * FROM consulting_programs WHERE program_id = ?'
+    ).bind(program_id).first();
+
+    if (!program) {
+      return c.json({ success: false, error: '존재하지 않는 프로그램입니다.' }, 404);
+    }
+
+    // 중복 신청 확인
+    const existing = await c.env.DB.prepare(
+      'SELECT * FROM consulting_applications WHERE program_id = ? AND user_id = ? AND status = "pending"'
+    ).bind(program_id, user_id).first();
+
+    if (existing) {
+      return c.json({ success: false, error: '이미 신청한 프로그램입니다.' }, 400);
+    }
+
+    // 신청 등록
+    const result = await c.env.DB.prepare(`
+      INSERT INTO consulting_applications 
+      (program_id, user_id, academy_id, applicant_name, applicant_email, applicant_phone, academy_name, message)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `).bind(program_id, user_id, academy_id, applicant_name, applicant_email, applicant_phone, academy_name, message).run();
+
+    return c.json({ 
+      success: true, 
+      message: '수강 신청이 완료되었습니다. 관리자 승인 후 연락드리겠습니다.',
+      applicationId: result.meta.last_row_id 
+    });
+  } catch (err) {
+    console.error('컨설팅 신청 오류:', err);
+    return c.json({ success: false, error: err.message }, 500);
+  }
+});
+
+// 컨설팅 신청 목록 조회 (관리자용)
+app.get('/api/admin/consulting/applications', async (c) => {
+  try {
+    if (!c.env.DB) {
+      return c.json({ success: false, error: 'DB not configured' }, 500);
+    }
+
+    // 관리자 권한 확인
+    const sessionCookie = c.req.header('Cookie')?.split(';').find(c => c.trim().startsWith('session='));
+    if (!sessionCookie) {
+      return c.json({ success: false, error: 'Unauthorized' }, 401);
+    }
+
+    const applications = await c.env.DB.prepare(`
+      SELECT 
+        ca.*,
+        cp.name as program_name,
+        cp.price as program_price,
+        u.email as user_email
+      FROM consulting_applications ca
+      LEFT JOIN consulting_programs cp ON ca.program_id = cp.program_id
+      LEFT JOIN users u ON ca.user_id = u.id
+      ORDER BY ca.applied_at DESC
+    `).all();
+
+    return c.json({ success: true, applications: applications.results });
+  } catch (err) {
+    console.error('컨설팅 신청 목록 조회 오류:', err);
+    return c.json({ success: false, error: err.message }, 500);
+  }
+});
+
+// 컨설팅 신청 승인 API
+app.post('/api/admin/consulting/applications/:id/approve', async (c) => {
+  try {
+    if (!c.env.DB) {
+      return c.json({ success: false, error: 'DB not configured' }, 500);
+    }
+
+    const applicationId = c.req.param('id');
+    const body = await c.req.json();
+    const { admin_id } = body;
+
+    await c.env.DB.prepare(`
+      UPDATE consulting_applications 
+      SET status = 'approved', processed_at = CURRENT_TIMESTAMP, processed_by = ?
+      WHERE id = ?
+    `).bind(admin_id, applicationId).run();
+
+    return c.json({ success: true, message: '신청이 승인되었습니다.' });
+  } catch (err) {
+    console.error('컨설팅 신청 승인 오류:', err);
+    return c.json({ success: false, error: err.message }, 500);
+  }
+});
+
+// 컨설팅 신청 거부 API
+app.post('/api/admin/consulting/applications/:id/reject', async (c) => {
+  try {
+    if (!c.env.DB) {
+      return c.json({ success: false, error: 'DB not configured' }, 500);
+    }
+
+    const applicationId = c.req.param('id');
+    const body = await c.req.json();
+    const { admin_id, reason } = body;
+
+    await c.env.DB.prepare(`
+      UPDATE consulting_applications 
+      SET status = 'rejected', processed_at = CURRENT_TIMESTAMP, processed_by = ?, reject_reason = ?
+      WHERE id = ?
+    `).bind(admin_id, reason, applicationId).run();
+
+    return c.json({ success: true, message: '신청이 거부되었습니다.' });
+  } catch (err) {
+    console.error('컨설팅 신청 거부 오류:', err);
+    return c.json({ success: false, error: err.message }, 500);
+  }
+});
+
 // 로그인 API
 app.post('/api/login', async (c) => {
   try {
@@ -11192,6 +11364,637 @@ app.get('/privacy-policy', (c) => {
     </html>
   `)
 })
+
+// 컨설팅 프로그램 쇼핑몰 페이지
+app.get('/consulting', async (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>교육 컨설팅 프로그램 - 우리는 슈퍼플레이스다</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+        <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css" rel="stylesheet">
+        <style>
+          * { font-family: 'Pretendard Variable', Pretendard, sans-serif; }
+        </style>
+    </head>
+    <body class="bg-gray-50">
+        <!-- Header -->
+        <header class="bg-white shadow-sm border-b sticky top-0 z-50">
+            <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+                <div class="flex justify-between items-center">
+                    <a href="/" class="text-2xl font-bold text-blue-600">SUPER PLACE</a>
+                    <div class="flex gap-6 items-center">
+                        <a href="/dashboard" class="text-gray-600 hover:text-blue-600">대시보드</a>
+                        <a href="/consulting" class="text-blue-600 font-semibold">교육 프로그램</a>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <!-- Hero Section -->
+        <section class="bg-gradient-to-r from-blue-600 to-indigo-700 text-white py-16">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <h1 class="text-4xl md:text-5xl font-bold mb-4">학원 전문 마케팅 컨설팅</h1>
+                <p class="text-xl md:text-2xl text-blue-100 mb-8">실제 포스팅의 집중 컨설팅 시작하실 마케팅!</p>
+                <p class="text-lg text-blue-200">6회 컨설팅 / 121만원</p>
+            </div>
+        </section>
+
+        <!-- Products Grid -->
+        <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            <div id="productsGrid" class="grid md:grid-cols-2 gap-8">
+                <!-- 프로그램 카드가 여기 동적으로 로드됩니다 -->
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="bg-gray-900 text-white py-12 mt-16">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid md:grid-cols-3 gap-8">
+                    <div>
+                        <h3 class="text-xl font-bold mb-4">주식회사 우리는 슈퍼플레이스다</h3>
+                        <p class="text-gray-400 text-sm">사업자등록번호: 142-88-02445</p>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold mb-2">주소</h4>
+                        <p class="text-gray-400 text-sm">인천광역시 서구 청라커낼로 270, 2층</p>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold mb-2">문의</h4>
+                        <p class="text-gray-400 text-sm">이메일: wangholy1@naver.com</p>
+                        <p class="text-gray-400 text-sm">전화: 010-8739-9697</p>
+                    </div>
+                </div>
+                <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-500 text-sm">
+                    © 2024 우리는 슈퍼플레이스다. All rights reserved.
+                </div>
+            </div>
+        </footer>
+
+        <script>
+          async function loadPrograms() {
+            try {
+              const response = await fetch('/api/consulting/programs');
+              const data = await response.json();
+              
+              if (!data.success || !data.programs) {
+                console.error('프로그램 로드 실패');
+                return;
+              }
+
+              const grid = document.getElementById('productsGrid');
+              grid.innerHTML = data.programs.map(program => {
+                const features = JSON.parse(program.features || '[]');
+                return \`
+                  <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition duration-300">
+                    <div class="aspect-w-16 aspect-h-9 bg-gray-200">
+                      <img src="\${program.image_url}" alt="\${program.name}" class="w-full h-64 object-cover">
+                    </div>
+                    <div class="p-8">
+                      <h2 class="text-2xl font-bold text-gray-900 mb-3">\${program.name}</h2>
+                      <p class="text-gray-600 mb-4">\${program.description}</p>
+                      <div class="mb-6">
+                        <p class="text-sm text-gray-700 mb-3 leading-relaxed">\${program.details}</p>
+                        <div class="space-y-2">
+                          \${features.map(f => \`
+                            <div class="flex items-center text-sm text-gray-600">
+                              <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                              <span>\${f}</span>
+                            </div>
+                          \`).join('')}
+                        </div>
+                      </div>
+                      <div class="flex items-center justify-between border-t pt-6">
+                        <div>
+                          <p class="text-sm text-gray-500">총 \${program.sessions}회 컨설팅</p>
+                          <p class="text-3xl font-bold text-blue-600">\${(program.price / 10000).toFixed(0)}만원</p>
+                        </div>
+                        <a href="/consulting/\${program.program_id}" 
+                           class="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg font-semibold hover:from-blue-700 hover:to-indigo-700 transition">
+                          수강하기
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                \`;
+              }).join('');
+            } catch (err) {
+              console.error('프로그램 로드 오류:', err);
+            }
+          }
+
+          loadPrograms();
+        </script>
+    </body>
+    </html>
+  `);
+});
+
+// 컨설팅 프로그램 상세 페이지
+app.get('/consulting/:programId', async (c) => {
+  const programId = c.req.param('programId');
+  
+  return c.html(\`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>컨설팅 프로그램 상세 - 우리는 슈퍼플레이스다</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+        <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css" rel="stylesheet">
+        <style>
+          * { font-family: 'Pretendard Variable', Pretendard, sans-serif; }
+        </style>
+    </head>
+    <body class="bg-gray-50">
+        <!-- Header -->
+        <header class="bg-white shadow-sm border-b sticky top-0 z-50">
+            <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+                <div class="flex justify-between items-center">
+                    <a href="/" class="text-2xl font-bold text-blue-600">SUPER PLACE</a>
+                    <div class="flex gap-6 items-center">
+                        <a href="/consulting" class="text-gray-600 hover:text-blue-600">← 목록으로</a>
+                        <a href="/dashboard" class="text-gray-600 hover:text-blue-600">대시보드</a>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            <div id="programDetail" class="bg-white rounded-2xl shadow-lg overflow-hidden">
+                <!-- 프로그램 상세 정보가 여기에 로드됩니다 -->
+            </div>
+        </main>
+
+        <script>
+          const programId = '\${programId}';
+          
+          async function loadProgramDetail() {
+            try {
+              const response = await fetch(\`/api/consulting/programs/\${programId}\`);
+              const data = await response.json();
+              
+              if (!data.success || !data.program) {
+                alert('프로그램 정보를 불러올 수 없습니다.');
+                window.location.href = '/consulting';
+                return;
+              }
+
+              const program = data.program;
+              const features = JSON.parse(program.features || '[]');
+              
+              document.getElementById('programDetail').innerHTML = \`
+                <div class="aspect-w-16 aspect-h-9 bg-gray-200">
+                  <img src="\${program.image_url}" alt="\${program.name}" class="w-full h-96 object-cover">
+                </div>
+                <div class="p-8 md:p-12">
+                  <h1 class="text-4xl font-bold text-gray-900 mb-4">\${program.name}</h1>
+                  <p class="text-xl text-gray-600 mb-8">\${program.description}</p>
+                  
+                  <div class="bg-blue-50 rounded-xl p-6 mb-8">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">프로그램 정보</h2>
+                    <div class="grid md:grid-cols-3 gap-6">
+                      <div class="text-center">
+                        <i class="fas fa-calendar-alt text-3xl text-blue-600 mb-2"></i>
+                        <p class="text-sm text-gray-500">컨설팅 횟수</p>
+                        <p class="text-2xl font-bold text-gray-900">\${program.sessions}회</p>
+                      </div>
+                      <div class="text-center">
+                        <i class="fas fa-won-sign text-3xl text-blue-600 mb-2"></i>
+                        <p class="text-sm text-gray-500">수강료</p>
+                        <p class="text-2xl font-bold text-blue-600">\${(program.price / 10000).toFixed(0)}만원</p>
+                      </div>
+                      <div class="text-center">
+                        <i class="fas fa-user-tie text-3xl text-blue-600 mb-2"></i>
+                        <p class="text-sm text-gray-500">컨설팅 방식</p>
+                        <p class="text-2xl font-bold text-gray-900">1:1 맞춤</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="mb-8">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">커리큘럼</h2>
+                    <p class="text-gray-700 leading-relaxed mb-6">\${program.details}</p>
+                    <div class="grid md:grid-cols-2 gap-4">
+                      \${features.map((feature, index) => \`
+                        <div class="flex items-start p-4 bg-gray-50 rounded-lg">
+                          <div class="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold mr-3">
+                            \${index + 1}
+                          </div>
+                          <p class="text-gray-700">\${feature}</p>
+                        </div>
+                      \`).join('')}
+                    </div>
+                  </div>
+
+                  <div class="border-t pt-8">
+                    <button onclick="openApplicationForm()" 
+                            class="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xl font-bold rounded-xl hover:from-blue-700 hover:to-indigo-700 transition">
+                      지금 수강 신청하기
+                    </button>
+                  </div>
+                </div>
+              \`;
+            } catch (err) {
+              console.error('프로그램 상세 로드 오류:', err);
+              alert('프로그램 정보를 불러오는 중 오류가 발생했습니다.');
+            }
+          }
+
+          function openApplicationForm() {
+            window.location.href = \`/consulting/\${programId}/apply\`;
+          }
+
+          loadProgramDetail();
+        </script>
+    </body>
+    </html>
+  \`);
+});
+
+// 컨설팅 수강 신청 페이지
+app.get('/consulting/:programId/apply', async (c) => {
+  const programId = c.req.param('programId');
+  
+  return c.html(\`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>수강 신청 - 우리는 슈퍼플레이스다</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+        <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css" rel="stylesheet">
+        <style>
+          * { font-family: 'Pretendard Variable', Pretendard, sans-serif; }
+        </style>
+    </head>
+    <body class="bg-gray-50">
+        <!-- Header -->
+        <header class="bg-white shadow-sm border-b sticky top-0 z-50">
+            <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+                <div class="flex justify-between items-center">
+                    <a href="/" class="text-2xl font-bold text-blue-600">SUPER PLACE</a>
+                    <a href="/consulting/\${programId}" class="text-gray-600 hover:text-blue-600">← 뒤로가기</a>
+                </div>
+            </nav>
+        </header>
+
+        <main class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            <div class="bg-white rounded-2xl shadow-lg p-8 md:p-12">
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">수강 신청</h1>
+                <p id="programName" class="text-lg text-gray-600 mb-8"></p>
+                
+                <form id="applicationForm" class="space-y-6">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">신청자 이름 *</label>
+                        <input type="text" id="name" required 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">이메일 *</label>
+                        <input type="email" id="email" required 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">연락처 *</label>
+                        <input type="tel" id="phone" required placeholder="010-0000-0000"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">학원명</label>
+                        <input type="text" id="academy_name" 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">문의사항</label>
+                        <textarea id="message" rows="4" 
+                                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
+                    </div>
+
+                    <div class="bg-blue-50 p-4 rounded-lg">
+                        <p class="text-sm text-gray-700">
+                          <i class="fas fa-info-circle text-blue-600 mr-2"></i>
+                          신청하시면 관리자 승인 후 연락드리겠습니다.
+                        </p>
+                    </div>
+
+                    <button type="submit" 
+                            class="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-lg font-bold rounded-xl hover:from-blue-700 hover:to-indigo-700 transition">
+                      신청하기
+                    </button>
+                </form>
+            </div>
+        </main>
+
+        <script>
+          const programId = '\${programId}';
+          
+          // 프로그램 정보 로드
+          async function loadProgram() {
+            try {
+              const response = await fetch(\`/api/consulting/programs/\${programId}\`);
+              const data = await response.json();
+              
+              if (data.success && data.program) {
+                document.getElementById('programName').textContent = data.program.name;
+              }
+            } catch (err) {
+              console.error('프로그램 로드 오류:', err);
+            }
+          }
+
+          // 신청 폼 제출
+          document.getElementById('applicationForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // 사용자 정보 확인
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            if (!user.id) {
+              alert('로그인이 필요합니다.');
+              window.location.href = '/login';
+              return;
+            }
+
+            const formData = {
+              program_id: programId,
+              user_id: user.id,
+              academy_id: user.academy_id || user.id,
+              applicant_name: document.getElementById('name').value,
+              applicant_email: document.getElementById('email').value,
+              applicant_phone: document.getElementById('phone').value,
+              academy_name: document.getElementById('academy_name').value,
+              message: document.getElementById('message').value
+            };
+
+            try {
+              const response = await fetch('/api/consulting/apply', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+              });
+
+              const data = await response.json();
+              
+              if (data.success) {
+                alert(data.message);
+                window.location.href = '/consulting';
+              } else {
+                alert(data.error || '신청 중 오류가 발생했습니다.');
+              }
+            } catch (err) {
+              console.error('신청 오류:', err);
+              alert('신청 중 오류가 발생했습니다.');
+            }
+          });
+
+          loadProgram();
+        </script>
+    </body>
+    </html>
+  \`);
+});
+
+// 관리자 - 컨설팅 신청 관리 페이지
+app.get('/admin/consulting-applications', async (c) => {
+  return c.html(\`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>컨설팅 신청 관리 - 관리자</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+        <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css" rel="stylesheet">
+        <style>
+          * { font-family: 'Pretendard Variable', Pretendard, sans-serif; }
+        </style>
+    </head>
+    <body class="bg-gray-50">
+        <!-- Header -->
+        <header class="bg-white shadow-sm border-b sticky top-0 z-50">
+            <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+                <div class="flex justify-between items-center">
+                    <a href="/admin/dashboard" class="text-2xl font-bold text-blue-600">관리자</a>
+                    <div class="flex gap-6 items-center">
+                        <a href="/admin/dashboard" class="text-gray-600 hover:text-blue-600">대시보드</a>
+                        <a href="/admin/consulting-applications" class="text-blue-600 font-semibold">컨설팅 신청</a>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">컨설팅 신청 관리</h1>
+                <p class="text-gray-600">수강 신청 내역을 확인하고 승인/거부 처리할 수 있습니다.</p>
+            </div>
+
+            <!-- 필터 -->
+            <div class="bg-white rounded-lg shadow p-6 mb-6">
+                <div class="flex gap-4">
+                    <button onclick="filterApplications('all')" 
+                            class="px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200" id="filter-all">
+                      전체
+                    </button>
+                    <button onclick="filterApplications('pending')" 
+                            class="px-4 py-2 rounded-lg bg-yellow-100 text-yellow-800 hover:bg-yellow-200" id="filter-pending">
+                      대기중
+                    </button>
+                    <button onclick="filterApplications('approved')" 
+                            class="px-4 py-2 rounded-lg bg-green-100 text-green-800 hover:bg-green-200" id="filter-approved">
+                      승인됨
+                    </button>
+                    <button onclick="filterApplications('rejected')" 
+                            class="px-4 py-2 rounded-lg bg-red-100 text-red-800 hover:bg-red-200" id="filter-rejected">
+                      거부됨
+                    </button>
+                </div>
+            </div>
+
+            <!-- 신청 목록 -->
+            <div id="applicationsList" class="space-y-4">
+                <!-- 신청 목록이 여기에 로드됩니다 -->
+            </div>
+        </main>
+
+        <script>
+          let allApplications = [];
+          let currentFilter = 'all';
+
+          async function loadApplications() {
+            try {
+              const response = await fetch('/api/admin/consulting/applications');
+              const data = await response.json();
+              
+              if (data.success) {
+                allApplications = data.applications;
+                renderApplications();
+              }
+            } catch (err) {
+              console.error('신청 목록 로드 오류:', err);
+            }
+          }
+
+          function filterApplications(status) {
+            currentFilter = status;
+            renderApplications();
+          }
+
+          function renderApplications() {
+            const filtered = currentFilter === 'all' 
+              ? allApplications 
+              : allApplications.filter(app => app.status === currentFilter);
+
+            const list = document.getElementById('applicationsList');
+            
+            if (filtered.length === 0) {
+              list.innerHTML = '<div class="bg-white rounded-lg shadow p-8 text-center text-gray-500">신청 내역이 없습니다.</div>';
+              return;
+            }
+
+            list.innerHTML = filtered.map(app => {
+              const statusBadge = {
+                'pending': '<span class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-semibold">대기중</span>',
+                'approved': '<span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-semibold">승인됨</span>',
+                'rejected': '<span class="px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm font-semibold">거부됨</span>'
+              }[app.status];
+
+              return \`
+                <div class="bg-white rounded-lg shadow p-6">
+                  <div class="flex justify-between items-start mb-4">
+                    <div class="flex-1">
+                      <div class="flex items-center gap-3 mb-2">
+                        <h3 class="text-xl font-bold text-gray-900">\${app.program_name}</h3>
+                        \${statusBadge}
+                      </div>
+                      <p class="text-sm text-gray-500">\${new Date(app.applied_at).toLocaleString('ko-KR')}</p>
+                    </div>
+                    <div class="text-right">
+                      <p class="text-2xl font-bold text-blue-600">\${(app.program_price / 10000).toFixed(0)}만원</p>
+                    </div>
+                  </div>
+
+                  <div class="grid md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                      <p class="text-sm text-gray-500">신청자</p>
+                      <p class="font-semibold">\${app.applicant_name}</p>
+                    </div>
+                    <div>
+                      <p class="text-sm text-gray-500">이메일</p>
+                      <p class="font-semibold">\${app.applicant_email}</p>
+                    </div>
+                    <div>
+                      <p class="text-sm text-gray-500">연락처</p>
+                      <p class="font-semibold">\${app.applicant_phone}</p>
+                    </div>
+                    <div>
+                      <p class="text-sm text-gray-500">학원명</p>
+                      <p class="font-semibold">\${app.academy_name || '-'}</p>
+                    </div>
+                  </div>
+
+                  \${app.message ? \`
+                    <div class="mb-4 p-4 bg-gray-50 rounded-lg">
+                      <p class="text-sm text-gray-500 mb-1">문의사항</p>
+                      <p class="text-gray-700">\${app.message}</p>
+                    </div>
+                  \` : ''}
+
+                  \${app.status === 'pending' ? \`
+                    <div class="flex gap-3">
+                      <button onclick="approveApplication(\${app.id})" 
+                              class="flex-1 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
+                        <i class="fas fa-check mr-2"></i>승인
+                      </button>
+                      <button onclick="rejectApplication(\${app.id})" 
+                              class="flex-1 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
+                        <i class="fas fa-times mr-2"></i>거부
+                      </button>
+                    </div>
+                  \` : ''}
+
+                  \${app.status === 'rejected' && app.reject_reason ? \`
+                    <div class="mt-4 p-4 bg-red-50 rounded-lg">
+                      <p class="text-sm text-red-700"><strong>거부 사유:</strong> \${app.reject_reason}</p>
+                    </div>
+                  \` : ''}
+                </div>
+              \`;
+            }).join('');
+          }
+
+          async function approveApplication(id) {
+            if (!confirm('이 신청을 승인하시겠습니까?')) return;
+
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            
+            try {
+              const response = await fetch(\`/api/admin/consulting/applications/\${id}/approve\`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ admin_id: user.id })
+              });
+
+              const data = await response.json();
+              
+              if (data.success) {
+                alert(data.message);
+                loadApplications();
+              } else {
+                alert(data.error || '승인 중 오류가 발생했습니다.');
+              }
+            } catch (err) {
+              console.error('승인 오류:', err);
+              alert('승인 중 오류가 발생했습니다.');
+            }
+          }
+
+          async function rejectApplication(id) {
+            const reason = prompt('거부 사유를 입력하세요:');
+            if (!reason) return;
+
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            
+            try {
+              const response = await fetch(\`/api/admin/consulting/applications/\${id}/reject\`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ admin_id: user.id, reason })
+              });
+
+              const data = await response.json();
+              
+              if (data.success) {
+                alert(data.message);
+                loadApplications();
+              } else {
+                alert(data.error || '거부 중 오류가 발생했습니다.');
+              }
+            } catch (err) {
+              console.error('거부 오류:', err);
+              alert('거부 중 오류가 발생했습니다.');
+            }
+          }
+
+          loadApplications();
+        </script>
+    </body>
+    </html>
+  \`);
+});
 
 // 회원가입 페이지
 app.get('/signup', (c) => {

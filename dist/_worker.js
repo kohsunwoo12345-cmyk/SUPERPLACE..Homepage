@@ -28661,8 +28661,8 @@ ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.di
                         <h1 class="text-xl font-bold text-gray-900">👨‍🎓 학생 관리 시스템</h1>
                     </div>
                     <div class="flex items-center space-x-4">
-                        <a href="/" class="text-gray-600 hover:text-gray-900">
-                            <i class="fas fa-home mr-2"></i>홈
+                        <a href="/dashboard" class="text-gray-600 hover:text-gray-900">
+                            <i class="fas fa-th-large mr-2"></i>대시보드
                         </a>
                         <a href="/sms/compose" class="text-gray-600 hover:text-gray-900">
                             <i class="fas fa-sms mr-2"></i>문자
