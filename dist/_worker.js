@@ -15618,8 +15618,6 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
                     document.getElementById('submissionsContainer').innerHTML = '<p class="text-red-500">제출 내역을 불러올 수 없습니다.</p>';
                 }
             }
-                document.getElementById('formDetailModal').classList.remove('hidden');
-            }
             
             // 폼 상세 닫기
             function closeFormDetail() {

@@ -19889,8 +19889,6 @@ app.get('/tools/form-manager', (c) => {
                     document.getElementById('submissionsContainer').innerHTML = '<p class="text-red-500">제출 내역을 불러올 수 없습니다.</p>';
                 }
             }
-                document.getElementById('formDetailModal').classList.remove('hidden');
-            }
             
             // 폼 상세 닫기
             function closeFormDetail() {
