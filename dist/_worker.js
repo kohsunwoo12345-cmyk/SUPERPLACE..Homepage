@@ -16938,13 +16938,8 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
                     </div>
                     
                     <div>
-                        <label class="block text-sm font-bold text-gray-700 mb-2">연락처</label>
-                        <input type="tel" name="phone" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="010-1234-5678">
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-bold text-gray-700 mb-2">이메일</label>
-                        <input type="email" name="email" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="example@email.com">
+                        <label class="block text-sm font-bold text-gray-700 mb-2">연락처 *</label>
+                        <input type="tel" name="phone" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="010-1234-5678">
                     </div>
                     
                     <div class="flex items-start">
@@ -16973,7 +16968,6 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
                 landingPageSlug: '${t}',
                 name: formData.get('name'),
                 phone: formData.get('phone'),
-                email: formData.get('email'),
                 agreedToTerms: formData.get('agreedToTerms') ? 1 : 0
             };
             
