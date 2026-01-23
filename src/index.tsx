@@ -4187,7 +4187,7 @@ app.get('/api/landing/my-pages', async (c) => {
     const userId = c.req.query('userId')
     const folderId = c.req.query('folderId')
     
-    let query = 'SELECT id, slug, title, template_type, view_count, status, folder_id, created_at FROM landing_pages WHERE user_id = ?'
+    let query = 'SELECT id, slug, title, template_type, view_count, status, folder_id, form_id, created_at FROM landing_pages WHERE user_id = ?'
     let params = [userId]
     
     if (folderId) {
