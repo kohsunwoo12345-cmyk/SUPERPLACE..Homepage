@@ -2561,7 +2561,84 @@ app.post('/api/upload/document', async (c) => {
   }
 })
 
+// 랜딩페이지 이미지 업로드 API (FormData)
+app.post('/api/upload/landing-image', async (c) => {
+  try {
+    const formData = await c.req.formData()
+    const image = formData.get('image') as File
+    const userId = formData.get('userId') as string
+    
+    if (!image || !userId) {
+      return c.json({ success: false, error: '필수 정보가 누락되었습니다.' }, 400)
+    }
+
+    // 이미지 파일만 허용
+    if (!image.type.startsWith('image/')) {
+      return c.json({ success: false, error: '이미지 파일만 업로드 가능합니다.' }, 400)
+    }
+
+    // 파일 크기 제한 (5MB)
+    if (image.size > 5 * 1024 * 1024) {
+      return c.json({ success: false, error: '파일 크기는 5MB 이하여야 합니다.' }, 400)
+    }
+
+    // 파일을 ArrayBuffer로 변환
+    const arrayBuffer = await image.arrayBuffer()
+    const bytes = new Uint8Array(arrayBuffer)
+
+    // R2에 업로드 (경로: landing-images/{userId}/{timestamp}-{fileName})
+    const timestamp = Date.now()
+    const sanitizedFileName = image.name.replace(/[^a-zA-Z0-9.-]/g, '_')
+    const key = `landing-images/${userId}/${timestamp}-${sanitizedFileName}`
+    
+    await c.env.R2.put(key, bytes, {
+      httpMetadata: {
+        contentType: image.type
+      }
+    })
+
+    // 공개 URL 생성 (전체 도메인 포함)
+    const publicUrl = `https://superplace-academy.pages.dev/api/image/${key}`
+
+    return c.json({ 
+      success: true, 
+      url: publicUrl,
+      message: '이미지가 업로드되었습니다.'
+    })
+  } catch (err) {
+    console.error('이미지 업로드 오류:', err)
+    return c.json({ success: false, error: '이미지 업로드 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
 // R2 이미지 조회 API (Public Access)
+app.get('/api/image/:path{.+}', async (c) => {
+  try {
+    const path = c.req.param('path')
+    
+    if (!path) {
+      return c.text('File not found', 404)
+    }
+
+    const object = await c.env.R2.get(path)
+    
+    if (!object) {
+      return c.text('File not found', 404)
+    }
+
+    return new Response(object.body, {
+      headers: {
+        'Content-Type': object.httpMetadata?.contentType || 'image/jpeg',
+        'Cache-Control': 'public, max-age=31536000',
+        'Access-Control-Allow-Origin': '*'
+      }
+    })
+  } catch (err) {
+    console.error('R2 get error:', err)
+    return c.text('Error retrieving file', 500)
+  }
+})
+
 app.get('/api/document/:path{.+}', async (c) => {
   try {
     const path = c.req.param('path')
@@ -17200,6 +17277,72 @@ app.get('/tools/landing-builder', (c) => {
             }
         }
 
+        // 파일 업로드 및 미리보기 함수
+        async function uploadImagePreview(input, previewId, hiddenInputId) {
+            const file = input.files[0];
+            if (!file) return;
+            
+            // 파일 크기 체크 (5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('파일 크기는 5MB 이하여야 합니다.');
+                input.value = '';
+                return;
+            }
+            
+            // 이미지 타입 체크
+            if (!file.type.startsWith('image/')) {
+                alert('이미지 파일만 업로드 가능합니다.');
+                input.value = '';
+                return;
+            }
+            
+            const previewDiv = document.getElementById(previewId);
+            const img = previewDiv.querySelector('img');
+            const statusText = previewDiv.querySelector('p');
+            
+            try {
+                // 미리보기 표시
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    img.src = e.target.result;
+                    previewDiv.classList.remove('hidden');
+                    if (statusText) statusText.textContent = '⏳ 업로드 중...';
+                };
+                reader.readAsDataURL(file);
+                
+                // 서버에 업로드
+                const formData = new FormData();
+                formData.append('image', file);
+                formData.append('userId', user.id);
+                
+                const response = await fetch('/api/upload/landing-image', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // hidden input에 URL 저장
+                    const hiddenInput = document.getElementById(hiddenInputId);
+                    if (hiddenInput) {
+                        hiddenInput.value = result.url;
+                    }
+                    
+                    // 성공 메시지
+                    if (statusText) statusText.textContent = '✅ 업로드 완료';
+                    console.log('이미지 업로드 성공:', result.url);
+                } else {
+                    throw new Error(result.error || '업로드 실패');
+                }
+            } catch (error) {
+                console.error('이미지 업로드 오류:', error);
+                alert('이미지 업로드에 실패했습니다: ' + error.message);
+                previewDiv.classList.add('hidden');
+                input.value = '';
+            }
+        }
+
         // 로그인 체크 (선택적)
         const userData = localStorage.getItem('user');
         if (userData) {
@@ -17387,11 +17530,13 @@ app.get('/tools/landing-builder', (c) => {
                                     <input type="text" name="directorName" placeholder="예: 홍길동" class="w-full px-4 py-3 border border-gray-300 rounded-xl">
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-900 mb-2">학원장 사진 URL</label>
-                                    <input type="url" id="directorPhotoInput" name="directorPhoto" placeholder="https://example.com/director.jpg" class="w-full px-4 py-3 border border-gray-300 rounded-xl" oninput="previewImage(this.value, 'directorPhotoPreview')">
-                                    <p class="text-xs text-gray-500 mt-1">💡 구글 드라이브 링크도 사용 가능합니다 (공유 > 링크 복사)</p>
+                                    <label class="block text-sm font-medium text-gray-900 mb-2">학원장 사진</label>
+                                    <input type="file" id="directorPhotoInput" accept="image/*" class="w-full px-4 py-3 border border-gray-300 rounded-xl file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100" onchange="uploadImagePreview(this, 'directorPhotoPreview', 'directorPhotoUrl')">
+                                    <input type="hidden" id="directorPhotoUrl" name="directorPhoto">
+                                    <p class="text-xs text-gray-500 mt-1">📸 사진 파일을 선택하면 자동으로 업로드됩니다 (최대 5MB)</p>
                                     <div id="directorPhotoPreview" class="mt-3 hidden">
-                                        <img src="" alt="학원장 사진 미리보기" class="w-32 h-32 object-cover rounded-full border-4 border-purple-500 mx-auto" onerror="this.parentElement.classList.add('hidden')">
+                                        <img src="" alt="학원장 사진 미리보기" class="w-32 h-32 object-cover rounded-full border-4 border-purple-500 mx-auto">
+                                        <p class="text-center text-sm text-green-600 mt-2">✅ 업로드 완료</p>
                                     </div>
                                 </div>
                                 <div>
@@ -17404,27 +17549,33 @@ app.get('/tools/landing-builder', (c) => {
                         <!-- 학원 사진 -->
                         <div class="border-b pb-4">
                             <h3 class="text-lg font-bold text-gray-900 mb-4">📷 학원 사진 (선택사항)</h3>
-                            <p class="text-sm text-gray-500 mb-4">💡 구글 드라이브 링크를 사용하세요! (파일 > 공유 > 링크 복사)</p>
+                            <p class="text-sm text-gray-500 mb-4">📸 사진 파일을 선택하면 자동으로 업로드됩니다</p>
                             <div class="space-y-4">
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-900 mb-2">학원 사진 1 URL</label>
-                                    <input type="url" id="academyPhoto1Input" name="academyPhoto1" placeholder="https://example.com/photo1.jpg" class="w-full px-4 py-3 border border-gray-300 rounded-xl" oninput="previewImage(this.value, 'academyPhoto1Preview')">
+                                    <label class="block text-sm font-medium text-gray-900 mb-2">학원 사진 1</label>
+                                    <input type="file" id="academyPhoto1Input" accept="image/*" class="w-full px-4 py-3 border border-gray-300 rounded-xl file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" onchange="uploadImagePreview(this, 'academyPhoto1Preview', 'academyPhoto1Url')">
+                                    <input type="hidden" id="academyPhoto1Url" name="academyPhoto1">
                                     <div id="academyPhoto1Preview" class="mt-3 hidden">
-                                        <img src="" alt="학원 사진 1 미리보기" class="w-full h-48 object-cover rounded-xl border-2 border-gray-300" onerror="this.parentElement.classList.add('hidden')">
+                                        <img src="" alt="학원 사진 1 미리보기" class="w-full h-48 object-cover rounded-xl border-2 border-gray-300">
+                                        <p class="text-sm text-green-600 mt-2">✅ 업로드 완료</p>
                                     </div>
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-900 mb-2">학원 사진 2 URL</label>
-                                    <input type="url" id="academyPhoto2Input" name="academyPhoto2" placeholder="https://example.com/photo2.jpg" class="w-full px-4 py-3 border border-gray-300 rounded-xl" oninput="previewImage(this.value, 'academyPhoto2Preview')">
+                                    <label class="block text-sm font-medium text-gray-900 mb-2">학원 사진 2</label>
+                                    <input type="file" id="academyPhoto2Input" accept="image/*" class="w-full px-4 py-3 border border-gray-300 rounded-xl file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" onchange="uploadImagePreview(this, 'academyPhoto2Preview', 'academyPhoto2Url')">
+                                    <input type="hidden" id="academyPhoto2Url" name="academyPhoto2">
                                     <div id="academyPhoto2Preview" class="mt-3 hidden">
-                                        <img src="" alt="학원 사진 2 미리보기" class="w-full h-48 object-cover rounded-xl border-2 border-gray-300" onerror="this.parentElement.classList.add('hidden')">
+                                        <img src="" alt="학원 사진 2 미리보기" class="w-full h-48 object-cover rounded-xl border-2 border-gray-300">
+                                        <p class="text-sm text-green-600 mt-2">✅ 업로드 완료</p>
                                     </div>
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-900 mb-2">학원 사진 3 URL</label>
-                                    <input type="url" id="academyPhoto3Input" name="academyPhoto3" placeholder="https://example.com/photo3.jpg" class="w-full px-4 py-3 border border-gray-300 rounded-xl" oninput="previewImage(this.value, 'academyPhoto3Preview')">
+                                    <label class="block text-sm font-medium text-gray-900 mb-2">학원 사진 3</label>
+                                    <input type="file" id="academyPhoto3Input" accept="image/*" class="w-full px-4 py-3 border border-gray-300 rounded-xl file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" onchange="uploadImagePreview(this, 'academyPhoto3Preview', 'academyPhoto3Url')">
+                                    <input type="hidden" id="academyPhoto3Url" name="academyPhoto3">
                                     <div id="academyPhoto3Preview" class="mt-3 hidden">
-                                        <img src="" alt="학원 사진 3 미리보기" class="w-full h-48 object-cover rounded-xl border-2 border-gray-300" onerror="this.parentElement.classList.add('hidden')">
+                                        <img src="" alt="학원 사진 3 미리보기" class="w-full h-48 object-cover rounded-xl border-2 border-gray-300">
+                                        <p class="text-sm text-green-600 mt-2">✅ 업로드 완료</p>
                                     </div>
                                 </div>
                             </div>

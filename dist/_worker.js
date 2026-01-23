@@ -3146,7 +3146,7 @@ var Bt=Object.defineProperty;var tt=e=>{throw TypeError(e)};var Nt=(e,t,s)=>t in
         COUNT(*) as total_transactions
       FROM point_transactions
       WHERE user_id = ?
-    `).bind(t).first();return e.json({success:!0,transactions:a||[],stats:{totalCharged:(n==null?void 0:n.total_charged)||0,totalUsed:(n==null?void 0:n.total_used)||0,totalTransactions:(n==null?void 0:n.total_transactions)||0}})}catch(t){return console.error("Failed to load point transactions:",t),e.json({success:!1,error:"거래 내역을 불러오는 중 오류가 발생했습니다."},500)}});c.post("/api/upload/document",async e=>{try{const{userId:t,fileName:s,fileData:r,fileType:a}=await e.req.json();if(!t||!s||!r||!a)return e.json({success:!1,error:"필수 정보가 누락되었습니다."},400);const n=r.split(",")[1],o=atob(n),i=new Uint8Array(o.length);for(let u=0;u<o.length;u++)i[u]=o.charCodeAt(u);if(i.length>5*1024*1024)return e.json({success:!1,error:"파일 크기는 5MB 이하여야 합니다."},400);const l=Date.now(),d=`documents/${t}/${l}-${s}`;await e.env.R2.put(d,i,{httpMetadata:{contentType:a}});const p=`https://superplace-academy.pages.dev/api/document/${d}`;return e.json({success:!0,url:p,key:d})}catch(t){return console.error("R2 upload error:",t),e.json({success:!1,error:"이미지 업로드 중 오류가 발생했습니다."},500)}});c.get("/api/document/:path{.+}",async e=>{var t;try{const s=e.req.param("path");if(!s)return e.text("File not found",404);const r=await e.env.R2.get(s);return r?new Response(r.body,{headers:{"Content-Type":((t=r.httpMetadata)==null?void 0:t.contentType)||"application/octet-stream","Cache-Control":"public, max-age=31536000"}}):e.text("File not found",404)}catch(s){return console.error("R2 get error:",s),e.text("Error retrieving file",500)}});c.post("/api/sms/sender/verification-request",async e=>{try{const{userId:t,phoneNumber:s,businessName:r,businessRegistrationNumber:a,businessRegistrationImage:n,certificateImage:o,employmentCertImage:i,contractImage:l}=await e.req.json();if(console.log("Verification request received:",{userId:t,phoneNumber:s,businessName:r}),!t||!s||!r||!a||!n||!o||!i||!l)return e.json({success:!1,error:"모든 필수 서류를 업로드해주세요."},400);const d=s.replace(/-/g,"");if(!/^01[0-9]{8,9}$/.test(d))return e.json({success:!1,error:"올바른 휴대폰 번호를 입력해주세요."},400);console.log("Checking existing request...");const p=await e.env.DB.prepare(`
+    `).bind(t).first();return e.json({success:!0,transactions:a||[],stats:{totalCharged:(n==null?void 0:n.total_charged)||0,totalUsed:(n==null?void 0:n.total_used)||0,totalTransactions:(n==null?void 0:n.total_transactions)||0}})}catch(t){return console.error("Failed to load point transactions:",t),e.json({success:!1,error:"거래 내역을 불러오는 중 오류가 발생했습니다."},500)}});c.post("/api/upload/document",async e=>{try{const{userId:t,fileName:s,fileData:r,fileType:a}=await e.req.json();if(!t||!s||!r||!a)return e.json({success:!1,error:"필수 정보가 누락되었습니다."},400);const n=r.split(",")[1],o=atob(n),i=new Uint8Array(o.length);for(let u=0;u<o.length;u++)i[u]=o.charCodeAt(u);if(i.length>5*1024*1024)return e.json({success:!1,error:"파일 크기는 5MB 이하여야 합니다."},400);const l=Date.now(),d=`documents/${t}/${l}-${s}`;await e.env.R2.put(d,i,{httpMetadata:{contentType:a}});const p=`https://superplace-academy.pages.dev/api/document/${d}`;return e.json({success:!0,url:p,key:d})}catch(t){return console.error("R2 upload error:",t),e.json({success:!1,error:"이미지 업로드 중 오류가 발생했습니다."},500)}});c.post("/api/upload/landing-image",async e=>{try{const t=await e.req.formData(),s=t.get("image"),r=t.get("userId");if(!s||!r)return e.json({success:!1,error:"필수 정보가 누락되었습니다."},400);if(!s.type.startsWith("image/"))return e.json({success:!1,error:"이미지 파일만 업로드 가능합니다."},400);if(s.size>5*1024*1024)return e.json({success:!1,error:"파일 크기는 5MB 이하여야 합니다."},400);const a=await s.arrayBuffer(),n=new Uint8Array(a),o=Date.now(),i=s.name.replace(/[^a-zA-Z0-9.-]/g,"_"),l=`landing-images/${r}/${o}-${i}`;await e.env.R2.put(l,n,{httpMetadata:{contentType:s.type}});const d=`https://superplace-academy.pages.dev/api/image/${l}`;return e.json({success:!0,url:d,message:"이미지가 업로드되었습니다."})}catch(t){return console.error("이미지 업로드 오류:",t),e.json({success:!1,error:"이미지 업로드 중 오류가 발생했습니다."},500)}});c.get("/api/image/:path{.+}",async e=>{var t;try{const s=e.req.param("path");if(!s)return e.text("File not found",404);const r=await e.env.R2.get(s);return r?new Response(r.body,{headers:{"Content-Type":((t=r.httpMetadata)==null?void 0:t.contentType)||"image/jpeg","Cache-Control":"public, max-age=31536000","Access-Control-Allow-Origin":"*"}}):e.text("File not found",404)}catch(s){return console.error("R2 get error:",s),e.text("Error retrieving file",500)}});c.get("/api/document/:path{.+}",async e=>{var t;try{const s=e.req.param("path");if(!s)return e.text("File not found",404);const r=await e.env.R2.get(s);return r?new Response(r.body,{headers:{"Content-Type":((t=r.httpMetadata)==null?void 0:t.contentType)||"application/octet-stream","Cache-Control":"public, max-age=31536000"}}):e.text("File not found",404)}catch(s){return console.error("R2 get error:",s),e.text("Error retrieving file",500)}});c.post("/api/sms/sender/verification-request",async e=>{try{const{userId:t,phoneNumber:s,businessName:r,businessRegistrationNumber:a,businessRegistrationImage:n,certificateImage:o,employmentCertImage:i,contractImage:l}=await e.req.json();if(console.log("Verification request received:",{userId:t,phoneNumber:s,businessName:r}),!t||!s||!r||!a||!n||!o||!i||!l)return e.json({success:!1,error:"모든 필수 서류를 업로드해주세요."},400);const d=s.replace(/-/g,"");if(!/^01[0-9]{8,9}$/.test(d))return e.json({success:!1,error:"올바른 휴대폰 번호를 입력해주세요."},400);console.log("Checking existing request...");const p=await e.env.DB.prepare(`
       SELECT id, status FROM sender_verification_requests
       WHERE phone_number = ? AND user_id = ? AND status IN ('pending', 'approved')
       ORDER BY request_date DESC
@@ -13251,6 +13251,72 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
             }
         }
 
+        // 파일 업로드 및 미리보기 함수
+        async function uploadImagePreview(input, previewId, hiddenInputId) {
+            const file = input.files[0];
+            if (!file) return;
+            
+            // 파일 크기 체크 (5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('파일 크기는 5MB 이하여야 합니다.');
+                input.value = '';
+                return;
+            }
+            
+            // 이미지 타입 체크
+            if (!file.type.startsWith('image/')) {
+                alert('이미지 파일만 업로드 가능합니다.');
+                input.value = '';
+                return;
+            }
+            
+            const previewDiv = document.getElementById(previewId);
+            const img = previewDiv.querySelector('img');
+            const statusText = previewDiv.querySelector('p');
+            
+            try {
+                // 미리보기 표시
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    img.src = e.target.result;
+                    previewDiv.classList.remove('hidden');
+                    if (statusText) statusText.textContent = '⏳ 업로드 중...';
+                };
+                reader.readAsDataURL(file);
+                
+                // 서버에 업로드
+                const formData = new FormData();
+                formData.append('image', file);
+                formData.append('userId', user.id);
+                
+                const response = await fetch('/api/upload/landing-image', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // hidden input에 URL 저장
+                    const hiddenInput = document.getElementById(hiddenInputId);
+                    if (hiddenInput) {
+                        hiddenInput.value = result.url;
+                    }
+                    
+                    // 성공 메시지
+                    if (statusText) statusText.textContent = '✅ 업로드 완료';
+                    console.log('이미지 업로드 성공:', result.url);
+                } else {
+                    throw new Error(result.error || '업로드 실패');
+                }
+            } catch (error) {
+                console.error('이미지 업로드 오류:', error);
+                alert('이미지 업로드에 실패했습니다: ' + error.message);
+                previewDiv.classList.add('hidden');
+                input.value = '';
+            }
+        }
+
         // 로그인 체크 (선택적)
         const userData = localStorage.getItem('user');
         if (userData) {
@@ -13438,11 +13504,13 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
                                     <input type="text" name="directorName" placeholder="예: 홍길동" class="w-full px-4 py-3 border border-gray-300 rounded-xl">
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-900 mb-2">학원장 사진 URL</label>
-                                    <input type="url" id="directorPhotoInput" name="directorPhoto" placeholder="https://example.com/director.jpg" class="w-full px-4 py-3 border border-gray-300 rounded-xl" oninput="previewImage(this.value, 'directorPhotoPreview')">
-                                    <p class="text-xs text-gray-500 mt-1">💡 구글 드라이브 링크도 사용 가능합니다 (공유 > 링크 복사)</p>
+                                    <label class="block text-sm font-medium text-gray-900 mb-2">학원장 사진</label>
+                                    <input type="file" id="directorPhotoInput" accept="image/*" class="w-full px-4 py-3 border border-gray-300 rounded-xl file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100" onchange="uploadImagePreview(this, 'directorPhotoPreview', 'directorPhotoUrl')">
+                                    <input type="hidden" id="directorPhotoUrl" name="directorPhoto">
+                                    <p class="text-xs text-gray-500 mt-1">📸 사진 파일을 선택하면 자동으로 업로드됩니다 (최대 5MB)</p>
                                     <div id="directorPhotoPreview" class="mt-3 hidden">
-                                        <img src="" alt="학원장 사진 미리보기" class="w-32 h-32 object-cover rounded-full border-4 border-purple-500 mx-auto" onerror="this.parentElement.classList.add('hidden')">
+                                        <img src="" alt="학원장 사진 미리보기" class="w-32 h-32 object-cover rounded-full border-4 border-purple-500 mx-auto">
+                                        <p class="text-center text-sm text-green-600 mt-2">✅ 업로드 완료</p>
                                     </div>
                                 </div>
                                 <div>
@@ -13455,27 +13523,33 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
                         <!-- 학원 사진 -->
                         <div class="border-b pb-4">
                             <h3 class="text-lg font-bold text-gray-900 mb-4">📷 학원 사진 (선택사항)</h3>
-                            <p class="text-sm text-gray-500 mb-4">💡 구글 드라이브 링크를 사용하세요! (파일 > 공유 > 링크 복사)</p>
+                            <p class="text-sm text-gray-500 mb-4">📸 사진 파일을 선택하면 자동으로 업로드됩니다</p>
                             <div class="space-y-4">
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-900 mb-2">학원 사진 1 URL</label>
-                                    <input type="url" id="academyPhoto1Input" name="academyPhoto1" placeholder="https://example.com/photo1.jpg" class="w-full px-4 py-3 border border-gray-300 rounded-xl" oninput="previewImage(this.value, 'academyPhoto1Preview')">
+                                    <label class="block text-sm font-medium text-gray-900 mb-2">학원 사진 1</label>
+                                    <input type="file" id="academyPhoto1Input" accept="image/*" class="w-full px-4 py-3 border border-gray-300 rounded-xl file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" onchange="uploadImagePreview(this, 'academyPhoto1Preview', 'academyPhoto1Url')">
+                                    <input type="hidden" id="academyPhoto1Url" name="academyPhoto1">
                                     <div id="academyPhoto1Preview" class="mt-3 hidden">
-                                        <img src="" alt="학원 사진 1 미리보기" class="w-full h-48 object-cover rounded-xl border-2 border-gray-300" onerror="this.parentElement.classList.add('hidden')">
+                                        <img src="" alt="학원 사진 1 미리보기" class="w-full h-48 object-cover rounded-xl border-2 border-gray-300">
+                                        <p class="text-sm text-green-600 mt-2">✅ 업로드 완료</p>
                                     </div>
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-900 mb-2">학원 사진 2 URL</label>
-                                    <input type="url" id="academyPhoto2Input" name="academyPhoto2" placeholder="https://example.com/photo2.jpg" class="w-full px-4 py-3 border border-gray-300 rounded-xl" oninput="previewImage(this.value, 'academyPhoto2Preview')">
+                                    <label class="block text-sm font-medium text-gray-900 mb-2">학원 사진 2</label>
+                                    <input type="file" id="academyPhoto2Input" accept="image/*" class="w-full px-4 py-3 border border-gray-300 rounded-xl file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" onchange="uploadImagePreview(this, 'academyPhoto2Preview', 'academyPhoto2Url')">
+                                    <input type="hidden" id="academyPhoto2Url" name="academyPhoto2">
                                     <div id="academyPhoto2Preview" class="mt-3 hidden">
-                                        <img src="" alt="학원 사진 2 미리보기" class="w-full h-48 object-cover rounded-xl border-2 border-gray-300" onerror="this.parentElement.classList.add('hidden')">
+                                        <img src="" alt="학원 사진 2 미리보기" class="w-full h-48 object-cover rounded-xl border-2 border-gray-300">
+                                        <p class="text-sm text-green-600 mt-2">✅ 업로드 완료</p>
                                     </div>
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-900 mb-2">학원 사진 3 URL</label>
-                                    <input type="url" id="academyPhoto3Input" name="academyPhoto3" placeholder="https://example.com/photo3.jpg" class="w-full px-4 py-3 border border-gray-300 rounded-xl" oninput="previewImage(this.value, 'academyPhoto3Preview')">
+                                    <label class="block text-sm font-medium text-gray-900 mb-2">학원 사진 3</label>
+                                    <input type="file" id="academyPhoto3Input" accept="image/*" class="w-full px-4 py-3 border border-gray-300 rounded-xl file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" onchange="uploadImagePreview(this, 'academyPhoto3Preview', 'academyPhoto3Url')">
+                                    <input type="hidden" id="academyPhoto3Url" name="academyPhoto3">
                                     <div id="academyPhoto3Preview" class="mt-3 hidden">
-                                        <img src="" alt="학원 사진 3 미리보기" class="w-full h-48 object-cover rounded-xl border-2 border-gray-300" onerror="this.parentElement.classList.add('hidden')">
+                                        <img src="" alt="학원 사진 3 미리보기" class="w-full h-48 object-cover rounded-xl border-2 border-gray-300">
+                                        <p class="text-sm text-green-600 mt-2">✅ 업로드 완료</p>
                                     </div>
                                 </div>
                             </div>
