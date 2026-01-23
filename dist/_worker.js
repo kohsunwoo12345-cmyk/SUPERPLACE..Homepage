@@ -15324,7 +15324,7 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
             
             // 사용자 정보 가져오기
             async function loadUser() {
-                const userData = localStorage.getItem('userData');
+                const userData = localStorage.getItem('user');
                 if (userData) {
                     try {
                         user = JSON.parse(userData);

@@ -19595,7 +19595,7 @@ app.get('/tools/form-manager', (c) => {
             
             // 사용자 정보 가져오기
             async function loadUser() {
-                const userData = localStorage.getItem('userData');
+                const userData = localStorage.getItem('user');
                 if (userData) {
                     try {
                         user = JSON.parse(userData);
