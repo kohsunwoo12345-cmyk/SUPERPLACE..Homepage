@@ -4371,6 +4371,45 @@ function generateLandingPageHTML(template_type: string, data: any): string {
   return generator(data)
 }
 
+// QR 코드 섹션 생성 함수
+function generateQRCodeSection(): string {
+  return `
+    <!-- QR 코드 섹션 -->
+    <div class="container" style="margin-top: 3rem; margin-bottom: 2rem;">
+        <div style="background: white; border-radius: 20px; padding: 2.5rem; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.1);">
+            <h3 style="font-size: 1.5rem; font-weight: 700; color: #333; margin-bottom: 1rem;">
+                📱 QR코드로 공유하기
+            </h3>
+            <p style="color: #666; margin-bottom: 2rem; font-size: 1rem;">
+                QR코드를 스캔하면 이 페이지로 바로 이동합니다
+            </p>
+            <div id="qrCodeContainer" style="display: inline-block; padding: 1rem; background: white; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1);">
+                <img id="qrCodeImage" src="" alt="QR 코드" style="width: 250px; height: 250px; display: block;">
+            </div>
+            <div style="margin-top: 1.5rem;">
+                <a id="qrCodeDownload" href="" download="qrcode.png" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 0.75rem 2rem; border-radius: 50px; text-decoration: none; font-weight: 600; transition: transform 0.3s; box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);">
+                    💾 QR코드 다운로드
+                </a>
+            </div>
+            <p id="pageUrl" style="color: #999; margin-top: 1rem; font-size: 0.85rem; word-break: break-all;">
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // 현재 페이지 URL로 QR코드 생성
+        (function() {
+            const currentUrl = window.location.href;
+            const qrCodeUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' + encodeURIComponent(currentUrl);
+            
+            document.getElementById('qrCodeImage').src = qrCodeUrl;
+            document.getElementById('qrCodeDownload').href = qrCodeUrl;
+            document.getElementById('pageUrl').textContent = currentUrl;
+        })();
+    </script>
+  `
+}
+
 // 학원 소개 페이지 템플릿 (깔끔하고 현대적인 버전)
 function generateAcademyIntroHTML(data: any): string {
   const { 
@@ -4888,6 +4927,8 @@ function generateAcademyIntroHTML(data: any): string {
             </a>
         </div>
     </section>
+
+    ${generateQRCodeSection()}
 
     <!-- Footer -->
     <footer style="background: #1a202c; color: #a0aec0; padding: 3rem 1.5rem; text-align: center;">
@@ -6288,6 +6329,8 @@ function generateVacationCourseHTML(data: any): string {
                 📞 ${contact}
             </p>
         </div>
+
+        ${generateQRCodeSection()}
 
         <!-- Footer -->
         <footer>
