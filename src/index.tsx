@@ -18231,21 +18231,25 @@ app.get('/tools/landing-builder', (c) => {
             user = { id: 1, name: '게스트' };
             console.warn('⚠️ 게스트 모드로 사용합니다.');
             
-            // 게스트 모드 경고 표시
-            const container = document.querySelector('.container');
-            const warning = document.createElement('div');
-            warning.className = 'mb-6 p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded-xl';
-            warning.innerHTML = '<div class="flex items-start">' +
-                '<i class="fas fa-exclamation-triangle text-yellow-600 text-xl mr-3 mt-1"></i>' +
-                '<div class="flex-1">' +
-                '<h3 class="font-bold text-yellow-800 mb-1">게스트 모드</h3>' +
-                '<p class="text-sm text-yellow-700 mb-2">로그인하지 않아 게스트 모드로 진행됩니다. 테스트 기능만 사용 가능합니다.</p>' +
-                '<a href="/" class="inline-block px-4 py-2 bg-yellow-600 text-white rounded-lg text-sm font-bold hover:bg-yellow-700 transition">' +
-                '<i class="fas fa-sign-in-alt mr-2"></i>로그인하기' +
-                '</a>' +
-                '</div>' +
-                '</div>';
-            container.insertBefore(warning, container.firstChild);
+            // 게스트 모드 경고 표시 (DOM이 로드된 후)
+            setTimeout(() => {
+                const container = document.querySelector('.container');
+                if (container) {
+                    const warning = document.createElement('div');
+                    warning.className = 'mb-6 p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded-xl';
+                    warning.innerHTML = '<div class="flex items-start">' +
+                        '<i class="fas fa-exclamation-triangle text-yellow-600 text-xl mr-3 mt-1"></i>' +
+                        '<div class="flex-1">' +
+                        '<h3 class="font-bold text-yellow-800 mb-1">게스트 모드</h3>' +
+                        '<p class="text-sm text-yellow-700 mb-2">로그인하지 않아 게스트 모드로 진행됩니다. 테스트 기능만 사용 가능합니다.</p>' +
+                        '<a href="/" class="inline-block px-4 py-2 bg-yellow-600 text-white rounded-lg text-sm font-bold hover:bg-yellow-700 transition">' +
+                        '<i class="fas fa-sign-in-alt mr-2"></i>로그인하기' +
+                        '</a>' +
+                        '</div>' +
+                        '</div>';
+                    container.insertBefore(warning, container.firstChild);
+                }
+            }, 100);
             
             loadUserFolders();
             loadUserForms();
