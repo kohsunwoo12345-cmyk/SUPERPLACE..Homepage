@@ -4685,7 +4685,7 @@ function generateAcademyIntroHTML(data: any): string {
         <div class="container">
             <h2 class="section-title">학원장 소개</h2>
             <div class="director-card">
-                ${directorPhoto ? `<img src="${directorPhoto}" alt="${directorName}" class="director-photo" crossorigin="anonymous" onerror="this.style.display='none';">` : ''}
+                ${directorPhoto ? `<img src="${directorPhoto}" alt="${directorName}" class="director-photo" onerror="this.style.display='none';">` : ''}
                 <h3 class="director-name">${directorName} 원장</h3>
                 <div class="career-list">
                     ${directorCareerList.map((career: string) => `
@@ -4708,17 +4708,17 @@ function generateAcademyIntroHTML(data: any): string {
             <div class="gallery-grid">
                 ${academyPhoto1 ? `
                 <div class="gallery-item">
-                    <img src="${academyPhoto1}" alt="학원 사진 1" crossorigin="anonymous" onerror="this.parentElement.style.display='none';">
+                    <img src="${academyPhoto1}" alt="학원 사진 1" onerror="this.parentElement.style.display='none';">
                 </div>
                 ` : ''}
                 ${academyPhoto2 ? `
                 <div class="gallery-item">
-                    <img src="${academyPhoto2}" alt="학원 사진 2" crossorigin="anonymous" onerror="this.parentElement.style.display='none';">
+                    <img src="${academyPhoto2}" alt="학원 사진 2" onerror="this.parentElement.style.display='none';">
                 </div>
                 ` : ''}
                 ${academyPhoto3 ? `
                 <div class="gallery-item">
-                    <img src="${academyPhoto3}" alt="학원 사진 3" crossorigin="anonymous" onerror="this.parentElement.style.display='none';">
+                    <img src="${academyPhoto3}" alt="학원 사진 3" onerror="this.parentElement.style.display='none';">
                 </div>
                 ` : ''}
             </div>

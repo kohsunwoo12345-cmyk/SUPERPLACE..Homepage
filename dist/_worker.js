@@ -3776,7 +3776,7 @@ var Bt=Object.defineProperty;var tt=e=>{throw TypeError(e)};var Nt=(e,t,s)=>t in
         <div class="container">
             <h2 class="section-title">학원장 소개</h2>
             <div class="director-card">
-                ${i?`<img src="${i}" alt="${o}" class="director-photo" crossorigin="anonymous" onerror="this.style.display='none';">`:""}
+                ${i?`<img src="${i}" alt="${o}" class="director-photo" onerror="this.style.display='none';">`:""}
                 <h3 class="director-name">${o} 원장</h3>
                 <div class="career-list">
                     ${b.map(f=>`
@@ -3799,17 +3799,17 @@ var Bt=Object.defineProperty;var tt=e=>{throw TypeError(e)};var Nt=(e,t,s)=>t in
             <div class="gallery-grid">
                 ${d?`
                 <div class="gallery-item">
-                    <img src="${d}" alt="학원 사진 1" crossorigin="anonymous" onerror="this.parentElement.style.display='none';">
+                    <img src="${d}" alt="학원 사진 1" onerror="this.parentElement.style.display='none';">
                 </div>
                 `:""}
                 ${p?`
                 <div class="gallery-item">
-                    <img src="${p}" alt="학원 사진 2" crossorigin="anonymous" onerror="this.parentElement.style.display='none';">
+                    <img src="${p}" alt="학원 사진 2" onerror="this.parentElement.style.display='none';">
                 </div>
                 `:""}
                 ${u?`
                 <div class="gallery-item">
-                    <img src="${u}" alt="학원 사진 3" crossorigin="anonymous" onerror="this.parentElement.style.display='none';">
+                    <img src="${u}" alt="학원 사진 3" onerror="this.parentElement.style.display='none';">
                 </div>
                 `:""}
             </div>
