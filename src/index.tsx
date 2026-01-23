@@ -21128,13 +21128,15 @@ app.get('/landing/:slug', async (c) => {
     const ogTitle = (page.og_title as string) || (page.title as string) || '우리는 슈퍼플레이스다'
     const ogDescription = (page.og_description as string) || '꾸메땅학원의 전문적인 교육 서비스를 만나보세요'
     
-    console.log('Landing page form_id:', page.form_id)
+    console.log('[Landing Page Debug] form_id:', page.form_id, 'Type:', typeof page.form_id)
     
     // 폼 데이터 가져오기
     let formHtml = ''
     let formHeaderScript = ''
     if (page.form_id) {
+      console.log('[Landing Page Debug] Fetching form with ID:', page.form_id)
       const form = await c.env.DB.prepare('SELECT * FROM forms WHERE id = ?').bind(page.form_id).first()
+      console.log('[Landing Page Debug] Form found:', !!form)
       if (form) {
         // 헤더 스크립트 (픽셀 등)
         if (form.header_script) {
