@@ -17023,8 +17023,10 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
     <meta property="twitter:image" content="${n}">
     
     ${p}
-    `;return a=a.replace("</head>",`${u}</head>`),d&&(a=a.replace("<footer>",`${d}
-        <footer>`)),e.html(a)}catch(t){return console.error("Landing page error:",t),e.html("<h1>오류가 발생했습니다.</h1>",500)}});async function Vs(e,t,s,r,a,o){const n=new FormData;n.append("key",s),n.append("user_id",r),n.append("sender",a),n.append("receiver",e),n.append("msg",t),n.append("testmode_yn",o==="Y"?"N":"Y");try{return await(await fetch("https://apis.aligo.in/send/",{method:"POST",body:n})).json()}catch(i){return console.error("Aligo SMS error:",i),{result_code:-1,message:"SMS 발송 실패"}}}c.get("/api/sms/templates",async e=>{try{const{results:t}=await e.env.DB.prepare(`
+    `;return a=a.replace("</head>",`${u}</head>`),d&&(a.includes("<footer>")?a=a.replace(/<footer>/i,`${d}
+        <footer>`):a.includes("<!-- Footer -->")?a=a.replace(/<!-- Footer -->/i,`${d}
+        <!-- Footer -->`):a=a.replace("</body>",`${d}
+    </body>`)),e.html(a)}catch(t){return console.error("Landing page error:",t),e.html("<h1>오류가 발생했습니다.</h1>",500)}});async function Vs(e,t,s,r,a,o){const n=new FormData;n.append("key",s),n.append("user_id",r),n.append("sender",a),n.append("receiver",e),n.append("msg",t),n.append("testmode_yn",o==="Y"?"N":"Y");try{return await(await fetch("https://apis.aligo.in/send/",{method:"POST",body:n})).json()}catch(i){return console.error("Aligo SMS error:",i),{result_code:-1,message:"SMS 발송 실패"}}}c.get("/api/sms/templates",async e=>{try{const{results:t}=await e.env.DB.prepare(`
       SELECT * FROM sms_templates WHERE is_active = 1 ORDER BY category, name
     `).all();return e.json({success:!0,templates:t})}catch(t){return console.error("Get templates error:",t),e.json({success:!1,error:"템플릿 조회 실패"},500)}});c.post("/api/sms/templates",async e=>{try{const{name:t,category:s,content:r,variables:a}=await e.req.json(),o=JSON.parse(e.req.header("X-User-Data-Base64")?decodeURIComponent(escape(atob(e.req.header("X-User-Data-Base64")||""))):'{"id":1}'),n=await e.env.DB.prepare(`
       INSERT INTO sms_templates (name, category, content, variables, created_by)

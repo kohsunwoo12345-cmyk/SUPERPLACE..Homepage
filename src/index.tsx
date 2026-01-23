@@ -21369,9 +21369,17 @@ app.get('/landing/:slug', async (c) => {
     // </head> 직전에 OG 태그 추가
     htmlContent = htmlContent.replace('</head>', `${ogTags}</head>`)
     
-    // Footer 직전에 폼 추가
+    // Footer 직전에 폼 추가 (공백/들여쓰기 무시)
     if (formHtml) {
-      htmlContent = htmlContent.replace('<footer>', `${formHtml}\n        <footer>`)
+      // 여러 패턴 시도
+      if (htmlContent.includes('<footer>')) {
+        htmlContent = htmlContent.replace(/<footer>/i, `${formHtml}\n        <footer>`)
+      } else if (htmlContent.includes('<!-- Footer -->')) {
+        htmlContent = htmlContent.replace(/<!-- Footer -->/i, `${formHtml}\n        <!-- Footer -->`)
+      } else {
+        // footer를 찾을 수 없으면 </body> 앞에 삽입
+        htmlContent = htmlContent.replace('</body>', `${formHtml}\n    </body>`)
+      }
     }
     
     // HTML 반환
