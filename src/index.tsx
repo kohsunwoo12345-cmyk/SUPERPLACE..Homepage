@@ -17348,32 +17348,6 @@ app.get('/tools/landing-builder', (c) => {
             showForm(type);
         }
 
-        // 이미지 미리보기 함수
-        function previewImage(input, previewId) {
-            const previewDiv = document.getElementById(previewId);
-            const img = previewDiv.querySelector('img');
-            
-            if (input.value.trim()) {
-                img.src = input.value;
-                previewDiv.classList.remove('hidden');
-                
-                // 이미지 로드 성공 시
-                img.onload = function() {
-                    console.log('✅ 이미지 로드 성공:', input.value);
-                };
-                
-                // 이미지 로드 실패 시
-                img.onerror = function() {
-                    console.error('❌ 이미지 로드 실패:', input.value);
-                    previewDiv.classList.add('hidden');
-                    alert('이미지를 불러올 수 없습니다. URL을 확인해주세요.');
-                };
-            } else {
-                previewDiv.classList.add('hidden');
-                img.src = '';
-            }
-        }
-
         function showForm(type) {
             const forms = {
                 'academy-intro': \`
