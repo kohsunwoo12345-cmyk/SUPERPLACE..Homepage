@@ -4378,6 +4378,7 @@ function generateAcademyIntroHTML(data: any): string {
     features, 
     specialties, 
     contact,
+    placeUrl,
     directorName,
     directorPhoto,
     directorCareer,
@@ -4756,6 +4757,11 @@ function generateAcademyIntroHTML(data: any): string {
             <h1>${academyName}</h1>
             <p>${features || '최고의 교육을 제공합니다'}</p>
             <p class="location"><i class="fas fa-map-marker-alt"></i> ${location}</p>
+            ${placeUrl ? `
+            <a href="${placeUrl}" target="_blank" rel="noopener noreferrer" style="display: inline-block; margin-top: 2rem; background: white; color: #667eea; padding: 1rem 2.5rem; border-radius: 50px; font-size: 1.2rem; font-weight: 700; text-decoration: none; box-shadow: 0 10px 30px rgba(0,0,0,0.2); transition: all 0.3s ease;">
+                <i class="fas fa-map-marked-alt" style="margin-right: 0.5rem;"></i>${academyName} 바로 보기
+            </a>
+            ` : ''}
         </div>
     </div>
 
@@ -17516,6 +17522,11 @@ app.get('/tools/landing-builder', (c) => {
                                 <div>
                                     <label class="block text-sm font-medium text-gray-900 mb-2">연락처 *</label>
                                     <input type="text" name="contact" placeholder="예: 010-1234-5678" required class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-900 mb-2">플레이스 주소 (선택사항)</label>
+                                    <input type="url" name="placeUrl" placeholder="예: https://place.map.kakao.com/12345" class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                                    <p class="text-xs text-gray-500 mt-1">🗺️ 카카오맵, 네이버 플레이스 등의 주소를 입력하면 "학원명 바로 보기" 버튼이 생성됩니다</p>
                                 </div>
                             </div>
                         </div>
