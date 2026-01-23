@@ -4060,7 +4060,7 @@ app.put('/api/admin/contacts/:id/status', async (c) => {
 // 랜딩페이지 생성
 app.post('/api/landing/create', async (c) => {
   try {
-    const { title, template_type, input_data, thumbnail_url, og_title, og_description, folder_id } = await c.req.json()
+    const { title, template_type, input_data, thumbnail_url, og_title, og_description, folder_id, form_id } = await c.req.json()
     
     // 디버깅: 받은 데이터 확인
     console.log('🔍 API에서 받은 데이터:', {
@@ -4069,7 +4069,8 @@ app.post('/api/landing/create', async (c) => {
       thumbnail_url: thumbnail_url ? (thumbnail_url.length > 100 ? thumbnail_url.substring(0, 100) + '...' : thumbnail_url) : null,
       og_title,
       og_description,
-      folder_id
+      folder_id,
+      form_id
     })
     
     // Base64 인코딩된 사용자 데이터 디코딩
@@ -4145,11 +4146,11 @@ app.post('/api/landing/create', async (c) => {
     
     // DB 저장
     const query = `
-      INSERT INTO landing_pages (user_id, slug, title, template_type, content_json, html_content, qr_code_url, thumbnail_url, og_title, og_description, folder_id, status)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active')
+      INSERT INTO landing_pages (user_id, slug, title, template_type, content_json, html_content, qr_code_url, thumbnail_url, og_title, og_description, folder_id, form_id, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active')
     `
     const result = await c.env.DB.prepare(query)
-      .bind(user.id, slug, title, template_type, JSON.stringify(input_data), htmlContent, qrCodeUrl, thumbnail_url || null, og_title || null, og_description || null, folder_id || null)
+      .bind(user.id, slug, title, template_type, JSON.stringify(input_data), htmlContent, qrCodeUrl, thumbnail_url || null, og_title || null, og_description || null, folder_id || null, form_id || null)
       .run()
     
     // 🔥 사용량 증가
@@ -18010,6 +18011,20 @@ app.get('/tools/landing-builder', (c) => {
                         </div>
                     </div>
 
+                    <!-- 폼 선택 -->
+                    <div class="bg-white rounded-xl p-8 border border-gray-200 mb-6">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-3">3.5️⃣ 폼 선택 (선택사항)</h2>
+                        <p class="text-sm text-gray-600 mb-4">랜딩페이지에 추가할 신청 폼을 선택하세요</p>
+                        <div class="space-y-4">
+                            <select id="formSelect" class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                                <option value="">폼 없음</option>
+                            </select>
+                            <a href="/tools/form-manager" target="_blank" class="inline-block text-purple-600 hover:text-purple-800 text-sm font-medium">
+                                <i class="fas fa-external-link-alt mr-1"></i>폼 관리 페이지에서 새 폼 만들기
+                            </a>
+                        </div>
+                    </div>
+
                     <!-- 썸네일 업로드 -->
                     <div class="bg-white rounded-xl p-8 border border-gray-200 mb-6">
                         <h2 class="text-2xl font-bold text-gray-900 mb-3">4️⃣ 썸네일 설정 (선택사항)</h2>
@@ -18097,6 +18112,7 @@ app.get('/tools/landing-builder', (c) => {
         let selectedTemplate = '';
         let user = null;
         let userFolders = [];
+        let allForms = [];
 
         // 이미지 미리보기 함수
         function previewImage(url, previewId) {
@@ -18194,6 +18210,8 @@ app.get('/tools/landing-builder', (c) => {
             user = JSON.parse(userData);
             // 사용자 폴더 목록 로드
             loadUserFolders();
+            // 사용자 폼 목록 로드
+            loadUserForms();
             // 통계 로드
             loadStats();
         } else {
@@ -18201,6 +18219,7 @@ app.get('/tools/landing-builder', (c) => {
             user = { id: 1, name: '게스트' };
             console.warn('로그인하지 않았습니다. 게스트 모드로 사용합니다.');
             loadUserFolders();
+            loadUserForms();
             loadStats();
         }
 
@@ -18250,6 +18269,45 @@ app.get('/tools/landing-builder', (c) => {
             } catch (err) {
                 console.error('폴더 로드 실패:', err);
             }
+        }
+        
+        // 사용자 폼 목록 로드
+        async function loadUserForms() {
+            try {
+                const response = await fetch('/api/forms/list', {
+                    headers: {
+                        'X-User-Data-Base64': btoa(JSON.stringify({ id: user.id }))
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    allForms = data.forms || [];
+                    updateFormSelect();
+                }
+            } catch (error) {
+                console.error('폼 목록 로드 실패:', error);
+            }
+        }
+        
+        // 폼 선택 드롭다운 업데이트
+        function updateFormSelect() {
+            const select = document.getElementById('formSelect');
+            if (!select) return;
+            
+            // 기존 옵션 제거 (첫 번째 "폼 없음" 제외)
+            while (select.options.length > 1) {
+                select.remove(1);
+            }
+            
+            // 폼 목록 추가
+            allForms.forEach(form => {
+                const option = document.createElement('option');
+                option.value = form.id;
+                option.textContent = form.name;
+                select.appendChild(option);
+            });
         }
 
         // 폴더 선택 드롭다운 업데이트
@@ -19207,6 +19265,9 @@ app.get('/tools/landing-builder', (c) => {
             // 선택된 폴더 가져오기
             const folderId = document.getElementById('folderSelect').value || null;
             
+            // 선택된 폼 가져오기
+            const formId = document.getElementById('formSelect').value || null;
+            
             // 선택된 폴더를 localStorage에 저장 (다음번에 자동 선택)
             if (folderId) {
                 localStorage.setItem('lastSelectedFolder', folderId);
@@ -19273,7 +19334,8 @@ app.get('/tools/landing-builder', (c) => {
                         thumbnail_url: thumbnailUrl,
                         og_title: ogTitle,
                         og_description: ogDescription,
-                        folder_id: folderId
+                        folder_id: folderId,
+                        form_id: formId
                     })
                 });
 
@@ -19291,6 +19353,45 @@ app.get('/tools/landing-builder', (c) => {
                 console.error('랜딩페이지 생성 에러:', err);
                 alert('랜딩페이지 생성 중 오류가 발생했습니다. 콘솔을 확인하세요: ' + err.message);
             }
+        }
+
+        // 폼 목록 로드
+        async function loadForms() {
+            try {
+                const response = await fetch('/api/forms/list', {
+                    headers: {
+                        'X-User-Data-Base64': btoa(JSON.stringify({ id: user.id }))
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    allForms = data.forms || [];
+                    populateFormSelect();
+                }
+            } catch (error) {
+                console.error('폼 목록 로드 실패:', error);
+            }
+        }
+        
+        // 폼 선택 옵션 채우기
+        function populateFormSelect() {
+            const select = document.getElementById('formSelect');
+            if (!select) return;
+            
+            // 기존 옵션 제거 (첫 번째 제외)
+            while (select.options.length > 1) {
+                select.remove(1);
+            }
+            
+            // 폼 목록 추가
+            allForms.forEach(form => {
+                const option = document.createElement('option');
+                option.value = form.id;
+                option.textContent = form.name;
+                select.appendChild(option);
+            });
         }
 
         function copyUrl() {
