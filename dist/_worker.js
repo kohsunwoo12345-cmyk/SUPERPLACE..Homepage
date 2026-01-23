@@ -13359,6 +13359,32 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
             showForm(type);
         }
 
+        // 이미지 미리보기 함수
+        function previewImage(input, previewId) {
+            const previewDiv = document.getElementById(previewId);
+            const img = previewDiv.querySelector('img');
+            
+            if (input.value.trim()) {
+                img.src = input.value;
+                previewDiv.classList.remove('hidden');
+                
+                // 이미지 로드 성공 시
+                img.onload = function() {
+                    console.log('✅ 이미지 로드 성공:', input.value);
+                };
+                
+                // 이미지 로드 실패 시
+                img.onerror = function() {
+                    console.error('❌ 이미지 로드 실패:', input.value);
+                    previewDiv.classList.add('hidden');
+                    alert('이미지를 불러올 수 없습니다. URL을 확인해주세요.');
+                };
+            } else {
+                previewDiv.classList.add('hidden');
+                img.src = '';
+            }
+        }
+
         function showForm(type) {
             const forms = {
                 'academy-intro': \`
@@ -13397,8 +13423,11 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-900 mb-2">학원장 사진 URL</label>
-                                    <input type="url" name="directorPhoto" placeholder="https://example.com/director.jpg" class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                                    <input type="url" id="directorPhotoInput" name="directorPhoto" placeholder="https://example.com/director.jpg" class="w-full px-4 py-3 border border-gray-300 rounded-xl" oninput="previewImage(this, 'directorPhotoPreview')">
                                     <p class="text-xs text-gray-500 mt-1">💡 구글 드라이브 링크도 사용 가능합니다 (공유 > 링크 복사)</p>
+                                    <div id="directorPhotoPreview" class="mt-3 hidden">
+                                        <img src="" alt="학원장 사진 미리보기" class="w-32 h-32 object-cover rounded-full border-4 border-purple-500 mx-auto" onerror="this.parentElement.classList.add('hidden')">
+                                    </div>
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-900 mb-2">학원장 경력</label>
@@ -13414,15 +13443,24 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
                             <div class="space-y-4">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-900 mb-2">학원 사진 1 URL</label>
-                                    <input type="url" name="academyPhoto1" placeholder="https://example.com/photo1.jpg" class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                                    <input type="url" id="academyPhoto1Input" name="academyPhoto1" placeholder="https://example.com/photo1.jpg" class="w-full px-4 py-3 border border-gray-300 rounded-xl" oninput="previewImage(this, 'academyPhoto1Preview')">
+                                    <div id="academyPhoto1Preview" class="mt-3 hidden">
+                                        <img src="" alt="학원 사진 1 미리보기" class="w-full h-48 object-cover rounded-xl border-2 border-gray-300" onerror="this.parentElement.classList.add('hidden')">
+                                    </div>
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-900 mb-2">학원 사진 2 URL</label>
-                                    <input type="url" name="academyPhoto2" placeholder="https://example.com/photo2.jpg" class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                                    <input type="url" id="academyPhoto2Input" name="academyPhoto2" placeholder="https://example.com/photo2.jpg" class="w-full px-4 py-3 border border-gray-300 rounded-xl" oninput="previewImage(this, 'academyPhoto2Preview')">
+                                    <div id="academyPhoto2Preview" class="mt-3 hidden">
+                                        <img src="" alt="학원 사진 2 미리보기" class="w-full h-48 object-cover rounded-xl border-2 border-gray-300" onerror="this.parentElement.classList.add('hidden')">
+                                    </div>
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-900 mb-2">학원 사진 3 URL</label>
-                                    <input type="url" name="academyPhoto3" placeholder="https://example.com/photo3.jpg" class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                                    <input type="url" id="academyPhoto3Input" name="academyPhoto3" placeholder="https://example.com/photo3.jpg" class="w-full px-4 py-3 border border-gray-300 rounded-xl" oninput="previewImage(this, 'academyPhoto3Preview')">
+                                    <div id="academyPhoto3Preview" class="mt-3 hidden">
+                                        <img src="" alt="학원 사진 3 미리보기" class="w-full h-48 object-cover rounded-xl border-2 border-gray-300" onerror="this.parentElement.classList.add('hidden')">
+                                    </div>
                                 </div>
                             </div>
                         </div>
