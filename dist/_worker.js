@@ -3570,6 +3570,7 @@ var Bt=Object.defineProperty;var tt=e=>{throw TypeError(e)};var Nt=(e,t,s)=>t in
             margin: 0 auto 2rem;
             border: 5px solid #667eea;
             box-shadow: 0 5px 20px rgba(102, 126, 234, 0.3);
+            background: #f0f0f0;
         }
         
         .director-name {
@@ -3632,6 +3633,7 @@ var Bt=Object.defineProperty;var tt=e=>{throw TypeError(e)};var Nt=(e,t,s)=>t in
             height: 300px;
             object-fit: cover;
             display: block;
+            background: #f0f0f0;
         }
         
         /* Info Cards */
@@ -3776,7 +3778,7 @@ var Bt=Object.defineProperty;var tt=e=>{throw TypeError(e)};var Nt=(e,t,s)=>t in
         <div class="container">
             <h2 class="section-title">학원장 소개</h2>
             <div class="director-card">
-                ${i?`<img src="${i}" alt="${o}" class="director-photo" onerror="this.style.display='none';">`:""}
+                ${i?`<img src="${i}" alt="${o}" class="director-photo" onerror="console.log('Failed to load director photo:',this.src);this.style.display='none';">`:""}
                 <h3 class="director-name">${o} 원장</h3>
                 <div class="career-list">
                     ${b.map(f=>`
@@ -3799,17 +3801,17 @@ var Bt=Object.defineProperty;var tt=e=>{throw TypeError(e)};var Nt=(e,t,s)=>t in
             <div class="gallery-grid">
                 ${d?`
                 <div class="gallery-item">
-                    <img src="${d}" alt="학원 사진 1" onerror="this.parentElement.style.display='none';">
+                    <img src="${d}" alt="학원 사진 1" onload="console.log('Loaded image 1');" onerror="console.log('Failed to load image 1:',this.src);this.parentElement.style.display='none';">
                 </div>
                 `:""}
                 ${p?`
                 <div class="gallery-item">
-                    <img src="${p}" alt="학원 사진 2" onerror="this.parentElement.style.display='none';">
+                    <img src="${p}" alt="학원 사진 2" onload="console.log('Loaded image 2');" onerror="console.log('Failed to load image 2:',this.src);this.parentElement.style.display='none';">
                 </div>
                 `:""}
                 ${u?`
                 <div class="gallery-item">
-                    <img src="${u}" alt="학원 사진 3" onerror="this.parentElement.style.display='none';">
+                    <img src="${u}" alt="학원 사진 3" onload="console.log('Loaded image 3');" onerror="console.log('Failed to load image 3:',this.src);this.parentElement.style.display='none';">
                 </div>
                 `:""}
             </div>

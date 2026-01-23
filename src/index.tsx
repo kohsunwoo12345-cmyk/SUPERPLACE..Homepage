@@ -4479,6 +4479,7 @@ function generateAcademyIntroHTML(data: any): string {
             margin: 0 auto 2rem;
             border: 5px solid #667eea;
             box-shadow: 0 5px 20px rgba(102, 126, 234, 0.3);
+            background: #f0f0f0;
         }
         
         .director-name {
@@ -4541,6 +4542,7 @@ function generateAcademyIntroHTML(data: any): string {
             height: 300px;
             object-fit: cover;
             display: block;
+            background: #f0f0f0;
         }
         
         /* Info Cards */
@@ -4685,7 +4687,7 @@ function generateAcademyIntroHTML(data: any): string {
         <div class="container">
             <h2 class="section-title">학원장 소개</h2>
             <div class="director-card">
-                ${directorPhoto ? `<img src="${directorPhoto}" alt="${directorName}" class="director-photo" onerror="this.style.display='none';">` : ''}
+                ${directorPhoto ? `<img src="${directorPhoto}" alt="${directorName}" class="director-photo" onerror="console.log('Failed to load director photo:',this.src);this.style.display='none';">` : ''}
                 <h3 class="director-name">${directorName} 원장</h3>
                 <div class="career-list">
                     ${directorCareerList.map((career: string) => `
@@ -4708,17 +4710,17 @@ function generateAcademyIntroHTML(data: any): string {
             <div class="gallery-grid">
                 ${academyPhoto1 ? `
                 <div class="gallery-item">
-                    <img src="${academyPhoto1}" alt="학원 사진 1" onerror="this.parentElement.style.display='none';">
+                    <img src="${academyPhoto1}" alt="학원 사진 1" onload="console.log('Loaded image 1');" onerror="console.log('Failed to load image 1:',this.src);this.parentElement.style.display='none';">
                 </div>
                 ` : ''}
                 ${academyPhoto2 ? `
                 <div class="gallery-item">
-                    <img src="${academyPhoto2}" alt="학원 사진 2" onerror="this.parentElement.style.display='none';">
+                    <img src="${academyPhoto2}" alt="학원 사진 2" onload="console.log('Loaded image 2');" onerror="console.log('Failed to load image 2:',this.src);this.parentElement.style.display='none';">
                 </div>
                 ` : ''}
                 ${academyPhoto3 ? `
                 <div class="gallery-item">
-                    <img src="${academyPhoto3}" alt="학원 사진 3" onerror="this.parentElement.style.display='none';">
+                    <img src="${academyPhoto3}" alt="학원 사진 3" onload="console.log('Loaded image 3');" onerror="console.log('Failed to load image 3:',this.src);this.parentElement.style.display='none';">
                 </div>
                 ` : ''}
             </div>
