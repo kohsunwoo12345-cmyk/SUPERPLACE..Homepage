@@ -12182,8 +12182,12 @@ app.get('/consulting/:programId/apply', async (c) => {
                       <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-2">학원장 사진 URL *</label>
                         <input type="url" id="director_photo" required placeholder="https://example.com/photo.jpg"
-                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                               oninput="previewImage(this.value, 'director_photo_preview')">
                         <p class="text-xs text-gray-500 mt-1">이미지 URL을 입력해주세요 (예: https://...)</p>
+                        <div id="director_photo_preview" class="mt-3 hidden">
+                          <img src="" alt="미리보기" class="w-32 h-32 object-cover rounded-full border-4 border-blue-500 shadow-lg">
+                        </div>
                       </div>
                       <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-2">학원장 경력 *</label>
@@ -12200,17 +12204,29 @@ app.get('/consulting/:programId/apply', async (c) => {
                       <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-2">학원 사진 1 URL *</label>
                         <input type="url" id="academy_photo_1" required placeholder="https://example.com/photo1.jpg"
-                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                               oninput="previewImage(this.value, 'academy_photo_1_preview')">
+                        <div id="academy_photo_1_preview" class="mt-3 hidden">
+                          <img src="" alt="학원 사진 1" class="w-full h-48 object-cover rounded-lg border-2 border-blue-500 shadow-lg">
+                        </div>
                       </div>
                       <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-2">학원 사진 2 URL *</label>
                         <input type="url" id="academy_photo_2" required placeholder="https://example.com/photo2.jpg"
-                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                               oninput="previewImage(this.value, 'academy_photo_2_preview')">
+                        <div id="academy_photo_2_preview" class="mt-3 hidden">
+                          <img src="" alt="학원 사진 2" class="w-full h-48 object-cover rounded-lg border-2 border-blue-500 shadow-lg">
+                        </div>
                       </div>
                       <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-2">학원 사진 3 URL *</label>
                         <input type="url" id="academy_photo_3" required placeholder="https://example.com/photo3.jpg"
-                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                               oninput="previewImage(this.value, 'academy_photo_3_preview')">
+                        <div id="academy_photo_3_preview" class="mt-3 hidden">
+                          <img src="" alt="학원 사진 3" class="w-full h-48 object-cover rounded-lg border-2 border-blue-500 shadow-lg">
+                        </div>
                       </div>
                       <p class="text-xs text-gray-500">학원 내부, 수업 모습, 학생들 공부하는 사진 등을 넣어주세요</p>
                     </div>
@@ -17157,6 +17173,30 @@ app.get('/tools/landing-builder', (c) => {
         let selectedTemplate = '';
         let user = null;
         let userFolders = [];
+
+        // 이미지 미리보기 함수
+        function previewImage(url, previewId) {
+            const previewDiv = document.getElementById(previewId);
+            const img = previewDiv.querySelector('img');
+            
+            if (url && url.trim() !== '') {
+                img.src = url;
+                previewDiv.classList.remove('hidden');
+                
+                // 이미지 로드 실패 시 처리
+                img.onerror = function() {
+                    previewDiv.classList.add('hidden');
+                    console.error('이미지 로드 실패:', url);
+                };
+                
+                // 이미지 로드 성공 시
+                img.onload = function() {
+                    console.log('이미지 로드 성공:', url);
+                };
+            } else {
+                previewDiv.classList.add('hidden');
+            }
+        }
 
         // 로그인 체크 (선택적)
         const userData = localStorage.getItem('user');
