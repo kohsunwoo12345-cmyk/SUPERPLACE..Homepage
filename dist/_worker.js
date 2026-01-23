@@ -15501,9 +15501,12 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
             });
             
             // 폼 상세 보기
-            function showFormDetail(formId) {
+            async function showFormDetail(formId) {
                 const form = allForms.find(f => f.id === formId);
                 if (!form) return;
+                
+                // 제출 내역 불러오기
+                let submissionsHtml = '<p class="text-gray-500">제출 내역을 불러오는 중...</p>';
                 
                 const content = \`
                     <div class="space-y-6">
@@ -15513,6 +15516,13 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
                                 <p><strong>폼 이름:</strong> \${form.name}</p>
                                 <p><strong>설명:</strong> \${form.description || '없음'}</p>
                                 <p><strong>생성일:</strong> \${new Date(form.created_at).toLocaleString()}</p>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <h3 class="text-lg font-bold mb-2">📊 제출 내역</h3>
+                            <div id="submissionsContainer" class="bg-gray-50 p-4 rounded-lg">
+                                \${submissionsHtml}
                             </div>
                         </div>
                         
@@ -15568,6 +15578,46 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
                 \`;
                 
                 document.getElementById('formDetailContent').innerHTML = content;
+                document.getElementById('formDetailModal').classList.remove('hidden');
+                
+                // 제출 내역 로드
+                try {
+                    const response = await fetch(\`/api/forms/\${formId}/submissions\`);
+                    const result = await response.json();
+                    
+                    if (result.success && result.submissions) {
+                        const submissions = result.submissions;
+                        const container = document.getElementById('submissionsContainer');
+                        
+                        if (submissions.length === 0) {
+                            container.innerHTML = '<p class="text-gray-500">아직 제출된 데이터가 없습니다.</p>';
+                        } else {
+                            container.innerHTML = \`
+                                <div class="space-y-4">
+                                    <p class="font-bold text-gray-700 mb-3">총 \${submissions.length}건의 신청</p>
+                                    \${submissions.map((sub, idx) => \`
+                                        <div class="bg-white p-4 rounded-lg border border-gray-200">
+                                            <div class="flex justify-between items-start mb-2">
+                                                <span class="text-sm font-bold text-purple-600">#\${submissions.length - idx}</span>
+                                                <span class="text-xs text-gray-500">\${new Date(sub.created_at).toLocaleString()}</span>
+                                            </div>
+                                            <div class="space-y-1 text-sm">
+                                                <p><strong>이름:</strong> \${sub.name}</p>
+                                                \${sub.phone ? \`<p><strong>연락처:</strong> \${sub.phone}</p>\` : ''}
+                                                \${sub.email ? \`<p><strong>이메일:</strong> \${sub.email}</p>\` : ''}
+                                                <p class="text-xs text-gray-400 mt-2">IP: \${sub.ip_address || 'unknown'}</p>
+                                            </div>
+                                        </div>
+                                    \`).join('')}
+                                </div>
+                            \`;
+                        }
+                    }
+                } catch (error) {
+                    console.error('Failed to load submissions:', error);
+                    document.getElementById('submissionsContainer').innerHTML = '<p class="text-red-500">제출 내역을 불러올 수 없습니다.</p>';
+                }
+            }
                 document.getElementById('formDetailModal').classList.remove('hidden');
             }
             
