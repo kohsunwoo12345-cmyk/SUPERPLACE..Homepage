@@ -4293,7 +4293,7 @@ function generateLandingPageHTML(template_type: string, data: any): string {
   return generator(data)
 }
 
-// 학원 소개 페이지 템플릿 (전문적이고 상세한 버전)
+// 학원 소개 페이지 템플릿 (깔끔하고 현대적인 버전)
 function generateAcademyIntroHTML(data: any): string {
   const { 
     academyName, 
@@ -4326,162 +4326,145 @@ function generateAcademyIntroHTML(data: any): string {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>${academyName} - 학원 소개</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
     <style>
       @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
-      * { font-family: 'Pretendard Variable', sans-serif; }
-      body { background: #ffffff; }
-      .hero-gradient { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-      img { max-width: 100%; height: auto; display: block; }
-      .section-title { color: #1a202c; font-size: 2.5rem; font-weight: 700; margin-bottom: 3rem; text-align: center; }
-      .card { background: white; border-radius: 1rem; padding: 2rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+      * { font-family: 'Pretendard Variable', sans-serif; margin: 0; padding: 0; box-sizing: border-box; }
+      body { background: #f8fafc; color: #1e293b; line-height: 1.6; }
+      .container { max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; }
+      .hero { background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%); color: white; padding: 4rem 1.5rem; text-align: center; }
+      .section { padding: 3rem 1.5rem; }
+      .card { background: white; border-radius: 1rem; padding: 2rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 2rem; }
+      .section-title { font-size: 2rem; font-weight: 700; margin-bottom: 2rem; text-align: center; color: #1e293b; }
+      .grid-2 { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
+      .grid-3 { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
+      @media (min-width: 768px) {
+        .grid-2 { grid-template-columns: repeat(2, 1fr); }
+        .grid-3 { grid-template-columns: repeat(3, 1fr); }
+      }
+      .feature-item { display: flex; align-items: start; gap: 1rem; padding: 1rem; background: #f1f5f9; border-radius: 0.5rem; }
+      .feature-number { flex-shrink: 0; width: 2.5rem; height: 2.5rem; background: #3b82f6; color: white; border-radius: 0.5rem; display: flex; align-items: center; justify-content: center; font-weight: 700; }
+      img { max-width: 100%; height: auto; display: block; border-radius: 0.5rem; }
+      .director-photo { width: 10rem; height: 10rem; border-radius: 50%; object-fit: cover; margin: 0 auto 1.5rem; }
+      .gallery-img { width: 100%; height: 250px; object-fit: cover; border-radius: 0.5rem; }
+      .contact-btn { display: inline-block; background: white; color: #3b82f6; padding: 1rem 2rem; border-radius: 0.5rem; font-weight: 600; text-decoration: none; margin-top: 1rem; }
+      .contact-btn:hover { background: #f1f5f9; }
     </style>
 </head>
 <body>
     <!-- Hero Section -->
-    <div class="hero-gradient text-white py-20 px-6">
-        <div class="max-w-4xl mx-auto text-center">
-            <h1 class="text-5xl md:text-6xl font-bold mb-6">${academyName}</h1>
-            <p class="text-xl md:text-2xl mb-4 opacity-90">
-                <i class="fas fa-map-marker-alt mr-2"></i>${location}
-            </p>
-            <p class="text-lg md:text-xl opacity-85">${features || '최고의 교육을 제공합니다'}</p>
+    <div class="hero">
+        <div class="container">
+            <h1 style="font-size: 3rem; font-weight: 800; margin-bottom: 1rem;">${academyName}</h1>
+            <p style="font-size: 1.25rem; margin-bottom: 0.5rem;">📍 ${location}</p>
+            <p style="font-size: 1.125rem; opacity: 0.95;">${features || ''}</p>
         </div>
     </div>
-    
+
     <!-- Main Content -->
-    <div class="max-w-5xl mx-auto px-6 py-16">
+    <div class="container">
         
-        <!-- 학원장 소개 -->
         ${directorName ? `
-        <section class="mb-16">
+        <!-- 학원장 소개 -->
+        <div class="section">
             <h2 class="section-title">학원장 소개</h2>
-            <div class="card flex flex-col md:flex-row items-center gap-8">
-                ${directorPhoto ? `
-                <div class="flex-shrink-0">
-                    <img src="${directorPhoto}" alt="${directorName}" class="w-40 h-40 rounded-full object-cover border-4 border-indigo-200" crossorigin="anonymous" onerror="this.style.display='none';">
-                </div>
-                ` : ''}
-                <div class="flex-1 text-center md:text-left">
-                    <h3 class="text-3xl font-bold text-gray-900 mb-4">${directorName} 원장</h3>
-                    <div class="space-y-2">
-                        ${directorCareerList.map((career: string) => `
-                            <p class="text-gray-700 flex items-start gap-2">
-                                <i class="fas fa-check-circle text-indigo-600 mt-1"></i>
-                                <span>${career}</span>
-                            </p>
-                        `).join('')}
-                    </div>
+            <div class="card" style="text-align: center;">
+                ${directorPhoto ? `<img src="${directorPhoto}" alt="${directorName}" class="director-photo" onerror="this.style.display='none';">` : ''}
+                <h3 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem;">${directorName} 원장</h3>
+                <div style="text-align: left; max-width: 600px; margin: 0 auto;">
+                    ${directorCareerList.map((career: string) => `
+                        <p style="margin-bottom: 0.5rem; padding-left: 1.5rem; position: relative;">
+                            <span style="position: absolute; left: 0; color: #3b82f6;">✓</span>
+                            ${career}
+                        </p>
+                    `).join('')}
                 </div>
             </div>
-        </section>
+        </div>
         ` : ''}
-        
-        <!-- 학원 사진 갤러리 -->
+
         ${academyPhoto1 || academyPhoto2 || academyPhoto3 ? `
-        <section class="mb-16">
+        <!-- 학원 사진 -->
+        <div class="section">
             <h2 class="section-title">학원 둘러보기</h2>
-            <div class="grid md:grid-cols-3 gap-6">
-                ${academyPhoto1 ? `
-                <div class="rounded-xl overflow-hidden shadow-md">
-                    <img src="${academyPhoto1}" alt="학원 사진 1" class="w-full h-64 object-cover" crossorigin="anonymous" onerror="this.parentElement.style.display='none';">
-                </div>
-                ` : ''}
-                ${academyPhoto2 ? `
-                <div class="rounded-xl overflow-hidden shadow-md">
-                    <img src="${academyPhoto2}" alt="학원 사진 2" class="w-full h-64 object-cover" crossorigin="anonymous" onerror="this.parentElement.style.display='none';">
-                </div>
-                ` : ''}
-                ${academyPhoto3 ? `
-                <div class="rounded-xl overflow-hidden shadow-md">
-                    <img src="${academyPhoto3}" alt="학원 사진 3" class="w-full h-64 object-cover" crossorigin="anonymous" onerror="this.parentElement.style.display='none';">
-                </div>
-                ` : ''}
+            <div class="grid-3">
+                ${academyPhoto1 ? `<div><img src="${academyPhoto1}" alt="학원 사진 1" class="gallery-img" onerror="this.parentElement.style.display='none';"></div>` : ''}
+                ${academyPhoto2 ? `<div><img src="${academyPhoto2}" alt="학원 사진 2" class="gallery-img" onerror="this.parentElement.style.display='none';"></div>` : ''}
+                ${academyPhoto3 ? `<div><img src="${academyPhoto3}" alt="학원 사진 3" class="gallery-img" onerror="this.parentElement.style.display='none';"></div>` : ''}
             </div>
-        </section>
+        </div>
         ` : ''}
-        
-        <!-- 교육 철학 -->
+
         ${educationPhilosophy ? `
-        <section class="mb-16">
+        <!-- 교육 철학 -->
+        <div class="section">
             <h2 class="section-title">교육 철학</h2>
             <div class="card">
-                <p class="text-lg text-gray-700 leading-relaxed whitespace-pre-line">${educationPhilosophy}</p>
+                <p style="font-size: 1.125rem; line-height: 1.8; white-space: pre-line;">${educationPhilosophy}</p>
             </div>
-        </section>
+        </div>
         ` : ''}
-        
-        <!-- 교육 프로그램 -->
+
         ${educationProgramsList.length > 0 ? `
-        <section class="mb-16">
+        <!-- 교육 프로그램 -->
+        <div class="section">
             <h2 class="section-title">교육 프로그램</h2>
-            <div class="grid md:grid-cols-2 gap-4">
+            <div class="grid-2">
                 ${educationProgramsList.map((program: string, i: number) => `
-                    <div class="card flex items-start gap-4">
-                        <div class="flex-shrink-0 w-10 h-10 bg-indigo-600 text-white rounded-full flex items-center justify-center font-bold">
-                            ${i + 1}
-                        </div>
-                        <p class="text-gray-800 flex-1">${program}</p>
+                    <div class="feature-item">
+                        <div class="feature-number">${i + 1}</div>
+                        <p>${program}</p>
                     </div>
                 `).join('')}
             </div>
-        </section>
+        </div>
         ` : ''}
-        
-        <!-- 커리큘럼 -->
+
         ${curriculumList.length > 0 ? `
-        <section class="mb-16">
+        <!-- 커리큘럼 -->
+        <div class="section">
             <h2 class="section-title">커리큘럼</h2>
-            <div class="space-y-4">
-                ${curriculumList.map((item: string, i: number) => `
-                    <div class="card flex items-center gap-6">
-                        <div class="flex-shrink-0 w-12 h-12 bg-purple-600 text-white rounded-lg flex items-center justify-center font-bold text-xl">
-                            ${i + 1}
-                        </div>
-                        <p class="text-gray-800 text-lg">${item}</p>
-                    </div>
-                `).join('')}
-            </div>
-        </section>
+            ${curriculumList.map((item: string, i: number) => `
+                <div class="feature-item" style="margin-bottom: 1rem;">
+                    <div class="feature-number">${i + 1}</div>
+                    <p>${item}</p>
+                </div>
+            `).join('')}
+        </div>
         ` : ''}
-        
-        <!-- 특별한 강점 -->
+
         ${specialtiesList.length > 0 ? `
-        <section class="mb-16">
+        <!-- 학원 강점 -->
+        <div class="section">
             <h2 class="section-title">${academyName}의 강점</h2>
-            <div class="grid md:grid-cols-2 gap-6">
+            <div class="grid-2">
                 ${specialtiesList.map((s: string, i: number) => `
-                    <div class="card flex items-start gap-4">
-                        <div class="flex-shrink-0 w-12 h-12 bg-indigo-600 text-white rounded-lg flex items-center justify-center font-bold text-xl">
-                            ${i + 1}
-                        </div>
-                        <p class="text-gray-800 text-lg flex-1">${s}</p>
+                    <div class="feature-item">
+                        <div class="feature-number">${i + 1}</div>
+                        <p>${s}</p>
                     </div>
                 `).join('')}
             </div>
-        </section>
+        </div>
         ` : ''}
-        
-        <!-- CTA Section -->
-        <section class="hero-gradient text-white rounded-2xl p-12 text-center">
-            <h2 class="text-4xl font-bold mb-4">지금 바로 상담 받으세요</h2>
-            <p class="text-xl mb-8 opacity-90">무료 학습 진단 및 맞춤 상담을 제공합니다</p>
-            <div class="text-3xl font-bold mb-6">
-                <i class="fas fa-phone mr-3"></i>${contact || '상담 문의'}
+
+        <!-- 연락처 -->
+        <div class="section">
+            <div class="card" style="background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%); color: white; text-align: center;">
+                <h2 style="font-size: 2rem; font-weight: 700; margin-bottom: 1rem;">지금 바로 상담 받으세요</h2>
+                <p style="font-size: 1.25rem; margin-bottom: 1.5rem; opacity: 0.95;">무료 학습 진단 및 맞춤 상담 제공</p>
+                <p style="font-size: 1.75rem; font-weight: 700; margin-bottom: 1rem;">📞 ${contact}</p>
+                <a href="tel:${contact}" class="contact-btn">전화 상담하기</a>
             </div>
-            <a href="tel:${contact}" class="inline-block bg-white text-indigo-600 px-8 py-4 rounded-full text-lg font-bold hover:bg-gray-100 transition">
-                <i class="fas fa-phone mr-2"></i>전화 상담하기
-            </a>
-        </section>
+        </div>
     </div>
-    
+
     <!-- Footer -->
-    <footer class="bg-gray-900 text-gray-300 py-12 px-6 mt-16">
-        <div class="max-w-5xl mx-auto text-center">
-            <h3 class="text-2xl font-bold text-white mb-4">${academyName}</h3>
-            <p class="mb-2"><i class="fas fa-map-marker-alt mr-2"></i>${location}</p>
-            <p class="mb-8"><i class="fas fa-phone mr-2"></i>${contact || '상담 문의'}</p>
-            <p class="text-sm opacity-75">© 2026 ${academyName}. All rights reserved.</p>
+    <footer style="background: #1e293b; color: #94a3b8; padding: 2rem 1.5rem; text-align: center;">
+        <div class="container">
+            <h3 style="color: white; font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem;">${academyName}</h3>
+            <p style="margin-bottom: 0.25rem;">📍 ${location}</p>
+            <p style="margin-bottom: 1rem;">📞 ${contact}</p>
+            <p style="font-size: 0.875rem; opacity: 0.7;">© 2026 ${academyName}. All rights reserved.</p>
         </div>
     </footer>
 </body>
