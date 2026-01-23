@@ -13958,10 +13958,11 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
             }
         }
 
-        // 로그인 체크 (선택적)
+        // 로그인 체크 및 사용자 정보 표시
         const userData = localStorage.getItem('user');
         if (userData) {
             user = JSON.parse(userData);
+            console.log('✅ User logged in:', user.name);
             // 사용자 폴더 목록 로드
             loadUserFolders();
             // 사용자 폼 목록 로드
@@ -13971,7 +13972,24 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
         } else {
             // 로그인 없이도 테스트 가능하도록 기본 사용자 설정
             user = { id: 1, name: '게스트' };
-            console.warn('로그인하지 않았습니다. 게스트 모드로 사용합니다.');
+            console.warn('⚠️ 게스트 모드로 사용합니다.');
+            
+            // 게스트 모드 경고 표시
+            const container = document.querySelector('.container');
+            const warning = document.createElement('div');
+            warning.className = 'mb-6 p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded-xl';
+            warning.innerHTML = '<div class="flex items-start">' +
+                '<i class="fas fa-exclamation-triangle text-yellow-600 text-xl mr-3 mt-1"></i>' +
+                '<div class="flex-1">' +
+                '<h3 class="font-bold text-yellow-800 mb-1">게스트 모드</h3>' +
+                '<p class="text-sm text-yellow-700 mb-2">로그인하지 않아 게스트 모드로 진행됩니다. 테스트 기능만 사용 가능합니다.</p>' +
+                '<a href="/" class="inline-block px-4 py-2 bg-yellow-600 text-white rounded-lg text-sm font-bold hover:bg-yellow-700 transition">' +
+                '<i class="fas fa-sign-in-alt mr-2"></i>로그인하기' +
+                '</a>' +
+                '</div>' +
+                '</div>';
+            container.insertBefore(warning, container.firstChild);
+            
             loadUserFolders();
             loadUserForms();
             loadStats();
@@ -15304,13 +15322,44 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
             async function loadUser() {
                 const userData = localStorage.getItem('userData');
                 if (userData) {
-                    user = JSON.parse(userData);
-                    console.log('User loaded:', user);
+                    try {
+                        user = JSON.parse(userData);
+                        console.log('✅ User loaded:', user);
+                        // 상단에 사용자 정보 표시
+                        const userInfo = document.createElement('div');
+                        userInfo.className = 'mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm';
+                        userInfo.innerHTML = \`
+                            <span class="text-blue-800"><i class="fas fa-user mr-2"></i><strong>\${user.name || '사용자'}</strong>님으로 로그인됨</span>
+                        \`;
+                        document.querySelector('.container').insertBefore(userInfo, document.querySelector('.container > div'));
+                    } catch (e) {
+                        console.error('Failed to parse user data:', e);
+                        user = { id: 1, name: '게스트' };
+                        showGuestModeWarning();
+                    }
                 } else {
                     // 게스트 모드
                     user = { id: 1, name: '게스트' };
-                    alert('로그인이 필요합니다. 게스트 모드로 진행합니다.');
+                    showGuestModeWarning();
                 }
+            }
+            
+            function showGuestModeWarning() {
+                const warning = document.createElement('div');
+                warning.className = 'mb-4 p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded-lg';
+                warning.innerHTML = \`
+                    <div class="flex items-start">
+                        <i class="fas fa-exclamation-triangle text-yellow-600 text-xl mr-3 mt-1"></i>
+                        <div class="flex-1">
+                            <h3 class="font-bold text-yellow-800 mb-1">게스트 모드</h3>
+                            <p class="text-sm text-yellow-700 mb-2">로그인하지 않아 게스트 모드로 진행됩니다. 테스트 데이터만 표시됩니다.</p>
+                            <a href="/" class="inline-block px-4 py-2 bg-yellow-600 text-white rounded-lg text-sm font-bold hover:bg-yellow-700 transition">
+                                <i class="fas fa-sign-in-alt mr-2"></i>로그인하기
+                            </a>
+                        </div>
+                    </div>
+                \`;
+                document.querySelector('.container').insertBefore(warning, document.querySelector('.container > div'));
             }
             
             // 폼 목록 불러오기
