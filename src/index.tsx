@@ -1695,6 +1695,15 @@ app.get('/api/db/migrate', async (c) => {
     
     // Migration 13: Create form_submissions table
     try {
+      // 기존 테이블 삭제 (구조 변경을 위해)
+      try {
+        await c.env.DB.prepare(`DROP TABLE IF EXISTS form_submissions`).run()
+        console.log('🗑️ [Migration] Dropped old form_submissions table')
+      } catch (dropErr) {
+        console.log('ℹ️ [Migration] No old table to drop')
+      }
+      
+      // 새 테이블 생성
       await c.env.DB.prepare(`
         CREATE TABLE IF NOT EXISTS form_submissions (
           id INTEGER PRIMARY KEY AUTOINCREMENT,

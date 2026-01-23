@@ -3006,7 +3006,7 @@ var Nt=Object.defineProperty;var tt=e=>{throw TypeError(e)};var Mt=(e,t,s)=>t in
           created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
           updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )
-      `).run(),console.log("✅ [Migration] Created forms table"),t.push("✅ Created forms table")}catch(a){console.log("ℹ️ [Migration] forms table:",a.message),t.push("ℹ️ forms: "+a.message.substring(0,50))}try{await e.env.DB.prepare(`
+      `).run(),console.log("✅ [Migration] Created forms table"),t.push("✅ Created forms table")}catch(a){console.log("ℹ️ [Migration] forms table:",a.message),t.push("ℹ️ forms: "+a.message.substring(0,50))}try{try{await e.env.DB.prepare("DROP TABLE IF EXISTS form_submissions").run(),console.log("🗑️ [Migration] Dropped old form_submissions table")}catch{console.log("ℹ️ [Migration] No old table to drop")}await e.env.DB.prepare(`
         CREATE TABLE IF NOT EXISTS form_submissions (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           form_id INTEGER NOT NULL,
