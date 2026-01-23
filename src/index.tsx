@@ -1669,6 +1669,66 @@ app.get('/api/db/migrate', async (c) => {
       results.push('⚠️ usage_tracking creation: ' + e.message.substring(0, 50))
     }
     
+    // Migration 12: Create forms table
+    try {
+      await c.env.DB.prepare(`
+        CREATE TABLE IF NOT EXISTS forms (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          academy_id INTEGER NOT NULL,
+          name TEXT NOT NULL,
+          description TEXT,
+          custom_html TEXT,
+          header_script TEXT,
+          pixel_script TEXT,
+          terms_text TEXT DEFAULT '개인정보 수집 및 이용에 동의합니다.',
+          success_message TEXT DEFAULT '신청이 완료되었습니다. 감사합니다!',
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+      `).run()
+      console.log('✅ [Migration] Created forms table')
+      results.push('✅ Created forms table')
+    } catch (e) {
+      console.log('ℹ️ [Migration] forms table:', e.message)
+      results.push('ℹ️ forms: ' + e.message.substring(0, 50))
+    }
+    
+    // Migration 13: Create form_submissions table
+    try {
+      await c.env.DB.prepare(`
+        CREATE TABLE IF NOT EXISTS form_submissions (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          form_id INTEGER NOT NULL,
+          landing_page_id INTEGER,
+          name TEXT NOT NULL,
+          phone TEXT,
+          email TEXT,
+          additional_data TEXT,
+          agreed_to_terms INTEGER DEFAULT 0,
+          ip_address TEXT,
+          user_agent TEXT,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (form_id) REFERENCES forms(id),
+          FOREIGN KEY (landing_page_id) REFERENCES landing_pages(id)
+        )
+      `).run()
+      console.log('✅ [Migration] Created form_submissions table')
+      results.push('✅ Created form_submissions table')
+    } catch (e) {
+      console.log('ℹ️ [Migration] form_submissions table:', e.message)
+      results.push('ℹ️ form_submissions: ' + e.message.substring(0, 50))
+    }
+    
+    // Migration 14: Add form_id column to landing_pages
+    try {
+      await c.env.DB.prepare(`ALTER TABLE landing_pages ADD COLUMN form_id INTEGER`).run()
+      console.log('✅ [Migration] Added form_id to landing_pages')
+      results.push('✅ Added form_id to landing_pages')
+    } catch (e) {
+      console.log('ℹ️ [Migration] landing_pages.form_id:', e.message)
+      results.push('ℹ️ landing_pages.form_id: exists')
+    }
+    
     return c.json({ 
       success: true, 
       message: '데이터베이스 마이그레이션이 완료되었습니다',
@@ -6341,6 +6401,182 @@ function generateVacationCourseHTML(data: any): string {
 </html>
   `
 }
+
+// ============================================
+// 폼 관리 API
+// ============================================
+
+// 폼 생성
+app.post('/api/forms/create', async (c) => {
+  try {
+    const { userId, name, description, termsText, successMessage, customHtml, headerScript, pixelScript } = await c.req.json()
+    
+    if (!userId || !name) {
+      return c.json({ success: false, error: '필수 정보가 누락되었습니다.' }, 400)
+    }
+
+    // 사용자의 academy_id 가져오기
+    const user = await c.env.DB.prepare('SELECT academy_id FROM users WHERE id = ?').bind(userId).first()
+    const academyId = user?.academy_id || userId
+    
+    const result = await c.env.DB.prepare(`
+      INSERT INTO forms (academy_id, name, description, custom_html, header_script, pixel_script, terms_text, success_message)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `).bind(
+      academyId,
+      name,
+      description || '',
+      customHtml || '',
+      headerScript || '',
+      pixelScript || '',
+      termsText || '개인정보 수집 및 이용에 동의합니다.',
+      successMessage || '신청이 완료되었습니다. 감사합니다!'
+    ).run()
+    
+    return c.json({ 
+      success: true, 
+      message: '폼이 생성되었습니다.',
+      formId: result.meta.last_row_id
+    })
+  } catch (err) {
+    console.error('Form creation error:', err)
+    return c.json({ success: false, error: '폼 생성 실패: ' + (err as Error).message }, 500)
+  }
+})
+
+// 폼 목록 조회
+app.get('/api/forms/list', async (c) => {
+  try {
+    // X-User-Data-Base64 헤더에서 사용자 정보 가져오기
+    const userDataHeader = c.req.header('X-User-Data-Base64')
+    let userId = null
+    
+    if (userDataHeader) {
+      try {
+        const decoded = atob(userDataHeader)
+        const userData = JSON.parse(decoded)
+        userId = userData.id
+      } catch (e) {
+        console.error('Failed to decode user data:', e)
+      }
+    }
+    
+    if (!userId) {
+      userId = c.req.query('userId')
+    }
+    
+    if (!userId) {
+      return c.json({ success: false, error: 'userId가 필요합니다.' }, 400)
+    }
+
+    // 사용자의 academy_id 가져오기
+    const user = await c.env.DB.prepare('SELECT academy_id FROM users WHERE id = ?').bind(userId).first()
+    const academyId = user?.academy_id || userId
+
+    const forms = await c.env.DB.prepare(`
+      SELECT * FROM forms WHERE academy_id = ? ORDER BY created_at DESC
+    `).bind(academyId).all()
+    
+    return c.json({ success: true, forms: forms.results || [] })
+  } catch (err) {
+    console.error('Forms list error:', err)
+    return c.json({ success: false, error: '폼 목록 조회 실패' }, 500)
+  }
+})
+
+// 폼 상세 조회
+app.get('/api/forms/:id', async (c) => {
+  try {
+    const formId = c.req.param('id')
+    
+    const form = await c.env.DB.prepare(`
+      SELECT * FROM forms WHERE id = ?
+    `).bind(formId).first()
+    
+    if (!form) {
+      return c.json({ success: false, error: '폼을 찾을 수 없습니다.' }, 404)
+    }
+    
+    return c.json({ success: true, form })
+  } catch (err) {
+    console.error('Form detail error:', err)
+    return c.json({ success: false, error: '폼 조회 실패' }, 500)
+  }
+})
+
+// 폼 수정
+app.put('/api/forms/:id', async (c) => {
+  try {
+    const formId = c.req.param('id')
+    const { name, description, fields, customHtml, headerScript } = await c.req.json()
+    
+    await c.env.DB.prepare(`
+      UPDATE forms 
+      SET name = ?, description = ?, fields = ?, custom_html = ?, header_script = ?, updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `).bind(name, description || '', JSON.stringify(fields || []), customHtml || '', headerScript || '', formId).run()
+    
+    return c.json({ success: true, message: '폼이 수정되었습니다.' })
+  } catch (err) {
+    console.error('Form update error:', err)
+    return c.json({ success: false, error: '폼 수정 실패' }, 500)
+  }
+})
+
+// 폼 삭제
+app.delete('/api/forms/:id', async (c) => {
+  try {
+    const formId = c.req.param('id')
+    
+    await c.env.DB.prepare(`DELETE FROM forms WHERE id = ?`).bind(formId).run()
+    
+    return c.json({ success: true, message: '폼이 삭제되었습니다.' })
+  } catch (err) {
+    console.error('Form delete error:', err)
+    return c.json({ success: false, error: '폼 삭제 실패' }, 500)
+  }
+})
+
+// 폼 제출
+app.post('/api/forms/submit', async (c) => {
+  try {
+    const { formId, landingPageSlug, name, phone, email, data, agreedToTerms } = await c.req.json()
+    
+    if (!formId || !name || !agreedToTerms) {
+      return c.json({ success: false, error: '필수 정보가 누락되었습니다.' }, 400)
+    }
+    
+    const result = await c.env.DB.prepare(`
+      INSERT INTO form_submissions (form_id, landing_page_slug, name, phone, email, data, agreed_to_terms)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `).bind(formId, landingPageSlug || '', name, phone || '', email || '', JSON.stringify(data || {}), agreedToTerms ? 1 : 0).run()
+    
+    return c.json({ 
+      success: true, 
+      message: '신청이 완료되었습니다.',
+      submissionId: result.meta.last_row_id
+    })
+  } catch (err) {
+    console.error('Form submission error:', err)
+    return c.json({ success: false, error: '신청 실패: ' + (err as Error).message }, 500)
+  }
+})
+
+// 폼 제출 내역 조회
+app.get('/api/forms/:id/submissions', async (c) => {
+  try {
+    const formId = c.req.param('id')
+    
+    const submissions = await c.env.DB.prepare(`
+      SELECT * FROM form_submissions WHERE form_id = ? ORDER BY created_at DESC
+    `).bind(formId).all()
+    
+    return c.json({ success: true, submissions: submissions.results || [] })
+  } catch (err) {
+    console.error('Form submissions error:', err)
+    return c.json({ success: false, error: '제출 내역 조회 실패' }, 500)
+  }
+})
 
 // AI 학부모 메시지 생성 API
 app.post('/api/generate-parent-message', async (c) => {
@@ -19063,6 +19299,435 @@ app.get('/tools/landing-builder', (c) => {
             document.execCommand('copy');
             alert('링크가 복사되었습니다!');
         }
+        </script>
+    </body>
+    </html>
+  `)
+})
+
+// 폼 관리 페이지
+app.get('/tools/form-manager', (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>폼 관리 - 우리는 슈퍼플레이스다</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+        <style>
+          @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
+          * { font-family: 'Pretendard Variable', sans-serif; }
+          
+          .gradient-purple {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          }
+          
+          .form-card {
+            transition: all 0.3s ease;
+          }
+          
+          .form-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+          }
+          
+          .code-block {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            overflow-x: auto;
+            max-height: 300px;
+          }
+          
+          .tab {
+            transition: all 0.3s ease;
+          }
+          
+          .tab-active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+          }
+        </style>
+    </head>
+    <body class="bg-gray-50">
+        <div class="container mx-auto px-4 py-8 max-w-6xl">
+            <div class="mb-8 text-center">
+                <h1 class="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-pink-600">
+                    📝 폼 관리
+                </h1>
+                <p class="text-gray-600 mt-2">랜딩페이지에 추가할 폼을 생성하고 관리하세요</p>
+            </div>
+            
+            <!-- 새 폼 생성 버튼 -->
+            <div class="mb-6">
+                <button onclick="showCreateForm()" class="gradient-purple text-white px-6 py-3 rounded-xl font-bold hover:shadow-lg transition">
+                    <i class="fas fa-plus-circle mr-2"></i>새 폼 만들기
+                </button>
+            </div>
+            
+            <!-- 폼 생성 영역 (숨김) -->
+            <div id="createFormArea" class="hidden mb-8 bg-white rounded-xl shadow-lg p-6">
+                <h2 class="text-2xl font-bold mb-4">새 폼 만들기</h2>
+                
+                <form id="formCreateForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-bold mb-2">폼 이름 *</label>
+                        <input type="text" name="name" required class="w-full px-4 py-2 border rounded-lg" placeholder="예: 방학 특강 신청">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-bold mb-2">설명</label>
+                        <textarea name="description" class="w-full px-4 py-2 border rounded-lg" rows="2" placeholder="이 폼에 대한 간단한 설명"></textarea>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-bold mb-2">약관 동의 문구</label>
+                        <input type="text" name="termsText" class="w-full px-4 py-2 border rounded-lg" value="개인정보 수집 및 이용에 동의합니다.">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-bold mb-2">신청 완료 메시지</label>
+                        <input type="text" name="successMessage" class="w-full px-4 py-2 border rounded-lg" value="신청이 완료되었습니다. 감사합니다!">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-bold mb-2">커스텀 HTML (선택사항)</label>
+                        <textarea name="customHtml" class="w-full px-4 py-2 border rounded-lg font-mono text-sm" rows="3" placeholder="추가 HTML 코드를 입력하세요"></textarea>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-bold mb-2">헤더 스크립트 (픽셀 등)</label>
+                        <textarea name="headerScript" class="w-full px-4 py-2 border rounded-lg font-mono text-sm" rows="3" placeholder="<!-- Facebook Pixel, Google Analytics 등 -->"></textarea>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-bold mb-2">픽셀 스크립트 (추적 코드)</label>
+                        <textarea name="pixelScript" class="w-full px-4 py-2 border rounded-lg font-mono text-sm" rows="3" placeholder="<!-- 전환 추적 코드 -->"></textarea>
+                    </div>
+                    
+                    <div class="flex gap-2">
+                        <button type="submit" class="gradient-purple text-white px-6 py-3 rounded-xl font-bold hover:shadow-lg transition">
+                            <i class="fas fa-check mr-2"></i>폼 생성
+                        </button>
+                        <button type="button" onclick="hideCreateForm()" class="bg-gray-300 text-gray-700 px-6 py-3 rounded-xl font-bold hover:bg-gray-400 transition">
+                            취소
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- 폼 목록 -->
+            <div id="formsList" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="text-center py-12 text-gray-500">
+                    <i class="fas fa-spinner fa-spin text-4xl mb-4"></i>
+                    <p>폼 목록을 불러오는 중...</p>
+                </div>
+            </div>
+            
+            <!-- 폼 상세 모달 -->
+            <div id="formDetailModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+                <div class="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                    <div class="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">
+                        <h2 class="text-2xl font-bold">폼 상세 정보</h2>
+                        <button onclick="closeFormDetail()" class="text-gray-500 hover:text-gray-700">
+                            <i class="fas fa-times text-2xl"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="p-6" id="formDetailContent">
+                        <!-- 동적으로 채워짐 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            let user = null;
+            let allForms = [];
+            
+            // 사용자 정보 가져오기
+            async function loadUser() {
+                const userData = localStorage.getItem('userData');
+                if (userData) {
+                    user = JSON.parse(userData);
+                    console.log('User loaded:', user);
+                } else {
+                    // 게스트 모드
+                    user = { id: 1, name: '게스트' };
+                    alert('로그인이 필요합니다. 게스트 모드로 진행합니다.');
+                }
+            }
+            
+            // 폼 목록 불러오기
+            async function loadForms() {
+                try {
+                    const response = await fetch('/api/forms/list', {
+                        headers: {
+                            'X-User-Data-Base64': btoa(JSON.stringify({ id: user.id }))
+                        }
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        allForms = data.forms || [];
+                        renderForms();
+                    } else {
+                        document.getElementById('formsList').innerHTML = \`
+                            <div class="col-span-full text-center py-12 text-gray-500">
+                                <i class="fas fa-exclamation-circle text-4xl mb-4"></i>
+                                <p>\${data.error || '폼을 불러올 수 없습니다.'}</p>
+                            </div>
+                        \`;
+                    }
+                } catch (error) {
+                    console.error('Load forms error:', error);
+                    document.getElementById('formsList').innerHTML = \`
+                        <div class="col-span-full text-center py-12 text-red-500">
+                            <i class="fas fa-exclamation-triangle text-4xl mb-4"></i>
+                            <p>폼 목록을 불러오는 중 오류가 발생했습니다.</p>
+                        </div>
+                    \`;
+                }
+            }
+            
+            // 폼 목록 렌더링
+            function renderForms() {
+                const container = document.getElementById('formsList');
+                
+                if (allForms.length === 0) {
+                    container.innerHTML = \`
+                        <div class="col-span-full text-center py-12 text-gray-500">
+                            <i class="fas fa-inbox text-4xl mb-4"></i>
+                            <p>생성된 폼이 없습니다.</p>
+                            <button onclick="showCreateForm()" class="mt-4 gradient-purple text-white px-6 py-2 rounded-xl font-bold">
+                                첫 폼 만들기
+                            </button>
+                        </div>
+                    \`;
+                    return;
+                }
+                
+                container.innerHTML = allForms.map(form => \`
+                    <div class="form-card bg-white rounded-xl shadow-lg p-6 cursor-pointer" onclick="showFormDetail(\${form.id})">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="flex-1">
+                                <h3 class="text-xl font-bold mb-2">\${form.name}</h3>
+                                <p class="text-gray-600 text-sm">\${form.description || '설명 없음'}</p>
+                            </div>
+                            <div class="text-right">
+                                <span class="inline-block px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-bold">
+                                    ID: \${form.id}
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center gap-4 text-sm text-gray-500">
+                            <span><i class="far fa-calendar-alt mr-1"></i>\${new Date(form.created_at).toLocaleDateString()}</span>
+                            <span><i class="fas fa-file-code mr-1"></i>\${form.custom_html ? 'HTML 포함' : 'HTML 없음'}</span>
+                            <span><i class="fas fa-code mr-1"></i>\${form.header_script || form.pixel_script ? '픽셀 포함' : '픽셀 없음'}</span>
+                        </div>
+                        
+                        <div class="mt-4 flex gap-2">
+                            <button onclick="event.stopPropagation(); viewFormCode(\${form.id})" class="flex-1 bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-blue-600 transition">
+                                <i class="fas fa-code mr-2"></i>코드 보기
+                            </button>
+                            <button onclick="event.stopPropagation(); copyFormEmbed(\${form.id})" class="flex-1 bg-green-500 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-green-600 transition">
+                                <i class="fas fa-copy mr-2"></i>임베드 복사
+                            </button>
+                        </div>
+                    </div>
+                \`).join('');
+            }
+            
+            // 폼 생성 영역 표시
+            function showCreateForm() {
+                document.getElementById('createFormArea').classList.remove('hidden');
+                document.getElementById('createFormArea').scrollIntoView({ behavior: 'smooth' });
+            }
+            
+            // 폼 생성 영역 숨김
+            function hideCreateForm() {
+                document.getElementById('createFormArea').classList.add('hidden');
+                document.getElementById('formCreateForm').reset();
+            }
+            
+            // 폼 생성
+            document.getElementById('formCreateForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const formData = new FormData(e.target);
+                const data = {
+                    userId: user.id,
+                    name: formData.get('name'),
+                    description: formData.get('description'),
+                    termsText: formData.get('termsText'),
+                    successMessage: formData.get('successMessage'),
+                    customHtml: formData.get('customHtml'),
+                    headerScript: formData.get('headerScript'),
+                    pixelScript: formData.get('pixelScript')
+                };
+                
+                try {
+                    const response = await fetch('/api/forms/create', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(data)
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        alert('✅ 폼이 생성되었습니다!');
+                        hideCreateForm();
+                        await loadForms();
+                    } else {
+                        alert('❌ 폼 생성 실패: ' + (result.error || '알 수 없는 오류'));
+                    }
+                } catch (error) {
+                    console.error('Create form error:', error);
+                    alert('❌ 폼 생성 중 오류가 발생했습니다.');
+                }
+            });
+            
+            // 폼 상세 보기
+            function showFormDetail(formId) {
+                const form = allForms.find(f => f.id === formId);
+                if (!form) return;
+                
+                const content = \`
+                    <div class="space-y-6">
+                        <div>
+                            <h3 class="text-lg font-bold mb-2">기본 정보</h3>
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <p><strong>폼 이름:</strong> \${form.name}</p>
+                                <p><strong>설명:</strong> \${form.description || '없음'}</p>
+                                <p><strong>생성일:</strong> \${new Date(form.created_at).toLocaleString()}</p>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <h3 class="text-lg font-bold mb-2">약관 문구</h3>
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <p>\${form.terms_text || '개인정보 수집 및 이용에 동의합니다.'}</p>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <h3 class="text-lg font-bold mb-2">완료 메시지</h3>
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <p>\${form.success_message || '신청이 완료되었습니다. 감사합니다!'}</p>
+                            </div>
+                        </div>
+                        
+                        \${form.custom_html ? \`
+                        <div>
+                            <h3 class="text-lg font-bold mb-2">커스텀 HTML</h3>
+                            <pre class="code-block">\${escapeHtml(form.custom_html)}</pre>
+                        </div>
+                        \` : ''}
+                        
+                        \${form.header_script ? \`
+                        <div>
+                            <h3 class="text-lg font-bold mb-2">헤더 스크립트</h3>
+                            <pre class="code-block">\${escapeHtml(form.header_script)}</pre>
+                        </div>
+                        \` : ''}
+                        
+                        \${form.pixel_script ? \`
+                        <div>
+                            <h3 class="text-lg font-bold mb-2">픽셀 스크립트</h3>
+                            <pre class="code-block">\${escapeHtml(form.pixel_script)}</pre>
+                        </div>
+                        \` : ''}
+                        
+                        <div>
+                            <h3 class="text-lg font-bold mb-2">임베드 코드</h3>
+                            <button onclick="copyFormEmbed(\${form.id})" class="mb-2 bg-green-500 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-green-600 transition">
+                                <i class="fas fa-copy mr-2"></i>복사하기
+                            </button>
+                            <pre class="code-block" id="embedCode\${form.id}"><iframe src="https://superplace-academy.pages.dev/forms/embed/\${form.id}" width="100%" height="600" frameborder="0"></iframe></pre>
+                        </div>
+                        
+                        <div class="flex gap-2">
+                            <button onclick="deleteForm(\${form.id})" class="bg-red-500 text-white px-6 py-3 rounded-xl font-bold hover:bg-red-600 transition">
+                                <i class="fas fa-trash-alt mr-2"></i>폼 삭제
+                            </button>
+                        </div>
+                    </div>
+                \`;
+                
+                document.getElementById('formDetailContent').innerHTML = content;
+                document.getElementById('formDetailModal').classList.remove('hidden');
+            }
+            
+            // 폼 상세 닫기
+            function closeFormDetail() {
+                document.getElementById('formDetailModal').classList.add('hidden');
+            }
+            
+            // HTML 이스케이프
+            function escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+            
+            // 폼 코드 보기
+            function viewFormCode(formId) {
+                showFormDetail(formId);
+            }
+            
+            // 임베드 코드 복사
+            function copyFormEmbed(formId) {
+                const embedCode = \`<iframe src="https://superplace-academy.pages.dev/forms/embed/\${formId}" width="100%" height="600" frameborder="0"></iframe>\`;
+                
+                navigator.clipboard.writeText(embedCode).then(() => {
+                    alert('✅ 임베드 코드가 복사되었습니다!');
+                }).catch(() => {
+                    alert('❌ 복사에 실패했습니다. 수동으로 복사해주세요.');
+                });
+            }
+            
+            // 폼 삭제
+            async function deleteForm(formId) {
+                if (!confirm('정말로 이 폼을 삭제하시겠습니까?')) return;
+                
+                try {
+                    const response = await fetch(\`/api/forms/\${formId}\`, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-User-Data-Base64': btoa(JSON.stringify({ id: user.id }))
+                        }
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        alert('✅ 폼이 삭제되었습니다.');
+                        closeFormDetail();
+                        await loadForms();
+                    } else {
+                        alert('❌ 폼 삭제 실패: ' + (result.error || '알 수 없는 오류'));
+                    }
+                } catch (error) {
+                    console.error('Delete form error:', error);
+                    alert('❌ 폼 삭제 중 오류가 발생했습니다.');
+                }
+            }
+            
+            // 초기화
+            (async () => {
+                await loadUser();
+                await loadForms();
+            })();
         </script>
     </body>
     </html>
