@@ -1,4 +1,4 @@
-var Bt=Object.defineProperty;var tt=e=>{throw TypeError(e)};var Nt=(e,t,s)=>t in e?Bt(e,t,{enumerable:!0,configurable:!0,writable:!0,value:s}):e[t]=s;var I=(e,t,s)=>Nt(e,typeof t!="symbol"?t+"":t,s),ze=(e,t,s)=>t.has(e)||tt("Cannot "+s);var h=(e,t,s)=>(ze(e,t,"read from private field"),s?s.call(e):t.get(e)),S=(e,t,s)=>t.has(e)?tt("Cannot add the same private member more than once"):t instanceof WeakSet?t.add(e):t.set(e,s),T=(e,t,s,r)=>(ze(e,t,"write to private field"),r?r.call(e,s):t.set(e,s),s),C=(e,t,s)=>(ze(e,t,"access private method"),s);var st=(e,t,s,r)=>({set _(a){T(e,t,a,s)},get _(){return h(e,t,r)}});var rt=(e,t,s)=>(r,a)=>{let n=-1;return o(0);async function o(i){if(i<=n)throw new Error("next() called multiple times");n=i;let l,d=!1,p;if(e[i]?(p=e[i][0][0],r.req.routeIndex=i):p=i===e.length&&a||void 0,p)try{l=await p(r,()=>o(i+1))}catch(u){if(u instanceof Error&&t)r.error=u,l=await t(u,r),d=!0;else throw u}else r.finalized===!1&&s&&(l=await s(r));return l&&(r.finalized===!1||d)&&(r.res=l),r}},Mt=Symbol(),At=async(e,t=Object.create(null))=>{const{all:s=!1,dot:r=!1}=t,n=(e instanceof vt?e.raw.headers:e.headers).get("Content-Type");return n!=null&&n.startsWith("multipart/form-data")||n!=null&&n.startsWith("application/x-www-form-urlencoded")?Ot(e,{all:s,dot:r}):{}};async function Ot(e,t){const s=await e.formData();return s?Ut(s,t):{}}function Ut(e,t){const s=Object.create(null);return e.forEach((r,a)=>{t.all||a.endsWith("[]")?Pt(s,a,r):s[a]=r}),t.dot&&Object.entries(s).forEach(([r,a])=>{r.includes(".")&&(Ft(s,r,a),delete s[r])}),s}var Pt=(e,t,s)=>{e[t]!==void 0?Array.isArray(e[t])?e[t].push(s):e[t]=[e[t],s]:t.endsWith("[]")?e[t]=[s]:e[t]=s},Ft=(e,t,s)=>{let r=e;const a=t.split(".");a.forEach((n,o)=>{o===a.length-1?r[n]=s:((!r[n]||typeof r[n]!="object"||Array.isArray(r[n])||r[n]instanceof File)&&(r[n]=Object.create(null)),r=r[n])})},gt=e=>{const t=e.split("/");return t[0]===""&&t.shift(),t},$t=e=>{const{groups:t,path:s}=Ht(e),r=gt(s);return qt(r,t)},Ht=e=>{const t=[];return e=e.replace(/\{[^}]+\}/g,(s,r)=>{const a=`@${r}`;return t.push([a,s]),a}),{groups:t,path:e}},qt=(e,t)=>{for(let s=t.length-1;s>=0;s--){const[r]=t[s];for(let a=e.length-1;a>=0;a--)if(e[a].includes(r)){e[a]=e[a].replace(r,t[s][1]);break}}return e},Pe={},Wt=(e,t)=>{if(e==="*")return"*";const s=e.match(/^\:([^\{\}]+)(?:\{(.+)\})?$/);if(s){const r=`${e}#${t}`;return Pe[r]||(s[2]?Pe[r]=t&&t[0]!==":"&&t[0]!=="*"?[r,s[1],new RegExp(`^${s[2]}(?=/${t})`)]:[e,s[1],new RegExp(`^${s[2]}$`)]:Pe[r]=[e,s[1],!0]),Pe[r]}return null},Ye=(e,t)=>{try{return t(e)}catch{return e.replace(/(?:%[0-9A-Fa-f]{2})+/g,s=>{try{return t(s)}catch{return s}})}},Gt=e=>Ye(e,decodeURI),xt=e=>{const t=e.url,s=t.indexOf("/",t.indexOf(":")+4);let r=s;for(;r<t.length;r++){const a=t.charCodeAt(r);if(a===37){const n=t.indexOf("?",r),o=t.slice(s,n===-1?void 0:n);return Gt(o.includes("%25")?o.replace(/%25/g,"%2525"):o)}else if(a===63)break}return t.slice(s,r)},Yt=e=>{const t=xt(e);return t.length>1&&t.at(-1)==="/"?t.slice(0,-1):t},ve=(e,t,...s)=>(s.length&&(t=ve(t,...s)),`${(e==null?void 0:e[0])==="/"?"":"/"}${e}${t==="/"?"":`${(e==null?void 0:e.at(-1))==="/"?"":"/"}${(t==null?void 0:t[0])==="/"?t.slice(1):t}`}`),bt=e=>{if(e.charCodeAt(e.length-1)!==63||!e.includes(":"))return null;const t=e.split("/"),s=[];let r="";return t.forEach(a=>{if(a!==""&&!/\:/.test(a))r+="/"+a;else if(/\:/.test(a))if(/\?/.test(a)){s.length===0&&r===""?s.push("/"):s.push(r);const n=a.replace("?","");r+="/"+n,s.push(r)}else r+="/"+a}),s.filter((a,n,o)=>o.indexOf(a)===n)},Ve=e=>/[%+]/.test(e)?(e.indexOf("+")!==-1&&(e=e.replace(/\+/g," ")),e.indexOf("%")!==-1?Ye(e,Qe):e):e,ht=(e,t,s)=>{let r;if(!s&&t&&!/[%+]/.test(t)){let o=e.indexOf("?",8);if(o===-1)return;for(e.startsWith(t,o+1)||(o=e.indexOf(`&${t}`,o+1));o!==-1;){const i=e.charCodeAt(o+t.length+1);if(i===61){const l=o+t.length+2,d=e.indexOf("&",l);return Ve(e.slice(l,d===-1?void 0:d))}else if(i==38||isNaN(i))return"";o=e.indexOf(`&${t}`,o+1)}if(r=/[%+]/.test(e),!r)return}const a={};r??(r=/[%+]/.test(e));let n=e.indexOf("?",8);for(;n!==-1;){const o=e.indexOf("&",n+1);let i=e.indexOf("=",n);i>o&&o!==-1&&(i=-1);let l=e.slice(n+1,i===-1?o===-1?void 0:o:i);if(r&&(l=Ve(l)),n=o,l==="")continue;let d;i===-1?d="":(d=e.slice(i+1,o===-1?void 0:o),r&&(d=Ve(d))),s?(a[l]&&Array.isArray(a[l])||(a[l]=[]),a[l].push(d)):a[l]??(a[l]=d)}return t?a[t]:a},zt=ht,Vt=(e,t)=>ht(e,t,!0),Qe=decodeURIComponent,at=e=>Ye(e,Qe),we,W,ee,ft,yt,Ze,te,lt,vt=(lt=class{constructor(e,t="/",s=[[]]){S(this,ee);I(this,"raw");S(this,we);S(this,W);I(this,"routeIndex",0);I(this,"path");I(this,"bodyCache",{});S(this,te,e=>{const{bodyCache:t,raw:s}=this,r=t[e];if(r)return r;const a=Object.keys(t)[0];return a?t[a].then(n=>(a==="json"&&(n=JSON.stringify(n)),new Response(n)[e]())):t[e]=s[e]()});this.raw=e,this.path=t,T(this,W,s),T(this,we,{})}param(e){return e?C(this,ee,ft).call(this,e):C(this,ee,yt).call(this)}query(e){return zt(this.url,e)}queries(e){return Vt(this.url,e)}header(e){if(e)return this.raw.headers.get(e)??void 0;const t={};return this.raw.headers.forEach((s,r)=>{t[r]=s}),t}async parseBody(e){var t;return(t=this.bodyCache).parsedBody??(t.parsedBody=await At(this,e))}json(){return h(this,te).call(this,"text").then(e=>JSON.parse(e))}text(){return h(this,te).call(this,"text")}arrayBuffer(){return h(this,te).call(this,"arrayBuffer")}blob(){return h(this,te).call(this,"blob")}formData(){return h(this,te).call(this,"formData")}addValidatedData(e,t){h(this,we)[e]=t}valid(e){return h(this,we)[e]}get url(){return this.raw.url}get method(){return this.raw.method}get[Mt](){return h(this,W)}get matchedRoutes(){return h(this,W)[0].map(([[,e]])=>e)}get routePath(){return h(this,W)[0].map(([[,e]])=>e)[this.routeIndex].path}},we=new WeakMap,W=new WeakMap,ee=new WeakSet,ft=function(e){const t=h(this,W)[0][this.routeIndex][1][e],s=C(this,ee,Ze).call(this,t);return s&&/\%/.test(s)?at(s):s},yt=function(){const e={},t=Object.keys(h(this,W)[0][this.routeIndex][1]);for(const s of t){const r=C(this,ee,Ze).call(this,h(this,W)[0][this.routeIndex][1][s]);r!==void 0&&(e[s]=/\%/.test(r)?at(r):r)}return e},Ze=function(e){return h(this,W)[1]?h(this,W)[1][e]:e},te=new WeakMap,lt),Xt={Stringify:1},wt=async(e,t,s,r,a)=>{typeof e=="object"&&!(e instanceof String)&&(e instanceof Promise||(e=e.toString()),e instanceof Promise&&(e=await e));const n=e.callbacks;return n!=null&&n.length?(a?a[0]+=e:a=[e],Promise.all(n.map(i=>i({phase:t,buffer:a,context:r}))).then(i=>Promise.all(i.filter(Boolean).map(l=>wt(l,t,!1,r,a))).then(()=>a[0]))):Promise.resolve(e)},Jt="text/plain; charset=UTF-8",Xe=(e,t)=>({"Content-Type":e,...t}),Le,je,J,Ee,K,$,Be,_e,Te,ce,Ne,Me,se,fe,dt,Kt=(dt=class{constructor(e,t){S(this,se);S(this,Le);S(this,je);I(this,"env",{});S(this,J);I(this,"finalized",!1);I(this,"error");S(this,Ee);S(this,K);S(this,$);S(this,Be);S(this,_e);S(this,Te);S(this,ce);S(this,Ne);S(this,Me);I(this,"render",(...e)=>(h(this,_e)??T(this,_e,t=>this.html(t)),h(this,_e).call(this,...e)));I(this,"setLayout",e=>T(this,Be,e));I(this,"getLayout",()=>h(this,Be));I(this,"setRenderer",e=>{T(this,_e,e)});I(this,"header",(e,t,s)=>{this.finalized&&T(this,$,new Response(h(this,$).body,h(this,$)));const r=h(this,$)?h(this,$).headers:h(this,ce)??T(this,ce,new Headers);t===void 0?r.delete(e):s!=null&&s.append?r.append(e,t):r.set(e,t)});I(this,"status",e=>{T(this,Ee,e)});I(this,"set",(e,t)=>{h(this,J)??T(this,J,new Map),h(this,J).set(e,t)});I(this,"get",e=>h(this,J)?h(this,J).get(e):void 0);I(this,"newResponse",(...e)=>C(this,se,fe).call(this,...e));I(this,"body",(e,t,s)=>C(this,se,fe).call(this,e,t,s));I(this,"text",(e,t,s)=>!h(this,ce)&&!h(this,Ee)&&!t&&!s&&!this.finalized?new Response(e):C(this,se,fe).call(this,e,t,Xe(Jt,s)));I(this,"json",(e,t,s)=>C(this,se,fe).call(this,JSON.stringify(e),t,Xe("application/json",s)));I(this,"html",(e,t,s)=>{const r=a=>C(this,se,fe).call(this,a,t,Xe("text/html; charset=UTF-8",s));return typeof e=="object"?wt(e,Xt.Stringify,!1,{}).then(r):r(e)});I(this,"redirect",(e,t)=>{const s=String(e);return this.header("Location",/[^\x00-\xFF]/.test(s)?encodeURI(s):s),this.newResponse(null,t??302)});I(this,"notFound",()=>(h(this,Te)??T(this,Te,()=>new Response),h(this,Te).call(this,this)));T(this,Le,e),t&&(T(this,K,t.executionCtx),this.env=t.env,T(this,Te,t.notFoundHandler),T(this,Me,t.path),T(this,Ne,t.matchResult))}get req(){return h(this,je)??T(this,je,new vt(h(this,Le),h(this,Me),h(this,Ne))),h(this,je)}get event(){if(h(this,K)&&"respondWith"in h(this,K))return h(this,K);throw Error("This context has no FetchEvent")}get executionCtx(){if(h(this,K))return h(this,K);throw Error("This context has no ExecutionContext")}get res(){return h(this,$)||T(this,$,new Response(null,{headers:h(this,ce)??T(this,ce,new Headers)}))}set res(e){if(h(this,$)&&e){e=new Response(e.body,e);for(const[t,s]of h(this,$).headers.entries())if(t!=="content-type")if(t==="set-cookie"){const r=h(this,$).headers.getSetCookie();e.headers.delete("set-cookie");for(const a of r)e.headers.append("set-cookie",a)}else e.headers.set(t,s)}T(this,$,e),this.finalized=!0}get var(){return h(this,J)?Object.fromEntries(h(this,J)):{}}},Le=new WeakMap,je=new WeakMap,J=new WeakMap,Ee=new WeakMap,K=new WeakMap,$=new WeakMap,Be=new WeakMap,_e=new WeakMap,Te=new WeakMap,ce=new WeakMap,Ne=new WeakMap,Me=new WeakMap,se=new WeakSet,fe=function(e,t,s){const r=h(this,$)?new Headers(h(this,$).headers):h(this,ce)??new Headers;if(typeof t=="object"&&"headers"in t){const n=t.headers instanceof Headers?t.headers:new Headers(t.headers);for(const[o,i]of n)o.toLowerCase()==="set-cookie"?r.append(o,i):r.set(o,i)}if(s)for(const[n,o]of Object.entries(s))if(typeof o=="string")r.set(n,o);else{r.delete(n);for(const i of o)r.append(n,i)}const a=typeof t=="number"?t:(t==null?void 0:t.status)??h(this,Ee);return new Response(e,{status:a,headers:r})},dt),M="ALL",Zt="all",Qt=["get","post","put","delete","options","patch"],Et="Can not add a route since the matcher is already built.",_t=class extends Error{},es="__COMPOSED_HANDLER",ts=e=>e.text("404 Not Found",404),nt=(e,t)=>{if("getResponse"in e){const s=e.getResponse();return t.newResponse(s.body,s)}return console.error(e),t.text("Internal Server Error",500)},G,A,Tt,Y,le,Fe,$e,Ie,ss=(Ie=class{constructor(t={}){S(this,A);I(this,"get");I(this,"post");I(this,"put");I(this,"delete");I(this,"options");I(this,"patch");I(this,"all");I(this,"on");I(this,"use");I(this,"router");I(this,"getPath");I(this,"_basePath","/");S(this,G,"/");I(this,"routes",[]);S(this,Y,ts);I(this,"errorHandler",nt);I(this,"onError",t=>(this.errorHandler=t,this));I(this,"notFound",t=>(T(this,Y,t),this));I(this,"fetch",(t,...s)=>C(this,A,$e).call(this,t,s[1],s[0],t.method));I(this,"request",(t,s,r,a)=>t instanceof Request?this.fetch(s?new Request(t,s):t,r,a):(t=t.toString(),this.fetch(new Request(/^https?:\/\//.test(t)?t:`http://localhost${ve("/",t)}`,s),r,a)));I(this,"fire",()=>{addEventListener("fetch",t=>{t.respondWith(C(this,A,$e).call(this,t.request,t,void 0,t.request.method))})});[...Qt,Zt].forEach(n=>{this[n]=(o,...i)=>(typeof o=="string"?T(this,G,o):C(this,A,le).call(this,n,h(this,G),o),i.forEach(l=>{C(this,A,le).call(this,n,h(this,G),l)}),this)}),this.on=(n,o,...i)=>{for(const l of[o].flat()){T(this,G,l);for(const d of[n].flat())i.map(p=>{C(this,A,le).call(this,d.toUpperCase(),h(this,G),p)})}return this},this.use=(n,...o)=>(typeof n=="string"?T(this,G,n):(T(this,G,"*"),o.unshift(n)),o.forEach(i=>{C(this,A,le).call(this,M,h(this,G),i)}),this);const{strict:r,...a}=t;Object.assign(this,a),this.getPath=r??!0?t.getPath??xt:Yt}route(t,s){const r=this.basePath(t);return s.routes.map(a=>{var o;let n;s.errorHandler===nt?n=a.handler:(n=async(i,l)=>(await rt([],s.errorHandler)(i,()=>a.handler(i,l))).res,n[es]=a.handler),C(o=r,A,le).call(o,a.method,a.path,n)}),this}basePath(t){const s=C(this,A,Tt).call(this);return s._basePath=ve(this._basePath,t),s}mount(t,s,r){let a,n;r&&(typeof r=="function"?n=r:(n=r.optionHandler,r.replaceRequest===!1?a=l=>l:a=r.replaceRequest));const o=n?l=>{const d=n(l);return Array.isArray(d)?d:[d]}:l=>{let d;try{d=l.executionCtx}catch{}return[l.env,d]};a||(a=(()=>{const l=ve(this._basePath,t),d=l==="/"?0:l.length;return p=>{const u=new URL(p.url);return u.pathname=u.pathname.slice(d)||"/",new Request(u,p)}})());const i=async(l,d)=>{const p=await s(a(l.req.raw),...o(l));if(p)return p;await d()};return C(this,A,le).call(this,M,ve(t,"*"),i),this}},G=new WeakMap,A=new WeakSet,Tt=function(){const t=new Ie({router:this.router,getPath:this.getPath});return t.errorHandler=this.errorHandler,T(t,Y,h(this,Y)),t.routes=this.routes,t},Y=new WeakMap,le=function(t,s,r){t=t.toUpperCase(),s=ve(this._basePath,s);const a={basePath:this._basePath,path:s,method:t,handler:r};this.router.add(t,s,[r,a]),this.routes.push(a)},Fe=function(t,s){if(t instanceof Error)return this.errorHandler(t,s);throw t},$e=function(t,s,r,a){if(a==="HEAD")return(async()=>new Response(null,await C(this,A,$e).call(this,t,s,r,"GET")))();const n=this.getPath(t,{env:r}),o=this.router.match(a,n),i=new Kt(t,{path:n,matchResult:o,env:r,executionCtx:s,notFoundHandler:h(this,Y)});if(o[0].length===1){let d;try{d=o[0][0][0][0](i,async()=>{i.res=await h(this,Y).call(this,i)})}catch(p){return C(this,A,Fe).call(this,p,i)}return d instanceof Promise?d.then(p=>p||(i.finalized?i.res:h(this,Y).call(this,i))).catch(p=>C(this,A,Fe).call(this,p,i)):d??h(this,Y).call(this,i)}const l=rt(o[0],this.errorHandler,h(this,Y));return(async()=>{try{const d=await l(i);if(!d.finalized)throw new Error("Context is not finalized. Did you forget to return a Response object or `await next()`?");return d.res}catch(d){return C(this,A,Fe).call(this,d,i)}})()},Ie),It=[];function rs(e,t){const s=this.buildAllMatchers(),r=((a,n)=>{const o=s[a]||s[M],i=o[2][n];if(i)return i;const l=n.match(o[0]);if(!l)return[[],It];const d=l.indexOf("",1);return[o[1][d],l]});return this.match=r,r(e,t)}var qe="[^/]+",Ce=".*",Re="(?:|/.*)",ye=Symbol(),as=new Set(".\\+*[^]$()");function ns(e,t){return e.length===1?t.length===1?e<t?-1:1:-1:t.length===1||e===Ce||e===Re?1:t===Ce||t===Re?-1:e===qe?1:t===qe?-1:e.length===t.length?e<t?-1:1:t.length-e.length}var pe,ue,z,xe,os=(xe=class{constructor(){S(this,pe);S(this,ue);S(this,z,Object.create(null))}insert(t,s,r,a,n){if(t.length===0){if(h(this,pe)!==void 0)throw ye;if(n)return;T(this,pe,s);return}const[o,...i]=t,l=o==="*"?i.length===0?["","",Ce]:["","",qe]:o==="/*"?["","",Re]:o.match(/^\:([^\{\}]+)(?:\{(.+)\})?$/);let d;if(l){const p=l[1];let u=l[2]||qe;if(p&&l[2]&&(u===".*"||(u=u.replace(/^\((?!\?:)(?=[^)]+\)$)/,"(?:"),/\((?!\?:)/.test(u))))throw ye;if(d=h(this,z)[u],!d){if(Object.keys(h(this,z)).some(m=>m!==Ce&&m!==Re))throw ye;if(n)return;d=h(this,z)[u]=new xe,p!==""&&T(d,ue,a.varIndex++)}!n&&p!==""&&r.push([p,h(d,ue)])}else if(d=h(this,z)[o],!d){if(Object.keys(h(this,z)).some(p=>p.length>1&&p!==Ce&&p!==Re))throw ye;if(n)return;d=h(this,z)[o]=new xe}d.insert(i,s,r,a,n)}buildRegExpStr(){const s=Object.keys(h(this,z)).sort(ns).map(r=>{const a=h(this,z)[r];return(typeof h(a,ue)=="number"?`(${r})@${h(a,ue)}`:as.has(r)?`\\${r}`:r)+a.buildRegExpStr()});return typeof h(this,pe)=="number"&&s.unshift(`#${h(this,pe)}`),s.length===0?"":s.length===1?s[0]:"(?:"+s.join("|")+")"}},pe=new WeakMap,ue=new WeakMap,z=new WeakMap,xe),We,Ae,ct,is=(ct=class{constructor(){S(this,We,{varIndex:0});S(this,Ae,new os)}insert(e,t,s){const r=[],a=[];for(let o=0;;){let i=!1;if(e=e.replace(/\{[^}]+\}/g,l=>{const d=`@\\${o}`;return a[o]=[d,l],o++,i=!0,d}),!i)break}const n=e.match(/(?::[^\/]+)|(?:\/\*$)|./g)||[];for(let o=a.length-1;o>=0;o--){const[i]=a[o];for(let l=n.length-1;l>=0;l--)if(n[l].indexOf(i)!==-1){n[l]=n[l].replace(i,a[o][1]);break}}return h(this,Ae).insert(n,t,r,h(this,We),s),r}buildRegExp(){let e=h(this,Ae).buildRegExpStr();if(e==="")return[/^$/,[],[]];let t=0;const s=[],r=[];return e=e.replace(/#(\d+)|@(\d+)|\.\*\$/g,(a,n,o)=>n!==void 0?(s[++t]=Number(n),"$()"):(o!==void 0&&(r[Number(o)]=++t),"")),[new RegExp(`^${e}`),s,r]}},We=new WeakMap,Ae=new WeakMap,ct),ls=[/^$/,[],Object.create(null)],He=Object.create(null);function kt(e){return He[e]??(He[e]=new RegExp(e==="*"?"":`^${e.replace(/\/\*$|([.\\+*[^\]$()])/g,(t,s)=>s?`\\${s}`:"(?:|/.*)")}$`))}function ds(){He=Object.create(null)}function cs(e){var d;const t=new is,s=[];if(e.length===0)return ls;const r=e.map(p=>[!/\*|\/:/.test(p[0]),...p]).sort(([p,u],[m,g])=>p?1:m?-1:u.length-g.length),a=Object.create(null);for(let p=0,u=-1,m=r.length;p<m;p++){const[g,x,v]=r[p];g?a[x]=[v.map(([y])=>[y,Object.create(null)]),It]:u++;let b;try{b=t.insert(x,u,g)}catch(y){throw y===ye?new _t(x):y}g||(s[u]=v.map(([y,w])=>{const f=Object.create(null);for(w-=1;w>=0;w--){const[E,_]=b[w];f[E]=_}return[y,f]}))}const[n,o,i]=t.buildRegExp();for(let p=0,u=s.length;p<u;p++)for(let m=0,g=s[p].length;m<g;m++){const x=(d=s[p][m])==null?void 0:d[1];if(!x)continue;const v=Object.keys(x);for(let b=0,y=v.length;b<y;b++)x[v[b]]=i[x[v[b]]]}const l=[];for(const p in o)l[p]=s[o[p]];return[n,l,a]}function he(e,t){if(e){for(const s of Object.keys(e).sort((r,a)=>a.length-r.length))if(kt(s).test(t))return[...e[s]]}}var re,ae,Ge,St,pt,ps=(pt=class{constructor(){S(this,Ge);I(this,"name","RegExpRouter");S(this,re);S(this,ae);I(this,"match",rs);T(this,re,{[M]:Object.create(null)}),T(this,ae,{[M]:Object.create(null)})}add(e,t,s){var i;const r=h(this,re),a=h(this,ae);if(!r||!a)throw new Error(Et);r[e]||[r,a].forEach(l=>{l[e]=Object.create(null),Object.keys(l[M]).forEach(d=>{l[e][d]=[...l[M][d]]})}),t==="/*"&&(t="*");const n=(t.match(/\/:/g)||[]).length;if(/\*$/.test(t)){const l=kt(t);e===M?Object.keys(r).forEach(d=>{var p;(p=r[d])[t]||(p[t]=he(r[d],t)||he(r[M],t)||[])}):(i=r[e])[t]||(i[t]=he(r[e],t)||he(r[M],t)||[]),Object.keys(r).forEach(d=>{(e===M||e===d)&&Object.keys(r[d]).forEach(p=>{l.test(p)&&r[d][p].push([s,n])})}),Object.keys(a).forEach(d=>{(e===M||e===d)&&Object.keys(a[d]).forEach(p=>l.test(p)&&a[d][p].push([s,n]))});return}const o=bt(t)||[t];for(let l=0,d=o.length;l<d;l++){const p=o[l];Object.keys(a).forEach(u=>{var m;(e===M||e===u)&&((m=a[u])[p]||(m[p]=[...he(r[u],p)||he(r[M],p)||[]]),a[u][p].push([s,n-d+l+1]))})}}buildAllMatchers(){const e=Object.create(null);return Object.keys(h(this,ae)).concat(Object.keys(h(this,re))).forEach(t=>{e[t]||(e[t]=C(this,Ge,St).call(this,t))}),T(this,re,T(this,ae,void 0)),ds(),e}},re=new WeakMap,ae=new WeakMap,Ge=new WeakSet,St=function(e){const t=[];let s=e===M;return[h(this,re),h(this,ae)].forEach(r=>{const a=r[e]?Object.keys(r[e]).map(n=>[n,r[e][n]]):[];a.length!==0?(s||(s=!0),t.push(...a)):e!==M&&t.push(...Object.keys(r[M]).map(n=>[n,r[M][n]]))}),s?cs(t):null},pt),ne,Z,ut,us=(ut=class{constructor(e){I(this,"name","SmartRouter");S(this,ne,[]);S(this,Z,[]);T(this,ne,e.routers)}add(e,t,s){if(!h(this,Z))throw new Error(Et);h(this,Z).push([e,t,s])}match(e,t){if(!h(this,Z))throw new Error("Fatal error");const s=h(this,ne),r=h(this,Z),a=s.length;let n=0,o;for(;n<a;n++){const i=s[n];try{for(let l=0,d=r.length;l<d;l++)i.add(...r[l]);o=i.match(e,t)}catch(l){if(l instanceof _t)continue;throw l}this.match=i.match.bind(i),T(this,ne,[i]),T(this,Z,void 0);break}if(n===a)throw new Error("Fatal error");return this.name=`SmartRouter + ${this.activeRouter.name}`,o}get activeRouter(){if(h(this,Z)||h(this,ne).length!==1)throw new Error("No active router has been determined yet.");return h(this,ne)[0]}},ne=new WeakMap,Z=new WeakMap,ut),De=Object.create(null),oe,P,me,ke,U,Q,de,Se,ms=(Se=class{constructor(t,s,r){S(this,Q);S(this,oe);S(this,P);S(this,me);S(this,ke,0);S(this,U,De);if(T(this,P,r||Object.create(null)),T(this,oe,[]),t&&s){const a=Object.create(null);a[t]={handler:s,possibleKeys:[],score:0},T(this,oe,[a])}T(this,me,[])}insert(t,s,r){T(this,ke,++st(this,ke)._);let a=this;const n=$t(s),o=[];for(let i=0,l=n.length;i<l;i++){const d=n[i],p=n[i+1],u=Wt(d,p),m=Array.isArray(u)?u[0]:d;if(m in h(a,P)){a=h(a,P)[m],u&&o.push(u[1]);continue}h(a,P)[m]=new Se,u&&(h(a,me).push(u),o.push(u[1])),a=h(a,P)[m]}return h(a,oe).push({[t]:{handler:r,possibleKeys:o.filter((i,l,d)=>d.indexOf(i)===l),score:h(this,ke)}}),a}search(t,s){var l;const r=[];T(this,U,De);let n=[this];const o=gt(s),i=[];for(let d=0,p=o.length;d<p;d++){const u=o[d],m=d===p-1,g=[];for(let x=0,v=n.length;x<v;x++){const b=n[x],y=h(b,P)[u];y&&(T(y,U,h(b,U)),m?(h(y,P)["*"]&&r.push(...C(this,Q,de).call(this,h(y,P)["*"],t,h(b,U))),r.push(...C(this,Q,de).call(this,y,t,h(b,U)))):g.push(y));for(let w=0,f=h(b,me).length;w<f;w++){const E=h(b,me)[w],_=h(b,U)===De?{}:{...h(b,U)};if(E==="*"){const N=h(b,P)["*"];N&&(r.push(...C(this,Q,de).call(this,N,t,h(b,U))),T(N,U,_),g.push(N));continue}const[D,L,B]=E;if(!u&&!(B instanceof RegExp))continue;const j=h(b,P)[D],ie=o.slice(d).join("/");if(B instanceof RegExp){const N=B.exec(ie);if(N){if(_[L]=N[0],r.push(...C(this,Q,de).call(this,j,t,h(b,U),_)),Object.keys(h(j,P)).length){T(j,U,_);const X=((l=N[0].match(/\//))==null?void 0:l.length)??0;(i[X]||(i[X]=[])).push(j)}continue}}(B===!0||B.test(u))&&(_[L]=u,m?(r.push(...C(this,Q,de).call(this,j,t,_,h(b,U))),h(j,P)["*"]&&r.push(...C(this,Q,de).call(this,h(j,P)["*"],t,_,h(b,U)))):(T(j,U,_),g.push(j)))}}n=g.concat(i.shift()??[])}return r.length>1&&r.sort((d,p)=>d.score-p.score),[r.map(({handler:d,params:p})=>[d,p])]}},oe=new WeakMap,P=new WeakMap,me=new WeakMap,ke=new WeakMap,U=new WeakMap,Q=new WeakSet,de=function(t,s,r,a){const n=[];for(let o=0,i=h(t,oe).length;o<i;o++){const l=h(t,oe)[o],d=l[s]||l[M],p={};if(d!==void 0&&(d.params=Object.create(null),n.push(d),r!==De||a&&a!==De))for(let u=0,m=d.possibleKeys.length;u<m;u++){const g=d.possibleKeys[u],x=p[d.score];d.params[g]=a!=null&&a[g]&&!x?a[g]:r[g]??(a==null?void 0:a[g]),p[d.score]=!0}}return n},Se),ge,mt,gs=(mt=class{constructor(){I(this,"name","TrieRouter");S(this,ge);T(this,ge,new ms)}add(e,t,s){const r=bt(t);if(r){for(let a=0,n=r.length;a<n;a++)h(this,ge).insert(e,r[a],s);return}h(this,ge).insert(e,t,s)}match(e,t){return h(this,ge).search(e,t)}},ge=new WeakMap,mt),et=class extends ss{constructor(e={}){super(e),this.router=e.router??new us({routers:[new ps,new gs]})}},xs=e=>{const s={...{origin:"*",allowMethods:["GET","HEAD","PUT","POST","DELETE","PATCH"],allowHeaders:[],exposeHeaders:[]},...e},r=(n=>typeof n=="string"?n==="*"?()=>n:o=>n===o?o:null:typeof n=="function"?n:o=>n.includes(o)?o:null)(s.origin),a=(n=>typeof n=="function"?n:Array.isArray(n)?()=>n:()=>[])(s.allowMethods);return async function(o,i){var p;function l(u,m){o.res.headers.set(u,m)}const d=await r(o.req.header("origin")||"",o);if(d&&l("Access-Control-Allow-Origin",d),s.credentials&&l("Access-Control-Allow-Credentials","true"),(p=s.exposeHeaders)!=null&&p.length&&l("Access-Control-Expose-Headers",s.exposeHeaders.join(",")),o.req.method==="OPTIONS"){s.origin!=="*"&&l("Vary","Origin"),s.maxAge!=null&&l("Access-Control-Max-Age",s.maxAge.toString());const u=await a(o.req.header("origin")||"",o);u.length&&l("Access-Control-Allow-Methods",u.join(","));let m=s.allowHeaders;if(!(m!=null&&m.length)){const g=o.req.header("Access-Control-Request-Headers");g&&(m=g.split(/\s*,\s*/))}return m!=null&&m.length&&(l("Access-Control-Allow-Headers",m.join(",")),o.res.headers.append("Vary","Access-Control-Request-Headers")),o.res.headers.delete("Content-Length"),o.res.headers.delete("Content-Type"),new Response(null,{headers:o.res.headers,status:204,statusText:"No Content"})}await i(),s.origin!=="*"&&o.header("Vary","Origin",{append:!0})}},bs=/^[\w!#$%&'*.^`|~+-]+$/,hs=/^[ !#-:<-[\]-~]*$/,vs=(e,t)=>{if(e.indexOf(t)===-1)return{};const s=e.trim().split(";"),r={};for(let a of s){a=a.trim();const n=a.indexOf("=");if(n===-1)continue;const o=a.substring(0,n).trim();if(t!==o||!bs.test(o))continue;let i=a.substring(n+1).trim();if(i.startsWith('"')&&i.endsWith('"')&&(i=i.slice(1,-1)),hs.test(i)){r[o]=i.indexOf("%")!==-1?Ye(i,Qe):i;break}}return r},O=(e,t,s)=>{const r=e.req.raw.headers.get("Cookie");{if(!r)return;let a=t;return vs(r,a)[a]}},fs=/^\s*(?:text\/(?!event-stream(?:[;\s]|$))[^;\s]+|application\/(?:javascript|json|xml|xml-dtd|ecmascript|dart|postscript|rtf|tar|toml|vnd\.dart|vnd\.ms-fontobject|vnd\.ms-opentype|wasm|x-httpd-php|x-javascript|x-ns-proxy-autoconfig|x-sh|x-tar|x-virtualbox-hdd|x-virtualbox-ova|x-virtualbox-ovf|x-virtualbox-vbox|x-virtualbox-vdi|x-virtualbox-vhd|x-virtualbox-vmdk|x-www-form-urlencoded)|font\/(?:otf|ttf)|image\/(?:bmp|vnd\.adobe\.photoshop|vnd\.microsoft\.icon|vnd\.ms-dds|x-icon|x-ms-bmp)|message\/rfc822|model\/gltf-binary|x-shader\/x-fragment|x-shader\/x-vertex|[^;\s]+?\+(?:json|text|xml|yaml))(?:[;\s]|$)/i,ot=(e,t=ws)=>{const s=/\.([a-zA-Z0-9]+?)$/,r=e.match(s);if(!r)return;let a=t[r[1]];return a&&a.startsWith("text")&&(a+="; charset=utf-8"),a},ys={aac:"audio/aac",avi:"video/x-msvideo",avif:"image/avif",av1:"video/av1",bin:"application/octet-stream",bmp:"image/bmp",css:"text/css",csv:"text/csv",eot:"application/vnd.ms-fontobject",epub:"application/epub+zip",gif:"image/gif",gz:"application/gzip",htm:"text/html",html:"text/html",ico:"image/x-icon",ics:"text/calendar",jpeg:"image/jpeg",jpg:"image/jpeg",js:"text/javascript",json:"application/json",jsonld:"application/ld+json",map:"application/json",mid:"audio/x-midi",midi:"audio/x-midi",mjs:"text/javascript",mp3:"audio/mpeg",mp4:"video/mp4",mpeg:"video/mpeg",oga:"audio/ogg",ogv:"video/ogg",ogx:"application/ogg",opus:"audio/opus",otf:"font/otf",pdf:"application/pdf",png:"image/png",rtf:"application/rtf",svg:"image/svg+xml",tif:"image/tiff",tiff:"image/tiff",ts:"video/mp2t",ttf:"font/ttf",txt:"text/plain",wasm:"application/wasm",webm:"video/webm",weba:"audio/webm",webmanifest:"application/manifest+json",webp:"image/webp",woff:"font/woff",woff2:"font/woff2",xhtml:"application/xhtml+xml",xml:"application/xml",zip:"application/zip","3gp":"video/3gpp","3g2":"video/3gpp2",gltf:"model/gltf+json",glb:"model/gltf-binary"},ws=ys,Es=(...e)=>{let t=e.filter(a=>a!=="").join("/");t=t.replace(new RegExp("(?<=\\/)\\/+","g"),"");const s=t.split("/"),r=[];for(const a of s)a===".."&&r.length>0&&r.at(-1)!==".."?r.pop():a!=="."&&r.push(a);return r.join("/")||"."},Dt={br:".br",zstd:".zst",gzip:".gz"},_s=Object.keys(Dt),Ts="index.html",Is=e=>{const t=e.root??"./",s=e.path,r=e.join??Es;return async(a,n)=>{var p,u,m,g;if(a.finalized)return n();let o;if(e.path)o=e.path;else try{if(o=decodeURIComponent(a.req.path),/(?:^|[\/\\])\.\.(?:$|[\/\\])/.test(o))throw new Error}catch{return await((p=e.onNotFound)==null?void 0:p.call(e,a.req.path,a)),n()}let i=r(t,!s&&e.rewriteRequestPath?e.rewriteRequestPath(o):o);e.isDir&&await e.isDir(i)&&(i=r(i,Ts));const l=e.getContent;let d=await l(i,a);if(d instanceof Response)return a.newResponse(d.body,d);if(d){const x=e.mimes&&ot(i,e.mimes)||ot(i);if(a.header("Content-Type",x||"application/octet-stream"),e.precompressed&&(!x||fs.test(x))){const v=new Set((u=a.req.header("Accept-Encoding"))==null?void 0:u.split(",").map(b=>b.trim()));for(const b of _s){if(!v.has(b))continue;const y=await l(i+Dt[b],a);if(y){d=y,a.header("Content-Encoding",b),a.header("Vary","Accept-Encoding",{append:!0});break}}}return await((m=e.onFound)==null?void 0:m.call(e,i,a)),a.body(d)}await((g=e.onNotFound)==null?void 0:g.call(e,i,a)),await n()}},ks=async(e,t)=>{let s;t&&t.manifest?typeof t.manifest=="string"?s=JSON.parse(t.manifest):s=t.manifest:typeof __STATIC_CONTENT_MANIFEST=="string"?s=JSON.parse(__STATIC_CONTENT_MANIFEST):s=__STATIC_CONTENT_MANIFEST;let r;t&&t.namespace?r=t.namespace:r=__STATIC_CONTENT;const a=s[e]||e;if(!a)return null;const n=await r.get(a,{type:"stream"});return n||null},Ss=e=>async function(s,r){return Is({...e,getContent:async n=>ks(n,{manifest:e.manifest,namespace:e.namespace?e.namespace:s.env?s.env.__STATIC_CONTENT:void 0})})(s,r)},Ds=e=>Ss(e);const Cs=`
+var Bt=Object.defineProperty;var tt=e=>{throw TypeError(e)};var Nt=(e,t,s)=>t in e?Bt(e,t,{enumerable:!0,configurable:!0,writable:!0,value:s}):e[t]=s;var I=(e,t,s)=>Nt(e,typeof t!="symbol"?t+"":t,s),Ye=(e,t,s)=>t.has(e)||tt("Cannot "+s);var h=(e,t,s)=>(Ye(e,t,"read from private field"),s?s.call(e):t.get(e)),S=(e,t,s)=>t.has(e)?tt("Cannot add the same private member more than once"):t instanceof WeakSet?t.add(e):t.set(e,s),T=(e,t,s,r)=>(Ye(e,t,"write to private field"),r?r.call(e,s):t.set(e,s),s),C=(e,t,s)=>(Ye(e,t,"access private method"),s);var st=(e,t,s,r)=>({set _(a){T(e,t,a,s)},get _(){return h(e,t,r)}});var rt=(e,t,s)=>(r,a)=>{let n=-1;return o(0);async function o(i){if(i<=n)throw new Error("next() called multiple times");n=i;let l,d=!1,p;if(e[i]?(p=e[i][0][0],r.req.routeIndex=i):p=i===e.length&&a||void 0,p)try{l=await p(r,()=>o(i+1))}catch(u){if(u instanceof Error&&t)r.error=u,l=await t(u,r),d=!0;else throw u}else r.finalized===!1&&s&&(l=await s(r));return l&&(r.finalized===!1||d)&&(r.res=l),r}},Mt=Symbol(),At=async(e,t=Object.create(null))=>{const{all:s=!1,dot:r=!1}=t,n=(e instanceof vt?e.raw.headers:e.headers).get("Content-Type");return n!=null&&n.startsWith("multipart/form-data")||n!=null&&n.startsWith("application/x-www-form-urlencoded")?Ot(e,{all:s,dot:r}):{}};async function Ot(e,t){const s=await e.formData();return s?Ut(s,t):{}}function Ut(e,t){const s=Object.create(null);return e.forEach((r,a)=>{t.all||a.endsWith("[]")?Pt(s,a,r):s[a]=r}),t.dot&&Object.entries(s).forEach(([r,a])=>{r.includes(".")&&(Ft(s,r,a),delete s[r])}),s}var Pt=(e,t,s)=>{e[t]!==void 0?Array.isArray(e[t])?e[t].push(s):e[t]=[e[t],s]:t.endsWith("[]")?e[t]=[s]:e[t]=s},Ft=(e,t,s)=>{let r=e;const a=t.split(".");a.forEach((n,o)=>{o===a.length-1?r[n]=s:((!r[n]||typeof r[n]!="object"||Array.isArray(r[n])||r[n]instanceof File)&&(r[n]=Object.create(null)),r=r[n])})},gt=e=>{const t=e.split("/");return t[0]===""&&t.shift(),t},$t=e=>{const{groups:t,path:s}=Ht(e),r=gt(s);return qt(r,t)},Ht=e=>{const t=[];return e=e.replace(/\{[^}]+\}/g,(s,r)=>{const a=`@${r}`;return t.push([a,s]),a}),{groups:t,path:e}},qt=(e,t)=>{for(let s=t.length-1;s>=0;s--){const[r]=t[s];for(let a=e.length-1;a>=0;a--)if(e[a].includes(r)){e[a]=e[a].replace(r,t[s][1]);break}}return e},Pe={},Wt=(e,t)=>{if(e==="*")return"*";const s=e.match(/^\:([^\{\}]+)(?:\{(.+)\})?$/);if(s){const r=`${e}#${t}`;return Pe[r]||(s[2]?Pe[r]=t&&t[0]!==":"&&t[0]!=="*"?[r,s[1],new RegExp(`^${s[2]}(?=/${t})`)]:[e,s[1],new RegExp(`^${s[2]}$`)]:Pe[r]=[e,s[1],!0]),Pe[r]}return null},ze=(e,t)=>{try{return t(e)}catch{return e.replace(/(?:%[0-9A-Fa-f]{2})+/g,s=>{try{return t(s)}catch{return s}})}},Gt=e=>ze(e,decodeURI),xt=e=>{const t=e.url,s=t.indexOf("/",t.indexOf(":")+4);let r=s;for(;r<t.length;r++){const a=t.charCodeAt(r);if(a===37){const n=t.indexOf("?",r),o=t.slice(s,n===-1?void 0:n);return Gt(o.includes("%25")?o.replace(/%25/g,"%2525"):o)}else if(a===63)break}return t.slice(s,r)},zt=e=>{const t=xt(e);return t.length>1&&t.at(-1)==="/"?t.slice(0,-1):t},ve=(e,t,...s)=>(s.length&&(t=ve(t,...s)),`${(e==null?void 0:e[0])==="/"?"":"/"}${e}${t==="/"?"":`${(e==null?void 0:e.at(-1))==="/"?"":"/"}${(t==null?void 0:t[0])==="/"?t.slice(1):t}`}`),bt=e=>{if(e.charCodeAt(e.length-1)!==63||!e.includes(":"))return null;const t=e.split("/"),s=[];let r="";return t.forEach(a=>{if(a!==""&&!/\:/.test(a))r+="/"+a;else if(/\:/.test(a))if(/\?/.test(a)){s.length===0&&r===""?s.push("/"):s.push(r);const n=a.replace("?","");r+="/"+n,s.push(r)}else r+="/"+a}),s.filter((a,n,o)=>o.indexOf(a)===n)},Ve=e=>/[%+]/.test(e)?(e.indexOf("+")!==-1&&(e=e.replace(/\+/g," ")),e.indexOf("%")!==-1?ze(e,Qe):e):e,ht=(e,t,s)=>{let r;if(!s&&t&&!/[%+]/.test(t)){let o=e.indexOf("?",8);if(o===-1)return;for(e.startsWith(t,o+1)||(o=e.indexOf(`&${t}`,o+1));o!==-1;){const i=e.charCodeAt(o+t.length+1);if(i===61){const l=o+t.length+2,d=e.indexOf("&",l);return Ve(e.slice(l,d===-1?void 0:d))}else if(i==38||isNaN(i))return"";o=e.indexOf(`&${t}`,o+1)}if(r=/[%+]/.test(e),!r)return}const a={};r??(r=/[%+]/.test(e));let n=e.indexOf("?",8);for(;n!==-1;){const o=e.indexOf("&",n+1);let i=e.indexOf("=",n);i>o&&o!==-1&&(i=-1);let l=e.slice(n+1,i===-1?o===-1?void 0:o:i);if(r&&(l=Ve(l)),n=o,l==="")continue;let d;i===-1?d="":(d=e.slice(i+1,o===-1?void 0:o),r&&(d=Ve(d))),s?(a[l]&&Array.isArray(a[l])||(a[l]=[]),a[l].push(d)):a[l]??(a[l]=d)}return t?a[t]:a},Yt=ht,Vt=(e,t)=>ht(e,t,!0),Qe=decodeURIComponent,at=e=>ze(e,Qe),we,W,ee,ft,yt,Ze,te,lt,vt=(lt=class{constructor(e,t="/",s=[[]]){S(this,ee);I(this,"raw");S(this,we);S(this,W);I(this,"routeIndex",0);I(this,"path");I(this,"bodyCache",{});S(this,te,e=>{const{bodyCache:t,raw:s}=this,r=t[e];if(r)return r;const a=Object.keys(t)[0];return a?t[a].then(n=>(a==="json"&&(n=JSON.stringify(n)),new Response(n)[e]())):t[e]=s[e]()});this.raw=e,this.path=t,T(this,W,s),T(this,we,{})}param(e){return e?C(this,ee,ft).call(this,e):C(this,ee,yt).call(this)}query(e){return Yt(this.url,e)}queries(e){return Vt(this.url,e)}header(e){if(e)return this.raw.headers.get(e)??void 0;const t={};return this.raw.headers.forEach((s,r)=>{t[r]=s}),t}async parseBody(e){var t;return(t=this.bodyCache).parsedBody??(t.parsedBody=await At(this,e))}json(){return h(this,te).call(this,"text").then(e=>JSON.parse(e))}text(){return h(this,te).call(this,"text")}arrayBuffer(){return h(this,te).call(this,"arrayBuffer")}blob(){return h(this,te).call(this,"blob")}formData(){return h(this,te).call(this,"formData")}addValidatedData(e,t){h(this,we)[e]=t}valid(e){return h(this,we)[e]}get url(){return this.raw.url}get method(){return this.raw.method}get[Mt](){return h(this,W)}get matchedRoutes(){return h(this,W)[0].map(([[,e]])=>e)}get routePath(){return h(this,W)[0].map(([[,e]])=>e)[this.routeIndex].path}},we=new WeakMap,W=new WeakMap,ee=new WeakSet,ft=function(e){const t=h(this,W)[0][this.routeIndex][1][e],s=C(this,ee,Ze).call(this,t);return s&&/\%/.test(s)?at(s):s},yt=function(){const e={},t=Object.keys(h(this,W)[0][this.routeIndex][1]);for(const s of t){const r=C(this,ee,Ze).call(this,h(this,W)[0][this.routeIndex][1][s]);r!==void 0&&(e[s]=/\%/.test(r)?at(r):r)}return e},Ze=function(e){return h(this,W)[1]?h(this,W)[1][e]:e},te=new WeakMap,lt),Xt={Stringify:1},wt=async(e,t,s,r,a)=>{typeof e=="object"&&!(e instanceof String)&&(e instanceof Promise||(e=e.toString()),e instanceof Promise&&(e=await e));const n=e.callbacks;return n!=null&&n.length?(a?a[0]+=e:a=[e],Promise.all(n.map(i=>i({phase:t,buffer:a,context:r}))).then(i=>Promise.all(i.filter(Boolean).map(l=>wt(l,t,!1,r,a))).then(()=>a[0]))):Promise.resolve(e)},Jt="text/plain; charset=UTF-8",Xe=(e,t)=>({"Content-Type":e,...t}),Le,je,J,Ee,K,$,Be,_e,Te,ce,Ne,Me,se,fe,dt,Kt=(dt=class{constructor(e,t){S(this,se);S(this,Le);S(this,je);I(this,"env",{});S(this,J);I(this,"finalized",!1);I(this,"error");S(this,Ee);S(this,K);S(this,$);S(this,Be);S(this,_e);S(this,Te);S(this,ce);S(this,Ne);S(this,Me);I(this,"render",(...e)=>(h(this,_e)??T(this,_e,t=>this.html(t)),h(this,_e).call(this,...e)));I(this,"setLayout",e=>T(this,Be,e));I(this,"getLayout",()=>h(this,Be));I(this,"setRenderer",e=>{T(this,_e,e)});I(this,"header",(e,t,s)=>{this.finalized&&T(this,$,new Response(h(this,$).body,h(this,$)));const r=h(this,$)?h(this,$).headers:h(this,ce)??T(this,ce,new Headers);t===void 0?r.delete(e):s!=null&&s.append?r.append(e,t):r.set(e,t)});I(this,"status",e=>{T(this,Ee,e)});I(this,"set",(e,t)=>{h(this,J)??T(this,J,new Map),h(this,J).set(e,t)});I(this,"get",e=>h(this,J)?h(this,J).get(e):void 0);I(this,"newResponse",(...e)=>C(this,se,fe).call(this,...e));I(this,"body",(e,t,s)=>C(this,se,fe).call(this,e,t,s));I(this,"text",(e,t,s)=>!h(this,ce)&&!h(this,Ee)&&!t&&!s&&!this.finalized?new Response(e):C(this,se,fe).call(this,e,t,Xe(Jt,s)));I(this,"json",(e,t,s)=>C(this,se,fe).call(this,JSON.stringify(e),t,Xe("application/json",s)));I(this,"html",(e,t,s)=>{const r=a=>C(this,se,fe).call(this,a,t,Xe("text/html; charset=UTF-8",s));return typeof e=="object"?wt(e,Xt.Stringify,!1,{}).then(r):r(e)});I(this,"redirect",(e,t)=>{const s=String(e);return this.header("Location",/[^\x00-\xFF]/.test(s)?encodeURI(s):s),this.newResponse(null,t??302)});I(this,"notFound",()=>(h(this,Te)??T(this,Te,()=>new Response),h(this,Te).call(this,this)));T(this,Le,e),t&&(T(this,K,t.executionCtx),this.env=t.env,T(this,Te,t.notFoundHandler),T(this,Me,t.path),T(this,Ne,t.matchResult))}get req(){return h(this,je)??T(this,je,new vt(h(this,Le),h(this,Me),h(this,Ne))),h(this,je)}get event(){if(h(this,K)&&"respondWith"in h(this,K))return h(this,K);throw Error("This context has no FetchEvent")}get executionCtx(){if(h(this,K))return h(this,K);throw Error("This context has no ExecutionContext")}get res(){return h(this,$)||T(this,$,new Response(null,{headers:h(this,ce)??T(this,ce,new Headers)}))}set res(e){if(h(this,$)&&e){e=new Response(e.body,e);for(const[t,s]of h(this,$).headers.entries())if(t!=="content-type")if(t==="set-cookie"){const r=h(this,$).headers.getSetCookie();e.headers.delete("set-cookie");for(const a of r)e.headers.append("set-cookie",a)}else e.headers.set(t,s)}T(this,$,e),this.finalized=!0}get var(){return h(this,J)?Object.fromEntries(h(this,J)):{}}},Le=new WeakMap,je=new WeakMap,J=new WeakMap,Ee=new WeakMap,K=new WeakMap,$=new WeakMap,Be=new WeakMap,_e=new WeakMap,Te=new WeakMap,ce=new WeakMap,Ne=new WeakMap,Me=new WeakMap,se=new WeakSet,fe=function(e,t,s){const r=h(this,$)?new Headers(h(this,$).headers):h(this,ce)??new Headers;if(typeof t=="object"&&"headers"in t){const n=t.headers instanceof Headers?t.headers:new Headers(t.headers);for(const[o,i]of n)o.toLowerCase()==="set-cookie"?r.append(o,i):r.set(o,i)}if(s)for(const[n,o]of Object.entries(s))if(typeof o=="string")r.set(n,o);else{r.delete(n);for(const i of o)r.append(n,i)}const a=typeof t=="number"?t:(t==null?void 0:t.status)??h(this,Ee);return new Response(e,{status:a,headers:r})},dt),M="ALL",Zt="all",Qt=["get","post","put","delete","options","patch"],Et="Can not add a route since the matcher is already built.",_t=class extends Error{},es="__COMPOSED_HANDLER",ts=e=>e.text("404 Not Found",404),nt=(e,t)=>{if("getResponse"in e){const s=e.getResponse();return t.newResponse(s.body,s)}return console.error(e),t.text("Internal Server Error",500)},G,A,Tt,z,le,Fe,$e,Ie,ss=(Ie=class{constructor(t={}){S(this,A);I(this,"get");I(this,"post");I(this,"put");I(this,"delete");I(this,"options");I(this,"patch");I(this,"all");I(this,"on");I(this,"use");I(this,"router");I(this,"getPath");I(this,"_basePath","/");S(this,G,"/");I(this,"routes",[]);S(this,z,ts);I(this,"errorHandler",nt);I(this,"onError",t=>(this.errorHandler=t,this));I(this,"notFound",t=>(T(this,z,t),this));I(this,"fetch",(t,...s)=>C(this,A,$e).call(this,t,s[1],s[0],t.method));I(this,"request",(t,s,r,a)=>t instanceof Request?this.fetch(s?new Request(t,s):t,r,a):(t=t.toString(),this.fetch(new Request(/^https?:\/\//.test(t)?t:`http://localhost${ve("/",t)}`,s),r,a)));I(this,"fire",()=>{addEventListener("fetch",t=>{t.respondWith(C(this,A,$e).call(this,t.request,t,void 0,t.request.method))})});[...Qt,Zt].forEach(n=>{this[n]=(o,...i)=>(typeof o=="string"?T(this,G,o):C(this,A,le).call(this,n,h(this,G),o),i.forEach(l=>{C(this,A,le).call(this,n,h(this,G),l)}),this)}),this.on=(n,o,...i)=>{for(const l of[o].flat()){T(this,G,l);for(const d of[n].flat())i.map(p=>{C(this,A,le).call(this,d.toUpperCase(),h(this,G),p)})}return this},this.use=(n,...o)=>(typeof n=="string"?T(this,G,n):(T(this,G,"*"),o.unshift(n)),o.forEach(i=>{C(this,A,le).call(this,M,h(this,G),i)}),this);const{strict:r,...a}=t;Object.assign(this,a),this.getPath=r??!0?t.getPath??xt:zt}route(t,s){const r=this.basePath(t);return s.routes.map(a=>{var o;let n;s.errorHandler===nt?n=a.handler:(n=async(i,l)=>(await rt([],s.errorHandler)(i,()=>a.handler(i,l))).res,n[es]=a.handler),C(o=r,A,le).call(o,a.method,a.path,n)}),this}basePath(t){const s=C(this,A,Tt).call(this);return s._basePath=ve(this._basePath,t),s}mount(t,s,r){let a,n;r&&(typeof r=="function"?n=r:(n=r.optionHandler,r.replaceRequest===!1?a=l=>l:a=r.replaceRequest));const o=n?l=>{const d=n(l);return Array.isArray(d)?d:[d]}:l=>{let d;try{d=l.executionCtx}catch{}return[l.env,d]};a||(a=(()=>{const l=ve(this._basePath,t),d=l==="/"?0:l.length;return p=>{const u=new URL(p.url);return u.pathname=u.pathname.slice(d)||"/",new Request(u,p)}})());const i=async(l,d)=>{const p=await s(a(l.req.raw),...o(l));if(p)return p;await d()};return C(this,A,le).call(this,M,ve(t,"*"),i),this}},G=new WeakMap,A=new WeakSet,Tt=function(){const t=new Ie({router:this.router,getPath:this.getPath});return t.errorHandler=this.errorHandler,T(t,z,h(this,z)),t.routes=this.routes,t},z=new WeakMap,le=function(t,s,r){t=t.toUpperCase(),s=ve(this._basePath,s);const a={basePath:this._basePath,path:s,method:t,handler:r};this.router.add(t,s,[r,a]),this.routes.push(a)},Fe=function(t,s){if(t instanceof Error)return this.errorHandler(t,s);throw t},$e=function(t,s,r,a){if(a==="HEAD")return(async()=>new Response(null,await C(this,A,$e).call(this,t,s,r,"GET")))();const n=this.getPath(t,{env:r}),o=this.router.match(a,n),i=new Kt(t,{path:n,matchResult:o,env:r,executionCtx:s,notFoundHandler:h(this,z)});if(o[0].length===1){let d;try{d=o[0][0][0][0](i,async()=>{i.res=await h(this,z).call(this,i)})}catch(p){return C(this,A,Fe).call(this,p,i)}return d instanceof Promise?d.then(p=>p||(i.finalized?i.res:h(this,z).call(this,i))).catch(p=>C(this,A,Fe).call(this,p,i)):d??h(this,z).call(this,i)}const l=rt(o[0],this.errorHandler,h(this,z));return(async()=>{try{const d=await l(i);if(!d.finalized)throw new Error("Context is not finalized. Did you forget to return a Response object or `await next()`?");return d.res}catch(d){return C(this,A,Fe).call(this,d,i)}})()},Ie),It=[];function rs(e,t){const s=this.buildAllMatchers(),r=((a,n)=>{const o=s[a]||s[M],i=o[2][n];if(i)return i;const l=n.match(o[0]);if(!l)return[[],It];const d=l.indexOf("",1);return[o[1][d],l]});return this.match=r,r(e,t)}var qe="[^/]+",Ce=".*",Re="(?:|/.*)",ye=Symbol(),as=new Set(".\\+*[^]$()");function ns(e,t){return e.length===1?t.length===1?e<t?-1:1:-1:t.length===1||e===Ce||e===Re?1:t===Ce||t===Re?-1:e===qe?1:t===qe?-1:e.length===t.length?e<t?-1:1:t.length-e.length}var pe,ue,Y,xe,os=(xe=class{constructor(){S(this,pe);S(this,ue);S(this,Y,Object.create(null))}insert(t,s,r,a,n){if(t.length===0){if(h(this,pe)!==void 0)throw ye;if(n)return;T(this,pe,s);return}const[o,...i]=t,l=o==="*"?i.length===0?["","",Ce]:["","",qe]:o==="/*"?["","",Re]:o.match(/^\:([^\{\}]+)(?:\{(.+)\})?$/);let d;if(l){const p=l[1];let u=l[2]||qe;if(p&&l[2]&&(u===".*"||(u=u.replace(/^\((?!\?:)(?=[^)]+\)$)/,"(?:"),/\((?!\?:)/.test(u))))throw ye;if(d=h(this,Y)[u],!d){if(Object.keys(h(this,Y)).some(m=>m!==Ce&&m!==Re))throw ye;if(n)return;d=h(this,Y)[u]=new xe,p!==""&&T(d,ue,a.varIndex++)}!n&&p!==""&&r.push([p,h(d,ue)])}else if(d=h(this,Y)[o],!d){if(Object.keys(h(this,Y)).some(p=>p.length>1&&p!==Ce&&p!==Re))throw ye;if(n)return;d=h(this,Y)[o]=new xe}d.insert(i,s,r,a,n)}buildRegExpStr(){const s=Object.keys(h(this,Y)).sort(ns).map(r=>{const a=h(this,Y)[r];return(typeof h(a,ue)=="number"?`(${r})@${h(a,ue)}`:as.has(r)?`\\${r}`:r)+a.buildRegExpStr()});return typeof h(this,pe)=="number"&&s.unshift(`#${h(this,pe)}`),s.length===0?"":s.length===1?s[0]:"(?:"+s.join("|")+")"}},pe=new WeakMap,ue=new WeakMap,Y=new WeakMap,xe),We,Ae,ct,is=(ct=class{constructor(){S(this,We,{varIndex:0});S(this,Ae,new os)}insert(e,t,s){const r=[],a=[];for(let o=0;;){let i=!1;if(e=e.replace(/\{[^}]+\}/g,l=>{const d=`@\\${o}`;return a[o]=[d,l],o++,i=!0,d}),!i)break}const n=e.match(/(?::[^\/]+)|(?:\/\*$)|./g)||[];for(let o=a.length-1;o>=0;o--){const[i]=a[o];for(let l=n.length-1;l>=0;l--)if(n[l].indexOf(i)!==-1){n[l]=n[l].replace(i,a[o][1]);break}}return h(this,Ae).insert(n,t,r,h(this,We),s),r}buildRegExp(){let e=h(this,Ae).buildRegExpStr();if(e==="")return[/^$/,[],[]];let t=0;const s=[],r=[];return e=e.replace(/#(\d+)|@(\d+)|\.\*\$/g,(a,n,o)=>n!==void 0?(s[++t]=Number(n),"$()"):(o!==void 0&&(r[Number(o)]=++t),"")),[new RegExp(`^${e}`),s,r]}},We=new WeakMap,Ae=new WeakMap,ct),ls=[/^$/,[],Object.create(null)],He=Object.create(null);function kt(e){return He[e]??(He[e]=new RegExp(e==="*"?"":`^${e.replace(/\/\*$|([.\\+*[^\]$()])/g,(t,s)=>s?`\\${s}`:"(?:|/.*)")}$`))}function ds(){He=Object.create(null)}function cs(e){var d;const t=new is,s=[];if(e.length===0)return ls;const r=e.map(p=>[!/\*|\/:/.test(p[0]),...p]).sort(([p,u],[m,g])=>p?1:m?-1:u.length-g.length),a=Object.create(null);for(let p=0,u=-1,m=r.length;p<m;p++){const[g,x,v]=r[p];g?a[x]=[v.map(([y])=>[y,Object.create(null)]),It]:u++;let b;try{b=t.insert(x,u,g)}catch(y){throw y===ye?new _t(x):y}g||(s[u]=v.map(([y,w])=>{const f=Object.create(null);for(w-=1;w>=0;w--){const[E,_]=b[w];f[E]=_}return[y,f]}))}const[n,o,i]=t.buildRegExp();for(let p=0,u=s.length;p<u;p++)for(let m=0,g=s[p].length;m<g;m++){const x=(d=s[p][m])==null?void 0:d[1];if(!x)continue;const v=Object.keys(x);for(let b=0,y=v.length;b<y;b++)x[v[b]]=i[x[v[b]]]}const l=[];for(const p in o)l[p]=s[o[p]];return[n,l,a]}function he(e,t){if(e){for(const s of Object.keys(e).sort((r,a)=>a.length-r.length))if(kt(s).test(t))return[...e[s]]}}var re,ae,Ge,St,pt,ps=(pt=class{constructor(){S(this,Ge);I(this,"name","RegExpRouter");S(this,re);S(this,ae);I(this,"match",rs);T(this,re,{[M]:Object.create(null)}),T(this,ae,{[M]:Object.create(null)})}add(e,t,s){var i;const r=h(this,re),a=h(this,ae);if(!r||!a)throw new Error(Et);r[e]||[r,a].forEach(l=>{l[e]=Object.create(null),Object.keys(l[M]).forEach(d=>{l[e][d]=[...l[M][d]]})}),t==="/*"&&(t="*");const n=(t.match(/\/:/g)||[]).length;if(/\*$/.test(t)){const l=kt(t);e===M?Object.keys(r).forEach(d=>{var p;(p=r[d])[t]||(p[t]=he(r[d],t)||he(r[M],t)||[])}):(i=r[e])[t]||(i[t]=he(r[e],t)||he(r[M],t)||[]),Object.keys(r).forEach(d=>{(e===M||e===d)&&Object.keys(r[d]).forEach(p=>{l.test(p)&&r[d][p].push([s,n])})}),Object.keys(a).forEach(d=>{(e===M||e===d)&&Object.keys(a[d]).forEach(p=>l.test(p)&&a[d][p].push([s,n]))});return}const o=bt(t)||[t];for(let l=0,d=o.length;l<d;l++){const p=o[l];Object.keys(a).forEach(u=>{var m;(e===M||e===u)&&((m=a[u])[p]||(m[p]=[...he(r[u],p)||he(r[M],p)||[]]),a[u][p].push([s,n-d+l+1]))})}}buildAllMatchers(){const e=Object.create(null);return Object.keys(h(this,ae)).concat(Object.keys(h(this,re))).forEach(t=>{e[t]||(e[t]=C(this,Ge,St).call(this,t))}),T(this,re,T(this,ae,void 0)),ds(),e}},re=new WeakMap,ae=new WeakMap,Ge=new WeakSet,St=function(e){const t=[];let s=e===M;return[h(this,re),h(this,ae)].forEach(r=>{const a=r[e]?Object.keys(r[e]).map(n=>[n,r[e][n]]):[];a.length!==0?(s||(s=!0),t.push(...a)):e!==M&&t.push(...Object.keys(r[M]).map(n=>[n,r[M][n]]))}),s?cs(t):null},pt),ne,Z,ut,us=(ut=class{constructor(e){I(this,"name","SmartRouter");S(this,ne,[]);S(this,Z,[]);T(this,ne,e.routers)}add(e,t,s){if(!h(this,Z))throw new Error(Et);h(this,Z).push([e,t,s])}match(e,t){if(!h(this,Z))throw new Error("Fatal error");const s=h(this,ne),r=h(this,Z),a=s.length;let n=0,o;for(;n<a;n++){const i=s[n];try{for(let l=0,d=r.length;l<d;l++)i.add(...r[l]);o=i.match(e,t)}catch(l){if(l instanceof _t)continue;throw l}this.match=i.match.bind(i),T(this,ne,[i]),T(this,Z,void 0);break}if(n===a)throw new Error("Fatal error");return this.name=`SmartRouter + ${this.activeRouter.name}`,o}get activeRouter(){if(h(this,Z)||h(this,ne).length!==1)throw new Error("No active router has been determined yet.");return h(this,ne)[0]}},ne=new WeakMap,Z=new WeakMap,ut),De=Object.create(null),oe,P,me,ke,U,Q,de,Se,ms=(Se=class{constructor(t,s,r){S(this,Q);S(this,oe);S(this,P);S(this,me);S(this,ke,0);S(this,U,De);if(T(this,P,r||Object.create(null)),T(this,oe,[]),t&&s){const a=Object.create(null);a[t]={handler:s,possibleKeys:[],score:0},T(this,oe,[a])}T(this,me,[])}insert(t,s,r){T(this,ke,++st(this,ke)._);let a=this;const n=$t(s),o=[];for(let i=0,l=n.length;i<l;i++){const d=n[i],p=n[i+1],u=Wt(d,p),m=Array.isArray(u)?u[0]:d;if(m in h(a,P)){a=h(a,P)[m],u&&o.push(u[1]);continue}h(a,P)[m]=new Se,u&&(h(a,me).push(u),o.push(u[1])),a=h(a,P)[m]}return h(a,oe).push({[t]:{handler:r,possibleKeys:o.filter((i,l,d)=>d.indexOf(i)===l),score:h(this,ke)}}),a}search(t,s){var l;const r=[];T(this,U,De);let n=[this];const o=gt(s),i=[];for(let d=0,p=o.length;d<p;d++){const u=o[d],m=d===p-1,g=[];for(let x=0,v=n.length;x<v;x++){const b=n[x],y=h(b,P)[u];y&&(T(y,U,h(b,U)),m?(h(y,P)["*"]&&r.push(...C(this,Q,de).call(this,h(y,P)["*"],t,h(b,U))),r.push(...C(this,Q,de).call(this,y,t,h(b,U)))):g.push(y));for(let w=0,f=h(b,me).length;w<f;w++){const E=h(b,me)[w],_=h(b,U)===De?{}:{...h(b,U)};if(E==="*"){const N=h(b,P)["*"];N&&(r.push(...C(this,Q,de).call(this,N,t,h(b,U))),T(N,U,_),g.push(N));continue}const[D,L,B]=E;if(!u&&!(B instanceof RegExp))continue;const j=h(b,P)[D],ie=o.slice(d).join("/");if(B instanceof RegExp){const N=B.exec(ie);if(N){if(_[L]=N[0],r.push(...C(this,Q,de).call(this,j,t,h(b,U),_)),Object.keys(h(j,P)).length){T(j,U,_);const X=((l=N[0].match(/\//))==null?void 0:l.length)??0;(i[X]||(i[X]=[])).push(j)}continue}}(B===!0||B.test(u))&&(_[L]=u,m?(r.push(...C(this,Q,de).call(this,j,t,_,h(b,U))),h(j,P)["*"]&&r.push(...C(this,Q,de).call(this,h(j,P)["*"],t,_,h(b,U)))):(T(j,U,_),g.push(j)))}}n=g.concat(i.shift()??[])}return r.length>1&&r.sort((d,p)=>d.score-p.score),[r.map(({handler:d,params:p})=>[d,p])]}},oe=new WeakMap,P=new WeakMap,me=new WeakMap,ke=new WeakMap,U=new WeakMap,Q=new WeakSet,de=function(t,s,r,a){const n=[];for(let o=0,i=h(t,oe).length;o<i;o++){const l=h(t,oe)[o],d=l[s]||l[M],p={};if(d!==void 0&&(d.params=Object.create(null),n.push(d),r!==De||a&&a!==De))for(let u=0,m=d.possibleKeys.length;u<m;u++){const g=d.possibleKeys[u],x=p[d.score];d.params[g]=a!=null&&a[g]&&!x?a[g]:r[g]??(a==null?void 0:a[g]),p[d.score]=!0}}return n},Se),ge,mt,gs=(mt=class{constructor(){I(this,"name","TrieRouter");S(this,ge);T(this,ge,new ms)}add(e,t,s){const r=bt(t);if(r){for(let a=0,n=r.length;a<n;a++)h(this,ge).insert(e,r[a],s);return}h(this,ge).insert(e,t,s)}match(e,t){return h(this,ge).search(e,t)}},ge=new WeakMap,mt),et=class extends ss{constructor(e={}){super(e),this.router=e.router??new us({routers:[new ps,new gs]})}},xs=e=>{const s={...{origin:"*",allowMethods:["GET","HEAD","PUT","POST","DELETE","PATCH"],allowHeaders:[],exposeHeaders:[]},...e},r=(n=>typeof n=="string"?n==="*"?()=>n:o=>n===o?o:null:typeof n=="function"?n:o=>n.includes(o)?o:null)(s.origin),a=(n=>typeof n=="function"?n:Array.isArray(n)?()=>n:()=>[])(s.allowMethods);return async function(o,i){var p;function l(u,m){o.res.headers.set(u,m)}const d=await r(o.req.header("origin")||"",o);if(d&&l("Access-Control-Allow-Origin",d),s.credentials&&l("Access-Control-Allow-Credentials","true"),(p=s.exposeHeaders)!=null&&p.length&&l("Access-Control-Expose-Headers",s.exposeHeaders.join(",")),o.req.method==="OPTIONS"){s.origin!=="*"&&l("Vary","Origin"),s.maxAge!=null&&l("Access-Control-Max-Age",s.maxAge.toString());const u=await a(o.req.header("origin")||"",o);u.length&&l("Access-Control-Allow-Methods",u.join(","));let m=s.allowHeaders;if(!(m!=null&&m.length)){const g=o.req.header("Access-Control-Request-Headers");g&&(m=g.split(/\s*,\s*/))}return m!=null&&m.length&&(l("Access-Control-Allow-Headers",m.join(",")),o.res.headers.append("Vary","Access-Control-Request-Headers")),o.res.headers.delete("Content-Length"),o.res.headers.delete("Content-Type"),new Response(null,{headers:o.res.headers,status:204,statusText:"No Content"})}await i(),s.origin!=="*"&&o.header("Vary","Origin",{append:!0})}},bs=/^[\w!#$%&'*.^`|~+-]+$/,hs=/^[ !#-:<-[\]-~]*$/,vs=(e,t)=>{if(e.indexOf(t)===-1)return{};const s=e.trim().split(";"),r={};for(let a of s){a=a.trim();const n=a.indexOf("=");if(n===-1)continue;const o=a.substring(0,n).trim();if(t!==o||!bs.test(o))continue;let i=a.substring(n+1).trim();if(i.startsWith('"')&&i.endsWith('"')&&(i=i.slice(1,-1)),hs.test(i)){r[o]=i.indexOf("%")!==-1?ze(i,Qe):i;break}}return r},O=(e,t,s)=>{const r=e.req.raw.headers.get("Cookie");{if(!r)return;let a=t;return vs(r,a)[a]}},fs=/^\s*(?:text\/(?!event-stream(?:[;\s]|$))[^;\s]+|application\/(?:javascript|json|xml|xml-dtd|ecmascript|dart|postscript|rtf|tar|toml|vnd\.dart|vnd\.ms-fontobject|vnd\.ms-opentype|wasm|x-httpd-php|x-javascript|x-ns-proxy-autoconfig|x-sh|x-tar|x-virtualbox-hdd|x-virtualbox-ova|x-virtualbox-ovf|x-virtualbox-vbox|x-virtualbox-vdi|x-virtualbox-vhd|x-virtualbox-vmdk|x-www-form-urlencoded)|font\/(?:otf|ttf)|image\/(?:bmp|vnd\.adobe\.photoshop|vnd\.microsoft\.icon|vnd\.ms-dds|x-icon|x-ms-bmp)|message\/rfc822|model\/gltf-binary|x-shader\/x-fragment|x-shader\/x-vertex|[^;\s]+?\+(?:json|text|xml|yaml))(?:[;\s]|$)/i,ot=(e,t=ws)=>{const s=/\.([a-zA-Z0-9]+?)$/,r=e.match(s);if(!r)return;let a=t[r[1]];return a&&a.startsWith("text")&&(a+="; charset=utf-8"),a},ys={aac:"audio/aac",avi:"video/x-msvideo",avif:"image/avif",av1:"video/av1",bin:"application/octet-stream",bmp:"image/bmp",css:"text/css",csv:"text/csv",eot:"application/vnd.ms-fontobject",epub:"application/epub+zip",gif:"image/gif",gz:"application/gzip",htm:"text/html",html:"text/html",ico:"image/x-icon",ics:"text/calendar",jpeg:"image/jpeg",jpg:"image/jpeg",js:"text/javascript",json:"application/json",jsonld:"application/ld+json",map:"application/json",mid:"audio/x-midi",midi:"audio/x-midi",mjs:"text/javascript",mp3:"audio/mpeg",mp4:"video/mp4",mpeg:"video/mpeg",oga:"audio/ogg",ogv:"video/ogg",ogx:"application/ogg",opus:"audio/opus",otf:"font/otf",pdf:"application/pdf",png:"image/png",rtf:"application/rtf",svg:"image/svg+xml",tif:"image/tiff",tiff:"image/tiff",ts:"video/mp2t",ttf:"font/ttf",txt:"text/plain",wasm:"application/wasm",webm:"video/webm",weba:"audio/webm",webmanifest:"application/manifest+json",webp:"image/webp",woff:"font/woff",woff2:"font/woff2",xhtml:"application/xhtml+xml",xml:"application/xml",zip:"application/zip","3gp":"video/3gpp","3g2":"video/3gpp2",gltf:"model/gltf+json",glb:"model/gltf-binary"},ws=ys,Es=(...e)=>{let t=e.filter(a=>a!=="").join("/");t=t.replace(new RegExp("(?<=\\/)\\/+","g"),"");const s=t.split("/"),r=[];for(const a of s)a===".."&&r.length>0&&r.at(-1)!==".."?r.pop():a!=="."&&r.push(a);return r.join("/")||"."},Dt={br:".br",zstd:".zst",gzip:".gz"},_s=Object.keys(Dt),Ts="index.html",Is=e=>{const t=e.root??"./",s=e.path,r=e.join??Es;return async(a,n)=>{var p,u,m,g;if(a.finalized)return n();let o;if(e.path)o=e.path;else try{if(o=decodeURIComponent(a.req.path),/(?:^|[\/\\])\.\.(?:$|[\/\\])/.test(o))throw new Error}catch{return await((p=e.onNotFound)==null?void 0:p.call(e,a.req.path,a)),n()}let i=r(t,!s&&e.rewriteRequestPath?e.rewriteRequestPath(o):o);e.isDir&&await e.isDir(i)&&(i=r(i,Ts));const l=e.getContent;let d=await l(i,a);if(d instanceof Response)return a.newResponse(d.body,d);if(d){const x=e.mimes&&ot(i,e.mimes)||ot(i);if(a.header("Content-Type",x||"application/octet-stream"),e.precompressed&&(!x||fs.test(x))){const v=new Set((u=a.req.header("Accept-Encoding"))==null?void 0:u.split(",").map(b=>b.trim()));for(const b of _s){if(!v.has(b))continue;const y=await l(i+Dt[b],a);if(y){d=y,a.header("Content-Encoding",b),a.header("Vary","Accept-Encoding",{append:!0});break}}}return await((m=e.onFound)==null?void 0:m.call(e,i,a)),a.body(d)}await((g=e.onNotFound)==null?void 0:g.call(e,i,a)),await n()}},ks=async(e,t)=>{let s;t&&t.manifest?typeof t.manifest=="string"?s=JSON.parse(t.manifest):s=t.manifest:typeof __STATIC_CONTENT_MANIFEST=="string"?s=JSON.parse(__STATIC_CONTENT_MANIFEST):s=__STATIC_CONTENT_MANIFEST;let r;t&&t.namespace?r=t.namespace:r=__STATIC_CONTENT;const a=s[e]||e;if(!a)return null;const n=await r.get(a,{type:"stream"});return n||null},Ss=e=>async function(s,r){return Is({...e,getContent:async n=>ks(n,{manifest:e.manifest,namespace:e.namespace?e.namespace:s.env?s.env.__STATIC_CONTENT:void 0})})(s,r)},Ds=e=>Ss(e);const Cs=`
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -3416,146 +3416,489 @@ var Bt=Object.defineProperty;var tt=e=>{throw TypeError(e)};var Nt=(e,t,s)=>t in
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>${t} - 학원 소개</title>
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"><\/script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
-      @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
-      * { font-family: 'Pretendard Variable', sans-serif; margin: 0; padding: 0; box-sizing: border-box; }
-      body { background: #f8fafc; color: #1e293b; line-height: 1.6; }
-      .container { max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; }
-      .hero { background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%); color: white; padding: 4rem 1.5rem; text-align: center; }
-      .section { padding: 3rem 1.5rem; }
-      .card { background: white; border-radius: 1rem; padding: 2rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 2rem; }
-      .section-title { font-size: 2rem; font-weight: 700; margin-bottom: 2rem; text-align: center; color: #1e293b; }
-      .grid-2 { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
-      .grid-3 { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
-      @media (min-width: 768px) {
-        .grid-2 { grid-template-columns: repeat(2, 1fr); }
-        .grid-3 { grid-template-columns: repeat(3, 1fr); }
-      }
-      .feature-item { display: flex; align-items: start; gap: 1rem; padding: 1rem; background: #f1f5f9; border-radius: 0.5rem; }
-      .feature-number { flex-shrink: 0; width: 2.5rem; height: 2.5rem; background: #3b82f6; color: white; border-radius: 0.5rem; display: flex; align-items: center; justify-content: center; font-weight: 700; }
-      img { max-width: 100%; height: auto; display: block; border-radius: 0.5rem; }
-      .director-photo { width: 10rem; height: 10rem; border-radius: 50%; object-fit: cover; margin: 0 auto 1.5rem; }
-      .gallery-img { width: 100%; height: 250px; object-fit: cover; border-radius: 0.5rem; }
-      .contact-btn { display: inline-block; background: white; color: #3b82f6; padding: 1rem 2rem; border-radius: 0.5rem; font-weight: 600; text-decoration: none; margin-top: 1rem; }
-      .contact-btn:hover { background: #f1f5f9; }
+        * {
+            font-family: 'Noto Sans KR', sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #fff;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* Navigation */
+        nav {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 1rem 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        nav .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        nav h1 {
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: #4F46E5;
+        }
+        
+        nav a {
+            color: #333;
+            text-decoration: none;
+            margin-left: 2rem;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        
+        nav a:hover {
+            color: #4F46E5;
+        }
+        
+        /* Hero Section */
+        .hero {
+            position: relative;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 8rem 0 6rem;
+            text-align: center;
+            overflow: hidden;
+        }
+        
+        .hero-pattern {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            opacity: 0.1;
+            background-image: 
+                radial-gradient(circle at 20px 20px, white 2px, transparent 0),
+                radial-gradient(circle at 80px 80px, white 2px, transparent 0);
+            background-size: 100px 100px;
+        }
+        
+        .hero-content {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 900;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .hero p {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            opacity: 0.95;
+        }
+        
+        .hero .location {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        /* Section Styles */
+        .section {
+            padding: 5rem 0;
+        }
+        
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 900;
+            text-align: center;
+            margin-bottom: 3rem;
+            color: #1a202c;
+        }
+        
+        .section-title::after {
+            content: '';
+            display: block;
+            width: 80px;
+            height: 4px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 1rem auto 0;
+            border-radius: 2px;
+        }
+        
+        /* Director Section */
+        .director-card {
+            background: white;
+            border-radius: 20px;
+            padding: 3rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .director-photo {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin: 0 auto 2rem;
+            border: 5px solid #667eea;
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .director-name {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 2rem;
+            color: #1a202c;
+        }
+        
+        .career-list {
+            text-align: left;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .career-item {
+            display: flex;
+            align-items: start;
+            margin-bottom: 1rem;
+            padding: 0.8rem;
+            background: #f7fafc;
+            border-radius: 10px;
+            transition: transform 0.3s;
+        }
+        
+        .career-item:hover {
+            transform: translateX(10px);
+        }
+        
+        .career-icon {
+            color: #667eea;
+            margin-right: 1rem;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+        
+        /* Gallery Section */
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+        
+        .gallery-item {
+            position: relative;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .gallery-item:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+        }
+        
+        .gallery-item img {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            display: block;
+        }
+        
+        /* Info Cards */
+        .info-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2.5rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            margin-bottom: 2rem;
+        }
+        
+        .info-card h3 {
+            font-size: 1.8rem;
+            font-weight: 900;
+            margin-bottom: 1.5rem;
+            color: #1a202c;
+        }
+        
+        .info-card p, .info-card ul {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: #4a5568;
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .feature-item {
+            display: flex;
+            align-items: start;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+            border-radius: 15px;
+            transition: transform 0.3s;
+        }
+        
+        .feature-item:hover {
+            transform: translateY(-5px);
+        }
+        
+        .feature-number {
+            flex-shrink: 0;
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            margin-right: 1rem;
+            font-size: 1.2rem;
+        }
+        
+        .feature-text {
+            flex: 1;
+            font-size: 1.05rem;
+            color: #2d3748;
+        }
+        
+        /* CTA Section */
+        .cta-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 5rem 0;
+            text-align: center;
+        }
+        
+        .cta-section h2 {
+            font-size: 2.5rem;
+            font-weight: 900;
+            margin-bottom: 1.5rem;
+        }
+        
+        .cta-section p {
+            font-size: 1.3rem;
+            margin-bottom: 2rem;
+            opacity: 0.95;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            background: white;
+            color: #667eea;
+            padding: 1.2rem 3rem;
+            border-radius: 50px;
+            font-size: 1.3rem;
+            font-weight: 700;
+            text-decoration: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2.5rem; }
+            .hero p { font-size: 1.2rem; }
+            .section-title { font-size: 2rem; }
+            .gallery-grid { grid-template-columns: 1fr; }
+            nav a { margin-left: 1rem; }
+        }
     </style>
 </head>
 <body>
+    <!-- Navigation -->
+    <nav>
+        <div class="container">
+            <h1>${t}</h1>
+            <div>
+                <a href="#about">소개</a>
+                <a href="#programs">프로그램</a>
+                <a href="#gallery">갤러리</a>
+                <a href="#contact">연락처</a>
+            </div>
+        </div>
+    </nav>
+
     <!-- Hero Section -->
     <div class="hero">
-        <div class="container">
-            <h1 style="font-size: 3rem; font-weight: 800; margin-bottom: 1rem;">${t}</h1>
-            <p style="font-size: 1.25rem; margin-bottom: 0.5rem;">📍 ${s}</p>
-            <p style="font-size: 1.125rem; opacity: 0.95;">${r||""}</p>
+        <div class="hero-pattern"></div>
+        <div class="hero-content container">
+            <h1>${t}</h1>
+            <p>${r||"최고의 교육을 제공합니다"}</p>
+            <p class="location"><i class="fas fa-map-marker-alt"></i> ${s}</p>
         </div>
     </div>
 
     <!-- Main Content -->
-    <div class="container">
-        
-        ${o?`
-        <!-- 학원장 소개 -->
-        <div class="section">
+    ${o?`
+    <!-- 학원장 소개 -->
+    <section id="about" class="section" style="background: #f7fafc;">
+        <div class="container">
             <h2 class="section-title">학원장 소개</h2>
-            <div class="card" style="text-align: center;">
-                ${i?`<img src="${i}" alt="${o}" class="director-photo" onerror="this.style.display='none';">`:""}
-                <h3 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem;">${o} 원장</h3>
-                <div style="text-align: left; max-width: 600px; margin: 0 auto;">
+            <div class="director-card">
+                ${i?`<img src="${i}" alt="${o}" class="director-photo" crossorigin="anonymous" onerror="this.style.display='none';">`:""}
+                <h3 class="director-name">${o} 원장</h3>
+                <div class="career-list">
                     ${b.map(f=>`
-                        <p style="margin-bottom: 0.5rem; padding-left: 1.5rem; position: relative;">
-                            <span style="position: absolute; left: 0; color: #3b82f6;">✓</span>
-                            ${f}
-                        </p>
+                        <div class="career-item">
+                            <i class="fas fa-check-circle career-icon"></i>
+                            <div>${f}</div>
+                        </div>
                     `).join("")}
                 </div>
             </div>
         </div>
-        `:""}
+    </section>
+    `:""}
 
-        ${d||p||u?`
-        <!-- 학원 사진 -->
-        <div class="section">
+    ${d||p||u?`
+    <!-- 학원 갤러리 -->
+    <section id="gallery" class="section">
+        <div class="container">
             <h2 class="section-title">학원 둘러보기</h2>
-            <div class="grid-3">
-                ${d?`<div><img src="${d}" alt="학원 사진 1" class="gallery-img" onerror="this.parentElement.style.display='none';"></div>`:""}
-                ${p?`<div><img src="${p}" alt="학원 사진 2" class="gallery-img" onerror="this.parentElement.style.display='none';"></div>`:""}
-                ${u?`<div><img src="${u}" alt="학원 사진 3" class="gallery-img" onerror="this.parentElement.style.display='none';"></div>`:""}
-            </div>
-        </div>
-        `:""}
-
-        ${m?`
-        <!-- 교육 철학 -->
-        <div class="section">
-            <h2 class="section-title">교육 철학</h2>
-            <div class="card">
-                <p style="font-size: 1.125rem; line-height: 1.8; white-space: pre-line;">${m}</p>
-            </div>
-        </div>
-        `:""}
-
-        ${y.length>0?`
-        <!-- 교육 프로그램 -->
-        <div class="section">
-            <h2 class="section-title">교육 프로그램</h2>
-            <div class="grid-2">
-                ${y.map((f,E)=>`
-                    <div class="feature-item">
-                        <div class="feature-number">${E+1}</div>
-                        <p>${f}</p>
-                    </div>
-                `).join("")}
-            </div>
-        </div>
-        `:""}
-
-        ${w.length>0?`
-        <!-- 커리큘럼 -->
-        <div class="section">
-            <h2 class="section-title">커리큘럼</h2>
-            ${w.map((f,E)=>`
-                <div class="feature-item" style="margin-bottom: 1rem;">
-                    <div class="feature-number">${E+1}</div>
-                    <p>${f}</p>
+            <div class="gallery-grid">
+                ${d?`
+                <div class="gallery-item">
+                    <img src="${d}" alt="학원 사진 1" crossorigin="anonymous" onerror="this.parentElement.style.display='none';">
                 </div>
-            `).join("")}
+                `:""}
+                ${p?`
+                <div class="gallery-item">
+                    <img src="${p}" alt="학원 사진 2" crossorigin="anonymous" onerror="this.parentElement.style.display='none';">
+                </div>
+                `:""}
+                ${u?`
+                <div class="gallery-item">
+                    <img src="${u}" alt="학원 사진 3" crossorigin="anonymous" onerror="this.parentElement.style.display='none';">
+                </div>
+                `:""}
+            </div>
         </div>
-        `:""}
+    </section>
+    `:""}
 
-        ${v.length>0?`
-        <!-- 학원 강점 -->
-        <div class="section">
+    ${m||y.length>0||w.length>0?`
+    <!-- 교육 정보 -->
+    <section id="programs" class="section" style="background: #f7fafc;">
+        <div class="container">
+            <h2 class="section-title">교육 정보</h2>
+            
+            ${m?`
+            <div class="info-card">
+                <h3><i class="fas fa-lightbulb" style="color: #667eea;"></i> 교육 철학</h3>
+                <p style="white-space: pre-line;">${m}</p>
+            </div>
+            `:""}
+            
+            ${y.length>0?`
+            <div class="info-card">
+                <h3><i class="fas fa-book-open" style="color: #667eea;"></i> 교육 프로그램</h3>
+                <div class="feature-grid">
+                    ${y.map((f,E)=>`
+                        <div class="feature-item">
+                            <div class="feature-number">${E+1}</div>
+                            <div class="feature-text">${f}</div>
+                        </div>
+                    `).join("")}
+                </div>
+            </div>
+            `:""}
+            
+            ${w.length>0?`
+            <div class="info-card">
+                <h3><i class="fas fa-graduation-cap" style="color: #667eea;"></i> 커리큘럼</h3>
+                <div class="feature-grid">
+                    ${w.map((f,E)=>`
+                        <div class="feature-item">
+                            <div class="feature-number">${E+1}</div>
+                            <div class="feature-text">${f}</div>
+                        </div>
+                    `).join("")}
+                </div>
+            </div>
+            `:""}
+        </div>
+    </section>
+    `:""}
+
+    ${v.length>0?`
+    <!-- 학원 강점 -->
+    <section class="section">
+        <div class="container">
             <h2 class="section-title">${t}의 강점</h2>
-            <div class="grid-2">
+            <div class="feature-grid">
                 ${v.map((f,E)=>`
                     <div class="feature-item">
                         <div class="feature-number">${E+1}</div>
-                        <p>${f}</p>
+                        <div class="feature-text">${f}</div>
                     </div>
                 `).join("")}
             </div>
         </div>
-        `:""}
+    </section>
+    `:""}
 
-        <!-- 연락처 -->
-        <div class="section">
-            <div class="card" style="background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%); color: white; text-align: center;">
-                <h2 style="font-size: 2rem; font-weight: 700; margin-bottom: 1rem;">지금 바로 상담 받으세요</h2>
-                <p style="font-size: 1.25rem; margin-bottom: 1.5rem; opacity: 0.95;">무료 학습 진단 및 맞춤 상담 제공</p>
-                <p style="font-size: 1.75rem; font-weight: 700; margin-bottom: 1rem;">📞 ${n}</p>
-                <a href="tel:${n}" class="contact-btn">전화 상담하기</a>
-            </div>
+    <!-- 연락처 -->
+    <section id="contact" class="cta-section">
+        <div class="container">
+            <h2>지금 바로 상담 받으세요</h2>
+            <p>무료 학습 진단 및 맞춤 상담 제공</p>
+            <p style="font-size: 2rem; font-weight: 900; margin-bottom: 2rem;">
+                <i class="fas fa-phone-alt"></i> ${n}
+            </p>
+            <a href="tel:${n}" class="cta-button">
+                <i class="fas fa-phone-alt"></i> 전화 상담하기
+            </a>
         </div>
-    </div>
+    </section>
 
     <!-- Footer -->
-    <footer style="background: #1e293b; color: #94a3b8; padding: 2rem 1.5rem; text-align: center;">
+    <footer style="background: #1a202c; color: #a0aec0; padding: 3rem 1.5rem; text-align: center;">
         <div class="container">
-            <h3 style="color: white; font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem;">${t}</h3>
-            <p style="margin-bottom: 0.25rem;">📍 ${s}</p>
-            <p style="margin-bottom: 1rem;">📞 ${n}</p>
-            <p style="font-size: 0.875rem; opacity: 0.7;">© 2026 ${t}. All rights reserved.</p>
+            <h3 style="color: white; font-size: 1.5rem; font-weight: 900; margin-bottom: 1rem;">${t}</h3>
+            <p style="margin-bottom: 0.5rem;"><i class="fas fa-map-marker-alt"></i> ${s}</p>
+            <p style="margin-bottom: 1.5rem;"><i class="fas fa-phone"></i> ${n}</p>
+            <p style="font-size: 0.9rem; opacity: 0.7;">© 2026 ${t}. All rights reserved.</p>
         </div>
     </footer>
 </body>
@@ -15119,12 +15462,12 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
     <meta property="twitter:title" content="${i}">
     <meta property="twitter:description" content="${l}">
     <meta property="twitter:image" content="${o}">
-    `;return a=a.replace("</head>",`${d}</head>`),e.html(a)}catch{return e.html("<h1>오류가 발생했습니다.</h1>",500)}});async function Ys(e,t,s,r,a,n){const o=new FormData;o.append("key",s),o.append("user_id",r),o.append("sender",a),o.append("receiver",e),o.append("msg",t),o.append("testmode_yn",n==="Y"?"N":"Y");try{return await(await fetch("https://apis.aligo.in/send/",{method:"POST",body:o})).json()}catch(i){return console.error("Aligo SMS error:",i),{result_code:-1,message:"SMS 발송 실패"}}}c.get("/api/sms/templates",async e=>{try{const{results:t}=await e.env.DB.prepare(`
+    `;return a=a.replace("</head>",`${d}</head>`),e.html(a)}catch{return e.html("<h1>오류가 발생했습니다.</h1>",500)}});async function zs(e,t,s,r,a,n){const o=new FormData;o.append("key",s),o.append("user_id",r),o.append("sender",a),o.append("receiver",e),o.append("msg",t),o.append("testmode_yn",n==="Y"?"N":"Y");try{return await(await fetch("https://apis.aligo.in/send/",{method:"POST",body:o})).json()}catch(i){return console.error("Aligo SMS error:",i),{result_code:-1,message:"SMS 발송 실패"}}}c.get("/api/sms/templates",async e=>{try{const{results:t}=await e.env.DB.prepare(`
       SELECT * FROM sms_templates WHERE is_active = 1 ORDER BY category, name
     `).all();return e.json({success:!0,templates:t})}catch(t){return console.error("Get templates error:",t),e.json({success:!1,error:"템플릿 조회 실패"},500)}});c.post("/api/sms/templates",async e=>{try{const{name:t,category:s,content:r,variables:a}=await e.req.json(),n=JSON.parse(e.req.header("X-User-Data-Base64")?decodeURIComponent(escape(atob(e.req.header("X-User-Data-Base64")||""))):'{"id":1}'),o=await e.env.DB.prepare(`
       INSERT INTO sms_templates (name, category, content, variables, created_by)
       VALUES (?, ?, ?, ?, ?)
-    `).bind(t,s,r,JSON.stringify(a||[]),n.id).run();return e.json({success:!0,message:"템플릿이 추가되었습니다.",id:o.meta.last_row_id})}catch(t){return console.error("Add template error:",t),e.json({success:!1,error:"템플릿 추가 실패"},500)}});c.post("/api/sms/send",async e=>{var t;try{const{recipient_phone:s,recipient_name:r,message_content:a,template_id:n}=await e.req.json(),o=JSON.parse(e.req.header("X-User-Data-Base64")?decodeURIComponent(escape(atob(e.req.header("X-User-Data-Base64")||""))):'{"id":1}'),i=e.env.ALIGO_API_KEY||"",l=e.env.ALIGO_USER_ID||"",d=e.env.ALIGO_SENDER||"01012345678",p=e.env.SMS_REAL_MODE||"N";let u=null,m="sent",g=null,x=null;i&&l&&(u=await Ys(s,a,i,l,d,p),g=((t=u.result_code)==null?void 0:t.toString())||null,x=u.message||null,u.result_code!==1&&(m="failed"));const v=await e.env.DB.prepare(`
+    `).bind(t,s,r,JSON.stringify(a||[]),n.id).run();return e.json({success:!0,message:"템플릿이 추가되었습니다.",id:o.meta.last_row_id})}catch(t){return console.error("Add template error:",t),e.json({success:!1,error:"템플릿 추가 실패"},500)}});c.post("/api/sms/send",async e=>{var t;try{const{recipient_phone:s,recipient_name:r,message_content:a,template_id:n}=await e.req.json(),o=JSON.parse(e.req.header("X-User-Data-Base64")?decodeURIComponent(escape(atob(e.req.header("X-User-Data-Base64")||""))):'{"id":1}'),i=e.env.ALIGO_API_KEY||"",l=e.env.ALIGO_USER_ID||"",d=e.env.ALIGO_SENDER||"01012345678",p=e.env.SMS_REAL_MODE||"N";let u=null,m="sent",g=null,x=null;i&&l&&(u=await zs(s,a,i,l,d,p),g=((t=u.result_code)==null?void 0:t.toString())||null,x=u.message||null,u.result_code!==1&&(m="failed"));const v=await e.env.DB.prepare(`
       INSERT INTO sms_history (template_id, recipient_name, recipient_phone, message_content, status, sent_at, result_code, result_message, created_by)
       VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?, ?)
     `).bind(n||null,r,s,a,m,g,x,o.id).run();return e.json({success:m!=="failed",message:m==="failed"?"SMS 발송 실패: "+x:"SMS가 발송되었습니다.",id:v.meta.last_row_id,note:i?p==="Y"?"실제 발송 완료":"테스트 모드 (실제 발송 안됨)":"API 키를 설정하면 실제 발송됩니다.",smsResult:u})}catch(s){return console.error("Send SMS error:",s),e.json({success:!1,error:"SMS 발송 실패"},500)}});c.post("/api/sms/schedule",async e=>{try{const{recipient_phone:t,recipient_name:s,message_content:r,template_id:a,scheduled_at:n}=await e.req.json(),o=JSON.parse(e.req.header("X-User-Data-Base64")?decodeURIComponent(escape(atob(e.req.header("X-User-Data-Base64")||""))):'{"id":1}'),i=await e.env.DB.prepare(`
@@ -31150,4 +31493,4 @@ ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.di
         `).bind(a.name).first()||(await e.env.DB.prepare(`
             INSERT INTO store_products (name, description, category, price, display_order, enabled)
             VALUES (?, ?, ?, ?, ?, 1)
-          `).bind(a.name,a.description,a.category,a.price,a.order).run(),r++)}catch(n){console.error("Failed to insert product:",a.name,n)}return t.push("✅ Inserted "+r+" initial products"),e.json({success:!0,message:"스토어 시스템 초기화 완료",results:t})}catch(t){return console.error("[Store Init] Error:",t),e.json({success:!1,error:t.message},500)}});const it=new et,zs=Object.assign({"/src/index.tsx":c});let Rt=!1;for(const[,e]of Object.entries(zs))e&&(it.all("*",t=>{let s;try{s=t.executionCtx}catch{}return e.fetch(t.req.raw,t.env,s)}),it.notFound(t=>{let s;try{s=t.executionCtx}catch{}return e.fetch(t.req.raw,t.env,s)}),Rt=!0);if(!Rt)throw new Error("Can't import modules from ['/src/index.ts','/src/index.tsx','/app/server.ts']");export{it as default};
+          `).bind(a.name,a.description,a.category,a.price,a.order).run(),r++)}catch(n){console.error("Failed to insert product:",a.name,n)}return t.push("✅ Inserted "+r+" initial products"),e.json({success:!0,message:"스토어 시스템 초기화 완료",results:t})}catch(t){return console.error("[Store Init] Error:",t),e.json({success:!1,error:t.message},500)}});const it=new et,Ys=Object.assign({"/src/index.tsx":c});let Rt=!1;for(const[,e]of Object.entries(Ys))e&&(it.all("*",t=>{let s;try{s=t.executionCtx}catch{}return e.fetch(t.req.raw,t.env,s)}),it.notFound(t=>{let s;try{s=t.executionCtx}catch{}return e.fetch(t.req.raw,t.env,s)}),Rt=!0);if(!Rt)throw new Error("Can't import modules from ['/src/index.ts','/src/index.tsx','/app/server.ts']");export{it as default};

@@ -4325,146 +4325,489 @@ function generateAcademyIntroHTML(data: any): string {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>${academyName} - 학원 소개</title>
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
-      @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
-      * { font-family: 'Pretendard Variable', sans-serif; margin: 0; padding: 0; box-sizing: border-box; }
-      body { background: #f8fafc; color: #1e293b; line-height: 1.6; }
-      .container { max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; }
-      .hero { background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%); color: white; padding: 4rem 1.5rem; text-align: center; }
-      .section { padding: 3rem 1.5rem; }
-      .card { background: white; border-radius: 1rem; padding: 2rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 2rem; }
-      .section-title { font-size: 2rem; font-weight: 700; margin-bottom: 2rem; text-align: center; color: #1e293b; }
-      .grid-2 { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
-      .grid-3 { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
-      @media (min-width: 768px) {
-        .grid-2 { grid-template-columns: repeat(2, 1fr); }
-        .grid-3 { grid-template-columns: repeat(3, 1fr); }
-      }
-      .feature-item { display: flex; align-items: start; gap: 1rem; padding: 1rem; background: #f1f5f9; border-radius: 0.5rem; }
-      .feature-number { flex-shrink: 0; width: 2.5rem; height: 2.5rem; background: #3b82f6; color: white; border-radius: 0.5rem; display: flex; align-items: center; justify-content: center; font-weight: 700; }
-      img { max-width: 100%; height: auto; display: block; border-radius: 0.5rem; }
-      .director-photo { width: 10rem; height: 10rem; border-radius: 50%; object-fit: cover; margin: 0 auto 1.5rem; }
-      .gallery-img { width: 100%; height: 250px; object-fit: cover; border-radius: 0.5rem; }
-      .contact-btn { display: inline-block; background: white; color: #3b82f6; padding: 1rem 2rem; border-radius: 0.5rem; font-weight: 600; text-decoration: none; margin-top: 1rem; }
-      .contact-btn:hover { background: #f1f5f9; }
+        * {
+            font-family: 'Noto Sans KR', sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #fff;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* Navigation */
+        nav {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 1rem 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        nav .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        nav h1 {
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: #4F46E5;
+        }
+        
+        nav a {
+            color: #333;
+            text-decoration: none;
+            margin-left: 2rem;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        
+        nav a:hover {
+            color: #4F46E5;
+        }
+        
+        /* Hero Section */
+        .hero {
+            position: relative;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 8rem 0 6rem;
+            text-align: center;
+            overflow: hidden;
+        }
+        
+        .hero-pattern {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            opacity: 0.1;
+            background-image: 
+                radial-gradient(circle at 20px 20px, white 2px, transparent 0),
+                radial-gradient(circle at 80px 80px, white 2px, transparent 0);
+            background-size: 100px 100px;
+        }
+        
+        .hero-content {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 900;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .hero p {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            opacity: 0.95;
+        }
+        
+        .hero .location {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        /* Section Styles */
+        .section {
+            padding: 5rem 0;
+        }
+        
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 900;
+            text-align: center;
+            margin-bottom: 3rem;
+            color: #1a202c;
+        }
+        
+        .section-title::after {
+            content: '';
+            display: block;
+            width: 80px;
+            height: 4px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 1rem auto 0;
+            border-radius: 2px;
+        }
+        
+        /* Director Section */
+        .director-card {
+            background: white;
+            border-radius: 20px;
+            padding: 3rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .director-photo {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin: 0 auto 2rem;
+            border: 5px solid #667eea;
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .director-name {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 2rem;
+            color: #1a202c;
+        }
+        
+        .career-list {
+            text-align: left;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .career-item {
+            display: flex;
+            align-items: start;
+            margin-bottom: 1rem;
+            padding: 0.8rem;
+            background: #f7fafc;
+            border-radius: 10px;
+            transition: transform 0.3s;
+        }
+        
+        .career-item:hover {
+            transform: translateX(10px);
+        }
+        
+        .career-icon {
+            color: #667eea;
+            margin-right: 1rem;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+        
+        /* Gallery Section */
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+        
+        .gallery-item {
+            position: relative;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .gallery-item:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+        }
+        
+        .gallery-item img {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            display: block;
+        }
+        
+        /* Info Cards */
+        .info-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2.5rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            margin-bottom: 2rem;
+        }
+        
+        .info-card h3 {
+            font-size: 1.8rem;
+            font-weight: 900;
+            margin-bottom: 1.5rem;
+            color: #1a202c;
+        }
+        
+        .info-card p, .info-card ul {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: #4a5568;
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .feature-item {
+            display: flex;
+            align-items: start;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+            border-radius: 15px;
+            transition: transform 0.3s;
+        }
+        
+        .feature-item:hover {
+            transform: translateY(-5px);
+        }
+        
+        .feature-number {
+            flex-shrink: 0;
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            margin-right: 1rem;
+            font-size: 1.2rem;
+        }
+        
+        .feature-text {
+            flex: 1;
+            font-size: 1.05rem;
+            color: #2d3748;
+        }
+        
+        /* CTA Section */
+        .cta-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 5rem 0;
+            text-align: center;
+        }
+        
+        .cta-section h2 {
+            font-size: 2.5rem;
+            font-weight: 900;
+            margin-bottom: 1.5rem;
+        }
+        
+        .cta-section p {
+            font-size: 1.3rem;
+            margin-bottom: 2rem;
+            opacity: 0.95;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            background: white;
+            color: #667eea;
+            padding: 1.2rem 3rem;
+            border-radius: 50px;
+            font-size: 1.3rem;
+            font-weight: 700;
+            text-decoration: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2.5rem; }
+            .hero p { font-size: 1.2rem; }
+            .section-title { font-size: 2rem; }
+            .gallery-grid { grid-template-columns: 1fr; }
+            nav a { margin-left: 1rem; }
+        }
     </style>
 </head>
 <body>
+    <!-- Navigation -->
+    <nav>
+        <div class="container">
+            <h1>${academyName}</h1>
+            <div>
+                <a href="#about">소개</a>
+                <a href="#programs">프로그램</a>
+                <a href="#gallery">갤러리</a>
+                <a href="#contact">연락처</a>
+            </div>
+        </div>
+    </nav>
+
     <!-- Hero Section -->
     <div class="hero">
-        <div class="container">
-            <h1 style="font-size: 3rem; font-weight: 800; margin-bottom: 1rem;">${academyName}</h1>
-            <p style="font-size: 1.25rem; margin-bottom: 0.5rem;">📍 ${location}</p>
-            <p style="font-size: 1.125rem; opacity: 0.95;">${features || ''}</p>
+        <div class="hero-pattern"></div>
+        <div class="hero-content container">
+            <h1>${academyName}</h1>
+            <p>${features || '최고의 교육을 제공합니다'}</p>
+            <p class="location"><i class="fas fa-map-marker-alt"></i> ${location}</p>
         </div>
     </div>
 
     <!-- Main Content -->
-    <div class="container">
-        
-        ${directorName ? `
-        <!-- 학원장 소개 -->
-        <div class="section">
+    ${directorName ? `
+    <!-- 학원장 소개 -->
+    <section id="about" class="section" style="background: #f7fafc;">
+        <div class="container">
             <h2 class="section-title">학원장 소개</h2>
-            <div class="card" style="text-align: center;">
-                ${directorPhoto ? `<img src="${directorPhoto}" alt="${directorName}" class="director-photo" onerror="this.style.display='none';">` : ''}
-                <h3 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem;">${directorName} 원장</h3>
-                <div style="text-align: left; max-width: 600px; margin: 0 auto;">
+            <div class="director-card">
+                ${directorPhoto ? `<img src="${directorPhoto}" alt="${directorName}" class="director-photo" crossorigin="anonymous" onerror="this.style.display='none';">` : ''}
+                <h3 class="director-name">${directorName} 원장</h3>
+                <div class="career-list">
                     ${directorCareerList.map((career: string) => `
-                        <p style="margin-bottom: 0.5rem; padding-left: 1.5rem; position: relative;">
-                            <span style="position: absolute; left: 0; color: #3b82f6;">✓</span>
-                            ${career}
-                        </p>
+                        <div class="career-item">
+                            <i class="fas fa-check-circle career-icon"></i>
+                            <div>${career}</div>
+                        </div>
                     `).join('')}
                 </div>
             </div>
         </div>
-        ` : ''}
+    </section>
+    ` : ''}
 
-        ${academyPhoto1 || academyPhoto2 || academyPhoto3 ? `
-        <!-- 학원 사진 -->
-        <div class="section">
+    ${academyPhoto1 || academyPhoto2 || academyPhoto3 ? `
+    <!-- 학원 갤러리 -->
+    <section id="gallery" class="section">
+        <div class="container">
             <h2 class="section-title">학원 둘러보기</h2>
-            <div class="grid-3">
-                ${academyPhoto1 ? `<div><img src="${academyPhoto1}" alt="학원 사진 1" class="gallery-img" onerror="this.parentElement.style.display='none';"></div>` : ''}
-                ${academyPhoto2 ? `<div><img src="${academyPhoto2}" alt="학원 사진 2" class="gallery-img" onerror="this.parentElement.style.display='none';"></div>` : ''}
-                ${academyPhoto3 ? `<div><img src="${academyPhoto3}" alt="학원 사진 3" class="gallery-img" onerror="this.parentElement.style.display='none';"></div>` : ''}
-            </div>
-        </div>
-        ` : ''}
-
-        ${educationPhilosophy ? `
-        <!-- 교육 철학 -->
-        <div class="section">
-            <h2 class="section-title">교육 철학</h2>
-            <div class="card">
-                <p style="font-size: 1.125rem; line-height: 1.8; white-space: pre-line;">${educationPhilosophy}</p>
-            </div>
-        </div>
-        ` : ''}
-
-        ${educationProgramsList.length > 0 ? `
-        <!-- 교육 프로그램 -->
-        <div class="section">
-            <h2 class="section-title">교육 프로그램</h2>
-            <div class="grid-2">
-                ${educationProgramsList.map((program: string, i: number) => `
-                    <div class="feature-item">
-                        <div class="feature-number">${i + 1}</div>
-                        <p>${program}</p>
-                    </div>
-                `).join('')}
-            </div>
-        </div>
-        ` : ''}
-
-        ${curriculumList.length > 0 ? `
-        <!-- 커리큘럼 -->
-        <div class="section">
-            <h2 class="section-title">커리큘럼</h2>
-            ${curriculumList.map((item: string, i: number) => `
-                <div class="feature-item" style="margin-bottom: 1rem;">
-                    <div class="feature-number">${i + 1}</div>
-                    <p>${item}</p>
+            <div class="gallery-grid">
+                ${academyPhoto1 ? `
+                <div class="gallery-item">
+                    <img src="${academyPhoto1}" alt="학원 사진 1" crossorigin="anonymous" onerror="this.parentElement.style.display='none';">
                 </div>
-            `).join('')}
+                ` : ''}
+                ${academyPhoto2 ? `
+                <div class="gallery-item">
+                    <img src="${academyPhoto2}" alt="학원 사진 2" crossorigin="anonymous" onerror="this.parentElement.style.display='none';">
+                </div>
+                ` : ''}
+                ${academyPhoto3 ? `
+                <div class="gallery-item">
+                    <img src="${academyPhoto3}" alt="학원 사진 3" crossorigin="anonymous" onerror="this.parentElement.style.display='none';">
+                </div>
+                ` : ''}
+            </div>
         </div>
-        ` : ''}
+    </section>
+    ` : ''}
 
-        ${specialtiesList.length > 0 ? `
-        <!-- 학원 강점 -->
-        <div class="section">
+    ${educationPhilosophy || educationProgramsList.length > 0 || curriculumList.length > 0 ? `
+    <!-- 교육 정보 -->
+    <section id="programs" class="section" style="background: #f7fafc;">
+        <div class="container">
+            <h2 class="section-title">교육 정보</h2>
+            
+            ${educationPhilosophy ? `
+            <div class="info-card">
+                <h3><i class="fas fa-lightbulb" style="color: #667eea;"></i> 교육 철학</h3>
+                <p style="white-space: pre-line;">${educationPhilosophy}</p>
+            </div>
+            ` : ''}
+            
+            ${educationProgramsList.length > 0 ? `
+            <div class="info-card">
+                <h3><i class="fas fa-book-open" style="color: #667eea;"></i> 교육 프로그램</h3>
+                <div class="feature-grid">
+                    ${educationProgramsList.map((program: string, i: number) => `
+                        <div class="feature-item">
+                            <div class="feature-number">${i + 1}</div>
+                            <div class="feature-text">${program}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+            ` : ''}
+            
+            ${curriculumList.length > 0 ? `
+            <div class="info-card">
+                <h3><i class="fas fa-graduation-cap" style="color: #667eea;"></i> 커리큘럼</h3>
+                <div class="feature-grid">
+                    ${curriculumList.map((item: string, i: number) => `
+                        <div class="feature-item">
+                            <div class="feature-number">${i + 1}</div>
+                            <div class="feature-text">${item}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+            ` : ''}
+        </div>
+    </section>
+    ` : ''}
+
+    ${specialtiesList.length > 0 ? `
+    <!-- 학원 강점 -->
+    <section class="section">
+        <div class="container">
             <h2 class="section-title">${academyName}의 강점</h2>
-            <div class="grid-2">
+            <div class="feature-grid">
                 ${specialtiesList.map((s: string, i: number) => `
                     <div class="feature-item">
                         <div class="feature-number">${i + 1}</div>
-                        <p>${s}</p>
+                        <div class="feature-text">${s}</div>
                     </div>
                 `).join('')}
             </div>
         </div>
-        ` : ''}
+    </section>
+    ` : ''}
 
-        <!-- 연락처 -->
-        <div class="section">
-            <div class="card" style="background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%); color: white; text-align: center;">
-                <h2 style="font-size: 2rem; font-weight: 700; margin-bottom: 1rem;">지금 바로 상담 받으세요</h2>
-                <p style="font-size: 1.25rem; margin-bottom: 1.5rem; opacity: 0.95;">무료 학습 진단 및 맞춤 상담 제공</p>
-                <p style="font-size: 1.75rem; font-weight: 700; margin-bottom: 1rem;">📞 ${contact}</p>
-                <a href="tel:${contact}" class="contact-btn">전화 상담하기</a>
-            </div>
+    <!-- 연락처 -->
+    <section id="contact" class="cta-section">
+        <div class="container">
+            <h2>지금 바로 상담 받으세요</h2>
+            <p>무료 학습 진단 및 맞춤 상담 제공</p>
+            <p style="font-size: 2rem; font-weight: 900; margin-bottom: 2rem;">
+                <i class="fas fa-phone-alt"></i> ${contact}
+            </p>
+            <a href="tel:${contact}" class="cta-button">
+                <i class="fas fa-phone-alt"></i> 전화 상담하기
+            </a>
         </div>
-    </div>
+    </section>
 
     <!-- Footer -->
-    <footer style="background: #1e293b; color: #94a3b8; padding: 2rem 1.5rem; text-align: center;">
+    <footer style="background: #1a202c; color: #a0aec0; padding: 3rem 1.5rem; text-align: center;">
         <div class="container">
-            <h3 style="color: white; font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem;">${academyName}</h3>
-            <p style="margin-bottom: 0.25rem;">📍 ${location}</p>
-            <p style="margin-bottom: 1rem;">📞 ${contact}</p>
-            <p style="font-size: 0.875rem; opacity: 0.7;">© 2026 ${academyName}. All rights reserved.</p>
+            <h3 style="color: white; font-size: 1.5rem; font-weight: 900; margin-bottom: 1rem;">${academyName}</h3>
+            <p style="margin-bottom: 0.5rem;"><i class="fas fa-map-marker-alt"></i> ${location}</p>
+            <p style="margin-bottom: 1.5rem;"><i class="fas fa-phone"></i> ${contact}</p>
+            <p style="font-size: 0.9rem; opacity: 0.7;">© 2026 ${academyName}. All rights reserved.</p>
         </div>
     </footer>
 </body>
