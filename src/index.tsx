@@ -21253,9 +21253,9 @@ app.get('/landing/:slug', async (c) => {
     // </head> 직전에 OG 태그 추가
     htmlContent = htmlContent.replace('</head>', `${ogTags}</head>`)
     
-    // QR코드 섹션 직전에 폼 추가
+    // Footer 직전에 폼 추가
     if (formHtml) {
-      htmlContent = htmlContent.replace('<!-- QR코드 섹션 -->', `${formHtml}\n        <!-- QR코드 섹션 -->`)
+      htmlContent = htmlContent.replace('<footer>', `${formHtml}\n        <footer>`)
     }
     
     // HTML 반환
