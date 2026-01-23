@@ -5302,10 +5302,10 @@ var Nt=Object.defineProperty;var tt=e=>{throw TypeError(e)};var Mt=(e,t,s)=>t in
       UPDATE forms 
       SET name = ?, description = ?, fields = ?, custom_html = ?, header_script = ?, updated_at = CURRENT_TIMESTAMP
       WHERE id = ?
-    `).bind(s,r||"",JSON.stringify(a||[]),o||"",n||"",t).run(),e.json({success:!0,message:"폼이 수정되었습니다."})}catch(t){return console.error("Form update error:",t),e.json({success:!1,error:"폼 수정 실패"},500)}});c.delete("/api/forms/:id",async e=>{try{const t=e.req.param("id");return await e.env.DB.prepare("DELETE FROM forms WHERE id = ?").bind(t).run(),e.json({success:!0,message:"폼이 삭제되었습니다."})}catch(t){return console.error("Form delete error:",t),e.json({success:!1,error:"폼 삭제 실패"},500)}});c.post("/api/forms/submit",async e=>{try{const{formId:t,landingPageSlug:s,name:r,phone:a,email:o,data:n,agreedToTerms:i}=await e.req.json();if(!t||!r||!i)return e.json({success:!1,error:"필수 정보가 누락되었습니다."},400);const l=await e.env.DB.prepare(`
-      INSERT INTO form_submissions (form_id, landing_page_slug, name, phone, email, data, agreed_to_terms)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
-    `).bind(t,s||"",r,a||"",o||"",JSON.stringify(n||{}),i?1:0).run();return e.json({success:!0,message:"신청이 완료되었습니다.",submissionId:l.meta.last_row_id})}catch(t){return console.error("Form submission error:",t),e.json({success:!1,error:"신청 실패: "+t.message},500)}});c.get("/api/forms/:id/submissions",async e=>{try{const t=e.req.param("id"),s=await e.env.DB.prepare(`
+    `).bind(s,r||"",JSON.stringify(a||[]),o||"",n||"",t).run(),e.json({success:!0,message:"폼이 수정되었습니다."})}catch(t){return console.error("Form update error:",t),e.json({success:!1,error:"폼 수정 실패"},500)}});c.delete("/api/forms/:id",async e=>{try{const t=e.req.param("id");return await e.env.DB.prepare("DELETE FROM forms WHERE id = ?").bind(t).run(),e.json({success:!0,message:"폼이 삭제되었습니다."})}catch(t){return console.error("Form delete error:",t),e.json({success:!1,error:"폼 삭제 실패"},500)}});c.post("/api/forms/submit",async e=>{try{const{formId:t,landingPageSlug:s,name:r,phone:a,email:o,data:n,agreedToTerms:i}=await e.req.json();if(!t||!r||!i)return e.json({success:!1,error:"필수 정보가 누락되었습니다."},400);let l=null;if(s){const m=await e.env.DB.prepare("SELECT id FROM landing_pages WHERE slug = ?").bind(s).first();l=(m==null?void 0:m.id)||null}const d=e.req.header("cf-connecting-ip")||e.req.header("x-forwarded-for")||"unknown",p=e.req.header("user-agent")||"unknown",u=await e.env.DB.prepare(`
+      INSERT INTO form_submissions (form_id, landing_page_id, name, phone, email, additional_data, agreed_to_terms, ip_address, user_agent)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).bind(t,l,r,a||"",o||"",JSON.stringify(n||{}),i?1:0,d,p).run();return e.json({success:!0,message:"신청이 완료되었습니다.",submissionId:u.meta.last_row_id})}catch(t){return console.error("Form submission error:",t),e.json({success:!1,error:"신청 실패: "+t.message},500)}});c.get("/api/forms/:id/submissions",async e=>{try{const t=e.req.param("id"),s=await e.env.DB.prepare(`
       SELECT * FROM form_submissions WHERE form_id = ? ORDER BY created_at DESC
     `).bind(t).all();return e.json({success:!0,submissions:s.results||[]})}catch(t){return console.error("Form submissions error:",t),e.json({success:!1,error:"제출 내역 조회 실패"},500)}});c.post("/api/generate-parent-message",async e=>{var t,s;try{const{studentName:r,grade:a,subject:o,shortMessage:n}=await e.req.json();if(!r||!a||!o||!n)return e.json({success:!1,error:"필수 항목을 입력해주세요."},400);const i=Je(r,a,o,n);return e.json({success:!0,message:i,metadata:{studentName:r,grade:a,subject:o,originalMessage:n,mode:"template"}})}catch(r){return console.error("Generate message error:",r),e.json({success:!1,error:"메시지 생성 중 오류가 발생했습니다."},500)}});c.post("/api/generate-parent-message-from-records",async e=>{try{const{studentId:t,studentName:s,grade:r,subjects:a,parentName:o,records:n,additionalMessage:i}=await e.req.json();if(!t||!s)return e.json({success:!1,error:"학생 정보가 필요합니다."},400);const l=Gs(n),d=zs(s,r,a,o,l,i),p=e.env.OPENAI_API_KEY,u=e.env.OPENAI_BASE_URL||"https://api.openai.com/v1";if(p)try{const g=await fetch(`${u}/chat/completions`,{method:"POST",headers:{"Content-Type":"application/json",Authorization:`Bearer ${p}`},body:JSON.stringify({model:"gpt-4o-mini",messages:[{role:"system",content:`당신은 학원 원장님입니다. 학부모님께 학생의 학습 현황을 따뜻하고 격려하는 말투로 전달하는 메시지를 작성합니다.
 
@@ -16817,7 +16817,94 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
         </footer>
     </body>
     </html>
-  `));c.get("/landing/:slug",async e=>{try{const t=e.req.param("slug"),r=await e.env.DB.prepare("SELECT * FROM landing_pages WHERE slug = ? AND status = ?").bind(t,"active").first();if(!r)return e.html("<h1>페이지를 찾을 수 없습니다.</h1>",404);await e.env.DB.prepare("UPDATE landing_pages SET view_count = view_count + 1 WHERE slug = ?").bind(t).run();let a=r.html_content;const o=`${e.req.header("origin")||"https://superplace-academy.pages.dev"}/landing/${t}`,n=r.thumbnail_url||"https://via.placeholder.com/1200x630.png?text=Super+Place+Academy",i=r.og_title||r.title||"우리는 슈퍼플레이스다",l=r.og_description||"꾸메땅학원의 전문적인 교육 서비스를 만나보세요",d=`
+  `));c.get("/landing/:slug",async e=>{try{const t=e.req.param("slug"),r=await e.env.DB.prepare("SELECT * FROM landing_pages WHERE slug = ? AND status = ?").bind(t,"active").first();if(!r)return e.html("<h1>페이지를 찾을 수 없습니다.</h1>",404);await e.env.DB.prepare("UPDATE landing_pages SET view_count = view_count + 1 WHERE slug = ?").bind(t).run();let a=r.html_content;const o=`${e.req.header("origin")||"https://superplace-academy.pages.dev"}/landing/${t}`,n=r.thumbnail_url||"https://via.placeholder.com/1200x630.png?text=Super+Place+Academy",i=r.og_title||r.title||"우리는 슈퍼플레이스다",l=r.og_description||"꾸메땅학원의 전문적인 교육 서비스를 만나보세요";let d="",p="";if(r.form_id){const m=await e.env.DB.prepare("SELECT * FROM forms WHERE id = ?").bind(r.form_id).first();m&&(m.header_script&&(p=m.header_script),d=`
+        <!-- 신청 폼 섹션 -->
+        <div class="container mx-auto px-4 py-12" id="apply-form-section">
+            <div class="max-w-2xl mx-auto bg-white rounded-2xl shadow-2xl p-8">
+                <h2 class="text-3xl font-bold text-center mb-2 bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-pink-600">
+                    📝 신청하기
+                </h2>
+                <p class="text-center text-gray-600 mb-8">아래 정보를 입력하고 신청해주세요</p>
+                
+                ${m.custom_html||""}
+                
+                <form id="applicationForm" class="space-y-6">
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">이름 *</label>
+                        <input type="text" name="name" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="홍길동">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">연락처</label>
+                        <input type="tel" name="phone" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="010-1234-5678">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">이메일</label>
+                        <input type="email" name="email" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="example@email.com">
+                    </div>
+                    
+                    <div class="flex items-start">
+                        <input type="checkbox" name="agreedToTerms" required class="mt-1 mr-3 h-5 w-5 text-purple-600 focus:ring-purple-500 border-gray-300 rounded">
+                        <label class="text-sm text-gray-700">
+                            ${m.terms_text||"개인정보 수집 및 이용에 동의합니다."}
+                        </label>
+                    </div>
+                    
+                    <button type="submit" class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-4 rounded-xl text-lg font-bold hover:shadow-xl transition transform hover:scale-105">
+                        신청하기
+                    </button>
+                </form>
+                
+                <div id="formResult" class="hidden mt-6 p-4 rounded-xl"></div>
+            </div>
+        </div>
+        
+        <script>
+        document.getElementById('applicationForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const data = {
+                formId: ${m.id},
+                landingPageSlug: '${t}',
+                name: formData.get('name'),
+                phone: formData.get('phone'),
+                email: formData.get('email'),
+                agreedToTerms: formData.get('agreedToTerms') ? 1 : 0
+            };
+            
+            try {
+                const response = await fetch('/api/forms/submit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                const resultDiv = document.getElementById('formResult');
+                resultDiv.classList.remove('hidden');
+                
+                if (result.success) {
+                    resultDiv.className = 'mt-6 p-4 rounded-xl bg-green-100 border-2 border-green-500 text-green-800';
+                    resultDiv.innerHTML = '<p class="font-bold text-center">✅ ${m.success_message||"신청이 완료되었습니다. 감사합니다!"}</p>';
+                    e.target.reset();
+                    
+                    // 픽셀 스크립트 실행
+                    ${m.pixel_script||""}
+                } else {
+                    resultDiv.className = 'mt-6 p-4 rounded-xl bg-red-100 border-2 border-red-500 text-red-800';
+                    resultDiv.innerHTML = '<p class="font-bold text-center">❌ ' + (result.error || '신청에 실패했습니다.') + '</p>';
+                }
+            } catch (error) {
+                const resultDiv = document.getElementById('formResult');
+                resultDiv.classList.remove('hidden');
+                resultDiv.className = 'mt-6 p-4 rounded-xl bg-red-100 border-2 border-red-500 text-red-800';
+                resultDiv.innerHTML = '<p class="font-bold text-center">❌ 오류가 발생했습니다.</p>';
+            }
+        });
+        <\/script>
+        `)}const u=`
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="${o}">
@@ -16831,7 +16918,10 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
     <meta property="twitter:title" content="${i}">
     <meta property="twitter:description" content="${l}">
     <meta property="twitter:image" content="${n}">
-    `;return a=a.replace("</head>",`${d}</head>`),e.html(a)}catch{return e.html("<h1>오류가 발생했습니다.</h1>",500)}});async function Vs(e,t,s,r,a,o){const n=new FormData;n.append("key",s),n.append("user_id",r),n.append("sender",a),n.append("receiver",e),n.append("msg",t),n.append("testmode_yn",o==="Y"?"N":"Y");try{return await(await fetch("https://apis.aligo.in/send/",{method:"POST",body:n})).json()}catch(i){return console.error("Aligo SMS error:",i),{result_code:-1,message:"SMS 발송 실패"}}}c.get("/api/sms/templates",async e=>{try{const{results:t}=await e.env.DB.prepare(`
+    
+    ${p}
+    `;return a=a.replace("</head>",`${u}</head>`),d&&(a=a.replace("<!-- QR코드 섹션 -->",`${d}
+        <!-- QR코드 섹션 -->`)),e.html(a)}catch(t){return console.error("Landing page error:",t),e.html("<h1>오류가 발생했습니다.</h1>",500)}});async function Vs(e,t,s,r,a,o){const n=new FormData;n.append("key",s),n.append("user_id",r),n.append("sender",a),n.append("receiver",e),n.append("msg",t),n.append("testmode_yn",o==="Y"?"N":"Y");try{return await(await fetch("https://apis.aligo.in/send/",{method:"POST",body:n})).json()}catch(i){return console.error("Aligo SMS error:",i),{result_code:-1,message:"SMS 발송 실패"}}}c.get("/api/sms/templates",async e=>{try{const{results:t}=await e.env.DB.prepare(`
       SELECT * FROM sms_templates WHERE is_active = 1 ORDER BY category, name
     `).all();return e.json({success:!0,templates:t})}catch(t){return console.error("Get templates error:",t),e.json({success:!1,error:"템플릿 조회 실패"},500)}});c.post("/api/sms/templates",async e=>{try{const{name:t,category:s,content:r,variables:a}=await e.req.json(),o=JSON.parse(e.req.header("X-User-Data-Base64")?decodeURIComponent(escape(atob(e.req.header("X-User-Data-Base64")||""))):'{"id":1}'),n=await e.env.DB.prepare(`
       INSERT INTO sms_templates (name, category, content, variables, created_by)

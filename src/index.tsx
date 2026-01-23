@@ -6547,10 +6547,21 @@ app.post('/api/forms/submit', async (c) => {
       return c.json({ success: false, error: '필수 정보가 누락되었습니다.' }, 400)
     }
     
+    // 랜딩페이지 ID 가져오기
+    let landingPageId = null
+    if (landingPageSlug) {
+      const page = await c.env.DB.prepare('SELECT id FROM landing_pages WHERE slug = ?').bind(landingPageSlug).first()
+      landingPageId = page?.id || null
+    }
+    
+    // IP 주소와 User Agent 가져오기
+    const ipAddress = c.req.header('cf-connecting-ip') || c.req.header('x-forwarded-for') || 'unknown'
+    const userAgent = c.req.header('user-agent') || 'unknown'
+    
     const result = await c.env.DB.prepare(`
-      INSERT INTO form_submissions (form_id, landing_page_slug, name, phone, email, data, agreed_to_terms)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
-    `).bind(formId, landingPageSlug || '', name, phone || '', email || '', JSON.stringify(data || {}), agreedToTerms ? 1 : 0).run()
+      INSERT INTO form_submissions (form_id, landing_page_id, name, phone, email, additional_data, agreed_to_terms, ip_address, user_agent)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).bind(formId, landingPageId, name, phone || '', email || '', JSON.stringify(data || {}), agreedToTerms ? 1 : 0, ipAddress, userAgent).run()
     
     return c.json({ 
       success: true, 
@@ -21117,7 +21128,110 @@ app.get('/landing/:slug', async (c) => {
     const ogTitle = (page.og_title as string) || (page.title as string) || '우리는 슈퍼플레이스다'
     const ogDescription = (page.og_description as string) || '꾸메땅학원의 전문적인 교육 서비스를 만나보세요'
     
-    // <head> 태그에 OG 메타 태그 주입
+    // 폼 데이터 가져오기
+    let formHtml = ''
+    let formHeaderScript = ''
+    if (page.form_id) {
+      const form = await c.env.DB.prepare('SELECT * FROM forms WHERE id = ?').bind(page.form_id).first()
+      if (form) {
+        // 헤더 스크립트 (픽셀 등)
+        if (form.header_script) {
+          formHeaderScript = form.header_script as string
+        }
+        
+        // 폼 HTML 생성
+        formHtml = `
+        <!-- 신청 폼 섹션 -->
+        <div class="container mx-auto px-4 py-12" id="apply-form-section">
+            <div class="max-w-2xl mx-auto bg-white rounded-2xl shadow-2xl p-8">
+                <h2 class="text-3xl font-bold text-center mb-2 bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-pink-600">
+                    📝 신청하기
+                </h2>
+                <p class="text-center text-gray-600 mb-8">아래 정보를 입력하고 신청해주세요</p>
+                
+                ${form.custom_html || ''}
+                
+                <form id="applicationForm" class="space-y-6">
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">이름 *</label>
+                        <input type="text" name="name" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="홍길동">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">연락처</label>
+                        <input type="tel" name="phone" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="010-1234-5678">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">이메일</label>
+                        <input type="email" name="email" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="example@email.com">
+                    </div>
+                    
+                    <div class="flex items-start">
+                        <input type="checkbox" name="agreedToTerms" required class="mt-1 mr-3 h-5 w-5 text-purple-600 focus:ring-purple-500 border-gray-300 rounded">
+                        <label class="text-sm text-gray-700">
+                            ${form.terms_text || '개인정보 수집 및 이용에 동의합니다.'}
+                        </label>
+                    </div>
+                    
+                    <button type="submit" class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-4 rounded-xl text-lg font-bold hover:shadow-xl transition transform hover:scale-105">
+                        신청하기
+                    </button>
+                </form>
+                
+                <div id="formResult" class="hidden mt-6 p-4 rounded-xl"></div>
+            </div>
+        </div>
+        
+        <script>
+        document.getElementById('applicationForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const data = {
+                formId: ${form.id},
+                landingPageSlug: '${slug}',
+                name: formData.get('name'),
+                phone: formData.get('phone'),
+                email: formData.get('email'),
+                agreedToTerms: formData.get('agreedToTerms') ? 1 : 0
+            };
+            
+            try {
+                const response = await fetch('/api/forms/submit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                const resultDiv = document.getElementById('formResult');
+                resultDiv.classList.remove('hidden');
+                
+                if (result.success) {
+                    resultDiv.className = 'mt-6 p-4 rounded-xl bg-green-100 border-2 border-green-500 text-green-800';
+                    resultDiv.innerHTML = '<p class="font-bold text-center">✅ ${form.success_message || '신청이 완료되었습니다. 감사합니다!'}</p>';
+                    e.target.reset();
+                    
+                    // 픽셀 스크립트 실행
+                    ${form.pixel_script || ''}
+                } else {
+                    resultDiv.className = 'mt-6 p-4 rounded-xl bg-red-100 border-2 border-red-500 text-red-800';
+                    resultDiv.innerHTML = '<p class="font-bold text-center">❌ ' + (result.error || '신청에 실패했습니다.') + '</p>';
+                }
+            } catch (error) {
+                const resultDiv = document.getElementById('formResult');
+                resultDiv.classList.remove('hidden');
+                resultDiv.className = 'mt-6 p-4 rounded-xl bg-red-100 border-2 border-red-500 text-red-800';
+                resultDiv.innerHTML = '<p class="font-bold text-center">❌ 오류가 발생했습니다.</p>';
+            }
+        });
+        </script>
+        `
+      }
+    }
+    
+    // <head> 태그에 OG 메타 태그 + 폼 헤더 스크립트 주입
     const ogTags = `
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
@@ -21132,14 +21246,22 @@ app.get('/landing/:slug', async (c) => {
     <meta property="twitter:title" content="${ogTitle}">
     <meta property="twitter:description" content="${ogDescription}">
     <meta property="twitter:image" content="${thumbnailUrl}">
+    
+    ${formHeaderScript}
     `
     
     // </head> 직전에 OG 태그 추가
     htmlContent = htmlContent.replace('</head>', `${ogTags}</head>`)
     
+    // QR코드 섹션 직전에 폼 추가
+    if (formHtml) {
+      htmlContent = htmlContent.replace('<!-- QR코드 섹션 -->', `${formHtml}\n        <!-- QR코드 섹션 -->`)
+    }
+    
     // HTML 반환
     return c.html(htmlContent)
   } catch (err) {
+    console.error('Landing page error:', err)
     return c.html('<h1>오류가 발생했습니다.</h1>', 500)
   }
 })
