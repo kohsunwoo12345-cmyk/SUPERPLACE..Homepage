@@ -3571,6 +3571,7 @@ var Bt=Object.defineProperty;var tt=e=>{throw TypeError(e)};var Nt=(e,t,s)=>t in
             border: 5px solid #667eea;
             box-shadow: 0 5px 20px rgba(102, 126, 234, 0.3);
             background: #f0f0f0;
+            display: block !important;
         }
         
         .director-name {
@@ -3632,8 +3633,9 @@ var Bt=Object.defineProperty;var tt=e=>{throw TypeError(e)};var Nt=(e,t,s)=>t in
             width: 100%;
             height: 300px;
             object-fit: cover;
-            display: block;
+            display: block !important;
             background: #f0f0f0;
+            border: 3px solid #667eea !important;
         }
         
         /* Info Cards */

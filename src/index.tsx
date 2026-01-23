@@ -4480,6 +4480,7 @@ function generateAcademyIntroHTML(data: any): string {
             border: 5px solid #667eea;
             box-shadow: 0 5px 20px rgba(102, 126, 234, 0.3);
             background: #f0f0f0;
+            display: block !important;
         }
         
         .director-name {
@@ -4541,8 +4542,9 @@ function generateAcademyIntroHTML(data: any): string {
             width: 100%;
             height: 300px;
             object-fit: cover;
-            display: block;
+            display: block !important;
             background: #f0f0f0;
+            border: 3px solid #667eea !important;
         }
         
         /* Info Cards */
