@@ -4116,7 +4116,7 @@ app.post('/api/landing/create', async (c) => {
     })
   } catch (err) {
     console.error('Landing page creation error:', err)
-    return c.json({ success: false, error: '랜딩페이지 생성 실패: ' + (error as Error).message }, 500)
+    return c.json({ success: false, error: '랜딩페이지 생성 실패: ' + (err as Error).message }, 500)
   }
 })
 
