@@ -4689,7 +4689,7 @@ function generateAcademyIntroHTML(data: any): string {
         <div class="container">
             <h2 class="section-title">학원장 소개</h2>
             <div class="director-card">
-                ${directorPhoto ? `<img src="${directorPhoto}" alt="${directorName}" class="director-photo" width="180" height="180" referrerpolicy="no-referrer" onerror="console.log('Failed to load director photo:',this.src);this.style.display='none';">` : ''}
+                ${directorPhoto ? `<img src="${directorPhoto}" alt="${directorName}" class="director-photo" width="180" height="180" style="display:block!important;width:180px!important;height:180px!important;" referrerpolicy="no-referrer" onerror="console.log('Failed to load director photo:',this.src);this.style.display='none';">` : ''}
                 <h3 class="director-name">${directorName} 원장</h3>
                 <div class="career-list">
                     ${directorCareerList.map((career: string) => `
@@ -4712,17 +4712,17 @@ function generateAcademyIntroHTML(data: any): string {
             <div class="gallery-grid">
                 ${academyPhoto1 ? `
                 <div class="gallery-item">
-                    <img src="${academyPhoto1}" alt="학원 사진 1" width="400" height="300" referrerpolicy="no-referrer" onload="console.log('Loaded image 1');" onerror="console.log('Failed to load image 1:',this.src);this.parentElement.style.display='none';">
+                    <img src="${academyPhoto1}" alt="학원 사진 1" width="400" height="300" style="display:block!important;width:100%!important;height:300px!important;" referrerpolicy="no-referrer" onload="console.log('Loaded image 1');" onerror="console.log('Failed to load image 1:',this.src);this.parentElement.style.display='none';" >
                 </div>
                 ` : ''}
                 ${academyPhoto2 ? `
                 <div class="gallery-item">
-                    <img src="${academyPhoto2}" alt="학원 사진 2" width="400" height="300" referrerpolicy="no-referrer" onload="console.log('Loaded image 2');" onerror="console.log('Failed to load image 2:',this.src);this.parentElement.style.display='none';">
+                    <img src="${academyPhoto2}" alt="학원 사진 2" width="400" height="300" style="display:block!important;width:100%!important;height:300px!important;" referrerpolicy="no-referrer" onload="console.log('Loaded image 2');" onerror="console.log('Failed to load image 2:',this.src);this.parentElement.style.display='none';" >
                 </div>
                 ` : ''}
                 ${academyPhoto3 ? `
                 <div class="gallery-item">
-                    <img src="${academyPhoto3}" alt="학원 사진 3" width="400" height="300" referrerpolicy="no-referrer" onload="console.log('Loaded image 3');" onerror="console.log('Failed to load image 3:',this.src);this.parentElement.style.display='none';">
+                    <img src="${academyPhoto3}" alt="학원 사진 3" width="400" height="300" style="display:block!important;width:100%!important;height:300px!important;" referrerpolicy="no-referrer" onload="console.log('Loaded image 3');" onerror="console.log('Failed to load image 3:',this.src);this.parentElement.style.display='none';" >
                 </div>
                 ` : ''}
             </div>
