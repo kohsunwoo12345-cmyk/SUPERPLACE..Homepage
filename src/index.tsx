@@ -4363,7 +4363,8 @@ function generateLandingPageHTML(template_type: string, data: any): string {
     'student-report': generateStudentReportHTML,
     'admission-info': generateAdmissionInfoHTML,
     'academy-stats': generateAcademyStatsHTML,
-    'teacher-intro': generateTeacherIntroHTML
+    'teacher-intro': generateTeacherIntroHTML,
+    'vacation-course': generateVacationCourseHTML
   }
   
   const generator = templates[template_type] || templates['academy-intro']
@@ -5738,6 +5739,560 @@ function generateTeacherIntroHTML(data: any): string {
                 </div>
             </div>
         </div>
+    </div>
+</body>
+</html>
+  `
+}
+
+// 방학 특강 안내 템플릿
+function generateVacationCourseHTML(data: any): string {
+  const {
+    academyName,
+    courseName,
+    period,
+    schedule,
+    programs,
+    curriculum,
+    contact,
+    targetGrade,
+    features,
+    tuition,
+    earlyBirdDiscount,
+    placeUrl
+  } = data
+  
+  // 배열 변환
+  const programsList = Array.isArray(programs) ? programs : (programs ? programs.split('\n').filter((p: string) => p.trim()) : [])
+  const curriculumList = Array.isArray(curriculum) ? curriculum : (curriculum ? curriculum.split('\n').filter((c: string) => c.trim()) : [])
+  const featuresList = Array.isArray(features) ? features : (features ? features.split('\n').filter((f: string) => f.trim()) : [])
+  
+  return `
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${courseName} - ${academyName}</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        * {
+            font-family: 'Noto Sans KR', sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* Hero Section */
+        .hero {
+            background: white;
+            border-radius: 30px;
+            padding: 3rem;
+            margin: 2rem 0;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(102, 126, 234, 0.1), transparent);
+            animation: shine 3s infinite;
+        }
+        
+        @keyframes shine {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .hero-content {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .hero h1 {
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: #667eea;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .hero .academy-name {
+            font-size: 1.5rem;
+            color: #555;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+        
+        .hero .badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 0.75rem 2rem;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin: 1rem 0;
+            box-shadow: 0 10px 25px rgba(245, 87, 108, 0.3);
+        }
+        
+        .hero .period {
+            font-size: 1.3rem;
+            color: #764ba2;
+            font-weight: 700;
+            margin-top: 1.5rem;
+        }
+        
+        /* Section Styles */
+        .section {
+            background: white;
+            border-radius: 20px;
+            padding: 2.5rem;
+            margin: 2rem 0;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        
+        .section-title {
+            font-size: 2rem;
+            font-weight: 900;
+            color: #667eea;
+            margin-bottom: 2rem;
+            text-align: center;
+            position: relative;
+            padding-bottom: 1rem;
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            border-radius: 2px;
+        }
+        
+        /* Info Grid */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+        
+        .info-card {
+            background: linear-gradient(135deg, #f8f9ff 0%, #f0f2ff 100%);
+            padding: 1.5rem;
+            border-radius: 15px;
+            text-align: center;
+            border: 2px solid #e0e7ff;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .info-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
+        }
+        
+        .info-card .icon {
+            font-size: 2.5rem;
+            color: #667eea;
+            margin-bottom: 1rem;
+        }
+        
+        .info-card .label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+        
+        .info-card .value {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #333;
+        }
+        
+        /* Program List */
+        .program-list {
+            display: grid;
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+        
+        .program-item {
+            background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+            padding: 1.5rem;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 5px 15px rgba(253, 203, 110, 0.3);
+            transition: transform 0.3s;
+        }
+        
+        .program-item:hover {
+            transform: translateX(10px);
+        }
+        
+        .program-number {
+            flex-shrink: 0;
+            width: 50px;
+            height: 50px;
+            background: white;
+            color: #fdcb6e;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 900;
+            margin-right: 1.5rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .program-text {
+            flex: 1;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2d3436;
+        }
+        
+        /* Curriculum Timeline */
+        .curriculum-timeline {
+            position: relative;
+            padding-left: 2rem;
+            margin: 2rem 0;
+        }
+        
+        .curriculum-timeline::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+            border-radius: 2px;
+        }
+        
+        .curriculum-item {
+            position: relative;
+            padding: 1.5rem;
+            background: #f8f9ff;
+            border-radius: 15px;
+            margin-bottom: 1.5rem;
+            margin-left: 2rem;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+        }
+        
+        .curriculum-item::before {
+            content: '';
+            position: absolute;
+            left: -3rem;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            background: white;
+            border: 4px solid #667eea;
+            border-radius: 50%;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2);
+        }
+        
+        .curriculum-item .week {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+        }
+        
+        .curriculum-item .content {
+            font-size: 1.05rem;
+            color: #333;
+            line-height: 1.7;
+        }
+        
+        /* Feature Cards */
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+        
+        .feature-card {
+            background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%);
+            padding: 2rem;
+            border-radius: 20px;
+            text-align: center;
+            transition: transform 0.3s;
+            border: 3px solid #4dd0e1;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-10px);
+        }
+        
+        .feature-card .icon {
+            font-size: 3rem;
+            color: #00838f;
+            margin-bottom: 1rem;
+        }
+        
+        .feature-card .text {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #00695c;
+            line-height: 1.5;
+        }
+        
+        /* Price Section */
+        .price-section {
+            background: linear-gradient(135deg, #a8e063 0%, #56ab2f 100%);
+            color: white;
+            padding: 2.5rem;
+            border-radius: 20px;
+            text-align: center;
+            margin: 2rem 0;
+            box-shadow: 0 15px 40px rgba(86, 171, 47, 0.3);
+        }
+        
+        .price-section h2 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 1.5rem;
+        }
+        
+        .price {
+            font-size: 3rem;
+            font-weight: 900;
+            margin: 1rem 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .early-bird {
+            background: rgba(255,255,255,0.3);
+            padding: 1rem 2rem;
+            border-radius: 15px;
+            margin-top: 1.5rem;
+            font-size: 1.2rem;
+            font-weight: 700;
+            backdrop-filter: blur(10px);
+        }
+        
+        /* CTA Section */
+        .cta-section {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            padding: 3rem;
+            border-radius: 20px;
+            text-align: center;
+            margin: 2rem 0;
+            box-shadow: 0 15px 40px rgba(245, 87, 108, 0.4);
+        }
+        
+        .cta-section h2 {
+            color: white;
+            font-size: 2.5rem;
+            font-weight: 900;
+            margin-bottom: 2rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            background: white;
+            color: #f5576c;
+            padding: 1.2rem 2.5rem;
+            border-radius: 50px;
+            font-size: 1.3rem;
+            font-weight: 700;
+            text-decoration: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+        
+        .cta-button i {
+            margin-right: 0.5rem;
+        }
+        
+        /* Footer */
+        footer {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+            border-radius: 20px;
+            margin: 2rem 0;
+            backdrop-filter: blur(10px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Hero Section -->
+        <div class="hero">
+            <div class="hero-content">
+                <div class="academy-name">${academyName}</div>
+                <h1>🎓 ${courseName}</h1>
+                <div class="badge">🔥 특강 모집 중</div>
+                <div class="period">
+                    <i class="fas fa-calendar-alt"></i> ${period}
+                </div>
+            </div>
+        </div>
+
+        <!-- 기본 정보 -->
+        <div class="section">
+            <h2 class="section-title"><i class="fas fa-info-circle"></i> 특강 개요</h2>
+            <div class="info-grid">
+                ${targetGrade ? `
+                <div class="info-card">
+                    <div class="icon"><i class="fas fa-users"></i></div>
+                    <div class="label">대상</div>
+                    <div class="value">${targetGrade}</div>
+                </div>
+                ` : ''}
+                <div class="info-card">
+                    <div class="icon"><i class="fas fa-clock"></i></div>
+                    <div class="label">수업 시간</div>
+                    <div class="value">${schedule}</div>
+                </div>
+                <div class="info-card">
+                    <div class="icon"><i class="fas fa-calendar-check"></i></div>
+                    <div class="label">기간</div>
+                    <div class="value">${period}</div>
+                </div>
+            </div>
+        </div>
+
+        ${programsList.length > 0 ? `
+        <!-- 특강 프로그램 -->
+        <div class="section">
+            <h2 class="section-title"><i class="fas fa-book-open"></i> 특강 프로그램</h2>
+            <div class="program-list">
+                ${programsList.map((program: string, index: number) => `
+                <div class="program-item">
+                    <div class="program-number">${index + 1}</div>
+                    <div class="program-text">${program}</div>
+                </div>
+                `).join('')}
+            </div>
+        </div>
+        ` : ''}
+
+        ${curriculumList.length > 0 ? `
+        <!-- 커리큘럼 -->
+        <div class="section">
+            <h2 class="section-title"><i class="fas fa-list-ol"></i> 주차별 커리큘럼</h2>
+            <div class="curriculum-timeline">
+                ${curriculumList.map((item: string, index: number) => `
+                <div class="curriculum-item">
+                    <div class="week">${index + 1}주차</div>
+                    <div class="content">${item}</div>
+                </div>
+                `).join('')}
+            </div>
+        </div>
+        ` : ''}
+
+        ${featuresList.length > 0 ? `
+        <!-- 특강 특징 -->
+        <div class="section">
+            <h2 class="section-title"><i class="fas fa-star"></i> 특강 특징</h2>
+            <div class="feature-grid">
+                ${featuresList.map((feature: string) => `
+                <div class="feature-card">
+                    <div class="icon"><i class="fas fa-check-circle"></i></div>
+                    <div class="text">${feature}</div>
+                </div>
+                `).join('')}
+            </div>
+        </div>
+        ` : ''}
+
+        ${tuition ? `
+        <!-- 수강료 -->
+        <div class="price-section">
+            <h2>💰 수강료</h2>
+            <div class="price">${tuition}</div>
+            ${earlyBirdDiscount ? `
+            <div class="early-bird">
+                🎁 조기 등록 혜택: ${earlyBirdDiscount}
+            </div>
+            ` : ''}
+        </div>
+        ` : ''}
+
+        <!-- CTA Section -->
+        <div class="cta-section">
+            <h2>지금 바로 신청하세요!</h2>
+            <div class="cta-buttons">
+                <a href="tel:${contact}" class="cta-button">
+                    <i class="fas fa-phone"></i>전화 문의
+                </a>
+                ${placeUrl ? `
+                <a href="${placeUrl}" target="_blank" rel="noopener noreferrer" class="cta-button">
+                    <i class="fas fa-map-marker-alt"></i>오시는 길
+                </a>
+                ` : ''}
+            </div>
+            <p style="margin-top: 2rem; font-size: 1.1rem; color: white; opacity: 0.95;">
+                📞 ${contact}
+            </p>
+        </div>
+
+        <!-- Footer -->
+        <footer>
+            <p>&copy; 2026 ${academyName}. All rights reserved.</p>
+        </footer>
     </div>
 </body>
 </html>
@@ -17134,6 +17689,11 @@ app.get('/tools/landing-builder', (c) => {
                             <div class="font-bold text-lg mb-2 text-gray-900 group-hover:text-teal-600 transition-colors">선생님 소개</div>
                             <p class="text-sm text-gray-600 leading-relaxed">강사진의 경력과 전문성을 소개</p>
                         </button>
+                        <button onclick="selectTemplate('vacation-course', event)" class="template-btn group p-6 border-2 border-gray-200 rounded-xl hover:border-orange-500 hover:shadow-xl transition-all duration-300 text-left bg-white">
+                            <div class="text-4xl mb-3 group-hover:scale-110 transition-transform duration-300">🎓</div>
+                            <div class="font-bold text-lg mb-2 text-gray-900 group-hover:text-orange-600 transition-colors">방학 특강 안내</div>
+                            <p class="text-sm text-gray-600 leading-relaxed">방학 특강 프로그램 및 커리큘럼 안내</p>
+                        </button>
                     </div>
                 </div>
 
@@ -17926,6 +18486,89 @@ app.get('/tools/landing-builder', (c) => {
                             <input type="text" name="contact" placeholder="예: 032-123-4567" class="w-full px-4 py-3 border border-gray-300 rounded-xl">
                         </div>
                     </div>
+                \`,
+                'vacation-course': \`
+                    <div class="space-y-6">
+                        <!-- 기본 정보 -->
+                        <div class="border-b pb-4">
+                            <h3 class="text-lg font-bold text-gray-900 mb-4">📋 기본 정보</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-900 mb-2">학원명 *</label>
+                                    <input type="text" name="academyName" required class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-900 mb-2">특강명 *</label>
+                                    <input type="text" name="courseName" placeholder="예: 겨울방학 수학 특강" required class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-900 mb-2">기간 *</label>
+                                        <input type="text" name="period" placeholder="예: 2026.01.20 ~ 2026.02.10" required class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-900 mb-2">수업 시간 *</label>
+                                        <input type="text" name="schedule" placeholder="예: 월~금 10:00-12:00" required class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-900 mb-2">대상 학년</label>
+                                    <input type="text" name="targetGrade" placeholder="예: 중1~중3" class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-900 mb-2">연락처 *</label>
+                                    <input type="text" name="contact" placeholder="예: 010-1234-5678" required class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-900 mb-2">플레이스 주소 (선택사항)</label>
+                                    <input type="url" name="placeUrl" placeholder="예: https://place.map.kakao.com/12345" class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                                    <p class="text-xs text-gray-500 mt-1">🗺️ 카카오맵, 네이버 플레이스 등의 주소를 입력하면 오시는 길 버튼이 생성됩니다</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 특강 프로그램 -->
+                        <div class="border-b pb-4">
+                            <h3 class="text-lg font-bold text-gray-900 mb-4">📚 특강 프로그램 (선택사항)</h3>
+                            <p class="text-sm text-gray-500 mb-4">각 프로그램을 한 줄씩 입력해주세요</p>
+                            <div>
+                                <textarea name="programs" rows="4" placeholder="개념 완벽 정리 및 심화 학습&#10;문제 풀이 집중 훈련&#10;실전 모의고사 대비&#10;1:1 맞춤 학습 코칭" class="w-full px-4 py-3 border border-gray-300 rounded-xl"></textarea>
+                            </div>
+                        </div>
+                        
+                        <!-- 주차별 커리큘럼 -->
+                        <div class="border-b pb-4">
+                            <h3 class="text-lg font-bold text-gray-900 mb-4">📅 주차별 커리큘럼 (선택사항)</h3>
+                            <p class="text-sm text-gray-500 mb-4">각 주차 내용을 한 줄씩 입력해주세요</p>
+                            <div>
+                                <textarea name="curriculum" rows="4" placeholder="기초 개념 완벽 정리&#10;유형별 문제 풀이 마스터&#10;실전 모의고사 및 분석&#10;최종 점검 및 보완" class="w-full px-4 py-3 border border-gray-300 rounded-xl"></textarea>
+                            </div>
+                        </div>
+                        
+                        <!-- 특강 특징 -->
+                        <div class="border-b pb-4">
+                            <h3 class="text-lg font-bold text-gray-900 mb-4">⭐ 특강 특징 (선택사항)</h3>
+                            <p class="text-sm text-gray-500 mb-4">특강만의 장점을 한 줄씩 입력해주세요</p>
+                            <div>
+                                <textarea name="features" rows="4" placeholder="소규모 그룹 수업으로 집중 케어&#10;내신과 수능 동시 대비&#10;전문 강사진의 체계적 관리&#10;매일 과제 검사 및 피드백" class="w-full px-4 py-3 border border-gray-300 rounded-xl"></textarea>
+                            </div>
+                        </div>
+                        
+                        <!-- 수강료 -->
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900 mb-4">💰 수강료 (선택사항)</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-900 mb-2">수강료</label>
+                                    <input type="text" name="tuition" placeholder="예: 350,000원" class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-900 mb-2">조기 등록 혜택</label>
+                                    <input type="text" name="earlyBirdDiscount" placeholder="예: 1월 10일까지 등록 시 30,000원 할인" class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 \`
             };
 
@@ -18317,6 +18960,7 @@ app.get('/tools/landing-builder', (c) => {
             else if (selectedTemplate === 'admission-info') title = data.eventTitle;
             else if (selectedTemplate === 'academy-stats') title = data.academyName + ' ' + data.period + ' 성과';
             else if (selectedTemplate === 'teacher-intro') title = data.teacherName + ' 선생님';
+            else if (selectedTemplate === 'vacation-course') title = data.courseName;
 
             // 배열 필드 처리 - 새로운 템플릿 포함
             if (data.agenda) data.agenda = data.agenda.split('\\n').filter(s => s.trim());

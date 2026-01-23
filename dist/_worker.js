@@ -3405,7 +3405,7 @@ var Bt=Object.defineProperty;var tt=e=>{throw TypeError(e)};var Nt=(e,t,s)=>t in
       SET landing_pages_created = landing_pages_created + 1, 
           updated_at = CURRENT_TIMESTAMP
       WHERE subscription_id = ?
-    `).bind(m.id).run(),console.log("✅ Landing page created and usage incremented:",x+1,"/",v),e.json({success:!0,message:"랜딩페이지가 생성되었습니다.",slug:b,url:`/landing/${b}`,usage:{current:x+1,limit:v},qrCodeUrl:f,id:_.meta.last_row_id})}catch(t){return console.error("Landing page creation error:",t),e.json({success:!1,error:"랜딩페이지 생성 실패: "+t.message},500)}});c.get("/api/landing/my-pages",async e=>{try{const t=e.req.query("userId"),s=e.req.query("folderId");let r="SELECT id, slug, title, template_type, view_count, status, folder_id, created_at FROM landing_pages WHERE user_id = ?",a=[t];s?(r+=" AND folder_id = ?",a.push(s)):(s===null||s==="null")&&(r+=" AND folder_id IS NULL"),r+=" ORDER BY created_at DESC";const{results:n}=await e.env.DB.prepare(r).bind(...a).all();return e.json({success:!0,pages:n})}catch(t){return console.error("목록 조회 실패:",t),e.json({success:!1,error:"목록 조회 실패"},500)}});c.get("/api/landing/folders",async e=>{try{const t=e.req.query("userId"),s="SELECT id, name, created_at FROM landing_folders WHERE user_id = ? ORDER BY created_at DESC",{results:r}=await e.env.DB.prepare(s).bind(t).all(),a=await Promise.all(r.map(async i=>{const d=await e.env.DB.prepare("SELECT COUNT(*) as count FROM landing_pages WHERE folder_id = ?").bind(i.id).first();return{...i,page_count:d.count||0}})),o=await e.env.DB.prepare("SELECT COUNT(*) as count FROM landing_pages WHERE user_id = ?").bind(t).first();return e.json({success:!0,folders:a,totalPages:o.count||0})}catch(t){return console.error("폴더 목록 조회 실패:",t),e.json({success:!1,error:"폴더 목록 조회 실패"},500)}});c.post("/api/landing/folders",async e=>{try{const{userId:t,name:s,description:r}=await e.req.json();if(!s||!s.trim())return e.json({success:!1,error:"폴더 이름을 입력하세요."},400);const n=await e.env.DB.prepare("INSERT INTO landing_folders (user_id, name, description) VALUES (?, ?, ?)").bind(t,s.trim(),r||null).run();return e.json({success:!0,folderId:n.meta.last_row_id,message:"폴더가 생성되었습니다."})}catch(t){return console.error("폴더 생성 실패:",t),e.json({success:!1,error:"폴더 생성 실패"},500)}});c.put("/api/landing/folders/:id",async e=>{try{const t=e.req.param("id"),{name:s,description:r}=await e.req.json();return!s||!s.trim()?e.json({success:!1,error:"폴더 이름을 입력하세요."},400):(await e.env.DB.prepare("UPDATE landing_folders SET name = ?, description = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?").bind(s.trim(),r||null,t).run(),e.json({success:!0,message:"폴더가 수정되었습니다."}))}catch(t){return console.error("폴더 수정 실패:",t),e.json({success:!1,error:"폴더 수정 실패"},500)}});c.delete("/api/landing/folders/:id",async e=>{try{const t=e.req.param("id"),s=e.req.query("userId");return await e.env.DB.prepare("UPDATE landing_pages SET folder_id = NULL WHERE folder_id = ?").bind(t).run(),await e.env.DB.prepare("DELETE FROM landing_folders WHERE id = ? AND user_id = ?").bind(t,s).run(),e.json({success:!0,message:"폴더가 삭제되었습니다."})}catch(t){return console.error("폴더 삭제 실패:",t),e.json({success:!1,error:"폴더 삭제 실패"},500)}});c.put("/api/landing/move-to-folder",async e=>{try{const{pageId:t,folderId:s}=await e.req.json();return await e.env.DB.prepare("UPDATE landing_pages SET folder_id = ? WHERE id = ?").bind(s,t).run(),e.json({success:!0,message:"폴더로 이동되었습니다."})}catch(t){return console.error("폴더 이동 실패:",t),e.json({success:!1,error:"폴더 이동 실패"},500)}});c.get("/api/landing/:slug",async e=>{try{const t=e.req.param("slug"),r=await e.env.DB.prepare("SELECT * FROM landing_pages WHERE slug = ? AND status = ?").bind(t,"active").first();return r?(await e.env.DB.prepare("UPDATE landing_pages SET view_count = view_count + 1 WHERE slug = ?").bind(t).run(),await e.env.DB.prepare("INSERT INTO landing_page_views (landing_page_id, user_agent, referrer) VALUES (?, ?, ?)").bind(r.id,e.req.header("user-agent")||"",e.req.header("referer")||"").run(),e.json({success:!0,page:r})):e.json({success:!1,error:"페이지를 찾을 수 없습니다."},404)}catch{return e.json({success:!1,error:"페이지 조회 실패"},500)}});c.get("/api/landing/stats/summary",async e=>{try{const t=e.req.header("X-User-Data"),s=t?JSON.parse(t):{id:1},r=await e.env.DB.prepare("SELECT COUNT(*) as count FROM landing_pages WHERE user_id = ?").bind(s.id).first(),a=await e.env.DB.prepare("SELECT SUM(view_count) as total FROM landing_pages WHERE user_id = ?").bind(s.id).first(),n=await e.env.DB.prepare("SELECT id, title, slug, view_count FROM landing_pages WHERE user_id = ? ORDER BY view_count DESC LIMIT 5").bind(s.id).all();return e.json({success:!0,stats:{totalPages:(r==null?void 0:r.count)||0,totalViews:(a==null?void 0:a.total)||0,topPages:n.results||[]}})}catch{return e.json({success:!1,error:"통계 조회 실패"},500)}});c.delete("/api/landing/:id",async e=>{try{const t=e.req.param("id"),s=e.req.query("userId"),r=e.req.header("X-User-Data");let a;if(s)a={id:parseInt(s)};else if(r)a=JSON.parse(r);else return e.json({success:!1,error:"사용자 인증 정보가 없습니다."},401);console.log("Deleting landing page:",{id:t,userId:a.id});const n=await e.env.DB.prepare("DELETE FROM landing_pages WHERE id = ? AND user_id = ?").bind(t,a.id).run();return console.log("Delete result:",n),n.meta.changes===0?e.json({success:!1,error:"삭제할 페이지를 찾을 수 없거나 권한이 없습니다."},404):e.json({success:!0,message:"삭제되었습니다."})}catch(t){return console.error("Landing page delete error:",t),e.json({success:!1,error:t.message||"삭제 실패"},500)}});function Ns(e,t){const s={"academy-intro":Ms,"program-promo":As,"event-promo":Os,"parent-letter":Us,"student-report":Ps,"admission-info":Fs,"academy-stats":$s,"teacher-intro":Hs};return(s[e]||s["academy-intro"])(t)}function Ms(e){const{academyName:t,location:s,features:r,specialties:a,contact:n,placeUrl:o,directorName:i,directorPhoto:l,directorCareer:d,academyPhoto1:p,academyPhoto2:u,academyPhoto3:m,educationPhilosophy:g,educationPrograms:x,curriculum:v}=e,b=Array.isArray(a)?a:a?a.split(`
+    `).bind(m.id).run(),console.log("✅ Landing page created and usage incremented:",x+1,"/",v),e.json({success:!0,message:"랜딩페이지가 생성되었습니다.",slug:b,url:`/landing/${b}`,usage:{current:x+1,limit:v},qrCodeUrl:f,id:_.meta.last_row_id})}catch(t){return console.error("Landing page creation error:",t),e.json({success:!1,error:"랜딩페이지 생성 실패: "+t.message},500)}});c.get("/api/landing/my-pages",async e=>{try{const t=e.req.query("userId"),s=e.req.query("folderId");let r="SELECT id, slug, title, template_type, view_count, status, folder_id, created_at FROM landing_pages WHERE user_id = ?",a=[t];s?(r+=" AND folder_id = ?",a.push(s)):(s===null||s==="null")&&(r+=" AND folder_id IS NULL"),r+=" ORDER BY created_at DESC";const{results:n}=await e.env.DB.prepare(r).bind(...a).all();return e.json({success:!0,pages:n})}catch(t){return console.error("목록 조회 실패:",t),e.json({success:!1,error:"목록 조회 실패"},500)}});c.get("/api/landing/folders",async e=>{try{const t=e.req.query("userId"),s="SELECT id, name, created_at FROM landing_folders WHERE user_id = ? ORDER BY created_at DESC",{results:r}=await e.env.DB.prepare(s).bind(t).all(),a=await Promise.all(r.map(async i=>{const d=await e.env.DB.prepare("SELECT COUNT(*) as count FROM landing_pages WHERE folder_id = ?").bind(i.id).first();return{...i,page_count:d.count||0}})),o=await e.env.DB.prepare("SELECT COUNT(*) as count FROM landing_pages WHERE user_id = ?").bind(t).first();return e.json({success:!0,folders:a,totalPages:o.count||0})}catch(t){return console.error("폴더 목록 조회 실패:",t),e.json({success:!1,error:"폴더 목록 조회 실패"},500)}});c.post("/api/landing/folders",async e=>{try{const{userId:t,name:s,description:r}=await e.req.json();if(!s||!s.trim())return e.json({success:!1,error:"폴더 이름을 입력하세요."},400);const n=await e.env.DB.prepare("INSERT INTO landing_folders (user_id, name, description) VALUES (?, ?, ?)").bind(t,s.trim(),r||null).run();return e.json({success:!0,folderId:n.meta.last_row_id,message:"폴더가 생성되었습니다."})}catch(t){return console.error("폴더 생성 실패:",t),e.json({success:!1,error:"폴더 생성 실패"},500)}});c.put("/api/landing/folders/:id",async e=>{try{const t=e.req.param("id"),{name:s,description:r}=await e.req.json();return!s||!s.trim()?e.json({success:!1,error:"폴더 이름을 입력하세요."},400):(await e.env.DB.prepare("UPDATE landing_folders SET name = ?, description = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?").bind(s.trim(),r||null,t).run(),e.json({success:!0,message:"폴더가 수정되었습니다."}))}catch(t){return console.error("폴더 수정 실패:",t),e.json({success:!1,error:"폴더 수정 실패"},500)}});c.delete("/api/landing/folders/:id",async e=>{try{const t=e.req.param("id"),s=e.req.query("userId");return await e.env.DB.prepare("UPDATE landing_pages SET folder_id = NULL WHERE folder_id = ?").bind(t).run(),await e.env.DB.prepare("DELETE FROM landing_folders WHERE id = ? AND user_id = ?").bind(t,s).run(),e.json({success:!0,message:"폴더가 삭제되었습니다."})}catch(t){return console.error("폴더 삭제 실패:",t),e.json({success:!1,error:"폴더 삭제 실패"},500)}});c.put("/api/landing/move-to-folder",async e=>{try{const{pageId:t,folderId:s}=await e.req.json();return await e.env.DB.prepare("UPDATE landing_pages SET folder_id = ? WHERE id = ?").bind(s,t).run(),e.json({success:!0,message:"폴더로 이동되었습니다."})}catch(t){return console.error("폴더 이동 실패:",t),e.json({success:!1,error:"폴더 이동 실패"},500)}});c.get("/api/landing/:slug",async e=>{try{const t=e.req.param("slug"),r=await e.env.DB.prepare("SELECT * FROM landing_pages WHERE slug = ? AND status = ?").bind(t,"active").first();return r?(await e.env.DB.prepare("UPDATE landing_pages SET view_count = view_count + 1 WHERE slug = ?").bind(t).run(),await e.env.DB.prepare("INSERT INTO landing_page_views (landing_page_id, user_agent, referrer) VALUES (?, ?, ?)").bind(r.id,e.req.header("user-agent")||"",e.req.header("referer")||"").run(),e.json({success:!0,page:r})):e.json({success:!1,error:"페이지를 찾을 수 없습니다."},404)}catch{return e.json({success:!1,error:"페이지 조회 실패"},500)}});c.get("/api/landing/stats/summary",async e=>{try{const t=e.req.header("X-User-Data"),s=t?JSON.parse(t):{id:1},r=await e.env.DB.prepare("SELECT COUNT(*) as count FROM landing_pages WHERE user_id = ?").bind(s.id).first(),a=await e.env.DB.prepare("SELECT SUM(view_count) as total FROM landing_pages WHERE user_id = ?").bind(s.id).first(),n=await e.env.DB.prepare("SELECT id, title, slug, view_count FROM landing_pages WHERE user_id = ? ORDER BY view_count DESC LIMIT 5").bind(s.id).all();return e.json({success:!0,stats:{totalPages:(r==null?void 0:r.count)||0,totalViews:(a==null?void 0:a.total)||0,topPages:n.results||[]}})}catch{return e.json({success:!1,error:"통계 조회 실패"},500)}});c.delete("/api/landing/:id",async e=>{try{const t=e.req.param("id"),s=e.req.query("userId"),r=e.req.header("X-User-Data");let a;if(s)a={id:parseInt(s)};else if(r)a=JSON.parse(r);else return e.json({success:!1,error:"사용자 인증 정보가 없습니다."},401);console.log("Deleting landing page:",{id:t,userId:a.id});const n=await e.env.DB.prepare("DELETE FROM landing_pages WHERE id = ? AND user_id = ?").bind(t,a.id).run();return console.log("Delete result:",n),n.meta.changes===0?e.json({success:!1,error:"삭제할 페이지를 찾을 수 없거나 권한이 없습니다."},404):e.json({success:!0,message:"삭제되었습니다."})}catch(t){return console.error("Landing page delete error:",t),e.json({success:!1,error:t.message||"삭제 실패"},500)}});function Ns(e,t){const s={"academy-intro":Ms,"program-promo":As,"event-promo":Os,"parent-letter":Us,"student-report":Ps,"admission-info":Fs,"academy-stats":$s,"teacher-intro":Hs,"vacation-course":qs};return(s[e]||s["academy-intro"])(t)}function Ms(e){const{academyName:t,location:s,features:r,specialties:a,contact:n,placeUrl:o,directorName:i,directorPhoto:l,directorCareer:d,academyPhoto1:p,academyPhoto2:u,academyPhoto3:m,educationPhilosophy:g,educationPrograms:x,curriculum:v}=e,b=Array.isArray(a)?a:a?a.split(`
 `).filter(E=>E.trim()):[],y=Array.isArray(d)?d:d?d.split(`
 `).filter(E=>E.trim()):[],w=Array.isArray(x)?x:x?x.split(`
 `).filter(E=>E.trim()):[],f=Array.isArray(v)?v:v?v.split(`
@@ -4691,7 +4691,539 @@ var Bt=Object.defineProperty;var tt=e=>{throw TypeError(e)};var Nt=(e,t,s)=>t in
     </div>
 </body>
 </html>
-  `}c.post("/api/generate-parent-message",async e=>{var t,s;try{const{studentName:r,grade:a,subject:n,shortMessage:o}=await e.req.json();if(!r||!a||!n||!o)return e.json({success:!1,error:"필수 항목을 입력해주세요."},400);const i=Je(r,a,n,o);return e.json({success:!0,message:i,metadata:{studentName:r,grade:a,subject:n,originalMessage:o,mode:"template"}})}catch(r){return console.error("Generate message error:",r),e.json({success:!1,error:"메시지 생성 중 오류가 발생했습니다."},500)}});c.post("/api/generate-parent-message-from-records",async e=>{try{const{studentId:t,studentName:s,grade:r,subjects:a,parentName:n,records:o,additionalMessage:i}=await e.req.json();if(!t||!s)return e.json({success:!1,error:"학생 정보가 필요합니다."},400);const l=qs(o),d=Ws(s,r,a,n,l,i),p=e.env.OPENAI_API_KEY,u=e.env.OPENAI_BASE_URL||"https://api.openai.com/v1";if(p)try{const g=await fetch(`${u}/chat/completions`,{method:"POST",headers:{"Content-Type":"application/json",Authorization:`Bearer ${p}`},body:JSON.stringify({model:"gpt-4o-mini",messages:[{role:"system",content:`당신은 학원 원장님입니다. 학부모님께 학생의 학습 현황을 따뜻하고 격려하는 말투로 전달하는 메시지를 작성합니다.
+  `}function qs(e){const{academyName:t,courseName:s,period:r,schedule:a,programs:n,curriculum:o,contact:i,targetGrade:l,features:d,tuition:p,earlyBirdDiscount:u,placeUrl:m}=e,g=Array.isArray(n)?n:n?n.split(`
+`).filter(b=>b.trim()):[],x=Array.isArray(o)?o:o?o.split(`
+`).filter(b=>b.trim()):[],v=Array.isArray(d)?d:d?d.split(`
+`).filter(b=>b.trim()):[];return`
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${s} - ${t}</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"><\/script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        * {
+            font-family: 'Noto Sans KR', sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* Hero Section */
+        .hero {
+            background: white;
+            border-radius: 30px;
+            padding: 3rem;
+            margin: 2rem 0;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(102, 126, 234, 0.1), transparent);
+            animation: shine 3s infinite;
+        }
+        
+        @keyframes shine {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .hero-content {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .hero h1 {
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: #667eea;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .hero .academy-name {
+            font-size: 1.5rem;
+            color: #555;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+        
+        .hero .badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 0.75rem 2rem;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin: 1rem 0;
+            box-shadow: 0 10px 25px rgba(245, 87, 108, 0.3);
+        }
+        
+        .hero .period {
+            font-size: 1.3rem;
+            color: #764ba2;
+            font-weight: 700;
+            margin-top: 1.5rem;
+        }
+        
+        /* Section Styles */
+        .section {
+            background: white;
+            border-radius: 20px;
+            padding: 2.5rem;
+            margin: 2rem 0;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        
+        .section-title {
+            font-size: 2rem;
+            font-weight: 900;
+            color: #667eea;
+            margin-bottom: 2rem;
+            text-align: center;
+            position: relative;
+            padding-bottom: 1rem;
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            border-radius: 2px;
+        }
+        
+        /* Info Grid */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+        
+        .info-card {
+            background: linear-gradient(135deg, #f8f9ff 0%, #f0f2ff 100%);
+            padding: 1.5rem;
+            border-radius: 15px;
+            text-align: center;
+            border: 2px solid #e0e7ff;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .info-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
+        }
+        
+        .info-card .icon {
+            font-size: 2.5rem;
+            color: #667eea;
+            margin-bottom: 1rem;
+        }
+        
+        .info-card .label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+        
+        .info-card .value {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #333;
+        }
+        
+        /* Program List */
+        .program-list {
+            display: grid;
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+        
+        .program-item {
+            background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+            padding: 1.5rem;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 5px 15px rgba(253, 203, 110, 0.3);
+            transition: transform 0.3s;
+        }
+        
+        .program-item:hover {
+            transform: translateX(10px);
+        }
+        
+        .program-number {
+            flex-shrink: 0;
+            width: 50px;
+            height: 50px;
+            background: white;
+            color: #fdcb6e;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 900;
+            margin-right: 1.5rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .program-text {
+            flex: 1;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2d3436;
+        }
+        
+        /* Curriculum Timeline */
+        .curriculum-timeline {
+            position: relative;
+            padding-left: 2rem;
+            margin: 2rem 0;
+        }
+        
+        .curriculum-timeline::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+            border-radius: 2px;
+        }
+        
+        .curriculum-item {
+            position: relative;
+            padding: 1.5rem;
+            background: #f8f9ff;
+            border-radius: 15px;
+            margin-bottom: 1.5rem;
+            margin-left: 2rem;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+        }
+        
+        .curriculum-item::before {
+            content: '';
+            position: absolute;
+            left: -3rem;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            background: white;
+            border: 4px solid #667eea;
+            border-radius: 50%;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2);
+        }
+        
+        .curriculum-item .week {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+        }
+        
+        .curriculum-item .content {
+            font-size: 1.05rem;
+            color: #333;
+            line-height: 1.7;
+        }
+        
+        /* Feature Cards */
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+        
+        .feature-card {
+            background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%);
+            padding: 2rem;
+            border-radius: 20px;
+            text-align: center;
+            transition: transform 0.3s;
+            border: 3px solid #4dd0e1;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-10px);
+        }
+        
+        .feature-card .icon {
+            font-size: 3rem;
+            color: #00838f;
+            margin-bottom: 1rem;
+        }
+        
+        .feature-card .text {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #00695c;
+            line-height: 1.5;
+        }
+        
+        /* Price Section */
+        .price-section {
+            background: linear-gradient(135deg, #a8e063 0%, #56ab2f 100%);
+            color: white;
+            padding: 2.5rem;
+            border-radius: 20px;
+            text-align: center;
+            margin: 2rem 0;
+            box-shadow: 0 15px 40px rgba(86, 171, 47, 0.3);
+        }
+        
+        .price-section h2 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 1.5rem;
+        }
+        
+        .price {
+            font-size: 3rem;
+            font-weight: 900;
+            margin: 1rem 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .early-bird {
+            background: rgba(255,255,255,0.3);
+            padding: 1rem 2rem;
+            border-radius: 15px;
+            margin-top: 1.5rem;
+            font-size: 1.2rem;
+            font-weight: 700;
+            backdrop-filter: blur(10px);
+        }
+        
+        /* CTA Section */
+        .cta-section {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            padding: 3rem;
+            border-radius: 20px;
+            text-align: center;
+            margin: 2rem 0;
+            box-shadow: 0 15px 40px rgba(245, 87, 108, 0.4);
+        }
+        
+        .cta-section h2 {
+            color: white;
+            font-size: 2.5rem;
+            font-weight: 900;
+            margin-bottom: 2rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            background: white;
+            color: #f5576c;
+            padding: 1.2rem 2.5rem;
+            border-radius: 50px;
+            font-size: 1.3rem;
+            font-weight: 700;
+            text-decoration: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+        
+        .cta-button i {
+            margin-right: 0.5rem;
+        }
+        
+        /* Footer */
+        footer {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+            border-radius: 20px;
+            margin: 2rem 0;
+            backdrop-filter: blur(10px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Hero Section -->
+        <div class="hero">
+            <div class="hero-content">
+                <div class="academy-name">${t}</div>
+                <h1>🎓 ${s}</h1>
+                <div class="badge">🔥 특강 모집 중</div>
+                <div class="period">
+                    <i class="fas fa-calendar-alt"></i> ${r}
+                </div>
+            </div>
+        </div>
+
+        <!-- 기본 정보 -->
+        <div class="section">
+            <h2 class="section-title"><i class="fas fa-info-circle"></i> 특강 개요</h2>
+            <div class="info-grid">
+                ${l?`
+                <div class="info-card">
+                    <div class="icon"><i class="fas fa-users"></i></div>
+                    <div class="label">대상</div>
+                    <div class="value">${l}</div>
+                </div>
+                `:""}
+                <div class="info-card">
+                    <div class="icon"><i class="fas fa-clock"></i></div>
+                    <div class="label">수업 시간</div>
+                    <div class="value">${a}</div>
+                </div>
+                <div class="info-card">
+                    <div class="icon"><i class="fas fa-calendar-check"></i></div>
+                    <div class="label">기간</div>
+                    <div class="value">${r}</div>
+                </div>
+            </div>
+        </div>
+
+        ${g.length>0?`
+        <!-- 특강 프로그램 -->
+        <div class="section">
+            <h2 class="section-title"><i class="fas fa-book-open"></i> 특강 프로그램</h2>
+            <div class="program-list">
+                ${g.map((b,y)=>`
+                <div class="program-item">
+                    <div class="program-number">${y+1}</div>
+                    <div class="program-text">${b}</div>
+                </div>
+                `).join("")}
+            </div>
+        </div>
+        `:""}
+
+        ${x.length>0?`
+        <!-- 커리큘럼 -->
+        <div class="section">
+            <h2 class="section-title"><i class="fas fa-list-ol"></i> 주차별 커리큘럼</h2>
+            <div class="curriculum-timeline">
+                ${x.map((b,y)=>`
+                <div class="curriculum-item">
+                    <div class="week">${y+1}주차</div>
+                    <div class="content">${b}</div>
+                </div>
+                `).join("")}
+            </div>
+        </div>
+        `:""}
+
+        ${v.length>0?`
+        <!-- 특강 특징 -->
+        <div class="section">
+            <h2 class="section-title"><i class="fas fa-star"></i> 특강 특징</h2>
+            <div class="feature-grid">
+                ${v.map(b=>`
+                <div class="feature-card">
+                    <div class="icon"><i class="fas fa-check-circle"></i></div>
+                    <div class="text">${b}</div>
+                </div>
+                `).join("")}
+            </div>
+        </div>
+        `:""}
+
+        ${p?`
+        <!-- 수강료 -->
+        <div class="price-section">
+            <h2>💰 수강료</h2>
+            <div class="price">${p}</div>
+            ${u?`
+            <div class="early-bird">
+                🎁 조기 등록 혜택: ${u}
+            </div>
+            `:""}
+        </div>
+        `:""}
+
+        <!-- CTA Section -->
+        <div class="cta-section">
+            <h2>지금 바로 신청하세요!</h2>
+            <div class="cta-buttons">
+                <a href="tel:${i}" class="cta-button">
+                    <i class="fas fa-phone"></i>전화 문의
+                </a>
+                ${m?`
+                <a href="${m}" target="_blank" rel="noopener noreferrer" class="cta-button">
+                    <i class="fas fa-map-marker-alt"></i>오시는 길
+                </a>
+                `:""}
+            </div>
+            <p style="margin-top: 2rem; font-size: 1.1rem; color: white; opacity: 0.95;">
+                📞 ${i}
+            </p>
+        </div>
+
+        <!-- Footer -->
+        <footer>
+            <p>&copy; 2026 ${t}. All rights reserved.</p>
+        </footer>
+    </div>
+</body>
+</html>
+  `}c.post("/api/generate-parent-message",async e=>{var t,s;try{const{studentName:r,grade:a,subject:n,shortMessage:o}=await e.req.json();if(!r||!a||!n||!o)return e.json({success:!1,error:"필수 항목을 입력해주세요."},400);const i=Je(r,a,n,o);return e.json({success:!0,message:i,metadata:{studentName:r,grade:a,subject:n,originalMessage:o,mode:"template"}})}catch(r){return console.error("Generate message error:",r),e.json({success:!1,error:"메시지 생성 중 오류가 발생했습니다."},500)}});c.post("/api/generate-parent-message-from-records",async e=>{try{const{studentId:t,studentName:s,grade:r,subjects:a,parentName:n,records:o,additionalMessage:i}=await e.req.json();if(!t||!s)return e.json({success:!1,error:"학생 정보가 필요합니다."},400);const l=Ws(o),d=Gs(s,r,a,n,l,i),p=e.env.OPENAI_API_KEY,u=e.env.OPENAI_BASE_URL||"https://api.openai.com/v1";if(p)try{const g=await fetch(`${u}/chat/completions`,{method:"POST",headers:{"Content-Type":"application/json",Authorization:`Bearer ${p}`},body:JSON.stringify({model:"gpt-4o-mini",messages:[{role:"system",content:`당신은 학원 원장님입니다. 학부모님께 학생의 학습 현황을 따뜻하고 격려하는 말투로 전달하는 메시지를 작성합니다.
 
 규칙:
 1. 존댓말 사용 (학부모님께)
@@ -4702,7 +5234,7 @@ var Bt=Object.defineProperty;var tt=e=>{throw TypeError(e)};var Nt=(e,t,s)=>t in
 6. 250-350자 정도의 적절한 길이
 7. 이모지 2-3개 자연스럽게 사용
 8. 학부모님이 안심하고 신뢰할 수 있는 내용
-9. 최근 7일간의 구체적인 학습 기록을 바탕으로 작성`},{role:"user",content:d}],temperature:.8,max_tokens:600})}),x=await g.json();if(g.ok&&x.choices&&x.choices[0])return e.json({success:!0,message:x.choices[0].message.content,metadata:{studentName:s,grade:r,subjects:a,mode:"ai",recordsCount:o.length}})}catch(g){console.error("OpenAI API error:",g)}const m=Gs(s,r,a,n,l,i);return e.json({success:!0,message:m,metadata:{studentName:s,grade:r,subjects:a,mode:"template",recordsCount:o.length}})}catch(t){return console.error("Generate message from records error:",t),e.json({success:!1,error:"메시지 생성 실패: "+t.message},500)}});function qs(e){if(!e||e.length===0)return{totalDays:0,attendanceRate:0,homeworkRate:0,avgUnderstanding:0,avgParticipation:0,achievements:[],memos:[],latestRecords:[]};const t=e.length,s=e.filter(p=>p.attendance==="출석").length,r=e.filter(p=>p.homework_status==="완료").length,a=e.filter(p=>p.understanding_level).map(p=>p.understanding_level),n=e.filter(p=>p.participation_level).map(p=>p.participation_level),o=a.length>0?(a.reduce((p,u)=>p+u,0)/a.length).toFixed(1):"0",i=n.length>0?(n.reduce((p,u)=>p+u,0)/n.length).toFixed(1):"0",l=e.filter(p=>p.achievement).map(p=>p.achievement),d=e.filter(p=>p.memo).map(p=>p.memo);return{totalDays:t,attendanceRate:(s/t*100).toFixed(0),homeworkRate:t>0?(r/t*100).toFixed(0):"0",avgUnderstanding:o,avgParticipation:i,achievements:l,memos:d,latestRecords:e.slice(0,3)}}function Ws(e,t,s,r,a,n){const o=a.achievements.length>0?`주요 성과:
+9. 최근 7일간의 구체적인 학습 기록을 바탕으로 작성`},{role:"user",content:d}],temperature:.8,max_tokens:600})}),x=await g.json();if(g.ok&&x.choices&&x.choices[0])return e.json({success:!0,message:x.choices[0].message.content,metadata:{studentName:s,grade:r,subjects:a,mode:"ai",recordsCount:o.length}})}catch(g){console.error("OpenAI API error:",g)}const m=zs(s,r,a,n,l,i);return e.json({success:!0,message:m,metadata:{studentName:s,grade:r,subjects:a,mode:"template",recordsCount:o.length}})}catch(t){return console.error("Generate message from records error:",t),e.json({success:!1,error:"메시지 생성 실패: "+t.message},500)}});function Ws(e){if(!e||e.length===0)return{totalDays:0,attendanceRate:0,homeworkRate:0,avgUnderstanding:0,avgParticipation:0,achievements:[],memos:[],latestRecords:[]};const t=e.length,s=e.filter(p=>p.attendance==="출석").length,r=e.filter(p=>p.homework_status==="완료").length,a=e.filter(p=>p.understanding_level).map(p=>p.understanding_level),n=e.filter(p=>p.participation_level).map(p=>p.participation_level),o=a.length>0?(a.reduce((p,u)=>p+u,0)/a.length).toFixed(1):"0",i=n.length>0?(n.reduce((p,u)=>p+u,0)/n.length).toFixed(1):"0",l=e.filter(p=>p.achievement).map(p=>p.achievement),d=e.filter(p=>p.memo).map(p=>p.memo);return{totalDays:t,attendanceRate:(s/t*100).toFixed(0),homeworkRate:t>0?(r/t*100).toFixed(0):"0",avgUnderstanding:o,avgParticipation:i,achievements:l,memos:d,latestRecords:e.slice(0,3)}}function Gs(e,t,s,r,a,n){const o=a.achievements.length>0?`주요 성과:
 ${a.achievements.slice(0,3).map(d=>`- ${d}`).join(`
 `)}`:"",i=a.memos.length>0?`선생님 메모:
 ${a.memos.slice(0,3).map(d=>`- ${d}`).join(`
@@ -4725,7 +5257,7 @@ ${i}
 ${l}
 
 위 정보를 바탕으로 ${r||"학부모"} 님께 보낼 따뜻하고 구체적인 메시지를 작성해주세요. 
-학생의 강점을 구체적인 수치와 함께 칭찬하고, 개선이 필요한 부분은 격려와 함께 제시해주세요.`}function Gs(e,t,s,r,a,n){let i=`안녕하세요, ${r?`${r} 학부모님`:"학부모님"}! 😊
+학생의 강점을 구체적인 수치와 함께 칭찬하고, 개선이 필요한 부분은 격려와 함께 제시해주세요.`}function zs(e,t,s,r,a,n){let i=`안녕하세요, ${r?`${r} 학부모님`:"학부모님"}! 😊
 
 `;return i+=`${e} 학생의 최근 일주일 학습 현황을 전달드립니다.
 
@@ -13107,6 +13639,11 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
                             <div class="font-bold text-lg mb-2 text-gray-900 group-hover:text-teal-600 transition-colors">선생님 소개</div>
                             <p class="text-sm text-gray-600 leading-relaxed">강사진의 경력과 전문성을 소개</p>
                         </button>
+                        <button onclick="selectTemplate('vacation-course', event)" class="template-btn group p-6 border-2 border-gray-200 rounded-xl hover:border-orange-500 hover:shadow-xl transition-all duration-300 text-left bg-white">
+                            <div class="text-4xl mb-3 group-hover:scale-110 transition-transform duration-300">🎓</div>
+                            <div class="font-bold text-lg mb-2 text-gray-900 group-hover:text-orange-600 transition-colors">방학 특강 안내</div>
+                            <p class="text-sm text-gray-600 leading-relaxed">방학 특강 프로그램 및 커리큘럼 안내</p>
+                        </button>
                     </div>
                 </div>
 
@@ -13899,6 +14436,89 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
                             <input type="text" name="contact" placeholder="예: 032-123-4567" class="w-full px-4 py-3 border border-gray-300 rounded-xl">
                         </div>
                     </div>
+                \`,
+                'vacation-course': \`
+                    <div class="space-y-6">
+                        <!-- 기본 정보 -->
+                        <div class="border-b pb-4">
+                            <h3 class="text-lg font-bold text-gray-900 mb-4">📋 기본 정보</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-900 mb-2">학원명 *</label>
+                                    <input type="text" name="academyName" required class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-900 mb-2">특강명 *</label>
+                                    <input type="text" name="courseName" placeholder="예: 겨울방학 수학 특강" required class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-900 mb-2">기간 *</label>
+                                        <input type="text" name="period" placeholder="예: 2026.01.20 ~ 2026.02.10" required class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-900 mb-2">수업 시간 *</label>
+                                        <input type="text" name="schedule" placeholder="예: 월~금 10:00-12:00" required class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-900 mb-2">대상 학년</label>
+                                    <input type="text" name="targetGrade" placeholder="예: 중1~중3" class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-900 mb-2">연락처 *</label>
+                                    <input type="text" name="contact" placeholder="예: 010-1234-5678" required class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-900 mb-2">플레이스 주소 (선택사항)</label>
+                                    <input type="url" name="placeUrl" placeholder="예: https://place.map.kakao.com/12345" class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                                    <p class="text-xs text-gray-500 mt-1">🗺️ 카카오맵, 네이버 플레이스 등의 주소를 입력하면 오시는 길 버튼이 생성됩니다</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 특강 프로그램 -->
+                        <div class="border-b pb-4">
+                            <h3 class="text-lg font-bold text-gray-900 mb-4">📚 특강 프로그램 (선택사항)</h3>
+                            <p class="text-sm text-gray-500 mb-4">각 프로그램을 한 줄씩 입력해주세요</p>
+                            <div>
+                                <textarea name="programs" rows="4" placeholder="개념 완벽 정리 및 심화 학습&#10;문제 풀이 집중 훈련&#10;실전 모의고사 대비&#10;1:1 맞춤 학습 코칭" class="w-full px-4 py-3 border border-gray-300 rounded-xl"></textarea>
+                            </div>
+                        </div>
+                        
+                        <!-- 주차별 커리큘럼 -->
+                        <div class="border-b pb-4">
+                            <h3 class="text-lg font-bold text-gray-900 mb-4">📅 주차별 커리큘럼 (선택사항)</h3>
+                            <p class="text-sm text-gray-500 mb-4">각 주차 내용을 한 줄씩 입력해주세요</p>
+                            <div>
+                                <textarea name="curriculum" rows="4" placeholder="기초 개념 완벽 정리&#10;유형별 문제 풀이 마스터&#10;실전 모의고사 및 분석&#10;최종 점검 및 보완" class="w-full px-4 py-3 border border-gray-300 rounded-xl"></textarea>
+                            </div>
+                        </div>
+                        
+                        <!-- 특강 특징 -->
+                        <div class="border-b pb-4">
+                            <h3 class="text-lg font-bold text-gray-900 mb-4">⭐ 특강 특징 (선택사항)</h3>
+                            <p class="text-sm text-gray-500 mb-4">특강만의 장점을 한 줄씩 입력해주세요</p>
+                            <div>
+                                <textarea name="features" rows="4" placeholder="소규모 그룹 수업으로 집중 케어&#10;내신과 수능 동시 대비&#10;전문 강사진의 체계적 관리&#10;매일 과제 검사 및 피드백" class="w-full px-4 py-3 border border-gray-300 rounded-xl"></textarea>
+                            </div>
+                        </div>
+                        
+                        <!-- 수강료 -->
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900 mb-4">💰 수강료 (선택사항)</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-900 mb-2">수강료</label>
+                                    <input type="text" name="tuition" placeholder="예: 350,000원" class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-900 mb-2">조기 등록 혜택</label>
+                                    <input type="text" name="earlyBirdDiscount" placeholder="예: 1월 10일까지 등록 시 30,000원 할인" class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 \`
             };
 
@@ -14290,6 +14910,7 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
             else if (selectedTemplate === 'admission-info') title = data.eventTitle;
             else if (selectedTemplate === 'academy-stats') title = data.academyName + ' ' + data.period + ' 성과';
             else if (selectedTemplate === 'teacher-intro') title = data.teacherName + ' 선생님';
+            else if (selectedTemplate === 'vacation-course') title = data.courseName;
 
             // 배열 필드 처리 - 새로운 템플릿 포함
             if (data.agenda) data.agenda = data.agenda.split('\\n').filter(s => s.trim());
@@ -15602,12 +16223,12 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
     <meta property="twitter:title" content="${i}">
     <meta property="twitter:description" content="${l}">
     <meta property="twitter:image" content="${o}">
-    `;return a=a.replace("</head>",`${d}</head>`),e.html(a)}catch{return e.html("<h1>오류가 발생했습니다.</h1>",500)}});async function zs(e,t,s,r,a,n){const o=new FormData;o.append("key",s),o.append("user_id",r),o.append("sender",a),o.append("receiver",e),o.append("msg",t),o.append("testmode_yn",n==="Y"?"N":"Y");try{return await(await fetch("https://apis.aligo.in/send/",{method:"POST",body:o})).json()}catch(i){return console.error("Aligo SMS error:",i),{result_code:-1,message:"SMS 발송 실패"}}}c.get("/api/sms/templates",async e=>{try{const{results:t}=await e.env.DB.prepare(`
+    `;return a=a.replace("</head>",`${d}</head>`),e.html(a)}catch{return e.html("<h1>오류가 발생했습니다.</h1>",500)}});async function Ys(e,t,s,r,a,n){const o=new FormData;o.append("key",s),o.append("user_id",r),o.append("sender",a),o.append("receiver",e),o.append("msg",t),o.append("testmode_yn",n==="Y"?"N":"Y");try{return await(await fetch("https://apis.aligo.in/send/",{method:"POST",body:o})).json()}catch(i){return console.error("Aligo SMS error:",i),{result_code:-1,message:"SMS 발송 실패"}}}c.get("/api/sms/templates",async e=>{try{const{results:t}=await e.env.DB.prepare(`
       SELECT * FROM sms_templates WHERE is_active = 1 ORDER BY category, name
     `).all();return e.json({success:!0,templates:t})}catch(t){return console.error("Get templates error:",t),e.json({success:!1,error:"템플릿 조회 실패"},500)}});c.post("/api/sms/templates",async e=>{try{const{name:t,category:s,content:r,variables:a}=await e.req.json(),n=JSON.parse(e.req.header("X-User-Data-Base64")?decodeURIComponent(escape(atob(e.req.header("X-User-Data-Base64")||""))):'{"id":1}'),o=await e.env.DB.prepare(`
       INSERT INTO sms_templates (name, category, content, variables, created_by)
       VALUES (?, ?, ?, ?, ?)
-    `).bind(t,s,r,JSON.stringify(a||[]),n.id).run();return e.json({success:!0,message:"템플릿이 추가되었습니다.",id:o.meta.last_row_id})}catch(t){return console.error("Add template error:",t),e.json({success:!1,error:"템플릿 추가 실패"},500)}});c.post("/api/sms/send",async e=>{var t;try{const{recipient_phone:s,recipient_name:r,message_content:a,template_id:n}=await e.req.json(),o=JSON.parse(e.req.header("X-User-Data-Base64")?decodeURIComponent(escape(atob(e.req.header("X-User-Data-Base64")||""))):'{"id":1}'),i=e.env.ALIGO_API_KEY||"",l=e.env.ALIGO_USER_ID||"",d=e.env.ALIGO_SENDER||"01012345678",p=e.env.SMS_REAL_MODE||"N";let u=null,m="sent",g=null,x=null;i&&l&&(u=await zs(s,a,i,l,d,p),g=((t=u.result_code)==null?void 0:t.toString())||null,x=u.message||null,u.result_code!==1&&(m="failed"));const v=await e.env.DB.prepare(`
+    `).bind(t,s,r,JSON.stringify(a||[]),n.id).run();return e.json({success:!0,message:"템플릿이 추가되었습니다.",id:o.meta.last_row_id})}catch(t){return console.error("Add template error:",t),e.json({success:!1,error:"템플릿 추가 실패"},500)}});c.post("/api/sms/send",async e=>{var t;try{const{recipient_phone:s,recipient_name:r,message_content:a,template_id:n}=await e.req.json(),o=JSON.parse(e.req.header("X-User-Data-Base64")?decodeURIComponent(escape(atob(e.req.header("X-User-Data-Base64")||""))):'{"id":1}'),i=e.env.ALIGO_API_KEY||"",l=e.env.ALIGO_USER_ID||"",d=e.env.ALIGO_SENDER||"01012345678",p=e.env.SMS_REAL_MODE||"N";let u=null,m="sent",g=null,x=null;i&&l&&(u=await Ys(s,a,i,l,d,p),g=((t=u.result_code)==null?void 0:t.toString())||null,x=u.message||null,u.result_code!==1&&(m="failed"));const v=await e.env.DB.prepare(`
       INSERT INTO sms_history (template_id, recipient_name, recipient_phone, message_content, status, sent_at, result_code, result_message, created_by)
       VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?, ?)
     `).bind(n||null,r,s,a,m,g,x,o.id).run();return e.json({success:m!=="failed",message:m==="failed"?"SMS 발송 실패: "+x:"SMS가 발송되었습니다.",id:v.meta.last_row_id,note:i?p==="Y"?"실제 발송 완료":"테스트 모드 (실제 발송 안됨)":"API 키를 설정하면 실제 발송됩니다.",smsResult:u})}catch(s){return console.error("Send SMS error:",s),e.json({success:!1,error:"SMS 발송 실패"},500)}});c.post("/api/sms/schedule",async e=>{try{const{recipient_phone:t,recipient_name:s,message_content:r,template_id:a,scheduled_at:n}=await e.req.json(),o=JSON.parse(e.req.header("X-User-Data-Base64")?decodeURIComponent(escape(atob(e.req.header("X-User-Data-Base64")||""))):'{"id":1}'),i=await e.env.DB.prepare(`
@@ -31633,4 +32254,4 @@ ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.di
         `).bind(a.name).first()||(await e.env.DB.prepare(`
             INSERT INTO store_products (name, description, category, price, display_order, enabled)
             VALUES (?, ?, ?, ?, ?, 1)
-          `).bind(a.name,a.description,a.category,a.price,a.order).run(),r++)}catch(n){console.error("Failed to insert product:",a.name,n)}return t.push("✅ Inserted "+r+" initial products"),e.json({success:!0,message:"스토어 시스템 초기화 완료",results:t})}catch(t){return console.error("[Store Init] Error:",t),e.json({success:!1,error:t.message},500)}});const it=new et,Ys=Object.assign({"/src/index.tsx":c});let Rt=!1;for(const[,e]of Object.entries(Ys))e&&(it.all("*",t=>{let s;try{s=t.executionCtx}catch{}return e.fetch(t.req.raw,t.env,s)}),it.notFound(t=>{let s;try{s=t.executionCtx}catch{}return e.fetch(t.req.raw,t.env,s)}),Rt=!0);if(!Rt)throw new Error("Can't import modules from ['/src/index.ts','/src/index.tsx','/app/server.ts']");export{it as default};
+          `).bind(a.name,a.description,a.category,a.price,a.order).run(),r++)}catch(n){console.error("Failed to insert product:",a.name,n)}return t.push("✅ Inserted "+r+" initial products"),e.json({success:!0,message:"스토어 시스템 초기화 완료",results:t})}catch(t){return console.error("[Store Init] Error:",t),e.json({success:!1,error:t.message},500)}});const it=new et,Vs=Object.assign({"/src/index.tsx":c});let Rt=!1;for(const[,e]of Object.entries(Vs))e&&(it.all("*",t=>{let s;try{s=t.executionCtx}catch{}return e.fetch(t.req.raw,t.env,s)}),it.notFound(t=>{let s;try{s=t.executionCtx}catch{}return e.fetch(t.req.raw,t.env,s)}),Rt=!0);if(!Rt)throw new Error("Can't import modules from ['/src/index.ts','/src/index.tsx','/app/server.ts']");export{it as default};
