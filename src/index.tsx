@@ -17002,7 +17002,7 @@ app.get('/tools/landing-builder', (c) => {
                                 <div>
                                     <label class="block text-sm font-medium text-gray-900 mb-2">학원장 사진 URL</label>
                                     <input type="url" name="directorPhoto" placeholder="https://example.com/director.jpg" class="w-full px-4 py-3 border border-gray-300 rounded-xl">
-                                    <p class="text-xs text-gray-500 mt-1">이미지 URL을 입력하세요</p>
+                                    <p class="text-xs text-gray-500 mt-1">💡 구글 드라이브 링크도 사용 가능합니다 (공유 > 링크 복사)</p>
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-900 mb-2">학원장 경력</label>
@@ -17014,7 +17014,7 @@ app.get('/tools/landing-builder', (c) => {
                         <!-- 학원 사진 -->
                         <div class="border-b pb-4">
                             <h3 class="text-lg font-bold text-gray-900 mb-4">📷 학원 사진 (선택사항)</h3>
-                            <p class="text-sm text-gray-500 mb-4">입력하지 않으면 해당 섹션이 표시되지 않습니다</p>
+                            <p class="text-sm text-gray-500 mb-4">💡 구글 드라이브 링크를 사용하세요! (파일 > 공유 > 링크 복사)</p>
                             <div class="space-y-4">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-900 mb-2">학원 사진 1 URL</label>
@@ -17695,6 +17695,24 @@ app.get('/tools/landing-builder', (c) => {
 
             const formData = new FormData(document.getElementById('landingForm'));
             const data = Object.fromEntries(formData);
+            
+            // 구글 드라이브 URL 변환 함수
+            function convertGoogleDriveUrl(url) {
+                if (!url) return url;
+                // https://drive.google.com/file/d/FILE_ID/view 형식 감지
+                const match = url.match(/drive\\.google\\.com\\/file\\/d\\/([^\\/]+)/);
+                if (match) {
+                    const fileId = match[1];
+                    return 'https://drive.google.com/uc?export=view&id=' + fileId;
+                }
+                return url;
+            }
+            
+            // 이미지 URL들을 구글 드라이브 형식이면 변환
+            if (data.directorPhoto) data.directorPhoto = convertGoogleDriveUrl(data.directorPhoto);
+            if (data.academyPhoto1) data.academyPhoto1 = convertGoogleDriveUrl(data.academyPhoto1);
+            if (data.academyPhoto2) data.academyPhoto2 = convertGoogleDriveUrl(data.academyPhoto2);
+            if (data.academyPhoto3) data.academyPhoto3 = convertGoogleDriveUrl(data.academyPhoto3);
 
             // 썸네일 URL 가져오기
             const thumbnailUrl = document.getElementById('thumbnailUrl').value || '';
