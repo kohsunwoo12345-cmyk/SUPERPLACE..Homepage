@@ -3421,217 +3421,158 @@ var Bt=Object.defineProperty;var tt=e=>{throw TypeError(e)};var Nt=(e,t,s)=>t in
     <style>
       @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
       * { font-family: 'Pretendard Variable', sans-serif; }
-      .gradient-bg { background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); }
-      .pattern-bg { background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.1) 1px, transparent 0); background-size: 40px 40px; }
-      @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-20px); } }
-      .float-animation { animation: float 3s ease-in-out infinite; }
-      img { max-width: 100%; height: auto; }
-      .img-error { display: none; }
+      body { background: #ffffff; }
+      .hero-gradient { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+      img { max-width: 100%; height: auto; display: block; }
+      .section-title { color: #1a202c; font-size: 2.5rem; font-weight: 700; margin-bottom: 3rem; text-align: center; }
+      .card { background: white; border-radius: 1rem; padding: 2rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
     </style>
 </head>
-<body class="bg-gray-50">
-    <!-- Hero Section with Enhanced Design -->
-    <div class="gradient-bg pattern-bg text-white py-24 px-6 relative overflow-hidden">
-        <div class="absolute inset-0 bg-black opacity-10"></div>
-        <div class="max-w-6xl mx-auto relative z-10">
-            <div class="text-center mb-16">
-                <div class="inline-block bg-white/20 backdrop-blur-sm px-6 py-3 rounded-full text-sm font-bold mb-6 float-animation">
-                    <i class="fas fa-graduation-cap mr-2"></i>믿을 수 있는 교육 파트너
-                </div>
-                <h1 class="text-6xl font-bold mb-6 leading-tight">${t}</h1>
-                <div class="flex items-center justify-center gap-4 text-xl mb-8">
-                    <i class="fas fa-map-marker-alt"></i>
-                    <p class="text-2xl">${s}</p>
-                </div>
-                <p class="text-2xl opacity-95 max-w-3xl mx-auto leading-relaxed">${r||"학생 한 명 한 명의 꿈을 응원하는 교육 파트너"}</p>
-            </div>
+<body>
+    <!-- Hero Section -->
+    <div class="hero-gradient text-white py-20 px-6">
+        <div class="max-w-4xl mx-auto text-center">
+            <h1 class="text-5xl md:text-6xl font-bold mb-6">${t}</h1>
+            <p class="text-xl md:text-2xl mb-4 opacity-90">
+                <i class="fas fa-map-marker-alt mr-2"></i>${s}
+            </p>
+            <p class="text-lg md:text-xl opacity-85">${r||"최고의 교육을 제공합니다"}</p>
         </div>
     </div>
     
     <!-- Main Content -->
-    <div class="max-w-6xl mx-auto px-6 py-20">
+    <div class="max-w-5xl mx-auto px-6 py-16">
+        
         <!-- 학원장 소개 -->
         ${o?`
-        <div class="mb-20">
-            <div class="text-center mb-12">
-                <h2 class="text-4xl font-bold text-gray-900 mb-4">
-                    <i class="fas fa-user-tie text-purple-600 mr-3"></i>
-                    학원장 소개
-                </h2>
-            </div>
-            
-            <div class="bg-white rounded-3xl shadow-2xl p-12">
-                <div class="flex flex-col md:flex-row items-center gap-8">
-                    ${i?`
-                    <div class="flex-shrink-0">
-                        <img src="${i}" alt="${o}" class="w-48 h-48 rounded-full object-cover shadow-lg border-4 border-purple-200" onerror="this.onerror=null; this.src='https://via.placeholder.com/200x200?text=Director'; this.classList.add('img-error');">
-                    </div>
-                    `:""}
-                    <div class="flex-1">
-                        <h3 class="text-3xl font-bold text-gray-900 mb-4">${o} 원장</h3>
-                        <div class="space-y-3">
-                            ${b.map(f=>`
-                                <div class="flex items-start gap-3">
-                                    <i class="fas fa-check-circle text-purple-600 mt-1"></i>
-                                    <p class="text-lg text-gray-700">${f}</p>
-                                </div>
-                            `).join("")}
-                        </div>
+        <section class="mb-16">
+            <h2 class="section-title">학원장 소개</h2>
+            <div class="card flex flex-col md:flex-row items-center gap-8">
+                ${i?`
+                <div class="flex-shrink-0">
+                    <img src="${i}" alt="${o}" class="w-40 h-40 rounded-full object-cover border-4 border-indigo-200" crossorigin="anonymous" onerror="this.style.display='none';">
+                </div>
+                `:""}
+                <div class="flex-1 text-center md:text-left">
+                    <h3 class="text-3xl font-bold text-gray-900 mb-4">${o} 원장</h3>
+                    <div class="space-y-2">
+                        ${b.map(f=>`
+                            <p class="text-gray-700 flex items-start gap-2">
+                                <i class="fas fa-check-circle text-indigo-600 mt-1"></i>
+                                <span>${f}</span>
+                            </p>
+                        `).join("")}
                     </div>
                 </div>
             </div>
-        </div>
+        </section>
         `:""}
         
         <!-- 학원 사진 갤러리 -->
         ${d||p||u?`
-        <div class="mb-20">
-            <div class="text-center mb-12">
-                <h2 class="text-4xl font-bold text-gray-900 mb-4">
-                    <i class="fas fa-images text-purple-600 mr-3"></i>
-                    학원 둘러보기
-                </h2>
-            </div>
-            
+        <section class="mb-16">
+            <h2 class="section-title">학원 둘러보기</h2>
             <div class="grid md:grid-cols-3 gap-6">
                 ${d?`
-                <div class="rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow">
-                    <img src="${d}" alt="학원 사진 1" class="w-full h-64 object-cover" onerror="this.onerror=null; this.src='https://via.placeholder.com/400x300?text=Academy+Photo+1';">
+                <div class="rounded-xl overflow-hidden shadow-md">
+                    <img src="${d}" alt="학원 사진 1" class="w-full h-64 object-cover" crossorigin="anonymous" onerror="this.parentElement.style.display='none';">
                 </div>
                 `:""}
                 ${p?`
-                <div class="rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow">
-                    <img src="${p}" alt="학원 사진 2" class="w-full h-64 object-cover" onerror="this.onerror=null; this.src='https://via.placeholder.com/400x300?text=Academy+Photo+2';">
+                <div class="rounded-xl overflow-hidden shadow-md">
+                    <img src="${p}" alt="학원 사진 2" class="w-full h-64 object-cover" crossorigin="anonymous" onerror="this.parentElement.style.display='none';">
                 </div>
                 `:""}
                 ${u?`
-                <div class="rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow">
-                    <img src="${u}" alt="학원 사진 3" class="w-full h-64 object-cover" onerror="this.onerror=null; this.src='https://via.placeholder.com/400x300?text=Academy+Photo+3';">
+                <div class="rounded-xl overflow-hidden shadow-md">
+                    <img src="${u}" alt="학원 사진 3" class="w-full h-64 object-cover" crossorigin="anonymous" onerror="this.parentElement.style.display='none';">
                 </div>
                 `:""}
             </div>
-        </div>
+        </section>
         `:""}
         
         <!-- 교육 철학 -->
         ${m?`
-        <div class="mb-20">
-            <div class="bg-gradient-to-br from-purple-50 to-blue-50 rounded-3xl p-12 shadow-lg">
-                <h2 class="text-4xl font-bold text-gray-900 mb-8 text-center">
-                    <i class="fas fa-lightbulb text-purple-600 mr-3"></i>
-                    우리의 교육 철학
-                </h2>
-                <p class="text-xl text-gray-700 leading-relaxed text-center whitespace-pre-line">${m}</p>
+        <section class="mb-16">
+            <h2 class="section-title">교육 철학</h2>
+            <div class="card">
+                <p class="text-lg text-gray-700 leading-relaxed whitespace-pre-line">${m}</p>
             </div>
-        </div>
+        </section>
         `:""}
         
         <!-- 교육 프로그램 -->
         ${y.length>0?`
-        <div class="mb-20">
-            <h2 class="text-4xl font-bold text-gray-900 mb-12 text-center">
-                <i class="fas fa-book-open text-purple-600 mr-3"></i>
-                교육 프로그램
-            </h2>
-            <div class="grid md:grid-cols-2 gap-6">
+        <section class="mb-16">
+            <h2 class="section-title">교육 프로그램</h2>
+            <div class="grid md:grid-cols-2 gap-4">
                 ${y.map((f,E)=>`
-                    <div class="bg-white rounded-2xl p-8 shadow-lg border-l-4 border-purple-600">
-                        <div class="flex items-start gap-4">
-                            <div class="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0">
-                                ${E+1}
-                            </div>
-                            <p class="text-lg text-gray-800 leading-relaxed">${f}</p>
+                    <div class="card flex items-start gap-4">
+                        <div class="flex-shrink-0 w-10 h-10 bg-indigo-600 text-white rounded-full flex items-center justify-center font-bold">
+                            ${E+1}
                         </div>
+                        <p class="text-gray-800 flex-1">${f}</p>
                     </div>
                 `).join("")}
             </div>
-        </div>
+        </section>
         `:""}
         
         <!-- 커리큘럼 -->
         ${w.length>0?`
-        <div class="mb-20">
-            <h2 class="text-4xl font-bold text-gray-900 mb-12 text-center">
-                <i class="fas fa-graduation-cap text-purple-600 mr-3"></i>
-                커리큘럼
-            </h2>
+        <section class="mb-16">
+            <h2 class="section-title">커리큘럼</h2>
             <div class="space-y-4">
                 ${w.map((f,E)=>`
-                    <div class="bg-white rounded-2xl p-6 shadow-lg flex items-center gap-6 hover:shadow-xl transition-shadow">
-                        <div class="w-16 h-16 bg-gradient-to-br from-purple-600 to-purple-800 rounded-2xl flex items-center justify-center text-white font-bold text-2xl flex-shrink-0 shadow-lg">
+                    <div class="card flex items-center gap-6">
+                        <div class="flex-shrink-0 w-12 h-12 bg-purple-600 text-white rounded-lg flex items-center justify-center font-bold text-xl">
                             ${E+1}
                         </div>
-                        <p class="text-lg text-gray-800 leading-relaxed">${f}</p>
+                        <p class="text-gray-800 text-lg">${f}</p>
                     </div>
                 `).join("")}
             </div>
-        </div>
+        </section>
         `:""}
         
         <!-- 특별한 강점 -->
         ${v.length>0?`
-        <div class="bg-white rounded-3xl shadow-2xl p-12 mb-20">
-            <h2 class="text-4xl font-bold text-gray-900 mb-12 text-center">
-                <i class="fas fa-star text-yellow-500 mr-3"></i>
-                ${t}의 특별한 강점
-            </h2>
-            <div class="grid md:grid-cols-2 gap-8">
+        <section class="mb-16">
+            <h2 class="section-title">${t}의 강점</h2>
+            <div class="grid md:grid-cols-2 gap-6">
                 ${v.map((f,E)=>`
-                    <div class="group hover:transform hover:scale-105 transition-all duration-300">
-                        <div class="flex items-start gap-6 p-8 bg-gradient-to-br from-purple-50 to-white rounded-2xl border-2 border-purple-100 hover:border-purple-300 hover:shadow-xl">
-                            <div class="w-14 h-14 bg-gradient-to-br from-purple-600 to-purple-800 rounded-2xl flex items-center justify-center text-white font-bold text-2xl flex-shrink-0 shadow-lg group-hover:scale-110 transition-transform">
-                                ${E+1}
-                            </div>
-                            <div class="flex-1">
-                                <p class="text-gray-800 text-xl leading-relaxed font-medium">${f}</p>
-                            </div>
+                    <div class="card flex items-start gap-4">
+                        <div class="flex-shrink-0 w-12 h-12 bg-indigo-600 text-white rounded-lg flex items-center justify-center font-bold text-xl">
+                            ${E+1}
                         </div>
+                        <p class="text-gray-800 text-lg flex-1">${f}</p>
                     </div>
                 `).join("")}
             </div>
-        </div>
+        </section>
         `:""}
         
         <!-- CTA Section -->
-        <div class="bg-gradient-to-br from-purple-600 to-purple-900 rounded-3xl shadow-2xl p-12 text-white text-center">
-            <h2 class="text-4xl font-bold mb-6">
-                <i class="fas fa-phone-alt mr-3"></i>
-                지금 바로 상담 받으세요!
-            </h2>
-            <p class="text-2xl mb-8 opacity-95">
-                무료 학습 진단 및 맞춤 상담을 제공합니다
-            </p>
-            <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-8 mb-8 max-w-2xl mx-auto">
-                <div class="text-3xl font-bold mb-4">
-                    <i class="fas fa-phone text-yellow-300 mr-3"></i>
-                    ${n||"상담 문의"}
-                </div>
-                <p class="text-lg opacity-90">평일 오전 9시 ~ 오후 10시 | 주말 오전 10시 ~ 오후 6시</p>
+        <section class="hero-gradient text-white rounded-2xl p-12 text-center">
+            <h2 class="text-4xl font-bold mb-4">지금 바로 상담 받으세요</h2>
+            <p class="text-xl mb-8 opacity-90">무료 학습 진단 및 맞춤 상담을 제공합니다</p>
+            <div class="text-3xl font-bold mb-6">
+                <i class="fas fa-phone mr-3"></i>${n||"상담 문의"}
             </div>
-            <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                <a href="tel:${n}" class="inline-flex items-center justify-center bg-white text-purple-600 px-10 py-5 rounded-full text-xl font-bold hover:bg-gray-100 transition-all transform hover:scale-105 shadow-lg">
-                    <i class="fas fa-phone mr-3"></i>
-                    전화 상담하기
-                </a>
-                <a href="javascript:alert('카카오톡 상담 준비 중입니다')" class="inline-flex items-center justify-center bg-yellow-300 text-gray-900 px-10 py-5 rounded-full text-xl font-bold hover:bg-yellow-200 transition-all transform hover:scale-105 shadow-lg">
-                    <i class="fab fa-comment mr-3"></i>
-                    카카오톡 문의
-                </a>
-            </div>
-        </div>
+            <a href="tel:${n}" class="inline-block bg-white text-indigo-600 px-8 py-4 rounded-full text-lg font-bold hover:bg-gray-100 transition">
+                <i class="fas fa-phone mr-2"></i>전화 상담하기
+            </a>
+        </section>
     </div>
     
     <!-- Footer -->
-    <footer class="bg-gray-900 text-gray-300 py-12 px-6">
-        <div class="max-w-6xl mx-auto text-center">
+    <footer class="bg-gray-900 text-gray-300 py-12 px-6 mt-16">
+        <div class="max-w-5xl mx-auto text-center">
             <h3 class="text-2xl font-bold text-white mb-4">${t}</h3>
-            <p class="mb-4">
-                <i class="fas fa-map-marker-alt mr-2"></i>${s}
-            </p>
-            <p class="mb-4">
-                <i class="fas fa-phone mr-2"></i>${n||"상담 문의"}
-            </p>
-            <p class="text-sm opacity-75 mt-8">© 2026 ${t}. All rights reserved.</p>
+            <p class="mb-2"><i class="fas fa-map-marker-alt mr-2"></i>${s}</p>
+            <p class="mb-8"><i class="fas fa-phone mr-2"></i>${n||"상담 문의"}</p>
+            <p class="text-sm opacity-75">© 2026 ${t}. All rights reserved.</p>
         </div>
     </footer>
 </body>
