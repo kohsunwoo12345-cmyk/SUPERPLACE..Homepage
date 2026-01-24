@@ -6212,6 +6212,88 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
                             </a>
                         </div>
                     </div>
+
+                    <!-- Service 4: 랜딩페이지 제작 -->
+                    <div class="bg-white rounded-3xl overflow-hidden border border-gray-100 card-hover animate-fade-in" style="transition-delay: 0.4s">
+                        <div class="h-48 bg-gradient-to-br from-purple-100 to-purple-50 flex items-center justify-center">
+                            <i class="fas fa-desktop text-6xl text-purple-600"></i>
+                        </div>
+                        <div class="p-8">
+                            <div class="w-12 h-12 bg-purple-600 rounded-xl flex items-center justify-center mb-4">
+                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                                </svg>
+                            </div>
+                            <h3 class="text-2xl font-bold text-gray-900 mb-3">랜딩페이지<br>제작</h3>
+                            <p class="text-gray-600 mb-6 leading-relaxed">
+                                전환율을 높이는 맞춤형 랜딩페이지 제작. 반응형 디자인과 빠른 로딩으로 상담 신청을 극대화합니다.
+                            </p>
+                            <ul class="space-y-3 text-gray-700">
+                                <li class="flex items-start">
+                                    <svg class="w-5 h-5 text-purple-600 mt-0.5 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    <span>반응형 디자인</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-5 h-5 text-purple-600 mt-0.5 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    <span>빠른 로딩 속도</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-5 h-5 text-purple-600 mt-0.5 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    <span>전환율 최적화</span>
+                                </li>
+                            </ul>
+                            <a href="/services/landing-page" class="mt-6 block w-full py-3 text-center gradient-purple text-white rounded-xl font-bold hover:shadow-lg transition-all">
+                                자세히 보기 →
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Service 5: 학원마케팅 대행 -->
+                    <div class="bg-white rounded-3xl overflow-hidden border border-gray-100 card-hover animate-fade-in" style="transition-delay: 0.5s">
+                        <div class="h-48 bg-gradient-to-br from-orange-100 to-orange-50 flex items-center justify-center">
+                            <i class="fas fa-bullhorn text-6xl text-orange-600"></i>
+                        </div>
+                        <div class="p-8">
+                            <div class="w-12 h-12 gradient-orange rounded-xl flex items-center justify-center mb-4">
+                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"></path>
+                                </svg>
+                            </div>
+                            <h3 class="text-2xl font-bold text-gray-900 mb-3">학원마케팅<br>대행</h3>
+                            <p class="text-gray-600 mb-6 leading-relaxed">
+                                학생 모집부터 유지까지 올인원 솔루션. 전문 마케터가 학원 성장을 위한 모든 마케팅을 대행합니다.
+                            </p>
+                            <ul class="space-y-3 text-gray-700">
+                                <li class="flex items-start">
+                                    <svg class="w-5 h-5 text-orange-500 mt-0.5 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    <span>온라인 광고 운영</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-5 h-5 text-orange-500 mt-0.5 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    <span>SEO & SNS 마케팅</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-5 h-5 text-orange-500 mt-0.5 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    <span>콘텐츠 제작 & 분석</span>
+                                </li>
+                            </ul>
+                            <a href="/services/marketing" class="mt-6 block w-full py-3 text-center gradient-orange text-white rounded-xl font-bold hover:shadow-lg transition-all">
+                                자세히 보기 →
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
