@@ -16610,34 +16610,13 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
         <!-- Story Section -->
         <section class="py-20 px-6">
             <div class="max-w-7xl mx-auto">
-                <!-- CEO Profile Header -->
-                <div class="flex flex-col md:flex-row items-center gap-8 mb-16">
-                    <div class="flex-shrink-0">
-                        <img src="/static/images/ceo-profile.jpg" 
-                             alt="고희준 대표이사" 
-                             class="w-48 h-48 rounded-3xl shadow-2xl object-cover">
-                    </div>
-                    <div class="text-center md:text-left">
-                        <h2 class="text-4xl lg:text-5xl font-bold text-gray-900 mb-3">우리의 시작</h2>
-                        <p class="text-xl text-purple-600 font-semibold">고희준 대표이사</p>
-                        <p class="text-lg text-gray-600 mt-2">CEO · 인문학 박사</p>
-                    </div>
+                <div class="text-center mb-16">
+                    <h2 class="text-4xl lg:text-5xl font-bold text-gray-900 mb-4">우리의 시작</h2>
+                    <div class="w-24 h-1 bg-gradient-to-r from-purple-600 to-orange-500 mx-auto"></div>
                 </div>
                 
-                <div class="grid lg:grid-cols-2 gap-16 items-center">
+                <div class="grid lg:grid-cols-2 gap-16 items-start">
                     <div>
-                        <div class="bg-gradient-to-r from-purple-100 to-blue-100 rounded-2xl p-8 mb-8">
-                            <h3 class="text-2xl font-bold text-gray-900 mb-4">대표 소개</h3>
-                            <div class="space-y-2 text-gray-700">
-                                <p>✓ 2005~ 공부방 시작</p>
-                                <p>✓ 2012~ 인문학 박사 취득</p>
-                                <p>✓ 2015~ 꾸메땅학원 창립</p>
-                                <p>✓ 2022~ (주)맘스온 대표이사</p>
-                                <p>✓ 2022~ 킹클래스 학원장소통 오픈</p>
-                                <p>✓ 2024~ 한국학원대학교 협업</p>
-                                <p>✓ 2025~ (주)우리는 슈퍼플레이스다 대표이사</p>
-                            </div>
-                        </div>
                         <div class="space-y-6 text-lg text-gray-700 leading-relaxed">
                             <p>
                                 <strong class="text-purple-600">인천 서구에서 공부방을 운영하던 저희</strong>는 
@@ -16714,36 +16693,63 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
                             </p>
                         </div>
                     </div>
-                    <div class="bg-purple-50 rounded-3xl p-12">
-                        <div class="space-y-8">
-                            <div class="flex items-start gap-4">
-                                <div class="w-12 h-12 rounded-full gradient-purple flex items-center justify-center text-white font-bold flex-shrink-0">1</div>
-                                <div>
-                                    <h3 class="font-bold text-gray-900 mb-2">2015년</h3>
-                                    <p class="text-gray-600">꾸메땅학원 개원, 학생 모집 어려움</p>
-                                </div>
+                    
+                    <!-- CEO Profile Card -->
+                    <div class="bg-white rounded-3xl shadow-xl p-10">
+                        <div class="flex flex-col items-center text-center mb-8">
+                            <img src="/static/images/ceo-profile.jpg" 
+                                 alt="고희준 대표이사" 
+                                 class="w-40 h-40 rounded-full shadow-lg object-cover mb-6">
+                            <h3 class="text-2xl font-bold text-gray-900 mb-2">고희준</h3>
+                            <p class="text-lg text-purple-600 font-semibold">대표이사</p>
+                            <p class="text-gray-600">인문학 박사</p>
+                        </div>
+                        <div class="border-t border-gray-200 pt-6">
+                            <h4 class="font-bold text-gray-900 mb-4 text-center">경력</h4>
+                            <div class="space-y-3 text-sm text-gray-700">
+                                <p>• 2005~ 공부방 시작</p>
+                                <p>• 2012~ 인문학 박사 취득</p>
+                                <p>• 2015~ 꾸메땅학원 창립</p>
+                                <p>• 2022~ (주)맘스온 대표이사</p>
+                                <p>• 2022~ 킹클래스 학원장소통 오픈</p>
+                                <p>• 2024~ 한국학원대학교 협업</p>
+                                <p>• 2025~ (주)우리는 슈퍼플레이스다 대표이사</p>
                             </div>
-                            <div class="flex items-start gap-4">
-                                <div class="w-12 h-12 rounded-full gradient-purple flex items-center justify-center text-white font-bold flex-shrink-0">2</div>
-                                <div>
-                                    <h3 class="font-bold text-gray-900 mb-2">2020년</h3>
-                                    <p class="text-gray-600">플레이스 마케팅 독학, 1위 달성</p>
-                                </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Timeline -->
+                <div class="mt-20">
+                    <h3 class="text-3xl font-bold text-gray-900 text-center mb-12">성장 스토리</h3>
+                    <div class="grid md:grid-cols-4 gap-8">
+                        <div class="text-center">
+                            <div class="w-16 h-16 rounded-full bg-purple-100 flex items-center justify-center mx-auto mb-4">
+                                <span class="text-2xl font-bold text-purple-600">1</span>
                             </div>
-                            <div class="flex items-start gap-4">
-                                <div class="w-12 h-12 rounded-full gradient-purple flex items-center justify-center text-white font-bold flex-shrink-0">3</div>
-                                <div>
-                                    <h3 class="font-bold text-gray-900 mb-2">2021년</h3>
-                                    <p class="text-gray-600">오픈채팅방 시작, 노하우 공유</p>
-                                </div>
+                            <h4 class="font-bold text-gray-900 mb-2">2015년</h4>
+                            <p class="text-gray-600 text-sm">꾸메땅학원 개원<br>학생 모집 어려움</p>
+                        </div>
+                        <div class="text-center">
+                            <div class="w-16 h-16 rounded-full bg-orange-100 flex items-center justify-center mx-auto mb-4">
+                                <span class="text-2xl font-bold text-orange-600">2</span>
                             </div>
-                            <div class="flex items-start gap-4">
-                                <div class="w-12 h-12 rounded-full gradient-purple flex items-center justify-center text-white font-bold flex-shrink-0">4</div>
-                                <div>
-                                    <h3 class="font-bold text-gray-900 mb-2">2022년~현재</h3>
-                                    <p class="text-gray-600">전국 500개 학원 교육 진행</p>
-                                </div>
+                            <h4 class="font-bold text-gray-900 mb-2">2020년</h4>
+                            <p class="text-gray-600 text-sm">플레이스 마케팅 독학<br>1위 달성</p>
+                        </div>
+                        <div class="text-center">
+                            <div class="w-16 h-16 rounded-full bg-purple-100 flex items-center justify-center mx-auto mb-4">
+                                <span class="text-2xl font-bold text-purple-600">3</span>
                             </div>
+                            <h4 class="font-bold text-gray-900 mb-2">2021년</h4>
+                            <p class="text-gray-600 text-sm">오픈채팅방 시작<br>노하우 공유</p>
+                        </div>
+                        <div class="text-center">
+                            <div class="w-16 h-16 rounded-full bg-orange-100 flex items-center justify-center mx-auto mb-4">
+                                <span class="text-2xl font-bold text-orange-600">4</span>
+                            </div>
+                            <h4 class="font-bold text-gray-900 mb-2">2022년~현재</h4>
+                            <p class="text-gray-600 text-sm">전국 500개 학원<br>교육 진행</p>
                         </div>
                     </div>
                 </div>
@@ -16835,7 +16841,7 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
         </section>
 
         <!-- Team Section -->
-        <section class="py-20 px-6 bg-gradient-to-br from-purple-50 to-blue-50">
+        <section class="py-20 px-6 bg-gradient-to-br from-gray-50 to-white">
             <div class="max-w-7xl mx-auto">
                 <div class="text-center mb-16">
                     <h2 class="text-4xl font-bold text-gray-900 mb-4">팀 소개</h2>
@@ -16844,41 +16850,40 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
 
                 <div class="grid md:grid-cols-2 gap-12 max-w-5xl mx-auto">
                     <!-- 고희준 대표 -->
-                    <div class="bg-white rounded-3xl p-10 shadow-xl">
-                        <div class="w-48 h-48 mx-auto mb-6 rounded-3xl overflow-hidden">
+                    <div class="bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow">
+                        <div class="h-80 overflow-hidden">
                             <img src="/static/images/ceo-profile.jpg" 
                                  alt="고희준 대표이사" 
                                  class="w-full h-full object-cover">
                         </div>
-                        <h3 class="text-2xl font-bold text-gray-900 text-center mb-2">고희준</h3>
-                        <p class="text-center text-purple-600 font-semibold text-lg mb-6">대표이사 · 인문학 박사</p>
-                        <div class="space-y-2 text-gray-700 text-sm">
-                            <p>✓ 2005~ 공부방 시작</p>
-                            <p>✓ 2012~ 인문학 박사 취득</p>
-                            <p>✓ 2015~ 꾸메땅학원 창립</p>
-                            <p>✓ 2022~ (주)맘스온 대표이사</p>
-                            <p>✓ 2022~ 킹클래스 학원장소통 오픈</p>
-                            <p>✓ 2024~ 한국학원대학교 협업</p>
-                            <p>✓ 2025~ (주)우리는 슈퍼플레이스다 대표이사</p>
+                        <div class="p-8">
+                            <h3 class="text-2xl font-bold text-gray-900 mb-2">고희준</h3>
+                            <p class="text-purple-600 font-semibold mb-4">대표이사 · 인문학 박사</p>
+                            <div class="space-y-2 text-sm text-gray-600">
+                                <p>• 2005~ 공부방 시작</p>
+                                <p>• 2015~ 꾸메땅학원 창립</p>
+                                <p>• 2022~ (주)맘스온 대표이사</p>
+                                <p>• 2025~ (주)우리는 슈퍼플레이스다</p>
+                            </div>
                         </div>
                     </div>
 
                     <!-- 고선우 마케팅 팀장 -->
-                    <div class="bg-white rounded-3xl p-10 shadow-xl">
-                        <div class="w-48 h-48 mx-auto mb-6 rounded-3xl overflow-hidden">
+                    <div class="bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow">
+                        <div class="h-80 overflow-hidden">
                             <img src="/static/images/team-ko-sunwoo.jpg" 
                                  alt="고선우 마케팅 1팀장" 
                                  class="w-full h-full object-cover">
                         </div>
-                        <h3 class="text-2xl font-bold text-gray-900 text-center mb-2">고선우</h3>
-                        <p class="text-center text-orange-600 font-semibold text-lg mb-6">마케팅 1팀장</p>
-                        <div class="space-y-2 text-gray-700 text-sm">
-                            <p>✓ 자동화 퍼널 전문가</p>
-                            <p>✓ 인스타그램 바이럴 영상 제작</p>
-                            <p>✓ 네이버 플레이스 상위노출</p>
-                            <p>✓ 랜딩페이지 제작 및 개발</p>
-                            <p>✓ 블로그 상위노출 글 작성</p>
-                            <p>✓ AI 컨설턴트 전문가</p>
+                        <div class="p-8">
+                            <h3 class="text-2xl font-bold text-gray-900 mb-2">고선우</h3>
+                            <p class="text-orange-600 font-semibold mb-4">마케팅 1팀장</p>
+                            <div class="space-y-2 text-sm text-gray-600">
+                                <p>• 자동화 퍼널 전문가</p>
+                                <p>• 네이버 플레이스 상위노출</p>
+                                <p>• 랜딩페이지 제작 및 개발</p>
+                                <p>• AI 컨설턴트 전문가</p>
+                            </div>
                         </div>
                     </div>
                 </div>
