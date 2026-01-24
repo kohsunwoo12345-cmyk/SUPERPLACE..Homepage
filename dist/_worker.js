@@ -14541,6 +14541,10 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
                     <a href="https://developers.kakao.com/tool/debugger/sharing" target="_blank" class="block w-full text-center bg-yellow-500 hover:bg-yellow-600 text-white py-4 rounded-xl text-lg font-bold hover:shadow-xl transition mt-4">
                         🔄 카카오톡 캐시 초기화하기
                     </a>
+                    
+                    <button id="qrDownloadBtn" onclick="downloadQRCode()" class="hidden w-full text-center bg-orange-500 hover:bg-orange-600 text-white py-4 rounded-xl text-lg font-bold hover:shadow-xl transition mt-4">
+                        📱 QR 코드 다운로드
+                    </button>
                 </div>
 
                 <!-- 결과 영역 -->
@@ -15863,6 +15867,11 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
                     document.getElementById('resultArea').classList.remove('hidden');
                     document.getElementById('resultArea').scrollIntoView({ behavior: 'smooth' });
                     
+                    // QR 다운로드 버튼 표시 및 slug 저장
+                    const qrBtn = document.getElementById('qrDownloadBtn');
+                    qrBtn.classList.remove('hidden');
+                    qrBtn.dataset.slug = result.slug;
+                    
                     // 포인트 사용 시 알림
                     if (result.usedPoints) {
                         alert('✅ 랜딩페이지가 생성되었습니다!\\n\\n💰 ' + result.pointsDeducted.toLocaleString() + '포인트가 차감되었습니다.');
@@ -15929,6 +15938,55 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
             input.select();
             document.execCommand('copy');
             alert('링크가 복사되었습니다!');
+        }
+        
+        async function downloadQRCode() {
+            const qrBtn = document.getElementById('qrDownloadBtn');
+            const slug = qrBtn.dataset.slug;
+            
+            if (!slug) {
+                alert('QR 코드를 생성할 랜딩페이지 정보가 없습니다.');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/landing/' + slug + '/qr?size=500');
+                const result = await response.json();
+                
+                if (result.success) {
+                    // QR 코드를 다운로드
+                    const qrImage = new Image();
+                    qrImage.crossOrigin = 'anonymous';
+                    qrImage.src = result.qrCodeUrl;
+                    
+                    qrImage.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        canvas.width = qrImage.width;
+                        canvas.height = qrImage.height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(qrImage, 0, 0);
+                        
+                        canvas.toBlob(function(blob) {
+                            const link = document.createElement('a');
+                            link.href = URL.createObjectURL(blob);
+                            link.download = 'QR_' + result.title.replace(/[^a-zA-Z0-9가-힣]/g, '_') + '.png';
+                            link.click();
+                            alert('✅ QR 코드가 다운로드되었습니다!\\n\\n랜딩페이지: ' + result.title + '\\nURL: ' + result.landingUrl);
+                        });
+                    };
+                    
+                    qrImage.onerror = function() {
+                        // Fallback: 새 창에서 열기
+                        window.open(result.qrCodeUrl, '_blank');
+                        alert('QR 코드가 새 탭에서 열렸습니다.\\n오른쪽 클릭하여 이미지를 저장하세요.\\n\\n랜딩페이지: ' + result.title + '\\nURL: ' + result.landingUrl);
+                    };
+                } else {
+                    alert('QR 코드 생성 실패: ' + result.error);
+                }
+            } catch (err) {
+                console.error('QR download error:', err);
+                alert('QR 코드 다운로드 중 오류가 발생했습니다.');
+            }
         }
         <\/script>
     </body>
