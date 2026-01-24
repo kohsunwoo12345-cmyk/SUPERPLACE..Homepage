@@ -4762,7 +4762,7 @@ function generateQRCodeSection(): string {
                 <img id="qrCodeImage" src="" alt="QR 코드" style="width: 250px; height: 250px; display: block;">
             </div>
             <div style="margin-top: 1.5rem;">
-                <a id="qrCodeDownload" href="" download="qrcode.png" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 0.75rem 2rem; border-radius: 50px; text-decoration: none; font-weight: 600; transition: transform 0.3s; box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);">
+                <a id="qrCodeDownload" href="" download="qrcode.png" style="display: inline-block; background: linear-gradient(135deg, #93b8f5 0%, #a78cc5 100%); color: white; padding: 0.75rem 2rem; border-radius: 50px; text-decoration: none; font-weight: 600; transition: transform 0.3s; box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);">
                     💾 QR코드 다운로드
                 </a>
             </div>
@@ -4887,7 +4887,7 @@ function generateAcademyIntroHTML(data: any): string {
         /* Hero Section */
         .hero {
             position: relative;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #93b8f5 0%, #a78cc5 100%);
             color: white;
             padding: 8rem 0 6rem;
             text-align: center;
@@ -4948,7 +4948,7 @@ function generateAcademyIntroHTML(data: any): string {
             display: block;
             width: 80px;
             height: 4px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #93b8f5 0%, #a78cc5 100%);
             margin: 1rem auto 0;
             border-radius: 2px;
         }
@@ -5086,7 +5086,7 @@ function generateAcademyIntroHTML(data: any): string {
             flex-shrink: 0;
             width: 40px;
             height: 40px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #93b8f5 0%, #a78cc5 100%);
             color: white;
             border-radius: 10px;
             display: flex;
@@ -5105,7 +5105,7 @@ function generateAcademyIntroHTML(data: any): string {
         
         /* CTA Section */
         .cta-section {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #93b8f5 0%, #a78cc5 100%);
             color: white;
             padding: 5rem 0;
             text-align: center;
@@ -5996,7 +5996,7 @@ function generateAdmissionInfoHTML(data: any): string {
                     </div>
                 </div>
                 
-                <div class="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-8 text-white text-center">
+                <div class="bg-gradient-to-r from-blue-400 to-indigo-400 rounded-2xl p-8 text-white text-center">
                     <h3 class="text-2xl font-bold mb-4">참석 신청</h3>
                     <p class="text-lg mb-6">전화 또는 카카오톡으로 신청하세요</p>
                     <a href="tel:${contact}" class="inline-block bg-white text-purple-600 px-10 py-4 rounded-full text-xl font-bold hover:bg-gray-100 transition">
@@ -6036,15 +6036,15 @@ function generateAcademyStatsHTML(data: any): string {
         </div>
         
         <div class="grid md:grid-cols-3 gap-6 mb-12">
-            <div class="bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl p-8 text-white text-center">
+            <div class="bg-gradient-to-br from-blue-300 to-blue-400 rounded-2xl p-8 text-white text-center">
                 <div class="text-5xl font-bold mb-2">${totalStudents || 0}</div>
                 <div class="text-xl opacity-90">총 재학생</div>
             </div>
-            <div class="bg-gradient-to-br from-green-500 to-green-700 rounded-2xl p-8 text-white text-center">
+            <div class="bg-gradient-to-br from-green-300 to-green-400 rounded-2xl p-8 text-white text-center">
                 <div class="text-5xl font-bold mb-2">${gradeImprovement || '2'}등급</div>
                 <div class="text-xl opacity-90">평균 성적 향상</div>
             </div>
-            <div class="bg-gradient-to-br from-purple-500 to-purple-700 rounded-2xl p-8 text-white text-center">
+            <div class="bg-gradient-to-br from-purple-300 to-purple-400 rounded-2xl p-8 text-white text-center">
                 <div class="text-5xl font-bold mb-2">95%</div>
                 <div class="text-xl opacity-90">재등록률</div>
             </div>
@@ -6102,7 +6102,7 @@ function generateTeacherIntroHTML(data: any): string {
 <body class="bg-gradient-to-br from-teal-50 to-cyan-50 min-h-screen py-12 px-6">
     <div class="max-w-4xl mx-auto">
         <div class="bg-white rounded-3xl shadow-2xl overflow-hidden">
-            <div class="bg-gradient-to-r from-teal-600 to-cyan-600 text-white p-12 text-center">
+            <div class="bg-gradient-to-r from-teal-400 to-cyan-400 text-white p-12 text-center">
                 <div class="w-32 h-32 bg-white/20 rounded-full mx-auto mb-6 flex items-center justify-center">
                     <span class="text-6xl">👨‍🏫</span>
                 </div>
@@ -6147,7 +6147,7 @@ function generateTeacherIntroHTML(data: any): string {
                     </div>
                 </div>
                 
-                <div class="bg-gradient-to-r from-teal-600 to-cyan-600 rounded-2xl p-8 text-white text-center">
+                <div class="bg-gradient-to-r from-teal-400 to-cyan-400 rounded-2xl p-8 text-white text-center">
                     <h3 class="text-2xl font-bold mb-4">수업 문의</h3>
                     <a href="tel:${contact}" class="inline-block bg-white text-teal-600 px-10 py-4 rounded-full text-xl font-bold hover:bg-gray-100 transition">
                         📞 ${contact || '문의하기'}
@@ -6211,7 +6211,7 @@ function generateVacationCourseHTML(data: any): string {
         }
         
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #93b8f5 0%, #a78cc5 100%);
             color: #333;
             line-height: 1.6;
             min-height: 100vh;
@@ -6449,7 +6449,7 @@ function generateVacationCourseHTML(data: any): string {
         
         .curriculum-item .week {
             display: inline-block;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #93b8f5 0%, #a78cc5 100%);
             color: white;
             padding: 0.5rem 1rem;
             border-radius: 20px;
@@ -13475,7 +13475,7 @@ app.get('/teachers/register', (c) => {
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
         <style>
-            .gradient-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+            .gradient-purple { background: linear-gradient(135deg, #93b8f5 0%, #a78cc5 100%); }
         </style>
     </head>
     <body class="bg-gradient-to-br from-purple-50 to-blue-50 min-h-screen flex items-center justify-center p-4">
@@ -15585,7 +15585,7 @@ app.get('/signup', (c) => {
 //         <script src="https://cdn.tailwindcss.com"></script>
 //         <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
 //         <style>
-//             .gradient-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+//             .gradient-purple { background: linear-gradient(135deg, #93b8f5 0%, #a78cc5 100%); }
 //             .gradient-orange { background: linear-gradient(135deg, #fb923c 0%, #f97316 100%); }
 //             .card-hover { transition: all 0.3s; }
 //             .card-hover:hover { transform: translateY(-4px); }
@@ -15615,7 +15615,7 @@ app.get('/signup', (c) => {
 //             <div class="grid md:grid-cols-3 gap-8">
 //                 <!-- 네이버 플레이스 -->
 //                 <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden card-hover">
-//                     <div class="h-48 bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center">
+//                     <div class="h-48 bg-gradient-to-br from-purple-300 to-purple-400 flex items-center justify-center">
 //                         <i class="fas fa-map-marker-alt text-white text-6xl"></i>
 //                     </div>
 //                     <div class="p-8">
@@ -16774,7 +16774,7 @@ app.get('/dashboard', (c) => {
 
                 <!-- Stats Grid -->
                 <div class="grid md:grid-cols-3 gap-6 mb-12">
-                    <div class="bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl p-6 text-white shadow-lg">
+                    <div class="bg-gradient-to-br from-blue-300 to-blue-400 rounded-2xl p-6 text-white shadow-lg">
                         <div class="flex items-center justify-between mb-4">
                             <div class="text-sm text-blue-100">보유 포인트</div>
                             <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -17040,7 +17040,7 @@ app.get('/dashboard', (c) => {
                             </div>
                         </div>
 
-                        <div class="block bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl p-8 hover:shadow-2xl transition-all hover:-translate-y-1">
+                        <div class="block bg-gradient-to-br from-blue-300 to-blue-400 rounded-2xl p-8 hover:shadow-2xl transition-all hover:-translate-y-1">
                             <div class="flex items-center gap-4 mb-4">
                                 <div class="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
                                     <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -17393,7 +17393,7 @@ app.get('/dashboard', (c) => {
                                         '<div class="h-4 rounded-full transition-all duration-500 ' + 
                                         (usage.color === 'red' ? 'bg-gradient-to-r from-red-500 to-red-700' : 
                                          usage.color === 'orange' ? 'bg-gradient-to-r from-orange-500 to-orange-700' :
-                                         usage.color === 'yellow' ? 'bg-gradient-to-r from-yellow-500 to-yellow-700' : 'bg-gradient-to-r from-blue-500 to-blue-700') + 
+                                         usage.color === 'yellow' ? 'bg-gradient-to-r from-yellow-500 to-yellow-700' : 'bg-gradient-to-r from-blue-300 to-blue-400') + 
                                         '" style="width: ' + Math.min(usage.percent, 100) + '%"></div>' +
                                         '</div>' +
                                         '<div class="flex justify-between items-center">' +
@@ -17436,7 +17436,7 @@ app.get('/dashboard', (c) => {
                                 '<div class="flex items-center justify-between flex-wrap gap-4">' +
                                     '<div class="flex-1">' +
                                         '<div class="flex items-center gap-4 mb-4">' +
-                                            '<div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-700 rounded-full flex items-center justify-center">' +
+                                            '<div class="w-16 h-16 bg-gradient-to-br from-purple-300 to-purple-400 rounded-full flex items-center justify-center">' +
                                                 '<svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">' +
                                                     '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path>' +
                                                 '</svg>' +
@@ -18015,7 +18015,7 @@ app.get('/dashboard', (c) => {
                 </div>
 
                 <!-- 계좌 정보 -->
-                <div class="bg-gradient-to-r from-blue-500 to-blue-700 rounded-xl p-5 mb-6 text-white">
+                <div class="bg-gradient-to-r from-blue-300 to-blue-400 rounded-xl p-5 mb-6 text-white">
                     <h4 class="font-bold mb-3 flex items-center gap-2">
                         <i class="fas fa-university"></i>
                         입금 계좌 정보
@@ -27174,7 +27174,7 @@ app.get('/programs/funnel', (c) => {
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
         <style>
-            .gradient-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+            .gradient-purple { background: linear-gradient(135deg, #93b8f5 0%, #a78cc5 100%); }
         </style>
     </head>
     <body class="bg-gray-50">
@@ -27366,7 +27366,7 @@ app.get('/contact', (c) => {
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
         <style>
-            .gradient-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+            .gradient-purple { background: linear-gradient(135deg, #93b8f5 0%, #a78cc5 100%); }
         </style>
     </head>
     <body class="bg-gray-50">
@@ -27618,7 +27618,7 @@ app.get('/tools/keyword-analyzer', (c) => {
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
         <style>
-            .gradient-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+            .gradient-purple { background: linear-gradient(135deg, #93b8f5 0%, #a78cc5 100%); }
         </style>
     </head>
     <body class="bg-gray-50">
@@ -27714,7 +27714,7 @@ app.get('/tools/review-template', (c) => {
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>리뷰 응답 템플릿 생성기 - 슈퍼플레이스</title>
         <script src="https://cdn.tailwindcss.com"></script>
-        <style>.gradient-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }</style>
+        <style>.gradient-purple { background: linear-gradient(135deg, #93b8f5 0%, #a78cc5 100%); }</style>
     </head>
     <body class="bg-gray-50">
         <nav class="bg-white border-b border-gray-200">
@@ -27800,7 +27800,7 @@ app.get('/tools/ad-copy-generator', (c) => {
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>학원 홍보 문구 생성기 - 슈퍼플레이스</title>
         <script src="https://cdn.tailwindcss.com"></script>
-        <style>.gradient-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }</style>
+        <style>.gradient-purple { background: linear-gradient(135deg, #93b8f5 0%, #a78cc5 100%); }</style>
     </head>
     <body class="bg-gray-50">
         <nav class="bg-white border-b border-gray-200">
@@ -27891,7 +27891,7 @@ app.get('/tools/photo-optimizer', (c) => {
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>플레이스 사진 최적화 가이드 - 슈퍼플레이스</title>
         <script src="https://cdn.tailwindcss.com"></script>
-        <style>.gradient-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }</style>
+        <style>.gradient-purple { background: linear-gradient(135deg, #93b8f5 0%, #a78cc5 100%); }</style>
     </head>
     <body class="bg-gray-50">
         <nav class="bg-white border-b border-gray-200">
@@ -28018,7 +28018,7 @@ app.get('/tools/competitor-analysis', (c) => {
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>경쟁 학원 분석 도구 - 슈퍼플레이스</title>
         <script src="https://cdn.tailwindcss.com"></script>
-        <style>.gradient-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }</style>
+        <style>.gradient-purple { background: linear-gradient(135deg, #93b8f5 0%, #a78cc5 100%); }</style>
     </head>
     <body class="bg-gray-50">
         <nav class="bg-white border-b border-gray-200">
@@ -28104,7 +28104,7 @@ app.get('/tools/blog-checklist', (c) => {
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>블로그 포스팅 체크리스트 - 슈퍼플레이스</title>
         <script src="https://cdn.tailwindcss.com"></script>
-        <style>.gradient-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }</style>
+        <style>.gradient-purple { background: linear-gradient(135deg, #93b8f5 0%, #a78cc5 100%); }</style>
     </head>
     <body class="bg-gray-50">
         <nav class="bg-white border-b border-gray-200">
@@ -28261,7 +28261,7 @@ app.get('/tools/content-calendar', (c) => {
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>SNS 콘텐츠 캘린더 - 슈퍼플레이스</title>
         <script src="https://cdn.tailwindcss.com"></script>
-        <style>.gradient-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }</style>
+        <style>.gradient-purple { background: linear-gradient(135deg, #93b8f5 0%, #a78cc5 100%); }</style>
     </head>
     <body class="bg-gray-50">
         <nav class="bg-white border-b border-gray-200">
@@ -28364,7 +28364,7 @@ app.get('/tools/consultation-script', (c) => {
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>학원 상담 스크립트 생성기 - 슈퍼플레이스</title>
         <script src="https://cdn.tailwindcss.com"></script>
-        <style>.gradient-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }</style>
+        <style>.gradient-purple { background: linear-gradient(135deg, #93b8f5 0%, #a78cc5 100%); }</style>
     </head>
     <body class="bg-gray-50">
         <nav class="bg-white border-b border-gray-200">
@@ -28484,7 +28484,7 @@ app.get('/tools/place-optimization', (c) => {
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>플레이스 최적화 점검표 - 슈퍼플레이스</title>
         <script src="https://cdn.tailwindcss.com"></script>
-        <style>.gradient-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }</style>
+        <style>.gradient-purple { background: linear-gradient(135deg, #93b8f5 0%, #a78cc5 100%); }</style>
     </head>
     <body class="bg-gray-50">
         <nav class="bg-white border-b border-gray-200">
@@ -28663,7 +28663,7 @@ app.get('/tools/roi-calculator', (c) => {
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>마케팅 ROI 계산기 - 슈퍼플레이스</title>
         <script src="https://cdn.tailwindcss.com"></script>
-        <style>.gradient-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }</style>
+        <style>.gradient-purple { background: linear-gradient(135deg, #93b8f5 0%, #a78cc5 100%); }</style>
     </head>
     <body class="bg-gray-50">
         <nav class="bg-white border-b border-gray-200">
@@ -28815,7 +28815,7 @@ app.get('/tools', (c) => {
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
         <style>
-            .gradient-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+            .gradient-purple { background: linear-gradient(135deg, #93b8f5 0%, #a78cc5 100%); }
             .card-hover { transition: all 0.3s ease; }
             .card-hover:hover { transform: translateY(-8px); box-shadow: 0 20px 40px -10px rgba(124, 58, 237, 0.3); }
         </style>
@@ -29373,7 +29373,7 @@ app.get('/tools/place-keyword-analyzer', (c) => {
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
         <style>
-            .gradient-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+            .gradient-purple { background: linear-gradient(135deg, #93b8f5 0%, #a78cc5 100%); }
         </style>
     </head>
     <body class="bg-gray-50">
@@ -29529,7 +29529,7 @@ app.get('/tools/blog-title-generator', (c) => {
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
         <style>
-            .gradient-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+            .gradient-purple { background: linear-gradient(135deg, #93b8f5 0%, #a78cc5 100%); }
         </style>
     </head>
     <body class="bg-gray-50">
@@ -29710,11 +29710,11 @@ app.get('/tools/consultation-calendar', (c) => {
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
         <style>
-            .gradient-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+            .gradient-purple { background: linear-gradient(135deg, #93b8f5 0%, #a78cc5 100%); }
             .calendar-day { min-height: 100px; }
             .time-slot { cursor: pointer; transition: all 0.2s; }
             .time-slot:hover { transform: scale(1.05); }
-            .time-slot.selected { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+            .time-slot.selected { background: linear-gradient(135deg, #93b8f5 0%, #a78cc5 100%); color: white; }
         </style>
     </head>
     <body class="bg-gray-50">
@@ -29904,7 +29904,7 @@ app.get('/tools/promo-generator', (c) => {
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
         <style>
-            .gradient-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+            .gradient-purple { background: linear-gradient(135deg, #93b8f5 0%, #a78cc5 100%); }
         </style>
     </head>
     <body class="bg-gray-50">
@@ -30011,7 +30011,7 @@ app.get('/tools/review-template', (c) => {
         <title>리뷰 답변 템플릿 - 슈퍼플레이스</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <style>
-            .gradient-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+            .gradient-purple { background: linear-gradient(135deg, #93b8f5 0%, #a78cc5 100%); }
         </style>
     </head>
     <body class="bg-gray-50">
@@ -30089,7 +30089,7 @@ app.get('/tools/parent-sms-template', (c) => {
         <title>학부모 문자 템플릿 - 슈퍼플레이스</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <style>
-            .gradient-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+            .gradient-purple { background: linear-gradient(135deg, #93b8f5 0%, #a78cc5 100%); }
         </style>
     </head>
     <body class="bg-gray-50">
@@ -30169,7 +30169,7 @@ app.get('/tools/poster-generator', (c) => {
         <title>학원 포스터 문구 생성기 - 슈퍼플레이스</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <style>
-            .gradient-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+            .gradient-purple { background: linear-gradient(135deg, #93b8f5 0%, #a78cc5 100%); }
             .poster-preview { aspect-ratio: 3/4; }
         </style>
     </head>
@@ -30246,7 +30246,7 @@ app.get('/tools/competitor-analysis', (c) => {
         <title>경쟁사 분석 도구 - 슈퍼플레이스</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <style>
-            .gradient-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+            .gradient-purple { background: linear-gradient(135deg, #93b8f5 0%, #a78cc5 100%); }
         </style>
     </head>
     <body class="bg-gray-50">
@@ -30336,7 +30336,7 @@ app.get('/tools/operation-checklist', (c) => {
         <title>학원 운영 체크리스트 - 슈퍼플레이스</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <style>
-            .gradient-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+            .gradient-purple { background: linear-gradient(135deg, #93b8f5 0%, #a78cc5 100%); }
         </style>
     </head>
     <body class="bg-gray-50">
@@ -30405,7 +30405,7 @@ app.get('/tools/campaign-planner', (c) => {
         <title>마케팅 캠페인 플래너 - 슈퍼플레이스</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <style>
-            .gradient-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+            .gradient-purple { background: linear-gradient(135deg, #93b8f5 0%, #a78cc5 100%); }
         </style>
     </head>
     <body class="bg-gray-50">
@@ -30492,7 +30492,7 @@ app.get('/tools', (c) => {
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
         <style>
-            .gradient-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+            .gradient-purple { background: linear-gradient(135deg, #93b8f5 0%, #a78cc5 100%); }
             .tool-card { transition: all 0.3s; }
             .tool-card:hover { transform: translateY(-4px); }
         </style>
@@ -30587,7 +30587,7 @@ app.get('/admin/users', async (c) => {
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
         <style>
-            .gradient-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+            .gradient-purple { background: linear-gradient(135deg, #93b8f5 0%, #a78cc5 100%); }
         </style>
         <script>
             // v2.0 - All functions defined immediately in head
@@ -33527,7 +33527,7 @@ app.get('/admin/users/:id', async (c) => {
           <script src="https://cdn.tailwindcss.com"></script>
           <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
           <style>
-              .gradient-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+              .gradient-purple { background: linear-gradient(135deg, #93b8f5 0%, #a78cc5 100%); }
               .info-card { transition: all 0.3s ease; }
               .info-card:hover { transform: translateY(-2px); box-shadow: 0 8px 15px -5px rgba(0, 0, 0, 0.1); }
           </style>
@@ -33897,7 +33897,7 @@ app.get('/admin/contacts', async (c) => {
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
         <style>
-            .gradient-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+            .gradient-purple { background: linear-gradient(135deg, #93b8f5 0%, #a78cc5 100%); }
         </style>
     </head>
     <body class="bg-gray-50">
@@ -41150,7 +41150,7 @@ app.get('/teachers/manage', (c) => {
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
         <style>
-            .gradient-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+            .gradient-purple { background: linear-gradient(135deg, #93b8f5 0%, #a78cc5 100%); }
         </style>
     </head>
     <body class="bg-gray-50">
@@ -41356,7 +41356,7 @@ app.get('/academy-management', (c) => {
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
         <style>
-            .gradient-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+            .gradient-purple { background: linear-gradient(135deg, #93b8f5 0%, #a78cc5 100%); }
         </style>
     </head>
     <body class="bg-gray-50">
@@ -41574,7 +41574,7 @@ app.get('/teachers-old', (c) => {
         <style>
             @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
             * { font-family: 'Pretendard Variable', sans-serif; }
-            .gradient-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+            .gradient-purple { background: linear-gradient(135deg, #93b8f5 0%, #a78cc5 100%); }
         </style>
     </head>
     <body class="bg-gray-50">
@@ -42355,7 +42355,7 @@ app.get('/store', (c) => {
         
         /* 헤더 */
         .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #93b8f5 0%, #a78cc5 100%);
             border-radius: 20px;
             padding: 40px 30px;
             margin-bottom: 30px;
@@ -42431,7 +42431,7 @@ app.get('/store', (c) => {
             color: #667eea;
         }
         .category-btn.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #93b8f5 0%, #a78cc5 100%);
             border-color: transparent;
             color: white;
         }
@@ -42492,7 +42492,7 @@ app.get('/store', (c) => {
         }
         .buy-btn {
             width: 100%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #93b8f5 0%, #a78cc5 100%);
             color: white;
             border: none;
             padding: 15px;
@@ -42618,7 +42618,7 @@ app.get('/store', (c) => {
             background: #e0e0e0;
         }
         .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #93b8f5 0%, #a78cc5 100%);
             color: white;
         }
         .btn-primary:hover {
@@ -43222,7 +43222,7 @@ app.get('/students', (c) => {
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
         <style>
-            .gradient-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+            .gradient-purple { background: linear-gradient(135deg, #93b8f5 0%, #a78cc5 100%); }
             .gradient-blue { background: linear-gradient(135deg, #667eea 0%, #4facfe 100%); }
             .gradient-green { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); }
             .gradient-orange { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
