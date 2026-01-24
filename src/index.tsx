@@ -4390,12 +4390,11 @@ app.post('/api/landing/create', async (c) => {
           INSERT INTO usage_tracking (
             academy_id, subscription_id, current_students, ai_reports_used_this_month,
             landing_pages_created, current_teachers, sms_sent_this_month,
-            last_ai_report_reset_date, last_sms_reset_date, last_landing_page_reset_date, created_at, updated_at
-          ) VALUES (?, ?, 0, 0, 0, 0, 0, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+            last_ai_report_reset_date, last_sms_reset_date, created_at, updated_at
+          ) VALUES (?, ?, 0, 0, 0, 0, 0, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
         `).bind(
           academyIdToUse,
           newSubId,
-          newStartDate.toISOString().split('T')[0],
           newStartDate.toISOString().split('T')[0],
           newStartDate.toISOString().split('T')[0]
         ).run()
@@ -4414,33 +4413,16 @@ app.post('/api/landing/create', async (c) => {
     }
     
     const usage = await c.env.DB.prepare(`
-      SELECT landing_pages_created, last_landing_page_reset_date
+      SELECT landing_pages_created
       FROM usage_tracking 
       WHERE subscription_id = ?
     `).bind(activeSubscription.id).first()
     
     let currentPages = usage?.landing_pages_created || 0
-    const lastResetDate = usage?.last_landing_page_reset_date
     const pageLimit = activeSubscription.landing_page_limit
     
-    // 🔥 월별 리셋 로직 (AI 리포트와 동일)
-    const now = new Date()
-    const currentMonth = now.toISOString().slice(0, 7) // YYYY-MM
-    const lastResetMonth = lastResetDate ? lastResetDate.slice(0, 7) : null
-    
-    if (!lastResetMonth || lastResetMonth !== currentMonth) {
-      console.log(`🔄 [Landing Page] Resetting monthly count. Last: ${lastResetMonth}, Current: ${currentMonth}`)
-      
-      await c.env.DB.prepare(`
-        UPDATE usage_tracking
-        SET landing_pages_created = 0,
-            last_landing_page_reset_date = ?,
-            updated_at = CURRENT_TIMESTAMP
-        WHERE subscription_id = ?
-      `).bind(now.toISOString().split('T')[0], activeSubscription.id).run()
-      
-      currentPages = 0
-    }
+    // 🔥 월별 리셋 로직은 제거 - 무제한으로 변경
+    // 나중에 필요하면 last_ai_report_reset_date를 재활용 가능
     
     // 한도 초과 체크 (포인트 시스템 제거)
     if (currentPages >= pageLimit) {
