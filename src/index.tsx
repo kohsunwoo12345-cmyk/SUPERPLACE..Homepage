@@ -1809,6 +1809,59 @@ app.get('/api/db/migrate', async (c) => {
       results.push('ℹ️ landing_pages.conversion_pixel: exists')
     }
     
+    // Migration 19: Drop and recreate form_submissions without FOREIGN KEY constraints
+    try {
+      // 기존 데이터 백업
+      const existingSubmissions = await c.env.DB.prepare('SELECT * FROM form_submissions').all()
+      console.log('📦 [Migration] Backing up form_submissions:', existingSubmissions.results.length)
+      
+      // 테이블 삭제
+      await c.env.DB.prepare('DROP TABLE IF EXISTS form_submissions_old').run()
+      await c.env.DB.prepare('ALTER TABLE form_submissions RENAME TO form_submissions_old').run()
+      
+      // FOREIGN KEY 없이 재생성
+      await c.env.DB.prepare(`
+        CREATE TABLE IF NOT EXISTS form_submissions (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          form_id INTEGER NOT NULL,
+          landing_page_id INTEGER,
+          name TEXT NOT NULL,
+          phone TEXT,
+          email TEXT,
+          data TEXT,
+          agreed_to_terms INTEGER DEFAULT 0,
+          ip_address TEXT,
+          user_agent TEXT,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+      `).run()
+      
+      // 데이터 복원
+      if (existingSubmissions.results.length > 0) {
+        for (const row of existingSubmissions.results) {
+          await c.env.DB.prepare(`
+            INSERT INTO form_submissions (
+              id, form_id, landing_page_id, name, phone, email, data, 
+              agreed_to_terms, ip_address, user_agent, created_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          `).bind(
+            row.id, row.form_id, row.landing_page_id, row.name, row.phone, 
+            row.email, row.data, row.agreed_to_terms, row.ip_address, 
+            row.user_agent, row.created_at
+          ).run()
+        }
+      }
+      
+      // 구 테이블 삭제
+      await c.env.DB.prepare('DROP TABLE IF EXISTS form_submissions_old').run()
+      
+      console.log('✅ [Migration] Recreated form_submissions without FOREIGN KEY')
+      results.push('✅ Recreated form_submissions without FOREIGN KEY constraints')
+    } catch (e) {
+      console.log('ℹ️ [Migration] form_submissions recreation:', e.message)
+      results.push('ℹ️ form_submissions: ' + e.message.substring(0, 100))
+    }
+    
     return c.json({ 
       success: true, 
       message: '데이터베이스 마이그레이션이 완료되었습니다',
