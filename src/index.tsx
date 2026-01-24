@@ -20823,7 +20823,7 @@ app.get('/tools/landing-builder', (c) => {
                     qrImage.onerror = function() {
                         // Fallback: 새 창에서 열기
                         window.open(result.qrCodeUrl, '_blank');
-                        alert('QR 코드가 새 탭에서 열렸습니다.\\n오른쪽 클릭하여 이미지를 저장하세요.\\n\\n랜딩페이지: ' + result.title + '\\nURL: ' + result.landingUrl);
+                        alert('QR 코드가 새 탭에서 열렸습니다.\n오른쪽 클릭하여 이미지를 저장하세요.\n\n랜딩페이지: ' + result.title + '\nURL: ' + result.landingUrl);
                     };
                 } else {
                     alert('QR 코드 생성 실패: ' + result.error);
@@ -21330,14 +21330,14 @@ app.get('/tools/landing-manager', (c) => {
                             link.href = URL.createObjectURL(blob);
                             link.download = 'QR_' + result.title.replace(/[^a-zA-Z0-9가-힣]/g, '_') + '.png';
                             link.click();
-                            alert('QR 코드가 다운로드되었습니다!\\n\\n랜딩페이지: ' + result.title + '\\nURL: ' + result.landingUrl);
+                            alert('QR 코드가 다운로드되었습니다!\n\n랜딩페이지: ' + result.title + '\nURL: ' + result.landingUrl);
                         });
                     };
                     
                     qrImage.onerror = function() {
                         // Fallback: 새 창에서 열기
                         window.open(result.qrCodeUrl, '_blank');
-                        alert('QR 코드가 새 탭에서 열렸습니다.\\n오른쪽 클릭하여 이미지를 저장하세요.\\n\\n랜딩페이지: ' + result.title + '\\nURL: ' + result.landingUrl);
+                        alert('QR 코드가 새 탭에서 열렸습니다.\n오른쪽 클릭하여 이미지를 저장하세요.\n\n랜딩페이지: ' + result.title + '\nURL: ' + result.landingUrl);
                     };
                 } else {
                     alert('QR 코드 생성 실패: ' + result.error);
