@@ -35551,6 +35551,27 @@ app.get('/admin/dashboard', async (c) => {
 
 // 관리자: 실시간 대기 건수 조회 API
 app.get('/api/admin/pending-counts', async (c) => {
+  const {env} = c
+  if (!env?.DB) return c.json({ success: false, error: 'DB Error' }, 500)
+  
+  let pd = 0, ps = 0, pbt = 0
+  try {
+    pd = (await env.DB.prepare('SELECT COUNT(*) c FROM deposit_requests WHERE status=?').bind('pending').first())?.c || 0
+  } catch (e) {}
+  try {
+    ps = (await env.DB.prepare('SELECT COUNT(*) c FROM sender_verification_requests WHERE status=?').bind('pending').first())?.c || 0
+  } catch (e) {}
+  try {
+    pbt = (await env.DB.prepare('SELECT COUNT(*) c FROM bank_transfer_requests WHERE status=?').bind('pending').first())?.c || 0
+  } catch (e) {}
+  
+  return c.json({
+    success: true,
+    deposits: pd,
+    senders: ps,
+    bankTransfers: pbt
+  })
+})
 
 // 관리자: 실시간 접속자 페이지
 app.get('/admin/active-sessions', async (c) => {
@@ -35856,28 +35877,6 @@ app.get('/admin/active-sessions', async (c) => {
     </script>
 </body>
 </html>`)
-})
-
-  const {env} = c
-  if (!env?.DB) return c.json({ success: false, error: 'DB Error' }, 500)
-  
-  let pd = 0, ps = 0, pbt = 0
-  try {
-    pd = (await env.DB.prepare('SELECT COUNT(*) c FROM deposit_requests WHERE status=?').bind('pending').first())?.c || 0
-  } catch (e) {}
-  try {
-    ps = (await env.DB.prepare('SELECT COUNT(*) c FROM sender_verification_requests WHERE status=?').bind('pending').first())?.c || 0
-  } catch (e) {}
-  try {
-    pbt = (await env.DB.prepare('SELECT COUNT(*) c FROM bank_transfer_requests WHERE status=?').bind('pending').first())?.c || 0
-  } catch (e) {}
-  
-  return c.json({
-    success: true,
-    deposits: pd,
-    senders: ps,
-    bankTransfers: pbt
-  })
 })
 
 // .html 확장자 접근 시 리다이렉트
