@@ -21261,7 +21261,7 @@ app.get('/tools/landing-manager', (c) => {
                             'student-report': '📊 학생 리포트'
                         };
                         const url = window.location.origin + '/landing/' + p.slug;
-                        const safeUrl = url.replace(/'/g, "\\'");
+                        const safeUrl = url.replace(/'/g, "\\\\'");
                         return '<div class="bg-white rounded-xl p-6 border border-gray-200 hover:shadow-lg transition">' +
                                 '<div class="flex items-start justify-between">' +
                                     '<div class="flex-1">' +
