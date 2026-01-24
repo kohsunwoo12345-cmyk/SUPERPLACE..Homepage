@@ -9505,13 +9505,14 @@ app.post('/api/free-plan/approve', async (c) => {
 
     // 사용자 정보 조회 (정수 ID인 경우만)
     let user: any = null
-    let academyId = userId // 기본값으로 userId 사용
+    let academyId: number
     
     // userId가 숫자인 경우에만 users 테이블에서 조회
     if (!isNaN(Number(userId))) {
+      const numericUserId = Number(userId)
       user = await c.env.DB.prepare(`
         SELECT id, academy_id, name FROM users WHERE id = ?
-      `).bind(userId).first()
+      `).bind(numericUserId).first()
       
       if (user) {
         academyId = user.academy_id || user.id
@@ -9519,9 +9520,19 @@ app.post('/api/free-plan/approve', async (c) => {
         if (!user.academy_id) {
           await c.env.DB.prepare(`
             UPDATE users SET academy_id = ? WHERE id = ?
-          `).bind(academyId, userId).run()
+          `).bind(academyId, numericUserId).run()
         }
+      } else {
+        academyId = numericUserId
       }
+    } else {
+      // TEXT userId를 숫자로 변환 (간단한 해시)
+      let hash = 0
+      for (let i = 0; i < userId.length; i++) {
+        hash = ((hash << 5) - hash) + userId.charCodeAt(i)
+        hash = hash & hash // Convert to 32bit integer
+      }
+      academyId = Math.abs(hash)
     }
     
     console.log('[Free Plan Approve] Academy ID:', academyId)
