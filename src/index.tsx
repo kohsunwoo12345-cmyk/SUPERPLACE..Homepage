@@ -29798,184 +29798,8 @@ app.get('/tools', (c) => {
 
 // 관리자 대시보드
 app.get('/admin', async (c) => {
-  const { env } = c
-  
-  // 통계 데이터 조회
-  const totalUsers = await env.DB.prepare('SELECT COUNT(*) as count FROM users').first()
-  const totalContacts = await env.DB.prepare('SELECT COUNT(*) as count FROM contacts').first()
-  const pendingContacts = await env.DB.prepare('SELECT COUNT(*) as count FROM contacts WHERE status = ?').bind('pending').first()
-  
-  return c.html(`
-    <!DOCTYPE html>
-    <html lang="ko">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>관리자 대시보드 - 슈퍼플레이스</title>
-        <script src="https://cdn.tailwindcss.com"></script>
-        <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
-        <style>
-            .gradient-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-            .card-hover { transition: all 0.3s ease; }
-            .card-hover:hover { transform: translateY(-4px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
-        </style>
-    </head>
-    <body class="bg-gray-50">
-        <!-- 헤더 -->
-        <nav class="bg-white border-b border-gray-200 sticky top-0 z-50">
-            <div class="max-w-7xl mx-auto px-6 py-4">
-                <div class="flex justify-between items-center">
-                    <div class="flex items-center gap-8">
-                        <a href="/" class="text-2xl font-bold text-purple-600">슈퍼플레이스 관리자</a>
-                        <div class="flex gap-4">
-                            <a href="/admin" class="text-purple-600 font-medium">대시보드</a>
-                            <a href="/admin/users" class="text-gray-600 hover:text-purple-600">사용자</a>
-                            <a href="/admin/deposits" class="text-gray-600 hover:text-purple-600">입금 신청</a>
-                            <a href="/admin/contacts" class="text-gray-600 hover:text-purple-600">문의</a>
-                        </div>
-                    </div>
-                    <button onclick="logout()" class="text-gray-600 hover:text-red-600">
-                        <i class="fas fa-sign-out-alt mr-2"></i>로그아웃
-                    </button>
-                </div>
-            </div>
-        </nav>
-
-        <!-- 메인 컨텐츠 -->
-        <div class="max-w-7xl mx-auto px-6 py-8">
-            <div class="mb-8">
-                <h1 class="text-3xl font-bold text-gray-900 mb-2">관리자 대시보드</h1>
-                <p class="text-gray-600">시스템 전체 현황을 한눈에 확인하세요</p>
-            </div>
-
-            <!-- 통계 카드 -->
-            <div class="grid md:grid-cols-3 gap-6 mb-8">
-                <!-- 전체 사용자 -->
-                <div class="bg-white rounded-2xl p-6 shadow-sm card-hover border border-gray-100">
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="w-12 h-12 gradient-purple rounded-xl flex items-center justify-center">
-                            <i class="fas fa-users text-white text-xl"></i>
-                        </div>
-                        <span class="text-sm text-gray-500">전체</span>
-                    </div>
-                    <div class="text-3xl font-bold text-gray-900 mb-1">${totalUsers?.count || 0}</div>
-                    <div class="text-sm text-gray-600">전체 사용자</div>
-                </div>
-
-                <!-- 전체 문의 -->
-                <div class="bg-white rounded-2xl p-6 shadow-sm card-hover border border-gray-100">
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center">
-                            <i class="fas fa-envelope text-white text-xl"></i>
-                        </div>
-                        <span class="text-sm text-gray-500">전체</span>
-                    </div>
-                    <div class="text-3xl font-bold text-gray-900 mb-1">${totalContacts?.count || 0}</div>
-                    <div class="text-sm text-gray-600">전체 문의</div>
-                </div>
-
-                <!-- 대기중 문의 -->
-                <div class="bg-white rounded-2xl p-6 shadow-sm card-hover border border-gray-100">
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="w-12 h-12 bg-orange-500 rounded-xl flex items-center justify-center">
-                            <i class="fas fa-clock text-white text-xl"></i>
-                        </div>
-                        <span class="text-sm text-orange-500">처리 필요</span>
-                    </div>
-                    <div class="text-3xl font-bold text-gray-900 mb-1">${pendingContacts?.count || 0}</div>
-                    <div class="text-sm text-gray-600">대기중 문의</div>
-                </div>
-            </div>
-
-            <!-- 빠른 메뉴 -->
-            <div class="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
-                <h2 class="text-xl font-bold text-gray-900 mb-6">빠른 메뉴</h2>
-                <div class="grid md:grid-cols-4 gap-4">
-                    <a href="/admin/users" class="flex items-center gap-4 p-4 rounded-xl border border-gray-200 hover:border-purple-300 hover:bg-purple-50 transition">
-                        <div class="w-12 h-12 gradient-purple rounded-xl flex items-center justify-center">
-                            <i class="fas fa-users text-white"></i>
-                        </div>
-                        <div>
-                            <div class="font-bold text-gray-900">사용자 관리</div>
-                            <div class="text-sm text-gray-600">회원 목록 및 관리</div>
-                        </div>
-                    </a>
-
-                    <a href="/admin/contacts" class="flex items-center gap-4 p-4 rounded-xl border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition">
-                        <div class="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center">
-                            <i class="fas fa-envelope text-white"></i>
-                        </div>
-                        <div>
-                            <div class="font-bold text-gray-900">문의 관리</div>
-                            <div class="text-sm text-gray-600">대행 문의 확인</div>
-                        </div>
-                    </a>
-
-                    <a href="/admin/programs" class="flex items-center gap-4 p-4 rounded-xl border border-gray-200 hover:border-green-300 hover:bg-green-50 transition">
-                        <div class="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center">
-                            <i class="fas fa-graduation-cap text-white"></i>
-                        </div>
-                        <div>
-                            <div class="font-bold text-gray-900">프로그램 관리</div>
-                            <div class="text-sm text-gray-600">교육 프로그램 관리</div>
-                        </div>
-                    </a>
-                    
-                    <button onclick="runMigration()" class="flex items-center gap-4 p-4 rounded-xl border border-gray-200 hover:border-red-300 hover:bg-red-50 transition text-left">
-                        <div class="w-12 h-12 bg-red-500 rounded-xl flex items-center justify-center">
-                            <i class="fas fa-database text-white"></i>
-                        </div>
-                        <div>
-                            <div class="font-bold text-gray-900">DB 마이그레이션</div>
-                            <div class="text-sm text-gray-600">권한 테이블 초기화</div>
-                        </div>
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <script>
-            async function runMigration() {
-                if (!confirm('⚠️ 권한 테이블을 재생성하시겠습니까?\n\n기존 권한 데이터는 백업되지만, 모든 사용자의 권한이 초기화됩니다.')) {
-                    return;
-                }
-                
-                const user = JSON.parse(localStorage.getItem('user') || '{}');
-                if (!user.id) {
-                    alert('로그인이 필요합니다.');
-                    return;
-                }
-                
-                try {
-                    const response = await fetch('/api/admin/run-migration', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ adminId: user.id })
-                    });
-                    
-                    const data = await response.json();
-                    if (data.success) {
-                        alert('✅ ' + data.message + '\n\n이제 권한 시스템을 정상적으로 사용할 수 있습니다.');
-                        location.reload();
-                    } else {
-                        alert('❌ 오류: ' + data.error);
-                    }
-                } catch (err) {
-                    alert('❌ 마이그레이션 실행 중 오류가 발생했습니다: ' + err.message);
-                }
-            }
-            
-            function logout() {
-                if(confirm('로그아웃 하시겠습니까?')) {
-                    localStorage.removeItem('user');
-                localStorage.removeItem('loginTime');
-                    window.location.href = '/';
-                }
-            }
-        </script>
-    </body>
-    </html>
-  `)
+  // /admin → /admin/dashboard 리다이렉트
+  return c.redirect('/admin/dashboard', 301)
 })
 
 // 사용자 관리 페이지
@@ -30288,11 +30112,12 @@ app.get('/admin/users', async (c) => {
             <div class="max-w-full mx-auto px-6 py-4">
                 <div class="flex justify-between items-center">
                     <div class="flex items-center gap-8">
-                        <a href="/admin" class="text-2xl font-bold text-purple-600">슈퍼플레이스 관리자</a>
+                        <a href="/admin/dashboard" class="text-2xl font-bold text-purple-600">슈퍼플레이스 관리자</a>
                         <div class="flex gap-4">
-                            <a href="/admin" class="text-gray-600 hover:text-purple-600">대시보드</a>
+                            <a href="/admin/dashboard" class="text-gray-600 hover:text-purple-600">대시보드</a>
                             <a href="/admin/users" class="text-purple-600 font-medium">사용자</a>
                             <a href="/admin/contacts" class="text-gray-600 hover:text-purple-600">문의</a>
+                            <a href="/admin/bank-transfers" class="text-gray-600 hover:text-purple-600">계좌이체</a>
                         </div>
                     </div>
                     <button onclick="logout()" class="text-gray-600 hover:text-red-600">
@@ -32945,11 +32770,12 @@ app.get('/admin/users/:id', async (c) => {
               <div class="max-w-7xl mx-auto px-6 py-4">
                   <div class="flex justify-between items-center">
                       <div class="flex items-center gap-8">
-                          <a href="/admin" class="text-2xl font-bold text-purple-600">슈퍼플레이스 관리자</a>
+                          <a href="/admin/dashboard" class="text-2xl font-bold text-purple-600">슈퍼플레이스 관리자</a>
                           <div class="flex gap-4">
-                              <a href="/admin" class="text-gray-600 hover:text-purple-600">대시보드</a>
+                              <a href="/admin/dashboard" class="text-gray-600 hover:text-purple-600">대시보드</a>
                               <a href="/admin/users" class="text-purple-600 font-medium">사용자</a>
                               <a href="/admin/contacts" class="text-gray-600 hover:text-purple-600">문의</a>
+                              <a href="/admin/bank-transfers" class="text-gray-600 hover:text-purple-600">계좌이체</a>
                           </div>
                       </div>
                       <button onclick="logout()" class="text-gray-600 hover:text-red-600">
@@ -33312,11 +33138,12 @@ app.get('/admin/contacts', async (c) => {
             <div class="max-w-7xl mx-auto px-6 py-4">
                 <div class="flex justify-between items-center">
                     <div class="flex items-center gap-8">
-                        <a href="/admin" class="text-2xl font-bold text-purple-600">슈퍼플레이스 관리자</a>
+                        <a href="/admin/dashboard" class="text-2xl font-bold text-purple-600">슈퍼플레이스 관리자</a>
                         <div class="flex gap-4">
-                            <a href="/admin" class="text-gray-600 hover:text-purple-600">대시보드</a>
+                            <a href="/admin/dashboard" class="text-gray-600 hover:text-purple-600">대시보드</a>
                             <a href="/admin/users" class="text-gray-600 hover:text-purple-600">사용자</a>
                             <a href="/admin/contacts" class="text-purple-600 font-medium">문의</a>
+                            <a href="/admin/bank-transfers" class="text-gray-600 hover:text-purple-600">계좌이체</a>
                         </div>
                     </div>
                     <button onclick="logout()" class="text-gray-600 hover:text-red-600">
@@ -35369,7 +35196,7 @@ app.get('/admin/dashboard', async (c) => {
   try{pbt=(await env.DB.prepare('SELECT COUNT(*)c FROM bank_transfer_requests WHERE status=?').bind('pending').first())?.c||0}catch(e){}
   try{pfp=(await env.DB.prepare('SELECT COUNT(*)c FROM free_plan_requests WHERE status=?').bind('pending').first())?.c||0}catch(e){}
   const h=`<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>관리자 대시보드</title><script src="https://cdn.tailwindcss.com"></script><link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet"></head><body class="bg-gray-50">`
-  const n=`<nav class="bg-white border-b"><div class="max-w-7xl mx-auto px-6 py-4"><div class="flex justify-between items-center"><div class="flex items-center gap-8"><a href="/admin/dashboard" class="text-2xl font-bold text-purple-600">슈퍼플레이스</a><div class="flex gap-4"><a href="/admin/dashboard" class="text-purple-600 font-semibold">대시보드</a><a href="/admin/users" class="text-gray-600 hover:text-purple-600">사용자</a><a href="/admin/contacts" class="text-gray-600 hover:text-purple-600">문의</a><a href="/admin/sms" class="text-gray-600 hover:text-purple-600">문자</a><a href="/admin/sender/verification" class="text-gray-600 hover:text-purple-600">발신번호</a><a href="/admin/free-plan-requests" class="text-gray-600 hover:text-purple-600">무료 플랜</a></div></div><button onclick="localStorage.removeItem('user');
+  const n=`<nav class="bg-white border-b"><div class="max-w-7xl mx-auto px-6 py-4"><div class="flex justify-between items-center"><div class="flex items-center gap-8"><a href="/admin/dashboard" class="text-2xl font-bold text-purple-600">슈퍼플레이스</a><div class="flex gap-4"><a href="/admin/dashboard" class="text-purple-600 font-semibold">대시보드</a><a href="/admin/users" class="text-gray-600 hover:text-purple-600">사용자</a><a href="/admin/contacts" class="text-gray-600 hover:text-purple-600">문의</a><a href="/admin/bank-transfers" class="text-gray-600 hover:text-purple-600">계좌이체</a><a href="/admin/sms" class="text-gray-600 hover:text-purple-600">문자</a><a href="/admin/sender/verification" class="text-gray-600 hover:text-purple-600">발신번호</a><a href="/admin/free-plan-requests" class="text-gray-600 hover:text-purple-600">무료 플랜</a></div></div><button onclick="localStorage.removeItem('user');
                 localStorage.removeItem('loginTime');location.href='/'" class="text-gray-600 hover:text-red-600"><i class="fas fa-sign-out-alt mr-2"></i>로그아웃</button></div></div></nav>`
   const b=`<div class="max-w-7xl mx-auto px-6 py-8"><h1 class="text-3xl font-bold mb-8">관리자 대시보드</h1><div class="grid md:grid-cols-3 gap-6 mb-8"><div class="bg-white rounded-xl shadow p-6 border"><div class="flex items-center justify-between mb-2"><span class="text-gray-600">전체 사용자</span><i class="fas fa-users text-blue-600 text-2xl"></i></div><p class="text-3xl font-bold">${u}</p></div><div class="bg-white rounded-xl shadow p-6 border"><div class="flex items-center justify-between mb-2"><span class="text-gray-600">전체 문의</span><i class="fas fa-envelope text-green-600 text-2xl"></i></div><p class="text-3xl font-bold">${co}</p></div><div class="bg-white rounded-xl shadow p-6 border"><div class="flex items-center justify-between mb-2"><span class="text-gray-600">대기중 문의</span><i class="fas fa-clock text-orange-600 text-2xl"></i></div><p class="text-3xl font-bold">${pc}</p></div></div>`
   const s=`<div class="mb-8"><h2 class="text-xl font-bold mb-4">신청 대기</h2><div class="grid md:grid-cols-4 gap-6"><div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow p-6 text-white"><div class="flex items-center justify-between mb-2"><span>입금 대기</span><i class="fas fa-money-bill-wave text-2xl"></i></div><p class="text-3xl font-bold">${pd}</p></div><div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow p-6 text-white"><div class="flex items-center justify-between mb-2"><span>발신번호 대기</span><i class="fas fa-phone text-2xl"></i></div><p class="text-3xl font-bold">${ps}</p></div><a href="/admin/bank-transfers" class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow p-6 text-white hover:shadow-lg transition"><div class="flex items-center justify-between mb-2"><span>계좌이체 대기</span><i class="fas fa-university text-2xl"></i></div><p class="text-3xl font-bold">${pbt}</p><p class="text-sm text-blue-100 mt-2">클릭하여 관리</p></a><a href="/admin/free-plan-requests" class="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl shadow p-6 text-white hover:shadow-lg transition"><div class="flex items-center justify-between mb-2"><span>무료 플랜 대기</span><i class="fas fa-gift text-2xl"></i></div><p class="text-3xl font-bold">${pfp}</p><p class="text-sm text-emerald-100 mt-2">클릭하여 관리</p></a></div></div>`
@@ -36015,6 +35842,7 @@ app.get('/admin/programs', async (c) => {
                             <a href="/admin/dashboard" class="text-gray-600 hover:text-purple-600">대시보드</a>
                             <a href="/admin/users" class="text-gray-600 hover:text-purple-600">사용자</a>
                             <a href="/admin/contacts" class="text-gray-600 hover:text-purple-600">문의</a>
+                            <a href="/admin/bank-transfers" class="text-gray-600 hover:text-purple-600">계좌이체</a>
                             <a href="/admin/programs" class="text-purple-600 font-semibold">프로그램</a>
                         </div>
                     </div>
@@ -38814,6 +38642,7 @@ app.get('/admin/sms', async (c) => {
                             <a href="/admin/dashboard" class="text-gray-600 hover:text-purple-600">대시보드</a>
                             <a href="/admin/users" class="text-gray-600 hover:text-purple-600">사용자</a>
                             <a href="/admin/contacts" class="text-gray-600 hover:text-purple-600">문의</a>
+                            <a href="/admin/bank-transfers" class="text-gray-600 hover:text-purple-600">계좌이체</a>
                             <a href="/admin/sms" class="text-purple-600 font-semibold">문자 관리</a>
                             <a href="/admin/sender/verification" class="text-gray-600 hover:text-purple-600">발신번호 승인</a>
                         </div>
@@ -39010,6 +38839,7 @@ app.get('/admin/deposits', async (c) => {
                             <a href="/admin/dashboard" class="text-gray-600 hover:text-purple-600">대시보드</a>
                             <a href="/admin/users" class="text-gray-600 hover:text-purple-600">사용자</a>
                             <a href="/admin/contacts" class="text-gray-600 hover:text-purple-600">문의</a>
+                            <a href="/admin/bank-transfers" class="text-gray-600 hover:text-purple-600">계좌이체</a>
                             <a href="/admin/sms" class="text-gray-600 hover:text-purple-600">문자 관리</a>
                             <a href="/admin/deposits" class="text-purple-600 font-semibold">입금 관리</a>
                         </div>
