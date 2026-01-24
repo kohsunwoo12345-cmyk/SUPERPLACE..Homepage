@@ -21186,7 +21186,7 @@ app.get('/tools/landing-manager', (c) => {
 
         const userData = localStorage.getItem('user');
         if (!userData) {
-            alert('로그인이 필요합니다.');
+            alert('\uB85C\uADF8\uC778\uC774 \uD544\uC694\uD569\uB2C8\uB2E4.');
             window.location.href = '/login';
         } else {
             user = JSON.parse(userData);
@@ -21216,11 +21216,11 @@ app.get('/tools/landing-manager', (c) => {
                     
                     document.getElementById('foldersList').innerHTML = 
                         '<button onclick="selectFolder(null)" id="folder-all" class="folder-btn px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 whitespace-nowrap">' +
-                            '📁 전체 (' + (result.totalPages || 0) + ')' +
+                            '📁 \uC804\uCCB4 (' + (result.totalPages || 0) + ')' +
                         '</button>' + foldersHtml;
                 }
             } catch (err) {
-                console.error('폴더 로드 실패:', err);
+                console.error('\uD3F4\uB354 \uB85C\uB4DC \uC2E4\uD328:', err);
             }
         }
 
@@ -21290,18 +21290,18 @@ app.get('/tools/landing-manager', (c) => {
                     document.getElementById('pagesList').innerHTML = html;
                 } else {
                     document.getElementById('pagesList').innerHTML = '<div class="text-center py-12">' +
-                            '<p class="text-gray-500 mb-4">랜딩페이지가 없습니다.</p>' +
-                            '<a href="/tools/landing-builder" class="inline-block px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700">첫 랜딩페이지 만들기</a>' +
+                            '<p class="text-gray-500 mb-4">\uB79C\uB529\uD398\uC774\uC9C0\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4.</p>' +
+                            '<a href="/tools/landing-builder" class="inline-block px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700">\uCCAB \uB79C\uB529\uD398\uC774\uC9C0 \uB9CC\uB4E4\uAE30</a>' +
                         '</div>';
                 }
             } catch (err) {
-                document.getElementById('pagesList').innerHTML = '<div class="text-center py-12 text-red-500">로딩 실패</div>';
+                document.getElementById('pagesList').innerHTML = '<div class="text-center py-12 text-red-500">\uB85C\uB529 \uC2E4\uD328</div>';
             }
         }
 
         function copyUrl(url) {
             navigator.clipboard.writeText(url).then(() => {
-                alert('링크가 복사되었습니다!');
+                alert('\uB9C1\uD06C\uAC00 \uBCF5\uC0AC\uB418\uC5C8\uC2B5\uB2C8\uB2E4!');
             });
         }
 
@@ -21327,23 +21327,23 @@ app.get('/tools/landing-manager', (c) => {
                         canvas.toBlob(function(blob) {
                             const link = document.createElement('a');
                             link.href = URL.createObjectURL(blob);
-                            link.download = 'QR_' + result.title.replace(/[^a-zA-Z0-9가-힣]/g, '_') + '.png';
+                            link.download = 'QR_' + result.title.replace(/[^a-zA-Z0-9\uAC00-\uD7A3]/g, '_') + '.png';
                             link.click();
-                            alert('QR 코드가 다운로드되었습니다!\n\n랜딩페이지: ' + result.title + '\nURL: ' + result.landingUrl);
+                            alert('QR \uCF54\uB4DC\uAC00 \uB2E4\uC6B4\uB85C\uB4DC\uB418\uC5C8\uC2B5\uB2C8\uB2E4!\n\n\uB79C\uB529\uD398\uC774\uC9C0: ' + result.title + '\nURL: ' + result.landingUrl);
                         });
                     };
                     
                     qrImage.onerror = function() {
                         // Fallback: 새 창에서 열기
                         window.open(result.qrCodeUrl, '_blank');
-                        alert('QR 코드가 새 탭에서 열렸습니다.\n오른쪽 클릭하여 이미지를 저장하세요.\n\n랜딩페이지: ' + result.title + '\nURL: ' + result.landingUrl);
+                        alert('QR \uCF54\uB4DC\uAC00 \uC0C8 \uD0ED\uC5D0\uC11C \uC5F4\uB838\uC2B5\uB2C8\uB2E4.\n\uC624\uB978\uCABD \uD074\uB9AD\uD558\uC5EC \uC774\uBBF8\uC9C0\uB97C \uC800\uC7A5\uD558\uC138\uC694.\n\n\uB79C\uB529\uD398\uC774\uC9C0: ' + result.title + '\nURL: ' + result.landingUrl);
                     };
                 } else {
-                    alert('QR 코드 생성 실패: ' + result.error);
+                    alert('QR \uCF54\uB4DC \uC0DD\uC131 \uC2E4\uD328: ' + result.error);
                 }
             } catch (err) {
                 console.error('QR generation error:', err);
-                alert('QR 코드 생성 중 오류가 발생했습니다.');
+                alert('QR \uCF54\uB4DC \uC0DD\uC131 \uC911 \uC624\uB958\uAC00 \uBC1C\uC0DD\uD588\uC2B5\uB2C8\uB2E4.');
             }
         }
 
@@ -21360,7 +21360,7 @@ app.get('/tools/landing-manager', (c) => {
         async function createFolder() {
             const name = document.getElementById('folderName').value.trim();
             if (!name) {
-                alert('폴더 이름을 입력하세요.');
+                alert('\uD3F4\uB354 \uC774\uB984\uC744 \uC785\uB825\uD558\uC138\uC694.');
                 return;
             }
 
@@ -21373,14 +21373,14 @@ app.get('/tools/landing-manager', (c) => {
                 const result = await response.json();
                 
                 if (result.success) {
-                    alert('폴더가 생성되었습니다!');
+                    alert('\uD3F4\uB354\uAC00 \uC0DD\uC131\uB418\uC5C8\uC2B5\uB2C8\uB2E4!');
                     closeFolderModal();
                     loadFolders();
                 } else {
-                    alert('폴더 생성 실패: ' + result.error);
+                    alert('\uD3F4\uB354 \uC0DD\uC131 \uC2E4\uD328: ' + result.error);
                 }
             } catch (err) {
-                alert('오류가 발생했습니다.');
+                alert('\uC624\uB958\uAC00 \uBC1C\uC0DD\uD588\uC2B5\uB2C8\uB2E4.');
             }
         }
 
@@ -21396,7 +21396,7 @@ app.get('/tools/landing-manager', (c) => {
             
             document.getElementById('folderSelectList').innerHTML = 
                 '<button onclick="moveToFolder(null)" class="w-full px-4 py-3 bg-gray-50 hover:bg-gray-100 rounded-lg text-left border border-gray-200">' +
-                    '📁 폴더 없음 (전체)' +
+                    '📁 \uD3F4\uB354 \uC5C6\uC74C (\uC804\uCCB4)' +
                 '</button>' + foldersHtml;
             
             document.getElementById('moveFolderModal').classList.remove('hidden');
@@ -21420,20 +21420,20 @@ app.get('/tools/landing-manager', (c) => {
                 const result = await response.json();
                 
                 if (result.success) {
-                    alert('폴더로 이동되었습니다!');
+                    alert('\uD3F4\uB354\uB85C \uC774\uB3D9\uB418\uC5C8\uC2B5\uB2C8\uB2E4!');
                     closeMoveFolderModal();
                     loadFolders();
                     loadPages();
                 } else {
-                    alert('이동 실패: ' + result.error);
+                    alert('\uC774\uB3D9 \uC2E4\uD328: ' + result.error);
                 }
             } catch (err) {
-                alert('오류가 발생했습니다.');
+                alert('\uC624\uB958\uAC00 \uBC1C\uC0DD\uD588\uC2B5\uB2C8\uB2E4.');
             }
         }
 
         async function deletePage(id) {
-            if (!confirm('정말 삭제하시겠습니까?')) return;
+            if (!confirm('\uC815\uB9D0 \uC0AD\uC81C\uD558\uC2DC\uACA0\uC2B5\uB2C8\uAE4C?')) return;
             
             try {
                 const response = await fetch('/api/landing/' + id + '?userId=' + user.id, {
@@ -21441,15 +21441,15 @@ app.get('/tools/landing-manager', (c) => {
                 });
                 const result = await response.json();
                 if (result.success) {
-                    alert('삭제되었습니다.');
+                    alert('\uC0AD\uC81C\uB418\uC5C8\uC2B5\uB2C8\uB2E4.');
                     loadFolders();
                     loadPages();
                 } else {
-                    alert('삭제 실패: ' + (result.error || '알 수 없는 오류'));
+                    alert('\uC0AD\uC81C \uC2E4\uD328: ' + (result.error || '\uC54C \uC218 \uC5C6\uB294 \uC624\uB958'));
                 }
             } catch (err) {
                 console.error('Delete error:', err);
-                alert('오류가 발생했습니다: ' + err.message);
+                alert('\uC624\uB958\uAC00 \uBC1C\uC0DD\uD588\uC2B5\uB2C8\uB2E4: ' + err.message);
             }
         }
         </script>
