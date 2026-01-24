@@ -15309,12 +15309,17 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
             window.location.href = '/';
         }
 
-        function selectTemplate(type, event) {
+        function selectTemplate(type, evt) {
             selectedTemplate = type;
             document.querySelectorAll('.template-btn').forEach(btn => {
                 btn.classList.remove('border-purple-600', 'bg-purple-50');
             });
-            event.target.closest('.template-btn').classList.add('border-purple-600', 'bg-purple-50');
+            if (evt && evt.target) {
+                const btn = evt.target.closest('.template-btn');
+                if (btn) {
+                    btn.classList.add('border-purple-600', 'bg-purple-50');
+                }
+            }
             
             showForm(type);
         }
