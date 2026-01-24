@@ -7,6 +7,7 @@ import { serveStatic } from 'hono/cloudflare-workers'
 // import studentRoutes from './student-routes'
 import studentPages from './student-pages'
 import formBuilderRoutes from './form-builder-routes'
+import landingRoutes from './landing-routes'
 
 type Bindings = {
   DB: D1Database
@@ -34,6 +35,9 @@ app.use('/static/*', serveStatic({ root: './public' }))
 
 // Mount form builder routes (폼 템플릿 및 제출 관리)
 app.route('/', formBuilderRoutes)
+
+// Mount landing page routes (랜딩 페이지 생성 및 관리) - PRIORITY OVER INLINE ROUTES
+app.route('/', landingRoutes)
 
 // ========================================
 // API Routes
