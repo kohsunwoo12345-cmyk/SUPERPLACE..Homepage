@@ -16352,9 +16352,16 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
             window.location.href = '/';
         }
 
+        // UTF-8 safe base64 encoding
+        function base64Encode(str) {
+            return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (match, p1) => {
+                return String.fromCharCode('0x' + p1);
+            }));
+        }
+
         async function loadForms() {
             try {
-                const userDataBase64 = btoa(JSON.stringify(user));
+                const userDataBase64 = base64Encode(JSON.stringify(user));
                 const response = await fetch('/api/forms/list', {
                     headers: {
                         'X-User-Data-Base64': userDataBase64
@@ -16435,7 +16442,7 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
             }
             
             try {
-                const userDataBase64 = btoa(JSON.stringify(user));
+                const userDataBase64 = base64Encode(JSON.stringify(user));
                 const response = await fetch(\`/api/forms/\${formId}\`, {
                     method: 'DELETE',
                     headers: {
@@ -25728,6 +25735,13 @@ ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.di
     <script>
         let autoRefreshInterval = null;
 
+        // UTF-8 safe base64 encoding
+        function base64Encode(str) {
+            return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (match, p1) => {
+                return String.fromCharCode('0x' + p1);
+            }));
+        }
+
         function formatKoreanTime(isoString) {
             if (!isoString) return '-';
             const date = new Date(isoString);
@@ -25753,7 +25767,7 @@ ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.di
                     return;
                 }
 
-                const userDataBase64 = btoa(JSON.stringify(user));
+                const userDataBase64 = base64Encode(JSON.stringify(user));
                 const response = await fetch('/api/admin/active-sessions', {
                     headers: {
                         'X-User-Data-Base64': userDataBase64
