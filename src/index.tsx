@@ -1998,6 +1998,118 @@ app.get('/api/admin/active-sessions', async (c) => {
   }
 })
 
+// 날짜별 접속자 통계 API
+app.get('/api/admin/sessions/history', async (c) => {
+  try {
+    // 관리자 확인
+    const userHeaderBase64 = c.req.header('X-User-Data-Base64')
+    if (!userHeaderBase64) {
+      return c.json({ success: false, error: 'Unauthorized' }, 401)
+    }
+    
+    let user
+    try {
+      const userDataStr = atob(userHeaderBase64)
+      user = JSON.parse(userDataStr)
+    } catch (e) {
+      return c.json({ success: false, error: 'Invalid user data' }, 401)
+    }
+    
+    if (user.role !== 'admin') {
+      return c.json({ success: false, error: 'Admin only' }, 403)
+    }
+    
+    const startDate = c.req.query('startDate') // YYYY-MM-DD
+    const endDate = c.req.query('endDate')     // YYYY-MM-DD
+    const searchKeyword = c.req.query('search') // 이름, 이메일, IP 검색
+    
+    let whereConditions = []
+    let params = []
+    
+    // 날짜 필터
+    if (startDate) {
+      whereConditions.push(`date(s.created_at) >= ?`)
+      params.push(startDate)
+    }
+    if (endDate) {
+      whereConditions.push(`date(s.created_at) <= ?`)
+      params.push(endDate)
+    }
+    
+    // 검색 필터
+    if (searchKeyword) {
+      whereConditions.push(`(
+        u.name LIKE ? OR 
+        u.email LIKE ? OR 
+        u.academy_name LIKE ? OR 
+        s.ip_address LIKE ?
+      )`)
+      const searchPattern = `%${searchKeyword}%`
+      params.push(searchPattern, searchPattern, searchPattern, searchPattern)
+    }
+    
+    const whereClause = whereConditions.length > 0 
+      ? 'WHERE ' + whereConditions.join(' AND ')
+      : ''
+    
+    // 날짜별 통계
+    const dailyStats = await c.env.DB.prepare(`
+      SELECT 
+        date(created_at) as date,
+        COUNT(*) as total_sessions,
+        COUNT(CASE WHEN is_logged_in = 1 THEN 1 END) as logged_in_sessions,
+        COUNT(CASE WHEN is_logged_in = 0 THEN 1 END) as guest_sessions,
+        COUNT(DISTINCT user_id) as unique_users
+      FROM user_sessions
+      ${whereClause.replace(/s\./g, '')}
+      GROUP BY date(created_at)
+      ORDER BY date DESC
+      LIMIT 90
+    `).bind(...params).all()
+    
+    // 상세 세션 목록
+    const sessions = await c.env.DB.prepare(`
+      SELECT 
+        s.id,
+        s.user_id,
+        s.session_id,
+        s.ip_address,
+        s.user_agent,
+        s.is_logged_in,
+        s.login_time,
+        s.logout_time,
+        s.last_activity,
+        s.created_at,
+        u.name as user_name,
+        u.email as user_email,
+        u.academy_name
+      FROM user_sessions s
+      LEFT JOIN users u ON s.user_id = u.id
+      ${whereClause}
+      ORDER BY s.created_at DESC
+      LIMIT 1000
+    `).bind(...params).all()
+    
+    return c.json({
+      success: true,
+      dailyStats: dailyStats.results || [],
+      sessions: sessions.results || [],
+      filters: {
+        startDate: startDate || null,
+        endDate: endDate || null,
+        search: searchKeyword || null
+      }
+    })
+  } catch (err) {
+    console.error('[Sessions History] Error:', err)
+    return c.json({ 
+      success: false, 
+      error: 'Failed to fetch sessions history',
+      details: err.message || String(err)
+    }, 500)
+  }
+})
+
 app.post('/api/points/charge', async (c) => {
   try {
     const { userId, amount } = await c.req.json()

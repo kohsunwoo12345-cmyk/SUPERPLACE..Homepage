@@ -3075,7 +3075,44 @@ var Bt=Object.defineProperty;var tt=e=>{throw TypeError(e)};var Nt=(e,t,s)=>t in
         COUNT(CASE WHEN is_logged_in = 1 THEN 1 END) as total_logged_in,
         COUNT(CASE WHEN is_logged_in = 0 THEN 1 END) as total_guests
       FROM user_sessions
-    `).first();return e.json({success:!0,activeSessions:{loggedIn:n,guests:l,total:(o.results||[]).length,loggedInCount:n.length,guestsCount:l.length},totalStats:i||{total_sessions:0,total_logged_in:0,total_guests:0}})}catch(r){return console.error("[Active Sessions] Error:",r),e.json({success:!1,error:"Failed to fetch active sessions",details:r.message||String(r)},500)}});c.post("/api/points/charge",async e=>{try{const{userId:t,amount:s}=await e.req.json();if(!t||!s)return e.json({success:!1,error:"사용자 ID와 충전 금액이 필요합니다."},400);const r=await e.env.DB.prepare("SELECT * FROM users WHERE id = ?").bind(t).first();if(!r)return e.json({success:!1,error:"사용자를 찾을 수 없습니다."},404);const a=r.balance||0;await e.env.DB.prepare("UPDATE users SET balance = balance + ? WHERE id = ?").bind(s,t).run(),await e.env.DB.prepare(`
+    `).first();return e.json({success:!0,activeSessions:{loggedIn:n,guests:l,total:(o.results||[]).length,loggedInCount:n.length,guestsCount:l.length},totalStats:i||{total_sessions:0,total_logged_in:0,total_guests:0}})}catch(r){return console.error("[Active Sessions] Error:",r),e.json({success:!1,error:"Failed to fetch active sessions",details:r.message||String(r)},500)}});c.get("/api/admin/sessions/history",async e=>{try{const t=e.req.header("X-User-Data-Base64");if(!t)return e.json({success:!1,error:"Unauthorized"},401);let s;try{const u=atob(t);s=JSON.parse(u)}catch{return e.json({success:!1,error:"Invalid user data"},401)}if(s.role!=="admin")return e.json({success:!1,error:"Admin only"},403);const r=e.req.query("startDate"),a=e.req.query("endDate"),o=e.req.query("search");let n=[],l=[];if(r&&(n.push("date(s.created_at) >= ?"),l.push(r)),a&&(n.push("date(s.created_at) <= ?"),l.push(a)),o){n.push(`(
+        u.name LIKE ? OR 
+        u.email LIKE ? OR 
+        u.academy_name LIKE ? OR 
+        s.ip_address LIKE ?
+      )`);const u=`%${o}%`;l.push(u,u,u,u)}const i=n.length>0?"WHERE "+n.join(" AND "):"",d=await e.env.DB.prepare(`
+      SELECT 
+        date(created_at) as date,
+        COUNT(*) as total_sessions,
+        COUNT(CASE WHEN is_logged_in = 1 THEN 1 END) as logged_in_sessions,
+        COUNT(CASE WHEN is_logged_in = 0 THEN 1 END) as guest_sessions,
+        COUNT(DISTINCT user_id) as unique_users
+      FROM user_sessions
+      ${i.replace(/s\./g,"")}
+      GROUP BY date(created_at)
+      ORDER BY date DESC
+      LIMIT 90
+    `).bind(...l).all(),p=await e.env.DB.prepare(`
+      SELECT 
+        s.id,
+        s.user_id,
+        s.session_id,
+        s.ip_address,
+        s.user_agent,
+        s.is_logged_in,
+        s.login_time,
+        s.logout_time,
+        s.last_activity,
+        s.created_at,
+        u.name as user_name,
+        u.email as user_email,
+        u.academy_name
+      FROM user_sessions s
+      LEFT JOIN users u ON s.user_id = u.id
+      ${i}
+      ORDER BY s.created_at DESC
+      LIMIT 1000
+    `).bind(...l).all();return e.json({success:!0,dailyStats:d.results||[],sessions:p.results||[],filters:{startDate:r||null,endDate:a||null,search:o||null}})}catch(t){return console.error("[Sessions History] Error:",t),e.json({success:!1,error:"Failed to fetch sessions history",details:t.message||String(t)},500)}});c.post("/api/points/charge",async e=>{try{const{userId:t,amount:s}=await e.req.json();if(!t||!s)return e.json({success:!1,error:"사용자 ID와 충전 금액이 필요합니다."},400);const r=await e.env.DB.prepare("SELECT * FROM users WHERE id = ?").bind(t).first();if(!r)return e.json({success:!1,error:"사용자를 찾을 수 없습니다."},404);const a=r.balance||0;await e.env.DB.prepare("UPDATE users SET balance = balance + ? WHERE id = ?").bind(s,t).run(),await e.env.DB.prepare(`
       INSERT INTO point_transactions (user_id, amount, balance_before, balance_after, transaction_type, description, created_at)
       VALUES (?, ?, ?, ?, 'charge', '테스트 충전', CURRENT_TIMESTAMP)
     `).bind(t,s,a,a+s).run();const o=await e.env.DB.prepare("SELECT balance FROM users WHERE id = ?").bind(t).first();return e.json({success:!0,message:"포인트가 충전되었습니다.",balance:o.balance})}catch(t){return console.error("Charge points error:",t),e.json({success:!1,error:"포인트 충전 실패: "+t.message},500)}});c.post("/api/sms/send",async e=>{var t;try{const{userId:s,senderId:r,receivers:a,message:o,reserveTime:n}=await e.req.json();if(!s||!r||!a||!o)return e.json({success:!1,error:"필수 정보를 입력해주세요."},400);const l=await e.env.DB.prepare(`
