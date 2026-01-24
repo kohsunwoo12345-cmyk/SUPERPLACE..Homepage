@@ -1781,6 +1781,34 @@ app.get('/api/db/migrate', async (c) => {
       results.push('ℹ️ forms.fields: exists')
     }
     
+    // Migration 18: Add pixel tracking columns to landing_pages
+    try {
+      await c.env.DB.prepare(`ALTER TABLE landing_pages ADD COLUMN header_pixel TEXT`).run()
+      console.log('✅ [Migration] Added header_pixel to landing_pages')
+      results.push('✅ Added header_pixel to landing_pages')
+    } catch (e) {
+      console.log('ℹ️ [Migration] landing_pages.header_pixel:', e.message)
+      results.push('ℹ️ landing_pages.header_pixel: exists')
+    }
+    
+    try {
+      await c.env.DB.prepare(`ALTER TABLE landing_pages ADD COLUMN body_pixel TEXT`).run()
+      console.log('✅ [Migration] Added body_pixel to landing_pages')
+      results.push('✅ Added body_pixel to landing_pages')
+    } catch (e) {
+      console.log('ℹ️ [Migration] landing_pages.body_pixel:', e.message)
+      results.push('ℹ️ landing_pages.body_pixel: exists')
+    }
+    
+    try {
+      await c.env.DB.prepare(`ALTER TABLE landing_pages ADD COLUMN conversion_pixel TEXT`).run()
+      console.log('✅ [Migration] Added conversion_pixel to landing_pages')
+      results.push('✅ Added conversion_pixel to landing_pages')
+    } catch (e) {
+      console.log('ℹ️ [Migration] landing_pages.conversion_pixel:', e.message)
+      results.push('ℹ️ landing_pages.conversion_pixel: exists')
+    }
+    
     return c.json({ 
       success: true, 
       message: '데이터베이스 마이그레이션이 완료되었습니다',
@@ -4505,6 +4533,39 @@ app.post('/api/landing/create', async (c) => {
   }
 })
 
+// 랜딩페이지 수정 API
+app.put('/api/landing/:slug/edit', async (c) => {
+  try {
+    const slug = c.req.param('slug')
+    const { html_content, header_pixel, body_pixel, conversion_pixel } = await c.req.json()
+    
+    // 랜딩페이지 존재 확인
+    const page = await c.env.DB.prepare('SELECT * FROM landing_pages WHERE slug = ?').bind(slug).first()
+    
+    if (!page) {
+      return c.json({ success: false, error: '랜딩페이지를 찾을 수 없습니다.' }, 404)
+    }
+    
+    await c.env.DB.prepare(`
+      UPDATE landing_pages 
+      SET html_content = ?, 
+          header_pixel = ?,
+          body_pixel = ?,
+          conversion_pixel = ?,
+          updated_at = CURRENT_TIMESTAMP
+      WHERE slug = ?
+    `).bind(html_content || page.html_content, header_pixel || null, body_pixel || null, conversion_pixel || null, slug).run()
+    
+    return c.json({ 
+      success: true, 
+      message: '랜딩페이지가 수정되었습니다.' 
+    })
+  } catch (err) {
+    console.error('Landing page update error:', err)
+    return c.json({ success: false, error: '랜딩페이지 수정 실패: ' + (err as Error).message }, 500)
+  }
+})
+
 // 사용자 랜딩페이지 목록
 app.get('/api/landing/my-pages', async (c) => {
   try {
@@ -6926,6 +6987,160 @@ app.delete('/api/forms/:id', async (c) => {
   } catch (err) {
     console.error('Form delete error:', err)
     return c.json({ success: false, error: '폼 삭제 실패' }, 500)
+  }
+})
+
+// 폼 HTML 가져오기
+app.get('/api/forms/:id/html', async (c) => {
+  try {
+    const formId = c.req.param('id')
+    
+    const form = await c.env.DB.prepare(`
+      SELECT * FROM forms WHERE id = ?
+    `).bind(formId).first()
+    
+    if (!form) {
+      return c.json({ success: false, error: '폼을 찾을 수 없습니다.' }, 404)
+    }
+    
+    // 커스텀 필드 파싱
+    let customFields = []
+    try {
+      customFields = form.fields ? JSON.parse(form.fields as string) : []
+    } catch (e) {
+      console.error('Failed to parse form fields:', e)
+    }
+    
+    // 커스텀 필드 HTML 생성
+    let customFieldsHtml = ''
+    for (const field of customFields) {
+      const required = field.required ? 'required' : ''
+      const requiredStar = field.required ? ' *' : ''
+      
+      if (field.type === 'textarea') {
+        customFieldsHtml += `
+    <div>
+        <label class="block text-sm font-bold text-gray-700 mb-2">${field.label}${requiredStar}</label>
+        <textarea name="custom_${field.label}" ${required} class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="${field.placeholder || ''}" rows="4"></textarea>
+    </div>`
+      } else if (field.type === 'select') {
+        let options = '<option value="">선택하세요</option>'
+        for (const opt of (field.options || [])) {
+          options += `<option value="${opt}">${opt}</option>`
+        }
+        customFieldsHtml += `
+    <div>
+        <label class="block text-sm font-bold text-gray-700 mb-2">${field.label}${requiredStar}</label>
+        <select name="custom_${field.label}" ${required} class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+            ${options}
+        </select>
+    </div>`
+      } else {
+        const inputType = field.type || 'text'
+        customFieldsHtml += `
+    <div>
+        <label class="block text-sm font-bold text-gray-700 mb-2">${field.label}${requiredStar}</label>
+        <input type="${inputType}" name="custom_${field.label}" ${required} class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="${field.placeholder || ''}">
+    </div>`
+      }
+    }
+    
+    // 폼 HTML 생성
+    const formHtml = `<!-- 신청 폼 섹션 -->
+<div class="container mx-auto px-4 py-12" id="apply-form-section">
+    <div class="max-w-2xl mx-auto bg-white rounded-2xl shadow-2xl p-8">
+        <h2 class="text-3xl font-bold text-center mb-2 bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-pink-600">
+            📝 신청하기
+        </h2>
+        <p class="text-center text-gray-600 mb-8">아래 정보를 입력하고 신청해주세요</p>
+        
+        ${form.custom_html || ''}
+        
+        <form id="applicationForm" class="space-y-6">
+            <div>
+                <label class="block text-sm font-bold text-gray-700 mb-2">이름 *</label>
+                <input type="text" name="name" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="홍길동">
+            </div>
+            
+            <div>
+                <label class="block text-sm font-bold text-gray-700 mb-2">연락처 *</label>
+                <input type="tel" name="phone" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="010-1234-5678">
+            </div>
+            
+            ${customFieldsHtml}
+            
+            <div class="flex items-start">
+                <input type="checkbox" name="agreedToTerms" required class="mt-1 mr-3 h-5 w-5 text-purple-600 focus:ring-purple-500 border-gray-300 rounded-xl">
+                <label class="text-sm text-gray-700">
+                    ${form.terms_text || '개인정보 수집 및 이용에 동의합니다.'}
+                </label>
+            </div>
+            
+            <button type="submit" class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-4 rounded-xl text-lg font-bold hover:shadow-xl transition transform hover:scale-105">
+                신청하기
+            </button>
+        </form>
+        
+        <div id="formResult" class="hidden mt-6 p-4 rounded-xl"></div>
+    </div>
+</div>
+
+<script>
+document.getElementById('applicationForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const formData = new FormData(e.target);
+    const customData = {};
+    for (const [key, value] of formData.entries()) {
+        if (key.startsWith('custom_')) {
+            customData[key.replace('custom_', '')] = value;
+        }
+    }
+    
+    const data = {
+        formId: ${form.id},
+        landingPageSlug: 'YOUR_LANDING_PAGE_SLUG', // 랜딩페이지 slug로 교체하세요
+        name: formData.get('name'),
+        phone: formData.get('phone'),
+        data: customData,
+        agreedToTerms: formData.get('agreedToTerms') ? 1 : 0
+    };
+    
+    try {
+        const response = await fetch('https://superplace-academy.pages.dev/api/forms/submit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        const resultDiv = document.getElementById('formResult');
+        resultDiv.classList.remove('hidden');
+        
+        if (result.success) {
+            resultDiv.className = 'mt-6 p-4 rounded-xl bg-green-100 border-2 border-green-500 text-green-800';
+            resultDiv.innerHTML = '<p class="font-bold text-center">✅ ${form.success_message || '신청이 완료되었습니다. 감사합니다!'}</p>';
+            e.target.reset();
+            
+            // 픽셀 스크립트 실행
+            ${form.pixel_script || ''}
+        } else {
+            resultDiv.className = 'mt-6 p-4 rounded-xl bg-red-100 border-2 border-red-500 text-red-800';
+            resultDiv.innerHTML = '<p class="font-bold text-center">❌ ' + (result.error || '신청에 실패했습니다.') + '</p>';
+        }
+    } catch (error) {
+        const resultDiv = document.getElementById('formResult');
+        resultDiv.classList.remove('hidden');
+        resultDiv.className = 'mt-6 p-4 rounded-xl bg-red-100 border-2 border-red-500 text-red-800';
+        resultDiv.innerHTML = '<p class="font-bold text-center">❌ 오류가 발생했습니다.</p>';
+    }
+});
+</script>`
+    
+    return c.json({ success: true, html: formHtml })
+  } catch (err) {
+    console.error('Form HTML error:', err)
+    return c.json({ success: false, error: 'HTML 생성 실패' }, 500)
   }
 })
 
@@ -21416,6 +21631,7 @@ app.get('/tools/landing-manager', (c) => {
                                     '</div>' +
                                     '<div class="flex flex-col gap-2 ml-4">' +
                                         '<a href="/landing/' + p.slug + '" target="_blank" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm text-center">\uBBF8\uB9AC\uBCF4\uAE30</a>' +
+                                        '<a href="/tools/landing-editor/' + p.slug + '" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 text-sm text-center flex items-center justify-center gap-2"><i class="fas fa-edit"></i> \uC218\uC815</a>' +
                                         '<button onclick="generateQR(' + JSON.stringify(p.slug) + ')" class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 text-sm flex items-center justify-center gap-2"><i class="fas fa-qrcode"></i> QR \\uC0DD\\uC131</button>' +
                                         '<a href="/landing/' + p.slug + '/submissions" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm text-center flex items-center justify-center gap-2"><i class="fas fa-users"></i> \uC2E0\uCCAD\uC790</a>' +
                                         '<button onclick="openMoveFolderModal(' + p.id + ')" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm">\uD3F4\uB354 \uC774\uB3D9</button>' +
@@ -21641,6 +21857,37 @@ app.get('/tools/form-manager', (c) => {
             </div>
         </div>
 
+        <!-- HTML 보기 모달 -->
+        <div id="htmlModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div class="bg-white rounded-2xl p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-900">📄 폼 HTML 코드</h2>
+                    <button onclick="closeHtmlModal()" class="text-gray-500 hover:text-gray-700 text-2xl">×</button>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">폼 이름</label>
+                    <div id="htmlFormName" class="px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg"></div>
+                </div>
+                
+                <div class="mb-6">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">HTML 코드</label>
+                    <div class="relative">
+                        <pre id="htmlCode" class="bg-gray-900 text-green-400 p-4 rounded-lg overflow-x-auto text-sm font-mono" style="max-height: 500px;"></pre>
+                        <button onclick="copyHtmlCode()" class="absolute top-4 right-4 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 text-sm flex items-center gap-2">
+                            <i class="fas fa-copy"></i> 복사
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="flex gap-3">
+                    <button onclick="closeHtmlModal()" class="flex-1 px-6 py-3 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 font-semibold">
+                        닫기
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <script>
         let user = null;
 
@@ -21700,6 +21947,9 @@ app.get('/tools/form-manager', (c) => {
                                         </button>
                                         <button onclick="editForm(\${form.id})" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm flex items-center gap-2">
                                             <i class="fas fa-edit"></i> 수정
+                                        </button>
+                                        <button onclick="viewFormHtml(\${form.id}, '\${form.name}')" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm flex items-center gap-2">
+                                            <i class="fas fa-code"></i> HTML 보기
                                         </button>
                                         <button onclick="deleteForm(\${form.id}, '\${form.name}')" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm flex items-center gap-2">
                                             <i class="fas fa-trash"></i> 삭제
@@ -21765,6 +22015,47 @@ app.get('/tools/form-manager', (c) => {
             } catch (err) {
                 console.error('Delete error:', err);
                 alert('오류가 발생했습니다: ' + err.message);
+            }
+        }
+
+        // HTML 보기 함수들
+        async function viewFormHtml(formId, formName) {
+            try {
+                const response = await fetch(\`/api/forms/\${formId}/html\`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    document.getElementById('htmlFormName').textContent = formName;
+                    document.getElementById('htmlCode').textContent = result.html;
+                    document.getElementById('htmlModal').classList.remove('hidden');
+                } else {
+                    alert('HTML을 불러올 수 없습니다: ' + (result.error || '알 수 없는 오류'));
+                }
+            } catch (err) {
+                console.error('HTML view error:', err);
+                alert('오류가 발생했습니다: ' + err.message);
+            }
+        }
+
+        function closeHtmlModal() {
+            document.getElementById('htmlModal').classList.add('hidden');
+        }
+
+        async function copyHtmlCode() {
+            const htmlCode = document.getElementById('htmlCode').textContent;
+            try {
+                await navigator.clipboard.writeText(htmlCode);
+                alert('✅ HTML 코드가 복사되었습니다!');
+            } catch (err) {
+                console.error('Copy error:', err);
+                // Fallback: select and copy
+                const range = document.createRange();
+                range.selectNode(document.getElementById('htmlCode'));
+                window.getSelection().removeAllRanges();
+                window.getSelection().addRange(range);
+                document.execCommand('copy');
+                window.getSelection().removeAllRanges();
+                alert('✅ HTML 코드가 복사되었습니다!');
             }
         }
         </script>
@@ -22089,6 +22380,191 @@ app.get('/tools/form-editor/:id', async (c) => {
   `)
 })
 
+
+// 랜딩페이지 수정 페이지
+app.get('/tools/landing-editor/:slug', async (c) => {
+  const slug = c.req.param('slug')
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>랜딩페이지 수정 - 슈퍼플레이스</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    </head>
+    <body class="bg-gray-50">
+        <nav class="fixed w-full top-0 z-50 bg-white border-b">
+            <div class="max-w-7xl mx-auto px-6">
+                <div class="flex justify-between items-center h-16">
+                    <span class="text-xl font-bold">랜딩페이지 수정</span>
+                    <div class="flex gap-4">
+                        <a href="/dashboard" class="text-gray-600 hover:text-purple-600">대시보드</a>
+                        <button onclick="logout()" class="text-gray-600 hover:text-red-600">로그아웃</button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <div class="pt-24 pb-12 px-6">
+            <div class="max-w-6xl mx-auto">
+                <div id="loading" class="text-center py-12">
+                    <i class="fas fa-spinner fa-spin text-4xl text-purple-600 mb-4"></i>
+                    <p>로딩중...</p>
+                </div>
+
+                <div id="editor" class="hidden">
+                    <div class="mb-8">
+                        <h1 class="text-3xl font-bold mb-2">📝 랜딩페이지 수정</h1>
+                        <p class="text-gray-600">HTML과 픽셀 스크립트를 수정하세요</p>
+                    </div>
+
+                    <!-- 픽셀 스크립트 섹션 -->
+                    <div class="bg-white rounded-xl p-8 border shadow-sm mb-6">
+                        <h2 class="text-xl font-bold mb-6">🎯 픽셀 스크립트</h2>
+                        
+                        <div class="space-y-6">
+                            <div>
+                                <label class="block font-semibold mb-2">헤더 픽셀 (Meta Pixel, Google Analytics 등)</label>
+                                <p class="text-sm text-gray-600 mb-3">&lt;head&gt; 태그 안에 삽입됩니다. 페이지 로드 시 실행됩니다.</p>
+                                <textarea id="headerPixel" rows="6" placeholder="<script>
+  // Meta Pixel
+  !function(f,b,e,v,n,t,s)
+  {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+  n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+  n.queue=[];t=b.createElement(e);t.async=!0;
+  t.src=v;s=b.getElementsByTagName(e)[0];
+  s.parentNode.insertBefore(t,s)}(window, document,'script',
+  'https://connect.facebook.net/en_US/fbevents.js');
+  fbq('init', 'YOUR_PIXEL_ID');
+  fbq('track', 'PageView');
+</script>" class="w-full px-4 py-3 border rounded-xl font-mono text-sm"></textarea>
+                            </div>
+
+                            <div>
+                                <label class="block font-semibold mb-2">본문 픽셀 (noscript, 추가 이미지 태그 등)</label>
+                                <p class="text-sm text-gray-600 mb-3">&lt;body&gt; 태그 직후에 삽입됩니다.</p>
+                                <textarea id="bodyPixel" rows="4" placeholder="<noscript><img height='1' width='1' style='display:none' src='https://www.facebook.com/tr?id=YOUR_PIXEL_ID&ev=PageView&noscript=1'/></noscript>" class="w-full px-4 py-3 border rounded-xl font-mono text-sm"></textarea>
+                            </div>
+
+                            <div>
+                                <label class="block font-semibold mb-2">전환 픽셀 (폼 제출 성공 시 실행)</label>
+                                <p class="text-sm text-gray-600 mb-3">폼 제출 성공 시 실행됩니다. JavaScript 코드를 입력하세요.</p>
+                                <textarea id="conversionPixel" rows="6" placeholder="// Meta Pixel 전환 추적
+fbq('track', 'Lead');
+
+// Google Ads 전환 추적
+gtag('event', 'conversion', {
+    'send_to': 'AW-CONVERSION_ID/CONVERSION_LABEL'
+});
+
+// TikTok Pixel 전환 추적
+ttq.track('SubmitForm');" class="w-full px-4 py-3 border rounded-xl font-mono text-sm"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- HTML 편집 (선택사항) -->
+                    <div class="bg-white rounded-xl p-8 border shadow-sm mb-6">
+                        <h2 class="text-xl font-bold mb-6">📄 HTML 편집 (선택사항)</h2>
+                        <textarea id="htmlContent" rows="15" class="w-full px-4 py-3 border rounded-xl font-mono text-sm"></textarea>
+                    </div>
+
+                    <div class="flex gap-4">
+                        <button onclick="savePage()" class="flex-1 px-6 py-4 bg-purple-600 text-white rounded-xl hover:bg-purple-700 font-semibold text-lg">
+                            <i class="fas fa-save mr-2"></i>저장하기
+                        </button>
+                        <a href="/dashboard" class="px-6 py-4 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 font-semibold text-lg">
+                            취소
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+        let user = null;
+        const slug = '${slug}';
+
+        const userData = localStorage.getItem('user');
+        if (!userData) {
+            alert('로그인이 필요합니다.');
+            window.location.href = '/login';
+        } else {
+            user = JSON.parse(userData);
+            loadPage();
+        }
+
+        function logout() {
+            localStorage.removeItem('user');
+            localStorage.removeItem('loginTime');
+            window.location.href = '/';
+        }
+
+        async function loadPage() {
+            try {
+                const response = await fetch(\`/api/landing/\${slug}\`);
+                const result = await response.json();
+                
+                if (result.success && result.page) {
+                    document.getElementById('htmlContent').value = result.page.html_content || '';
+                    document.getElementById('headerPixel').value = result.page.header_pixel || '';
+                    document.getElementById('bodyPixel').value = result.page.body_pixel || '';
+                    document.getElementById('conversionPixel').value = result.page.conversion_pixel || '';
+                    
+                    document.getElementById('loading').classList.add('hidden');
+                    document.getElementById('editor').classList.remove('hidden');
+                } else {
+                    alert('랜딩페이지를 불러올 수 없습니다.');
+                    window.location.href = '/dashboard';
+                }
+            } catch (err) {
+                console.error('Load error:', err);
+                alert('오류가 발생했습니다: ' + err.message);
+                window.location.href = '/dashboard';
+            }
+        }
+
+        async function savePage() {
+            const htmlContent = document.getElementById('htmlContent').value;
+            const headerPixel = document.getElementById('headerPixel').value;
+            const bodyPixel = document.getElementById('bodyPixel').value;
+            const conversionPixel = document.getElementById('conversionPixel').value;
+            
+            try {
+                const response = await fetch(\`/api/landing/\${slug}/edit\`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        html_content: htmlContent,
+                        header_pixel: headerPixel,
+                        body_pixel: bodyPixel,
+                        conversion_pixel: conversionPixel
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('✅ 랜딩페이지가 저장되었습니다!\\n\\n픽셀이 정상적으로 작동하는지 확인하세요.');
+                    window.open(\`/landing/\${slug}\`, '_blank');
+                } else {
+                    alert('저장 실패: ' + (result.error || '알 수 없는 오류'));
+                }
+            } catch (err) {
+                console.error('Save error:', err);
+                alert('저장 중 오류가 발생했습니다: ' + err.message);
+            }
+        }
+        </script>
+    </body>
+    </html>
+  `)
+})
 
 // 폴더 관리 페이지
 app.get('/tools/landing-folders', (c) => {
@@ -23309,8 +23785,18 @@ app.get('/landing/:slug', async (c) => {
                     resultDiv.innerHTML = '<p class="font-bold text-center">✅ ${form.success_message || '신청이 완료되었습니다. 감사합니다!'}</p>';
                     e.target.reset();
                     
-                    // 픽셀 스크립트 실행
+                    // 폼 픽셀 스크립트 실행
                     ${form.pixel_script || ''}
+                    
+                    // 랜딩페이지 전환 픽셀 실행
+                    try {
+                        const conversionPixel = ${JSON.stringify(page.conversion_pixel || '')};
+                        if (conversionPixel) {
+                            eval(conversionPixel);
+                        }
+                    } catch (e) {
+                        console.error('Conversion pixel error:', e);
+                    }
                 } else {
                     resultDiv.className = 'mt-6 p-4 rounded-xl bg-red-100 border-2 border-red-500 text-red-800';
                     resultDiv.innerHTML = '<p class="font-bold text-center">❌ ' + (result.error || '신청에 실패했습니다.') + '</p>';
@@ -23327,7 +23813,10 @@ app.get('/landing/:slug', async (c) => {
       }
     }
     
-    // <head> 태그에 OG 메타 태그 + 폼 헤더 스크립트 주입
+    // <head> 태그에 OG 메타 태그 + 폼 헤더 스크립트 + 헤더 픽셀 주입
+    const headerPixel = (page.header_pixel as string) || ''
+    const bodyPixel = (page.body_pixel as string) || ''
+    
     const ogTags = `
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
@@ -23344,10 +23833,16 @@ app.get('/landing/:slug', async (c) => {
     <meta property="twitter:image" content="${thumbnailUrl}">
     
     ${formHeaderScript}
+    ${headerPixel}
     `
     
     // </head> 직전에 OG 태그 추가
     htmlContent = htmlContent.replace('</head>', `${ogTags}</head>`)
+    
+    // <body> 직후에 본문 픽셀 추가
+    if (bodyPixel) {
+      htmlContent = htmlContent.replace(/<body[^>]*>/i, (match) => `${match}\n${bodyPixel}`)
+    }
     
     // Footer 직전에 폼 추가 (공백/들여쓰기 무시)
     if (formHtml) {
