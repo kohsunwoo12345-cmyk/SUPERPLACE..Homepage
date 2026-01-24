@@ -6614,7 +6614,7 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
         created_at DESC
     `).all();return e.json({success:!0,requests:s.results})}catch(t){return console.error("신청 목록 조회 실패:",t),e.json({success:!1,error:"조회 중 오류가 발생했습니다."},500)}});c.post("/api/free-plan/approve",async e=>{try{const{requestId:t,adminEmail:s}=await e.req.json();if(s!=="admin@superplace.co.kr")return e.json({success:!1,error:"관리자 권한이 필요합니다."},403);const r=await e.env.DB.prepare(`
       SELECT * FROM free_plan_requests WHERE id = ?
-    `).bind(t).first();if(!r)return e.json({success:!1,error:"신청을 찾을 수 없습니다."},404);if(r.status!=="pending")return e.json({success:!1,error:"이미 처리된 신청입니다."},400);const a=r.user_id;console.log("[Free Plan Approve] Starting approval for user:",a),await e.env.DB.prepare("PRAGMA foreign_keys = OFF").run();let o=null,n;if(isNaN(Number(a))){let b=0;for(let h=0;h<a.length;h++)b=(b<<5)-b+a.charCodeAt(h),b=b&b;n=Math.abs(b)}else{const b=Number(a);o=await e.env.DB.prepare(`
+    `).bind(t).first();if(!r)return e.json({success:!1,error:"신청을 찾을 수 없습니다."},404);if(r.status!=="pending")return e.json({success:!1,error:"이미 처리된 신청입니다."},400);const a=r.user_id;console.log("[Free Plan Approve] Starting approval for user:",a);let o=null,n;if(isNaN(Number(a))){let b=0;for(let h=0;h<a.length;h++)b=(b<<5)-b+a.charCodeAt(h),b=b&b;n=Math.abs(b)}else{const b=Number(a);o=await e.env.DB.prepare(`
         SELECT id, academy_id, name FROM users WHERE id = ?
       `).bind(b).first(),o?(n=o.academy_id||o.id,o.academy_id||await e.env.DB.prepare(`
             UPDATE users SET academy_id = ? WHERE id = ?
@@ -6622,8 +6622,8 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
       SELECT id FROM academies WHERE id = ?
     `).bind(n).first())try{await e.env.DB.prepare(`
           INSERT INTO academies (id, academy_name, owner_id, created_at)
-          VALUES (?, ?, ?, CURRENT_TIMESTAMP)
-        `).bind(n,r.academy_name,a).run(),console.log("[Free Plan Approve] Created academy:",n)}catch(b){console.log("[Free Plan Approve] Academy creation skipped (may already exist):",b)}const l=new Date,d=new Date;d.setFullYear(d.getFullYear()+10);const p=l.toISOString().split("T")[0],u=d.toISOString().split("T")[0];console.log("[Free Plan Approve] Date range:",p,"to",u);const g=(await e.env.DB.prepare(`
+          VALUES (?, ?, NULL, CURRENT_TIMESTAMP)
+        `).bind(n,r.academy_name).run(),console.log("[Free Plan Approve] Created academy:",n)}catch(b){console.log("[Free Plan Approve] Academy creation error:",b)}const l=new Date,d=new Date;d.setFullYear(d.getFullYear()+10);const p=l.toISOString().split("T")[0],u=d.toISOString().split("T")[0];console.log("[Free Plan Approve] Date range:",p,"to",u);const g=(await e.env.DB.prepare(`
       INSERT INTO subscriptions (
         academy_id, plan_name, plan_price, student_limit, ai_report_limit, 
         landing_page_limit, teacher_limit, subscription_start_date, 
@@ -6644,7 +6644,7 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
       UPDATE free_plan_requests
       SET status = 'approved', approved_at = CURRENT_TIMESTAMP, approved_by = ?
       WHERE id = ?
-    `).bind(s,t).run(),await e.env.DB.prepare("PRAGMA foreign_keys = ON").run(),e.json({success:!0,message:"무료 플랜이 승인되고 활성화되었습니다.",subscription_id:g,academy_id:n})}catch(t){console.error("[Free Plan Approve] Error:",t);try{await e.env.DB.prepare("PRAGMA foreign_keys = ON").run()}catch(s){console.error("[Free Plan Approve] Failed to re-enable foreign keys:",s)}return e.json({success:!1,error:"승인 처리 중 오류가 발생했습니다: "+t.message},500)}});c.post("/api/free-plan/reject",async e=>{try{const{requestId:t,adminEmail:s,reason:r}=await e.req.json();return s!=="admin@superplace.co.kr"?e.json({success:!1,error:"관리자 권한이 필요합니다."},403):(await e.env.DB.prepare(`
+    `).bind(s,t).run(),e.json({success:!0,message:"무료 플랜이 승인되고 활성화되었습니다.",subscription_id:g,academy_id:n})}catch(t){return console.error("[Free Plan Approve] Error:",t),e.json({success:!1,error:"승인 처리 중 오류가 발생했습니다: "+t.message},500)}});c.post("/api/free-plan/reject",async e=>{try{const{requestId:t,adminEmail:s,reason:r}=await e.req.json();return s!=="admin@superplace.co.kr"?e.json({success:!1,error:"관리자 권한이 필요합니다."},403):(await e.env.DB.prepare(`
       UPDATE free_plan_requests
       SET status = 'rejected', rejected_at = CURRENT_TIMESTAMP, rejected_by = ?, rejection_reason = ?
       WHERE id = ?
