@@ -8819,6 +8819,7 @@ app.get('/', (c) => {
 
 // 플랜 정보 매핑
 const PLAN_INFO = {
+  'free': { name: '무료 플랜', price: 0, studentLimit: 10, aiReportLimit: 1, landingPageLimit: 1, teacherLimit: 1 },
   'starter': { name: '스타터 플랜', price: 55000, studentLimit: 50, aiReportLimit: 50, landingPageLimit: 50, teacherLimit: 2 },
   'basic': { name: '베이직 플랜', price: 143000, studentLimit: 150, aiReportLimit: 150, landingPageLimit: 160, teacherLimit: 6 },
   'pro': { name: '프로 플랜', price: 187000, studentLimit: 500, aiReportLimit: 500, landingPageLimit: 530, teacherLimit: 20 },
@@ -9069,24 +9070,47 @@ app.post('/api/payments/complete', async (c) => {
       )
     `).run()
 
-    // usage_tracking 레코드 생성 (구독과 함께)
-    const usageResult = await c.env.DB.prepare(`
-      INSERT INTO usage_tracking (
-        academy_id, subscription_id, current_students, 
-        ai_reports_used_this_month, landing_pages_created, 
-        current_teachers, sms_sent_this_month,
-        last_ai_report_reset_date, last_sms_reset_date
-      ) VALUES (?, ?, 0, 0, 0, 0, 0, ?, ?)
-    `).bind(
-      actualAcademyId,
-      result.meta.last_row_id,
-      startDate,
-      startDate
-    ).run()
+    // 🔥 기존 usage_tracking 있으면 사용량 초기화, 없으면 새로 생성
+    const existingUsage = await c.env.DB.prepare(`
+      SELECT id FROM usage_tracking WHERE academy_id = ?
+    `).bind(actualAcademyId).first()
 
-    console.log('[Payment Complete] Usage tracking initialized:', {
-      usageId: usageResult.meta.last_row_id
-    })
+    if (existingUsage) {
+      // 기존 usage_tracking 초기화 (AI 리포트, 랜딩페이지 카운터 리셋)
+      await c.env.DB.prepare(`
+        UPDATE usage_tracking 
+        SET subscription_id = ?,
+            ai_reports_used_this_month = 0,
+            landing_pages_created = 0,
+            last_ai_report_reset_date = ?,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE academy_id = ?
+      `).bind(result.meta.last_row_id, startDate, actualAcademyId).run()
+      
+      console.log('[Payment Complete] Usage tracking reset:', {
+        usageId: existingUsage.id,
+        reset: 'ai_reports_used_this_month=0, landing_pages_created=0'
+      })
+    } else {
+      // usage_tracking 레코드 새로 생성
+      const usageResult = await c.env.DB.prepare(`
+        INSERT INTO usage_tracking (
+          academy_id, subscription_id, current_students, 
+          ai_reports_used_this_month, landing_pages_created, 
+          current_teachers, sms_sent_this_month,
+          last_ai_report_reset_date, last_sms_reset_date
+        ) VALUES (?, ?, 0, 0, 0, 0, 0, ?, ?)
+      `).bind(
+        actualAcademyId,
+        result.meta.last_row_id,
+        startDate,
+        startDate
+      ).run()
+
+      console.log('[Payment Complete] Usage tracking initialized:', {
+        usageId: usageResult.meta.last_row_id
+      })
+    }
 
     // 🔥 프로그램 자동 등록 (4개 기본 프로그램) - user_id는 원래 사용자 ID 사용
     const programs = [
@@ -10442,6 +10466,7 @@ app.post('/api/bank-transfer/approve', async (c) => {
 
     // 플랜별 한도 설정
     const planLimits: any = {
+      '무료 플랜': { student: 10, ai_report: 1, landing_page: 1, teacher: 1, price: 0 },
       '스타터 플랜': { student: 50, ai_report: 50, landing_page: 50, teacher: 2, price: 55000 },
       '베이직 플랜': { student: 150, ai_report: 150, landing_page: 160, teacher: 6, price: 143000 },
       '프로 플랜': { student: 500, ai_report: 500, landing_page: 530, teacher: 20, price: 187000 },
@@ -10449,7 +10474,7 @@ app.post('/api/bank-transfer/approve', async (c) => {
       '엔터프라이즈 플랜': { student: 3000, ai_report: 3000, landing_page: 5000, teacher: 999, price: 750000 }
     }
 
-    const limits = planLimits[request.plan_name] || planLimits['스타터 플랜']
+    const limits = planLimits[request.plan_name] || planLimits['무료 플랜']
 
     // 사용자의 academy_id는 user.id와 동일하게 설정
     const academyId = request.user_id
@@ -10536,26 +10561,43 @@ app.post('/api/bank-transfer/approve', async (c) => {
     const subscriptionId = subscriptionResult.meta.last_row_id
     console.log('[Bank Transfer Approve] Created subscription:', subscriptionId)
 
-    // 기존 usage_tracking 삭제 (있다면)
-    await c.env.DB.prepare(`
-      DELETE FROM usage_tracking WHERE academy_id = ?
-    `).bind(actualAcademyId).run()
-    console.log('[Bank Transfer Approve] Deleted old usage_tracking')
+    // 🔥 기존 usage_tracking 있으면 사용량 초기화, 없으면 새로 생성
+    const existingUsage = await c.env.DB.prepare(`
+      SELECT id FROM usage_tracking WHERE academy_id = ?
+    `).bind(actualAcademyId).first()
 
-    // usage_tracking 생성
-    await c.env.DB.prepare(`
-      INSERT INTO usage_tracking (
-        academy_id, subscription_id, current_students, ai_reports_used_this_month,
-        landing_pages_created, current_teachers, sms_sent_this_month,
-        last_ai_report_reset_date, last_sms_reset_date, created_at, updated_at
-      ) VALUES (?, ?, 0, 0, 0, 0, 0, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-    `).bind(
-      actualAcademyId, 
-      subscriptionId,
-      startDateStr,
-      startDateStr
-    ).run()
-    console.log('[Bank Transfer Approve] Created usage_tracking')
+    if (existingUsage) {
+      // 기존 usage_tracking 초기화 (AI 리포트, 랜딩페이지 카운터 리셋)
+      await c.env.DB.prepare(`
+        UPDATE usage_tracking 
+        SET subscription_id = ?,
+            current_students = 0,
+            ai_reports_used_this_month = 0,
+            landing_pages_created = 0,
+            current_teachers = 0,
+            sms_sent_this_month = 0,
+            last_ai_report_reset_date = ?,
+            last_sms_reset_date = ?,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE academy_id = ?
+      `).bind(subscriptionId, startDateStr, startDateStr, actualAcademyId).run()
+      console.log('[Bank Transfer Approve] Usage tracking reset:', existingUsage.id)
+    } else {
+      // usage_tracking 생성
+      await c.env.DB.prepare(`
+        INSERT INTO usage_tracking (
+          academy_id, subscription_id, current_students, ai_reports_used_this_month,
+          landing_pages_created, current_teachers, sms_sent_this_month,
+          last_ai_report_reset_date, last_sms_reset_date, created_at, updated_at
+        ) VALUES (?, ?, 0, 0, 0, 0, 0, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+      `).bind(
+        actualAcademyId, 
+        subscriptionId,
+        startDateStr,
+        startDateStr
+      ).run()
+      console.log('[Bank Transfer Approve] Created usage_tracking')
+    }
 
     // 🔥 프로그램 자동 등록 (4개 기본 프로그램)
     const programs = [
@@ -12313,9 +12355,42 @@ app.get('/pricing', (c) => {
                     <p class="text-xl text-gray-600">모든 플랜에는 AI 리포트, 랜딩페이지 제작, 학생 관리 기능이 포함됩니다</p>
                 </div>
 
-                <div class="grid md:grid-cols-2 lg:grid-cols-5 gap-6 mb-12">
-                    <!-- 스타터 플랜 -->
+                <!-- Row 1: 무료 ~ 베이직 -->
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                    <!-- 무료 플랜 -->
                     <div class="plan-card bg-white rounded-2xl p-6 border-2 border-gray-200 relative">
+                        <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-3 py-1 rounded-full text-xs font-bold">FREE</div>
+                        <div class="mb-4">
+                            <h3 class="text-xl font-bold text-gray-900 mb-2">무료</h3>
+                            <div class="flex items-end gap-2 mb-3">
+                                <span class="text-3xl font-bold text-green-600">₩0</span>
+                                <span class="text-gray-600 text-sm mb-1">/월</span>
+                            </div>
+                            <p class="text-xs text-gray-600 mb-4">체험용 무료 플랜</p>
+                        </div>
+                        <div class="space-y-2 mb-6 text-sm">
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-check text-green-500 text-xs"></i>
+                                <span>학생 <strong>10명</strong></span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-check text-green-500 text-xs"></i>
+                                <span>AI 리포트 <strong>1개/월</strong></span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-check text-green-500 text-xs"></i>
+                                <span>랜딩페이지 <strong>1개</strong></span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-check text-green-500 text-xs"></i>
+                                <span>선생님 <strong>1명</strong></span>
+                            </div>
+                        </div>
+                        <a href="/dashboard" class="block w-full py-2.5 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 text-center text-sm transition-all">무료 시작하기</a>
+                    </div>
+
+                    <!-- 스타터 플랜 -->
+                    <div class="plan-card bg-white rounded-2xl p-6 border-2 border-purple-200 relative">
                         <div class="mb-4">
                             <h3 class="text-xl font-bold text-gray-900 mb-2">스타터</h3>
                             <div class="flex items-end gap-2 mb-3">
@@ -12376,7 +12451,10 @@ app.get('/pricing', (c) => {
                         </div>
                         <a href="/pricing/basic" class="block w-full py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 text-center text-sm transition-all">선택하기</a>
                     </div>
+                </div>
 
+                <!-- Row 2: 프로 ~ 엔터프라이즈 -->
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
                     <!-- 프로 플랜 -->
                     <div class="plan-card bg-white rounded-2xl p-6 border-2 border-indigo-300 relative">
                         <div class="mb-4">
@@ -34907,15 +34985,15 @@ app.post('/api/payment/verify', async (c) => {
     
     // 플랜별 한도 설정
     const planLimits: any = {
-      '스타터 플랜': { student: 30, ai_report: 30, landing_page: 40, teacher: 2, price: 55000 },
-      '베이직 플랜': { student: 50, ai_report: 50, landing_page: 70, teacher: 3, price: 143000 },
-      '프로 플랜': { student: 100, ai_report: 100, landing_page: 140, teacher: 6, price: 187000 },
-      '비즈니스 플랜': { student: 300, ai_report: 600, landing_page: 550, teacher: 10, price: 297000 },
-      '프리미엄 플랜': { student: 500, ai_report: 1000, landing_page: 900, teacher: 15, price: 330000 },
-      '엔터프라이즈 플랜': { student: 1000, ai_report: 3000, landing_page: 2000, teacher: 20, price: 750000 }
+      '무료 플랜': { student: 10, ai_report: 1, landing_page: 1, teacher: 1, price: 0 },
+      '스타터 플랜': { student: 50, ai_report: 50, landing_page: 50, teacher: 2, price: 55000 },
+      '베이직 플랜': { student: 150, ai_report: 150, landing_page: 160, teacher: 6, price: 143000 },
+      '프로 플랜': { student: 500, ai_report: 500, landing_page: 530, teacher: 20, price: 187000 },
+      '프리미엄 플랜': { student: 1000, ai_report: 1000, landing_page: 1100, teacher: 40, price: 330000 },
+      '엔터프라이즈 플랜': { student: 3000, ai_report: 3000, landing_page: 5000, teacher: 999, price: 750000 }
     }
     
-    const limits = planLimits[plan] || planLimits['스타터 플랜']
+    const limits = planLimits[plan] || planLimits['무료 플랜']
     
     // 사용자 정보 조회
     const user: any = await DB.prepare('SELECT id, name, email FROM users WHERE id = ?').bind(user_id).first()
