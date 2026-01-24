@@ -7700,27 +7700,43 @@ app.get('/', (c) => {
 
         <!-- Our Story Section -->
         <section id="story" class="py-20 px-6 bg-gradient-to-br from-purple-50 to-white">
-            <div class="max-w-5xl mx-auto">
+            <div class="max-w-6xl mx-auto">
                 <div class="text-center mb-16">
-                    <h2 class="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
+                    <h2 class="text-4xl lg:text-5xl font-bold text-gray-900 mb-6 tracking-tight">
                         우리의 시작
                     </h2>
                     <div class="w-24 h-1 bg-gradient-to-r from-purple-600 to-orange-500 mx-auto"></div>
                 </div>
                 
-                <!-- Story Content -->
-                <div class="space-y-8 mb-16">
-                    <!-- 시작 -->
-                    <div class="bg-white rounded-2xl p-8 lg:p-12 shadow-lg hover:shadow-xl transition-shadow">
-                        <p class="text-xl lg:text-2xl text-gray-700 leading-relaxed mb-6">
-                            <span class="font-bold text-purple-600">인천 서구에서 공부방을 운영하던 저희</span>는 
-                            처음에 학생 모집에 큰 어려움을 겪었습니다.
+                <!-- CEO Profile and Intro -->
+                <div class="grid lg:grid-cols-2 gap-12 mb-16 items-center">
+                    <!-- CEO Image -->
+                    <div class="flex justify-center">
+                        <div class="relative">
+                            <img src="/static/images/ceo-profile.jpg" alt="대표이사 고희준" class="rounded-3xl shadow-2xl w-full max-w-md">
+                            <div class="absolute -bottom-6 left-1/2 transform -translate-x-1/2 bg-white px-8 py-4 rounded-full shadow-lg">
+                                <p class="text-xl font-bold text-gray-900">대표이사 고희준</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Intro Text -->
+                    <div class="space-y-6">
+                        <p class="text-2xl lg:text-3xl text-gray-800 leading-relaxed font-medium tracking-wide">
+                            <span class="font-bold text-purple-600">인천 서구에서<br>공부방을 운영하던 저희</span>는<br>
+                            처음에 학생 모집에<br>
+                            큰 어려움을 겪었습니다.
                         </p>
-                        <p class="text-lg lg:text-xl text-gray-700 leading-relaxed">
-                            하지만 <span class="font-semibold text-orange-500">네이버 플레이스 최적화, 블로그 마케팅, 퍼널 시스템</span>을 
-                            직접 공부하고 적용하면서 놀라운 변화를 경험했습니다.
+                        <p class="text-xl lg:text-2xl text-gray-700 leading-relaxed tracking-wide">
+                            하지만 <span class="font-bold text-orange-500">네이버 플레이스 최적화,<br>블로그 마케팅, 퍼널 시스템</span>을<br>
+                            직접 공부하고 적용하면서<br>
+                            놀라운 변화를 경험했습니다.
                         </p>
                     </div>
+                </div>
+                
+                <!-- Story Content -->
+                <div class="space-y-10 mb-16">
 
                     <!-- 성장 -->
                     <div class="grid md:grid-cols-2 gap-6">
@@ -7837,7 +7853,7 @@ app.get('/', (c) => {
 
                     <!-- 사용 편의성 -->
                     <div class="bg-white rounded-2xl p-8 lg:p-12 shadow-lg border-2 border-purple-200">
-                        <p class="text-xl lg:text-2xl text-gray-700 leading-relaxed text-center mb-6">
+                        <p class="text-xl lg:text-2xl text-gray-700 leading-loose text-center mb-6" style="letter-spacing: 0.03em;">
                             모든 과정을 <span class="font-bold text-purple-600">쉽게 컴맹이시더라도</span><br>
                             <span class="font-bold text-orange-500 text-3xl">클릭으로 가능</span>하도록 설계하였습니다.
                         </p>
@@ -7845,7 +7861,7 @@ app.get('/', (c) => {
 
                     <!-- 감사 인사 -->
                     <div class="text-center">
-                        <p class="text-3xl lg:text-4xl font-bold text-gray-900">
+                        <p class="text-4xl lg:text-5xl font-bold text-gray-900" style="letter-spacing: 0.03em;">
                             감사합니다.
                         </p>
                     </div>
