@@ -6393,6 +6393,7 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
             function logout() {
                 if (confirm('로그아웃 하시겠습니까?')) {
                     localStorage.removeItem('user');
+                localStorage.removeItem('loginTime');
                     location.reload();
                 }
             }
@@ -12682,6 +12683,7 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
 
         function logout() {
             localStorage.removeItem('user');
+                localStorage.removeItem('loginTime');
             window.location.href = '/';
         }
 
@@ -13974,6 +13976,7 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
                 if (elapsed > FIVE_HOURS) {
                     console.log('⏰ 5시간 경과 - 자동 로그아웃');
                     localStorage.removeItem('user');
+                localStorage.removeItem('loginTime');
                     localStorage.removeItem('loginTime');
                     alert('보안을 위해 5시간 후 자동 로그아웃되었습니다. 다시 로그인해주세요.');
                     window.location.href = '/';
@@ -14191,6 +14194,7 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
 
         function logout() {
             localStorage.removeItem('user');
+                localStorage.removeItem('loginTime');
             window.location.href = '/';
         }
 
@@ -15367,6 +15371,7 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
                     if (elapsed > FIVE_HOURS) {
                         console.log('⏰ 5시간 경과 - 자동 로그아웃');
                         localStorage.removeItem('user');
+                localStorage.removeItem('loginTime');
                         localStorage.removeItem('loginTime');
                         alert('보안을 위해 5시간 후 자동 로그아웃되었습니다. 다시 로그인해주세요.');
                         window.location.href = '/';
@@ -15848,6 +15853,7 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
 
         function logout() {
             localStorage.removeItem('user');
+                localStorage.removeItem('loginTime');
             window.location.href = '/';
         }
 
@@ -16459,6 +16465,7 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
 
         function logout() {
             localStorage.removeItem('user');
+                localStorage.removeItem('loginTime');
             window.location.href = '/';
         }
         <\/script>
@@ -22318,6 +22325,7 @@ ${N}
             function logout() {
                 if(confirm('로그아웃 하시겠습니까?')) {
                     localStorage.removeItem('user');
+                localStorage.removeItem('loginTime');
                     window.location.href = '/';
                 }
             }
@@ -23610,6 +23618,7 @@ ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.di
               function logout() {
                   if (confirm('로그아웃 하시겠습니까?')) {
                       localStorage.removeItem('user');
+                localStorage.removeItem('loginTime');
                       window.location.href = '/';
                   }
               }
@@ -23719,6 +23728,7 @@ ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.di
             function logout() {
                 if(confirm('로그아웃 하시겠습니까?')) {
                     localStorage.removeItem('user');
+                localStorage.removeItem('loginTime');
                     window.location.href = '/';
                 }
             }
@@ -24793,7 +24803,8 @@ ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.di
         </div>
     </body>
     </html>
-  `));c.get("/admin/dashboard",async e=>{var g,x,f,b,y,w;const{env:t}=e;if(!(t!=null&&t.DB))return e.html('<h1>DB Error</h1><a href="/admin/users">Users</a>');let s=0,r=0,a=0,o=0,n=0,i=0;try{s=((g=await t.DB.prepare("SELECT COUNT(*)c FROM users").first())==null?void 0:g.c)||0}catch{}try{r=((x=await t.DB.prepare("SELECT COUNT(*)c FROM contacts").first())==null?void 0:x.c)||0}catch{}try{a=((f=await t.DB.prepare("SELECT COUNT(*)c FROM contacts WHERE status=?").bind("pending").first())==null?void 0:f.c)||0}catch{}try{o=((b=await t.DB.prepare("SELECT COUNT(*)c FROM deposit_requests WHERE status=?").bind("pending").first())==null?void 0:b.c)||0}catch{}try{n=((y=await t.DB.prepare("SELECT COUNT(*)c FROM sender_verification_requests WHERE status=?").bind("pending").first())==null?void 0:y.c)||0}catch{}try{i=((w=await t.DB.prepare("SELECT COUNT(*)c FROM bank_transfer_requests WHERE status=?").bind("pending").first())==null?void 0:w.c)||0}catch{}const l='<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>관리자 대시보드</title><script src="https://cdn.tailwindcss.com"><\/script><link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet"></head><body class="bg-gray-50">',d=`<nav class="bg-white border-b"><div class="max-w-7xl mx-auto px-6 py-4"><div class="flex justify-between items-center"><div class="flex items-center gap-8"><a href="/admin/dashboard" class="text-2xl font-bold text-purple-600">슈퍼플레이스</a><div class="flex gap-4"><a href="/admin/dashboard" class="text-purple-600 font-semibold">대시보드</a><a href="/admin/users" class="text-gray-600 hover:text-purple-600">사용자</a><a href="/admin/contacts" class="text-gray-600 hover:text-purple-600">문의</a><a href="/admin/sms" class="text-gray-600 hover:text-purple-600">문자</a><a href="/admin/sender/verification" class="text-gray-600 hover:text-purple-600">발신번호</a></div></div><button onclick="localStorage.removeItem('user');location.href='/'" class="text-gray-600 hover:text-red-600"><i class="fas fa-sign-out-alt mr-2"></i>로그아웃</button></div></div></nav>`,p=`<div class="max-w-7xl mx-auto px-6 py-8"><h1 class="text-3xl font-bold mb-8">관리자 대시보드</h1><div class="grid md:grid-cols-3 gap-6 mb-8"><div class="bg-white rounded-xl shadow p-6 border"><div class="flex items-center justify-between mb-2"><span class="text-gray-600">전체 사용자</span><i class="fas fa-users text-blue-600 text-2xl"></i></div><p class="text-3xl font-bold">${s}</p></div><div class="bg-white rounded-xl shadow p-6 border"><div class="flex items-center justify-between mb-2"><span class="text-gray-600">전체 문의</span><i class="fas fa-envelope text-green-600 text-2xl"></i></div><p class="text-3xl font-bold">${r}</p></div><div class="bg-white rounded-xl shadow p-6 border"><div class="flex items-center justify-between mb-2"><span class="text-gray-600">대기중 문의</span><i class="fas fa-clock text-orange-600 text-2xl"></i></div><p class="text-3xl font-bold">${a}</p></div></div>`,u=`<div class="mb-8"><h2 class="text-xl font-bold mb-4">신청 대기</h2><div class="grid md:grid-cols-3 gap-6"><div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow p-6 text-white"><div class="flex items-center justify-between mb-2"><span>입금 대기</span><i class="fas fa-money-bill-wave text-2xl"></i></div><p class="text-3xl font-bold">${o}</p></div><div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow p-6 text-white"><div class="flex items-center justify-between mb-2"><span>발신번호 대기</span><i class="fas fa-phone text-2xl"></i></div><p class="text-3xl font-bold">${n}</p></div><a href="/admin/bank-transfers" class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow p-6 text-white hover:shadow-lg transition"><div class="flex items-center justify-between mb-2"><span>계좌이체 대기</span><i class="fas fa-university text-2xl"></i></div><p class="text-3xl font-bold">${i}</p><p class="text-sm text-blue-100 mt-2">클릭하여 관리</p></a></div></div>`;return e.html(l+d+p+u+'<div class="grid md:grid-cols-3 gap-6"><a href="/admin/users" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"><i class="fas fa-user-cog text-blue-600 text-xl"></i></div><div><h3 class="text-lg font-bold">사용자 관리</h3><p class="text-gray-600 text-sm">권한 관리</p></div></div></a><a href="/admin/contacts" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center"><i class="fas fa-comments text-green-600 text-xl"></i></div><div><h3 class="text-lg font-bold">문의 관리</h3><p class="text-gray-600 text-sm">문의 처리</p></div></div></a><a href="/admin/revenue" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center"><i class="fas fa-chart-line text-yellow-600 text-xl"></i></div><div><h3 class="text-lg font-bold">매출 관리</h3><p class="text-gray-600 text-sm">매출 통계</p></div></div></a><a href="/admin/sms" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"><i class="fas fa-sms text-blue-600 text-xl"></i></div><div><h3 class="text-lg font-bold">문자 관리</h3><p class="text-gray-600 text-sm">SMS 발송</p></div></div></a><a href="/admin/sender/verification" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center"><i class="fas fa-phone text-purple-600 text-xl"></i></div><div><h3 class="text-lg font-bold">발신번호</h3><p class="text-gray-600 text-sm">인증 승인</p></div></div></a><a href="/admin/deposits" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center"><i class="fas fa-money-bill-wave text-green-600 text-xl"></i></div><div><h3 class="text-lg font-bold">입금 관리</h3><p class="text-gray-600 text-sm">포인트 승인</p></div></div></a><a href="/admin/bank-transfers" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"><i class="fas fa-university text-blue-600 text-xl"></i></div><div><h3 class="text-lg font-bold">계좌이체</h3><p class="text-gray-600 text-sm">승인 관리</p></div></div></a><a href="/admin/programs" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center"><i class="fas fa-graduation-cap text-purple-600 text-xl"></i></div><div><h3 class="text-lg font-bold">프로그램</h3><p class="text-gray-600 text-sm">교육 관리</p></div></div></a></div></div></body></html>')});c.get("/api/admin/pending-counts",async e=>{var o,n,i;const{env:t}=e;if(!(t!=null&&t.DB))return e.json({success:!1,error:"DB Error"},500);let s=0,r=0,a=0;try{s=((o=await t.DB.prepare("SELECT COUNT(*) c FROM deposit_requests WHERE status=?").bind("pending").first())==null?void 0:o.c)||0}catch{}try{r=((n=await t.DB.prepare("SELECT COUNT(*) c FROM sender_verification_requests WHERE status=?").bind("pending").first())==null?void 0:n.c)||0}catch{}try{a=((i=await t.DB.prepare("SELECT COUNT(*) c FROM bank_transfer_requests WHERE status=?").bind("pending").first())==null?void 0:i.c)||0}catch{}return e.json({success:!0,deposits:s,senders:r,bankTransfers:a})});c.get("/admin/programs.html",e=>e.redirect("/admin/programs",301));c.get("/admin/revenue",async e=>e.html(`
+  `));c.get("/admin/dashboard",async e=>{var g,x,f,b,y,w;const{env:t}=e;if(!(t!=null&&t.DB))return e.html('<h1>DB Error</h1><a href="/admin/users">Users</a>');let s=0,r=0,a=0,o=0,n=0,i=0;try{s=((g=await t.DB.prepare("SELECT COUNT(*)c FROM users").first())==null?void 0:g.c)||0}catch{}try{r=((x=await t.DB.prepare("SELECT COUNT(*)c FROM contacts").first())==null?void 0:x.c)||0}catch{}try{a=((f=await t.DB.prepare("SELECT COUNT(*)c FROM contacts WHERE status=?").bind("pending").first())==null?void 0:f.c)||0}catch{}try{o=((b=await t.DB.prepare("SELECT COUNT(*)c FROM deposit_requests WHERE status=?").bind("pending").first())==null?void 0:b.c)||0}catch{}try{n=((y=await t.DB.prepare("SELECT COUNT(*)c FROM sender_verification_requests WHERE status=?").bind("pending").first())==null?void 0:y.c)||0}catch{}try{i=((w=await t.DB.prepare("SELECT COUNT(*)c FROM bank_transfer_requests WHERE status=?").bind("pending").first())==null?void 0:w.c)||0}catch{}const l='<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>관리자 대시보드</title><script src="https://cdn.tailwindcss.com"><\/script><link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet"></head><body class="bg-gray-50">',d=`<nav class="bg-white border-b"><div class="max-w-7xl mx-auto px-6 py-4"><div class="flex justify-between items-center"><div class="flex items-center gap-8"><a href="/admin/dashboard" class="text-2xl font-bold text-purple-600">슈퍼플레이스</a><div class="flex gap-4"><a href="/admin/dashboard" class="text-purple-600 font-semibold">대시보드</a><a href="/admin/users" class="text-gray-600 hover:text-purple-600">사용자</a><a href="/admin/contacts" class="text-gray-600 hover:text-purple-600">문의</a><a href="/admin/sms" class="text-gray-600 hover:text-purple-600">문자</a><a href="/admin/sender/verification" class="text-gray-600 hover:text-purple-600">발신번호</a></div></div><button onclick="localStorage.removeItem('user');
+                localStorage.removeItem('loginTime');location.href='/'" class="text-gray-600 hover:text-red-600"><i class="fas fa-sign-out-alt mr-2"></i>로그아웃</button></div></div></nav>`,p=`<div class="max-w-7xl mx-auto px-6 py-8"><h1 class="text-3xl font-bold mb-8">관리자 대시보드</h1><div class="grid md:grid-cols-3 gap-6 mb-8"><div class="bg-white rounded-xl shadow p-6 border"><div class="flex items-center justify-between mb-2"><span class="text-gray-600">전체 사용자</span><i class="fas fa-users text-blue-600 text-2xl"></i></div><p class="text-3xl font-bold">${s}</p></div><div class="bg-white rounded-xl shadow p-6 border"><div class="flex items-center justify-between mb-2"><span class="text-gray-600">전체 문의</span><i class="fas fa-envelope text-green-600 text-2xl"></i></div><p class="text-3xl font-bold">${r}</p></div><div class="bg-white rounded-xl shadow p-6 border"><div class="flex items-center justify-between mb-2"><span class="text-gray-600">대기중 문의</span><i class="fas fa-clock text-orange-600 text-2xl"></i></div><p class="text-3xl font-bold">${a}</p></div></div>`,u=`<div class="mb-8"><h2 class="text-xl font-bold mb-4">신청 대기</h2><div class="grid md:grid-cols-3 gap-6"><div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow p-6 text-white"><div class="flex items-center justify-between mb-2"><span>입금 대기</span><i class="fas fa-money-bill-wave text-2xl"></i></div><p class="text-3xl font-bold">${o}</p></div><div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow p-6 text-white"><div class="flex items-center justify-between mb-2"><span>발신번호 대기</span><i class="fas fa-phone text-2xl"></i></div><p class="text-3xl font-bold">${n}</p></div><a href="/admin/bank-transfers" class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow p-6 text-white hover:shadow-lg transition"><div class="flex items-center justify-between mb-2"><span>계좌이체 대기</span><i class="fas fa-university text-2xl"></i></div><p class="text-3xl font-bold">${i}</p><p class="text-sm text-blue-100 mt-2">클릭하여 관리</p></a></div></div>`;return e.html(l+d+p+u+'<div class="grid md:grid-cols-3 gap-6"><a href="/admin/users" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"><i class="fas fa-user-cog text-blue-600 text-xl"></i></div><div><h3 class="text-lg font-bold">사용자 관리</h3><p class="text-gray-600 text-sm">권한 관리</p></div></div></a><a href="/admin/contacts" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center"><i class="fas fa-comments text-green-600 text-xl"></i></div><div><h3 class="text-lg font-bold">문의 관리</h3><p class="text-gray-600 text-sm">문의 처리</p></div></div></a><a href="/admin/revenue" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center"><i class="fas fa-chart-line text-yellow-600 text-xl"></i></div><div><h3 class="text-lg font-bold">매출 관리</h3><p class="text-gray-600 text-sm">매출 통계</p></div></div></a><a href="/admin/sms" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"><i class="fas fa-sms text-blue-600 text-xl"></i></div><div><h3 class="text-lg font-bold">문자 관리</h3><p class="text-gray-600 text-sm">SMS 발송</p></div></div></a><a href="/admin/sender/verification" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center"><i class="fas fa-phone text-purple-600 text-xl"></i></div><div><h3 class="text-lg font-bold">발신번호</h3><p class="text-gray-600 text-sm">인증 승인</p></div></div></a><a href="/admin/deposits" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center"><i class="fas fa-money-bill-wave text-green-600 text-xl"></i></div><div><h3 class="text-lg font-bold">입금 관리</h3><p class="text-gray-600 text-sm">포인트 승인</p></div></div></a><a href="/admin/bank-transfers" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"><i class="fas fa-university text-blue-600 text-xl"></i></div><div><h3 class="text-lg font-bold">계좌이체</h3><p class="text-gray-600 text-sm">승인 관리</p></div></div></a><a href="/admin/programs" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center"><i class="fas fa-graduation-cap text-purple-600 text-xl"></i></div><div><h3 class="text-lg font-bold">프로그램</h3><p class="text-gray-600 text-sm">교육 관리</p></div></div></a></div></div></body></html>')});c.get("/api/admin/pending-counts",async e=>{var o,n,i;const{env:t}=e;if(!(t!=null&&t.DB))return e.json({success:!1,error:"DB Error"},500);let s=0,r=0,a=0;try{s=((o=await t.DB.prepare("SELECT COUNT(*) c FROM deposit_requests WHERE status=?").bind("pending").first())==null?void 0:o.c)||0}catch{}try{r=((n=await t.DB.prepare("SELECT COUNT(*) c FROM sender_verification_requests WHERE status=?").bind("pending").first())==null?void 0:n.c)||0}catch{}try{a=((i=await t.DB.prepare("SELECT COUNT(*) c FROM bank_transfer_requests WHERE status=?").bind("pending").first())==null?void 0:i.c)||0}catch{}return e.json({success:!0,deposits:s,senders:r,bankTransfers:a})});c.get("/admin/programs.html",e=>e.redirect("/admin/programs",301));c.get("/admin/revenue",async e=>e.html(`
     <!DOCTYPE html>
     <html lang="ko">
     <head>
@@ -24999,6 +25010,35 @@ ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.di
         </div>
 
         <script>
+            // 5시간 자동 로그아웃 체크
+            function checkAutoLogout() {
+                const loginTime = localStorage.getItem('loginTime');
+                const user = localStorage.getItem('user');
+                
+                if (!user) {
+                    location.href = '/login';
+                    return;
+                }
+                
+                if (loginTime) {
+                    const elapsed = Date.now() - parseInt(loginTime);
+                    const fiveHours = 5 * 60 * 60 * 1000; // 5시간 = 18000000ms
+                    
+                    if (elapsed >= fiveHours) {
+                        localStorage.removeItem('user');
+                localStorage.removeItem('loginTime');
+                        localStorage.removeItem('loginTime');
+                        alert('5시간이 경과하여 자동 로그아웃 되었습니다.');
+                        location.href = '/login';
+                    }
+                }
+            }
+            
+            // 페이지 로드 시 체크
+            checkAutoLogout();
+            // 1분마다 주기적으로 체크
+            setInterval(checkAutoLogout, 60000);
+
             let currentOffset = 0;
             const limit = 50;
             let totalTransactions = 0;
@@ -25008,6 +25048,8 @@ ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.di
 
             function logout() {
                 localStorage.removeItem('user');
+                localStorage.removeItem('loginTime');
+                localStorage.removeItem('loginTime');
                 location.href = '/';
             }
 
@@ -25535,6 +25577,7 @@ ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.di
             function logout() {
                 if(confirm('로그아웃 하시겠습니까?')) {
                     localStorage.removeItem('user');
+                localStorage.removeItem('loginTime');
                     window.location.href = '/';
                 }
             }
@@ -28243,6 +28286,7 @@ ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.di
             function logout() {
                 if(confirm('로그아웃 하시겠습니까?')) {
                     localStorage.removeItem('user');
+                localStorage.removeItem('loginTime');
                     window.location.href = '/';
                 }
             }
@@ -28384,6 +28428,7 @@ ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.di
             function logout() {
                 if(confirm('로그아웃 하시겠습니까?')) {
                     localStorage.removeItem('user');
+                localStorage.removeItem('loginTime');
                     window.location.href = '/';
                 }
             }
@@ -29510,6 +29555,7 @@ ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.di
             function logout() {
                 if (confirm('로그아웃 하시겠습니까?')) {
                     localStorage.removeItem('user');
+                localStorage.removeItem('loginTime');
                     location.href = '/';
                 }
             }
@@ -31447,6 +31493,7 @@ ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.di
                         console.error('❌ CRITICAL: academy_id missing in localStorage!');
                         console.log('Clearing localStorage and redirecting to login...');
                         localStorage.removeItem('user');
+                localStorage.removeItem('loginTime');
                         alert('세션이 만료되었습니다. 다시 로그인해주세요.');
                         shouldRedirect = true;
                     } else {
@@ -31459,6 +31506,7 @@ ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.di
                 } catch (e) {
                     console.error('Failed to parse user data:', e);
                     localStorage.removeItem('user');
+                localStorage.removeItem('loginTime');
                     alert('로그인 정보가 손상되었습니다. 다시 로그인해주세요.');
                     shouldRedirect = true;
                 }
@@ -31515,6 +31563,7 @@ ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.di
                         // 세션 만료
                         console.error('❌ Session expired, redirecting to login');
                         localStorage.removeItem('user');
+                localStorage.removeItem('loginTime');
                         alert('세션이 만료되었습니다. 다시 로그인해주세요.');
                         window.location.href = '/login';
                         return;
