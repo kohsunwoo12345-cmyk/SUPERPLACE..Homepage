@@ -9537,6 +9537,23 @@ app.post('/api/free-plan/approve', async (c) => {
     
     console.log('[Free Plan Approve] Academy ID:', academyId)
 
+    // academies 테이블에 academy 레코드 생성 (없으면)
+    const existingAcademy = await c.env.DB.prepare(`
+      SELECT id FROM academies WHERE id = ?
+    `).bind(academyId).first()
+    
+    if (!existingAcademy) {
+      try {
+        await c.env.DB.prepare(`
+          INSERT INTO academies (id, academy_name, owner_id, created_at)
+          VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+        `).bind(academyId, request.academy_name, userId).run()
+        console.log('[Free Plan Approve] Created academy:', academyId)
+      } catch (e) {
+        console.log('[Free Plan Approve] Academy creation skipped (may already exist):', e)
+      }
+    }
+
     // 구독 시작일과 종료일 계산 (영구 - 10년)
     const startDate = new Date()
     const endDate = new Date()
