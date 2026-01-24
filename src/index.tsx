@@ -19668,47 +19668,47 @@ app.get('/tools/landing-builder', (c) => {
                 <div class="bg-white rounded-xl p-8 border border-gray-200 mb-6">
                     <h2 class="text-2xl font-bold text-gray-900 mb-6">1️⃣ 템플릿 선택</h2>
                     <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <button onclick="selectTemplate('academy-intro', event)" class="template-btn group p-6 border-2 border-gray-200 rounded-xl hover:border-purple-500 hover:shadow-xl transition-all duration-300 text-left bg-white">
+                        <button onclick="selectTemplate('academy-intro')" class="template-btn group p-6 border-2 border-gray-200 rounded-xl hover:border-purple-500 hover:shadow-xl transition-all duration-300 text-left bg-white">
                             <div class="text-4xl mb-3 group-hover:scale-110 transition-transform duration-300">🏫</div>
                             <div class="font-bold text-lg mb-2 text-gray-900 group-hover:text-purple-600 transition-colors">학원 소개 페이지</div>
                             <p class="text-sm text-gray-600 leading-relaxed">학원의 강점과 특징을 효과적으로 홍보</p>
                         </button>
-                        <button onclick="selectTemplate('program-promo', event)" class="template-btn group p-6 border-2 border-gray-200 rounded-xl hover:border-blue-500 hover:shadow-xl transition-all duration-300 text-left bg-white">
+                        <button onclick="selectTemplate('program-promo')" class="template-btn group p-6 border-2 border-gray-200 rounded-xl hover:border-blue-500 hover:shadow-xl transition-all duration-300 text-left bg-white">
                             <div class="text-4xl mb-3 group-hover:scale-110 transition-transform duration-300">📚</div>
                             <div class="font-bold text-lg mb-2 text-gray-900 group-hover:text-blue-600 transition-colors">프로그램 홍보</div>
                             <p class="text-sm text-gray-600 leading-relaxed">특정 프로그램 등록을 유도하는 페이지</p>
                         </button>
-                        <button onclick="selectTemplate('event-promo', event)" class="template-btn group p-6 border-2 border-gray-200 rounded-xl hover:border-pink-500 hover:shadow-xl transition-all duration-300 text-left bg-white">
+                        <button onclick="selectTemplate('event-promo')" class="template-btn group p-6 border-2 border-gray-200 rounded-xl hover:border-pink-500 hover:shadow-xl transition-all duration-300 text-left bg-white">
                             <div class="text-4xl mb-3 group-hover:scale-110 transition-transform duration-300">🎉</div>
                             <div class="font-bold text-lg mb-2 text-gray-900 group-hover:text-pink-600 transition-colors">이벤트 프로모션</div>
                             <p class="text-sm text-gray-600 leading-relaxed">긴급감 있는 한정 이벤트 페이지</p>
                         </button>
-                        <button onclick="selectTemplate('parent-letter', event)" class="template-btn group p-6 border-2 border-gray-200 rounded-xl hover:border-green-500 hover:shadow-xl transition-all duration-300 text-left bg-white">
+                        <button onclick="selectTemplate('parent-letter')" class="template-btn group p-6 border-2 border-gray-200 rounded-xl hover:border-green-500 hover:shadow-xl transition-all duration-300 text-left bg-white">
                             <div class="text-4xl mb-3 group-hover:scale-110 transition-transform duration-300">📧</div>
                             <div class="font-bold text-lg mb-2 text-gray-900 group-hover:text-green-600 transition-colors">가정통신문</div>
                             <p class="text-sm text-gray-600 leading-relaxed">학부모님께 전달하는 공지사항 페이지</p>
                         </button>
-                        <button onclick="selectTemplate('student-report', event)" class="template-btn group p-6 border-2 border-gray-200 rounded-xl hover:border-indigo-500 hover:shadow-xl transition-all duration-300 text-left bg-white">
+                        <button onclick="selectTemplate('student-report')" class="template-btn group p-6 border-2 border-gray-200 rounded-xl hover:border-indigo-500 hover:shadow-xl transition-all duration-300 text-left bg-white">
                             <div class="text-4xl mb-3 group-hover:scale-110 transition-transform duration-300">📊</div>
                             <div class="font-bold text-lg mb-2 text-gray-900 group-hover:text-indigo-600 transition-colors">학생 성과 리포트</div>
                             <p class="text-sm text-gray-600 leading-relaxed">월간 학습 리포트 공유 페이지</p>
                         </button>
-                        <button onclick="selectTemplate('admission-info', event)" class="template-btn group p-6 border-2 border-gray-200 rounded-xl hover:border-yellow-500 hover:shadow-xl transition-all duration-300 text-left bg-white">
+                        <button onclick="selectTemplate('admission-info')" class="template-btn group p-6 border-2 border-gray-200 rounded-xl hover:border-yellow-500 hover:shadow-xl transition-all duration-300 text-left bg-white">
                             <div class="text-4xl mb-3 group-hover:scale-110 transition-transform duration-300">🎓</div>
                             <div class="font-bold text-lg mb-2 text-gray-900 group-hover:text-yellow-600 transition-colors">입학 설명회</div>
                             <p class="text-sm text-gray-600 leading-relaxed">설명회 안내 및 참석 유도 페이지</p>
                         </button>
-                        <button onclick="selectTemplate('academy-stats', event)" class="template-btn group p-6 border-2 border-gray-200 rounded-xl hover:border-red-500 hover:shadow-xl transition-all duration-300 text-left bg-white">
+                        <button onclick="selectTemplate('academy-stats')" class="template-btn group p-6 border-2 border-gray-200 rounded-xl hover:border-red-500 hover:shadow-xl transition-all duration-300 text-left bg-white">
                             <div class="text-4xl mb-3 group-hover:scale-110 transition-transform duration-300">📈</div>
                             <div class="font-bold text-lg mb-2 text-gray-900 group-hover:text-red-600 transition-colors">학원 성과 통계</div>
                             <p class="text-sm text-gray-600 leading-relaxed">실적과 성과를 수치로 보여주는 페이지</p>
                         </button>
-                        <button onclick="selectTemplate('teacher-intro', event)" class="template-btn group p-6 border-2 border-gray-200 rounded-xl hover:border-teal-500 hover:shadow-xl transition-all duration-300 text-left bg-white">
+                        <button onclick="selectTemplate('teacher-intro')" class="template-btn group p-6 border-2 border-gray-200 rounded-xl hover:border-teal-500 hover:shadow-xl transition-all duration-300 text-left bg-white">
                             <div class="text-4xl mb-3 group-hover:scale-110 transition-transform duration-300">👨‍🏫</div>
                             <div class="font-bold text-lg mb-2 text-gray-900 group-hover:text-teal-600 transition-colors">선생님 소개</div>
                             <p class="text-sm text-gray-600 leading-relaxed">강사진의 경력과 전문성을 소개</p>
                         </button>
-                        <button onclick="selectTemplate('vacation-course', event)" class="template-btn group p-6 border-2 border-gray-200 rounded-xl hover:border-orange-500 hover:shadow-xl transition-all duration-300 text-left bg-white">
+                        <button onclick="selectTemplate('vacation-course')" class="template-btn group p-6 border-2 border-gray-200 rounded-xl hover:border-orange-500 hover:shadow-xl transition-all duration-300 text-left bg-white">
                             <div class="text-4xl mb-3 group-hover:scale-110 transition-transform duration-300">🎓</div>
                             <div class="font-bold text-lg mb-2 text-gray-900 group-hover:text-orange-600 transition-colors">방학 특강 안내</div>
                             <p class="text-sm text-gray-600 leading-relaxed">방학 특강 프로그램 및 커리큘럼 안내</p>
@@ -20182,17 +20182,20 @@ app.get('/tools/landing-builder', (c) => {
             window.location.href = '/';
         }
 
-        function selectTemplate(type, evt) {
+        function selectTemplate(type) {
             selectedTemplate = type;
             document.querySelectorAll('.template-btn').forEach(btn => {
                 btn.classList.remove('border-purple-600', 'bg-purple-50');
             });
-            if (evt && evt.target) {
-                const btn = evt.target.closest('.template-btn');
-                if (btn) {
+            
+            // event.currentTarget 대신 type으로 버튼 찾기
+            const buttons = document.querySelectorAll('.template-btn');
+            buttons.forEach(btn => {
+                const onclickAttr = btn.getAttribute('onclick');
+                if (onclickAttr && onclickAttr.includes("'" + type + "'")) {
                     btn.classList.add('border-purple-600', 'bg-purple-50');
                 }
-            }
+            });
             
             showForm(type);
         }
