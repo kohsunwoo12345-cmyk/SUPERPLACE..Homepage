@@ -7113,7 +7113,7 @@ app.get('/forms/:id/submissions', async (c) => {
 
             const csv = BOM + [headers, ...rows]
                 .map(row => row.map(cell => \`"\${String(cell).replace(/"/g, '""')}"\`).join(','))
-                .join('\\n');
+                .join('\n');
 
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement('a');
@@ -11955,7 +11955,7 @@ app.get('/pricing/starter', (c) => {
                             
                             if (result.success) {
                                 const sub = result.subscription;
-                                alert(\`결제가 완료되었습니다!\\n\\n플랜: \${sub.planName}\\n이용 기간: \${sub.startDate} ~ \${sub.endDate}\\n\\n대시보드로 이동합니다.\`);
+                                alert(\`결제가 완료되었습니다!\n\n플랜: \${sub.planName}\n이용 기간: \${sub.startDate} ~ \${sub.endDate}\n\n대시보드로 이동합니다.\`);
                                 window.location.href = '/dashboard';
                             } else {
                                 alert('결제 처리에 실패했습니다: ' + result.error);
@@ -12189,7 +12189,7 @@ app.get('/pricing/free', (c) => {
                     const result = await response.json();
 
                     if (result.success) {
-                        alert('✅ 무료 플랜 신청이 완료되었습니다!\\n\\n관리자 승인 후 이메일로 알려드리겠습니다.\\n보통 24시간 내에 처리됩니다.');
+                        alert('✅ 무료 플랜 신청이 완료되었습니다!\n\n관리자 승인 후 이메일로 알려드리겠습니다.\n보통 24시간 내에 처리됩니다.');
                         window.location.href = '/dashboard';
                     } else {
                         alert('❌ 신청 실패: ' + result.error);
@@ -12316,7 +12316,7 @@ app.get('/pricing/basic', (c) => {
                             });
                             const result = await response.json();
                             if (result.success) {
-                                alert(\`결제가 완료되었습니다!\\n\\n플랜: \${result.subscription.planName}\\n이용 기간: \${result.subscription.startDate} ~ \${result.subscription.endDate}\`);
+                                alert(\`결제가 완료되었습니다!\n\n플랜: \${result.subscription.planName}\n이용 기간: \${result.subscription.startDate} ~ \${result.subscription.endDate}\`);
                                 window.location.href = '/dashboard';
                             } else { alert('결제 처리에 실패했습니다: ' + result.error); }
                         } catch (error) { alert('결제 처리 중 오류가 발생했습니다.'); }
@@ -12756,7 +12756,7 @@ app.get('/pricing/basic', (c) => {
                             });
                             const result = await response.json();
                             if (result.success) {
-                                alert(\`결제가 완료되었습니다!\\n\\n플랜: \${result.subscription.planName}\\n이용 기간: \${result.subscription.startDate} ~ \${result.subscription.endDate}\`);
+                                alert(\`결제가 완료되었습니다!\n\n플랜: \${result.subscription.planName}\n이용 기간: \${result.subscription.startDate} ~ \${result.subscription.endDate}\`);
                                 window.location.href = '/dashboard';
                             } else { alert('결제 처리에 실패했습니다: ' + result.error); }
                         } catch (error) { alert('결제 처리 중 오류가 발생했습니다.'); }
@@ -13340,7 +13340,7 @@ app.get('/pricing', (c) => {
                             
                             if (result.success) {
                                 const sub = result.subscription;
-                                alert(\`결제가 완료되었습니다!\\n\\n플랜: \${sub.planName}\\n이용 기간: \${sub.startDate} ~ \${sub.endDate}\\n\\n대시보드로 이동합니다.\`);
+                                alert(\`결제가 완료되었습니다!\n\n플랜: \${sub.planName}\n이용 기간: \${sub.startDate} ~ \${sub.endDate}\n\n대시보드로 이동합니다.\`);
                                 window.location.href = '/dashboard';
                             } else {
                                 alert('결제 처리에 실패했습니다: ' + result.error);
@@ -15701,7 +15701,7 @@ app.get('/signup', (c) => {
                             messageEl.className = 'mt-4 p-4 rounded-xl bg-red-50 text-red-800 border border-red-200'
                             let errorMsg = result.error || '등록 신청 중 오류가 발생했습니다.'
                             if (result.details) {
-                                errorMsg += '\\n\\n상세: ' + result.details
+                                errorMsg += '\n\\n상세: ' + result.details
                             }
                             messageEl.textContent = errorMsg
                             console.error('Error details:', result)
@@ -15711,7 +15711,7 @@ app.get('/signup', (c) => {
                         const messageEl = document.getElementById('message')
                         messageEl.classList.remove('hidden')
                         messageEl.className = 'mt-4 p-4 rounded-xl bg-red-50 text-red-800 border border-red-200'
-                        messageEl.textContent = '등록 신청 중 오류가 발생했습니다.\\n\\n' + error.message
+                        messageEl.textContent = '등록 신청 중 오류가 발생했습니다.\\n\n' + error.message
                     }
                     return
                 }
@@ -17027,7 +17027,7 @@ app.get('/resources', (c) => {
         <script>
         function downloadChecklist(type) {
             if (type === 'naver') {
-                alert('네이버 플레이스 체크리스트를 다운로드합니다.\\n\\n실제 서비스에서는 PDF 파일이 다운로드됩니다.');
+                alert('네이버 플레이스 체크리스트를 다운로드합니다.\n\n실제 서비스에서는 PDF 파일이 다운로드됩니다.');
                 // 실제로는 PDF 파일 다운로드 로직 추가
             }
         }
@@ -18423,7 +18423,7 @@ app.get('/dashboard', (c) => {
 
                     const data = await response.json()
                     if (data.success) {
-                        alert('입금 신청이 완료되었습니다!\\n\\n충전 포인트: ' + amount.toLocaleString() + 'P\\n부가세 (10%): ' + vat.toLocaleString() + '원\\n입금하실 금액: ' + totalAmount.toLocaleString() + '원\\n\\n관리자 확인 후 ' + amount.toLocaleString() + 'P가 지급됩니다.')
+                        alert('입금 신청이 완료되었습니다!\n\n충전 포인트: ' + amount.toLocaleString() + 'P\n부가세 (10%): ' + vat.toLocaleString() + '원\n입금하실 금액: ' + totalAmount.toLocaleString() + '원\n\n관리자 확인 후 ' + amount.toLocaleString() + 'P가 지급됩니다.')
                         closeDepositModal()
                         // 폼 초기화
                         document.getElementById('depositAmount').value = ''
@@ -18823,7 +18823,7 @@ app.get('/tools/sms-sender', (c) => {
 
                 const data = await response.json();
                 if (data.success) {
-                    alert('문자가 발송되었습니다!\\n' + (data.note || ''));
+                    alert('문자가 발송되었습니다!\n' + (data.note || ''));
                     document.getElementById('recipientName').value = '';
                     document.getElementById('recipientPhone').value = '';
                     document.getElementById('messageContent').value = '';
@@ -19334,7 +19334,7 @@ app.get('/tools/parent-message', (c) => {
 
             function copyMessage() {
                 navigator.clipboard.writeText(generatedMessageText).then(() => {
-                    alert('✅ 메시지가 복사되었습니다!\\n\\n카톡이나 문자로 학부모님께 전송하세요.');
+                    alert('✅ 메시지가 복사되었습니다!\n\n카톡이나 문자로 학부모님께 전송하세요.');
                 });
             }
 
@@ -19609,7 +19609,7 @@ app.get('/tools/blog-writer', (c) => {
 
             function copyBlog() {
                 navigator.clipboard.writeText(generatedBlogText).then(() => {
-                    alert('✅ 블로그 글이 복사되었습니다!\\n\\n네이버 블로그에 붙여넣기 하세요.');
+                    alert('✅ 블로그 글이 복사되었습니다!\n\n네이버 블로그에 붙여넣기 하세요.');
                 });
             }
 
@@ -20911,12 +20911,12 @@ app.get('/tools/landing-builder', (c) => {
                     
                     alert(alertMessage);
                 } else {
-                    alert('⚠️ 출석 데이터를 찾을 수 없습니다.\\n\\n선택한 기간에 출석 기록이 없을 수 있습니다.');
+                    alert('⚠️ 출석 데이터를 찾을 수 없습니다.\n\n선택한 기간에 출석 기록이 없을 수 있습니다.');
                 }
                 
             } catch (error) {
                 console.error('출석 계산 오류:', error);
-                alert('❌ 출석 데이터를 불러오는 중 오류가 발생했습니다.\\n\\n' + error.message);
+                alert('❌ 출석 데이터를 불러오는 중 오류가 발생했습니다.\n\n' + error.message);
             }
         }
 
@@ -21131,14 +21131,14 @@ app.get('/tools/landing-builder', (c) => {
             }
 
             // 배열로 변환이 필요한 필드들
-            if (data.specialties) data.specialties = data.specialties.split('\\n').filter(s => s.trim());
-            if (data.features) data.features = data.features.split('\\n').filter(s => s.trim());
-            if (data.benefits) data.benefits = data.benefits.split('\\n').filter(s => s.trim());
-            if (data.achievements) data.achievements = data.achievements.split('\\n').filter(s => s.trim());
-            if (data.improvements) data.improvements = data.improvements.split('\\n').filter(s => s.trim());
-            if (data.nextGoals) data.nextGoals = data.nextGoals.split('\\n').filter(s => s.trim());
+            if (data.specialties) data.specialties = data.specialties.split('\n').filter(s => s.trim());
+            if (data.features) data.features = data.features.split('\n').filter(s => s.trim());
+            if (data.benefits) data.benefits = data.benefits.split('\n').filter(s => s.trim());
+            if (data.achievements) data.achievements = data.achievements.split('\n').filter(s => s.trim());
+            if (data.improvements) data.improvements = data.improvements.split('\n').filter(s => s.trim());
+            if (data.nextGoals) data.nextGoals = data.nextGoals.split('\n').filter(s => s.trim());
             if (data.textbooks) {
-                data.textbooks = data.textbooks.split('\\n').filter(s => s.trim());
+                data.textbooks = data.textbooks.split('\n').filter(s => s.trim());
                 // 최대 5개로 제한
                 if (data.textbooks.length > 5) {
                     alert('⚠️ 사용 교재는 최대 5개까지만 입력 가능합니다. 처음 5개만 사용됩니다.');
@@ -21158,8 +21158,8 @@ app.get('/tools/landing-builder', (c) => {
             else if (selectedTemplate === 'vacation-course') title = data.courseName;
 
             // 배열 필드 처리 - 새로운 템플릿 포함
-            if (data.agenda) data.agenda = data.agenda.split('\\n').filter(s => s.trim());
-            if (data.testimonials) data.testimonials = data.testimonials.split('\\n').filter(s => s.trim());
+            if (data.agenda) data.agenda = data.agenda.split('\n').filter(s => s.trim());
+            if (data.testimonials) data.testimonials = data.testimonials.split('\n').filter(s => s.trim());
 
             try {
                 // 디버깅: 전송할 데이터 확인
@@ -21306,7 +21306,7 @@ app.get('/tools/landing-builder', (c) => {
                             link.href = URL.createObjectURL(blob);
                             link.download = 'QR_' + result.title.replace(/[^a-zA-Z0-9가-힣]/g, '_') + '.png';
                             link.click();
-                            alert('✅ QR 코드가 다운로드되었습니다!\\n\\n랜딩페이지: ' + result.title + '\\nURL: ' + result.landingUrl);
+                            alert('✅ QR 코드가 다운로드되었습니다!\n\n랜딩페이지: ' + result.title + '\nURL: ' + result.landingUrl);
                         });
                     };
                     
@@ -21545,7 +21545,7 @@ app.get('/landing/:slug/submissions', async (c) => {
             
             const csvContent = [headers, ...rows]
                 .map(row => row.map(cell => \`"\${cell}"\`).join(','))
-                .join('\\n');
+                .join('\n');
             
             const BOM = '\\uFEFF';
             const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -22733,7 +22733,7 @@ app.get('/payment/bank-transfer', (c) => {
                 const result = await response.json()
                 
                 if (result.success) {
-                    alert('✅ 계좌이체 신청이 완료되었습니다!\\n\\n관리자 승인 후 서비스가 활성화됩니다.\\n승인까지 영업일 기준 1-2일 소요될 수 있습니다.')
+                    alert('✅ 계좌이체 신청이 완료되었습니다!\n\n관리자 승인 후 서비스가 활성화됩니다.\n승인까지 영업일 기준 1-2일 소요될 수 있습니다.')
                     window.location.href = '/dashboard'
                 } else {
                     alert('❌ 신청 실패: ' + result.error)
@@ -28222,7 +28222,7 @@ app.get('/tools/review-template', (c) => {
                 
                 let response = '';
                 if(type === 'positive') {
-                    response = content + '\\n\\n소중한 리뷰 감사합니다! 😊\\n앞으로도 더 나은 교육으로 보답하겠습니다.\\n항상 응원해주세요!\\n\\n- 꾸메땅학원 원장 드림';
+                    response = content + '\n\\n소중한 리뷰 감사합니다! 😊\\n앞으로도 더 나은 교육으로 보답하겠습니다.\\n항상 응원해주세요!\\n\\n- 꾸메땅학원 원장 드림';
                 } else if(type === 'negative') {
                     response = '소중한 의견 감사드립니다.\\n말씀해주신 부분에 대해 깊이 반성하고 있습니다.\\n즉시 개선하여 더 나은 서비스로 보답하겠습니다.\\n다시 한 번 죄송합니다.\\n\\n- 꾸메땅학원 원장 드림';
                 } else {
@@ -30336,7 +30336,7 @@ app.get('/tools/consultation-calendar', (c) => {
                     return;
                 }
 
-                alert(\`예약이 완료되었습니다!\\n\\n날짜: \${selectedDate}\\n시간: \${selectedTimeSlot}\\n이름: \${name}\`);
+                alert(\`예약이 완료되었습니다!\n\n날짜: \${selectedDate}\n시간: \${selectedTimeSlot}\n이름: \${name}\`);
             }
 
             generateCalendar();
@@ -31152,7 +31152,7 @@ app.get('/admin/users', async (c) => {
                     return;
                 }
                 
-                if (!confirm('정말 사용 한도를 변경하시겠습니까?\\n\\n구독 기간: ' + displayPeriod + '\\n학생: ' + studentLimit + '명\\nAI 리포트: ' + aiReportLimit + '개/월\\n랜딩페이지: ' + landingPageLimit + '개\\n선생님: ' + teacherLimit + '명')) {
+                if (!confirm('정말 사용 한도를 변경하시겠습니까?\\n\\n구독 기간: ' + displayPeriod + '\n학생: ' + studentLimit + '명\\nAI 리포트: ' + aiReportLimit + '개/월\\n랜딩페이지: ' + landingPageLimit + '개\\n선생님: ' + teacherLimit + '명')) {
                     return;
                 }
                 
@@ -37301,7 +37301,7 @@ app.get('/admin/revenue', async (c) => {
             function exportData() {
                 if (!statsData) return;
 
-                let csv = '날짜,사용자,이메일,플랜,결제수단,금액\\n';
+                let csv = '날짜,사용자,이메일,플랜,결제수단,금액\n';
                 
                 // 실제로는 서버에서 전체 데이터를 가져와야 하지만, 
                 // 여기서는 현재 페이지의 데이터만 내보냅니다
@@ -37317,7 +37317,7 @@ app.get('/admin/revenue', async (c) => {
                         const plan = cells[2].textContent.trim();
                         const method = cells[3].textContent.trim();
                         const amount = cells[4].textContent.trim();
-                        csv += '"' + date + '","' + userName + '","' + userEmail + '","' + plan + '","' + method + '","' + amount + '"\\n';
+                        csv += '"' + date + '","' + userName + '","' + userEmail + '","' + plan + '","' + method + '","' + amount + '"\n';
                     }
                 });
 
@@ -38314,7 +38314,7 @@ app.get('/sms/sender/request', (c) => {
                     console.log('API Response:', data) // 디버깅용
 
                     if (data.success) {
-                        alert('✅ 발신번호 인증 신청이 완료되었습니다!\\n관리자 승인 후 사용 가능합니다. (평일 기준 2~3일 소요)')
+                        alert('✅ 발신번호 인증 신청이 완료되었습니다!\n관리자 승인 후 사용 가능합니다. (평일 기준 2~3일 소요)')
                         document.getElementById('verificationForm').reset()
                         // 모든 프리뷰 초기화
                         document.querySelectorAll('.upload-preview').forEach(p => p.classList.add('hidden'))
@@ -38848,7 +38848,7 @@ app.get('/sms/compose', (c) => {
                     receivers.push(...tempReceivers);
 
                     if (addedCount === 0 && duplicateCount === 0) {
-                        alert('❌ 엑셀 파일에서 데이터를 읽을 수 없습니다.\\n\\n형식을 확인해주세요:\\n- A열: 이름\\n- B열: 연락처 (01012345678 형식)\\n- 1행: 헤더 (자동 건너뜀)\\n\\n브라우저 콘솔(F12)에서 자세한 정보를 확인하세요.');
+                        alert('❌ 엑셀 파일에서 데이터를 읽을 수 없습니다.\n\n형식을 확인해주세요:\n- A열: 이름\n- B열: 연락처 (01012345678 형식)\n- 1행: 헤더 (자동 건너뜀)\n\n브라우저 콘솔(F12)에서 자세한 정보를 확인하세요.');
                     } else {
                         let message = \`✅ \${addedCount}명의 수신자가 추가되었습니다.\`;
                         if (duplicateCount > 0) {
@@ -38861,7 +38861,7 @@ app.get('/sms/compose', (c) => {
                     updateCost();
                 } catch (err) {
                     console.error('Excel upload error:', err);
-                    alert('엑셀 파일 업로드 중 오류가 발생했습니다.\\n' + err.message);
+                    alert('엑셀 파일 업로드 중 오류가 발생했습니다.\n' + err.message);
                 }
                 
                 event.target.value = '';
@@ -38929,7 +38929,7 @@ app.get('/sms/compose', (c) => {
                     const data = await response.json();
 
                     if (data.success) {
-                        alert(\`✅ 문자 발송이 완료되었습니다!\\n\\n발송 건수: \${data.sentCount}건\\n차감 포인트: \${data.totalCost}P\\n남은 포인트: \${data.remainingBalance}P\`);
+                        alert(\`✅ 문자 발송이 완료되었습니다!\n\n발송 건수: \${data.sentCount}건\n차감 포인트: \${data.totalCost}P\n남은 포인트: \${data.remainingBalance}P\`);
                         
                         // 초기화
                         document.getElementById('message').value = '';
@@ -39068,7 +39068,7 @@ app.get('/sms/compose', (c) => {
                             receivers = savedReceivers;
                             renderReceivers();
                             updateCost();
-                            alert(\`✅ 템플릿 불러오기 완료!\\n메시지 + 수신자 \${receivers.length}명\`);
+                            alert(\`✅ 템플릿 불러오기 완료!\n메시지 + 수신자 \${receivers.length}명\`);
                         } catch (err) {
                             console.error('Failed to parse receivers:', err);
                         }
@@ -39102,7 +39102,7 @@ app.get('/sms/compose', (c) => {
                     
                     const data = await response.json();
                     if (data.success) {
-                        alert(\`✅ 템플릿이 저장되었습니다!\\n수신자: \${receivers.length}명\`);
+                        alert(\`✅ 템플릿이 저장되었습니다!\n수신자: \${receivers.length}명\`);
                         await loadTemplates();
                     } else {
                         alert('❌ ' + data.error);
@@ -40072,7 +40072,7 @@ app.get('/sms/points', (c) => {
                     const data = await response.json();
 
                     if (data.success) {
-                        alert('✅ 입금 신청이 완료되었습니다!\\n관리자 승인 후 포인트가 충전됩니다.');
+                        alert('✅ 입금 신청이 완료되었습니다!\n관리자 승인 후 포인트가 충전됩니다.');
                         
                         // 폼 초기화
                         document.getElementById('depositAmount').value = '';
@@ -40727,11 +40727,11 @@ app.get('/admin/free-plan-requests', async (c) => {
             }
 
             function showReason(reason, academyName) {
-                alert('[' + academyName + '] 신청 사유:\\n\\n' + reason);
+                alert('[' + academyName + '] 신청 사유:\n\n' + reason);
             }
 
             async function approveRequest(requestId, academyName) {
-                if (!confirm('무료 플랜을 승인하시겠습니까?\\n\\n학원: ' + academyName + '\\n\\n승인 시 학생 50명까지 관리 가능한 무료 플랜이 활성화됩니다.')) {
+                if (!confirm('무료 플랜을 승인하시겠습니까?\\n\\n학원: ' + academyName + '\n\\n승인 시 학생 50명까지 관리 가능한 무료 플랜이 활성화됩니다.')) {
                     return;
                 }
 
@@ -40748,7 +40748,7 @@ app.get('/admin/free-plan-requests', async (c) => {
                     const result = await response.json();
 
                     if (result.success) {
-                        alert('✅ 승인 완료!\\n\\n학원: ' + academyName + '\\n무료 플랜이 활성화되었습니다.');
+                        alert('✅ 승인 완료!\n\n학원: ' + academyName + '\n무료 플랜이 활성화되었습니다.');
                         location.reload();
                     } else {
                         alert('❌ 승인 실패: ' + result.error);
@@ -40759,7 +40759,7 @@ app.get('/admin/free-plan-requests', async (c) => {
             }
 
             async function rejectRequest(requestId, academyName) {
-                const reason = prompt('무료 플랜 신청을 거절하시겠습니까?\\n\\n학원: ' + academyName + '\\n\\n거절 사유를 입력해주세요:');
+                const reason = prompt('무료 플랜 신청을 거절하시겠습니까?\\n\\n학원: ' + academyName + '\n\\n거절 사유를 입력해주세요:');
                 
                 if (!reason || reason.trim() === '') {
                     return;
@@ -40779,7 +40779,7 @@ app.get('/admin/free-plan-requests', async (c) => {
                     const result = await response.json();
 
                     if (result.success) {
-                        alert('✅ 거절 처리 완료\\n\\n학원: ' + academyName + '\\n사유: ' + reason);
+                        alert('✅ 거절 처리 완료\n\n학원: ' + academyName + '\n사유: ' + reason);
                         location.reload();
                     } else {
                         alert('❌ 거절 실패: ' + result.error);
@@ -42373,7 +42373,7 @@ app.get('/teachers-old', (c) => {
                     if (data.success) {
                         const newCode = data.code || (data.codeData && (data.codeData.code || data.codeData.verification_code));
                         document.getElementById('verificationCode').textContent = newCode;
-                        alert('✅ 인증 코드가 재생성되었습니다!\\n\\n새 코드: ' + newCode);
+                        alert('✅ 인증 코드가 재생성되었습니다!\n\n새 코드: ' + newCode);
                     } else {
                         alert('❌ 코드 재생성 실패: ' + (data.error || '알 수 없는 오류'));
                     }
@@ -44517,7 +44517,7 @@ app.get('/students', (c) => {
                             
                             if (initData.success) {
                                 console.log('✅ [loadDashboard] Test data created successfully!');
-                                alert('테스트 데이터 생성 완료!\\n\\n반: ' + initData.classes + '개\\n학생: ' + initData.students + '명');
+                                alert('테스트 데이터 생성 완료!\n\n반: ' + initData.classes + '개\n학생: ' + initData.students + '명');
                                 // 페이지 새로고침하여 데이터 표시
                                 location.reload();
                             } else {
@@ -44763,7 +44763,7 @@ app.get('/students', (c) => {
                             codeElement.classList.add('text-purple-600');
                             codeElement.classList.remove('text-red-600');
                         }
-                        alert('✅ 인증 코드가 재생성되었습니다!\\n\\n새 코드: ' + newCode);
+                        alert('✅ 인증 코드가 재생성되었습니다!\n\n새 코드: ' + newCode);
                     } else {
                         console.error('[Frontend] 재생성 실패:', data);
                         alert('❌ 코드 재생성 실패: ' + (data.error || '알 수 없는 오류'));
