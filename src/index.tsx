@@ -47632,3 +47632,4 @@ app.post('/api/service-inquiry', async (c) => {
     return c.json({ success: false, error: '문의 제출 중 오류가 발생했습니다.' }, 500)
   }
 })
+// Force rebuild Sat Jan 24 20:41:42 UTC 2026
