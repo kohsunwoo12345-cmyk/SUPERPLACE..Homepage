@@ -37,7 +37,7 @@ app.use('/static/*', serveStatic({ root: './public' }))
 app.route('/', formBuilderRoutes)
 
 // Mount landing page routes (랜딩 페이지 생성 및 관리) - PRIORITY OVER INLINE ROUTES
-app.route('/', landingRoutes)
+// app.route('/', landingRoutes) // removed - file not found
 
 // ========================================
 // API Routes
