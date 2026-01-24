@@ -1771,6 +1771,16 @@ app.get('/api/db/migrate', async (c) => {
       results.push('ℹ️ free_plan_requests.is_korea_academy: exists')
     }
     
+    // Migration 17: Add fields column to forms table for custom form fields
+    try {
+      await c.env.DB.prepare(`ALTER TABLE forms ADD COLUMN fields TEXT`).run()
+      console.log('✅ [Migration] Added fields column to forms table')
+      results.push('✅ Added fields column to forms')
+    } catch (e) {
+      console.log('ℹ️ [Migration] forms.fields:', e.message)
+      results.push('ℹ️ forms.fields: exists')
+    }
+    
     return c.json({ 
       success: true, 
       message: '데이터베이스 마이그레이션이 완료되었습니다',
@@ -6724,7 +6734,7 @@ function generateVacationCourseHTML(data: any): string {
 // 폼 생성
 app.post('/api/forms/create', async (c) => {
   try {
-    const { userId, name, description, termsText, successMessage, customHtml, headerScript, pixelScript } = await c.req.json()
+    const { userId, name, description, fields, termsText, successMessage, customHtml, headerScript, pixelScript } = await c.req.json()
     
     if (!userId || !name) {
       return c.json({ success: false, error: '필수 정보가 누락되었습니다.' }, 400)
@@ -6735,12 +6745,13 @@ app.post('/api/forms/create', async (c) => {
     const academyId = user?.academy_id || userId
     
     const result = await c.env.DB.prepare(`
-      INSERT INTO forms (academy_id, name, description, custom_html, header_script, pixel_script, terms_text, success_message)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO forms (academy_id, name, description, fields, custom_html, header_script, pixel_script, terms_text, success_message)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).bind(
       academyId,
       name,
       description || '',
+      JSON.stringify(fields || []),
       customHtml || '',
       headerScript || '',
       pixelScript || '',
@@ -6823,13 +6834,31 @@ app.get('/api/forms/:id', async (c) => {
 app.put('/api/forms/:id', async (c) => {
   try {
     const formId = c.req.param('id')
-    const { name, description, fields, customHtml, headerScript } = await c.req.json()
+    const { name, description, fields, termsText, successMessage, customHtml, headerScript, pixelScript } = await c.req.json()
     
     await c.env.DB.prepare(`
       UPDATE forms 
-      SET name = ?, description = ?, fields = ?, custom_html = ?, header_script = ?, updated_at = CURRENT_TIMESTAMP
+      SET name = ?, 
+          description = ?, 
+          fields = ?, 
+          terms_text = ?,
+          success_message = ?,
+          custom_html = ?, 
+          header_script = ?,
+          pixel_script = ?,
+          updated_at = CURRENT_TIMESTAMP
       WHERE id = ?
-    `).bind(name, description || '', JSON.stringify(fields || []), customHtml || '', headerScript || '', formId).run()
+    `).bind(
+      name, 
+      description || '', 
+      JSON.stringify(fields || []), 
+      termsText || '개인정보 수집 및 이용에 동의합니다.',
+      successMessage || '신청이 완료되었습니다. 감사합니다!',
+      customHtml || '', 
+      headerScript || '',
+      pixelScript || '',
+      formId
+    ).run()
     
     return c.json({ success: true, message: '폼이 수정되었습니다.' })
   } catch (err) {
@@ -21638,8 +21667,7 @@ app.get('/tools/form-manager', (c) => {
         }
 
         function editForm(formId) {
-            alert('폼 수정 기능은 곧 제공될 예정입니다.');
-            // TODO: 폼 수정 페이지로 이동
+            window.location.href = \`/tools/form-editor/\${formId}\`;
         }
 
         async function deleteForm(formId, formName) {
@@ -21665,6 +21693,322 @@ app.get('/tools/form-manager', (c) => {
             } catch (err) {
                 console.error('Delete error:', err);
                 alert('오류가 발생했습니다: ' + err.message);
+            }
+        }
+        </script>
+    </body>
+    </html>
+  `)
+})
+
+// 폼 수정 페이지
+app.get('/tools/form-editor/:id', async (c) => {
+  const formId = c.req.param('id')
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>폼 수정 - 슈퍼플레이스</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+        <style>
+          @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
+          * { font-family: 'Pretendard Variable', sans-serif; }
+        </style>
+    </head>
+    <body class="bg-gray-50">
+        <nav class="fixed w-full top-0 z-50 bg-white border-b border-gray-100">
+            <div class="max-w-7xl mx-auto px-6">
+                <div class="flex justify-between items-center h-16">
+                    <span class="text-xl font-bold text-gray-900">폼 수정</span>
+                    <div class="flex gap-4">
+                        <a href="/tools/form-manager" class="text-gray-600 hover:text-purple-600">폼 관리</a>
+                        <a href="/dashboard" class="text-gray-600 hover:text-purple-600">대시보드</a>
+                        <button onclick="logout()" class="text-gray-600 hover:text-red-600">로그아웃</button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <div class="pt-24 pb-12 px-6">
+            <div class="max-w-4xl mx-auto">
+                <div class="mb-8">
+                    <a href="/tools/form-manager" class="text-purple-600 hover:text-purple-700 inline-flex items-center mb-4">
+                        <i class="fas fa-arrow-left mr-2"></i>폼 관리로 돌아가기
+                    </a>
+                    <h1 class="text-3xl font-bold text-gray-900 mb-2">✏️ 폼 수정</h1>
+                    <p class="text-gray-600">폼 이름과 커스텀 항목을 수정하세요</p>
+                </div>
+
+                <!-- 로딩 상태 -->
+                <div id="loading" class="text-center py-12">
+                    <i class="fas fa-spinner fa-spin text-4xl text-purple-600 mb-4"></i>
+                    <p class="text-gray-600">폼 정보를 불러오는 중...</p>
+                </div>
+
+                <!-- 폼 편집 영역 -->
+                <div id="formEditor" class="hidden">
+                    <div class="bg-white rounded-xl p-8 border border-gray-200 shadow-sm mb-6">
+                        <h2 class="text-xl font-bold mb-6">📝 기본 정보</h2>
+                        
+                        <div class="space-y-6">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">폼 이름 *</label>
+                                <input type="text" id="formName" placeholder="예: 수학 학원 상담 신청" 
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">설명</label>
+                                <textarea id="formDescription" rows="3" placeholder="폼에 대한 간단한 설명을 입력하세요" 
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"></textarea>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">약관 문구</label>
+                                <input type="text" id="termsText" placeholder="개인정보 수집 및 이용에 동의합니다." 
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">성공 메시지</label>
+                                <input type="text" id="successMessage" placeholder="신청이 완료되었습니다. 감사합니다!" 
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl p-8 border border-gray-200 shadow-sm mb-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <h2 class="text-xl font-bold">📋 커스텀 항목</h2>
+                            <button onclick="addField()" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 flex items-center gap-2">
+                                <i class="fas fa-plus"></i> 항목 추가
+                            </button>
+                        </div>
+
+                        <div class="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                            <p class="text-sm text-blue-800">
+                                <i class="fas fa-info-circle mr-2"></i>
+                                <strong>기본 항목:</strong> 이름, 연락처(전화번호), 이메일은 기본으로 제공됩니다. 
+                                추가로 필요한 항목(학년, 자녀 이름 등)을 아래에서 추가하세요.
+                            </p>
+                        </div>
+
+                        <div id="fieldsList" class="space-y-4">
+                            <!-- 커스텀 항목들이 여기에 표시됩니다 -->
+                        </div>
+
+                        <div id="emptyFields" class="text-center py-8 text-gray-500">
+                            <i class="fas fa-inbox text-4xl mb-3"></i>
+                            <p>추가된 커스텀 항목이 없습니다.</p>
+                            <p class="text-sm text-gray-400 mt-2">예: 학년, 자녀 이름, 학습 희망 과목 등</p>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-4">
+                        <button onclick="saveForm()" class="flex-1 px-6 py-4 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-semibold text-lg flex items-center justify-center gap-2">
+                            <i class="fas fa-save"></i> 저장하기
+                        </button>
+                        <button onclick="cancelEdit()" class="px-6 py-4 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-semibold text-lg">
+                            취소
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+        let user = null;
+        let formData = null;
+        let fields = [];
+        const formId = ${formId};
+
+        const userData = localStorage.getItem('user');
+        if (!userData) {
+            alert('로그인이 필요합니다.');
+            window.location.href = '/login';
+        } else {
+            user = JSON.parse(userData);
+            loadFormData();
+        }
+
+        function logout() {
+            localStorage.removeItem('user');
+            localStorage.removeItem('loginTime');
+            window.location.href = '/';
+        }
+
+        async function loadFormData() {
+            try {
+                const response = await fetch(\`/api/forms/\${formId}\`);
+                const result = await response.json();
+                
+                if (result.success && result.form) {
+                    formData = result.form;
+                    
+                    // 기본 정보 채우기
+                    document.getElementById('formName').value = formData.name || '';
+                    document.getElementById('formDescription').value = formData.description || '';
+                    document.getElementById('termsText').value = formData.terms_text || '개인정보 수집 및 이용에 동의합니다.';
+                    document.getElementById('successMessage').value = formData.success_message || '신청이 완료되었습니다. 감사합니다!';
+                    
+                    // 필드 데이터 파싱
+                    try {
+                        fields = formData.fields ? JSON.parse(formData.fields) : [];
+                    } catch (e) {
+                        fields = [];
+                    }
+                    
+                    renderFields();
+                    
+                    document.getElementById('loading').classList.add('hidden');
+                    document.getElementById('formEditor').classList.remove('hidden');
+                } else {
+                    alert('폼을 불러올 수 없습니다: ' + (result.error || '알 수 없는 오류'));
+                    window.location.href = '/tools/form-manager';
+                }
+            } catch (err) {
+                console.error('Load error:', err);
+                alert('폼을 불러오는 중 오류가 발생했습니다: ' + err.message);
+                window.location.href = '/tools/form-manager';
+            }
+        }
+
+        function renderFields() {
+            const container = document.getElementById('fieldsList');
+            const emptyState = document.getElementById('emptyFields');
+            
+            if (fields.length === 0) {
+                container.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+            
+            emptyState.classList.add('hidden');
+            
+            const html = fields.map((field, index) => \`
+                <div class="flex items-center gap-4 p-4 border border-gray-200 rounded-lg bg-gray-50">
+                    <div class="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">항목명</label>
+                            <input type="text" value="\${field.label}" onchange="updateField(\${index}, 'label', this.value)"
+                                placeholder="예: 학년" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">입력 타입</label>
+                            <select onchange="updateField(\${index}, 'type', this.value)" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                                <option value="text" \${field.type === 'text' ? 'selected' : ''}>텍스트</option>
+                                <option value="select" \${field.type === 'select' ? 'selected' : ''}>선택 (드롭다운)</option>
+                                <option value="textarea" \${field.type === 'textarea' ? 'selected' : ''}>장문 텍스트</option>
+                                <option value="number" \${field.type === 'number' ? 'selected' : ''}>숫자</option>
+                                <option value="date" \${field.type === 'date' ? 'selected' : ''}>날짜</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">
+                                필수 여부
+                                <input type="checkbox" \${field.required ? 'checked' : ''} onchange="updateField(\${index}, 'required', this.checked)"
+                                    class="ml-2">
+                            </label>
+                            <input type="text" value="\${field.placeholder || ''}" onchange="updateField(\${index}, 'placeholder', this.value)"
+                                placeholder="입력 힌트 (선택사항)" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm mt-1">
+                        </div>
+                    </div>
+                    <button onclick="removeField(\${index})" class="px-3 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 flex-shrink-0">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+                \${field.type === 'select' ? \`
+                    <div class="ml-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                        <label class="block text-xs font-medium text-gray-700 mb-2">선택 옵션 (쉼표로 구분)</label>
+                        <input type="text" value="\${(field.options || []).join(', ')}" 
+                            onchange="updateField(\${index}, 'options', this.value.split(',').map(o => o.trim()).filter(o => o))"
+                            placeholder="예: 초등 1학년, 초등 2학년, 초등 3학년"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                    </div>
+                \` : ''}
+            \`).join('');
+            
+            container.innerHTML = html;
+        }
+
+        function addField() {
+            fields.push({
+                label: '',
+                type: 'text',
+                required: false,
+                placeholder: ''
+            });
+            renderFields();
+        }
+
+        function updateField(index, key, value) {
+            fields[index][key] = value;
+        }
+
+        function removeField(index) {
+            if (confirm('이 항목을 삭제하시겠습니까?')) {
+                fields.splice(index, 1);
+                renderFields();
+            }
+        }
+
+        async function saveForm() {
+            const name = document.getElementById('formName').value.trim();
+            const description = document.getElementById('formDescription').value.trim();
+            const termsText = document.getElementById('termsText').value.trim();
+            const successMessage = document.getElementById('successMessage').value.trim();
+            
+            if (!name) {
+                alert('폼 이름을 입력하세요.');
+                return;
+            }
+            
+            // 필드 유효성 검사
+            for (let i = 0; i < fields.length; i++) {
+                if (!fields[i].label || !fields[i].label.trim()) {
+                    alert(\`\${i + 1}번째 항목의 이름을 입력하세요.\`);
+                    return;
+                }
+            }
+            
+            try {
+                const response = await fetch(\`/api/forms/\${formId}\`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        name,
+                        description,
+                        fields,
+                        termsText,
+                        successMessage,
+                        customHtml: formData.custom_html || '',
+                        headerScript: formData.header_script || '',
+                        pixelScript: formData.pixel_script || ''
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('✅ 폼이 성공적으로 저장되었습니다!');
+                    window.location.href = '/tools/form-manager';
+                } else {
+                    alert('저장 실패: ' + (result.error || '알 수 없는 오류'));
+                }
+            } catch (err) {
+                console.error('Save error:', err);
+                alert('저장 중 오류가 발생했습니다: ' + err.message);
+            }
+        }
+
+        function cancelEdit() {
+            if (confirm('수정을 취소하시겠습니까? 저장하지 않은 변경사항은 사라집니다.')) {
+                window.location.href = '/tools/form-manager';
             }
         }
         </script>
