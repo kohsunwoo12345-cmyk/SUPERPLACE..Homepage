@@ -8188,6 +8188,7 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
                         }
                         
                         localStorage.setItem('user', JSON.stringify(data.user))
+                        localStorage.setItem('loginTime', Date.now().toString())
                         showMessage('success', data.message)
                         setTimeout(() => {
                             window.location.href = data.user.role === 'admin' ? '/admin/dashboard' : '/dashboard'
@@ -8253,6 +8254,7 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
                                         }
                                         
                                         localStorage.setItem('user', JSON.stringify(data.user))
+                                        localStorage.setItem('loginTime', Date.now().toString())
                                         showMessage('success', data.message)
                                         setTimeout(() => {
                                             window.location.href = data.user.role === 'admin' ? '/admin/dashboard' : '/dashboard'
@@ -8348,6 +8350,7 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
                         }
                         
                         localStorage.setItem('user', JSON.stringify(result.user))
+                        localStorage.setItem('loginTime', Date.now().toString())
                         
                         // 역할에 따라 자동 리다이렉트
                         setTimeout(() => {
@@ -13958,7 +13961,36 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
             }
         }
 
+        // 자동 로그아웃 체크 함수 (5시간)
+        function checkAutoLogout() {
+            const loginTime = localStorage.getItem('loginTime');
+            const userData = localStorage.getItem('user');
+            
+            if (userData && loginTime) {
+                const now = Date.now();
+                const elapsed = now - parseInt(loginTime);
+                const FIVE_HOURS = 5 * 60 * 60 * 1000; // 5시간
+                
+                if (elapsed > FIVE_HOURS) {
+                    console.log('⏰ 5시간 경과 - 자동 로그아웃');
+                    localStorage.removeItem('user');
+                    localStorage.removeItem('loginTime');
+                    alert('보안을 위해 5시간 후 자동 로그아웃되었습니다. 다시 로그인해주세요.');
+                    window.location.href = '/';
+                    return false;
+                }
+            }
+            return true;
+        }
+
         // 로그인 체크 및 사용자 정보 표시
+        if (!checkAutoLogout()) {
+            throw new Error('Auto logout');
+        }
+        
+        // 주기적 체크 (1분마다)
+        setInterval(checkAutoLogout, 60000);
+        
         const userData = localStorage.getItem('user');
         if (userData) {
             user = JSON.parse(userData);
@@ -15321,6 +15353,37 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
         <script>
             let user = null;
             let allForms = [];
+            
+            // 자동 로그아웃 체크 함수 (5시간)
+            function checkAutoLogout() {
+                const loginTime = localStorage.getItem('loginTime');
+                const userData = localStorage.getItem('user');
+                
+                if (userData && loginTime) {
+                    const now = Date.now();
+                    const elapsed = now - parseInt(loginTime);
+                    const FIVE_HOURS = 5 * 60 * 60 * 1000; // 5시간
+                    
+                    if (elapsed > FIVE_HOURS) {
+                        console.log('⏰ 5시간 경과 - 자동 로그아웃');
+                        localStorage.removeItem('user');
+                        localStorage.removeItem('loginTime');
+                        alert('보안을 위해 5시간 후 자동 로그아웃되었습니다. 다시 로그인해주세요.');
+                        window.location.href = '/';
+                        return false;
+                    }
+                }
+                return true;
+            }
+            
+            // 페이지 로드 시 체크
+            if (!checkAutoLogout()) {
+                // 로그아웃되었으므로 스크립트 실행 중단
+                throw new Error('Auto logout');
+            }
+            
+            // 주기적 체크 (1분마다)
+            setInterval(checkAutoLogout, 60000);
             
             // 사용자 정보 가져오기
             async function loadUser() {
