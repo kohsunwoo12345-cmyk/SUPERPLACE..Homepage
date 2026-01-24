@@ -21306,7 +21306,7 @@ app.get('/tools/landing-builder', (c) => {
                             link.href = URL.createObjectURL(blob);
                             link.download = 'QR_' + result.title.replace(/[^a-zA-Z0-9가-힣]/g, '_') + '.png';
                             link.click();
-                            alert('✅ QR 코드가 다운로드되었습니다!\n\n랜딩페이지: ' + result.title + '\nURL: ' + result.landingUrl);
+                            alert('✅ QR 코드가 다운로드되었습니다!\\n\\n랜딩페이지: ' + result.title + '\\nURL: ' + result.landingUrl);
                         });
                     };
                     
@@ -45282,9 +45282,7 @@ app.get('/clear-cache', (c) => {
                     
                     await sleep(1000);
                     
-                    alert('✅ 캐시가 완전히 삭제되었습니다!
-
-확인을 누르면 학생 관리 페이지로 이동합니다.');
+                    alert('✅ 캐시가 완전히 삭제되었습니다!\n\n확인을 누르면 학생 관리 페이지로 이동합니다.');
                     window.location.href = '/students?nocache=' + Date.now();
                     
                 } catch (error) {

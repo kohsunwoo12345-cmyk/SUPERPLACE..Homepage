@@ -16414,10 +16414,7 @@ URL: ' + imageUrl);
                             link.href = URL.createObjectURL(blob);
                             link.download = 'QR_' + result.title.replace(/[^a-zA-Z0-9가-힣]/g, '_') + '.png';
                             link.click();
-                            alert('✅ QR 코드가 다운로드되었습니다!
-
-랜딩페이지: ' + result.title + '
-URL: ' + result.landingUrl);
+                            alert('✅ QR 코드가 다운로드되었습니다!\\n\\n랜딩페이지: ' + result.title + '\\nURL: ' + result.landingUrl);
                         });
                     };
                     
