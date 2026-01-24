@@ -16407,7 +16407,6 @@ URL: ' + result.landingUrl);
                             'student-report': '📊 학생 리포트'
                         };
                         const url = window.location.origin + '/landing/' + p.slug;
-                        const safeUrl = url.replace(/'/g, "\\'");
                         return '<div class="bg-white rounded-xl p-6 border border-gray-200 hover:shadow-lg transition">' +
                                 '<div class="flex items-start justify-between">' +
                                     '<div class="flex-1">' +
@@ -16420,13 +16419,13 @@ URL: ' + result.landingUrl);
                                         '<h3 class="text-xl font-bold text-gray-900 mb-3">' + p.title + '</h3>' +
                                         '<div class="flex items-center gap-2 mb-3">' +
                                             '<input type="text" value="' + url + '" readonly class="flex-1 px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg text-sm">' +
-                                            '<button onclick="copyUrl(' + "'" + safeUrl + "'" + ')" class="px-4 py-2 bg-gray-600 text-white rounded-lg text-sm hover:bg-gray-700">복사</button>' +
+                                            '<button onclick="copyUrl(' + JSON.stringify(url) + ')" class="px-4 py-2 bg-gray-600 text-white rounded-lg text-sm hover:bg-gray-700">복사</button>' +
                                         '</div>' +
                                         '<p class="text-sm text-gray-500">생성일: ' + new Date(p.created_at).toLocaleString('ko-KR') + '</p>' +
                                     '</div>' +
                                     '<div class="flex flex-col gap-2 ml-4">' +
                                         '<a href="/landing/' + p.slug + '" target="_blank" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm text-center">미리보기</a>' +
-                                        "<button onclick=\\"generateQR('" + p.slug + "')\\" class=\\"px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 text-sm flex items-center justify-center gap-2\\"><i class=\\"fas fa-qrcode\\"></i> QR 생성</button>" +
+                                        "<button onclick="generateQR('" + p.slug + "')" class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 text-sm flex items-center justify-center gap-2"><i class="fas fa-qrcode"></i> QR 생성</button>" +
                                         '<a href="/landing/' + p.slug + '/submissions" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm text-center flex items-center justify-center gap-2"><i class="fas fa-users"></i> 신청자</a>' +
                                         '<button onclick="openMoveFolderModal(' + p.id + ')" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm">폴더 이동</button>' +
                                         '<button onclick="deletePage(' + p.id + ')" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm">삭제</button>' +
