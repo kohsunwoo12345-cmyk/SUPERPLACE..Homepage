@@ -6904,6 +6904,247 @@ app.get('/api/forms/:id/submissions', async (c) => {
   }
 })
 
+// Forms Submissions 페이지
+app.get('/forms/:id/submissions', async (c) => {
+  const formId = c.req.param('id')
+  
+  return c.html(`<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>폼 제출 내역 - 슈퍼플레이스</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg border-b-4 border-purple-600">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="/" class="text-2xl font-bold text-purple-600">슈퍼플레이스</a>
+                </div>
+                <div class="flex items-center gap-4">
+                    <a href="/tools/form-manager" class="text-gray-700 hover:text-purple-600">폼 관리</a>
+                    <button onclick="logout()" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+                        <i class="fas fa-sign-out-alt mr-2"></i>로그아웃
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <div class="flex items-center gap-2 text-sm text-gray-600 mb-4">
+                <a href="/tools/form-manager" class="hover:text-purple-600">폼 관리</a>
+                <i class="fas fa-chevron-right text-xs"></i>
+                <span id="formTitle" class="text-gray-900 font-medium">제출 내역</span>
+            </div>
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900 mb-2">
+                        <i class="fas fa-paper-plane text-purple-600 mr-3"></i>폼 제출 내역
+                    </h1>
+                    <p class="text-gray-600">이 폼을 통해 제출된 데이터 목록입니다</p>
+                </div>
+                <div class="text-right">
+                    <div class="text-sm text-gray-600 mb-1">총 제출</div>
+                    <div id="totalCount" class="text-3xl font-bold text-purple-600">0</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200 mb-6">
+            <div class="flex items-center gap-4">
+                <div class="flex-1">
+                    <input type="text" id="searchInput" placeholder="이름, 전화번호, 이메일로 검색..." 
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                </div>
+                <button onclick="exportToCSV()" class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2">
+                    <i class="fas fa-file-excel"></i>
+                    CSV 다운로드
+                </button>
+                <button onclick="loadSubmissions()" class="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 flex items-center gap-2">
+                    <i class="fas fa-sync-alt"></i>
+                    새로고침
+                </button>
+            </div>
+        </div>
+
+        <!-- Submissions Table -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50 border-b border-gray-200">
+                        <tr>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">번호</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">이름</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">연락처</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">이메일</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">추가정보</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">제출일시</th>
+                        </tr>
+                    </thead>
+                    <tbody id="submissionsTableBody" class="divide-y divide-gray-200">
+                        <tr>
+                            <td colspan="6" class="px-6 py-12 text-center text-gray-500">
+                                <i class="fas fa-spinner fa-spin text-3xl mb-4"></i>
+                                <p>데이터를 불러오는 중...</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="hidden text-center py-16">
+            <i class="fas fa-inbox text-6xl text-gray-300 mb-4"></i>
+            <h3 class="text-xl font-semibold text-gray-700 mb-2">아직 제출된 데이터가 없습니다</h3>
+            <p class="text-gray-500 mb-6">이 폼으로 데이터가 제출되면 여기에 표시됩니다</p>
+            <a href="/tools/form-manager" class="inline-block px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
+                <i class="fas fa-arrow-left mr-2"></i>폼 관리로 돌아가기
+            </a>
+        </div>
+    </div>
+
+    <script>
+        let allSubmissions = [];
+        const formId = ${formId};
+
+        async function loadSubmissions() {
+            try {
+                const response = await fetch(\`/api/forms/\${formId}/submissions\`);
+                const result = await response.json();
+                
+                if (!result.success) {
+                    alert(result.error || '제출 내역을 불러오는데 실패했습니다.');
+                    return;
+                }
+                
+                allSubmissions = result.submissions || [];
+                
+                if (result.form) {
+                    document.getElementById('formTitle').textContent = result.form.name;
+                    document.title = result.form.name + ' - 제출 내역';
+                }
+                
+                document.getElementById('totalCount').textContent = allSubmissions.length;
+                
+                renderSubmissions(allSubmissions);
+            } catch (err) {
+                console.error('Error loading submissions:', err);
+                alert('제출 내역을 불러오는데 실패했습니다.');
+            }
+        }
+
+        function renderSubmissions(submissions) {
+            const tbody = document.getElementById('submissionsTableBody');
+            const emptyState = document.getElementById('emptyState');
+            const table = tbody.closest('.bg-white');
+            
+            if (submissions.length === 0) {
+                table.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+                return;
+            }
+            
+            table.classList.remove('hidden');
+            emptyState.classList.add('hidden');
+            
+            tbody.innerHTML = submissions.map((sub, index) => {
+                const additionalData = sub.additional_data ? JSON.parse(sub.additional_data) : {};
+                const additionalDataStr = Object.entries(additionalData)
+                    .map(([key, value]) => \`\${key}: \${value}\`)
+                    .join('<br>') || '-';
+                
+                return \`
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 text-sm text-gray-900">\${submissions.length - index}</td>
+                        <td class="px-6 py-4">
+                            <div class="text-sm font-medium text-gray-900">\${sub.name}</div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="text-sm text-gray-900">\${sub.phone || '-'}</div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="text-sm text-gray-600">\${sub.email || '-'}</div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="text-xs text-gray-600">\${additionalDataStr}</div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="text-sm text-gray-900">\${new Date(sub.created_at).toLocaleString('ko-KR')}</div>
+                        </td>
+                    </tr>
+                \`;
+            }).join('');
+        }
+
+        function exportToCSV() {
+            if (allSubmissions.length === 0) {
+                alert('다운로드할 데이터가 없습니다.');
+                return;
+            }
+
+            const BOM = "\\uFEFF";
+            const headers = ['번호', '이름', '연락처', '이메일', '추가정보', '제출일시'];
+            const rows = allSubmissions.map((sub, index) => {
+                const additionalData = sub.additional_data ? JSON.parse(sub.additional_data) : {};
+                const additionalDataStr = Object.entries(additionalData)
+                    .map(([key, value]) => \`\${key}: \${value}\`)
+                    .join('; ') || '-';
+                
+                return [
+                    allSubmissions.length - index,
+                    sub.name,
+                    sub.phone || '-',
+                    sub.email || '-',
+                    additionalDataStr,
+                    new Date(sub.created_at).toLocaleString('ko-KR')
+                ];
+            });
+
+            const csv = BOM + [headers, ...rows]
+                .map(row => row.map(cell => \`"\${String(cell).replace(/"/g, '""')}"\`).join(','))
+                .join('\\n');
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = \`폼_제출내역_\${formId}_\${new Date().toISOString().split('T')[0]}.csv\`;
+            link.click();
+        }
+
+        function logout() {
+            localStorage.removeItem('user');
+            localStorage.removeItem('loginTime');
+            window.location.href = '/';
+        }
+
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const filtered = allSubmissions.filter(sub => {
+                return (sub.name && sub.name.toLowerCase().includes(searchTerm)) ||
+                       (sub.phone && sub.phone.includes(searchTerm)) ||
+                       (sub.email && sub.email.toLowerCase().includes(searchTerm));
+            });
+            renderSubmissions(filtered);
+        });
+
+        // Load on page load
+        loadSubmissions();
+    </script>
+</body>
+</html>`)
+})
+
+
 // QR 코드 생성 API
 app.get('/api/landing/:slug/qr', async (c) => {
   try {
