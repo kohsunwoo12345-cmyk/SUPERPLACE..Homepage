@@ -12358,35 +12358,40 @@ app.get('/pricing', (c) => {
                 <!-- Row 1: 무료 ~ 베이직 -->
                 <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
                     <!-- 무료 플랜 -->
-                    <div class="plan-card bg-white rounded-2xl p-6 border-2 border-gray-200 relative">
+                    <div class="plan-card bg-white rounded-2xl p-8 border-2 border-gray-200 relative shadow-lg">
                         <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-3 py-1 rounded-full text-xs font-bold">FREE</div>
-                        <div class="mb-4">
-                            <h3 class="text-xl font-bold text-gray-900 mb-2">무료</h3>
-                            <div class="flex items-end gap-2 mb-3">
-                                <span class="text-3xl font-bold text-green-600">₩0</span>
-                                <span class="text-gray-600 text-sm mb-1">/월</span>
+                        <div class="mb-6">
+                            <h3 class="text-2xl font-bold text-gray-900 mb-3">무료</h3>
+                            <div class="flex items-end gap-2 mb-4">
+                                <span class="text-5xl font-bold text-green-600">₩0</span>
+                                <span class="text-gray-600 text-lg mb-2">/월</span>
                             </div>
-                            <p class="text-xs text-gray-600 mb-4">체험용 무료 플랜</p>
+                            <p class="text-sm text-gray-600 mb-6">체험용 무료 플랜</p>
                         </div>
-                        <div class="space-y-2 mb-6 text-sm">
-                            <div class="flex items-center gap-2">
-                                <i class="fas fa-check text-green-500 text-xs"></i>
+                        <div class="space-y-3 mb-8 text-base">
+                            <div class="flex items-center gap-3">
+                                <i class="fas fa-check text-green-500 text-sm"></i>
                                 <span>학생 <strong>10명</strong></span>
                             </div>
-                            <div class="flex items-center gap-2">
-                                <i class="fas fa-check text-green-500 text-xs"></i>
+                            <div class="flex items-center gap-3">
+                                <i class="fas fa-check text-green-500 text-sm"></i>
                                 <span>AI 리포트 <strong>1개/월</strong></span>
                             </div>
-                            <div class="flex items-center gap-2">
-                                <i class="fas fa-check text-green-500 text-xs"></i>
+                            <div class="flex items-center gap-3">
+                                <i class="fas fa-check text-green-500 text-sm"></i>
                                 <span>랜딩페이지 <strong>1개</strong></span>
                             </div>
-                            <div class="flex items-center gap-2">
-                                <i class="fas fa-check text-green-500 text-xs"></i>
+                            <div class="flex items-center gap-3">
+                                <i class="fas fa-check text-green-500 text-sm"></i>
                                 <span>선생님 <strong>1명</strong></span>
                             </div>
                         </div>
-                        <a href="/dashboard" class="block w-full py-2.5 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 text-center text-sm transition-all">무료 시작하기</a>
+                        <div class="bg-green-50 rounded-lg p-4 mb-6">
+                            <p class="text-sm text-gray-700 leading-relaxed font-medium">
+                                "시스템이 궁금하신가요? 완전 무료로 먼저 써보세요. 부담 없이 시작하세요!"
+                            </p>
+                        </div>
+                        <a href="/dashboard" class="block w-full py-4 bg-green-600 text-white rounded-xl font-bold text-base hover:bg-green-700 text-center transition-all shadow-md hover:shadow-xl">무료 시작하기</a>
                     </div>
 
                     <!-- 스타터 플랜 -->
@@ -12426,35 +12431,40 @@ app.get('/pricing', (c) => {
                     </div>
 
                     <!-- 베이직 플랜 -->
-                    <div class="plan-card bg-white rounded-2xl p-6 border-2 border-blue-300 relative">
+                    <div class="plan-card bg-white rounded-2xl p-8 border-2 border-blue-300 relative shadow-lg">
                         <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-bold">인기</div>
-                        <div class="mb-4">
-                            <h3 class="text-xl font-bold text-gray-900 mb-2">베이직</h3>
-                            <div class="flex items-end gap-2 mb-3">
-                                <span class="text-3xl font-bold text-blue-600">₩143,000</span>
-                                <span class="text-gray-600 text-sm mb-1">/월</span>
+                        <div class="mb-6">
+                            <h3 class="text-2xl font-bold text-gray-900 mb-3">베이직</h3>
+                            <div class="flex items-end gap-2 mb-4">
+                                <span class="text-5xl font-bold text-blue-600">₩143,000</span>
+                                <span class="text-gray-600 text-lg mb-2">/월</span>
                             </div>
-                            <p class="text-xs text-gray-600 mb-4">중소형 학원 최적</p>
+                            <p class="text-sm text-gray-600 mb-6">중소형 학원 최적</p>
                         </div>
-                        <div class="space-y-2 mb-6 text-sm">
-                            <div class="flex items-center gap-2">
-                                <i class="fas fa-check text-green-500 text-xs"></i>
+                        <div class="space-y-3 mb-8 text-base">
+                            <div class="flex items-center gap-3">
+                                <i class="fas fa-check text-green-500 text-sm"></i>
                                 <span>학생 <strong>150명</strong></span>
                             </div>
-                            <div class="flex items-center gap-2">
-                                <i class="fas fa-check text-green-500 text-xs"></i>
+                            <div class="flex items-center gap-3">
+                                <i class="fas fa-check text-green-500 text-sm"></i>
                                 <span>AI 리포트 <strong>150개/월</strong></span>
                             </div>
-                            <div class="flex items-center gap-2">
-                                <i class="fas fa-check text-green-500 text-xs"></i>
+                            <div class="flex items-center gap-3">
+                                <i class="fas fa-check text-green-500 text-sm"></i>
                                 <span>랜딩페이지 <strong>160개</strong></span>
                             </div>
-                            <div class="flex items-center gap-2">
-                                <i class="fas fa-check text-green-500 text-xs"></i>
+                            <div class="flex items-center gap-3">
+                                <i class="fas fa-check text-green-500 text-sm"></i>
                                 <span>선생님 <strong>6명</strong></span>
                             </div>
                         </div>
-                        <a href="/pricing/basic" class="block w-full py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 text-center text-sm transition-all">선택하기</a>
+                        <div class="bg-blue-50 rounded-lg p-4 mb-6">
+                            <p class="text-sm text-gray-700 leading-relaxed font-medium">
+                                "학생 150명까지 관리 가능! 선생님 6명과 함께 체계적으로 학원을 운영하세요. 가장 인기 있는 플랜입니다."
+                            </p>
+                        </div>
+                        <a href="/pricing/basic" class="block w-full py-4 bg-blue-600 text-white rounded-xl font-bold text-base hover:bg-blue-700 text-center transition-all shadow-md hover:shadow-xl">선택하기</a>
                     </div>
                 </div>
 
@@ -12506,7 +12516,7 @@ app.get('/pricing', (c) => {
                             </div>
                             <p class="text-sm text-gray-600 mb-6">대형 학원 완벽</p>
                         </div>
-                        <div class="space-y-3 mb-6 text-base">
+                        <div class="space-y-3 mb-8 text-base">
                             <div class="flex items-center gap-3">
                                 <i class="fas fa-check text-green-500 text-sm"></i>
                                 <span>학생 <strong>1,000명</strong></span>
@@ -12524,39 +12534,49 @@ app.get('/pricing', (c) => {
                                 <span>선생님 <strong>40명</strong></span>
                             </div>
                         </div>
+                        <div class="bg-orange-50 rounded-lg p-4 mb-6">
+                            <p class="text-sm text-gray-700 leading-relaxed font-medium">
+                                "학생 1,000명 규모라면 이미 메이저 학원입니다. 선생님 40명과 함께 AI로 완벽한 관리 시스템을 구축하세요."
+                            </p>
+                        </div>
                         <a href="/pricing/premium" class="block w-full py-4 bg-orange-600 text-white rounded-xl font-bold text-base hover:bg-orange-700 text-center transition-all shadow-md hover:shadow-xl">선택하기</a>
                     </div>
 
                     <!-- 엔터프라이즈 플랜 -->
-                    <div class="plan-card bg-gradient-to-br from-purple-600 to-pink-600 rounded-2xl p-6 border-2 border-purple-400 relative text-white">
+                    <div class="plan-card bg-gradient-to-br from-purple-600 to-pink-600 rounded-2xl p-8 border-2 border-purple-400 relative text-white shadow-lg">
                         <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-yellow-400 to-orange-400 text-gray-900 px-3 py-1 rounded-full text-xs font-bold">최고급</div>
-                        <div class="mb-4">
-                            <h3 class="text-xl font-bold mb-2">엔터프라이즈</h3>
-                            <div class="flex items-end gap-2 mb-3">
-                                <span class="text-3xl font-bold">₩750,000</span>
-                                <span class="opacity-80 text-sm mb-1">/월</span>
+                        <div class="mb-6">
+                            <h3 class="text-2xl font-bold mb-3">엔터프라이즈</h3>
+                            <div class="flex items-end gap-2 mb-4">
+                                <span class="text-5xl font-bold">₩750,000</span>
+                                <span class="opacity-80 text-lg mb-2">/월</span>
                             </div>
-                            <p class="text-xs opacity-90 mb-4">초대형 학원 전용</p>
+                            <p class="text-sm opacity-90 mb-6">초대형 학원 전용</p>
                         </div>
-                        <div class="space-y-2 mb-6 text-sm">
-                            <div class="flex items-center gap-2">
-                                <i class="fas fa-check text-yellow-300 text-xs"></i>
+                        <div class="space-y-3 mb-8 text-base">
+                            <div class="flex items-center gap-3">
+                                <i class="fas fa-check text-yellow-300 text-sm"></i>
                                 <span>학생 <strong>3,000명</strong></span>
                             </div>
-                            <div class="flex items-center gap-2">
-                                <i class="fas fa-check text-yellow-300 text-xs"></i>
+                            <div class="flex items-center gap-3">
+                                <i class="fas fa-check text-yellow-300 text-sm"></i>
                                 <span>AI 리포트 <strong>3,000개/월</strong></span>
                             </div>
-                            <div class="flex items-center gap-2">
-                                <i class="fas fa-check text-yellow-300 text-xs"></i>
+                            <div class="flex items-center gap-3">
+                                <i class="fas fa-check text-yellow-300 text-sm"></i>
                                 <span>랜딩페이지 <strong>5,000개</strong></span>
                             </div>
-                            <div class="flex items-center gap-2">
-                                <i class="fas fa-check text-yellow-300 text-xs"></i>
+                            <div class="flex items-center gap-3">
+                                <i class="fas fa-check text-yellow-300 text-sm"></i>
                                 <span>선생님 <strong>무제한</strong></span>
                             </div>
                         </div>
-                        <a href="/pricing/enterprise" class="block w-full py-2.5 bg-white text-purple-600 rounded-lg font-medium hover:bg-gray-100 text-center text-sm transition-all">선택하기</a>
+                        <div class="bg-white/10 backdrop-blur-sm rounded-lg p-4 mb-6 border border-white/20">
+                            <p class="text-sm leading-relaxed font-medium">
+                                "프랜차이즈급 대형 학원이라면 엔터프라이즈! 3,000명 학생 관리와 무제한 강사 초대로 최고의 시스템을 경험하세요."
+                            </p>
+                        </div>
+                        <a href="/pricing/enterprise" class="block w-full py-4 bg-white text-purple-600 rounded-xl font-bold text-base hover:bg-gray-100 text-center transition-all shadow-md hover:shadow-xl">선택하기</a>
                     </div>
                 </div>
 
