@@ -34279,11 +34279,13 @@ app.post('/api/admin/init-free-plan-table', async (c) => {
   try {
     const { DB } = c.env
     
-    // Create free_plan_requests table
+    // Drop and recreate free_plan_requests table with correct schema
+    await DB.prepare(`DROP TABLE IF EXISTS free_plan_requests`).run()
+    
     await DB.prepare(`
       CREATE TABLE IF NOT EXISTS free_plan_requests (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER NOT NULL,
+        user_id TEXT NOT NULL,
         academy_name TEXT NOT NULL,
         owner_name TEXT NOT NULL,
         email TEXT NOT NULL,
@@ -34295,8 +34297,7 @@ app.post('/api/admin/init-free-plan-table', async (c) => {
         approved_by TEXT,
         rejected_at TEXT,
         rejected_by TEXT,
-        rejection_reason TEXT,
-        FOREIGN KEY (user_id) REFERENCES users(id)
+        rejection_reason TEXT
       )
     `).run()
     
