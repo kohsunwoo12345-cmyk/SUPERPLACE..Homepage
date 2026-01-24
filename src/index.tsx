@@ -9655,12 +9655,24 @@ app.post('/api/usage/increment-teachers', async (c) => {
 app.post('/api/admin/usage/:userId/update-limits', async (c) => {
   try {
     const userId = c.req.param('userId')
-    const { studentLimit, aiReportLimit, landingPageLimit, teacherLimit, subscriptionMonths } = await c.req.json()
+    const { studentLimit, aiReportLimit, landingPageLimit, teacherLimit, subscriptionDays, subscriptionMonths, durationType } = await c.req.json()
     
-    // 기본값: 구독 개월 수가 없으면 1개월
-    const months = subscriptionMonths || 1
+    // 일/월 단위 계산
+    let months = 0;
+    let days = 0;
+    let periodDisplay = '';
     
-    console.log('[Admin] Updating usage limits for user:', userId, 'months:', months)
+    if (durationType === 'days') {
+      days = subscriptionDays || 1;
+      periodDisplay = `${days}일`;
+      console.log('[Admin] Duration type: days, days:', days);
+    } else {
+      months = subscriptionMonths || 1;
+      periodDisplay = `${months}개월`;
+      console.log('[Admin] Duration type: months, months:', months);
+    }
+    
+    console.log('[Admin] Updating usage limits for user:', userId, 'period:', periodDisplay)
     
     // 사용자 정보 조회
     const user = await c.env.DB.prepare('SELECT id, email, name, academy_id, academy_name FROM users WHERE id = ?').bind(userId).first()
@@ -9684,13 +9696,19 @@ app.post('/api/admin/usage/:userId/update-limits', async (c) => {
     const koreaTime = new Date(now.getTime() + (9 * 60 * 60 * 1000)) // UTC+9
     const today = koreaTime.toISOString().split('T')[0]
     
-    // N개월 후 계산 (종료일은 N개월 후 전날 23:59:59)
-    const endDate = new Date(koreaTime)
-    endDate.setMonth(endDate.getMonth() + months)
-    endDate.setDate(endDate.getDate() - 1) // 전날까지
+    // 종료일 계산
+    const endDate = new Date(koreaTime);
+    if (durationType === 'days') {
+      // 일 단위: N일 후 (당일 포함하면 -1일 안함)
+      endDate.setDate(endDate.getDate() + days - 1); // 1일이면 오늘까지
+    } else {
+      // 월 단위: N개월 후 전날까지
+      endDate.setMonth(endDate.getMonth() + months);
+      endDate.setDate(endDate.getDate() - 1);
+    }
     const subscriptionEndDate = endDate.toISOString().split('T')[0]
     
-    console.log(`[Admin] Subscription period: ${today} to ${subscriptionEndDate} (${months} months)`)
+    console.log(`[Admin] Subscription period: ${today} to ${subscriptionEndDate} (${periodDisplay})`)
     
     // 🔥 CRITICAL: academies 테이블에 레코드 생성 (AUTOINCREMENT 고려)
     console.log('[Admin] Ensuring academy record exists for user:', userId)
@@ -29450,31 +29468,55 @@ app.get('/admin/users', async (c) => {
                 var aiReportLimit = parseInt(document.getElementById('aiReportLimit').value);
                 var landingPageLimit = parseInt(document.getElementById('landingPageLimit').value);
                 var teacherLimit = parseInt(document.getElementById('teacherLimit').value);
-                var subscriptionMonths = parseInt(document.getElementById('subscriptionMonths').value) || 1;
+                
+                // 일/월 단위 구분
+                var durationType = document.querySelector('input[name="durationType"]:checked').value;
+                var subscriptionDays = 0;
+                var subscriptionMonths = 0;
+                var displayPeriod = '';
+                
+                if (durationType === 'days') {
+                    subscriptionDays = parseInt(document.getElementById('subscriptionDays').value) || 1;
+                    if (subscriptionDays < 1 || subscriptionDays > 3650) {
+                        alert('❌ 일 수는 1 ~ 3650일 사이로 입력해주세요');
+                        return;
+                    }
+                    displayPeriod = subscriptionDays + '일';
+                } else {
+                    subscriptionMonths = parseInt(document.getElementById('subscriptionMonths').value) || 1;
+                    if (subscriptionMonths < 1 || subscriptionMonths > 120) {
+                        alert('❌ 개월 수는 1 ~ 120개월 사이로 입력해주세요');
+                        return;
+                    }
+                    displayPeriod = subscriptionMonths + '개월';
+                }
                 
                 if (isNaN(studentLimit) || isNaN(aiReportLimit) || isNaN(landingPageLimit) || isNaN(teacherLimit)) {
                     alert('❌ 모든 한도를 올바르게 입력해주세요');
                     return;
                 }
                 
-                // 최소값 검증
-                if (subscriptionMonths < 1 || subscriptionMonths > 120) {
-                    alert('❌ 구독 기간은 1일부터 120개월까지 설정 가능합니다');
-                    return;
-                }
                 if (studentLimit < 1 || aiReportLimit < 1 || landingPageLimit < 1 || teacherLimit < 1) {
                     alert('❌ 모든 한도는 최소 1 이상이어야 합니다');
                     return;
                 }
                 
-                if (!confirm('정말 사용 한도를 변경하시겠습니까?\\n\\n구독 기간: ' + subscriptionMonths + '개월\\n학생: ' + studentLimit + '\\nAI 리포트: ' + aiReportLimit + '\\n랜딩페이지: ' + landingPageLimit + '\\n선생님: ' + teacherLimit)) {
+                if (!confirm('정말 사용 한도를 변경하시겠습니까?\\n\\n구독 기간: ' + displayPeriod + '\\n학생: ' + studentLimit + '명\\nAI 리포트: ' + aiReportLimit + '개/월\\n랜딩페이지: ' + landingPageLimit + '개\\n선생님: ' + teacherLimit + '명')) {
                     return;
                 }
                 
                 fetch('/api/admin/usage/' + currentUsageUserId + '/update-limits', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ studentLimit: studentLimit, aiReportLimit: aiReportLimit, landingPageLimit: landingPageLimit, teacherLimit: teacherLimit, subscriptionMonths: subscriptionMonths })
+                    body: JSON.stringify({ 
+                        studentLimit: studentLimit, 
+                        aiReportLimit: aiReportLimit, 
+                        landingPageLimit: landingPageLimit, 
+                        teacherLimit: teacherLimit, 
+                        subscriptionDays: subscriptionDays,
+                        subscriptionMonths: subscriptionMonths,
+                        durationType: durationType
+                    })
                 })
                 .then(function(res) { return res.json(); })
                 .then(function(data) {
