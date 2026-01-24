@@ -3022,7 +3022,60 @@ var Nt=Object.defineProperty;var tt=e=>{throw TypeError(e)};var Mt=(e,t,s)=>t in
           FOREIGN KEY (form_id) REFERENCES forms(id),
           FOREIGN KEY (landing_page_id) REFERENCES landing_pages(id)
         )
-      `).run(),console.log("✅ [Migration] Created form_submissions table"),t.push("✅ Created form_submissions table")}catch(a){console.log("ℹ️ [Migration] form_submissions table:",a.message),t.push("ℹ️ form_submissions: "+a.message.substring(0,50))}try{await e.env.DB.prepare("ALTER TABLE landing_pages ADD COLUMN form_id INTEGER").run(),console.log("✅ [Migration] Added form_id to landing_pages"),t.push("✅ Added form_id to landing_pages")}catch(a){console.log("ℹ️ [Migration] landing_pages.form_id:",a.message),t.push("ℹ️ landing_pages.form_id: exists")}return e.json({success:!0,message:"데이터베이스 마이그레이션이 완료되었습니다",results:t,note:s?"⚠️ Old schema detected - migrated to new schema":"✅ Using new schema"})}catch(t){return console.error("❌ [Migration] Error:",t),e.json({success:!1,error:"마이그레이션 실패: "+t.message},500)}});c.post("/api/points/charge",async e=>{try{const{userId:t,amount:s}=await e.req.json();if(!t||!s)return e.json({success:!1,error:"사용자 ID와 충전 금액이 필요합니다."},400);const r=await e.env.DB.prepare("SELECT * FROM users WHERE id = ?").bind(t).first();if(!r)return e.json({success:!1,error:"사용자를 찾을 수 없습니다."},404);const a=r.balance||0;await e.env.DB.prepare("UPDATE users SET balance = balance + ? WHERE id = ?").bind(s,t).run(),await e.env.DB.prepare(`
+      `).run(),console.log("✅ [Migration] Created form_submissions table"),t.push("✅ Created form_submissions table")}catch(a){console.log("ℹ️ [Migration] form_submissions table:",a.message),t.push("ℹ️ form_submissions: "+a.message.substring(0,50))}try{await e.env.DB.prepare("ALTER TABLE landing_pages ADD COLUMN form_id INTEGER").run(),console.log("✅ [Migration] Added form_id to landing_pages"),t.push("✅ Added form_id to landing_pages")}catch(a){console.log("ℹ️ [Migration] landing_pages.form_id:",a.message),t.push("ℹ️ landing_pages.form_id: exists")}try{await e.env.DB.prepare(`
+        CREATE TABLE IF NOT EXISTS user_sessions (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          user_id INTEGER,
+          session_id TEXT NOT NULL UNIQUE,
+          ip_address TEXT,
+          user_agent TEXT,
+          is_logged_in INTEGER DEFAULT 0,
+          login_time DATETIME,
+          logout_time DATETIME,
+          last_activity DATETIME DEFAULT CURRENT_TIMESTAMP,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+      `).run(),console.log("✅ [Migration] Created user_sessions table"),t.push("✅ Created user_sessions table")}catch(a){console.log("ℹ️ [Migration] user_sessions table:",a.message),t.push("ℹ️ user_sessions: "+a.message.substring(0,50))}try{await e.env.DB.prepare("ALTER TABLE free_plan_requests ADD COLUMN is_korea_academy INTEGER DEFAULT 0").run(),console.log("✅ [Migration] Added is_korea_academy to free_plan_requests"),t.push("✅ Added is_korea_academy to free_plan_requests")}catch(a){console.log("ℹ️ [Migration] free_plan_requests.is_korea_academy:",a.message),t.push("ℹ️ free_plan_requests.is_korea_academy: exists")}return e.json({success:!0,message:"데이터베이스 마이그레이션이 완료되었습니다",results:t,note:s?"⚠️ Old schema detected - migrated to new schema":"✅ Using new schema"})}catch(t){return console.error("❌ [Migration] Error:",t),e.json({success:!1,error:"마이그레이션 실패: "+t.message},500)}});c.post("/api/session/track",async e=>{try{const{sessionId:t,userId:s,path:r}=await e.req.json(),a=e.req.header("cf-connecting-ip")||e.req.header("x-forwarded-for")||"unknown",o=e.req.header("user-agent")||"unknown";return t?(await e.env.DB.prepare(`
+      SELECT * FROM user_sessions WHERE session_id = ?
+    `).bind(t).first()?await e.env.DB.prepare(`
+        UPDATE user_sessions 
+        SET last_activity = CURRENT_TIMESTAMP,
+            user_id = ?,
+            is_logged_in = ?
+        WHERE session_id = ?
+      `).bind(s||null,s?1:0,t).run():await e.env.DB.prepare(`
+        INSERT INTO user_sessions (session_id, user_id, ip_address, user_agent, is_logged_in, login_time)
+        VALUES (?, ?, ?, ?, ?, ?)
+      `).bind(t,s||null,a,o,s?1:0,s?new Date().toISOString():null).run(),e.json({success:!0})):e.json({success:!1,error:"Session ID is required"},400)}catch(t){return console.error("Session track error:",t),e.json({success:!1,error:"Session tracking failed"},500)}});c.post("/api/session/login",async e=>{try{const{sessionId:t,userId:s}=await e.req.json();return!t||!s?e.json({success:!1,error:"Session ID and User ID are required"},400):(await e.env.DB.prepare(`
+      UPDATE user_sessions 
+      SET user_id = ?,
+          is_logged_in = 1,
+          login_time = CURRENT_TIMESTAMP,
+          last_activity = CURRENT_TIMESTAMP
+      WHERE session_id = ?
+    `).bind(s,t).run(),e.json({success:!0}))}catch(t){return console.error("Session login error:",t),e.json({success:!1,error:"Session login update failed"},500)}});c.post("/api/session/logout",async e=>{try{const{sessionId:t}=await e.req.json();return t?(await e.env.DB.prepare(`
+      UPDATE user_sessions 
+      SET logout_time = CURRENT_TIMESTAMP,
+          last_activity = CURRENT_TIMESTAMP
+      WHERE session_id = ?
+    `).bind(t).run(),e.json({success:!0})):e.json({success:!1,error:"Session ID is required"},400)}catch(t){return console.error("Session logout error:",t),e.json({success:!1,error:"Session logout update failed"},500)}});c.get("/api/admin/active-sessions",async e=>{try{const t=e.req.header("X-User-Data-Base64");if(!t)return e.json({success:!1,error:"Unauthorized"},401);let s;try{const i=atob(t);s=JSON.parse(i)}catch{return e.json({success:!1,error:"Invalid user data"},401)}if(s.role!=="admin")return e.json({success:!1,error:"Admin only"},403);const r=await e.env.DB.prepare(`
+      SELECT 
+        s.*,
+        u.name as user_name,
+        u.email as user_email,
+        u.academy_name
+      FROM user_sessions s
+      LEFT JOIN users u ON s.user_id = u.id
+      WHERE s.last_activity >= datetime('now', '-10 minutes')
+        AND s.logout_time IS NULL
+      ORDER BY s.last_activity DESC
+    `).all(),a=r.results.filter(i=>i.is_logged_in===1),o=r.results.filter(i=>i.is_logged_in===0),n=await e.env.DB.prepare(`
+      SELECT 
+        COUNT(*) as total_sessions,
+        COUNT(CASE WHEN is_logged_in = 1 THEN 1 END) as total_logged_in,
+        COUNT(CASE WHEN is_logged_in = 0 THEN 1 END) as total_guests
+      FROM user_sessions
+    `).first();return e.json({success:!0,activeSessions:{loggedIn:a,guests:o,total:r.results.length,loggedInCount:a.length,guestsCount:o.length},totalStats:n})}catch(t){return console.error("Active sessions error:",t),e.json({success:!1,error:"Failed to fetch active sessions"},500)}});c.post("/api/points/charge",async e=>{try{const{userId:t,amount:s}=await e.req.json();if(!t||!s)return e.json({success:!1,error:"사용자 ID와 충전 금액이 필요합니다."},400);const r=await e.env.DB.prepare("SELECT * FROM users WHERE id = ?").bind(t).first();if(!r)return e.json({success:!1,error:"사용자를 찾을 수 없습니다."},404);const a=r.balance||0;await e.env.DB.prepare("UPDATE users SET balance = balance + ? WHERE id = ?").bind(s,t).run(),await e.env.DB.prepare(`
       INSERT INTO point_transactions (user_id, amount, balance_before, balance_after, transaction_type, description, created_at)
       VALUES (?, ?, ?, ?, 'charge', '테스트 충전', CURRENT_TIMESTAMP)
     `).bind(t,s,a,a+s).run();const o=await e.env.DB.prepare("SELECT balance FROM users WHERE id = ?").bind(t).first();return e.json({success:!0,message:"포인트가 충전되었습니다.",balance:o.balance})}catch(t){return console.error("Charge points error:",t),e.json({success:!1,error:"포인트 충전 실패: "+t.message},500)}});c.post("/api/sms/send",async e=>{var t;try{const{userId:s,senderId:r,receivers:a,message:o,reserveTime:n}=await e.req.json();if(!s||!r||!a||!o)return e.json({success:!1,error:"필수 정보를 입력해주세요."},400);const i=await e.env.DB.prepare(`
@@ -6709,17 +6762,17 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
       UPDATE usage_tracking 
       SET landing_pages_created = landing_pages_created + 1, updated_at = CURRENT_TIMESTAMP
       WHERE academy_id = ? AND subscription_id = ?
-    `).bind(r,a.id).run(),e.json({success:!0,message:"랜딩페이지 사용량이 증가했습니다"})):e.json({success:!1,error:"활성 구독이 없습니다"},403)}catch(t){return e.json({success:!1,error:t.message},500)}});c.post("/api/free-plan/apply",async e=>{try{const{userId:t,academyName:s,ownerName:r,email:a,phone:o,reason:n}=await e.req.json();if(!t||!s||!r||!a||!o)return e.json({success:!1,error:"필수 정보를 모두 입력해주세요."},400);if(await e.env.DB.prepare(`
+    `).bind(r,a.id).run(),e.json({success:!0,message:"랜딩페이지 사용량이 증가했습니다"})):e.json({success:!1,error:"활성 구독이 없습니다"},403)}catch(t){return e.json({success:!1,error:t.message},500)}});c.post("/api/free-plan/apply",async e=>{try{const{userId:t,academyName:s,ownerName:r,email:a,phone:o,reason:n,isKoreaAcademy:i}=await e.req.json();if(!t||!s||!r||!a||!o)return e.json({success:!1,error:"필수 정보를 모두 입력해주세요."},400);if(await e.env.DB.prepare(`
       SELECT id, status FROM free_plan_requests 
       WHERE user_id = ? AND status = 'pending'
     `).bind(t).first())return e.json({success:!1,error:"이미 승인 대기 중인 신청이 있습니다."},400);if(await e.env.DB.prepare(`
       SELECT id FROM subscriptions 
       WHERE academy_id = ? AND plan_name = '무료 플랜' AND status = 'active'
-    `).bind(t).first())return e.json({success:!1,error:"이미 무료 플랜을 사용 중입니다."},400);const d=await e.env.DB.prepare(`
+    `).bind(t).first())return e.json({success:!1,error:"이미 무료 플랜을 사용 중입니다."},400);const p=await e.env.DB.prepare(`
       INSERT INTO free_plan_requests 
-      (user_id, academy_name, owner_name, email, phone, reason, status, created_at)
-      VALUES (?, ?, ?, ?, ?, ?, 'pending', CURRENT_TIMESTAMP)
-    `).bind(t,s,r,a,o,n||null).run();return e.json({success:!0,message:"무료 플랜 신청이 완료되었습니다.",requestId:d.meta.last_row_id})}catch(t){return console.error("무료 플랜 신청 실패:",t),e.json({success:!1,error:"신청 처리 중 오류가 발생했습니다."},500)}});c.get("/api/free-plan/requests",async e=>{try{if(e.req.query("adminEmail")!=="admin@superplace.co.kr")return e.json({success:!1,error:"관리자 권한이 필요합니다."},403);const s=await e.env.DB.prepare(`
+      (user_id, academy_name, owner_name, email, phone, reason, is_korea_academy, status, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', CURRENT_TIMESTAMP)
+    `).bind(t,s,r,a,o,n||null,i||0).run();return e.json({success:!0,message:"무료 플랜 신청이 완료되었습니다.",requestId:p.meta.last_row_id})}catch(t){return console.error("무료 플랜 신청 실패:",t),e.json({success:!1,error:"신청 처리 중 오류가 발생했습니다."},500)}});c.get("/api/free-plan/requests",async e=>{try{if(e.req.query("adminEmail")!=="admin@superplace.co.kr")return e.json({success:!1,error:"관리자 권한이 필요합니다."},403);const s=await e.env.DB.prepare(`
       SELECT * FROM free_plan_requests
       ORDER BY 
         CASE status
@@ -7457,6 +7510,19 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
                             <label class="block text-sm font-semibold text-gray-700 mb-2">신청 사유 (선택)</label>
                             <textarea id="reason" rows="3" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-green-500 focus:outline-none" placeholder="무료 플랜 신청 사유를 간단히 작성해주세요"></textarea>
                         </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-3">한국학원대학교 소속이신가요?</label>
+                            <div class="flex gap-4">
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="radio" name="isKoreaAcademy" value="yes" id="koreaAcademyYes" class="w-4 h-4 text-green-500">
+                                    <span class="text-gray-700">예</span>
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="radio" name="isKoreaAcademy" value="no" id="koreaAcademyNo" class="w-4 h-4 text-gray-500" checked>
+                                    <span class="text-gray-700">아니요</span>
+                                </label>
+                            </div>
+                        </div>
                     </div>
 
                     <label class="flex items-start gap-3 mb-6 cursor-pointer">
@@ -7502,6 +7568,7 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
                 const phone = document.getElementById('phone').value.trim();
                 const reason = document.getElementById('reason').value.trim();
                 const agreeTerms = document.getElementById('agreeTerms').checked;
+                const isKoreaAcademy = document.getElementById('koreaAcademyYes').checked ? 1 : 0;
 
                 if (!academyName || !ownerName || !email || !phone) {
                     alert('필수 정보를 모두 입력해주세요.');
@@ -7529,7 +7596,8 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
                             ownerName,
                             email,
                             phone,
-                            reason
+                            reason,
+                            isKoreaAcademy
                         })
                     });
 
@@ -25874,7 +25942,301 @@ ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.di
     </body>
     </html>
   `));c.get("/admin/dashboard",async e=>{var x,b,h,E,w,v,y;const{env:t}=e;if(!(t!=null&&t.DB))return e.html('<h1>DB Error</h1><a href="/admin/users">Users</a>');let s=0,r=0,a=0,o=0,n=0,i=0,l=0;try{s=((x=await t.DB.prepare("SELECT COUNT(*)c FROM users").first())==null?void 0:x.c)||0}catch{}try{r=((b=await t.DB.prepare("SELECT COUNT(*)c FROM contacts").first())==null?void 0:b.c)||0}catch{}try{a=((h=await t.DB.prepare("SELECT COUNT(*)c FROM contacts WHERE status=?").bind("pending").first())==null?void 0:h.c)||0}catch{}try{o=((E=await t.DB.prepare("SELECT COUNT(*)c FROM deposit_requests WHERE status=?").bind("pending").first())==null?void 0:E.c)||0}catch{}try{n=((w=await t.DB.prepare("SELECT COUNT(*)c FROM sender_verification_requests WHERE status=?").bind("pending").first())==null?void 0:w.c)||0}catch{}try{i=((v=await t.DB.prepare("SELECT COUNT(*)c FROM bank_transfer_requests WHERE status=?").bind("pending").first())==null?void 0:v.c)||0}catch{}try{l=((y=await t.DB.prepare("SELECT COUNT(*)c FROM free_plan_requests WHERE status=?").bind("pending").first())==null?void 0:y.c)||0}catch{}const d='<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>관리자 대시보드</title><script src="https://cdn.tailwindcss.com"><\/script><link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet"></head><body class="bg-gray-50">',p=`<nav class="bg-white border-b"><div class="max-w-7xl mx-auto px-6 py-4"><div class="flex justify-between items-center"><div class="flex items-center gap-8"><a href="/" class="text-2xl font-bold text-purple-600">슈퍼플레이스 관리자</a><div class="flex gap-4"><a href="/admin/dashboard" class="text-purple-600 font-semibold">대시보드</a><a href="/admin/users" class="text-gray-600 hover:text-purple-600">사용자</a><a href="/admin/contacts" class="text-gray-600 hover:text-purple-600">문의</a><a href="/admin/bank-transfers" class="text-gray-600 hover:text-purple-600">계좌이체</a><a href="/admin/sms" class="text-gray-600 hover:text-purple-600">문자</a><a href="/admin/sender/verification" class="text-gray-600 hover:text-purple-600">발신번호</a><a href="/admin/free-plan-requests" class="text-gray-600 hover:text-purple-600">무료 플랜</a></div></div><button onclick="localStorage.removeItem('user');
-                localStorage.removeItem('loginTime');location.href='/'" class="text-gray-600 hover:text-red-600"><i class="fas fa-sign-out-alt mr-2"></i>로그아웃</button></div></div></nav>`,u=`<div class="max-w-7xl mx-auto px-6 py-8"><h1 class="text-3xl font-bold mb-8">관리자 대시보드</h1><div class="grid md:grid-cols-3 gap-6 mb-8"><div class="bg-white rounded-xl shadow p-6 border"><div class="flex items-center justify-between mb-2"><span class="text-gray-600">전체 사용자</span><i class="fas fa-users text-blue-600 text-2xl"></i></div><p class="text-3xl font-bold">${s}</p></div><div class="bg-white rounded-xl shadow p-6 border"><div class="flex items-center justify-between mb-2"><span class="text-gray-600">전체 문의</span><i class="fas fa-envelope text-green-600 text-2xl"></i></div><p class="text-3xl font-bold">${r}</p></div><div class="bg-white rounded-xl shadow p-6 border"><div class="flex items-center justify-between mb-2"><span class="text-gray-600">대기중 문의</span><i class="fas fa-clock text-orange-600 text-2xl"></i></div><p class="text-3xl font-bold">${a}</p></div></div>`,m=`<div class="mb-8"><h2 class="text-xl font-bold mb-4">신청 대기</h2><div class="grid md:grid-cols-4 gap-6"><div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow p-6 text-white"><div class="flex items-center justify-between mb-2"><span>입금 대기</span><i class="fas fa-money-bill-wave text-2xl"></i></div><p class="text-3xl font-bold">${o}</p></div><div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow p-6 text-white"><div class="flex items-center justify-between mb-2"><span>발신번호 대기</span><i class="fas fa-phone text-2xl"></i></div><p class="text-3xl font-bold">${n}</p></div><a href="/admin/bank-transfers" class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow p-6 text-white hover:shadow-lg transition"><div class="flex items-center justify-between mb-2"><span>계좌이체 대기</span><i class="fas fa-university text-2xl"></i></div><p class="text-3xl font-bold">${i}</p><p class="text-sm text-blue-100 mt-2">클릭하여 관리</p></a><a href="/admin/free-plan-requests" class="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl shadow p-6 text-white hover:shadow-lg transition"><div class="flex items-center justify-between mb-2"><span>무료 플랜 대기</span><i class="fas fa-gift text-2xl"></i></div><p class="text-3xl font-bold">${l}</p><p class="text-sm text-emerald-100 mt-2">클릭하여 관리</p></a></div></div>`;return e.html(d+p+u+m+'<div class="grid md:grid-cols-3 gap-6"><a href="/admin/users" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"><i class="fas fa-user-cog text-blue-600 text-xl"></i></div><div><h3 class="text-lg font-bold">사용자 관리</h3><p class="text-gray-600 text-sm">권한 관리</p></div></div></a><a href="/admin/contacts" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center"><i class="fas fa-comments text-green-600 text-xl"></i></div><div><h3 class="text-lg font-bold">문의 관리</h3><p class="text-gray-600 text-sm">문의 처리</p></div></div></a><a href="/admin/revenue" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center"><i class="fas fa-chart-line text-yellow-600 text-xl"></i></div><div><h3 class="text-lg font-bold">매출 관리</h3><p class="text-gray-600 text-sm">매출 통계</p></div></div></a><a href="/admin/sms" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"><i class="fas fa-sms text-blue-600 text-xl"></i></div><div><h3 class="text-lg font-bold">문자 관리</h3><p class="text-gray-600 text-sm">SMS 발송</p></div></div></a><a href="/admin/sender/verification" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center"><i class="fas fa-phone text-purple-600 text-xl"></i></div><div><h3 class="text-lg font-bold">발신번호</h3><p class="text-gray-600 text-sm">인증 승인</p></div></div></a><a href="/admin/deposits" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center"><i class="fas fa-money-bill-wave text-green-600 text-xl"></i></div><div><h3 class="text-lg font-bold">입금 관리</h3><p class="text-gray-600 text-sm">포인트 승인</p></div></div></a><a href="/admin/bank-transfers" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"><i class="fas fa-university text-blue-600 text-xl"></i></div><div><h3 class="text-lg font-bold">계좌이체</h3><p class="text-gray-600 text-sm">승인 관리</p></div></div></a><a href="/admin/programs" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center"><i class="fas fa-graduation-cap text-purple-600 text-xl"></i></div><div><h3 class="text-lg font-bold">프로그램</h3><p class="text-gray-600 text-sm">교육 관리</p></div></div></a></div></div></body></html>')});c.get("/api/admin/pending-counts",async e=>{var o,n,i;const{env:t}=e;if(!(t!=null&&t.DB))return e.json({success:!1,error:"DB Error"},500);let s=0,r=0,a=0;try{s=((o=await t.DB.prepare("SELECT COUNT(*) c FROM deposit_requests WHERE status=?").bind("pending").first())==null?void 0:o.c)||0}catch{}try{r=((n=await t.DB.prepare("SELECT COUNT(*) c FROM sender_verification_requests WHERE status=?").bind("pending").first())==null?void 0:n.c)||0}catch{}try{a=((i=await t.DB.prepare("SELECT COUNT(*) c FROM bank_transfer_requests WHERE status=?").bind("pending").first())==null?void 0:i.c)||0}catch{}return e.json({success:!0,deposits:s,senders:r,bankTransfers:a})});c.get("/admin/programs.html",e=>e.redirect("/admin/programs",301));c.get("/admin/revenue",async e=>e.html(`
+                localStorage.removeItem('loginTime');location.href='/'" class="text-gray-600 hover:text-red-600"><i class="fas fa-sign-out-alt mr-2"></i>로그아웃</button></div></div></nav>`,u=`<div class="max-w-7xl mx-auto px-6 py-8"><h1 class="text-3xl font-bold mb-8">관리자 대시보드</h1><div class="grid md:grid-cols-3 gap-6 mb-8"><div class="bg-white rounded-xl shadow p-6 border"><div class="flex items-center justify-between mb-2"><span class="text-gray-600">전체 사용자</span><i class="fas fa-users text-blue-600 text-2xl"></i></div><p class="text-3xl font-bold">${s}</p></div><div class="bg-white rounded-xl shadow p-6 border"><div class="flex items-center justify-between mb-2"><span class="text-gray-600">전체 문의</span><i class="fas fa-envelope text-green-600 text-2xl"></i></div><p class="text-3xl font-bold">${r}</p></div><div class="bg-white rounded-xl shadow p-6 border"><div class="flex items-center justify-between mb-2"><span class="text-gray-600">대기중 문의</span><i class="fas fa-clock text-orange-600 text-2xl"></i></div><p class="text-3xl font-bold">${a}</p></div></div>`,m=`<div class="mb-8"><h2 class="text-xl font-bold mb-4">신청 대기</h2><div class="grid md:grid-cols-4 gap-6"><div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow p-6 text-white"><div class="flex items-center justify-between mb-2"><span>입금 대기</span><i class="fas fa-money-bill-wave text-2xl"></i></div><p class="text-3xl font-bold">${o}</p></div><div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow p-6 text-white"><div class="flex items-center justify-between mb-2"><span>발신번호 대기</span><i class="fas fa-phone text-2xl"></i></div><p class="text-3xl font-bold">${n}</p></div><a href="/admin/bank-transfers" class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow p-6 text-white hover:shadow-lg transition"><div class="flex items-center justify-between mb-2"><span>계좌이체 대기</span><i class="fas fa-university text-2xl"></i></div><p class="text-3xl font-bold">${i}</p><p class="text-sm text-blue-100 mt-2">클릭하여 관리</p></a><a href="/admin/free-plan-requests" class="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl shadow p-6 text-white hover:shadow-lg transition"><div class="flex items-center justify-between mb-2"><span>무료 플랜 대기</span><i class="fas fa-gift text-2xl"></i></div><p class="text-3xl font-bold">${l}</p><p class="text-sm text-emerald-100 mt-2">클릭하여 관리</p></a></div></div>`;return e.html(d+p+u+m+'<div class="grid md:grid-cols-3 gap-6"><a href="/admin/users" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"><i class="fas fa-user-cog text-blue-600 text-xl"></i></div><div><h3 class="text-lg font-bold">사용자 관리</h3><p class="text-gray-600 text-sm">권한 관리</p></div></div></a><a href="/admin/contacts" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center"><i class="fas fa-comments text-green-600 text-xl"></i></div><div><h3 class="text-lg font-bold">문의 관리</h3><p class="text-gray-600 text-sm">문의 처리</p></div></div></a><a href="/admin/revenue" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center"><i class="fas fa-chart-line text-yellow-600 text-xl"></i></div><div><h3 class="text-lg font-bold">매출 관리</h3><p class="text-gray-600 text-sm">매출 통계</p></div></div></a><a href="/admin/sms" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"><i class="fas fa-sms text-blue-600 text-xl"></i></div><div><h3 class="text-lg font-bold">문자 관리</h3><p class="text-gray-600 text-sm">SMS 발송</p></div></div></a><a href="/admin/sender/verification" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center"><i class="fas fa-phone text-purple-600 text-xl"></i></div><div><h3 class="text-lg font-bold">발신번호</h3><p class="text-gray-600 text-sm">인증 승인</p></div></div></a><a href="/admin/deposits" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center"><i class="fas fa-money-bill-wave text-green-600 text-xl"></i></div><div><h3 class="text-lg font-bold">입금 관리</h3><p class="text-gray-600 text-sm">포인트 승인</p></div></div></a><a href="/admin/bank-transfers" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"><i class="fas fa-university text-blue-600 text-xl"></i></div><div><h3 class="text-lg font-bold">계좌이체</h3><p class="text-gray-600 text-sm">승인 관리</p></div></div></a><a href="/admin/programs" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center"><i class="fas fa-graduation-cap text-purple-600 text-xl"></i></div><div><h3 class="text-lg font-bold">프로그램</h3><p class="text-gray-600 text-sm">교육 관리</p></div></div></a></div></div></body></html>')});c.get("/api/admin/pending-counts",async e=>{var o,n,i;c.get("/admin/active-sessions",async l=>l.html(`<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>실시간 접속자 - 슈퍼플레이스 관리자</title>
+    <script src="https://cdn.tailwindcss.com"><\/script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="/admin/dashboard" class="text-2xl font-bold text-purple-600">슈퍼플레이스 관리자</a>
+                </div>
+                <div class="flex items-center gap-6">
+                    <a href="/admin/dashboard" class="text-gray-700 hover:text-purple-600">대시보드</a>
+                    <a href="/admin/users" class="text-gray-700 hover:text-purple-600">사용자</a>
+                    <a href="/admin/contacts" class="text-gray-700 hover:text-purple-600">문의</a>
+                    <a href="/admin/active-sessions" class="text-purple-600 font-semibold">실시간 접속자</a>
+                    <a href="/admin/bank-transfers" class="text-gray-700 hover:text-purple-600">계좌이체</a>
+                    <button onclick="logout()" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+                        <i class="fas fa-sign-out-alt mr-2"></i>로그아웃
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Header with Stats -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900 mb-6">
+                <i class="fas fa-users text-purple-600 mr-3"></i>실시간 접속자
+            </h1>
+            
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-6 text-white shadow-lg">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="text-sm font-medium opacity-90">현재 접속자</div>
+                        <i class="fas fa-signal text-2xl opacity-80"></i>
+                    </div>
+                    <div class="text-4xl font-bold" id="totalActive">0</div>
+                    <div class="text-xs opacity-80 mt-2">10분 이내 활동</div>
+                </div>
+                
+                <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-6 text-white shadow-lg">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="text-sm font-medium opacity-90">로그인 사용자</div>
+                        <i class="fas fa-user-check text-2xl opacity-80"></i>
+                    </div>
+                    <div class="text-4xl font-bold" id="loggedInCount">0</div>
+                    <div class="text-xs opacity-80 mt-2">회원 접속 중</div>
+                </div>
+                
+                <div class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl p-6 text-white shadow-lg">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="text-sm font-medium opacity-90">비회원 방문자</div>
+                        <i class="fas fa-user text-2xl opacity-80"></i>
+                    </div>
+                    <div class="text-4xl font-bold" id="guestsCount">0</div>
+                    <div class="text-xs opacity-80 mt-2">게스트 접속 중</div>
+                </div>
+                
+                <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-6 text-white shadow-lg">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="text-sm font-medium opacity-90">총 세션</div>
+                        <i class="fas fa-chart-line text-2xl opacity-80"></i>
+                    </div>
+                    <div class="text-4xl font-bold" id="totalSessions">0</div>
+                    <div class="text-xs opacity-80 mt-2">전체 기록</div>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <button onclick="loadActiveSessions()" class="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 flex items-center gap-2">
+                    <i class="fas fa-sync-alt"></i>
+                    새로고침
+                </button>
+                <div class="text-sm text-gray-600">
+                    <i class="fas fa-clock mr-2"></i>마지막 업데이트: <span id="lastUpdate">-</span>
+                </div>
+                <label class="flex items-center gap-2 text-sm">
+                    <input type="checkbox" id="autoRefresh" class="w-4 h-4">
+                    <span class="text-gray-700">자동 새로고침 (10초)</span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Logged In Users -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-6">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-xl font-bold text-gray-900">
+                    <i class="fas fa-user-check text-green-600 mr-2"></i>
+                    로그인 사용자 (<span id="loggedInCountTitle">0</span>명)
+                </h2>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">사용자</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">학원명</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">로그인 시간</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">로그아웃 시간</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">마지막 활동</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">IP 주소</th>
+                        </tr>
+                    </thead>
+                    <tbody id="loggedInUsersTable" class="divide-y divide-gray-200"></tbody>
+                </table>
+            </div>
+            <div id="emptyLoggedIn" class="hidden px-6 py-12 text-center text-gray-500">
+                <i class="fas fa-user-slash text-4xl mb-3"></i>
+                <p>현재 로그인한 사용자가 없습니다</p>
+            </div>
+        </div>
+
+        <!-- Guests -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-xl font-bold text-gray-900">
+                    <i class="fas fa-user text-orange-600 mr-2"></i>
+                    비회원 방문자 (<span id="guestsCountTitle">0</span>명)
+                </h2>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">세션 ID</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">접속 시간</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">마지막 활동</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">IP 주소</th>
+                        </tr>
+                    </thead>
+                    <tbody id="guestsTable" class="divide-y divide-gray-200"></tbody>
+                </table>
+            </div>
+            <div id="emptyGuests" class="hidden px-6 py-12 text-center text-gray-500">
+                <i class="fas fa-users-slash text-4xl mb-3"></i>
+                <p>현재 비회원 방문자가 없습니다</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let autoRefreshInterval = null;
+
+        function formatKoreanTime(isoString) {
+            if (!isoString) return '-';
+            const date = new Date(isoString);
+            // UTC 시간을 KST (UTC+9)로 변환
+            const kstDate = new Date(date.getTime() + (9 * 60 * 60 * 1000));
+            return kstDate.toLocaleString('ko-KR', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false
+            });
+        }
+
+        async function loadActiveSessions() {
+            try {
+                const user = JSON.parse(localStorage.getItem('user') || '{}');
+                if (!user.id || user.role !== 'admin') {
+                    alert('관리자 권한이 필요합니다.');
+                    window.location.href = '/admin/dashboard';
+                    return;
+                }
+
+                const userDataBase64 = btoa(JSON.stringify(user));
+                const response = await fetch('/api/admin/active-sessions', {
+                    headers: {
+                        'X-User-Data-Base64': userDataBase64
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (!result.success) {
+                    alert(result.error || '데이터를 불러오는데 실패했습니다.');
+                    return;
+                }
+                
+                // Update stats
+                document.getElementById('totalActive').textContent = result.activeSessions.total;
+                document.getElementById('loggedInCount').textContent = result.activeSessions.loggedInCount;
+                document.getElementById('guestsCount').textContent = result.activeSessions.guestsCount;
+                document.getElementById('totalSessions').textContent = result.totalStats.total_sessions;
+                
+                // Update titles
+                document.getElementById('loggedInCountTitle').textContent = result.activeSessions.loggedInCount;
+                document.getElementById('guestsCountTitle').textContent = result.activeSessions.guestsCount;
+                
+                // Render logged in users
+                renderLoggedInUsers(result.activeSessions.loggedIn);
+                
+                // Render guests
+                renderGuests(result.activeSessions.guests);
+                
+                // Update last update time
+                document.getElementById('lastUpdate').textContent = formatKoreanTime(new Date().toISOString());
+            } catch (err) {
+                console.error('Error loading sessions:', err);
+                alert('데이터를 불러오는 중 오류가 발생했습니다.');
+            }
+        }
+
+        function renderLoggedInUsers(users) {
+            const tbody = document.getElementById('loggedInUsersTable');
+            const empty = document.getElementById('emptyLoggedIn');
+            
+            if (users.length === 0) {
+                tbody.innerHTML = '';
+                empty.classList.remove('hidden');
+                return;
+            }
+            
+            empty.classList.add('hidden');
+            
+            tbody.innerHTML = users.map(u => \`
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4">
+                        <div class="font-medium text-gray-900">\${u.user_name || 'Unknown'}</div>
+                        <div class="text-sm text-gray-500">\${u.user_email || '-'}</div>
+                    </td>
+                    <td class="px-6 py-4 text-sm text-gray-900">\${u.academy_name || '-'}</td>
+                    <td class="px-6 py-4 text-sm text-gray-900">\${formatKoreanTime(u.login_time)}</td>
+                    <td class="px-6 py-4 text-sm text-gray-900">\${formatKoreanTime(u.logout_time)}</td>
+                    <td class="px-6 py-4 text-sm">
+                        <span class="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs">
+                            \${formatKoreanTime(u.last_activity)}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-sm text-gray-600">\${u.ip_address || '-'}</td>
+                </tr>
+            \`).join('');
+        }
+
+        function renderGuests(guests) {
+            const tbody = document.getElementById('guestsTable');
+            const empty = document.getElementById('emptyGuests');
+            
+            if (guests.length === 0) {
+                tbody.innerHTML = '';
+                empty.classList.remove('hidden');
+                return;
+            }
+            
+            empty.classList.add('hidden');
+            
+            tbody.innerHTML = guests.map(g => \`
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 text-sm font-mono text-gray-600">\${g.session_id.substring(0, 12)}...</td>
+                    <td class="px-6 py-4 text-sm text-gray-900">\${formatKoreanTime(g.created_at)}</td>
+                    <td class="px-6 py-4 text-sm">
+                        <span class="px-2 py-1 bg-orange-100 text-orange-700 rounded-full text-xs">
+                            \${formatKoreanTime(g.last_activity)}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-sm text-gray-600">\${g.ip_address || '-'}</td>
+                </tr>
+            \`).join('');
+        }
+
+        function logout() {
+            localStorage.removeItem('user');
+            localStorage.removeItem('loginTime');
+            window.location.href = '/';
+        }
+
+        // Auto refresh functionality
+        document.getElementById('autoRefresh').addEventListener('change', (e) => {
+            if (e.target.checked) {
+                autoRefreshInterval = setInterval(loadActiveSessions, 10000);
+            } else {
+                if (autoRefreshInterval) {
+                    clearInterval(autoRefreshInterval);
+                    autoRefreshInterval = null;
+                }
+            }
+        });
+
+        // Load on page load
+        loadActiveSessions();
+    <\/script>
+</body>
+</html>`));const{env:t}=e;if(!(t!=null&&t.DB))return e.json({success:!1,error:"DB Error"},500);let s=0,r=0,a=0;try{s=((o=await t.DB.prepare("SELECT COUNT(*) c FROM deposit_requests WHERE status=?").bind("pending").first())==null?void 0:o.c)||0}catch{}try{r=((n=await t.DB.prepare("SELECT COUNT(*) c FROM sender_verification_requests WHERE status=?").bind("pending").first())==null?void 0:n.c)||0}catch{}try{a=((i=await t.DB.prepare("SELECT COUNT(*) c FROM bank_transfer_requests WHERE status=?").bind("pending").first())==null?void 0:i.c)||0}catch{}return e.json({success:!0,deposits:s,senders:r,bankTransfers:a})});c.get("/admin/programs.html",e=>e.redirect("/admin/programs",301));c.get("/admin/revenue",async e=>e.html(`
     <!DOCTYPE html>
     <html lang="ko">
     <head>
