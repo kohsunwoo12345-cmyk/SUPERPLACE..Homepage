@@ -20859,14 +20859,14 @@ app.get('/tools/landing-builder', (c) => {
                     qrImage.onerror = function() {
                         // Fallback: 새 창에서 열기
                         window.open(result.qrCodeUrl, '_blank');
-                        alert('QR 코드가 새 탭에서 열렸습니다.\n오른쪽 클릭하여 이미지를 저장하세요.\n\n랜딩페이지: ' + result.title + '\nURL: ' + result.landingUrl);
+                        console.log('QR 코드가 새 탭에서 열렸습니다.');
                     };
                 } else {
-                    alert('QR 코드 생성 실패: ' + result.error);
+                    console.error('QR 코드 생성 실패:', result.error);
                 }
             } catch (err) {
                 console.error('QR download error:', err);
-                alert('QR 코드 다운로드 중 오류가 발생했습니다.');
+                console.error('QR 코드 다운로드 오류:', err);
             }
         }
         </script>
