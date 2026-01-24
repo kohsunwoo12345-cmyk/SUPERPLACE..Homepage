@@ -23189,6 +23189,48 @@ app.get('/landing/:slug', async (c) => {
           formHeaderScript = form.header_script as string
         }
         
+        // 커스텀 fields 파싱
+        let customFields = []
+        try {
+          customFields = form.fields ? JSON.parse(form.fields as string) : []
+        } catch (e) {
+          console.error('Failed to parse form fields:', e)
+        }
+        
+        // 커스텀 필드 HTML 생성
+        let customFieldsHtml = ''
+        for (const field of customFields) {
+          const required = field.required ? 'required' : ''
+          const requiredStar = field.required ? ' *' : ''
+          
+          if (field.type === 'textarea') {
+            customFieldsHtml += `
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">${field.label}${requiredStar}</label>
+                        <textarea name="custom_${field.label}" ${required} class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="${field.placeholder || ''}" rows="4"></textarea>
+                    </div>`
+          } else if (field.type === 'select') {
+            let options = '<option value="">선택하세요</option>'
+            for (const opt of (field.options || [])) {
+              options += `<option value="${opt}">${opt}</option>`
+            }
+            customFieldsHtml += `
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">${field.label}${requiredStar}</label>
+                        <select name="custom_${field.label}" ${required} class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                            ${options}
+                        </select>
+                    </div>`
+          } else {
+            const inputType = field.type || 'text'
+            customFieldsHtml += `
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">${field.label}${requiredStar}</label>
+                        <input type="${inputType}" name="custom_${field.label}" ${required} class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="${field.placeholder || ''}">
+                    </div>`
+          }
+        }
+        
         // 폼 HTML 생성
         formHtml = `
         <!-- 신청 폼 섹션 -->
@@ -23212,6 +23254,8 @@ app.get('/landing/:slug', async (c) => {
                         <input type="tel" name="phone" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="010-1234-5678">
                     </div>
                     
+                    ${customFieldsHtml}
+                    
                     <div class="flex items-start">
                         <input type="checkbox" name="agreedToTerms" required class="mt-1 mr-3 h-5 w-5 text-purple-600 focus:ring-purple-500 border-gray-300 rounded">
                         <label class="text-sm text-gray-700">
@@ -23233,11 +23277,19 @@ app.get('/landing/:slug', async (c) => {
             e.preventDefault();
             
             const formData = new FormData(e.target);
+            const customData = {};
+            for (const [key, value] of formData.entries()) {
+                if (key.startsWith('custom_')) {
+                    customData[key.replace('custom_', '')] = value;
+                }
+            }
+            
             const data = {
                 formId: ${form.id},
                 landingPageSlug: '${slug}',
                 name: formData.get('name'),
                 phone: formData.get('phone'),
+                data: customData,
                 agreedToTerms: formData.get('agreedToTerms') ? 1 : 0
             };
             
