@@ -16389,11 +16389,7 @@ ${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커
                     qrImage.onerror = function() {
                         // Fallback: 새 창에서 열기
                         window.open(result.qrCodeUrl, '_blank');
-                        alert('QR 코드가 새 탭에서 열렸습니다.
-오른쪽 클릭하여 이미지를 저장하세요.
-
-랜딩페이지: ' + result.title + '
-URL: ' + result.landingUrl);
+                        alert('QR 코드가 새 탭에서 열렸습니다.\\n오른쪽 클릭하여 이미지를 저장하세요.\\n\\n랜딩페이지: ' + result.title + '\\nURL: ' + result.landingUrl);
                     };
                 } else {
                     alert('QR 코드 생성 실패: ' + result.error);
