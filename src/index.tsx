@@ -21019,7 +21019,7 @@ app.get('/tools/landing-builder', (c) => {
                                 document.getElementById('thumbnailPreviewImg').src = imageUrl;
                                 document.getElementById('thumbnailPreview').classList.remove('hidden');
                                 
-                                alert('✅ 이미지가 성공적으로 업로드되었습니다!\n\nURL: ' + imageUrl);
+                                alert('✅ 이미지가 성공적으로 업로드되었습니다!' + '\n\n' + 'URL: ' + imageUrl);
                             } else {
                                 // imgbb 실패 시 Base64로 폴백
                                 const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
@@ -21058,7 +21058,7 @@ app.get('/tools/landing-builder', (c) => {
                 
             } catch (err) {
                 console.error('업로드 오류:', err);
-                alert('❌ 이미지 업로드에 실패했습니다.\n\n이미지 URL을 직접 입력해주세요.');
+                alert('❌ 이미지 업로드에 실패했습니다.' + '\n\n' + '이미지 URL을 직접 입력해주세요.');
                 event.target.value = '';
             }
         }
@@ -21209,7 +21209,7 @@ app.get('/tools/landing-builder', (c) => {
                     
                     // 포인트 사용 시 알림
                     if (result.usedPoints) {
-                        alert('✅ 랜딩페이지가 생성되었습니다!\n\n💰 ' + result.pointsDeducted.toLocaleString() + '포인트가 차감되었습니다.');
+                        alert('✅ 랜딩페이지가 생성되었습니다!' + '\n\n' + '💰 ' + result.pointsDeducted.toLocaleString() + '포인트가 차감되었습니다.');
                     }
                 } else {
                     // 포인트 부족으로 인한 에러 처리
@@ -21306,14 +21306,14 @@ app.get('/tools/landing-builder', (c) => {
                             link.href = URL.createObjectURL(blob);
                             link.download = 'QR_' + result.title.replace(/[^a-zA-Z0-9가-힣]/g, '_') + '.png';
                             link.click();
-                            alert('✅ QR 코드가 다운로드되었습니다!\n\n랜딩페이지: ' + result.title + '\nURL: ' + result.landingUrl);
+                            alert('✅ QR 코드가 다운로드되었습니다!' + '\n\n' + '랜딩페이지: ' + result.title + '\n' + 'URL: ' + result.landingUrl);
                         });
                     };
                     
                     qrImage.onerror = function() {
                         // Fallback: 새 창에서 열기
                         window.open(result.qrCodeUrl, '_blank');
-                        alert('QR 코드가 새 탭에서 열렸습니다.\n오른쪽 클릭하여 이미지를 저장하세요.\n\n랜딩페이지: ' + result.title + '\nURL: ' + result.landingUrl);
+                        alert('QR 코드가 새 탭에서 열렸습니다.' + '\n' + '오른쪽 클릭하여 이미지를 저장하세요.' + '\n\n' + '랜딩페이지: ' + result.title + '\n' + 'URL: ' + result.landingUrl);
                     };
                 } else {
                     alert('QR 코드 생성 실패: ' + result.error);
