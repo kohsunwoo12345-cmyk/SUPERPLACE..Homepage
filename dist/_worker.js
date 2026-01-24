@@ -6614,11 +6614,11 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
         created_at DESC
     `).all();return e.json({success:!0,requests:s.results})}catch(t){return console.error("신청 목록 조회 실패:",t),e.json({success:!1,error:"조회 중 오류가 발생했습니다."},500)}});c.post("/api/free-plan/approve",async e=>{try{const{requestId:t,adminEmail:s}=await e.req.json();if(s!=="admin@superplace.co.kr")return e.json({success:!1,error:"관리자 권한이 필요합니다."},403);const r=await e.env.DB.prepare(`
       SELECT * FROM free_plan_requests WHERE id = ?
-    `).bind(t).first();if(!r)return e.json({success:!1,error:"신청을 찾을 수 없습니다."},404);if(r.status!=="pending")return e.json({success:!1,error:"이미 처리된 신청입니다."},400);const a=r.user_id;console.log("[Free Plan Approve] Starting approval for user:",a);const o=await e.env.DB.prepare(`
-      SELECT id, academy_id, name FROM users WHERE id = ?
-    `).bind(a).first();if(!o)return e.json({success:!1,error:"사용자를 찾을 수 없습니다."},404);const n=o.academy_id||o.id;o.academy_id||await e.env.DB.prepare(`
-        UPDATE users SET academy_id = ? WHERE id = ?
-      `).bind(n,a).run();const i=new Date,l=new Date;l.setFullYear(l.getFullYear()+10);const d=i.toISOString().split("T")[0],p=l.toISOString().split("T")[0];console.log("[Free Plan Approve] Date range:",d,"to",p);const m=(await e.env.DB.prepare(`
+    `).bind(t).first();if(!r)return e.json({success:!1,error:"신청을 찾을 수 없습니다."},404);if(r.status!=="pending")return e.json({success:!1,error:"이미 처리된 신청입니다."},400);const a=r.user_id;console.log("[Free Plan Approve] Starting approval for user:",a);let o=null,n=a;isNaN(Number(a))||(o=await e.env.DB.prepare(`
+        SELECT id, academy_id, name FROM users WHERE id = ?
+      `).bind(a).first(),o&&(n=o.academy_id||o.id,o.academy_id||await e.env.DB.prepare(`
+            UPDATE users SET academy_id = ? WHERE id = ?
+          `).bind(n,a).run())),console.log("[Free Plan Approve] Academy ID:",n);const i=new Date,l=new Date;l.setFullYear(l.getFullYear()+10);const d=i.toISOString().split("T")[0],p=l.toISOString().split("T")[0];console.log("[Free Plan Approve] Date range:",d,"to",p);const m=(await e.env.DB.prepare(`
       INSERT INTO subscriptions (
         academy_id, plan_name, plan_price, student_limit, ai_report_limit, 
         landing_page_limit, teacher_limit, subscription_start_date, 

@@ -9503,23 +9503,28 @@ app.post('/api/free-plan/approve', async (c) => {
 
     console.log('[Free Plan Approve] Starting approval for user:', userId)
 
-    // 사용자 정보 조회
-    const user: any = await c.env.DB.prepare(`
-      SELECT id, academy_id, name FROM users WHERE id = ?
-    `).bind(userId).first()
-
-    if (!user) {
-      return c.json({ success: false, error: '사용자를 찾을 수 없습니다.' }, 404)
-    }
-
-    // academy_id 설정 (없으면 user.id 사용)
-    const academyId = user.academy_id || user.id
+    // 사용자 정보 조회 (정수 ID인 경우만)
+    let user: any = null
+    let academyId = userId // 기본값으로 userId 사용
     
-    if (!user.academy_id) {
-      await c.env.DB.prepare(`
-        UPDATE users SET academy_id = ? WHERE id = ?
-      `).bind(academyId, userId).run()
+    // userId가 숫자인 경우에만 users 테이블에서 조회
+    if (!isNaN(Number(userId))) {
+      user = await c.env.DB.prepare(`
+        SELECT id, academy_id, name FROM users WHERE id = ?
+      `).bind(userId).first()
+      
+      if (user) {
+        academyId = user.academy_id || user.id
+        
+        if (!user.academy_id) {
+          await c.env.DB.prepare(`
+            UPDATE users SET academy_id = ? WHERE id = ?
+          `).bind(academyId, userId).run()
+        }
+      }
     }
+    
+    console.log('[Free Plan Approve] Academy ID:', academyId)
 
     // 구독 시작일과 종료일 계산 (영구 - 10년)
     const startDate = new Date()
