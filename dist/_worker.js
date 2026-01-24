@@ -5819,151 +5819,6 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
             </div>
         </section>
 
-        <!-- Services Section -->
-        <section id="programs" class="py-32 px-6 section-light">
-            <div class="max-w-7xl mx-auto">
-                <div class="text-center mb-20 animate-fade-in">
-                    <h2 class="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
-                        핵심 교육 프로그램
-                    </h2>
-                    <p class="text-xl text-gray-600">
-                        실전에서 바로 적용 가능한 학원 마케팅 전략
-                    </p>
-                </div>
-                
-                <div class="grid md:grid-cols-3 gap-6 lg:gap-8">
-                    <!-- Service 1 -->
-                    <div class="bg-white rounded-3xl overflow-hidden border border-gray-100 card-hover animate-fade-in" style="transition-delay: 0.1s">
-                        <div class="h-48 overflow-hidden">
-                            <img src="/static/images/naver-place.png" 
-                                 alt="네이버 플레이스 마케팅" 
-                                 class="w-full h-full object-cover hover:scale-105 transition-transform duration-500">
-                        </div>
-                        <div class="p-8">
-                            <div class="w-12 h-12 gradient-purple rounded-xl flex items-center justify-center mb-4">
-                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                </svg>
-                            </div>
-                            <h3 class="text-2xl font-bold text-gray-900 mb-3">네이버 플레이스<br>상위노출</h3>
-                            <p class="text-gray-600 mb-6 leading-relaxed">
-                                지역 검색 1위 달성을 위한 실전 노하우. 키워드 분석부터 리뷰 관리까지 완벽하게 마스터합니다.
-                            </p>
-                            <ul class="space-y-3 text-gray-700">
-                                <li class="flex items-start">
-                                    <svg class="w-5 h-5 text-purple-600 mt-0.5 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                    </svg>
-                                    <span>키워드 최적화 전략</span>
-                                </li>
-                                <li class="flex items-start">
-                                    <svg class="w-5 h-5 text-purple-600 mt-0.5 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                    </svg>
-                                    <span>리뷰 관리 시스템</span>
-                                </li>
-                                <li class="flex items-start">
-                                    <svg class="w-5 h-5 text-purple-600 mt-0.5 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                    </svg>
-                                    <span>지역 SEO 완벽 가이드</span>
-                                </li>
-                            </ul>
-                            <a href="/programs/naver-place" class="mt-6 block w-full py-3 text-center gradient-purple text-white rounded-xl font-bold hover:shadow-lg transition-all">
-                                자세히 보기 →
-                            </a>
-                        </div>
-                    </div>
-
-                    <!-- Service 2 -->
-                    <div class="bg-white rounded-3xl overflow-hidden border border-gray-100 card-hover animate-fade-in" style="transition-delay: 0.2s">
-                        <div class="h-48 overflow-hidden">
-                            <img src="/static/images/blog-marketing.jpg" 
-                                 alt="블로그 마케팅" 
-                                 class="w-full h-full object-cover hover:scale-105 transition-transform duration-500">
-                        </div>
-                        <div class="p-8">
-                            <div class="w-12 h-12 gradient-orange rounded-xl flex items-center justify-center mb-4">
-                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
-                                </svg>
-                            </div>
-                            <h3 class="text-2xl font-bold text-gray-900 mb-3">블로그<br>상위노출</h3>
-                            <p class="text-gray-600 mb-6 leading-relaxed">
-                                네이버 블로그 검색 최상위 진입 전략. SEO 최적화와 콘텐츠 기획의 모든 것을 배웁니다.
-                            </p>
-                            <ul class="space-y-3 text-gray-700">
-                                <li class="flex items-start">
-                                    <svg class="w-5 h-5 text-orange-500 mt-0.5 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                    </svg>
-                                    <span>검색 알고리즘 완벽 이해</span>
-                                </li>
-                                <li class="flex items-start">
-                                    <svg class="w-5 h-5 text-orange-500 mt-0.5 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                    </svg>
-                                    <span>효과적인 글쓰기 기법</span>
-                                </li>
-                                <li class="flex items-start">
-                                    <svg class="w-5 h-5 text-orange-500 mt-0.5 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                    </svg>
-                                    <span>콘텐츠 전략 수립</span>
-                                </li>
-                            </ul>
-                            <a href="/programs/blog" class="mt-6 block w-full py-3 text-center gradient-orange text-white rounded-xl font-bold hover:shadow-lg transition-all">
-                                자세히 보기 →
-                            </a>
-                        </div>
-                    </div>
-
-                    <!-- Service 3 -->
-                    <div class="bg-white rounded-3xl overflow-hidden border border-gray-100 card-hover animate-fade-in" style="transition-delay: 0.3s">
-                        <div class="h-48 overflow-hidden">
-                            <img src="/static/images/funnel-marketing.png" 
-                                 alt="퍼널 마케팅" 
-                                 class="w-full h-full object-cover hover:scale-105 transition-transform duration-500">
-                        </div>
-                        <div class="p-8">
-                            <div class="w-12 h-12 gradient-purple rounded-xl flex items-center justify-center mb-4">
-                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                                </svg>
-                            </div>
-                            <h3 class="text-2xl font-bold text-gray-900 mb-3">퍼널<br>마케팅</h3>
-                            <p class="text-gray-600 mb-6 leading-relaxed">
-                                상담부터 등록까지 자동화 시스템 구축. 효율적인 학생 모집 프로세스를 완성합니다.
-                            </p>
-                            <ul class="space-y-3 text-gray-700">
-                                <li class="flex items-start">
-                                    <svg class="w-5 h-5 text-purple-600 mt-0.5 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                    </svg>
-                                    <span>고객 여정 완벽 설계</span>
-                                </li>
-                                <li class="flex items-start">
-                                    <svg class="w-5 h-5 text-purple-600 mt-0.5 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                    </svg>
-                                    <span>마케팅 자동화 도구</span>
-                                </li>
-                                <li class="flex items-start">
-                                    <svg class="w-5 h-5 text-purple-600 mt-0.5 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                    </svg>
-                                    <span>전환율 극대화 전략</span>
-                                </li>
-                            </ul>
-                            <a href="/programs/funnel" class="mt-6 block w-full py-3 text-center gradient-purple text-white rounded-xl font-bold hover:shadow-lg transition-all">
-                                자세히 보기 →
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
 
         <!-- Our Story Section -->
         <section id="story" class="py-20 px-6 bg-gradient-to-br from-purple-50 to-white">
@@ -6157,6 +6012,154 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
                 </div>
             </div>
         </section>
+
+
+        <!-- Services Section -->
+        <section id="programs" class="py-32 px-6 section-light">
+            <div class="max-w-7xl mx-auto">
+                <div class="text-center mb-20 animate-fade-in">
+                    <h2 class="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
+                        핵심 교육 프로그램
+                    </h2>
+                    <p class="text-xl text-gray-600">
+                        실전에서 바로 적용 가능한 학원 마케팅 전략
+                    </p>
+                </div>
+                
+                <div class="grid md:grid-cols-3 gap-6 lg:gap-8">
+                    <!-- Service 1 -->
+                    <div class="bg-white rounded-3xl overflow-hidden border border-gray-100 card-hover animate-fade-in" style="transition-delay: 0.1s">
+                        <div class="h-48 overflow-hidden">
+                            <img src="/static/images/naver-place.png" 
+                                 alt="네이버 플레이스 마케팅" 
+                                 class="w-full h-full object-cover hover:scale-105 transition-transform duration-500">
+                        </div>
+                        <div class="p-8">
+                            <div class="w-12 h-12 gradient-purple rounded-xl flex items-center justify-center mb-4">
+                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                </svg>
+                            </div>
+                            <h3 class="text-2xl font-bold text-gray-900 mb-3">네이버 플레이스<br>상위노출</h3>
+                            <p class="text-gray-600 mb-6 leading-relaxed">
+                                지역 검색 1위 달성을 위한 실전 노하우. 키워드 분석부터 리뷰 관리까지 완벽하게 마스터합니다.
+                            </p>
+                            <ul class="space-y-3 text-gray-700">
+                                <li class="flex items-start">
+                                    <svg class="w-5 h-5 text-purple-600 mt-0.5 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    <span>키워드 최적화 전략</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-5 h-5 text-purple-600 mt-0.5 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    <span>리뷰 관리 시스템</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-5 h-5 text-purple-600 mt-0.5 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    <span>지역 SEO 완벽 가이드</span>
+                                </li>
+                            </ul>
+                            <a href="/programs/naver-place" class="mt-6 block w-full py-3 text-center gradient-purple text-white rounded-xl font-bold hover:shadow-lg transition-all">
+                                자세히 보기 →
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Service 2 -->
+                    <div class="bg-white rounded-3xl overflow-hidden border border-gray-100 card-hover animate-fade-in" style="transition-delay: 0.2s">
+                        <div class="h-48 overflow-hidden">
+                            <img src="/static/images/blog-marketing.jpg" 
+                                 alt="블로그 마케팅" 
+                                 class="w-full h-full object-cover hover:scale-105 transition-transform duration-500">
+                        </div>
+                        <div class="p-8">
+                            <div class="w-12 h-12 gradient-orange rounded-xl flex items-center justify-center mb-4">
+                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                                </svg>
+                            </div>
+                            <h3 class="text-2xl font-bold text-gray-900 mb-3">블로그<br>상위노출</h3>
+                            <p class="text-gray-600 mb-6 leading-relaxed">
+                                네이버 블로그 검색 최상위 진입 전략. SEO 최적화와 콘텐츠 기획의 모든 것을 배웁니다.
+                            </p>
+                            <ul class="space-y-3 text-gray-700">
+                                <li class="flex items-start">
+                                    <svg class="w-5 h-5 text-orange-500 mt-0.5 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    <span>검색 알고리즘 완벽 이해</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-5 h-5 text-orange-500 mt-0.5 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    <span>효과적인 글쓰기 기법</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-5 h-5 text-orange-500 mt-0.5 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    <span>콘텐츠 전략 수립</span>
+                                </li>
+                            </ul>
+                            <a href="/programs/blog" class="mt-6 block w-full py-3 text-center gradient-orange text-white rounded-xl font-bold hover:shadow-lg transition-all">
+                                자세히 보기 →
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Service 3 -->
+                    <div class="bg-white rounded-3xl overflow-hidden border border-gray-100 card-hover animate-fade-in" style="transition-delay: 0.3s">
+                        <div class="h-48 overflow-hidden">
+                            <img src="/static/images/funnel-marketing.png" 
+                                 alt="퍼널 마케팅" 
+                                 class="w-full h-full object-cover hover:scale-105 transition-transform duration-500">
+                        </div>
+                        <div class="p-8">
+                            <div class="w-12 h-12 gradient-purple rounded-xl flex items-center justify-center mb-4">
+                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                </svg>
+                            </div>
+                            <h3 class="text-2xl font-bold text-gray-900 mb-3">퍼널<br>마케팅</h3>
+                            <p class="text-gray-600 mb-6 leading-relaxed">
+                                상담부터 등록까지 자동화 시스템 구축. 효율적인 학생 모집 프로세스를 완성합니다.
+                            </p>
+                            <ul class="space-y-3 text-gray-700">
+                                <li class="flex items-start">
+                                    <svg class="w-5 h-5 text-purple-600 mt-0.5 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    <span>고객 여정 완벽 설계</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-5 h-5 text-purple-600 mt-0.5 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    <span>마케팅 자동화 도구</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-5 h-5 text-purple-600 mt-0.5 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    <span>전환율 극대화 전략</span>
+                                </li>
+                            </ul>
+                            <a href="/programs/funnel" class="mt-6 block w-full py-3 text-center gradient-purple text-white rounded-xl font-bold hover:shadow-lg transition-all">
+                                자세히 보기 →
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
 
         <!-- CTA Section -->
         <section id="contact" class="py-32 px-6 gradient-purple">
