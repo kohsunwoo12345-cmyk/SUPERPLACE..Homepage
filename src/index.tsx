@@ -8815,7 +8815,6 @@ app.get('/', (c) => {
 
 // 플랜 정보 매핑
 const PLAN_INFO = {
-  'starter': { name: '스타터 플랜', price: 55000, studentLimit: 30, aiReportLimit: 30, landingPageLimit: 40, teacherLimit: 2 },
   'starter': { name: '스타터 플랜', price: 55000, studentLimit: 50, aiReportLimit: 50, landingPageLimit: 50, teacherLimit: 2 },
   'basic': { name: '베이직 플랜', price: 143000, studentLimit: 150, aiReportLimit: 150, landingPageLimit: 160, teacherLimit: 6 },
   'pro': { name: '프로 플랜', price: 187000, studentLimit: 500, aiReportLimit: 500, landingPageLimit: 530, teacherLimit: 20 },
