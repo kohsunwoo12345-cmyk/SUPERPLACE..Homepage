@@ -4982,15 +4982,16 @@ app.delete('/api/landing/:id', async (c) => {
     
     console.log('Deleting landing page:', { id, userId: user.id })
     
-    // 1단계: form_submissions에서 해당 landing_page_id를 참조하는 모든 행의 landing_page_id를 NULL로 설정
+    // 1단계: form_submissions에서 해당 landing_page_id를 참조하는 모든 행을 삭제
+    // (landing_page_id는 nullable이므로 삭제해도 폼 제출 데이터는 유지됨)
     try {
-      const updateSubmissions = await c.env.DB.prepare(
-        'UPDATE form_submissions SET landing_page_id = NULL WHERE landing_page_id = ?'
+      const deleteSubmissions = await c.env.DB.prepare(
+        'DELETE FROM form_submissions WHERE landing_page_id = ?'
       ).bind(id).run()
-      console.log('✅ Cleared landing_page_id references in form_submissions:', updateSubmissions.meta.changes)
-    } catch (updateErr) {
-      console.log('⚠️ Could not update form_submissions:', updateErr)
-      // 실패해도 계속 진행
+      console.log('✅ Deleted form_submissions with landing_page_id:', deleteSubmissions.meta.changes)
+    } catch (deleteErr) {
+      console.log('⚠️ Could not delete form_submissions:', deleteErr)
+      // 실패해도 계속 진행 시도
     }
     
     // 2단계: 랜딩페이지 삭제
