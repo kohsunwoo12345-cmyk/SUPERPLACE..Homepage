@@ -29284,7 +29284,7 @@ ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.di
           END,
           created_at DESC
         LIMIT 100
-      `).all()}catch(l){console.error("DB query error:",l),s={results:[]}}const r=s.results.filter(l=>l.status==="pending").length,a=s.results.filter(l=>l.status==="approved").length,o=s.results.filter(l=>l.status==="rejected").length,n=s.results.map(l=>{const d=l.status==="pending"?'<span class="px-3 py-1 text-xs font-semibold text-yellow-800 bg-yellow-100 rounded-full">대기 중</span>':l.status==="approved"?'<span class="px-3 py-1 text-xs font-semibold text-green-800 bg-green-100 rounded-full">승인 완료</span>':'<span class="px-3 py-1 text-xs font-semibold text-red-800 bg-red-100 rounded-full">거절</span>',p=l.status==="pending"?`<button onclick="approveRequest(${l.id}, '${l.academy_name.replace(/'/g,"\\'")}'))" class="px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700 mr-2">
+      `).all()}catch(l){console.error("DB query error:",l),s={results:[]}}const r=l=>{if(!l)return"-";const d=new Date(l),p=new Date(d.getTime()+540*60*1e3),u=p.getFullYear(),m=String(p.getMonth()+1).padStart(2,"0"),g=String(p.getDate()).padStart(2,"0"),x=String(p.getHours()).padStart(2,"0"),b=String(p.getMinutes()).padStart(2,"0");return`${u}-${m}-${g} ${x}:${b}`},a=s.results.filter(l=>l.status==="pending").length,o=s.results.filter(l=>l.status==="approved").length,n=s.results.filter(l=>l.status==="rejected").length,i=s.results.map(l=>{const d=l.status==="pending"?'<span class="px-3 py-1 text-xs font-semibold text-yellow-800 bg-yellow-100 rounded-full">대기 중</span>':l.status==="approved"?'<span class="px-3 py-1 text-xs font-semibold text-green-800 bg-green-100 rounded-full">승인 완료</span>':'<span class="px-3 py-1 text-xs font-semibold text-red-800 bg-red-100 rounded-full">거절</span>',p=l.status==="pending"?`<button onclick="approveRequest(${l.id}, '${l.academy_name.replace(/'/g,"\\'")}'))" class="px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700 mr-2">
              <i class="fas fa-check mr-1"></i>승인
            </button>
            <button onclick="rejectRequest(${l.id}, '${l.academy_name.replace(/'/g,"\\'")}'))" class="px-3 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700">
@@ -29299,10 +29299,10 @@ ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.di
         </td>
         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${l.owner_name}</td>
         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${l.phone}</td>
-        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${i(l.created_at)}</td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${r(l.created_at)}</td>
         <td class="px-6 py-4 whitespace-nowrap">${d}</td>
         <td class="px-6 py-4 whitespace-nowrap text-center text-sm">${p}${u}</td>
-      </tr>`}).join(""),i=l=>{if(!l)return"-";const d=new Date(l),p=new Date(d.getTime()+540*60*1e3),u=p.getFullYear(),m=String(p.getMonth()+1).padStart(2,"0"),g=String(p.getDate()).padStart(2,"0"),x=String(p.getHours()).padStart(2,"0"),b=String(p.getMinutes()).padStart(2,"0");return`${u}-${m}-${g} ${x}:${b}`};return e.html(`
+      </tr>`}).join("");return e.html(`
     <!DOCTYPE html>
     <html lang="ko">
     <head>
@@ -29370,7 +29370,7 @@ ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.di
                             <h3 class="text-lg font-bold text-gray-900">대기 중</h3>
                         </div>
                     </div>
-                    <p class="text-4xl font-black text-yellow-600 mb-1">${r}</p>
+                    <p class="text-4xl font-black text-yellow-600 mb-1">${a}</p>
                     <p class="text-sm text-yellow-700">승인 대기 중인 신청</p>
                 </div>
                 <div class="bg-gradient-to-br from-green-50 to-green-100 border-2 border-green-300 rounded-2xl p-6 hover-lift">
@@ -29382,7 +29382,7 @@ ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.di
                             <h3 class="text-lg font-bold text-gray-900">승인 완료</h3>
                         </div>
                     </div>
-                    <p class="text-4xl font-black text-green-600 mb-1">${a}</p>
+                    <p class="text-4xl font-black text-green-600 mb-1">${o}</p>
                     <p class="text-sm text-green-700">무료 플랜 이용 중</p>
                 </div>
                 <div class="bg-gradient-to-br from-red-50 to-red-100 border-2 border-red-300 rounded-2xl p-6 hover-lift">
@@ -29394,7 +29394,7 @@ ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.di
                             <h3 class="text-lg font-bold text-gray-900">거절</h3>
                         </div>
                     </div>
-                    <p class="text-4xl font-black text-red-600 mb-1">${o}</p>
+                    <p class="text-4xl font-black text-red-600 mb-1">${n}</p>
                     <p class="text-sm text-red-700">거절된 신청</p>
                 </div>
             </div>
@@ -29420,7 +29420,7 @@ ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.di
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
-                            ${n}
+                            ${i}
                         </tbody>
                     </table>
                     ${s.results.length===0?`

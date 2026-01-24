@@ -39163,6 +39163,19 @@ app.get('/admin/free-plan-requests', async (c) => {
       requests = { results: [] }
     }
     
+    // 한국 시간 포맷 함수
+    const formatKoreanTime = (utcTimeString: string) => {
+      if (!utcTimeString) return '-'
+      const date = new Date(utcTimeString)
+      const koreaTime = new Date(date.getTime() + (9 * 60 * 60 * 1000))
+      const year = koreaTime.getFullYear()
+      const month = String(koreaTime.getMonth() + 1).padStart(2, '0')
+      const day = String(koreaTime.getDate()).padStart(2, '0')
+      const hours = String(koreaTime.getHours()).padStart(2, '0')
+      const minutes = String(koreaTime.getMinutes()).padStart(2, '0')
+      return `${year}-${month}-${day} ${hours}:${minutes}`
+    }
+    
     // 통계 계산
     const pendingCount = requests.results.filter((r: any) => r.status === 'pending').length
     const approvedCount = requests.results.filter((r: any) => r.status === 'approved').length
@@ -39204,18 +39217,6 @@ app.get('/admin/free-plan-requests', async (c) => {
         <td class="px-6 py-4 whitespace-nowrap text-center text-sm">${actionButtons}${reasonButton}</td>
       </tr>`
     }).join('')
-    
-    const formatKoreanTime = (utcTimeString: string) => {
-      if (!utcTimeString) return '-'
-      const date = new Date(utcTimeString)
-      const koreaTime = new Date(date.getTime() + (9 * 60 * 60 * 1000))
-      const year = koreaTime.getFullYear()
-      const month = String(koreaTime.getMonth() + 1).padStart(2, '0')
-      const day = String(koreaTime.getDate()).padStart(2, '0')
-      const hours = String(koreaTime.getHours()).padStart(2, '0')
-      const minutes = String(koreaTime.getMinutes()).padStart(2, '0')
-      return `${year}-${month}-${day} ${hours}:${minutes}`
-    }
     
     return c.html(`
     <!DOCTYPE html>
