@@ -7698,264 +7698,159 @@ app.get('/', (c) => {
             </div>
         </section>
 
-        <!-- Program CTA Section -->
-        <section id="pricing" class="py-20 px-6 bg-gradient-to-br from-purple-50 to-white">
-            <div class="max-w-7xl mx-auto">
-                <div class="text-center mb-12">
-                    <h2 class="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
-                        관심있는 프로그램을 선택하세요
+        <!-- Our Story Section -->
+        <section id="story" class="py-20 px-6 bg-gradient-to-br from-purple-50 to-white">
+            <div class="max-w-5xl mx-auto">
+                <div class="text-center mb-16">
+                    <h2 class="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
+                        우리의 시작
                     </h2>
-                    <p class="text-lg text-gray-600">
-                        각 프로그램의 상세 내용을 확인하고 바로 신청하세요
-                    </p>
+                    <div class="w-24 h-1 bg-gradient-to-r from-purple-600 to-orange-500 mx-auto"></div>
                 </div>
                 
-                <!-- 교육 프로그램 (첫 번째 줄) -->
-                <div class="grid md:grid-cols-3 gap-6 mb-6">
-                    <!-- 네이버 플레이스 버튼 -->
-                    <a href="/programs/naver-place" class="group bg-white rounded-2xl p-8 border-2 border-purple-200 hover:border-purple-600 hover:shadow-xl transition-all duration-300 hover:-translate-y-2">
-                        <div class="w-16 h-16 gradient-purple rounded-2xl flex items-center justify-center mb-6 mx-auto group-hover:scale-110 transition-transform">
-                            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                            </svg>
-                        </div>
-                        <h3 class="text-2xl font-bold text-gray-900 text-center mb-3">
-                            네이버 플레이스<br>상위노출
-                        </h3>
-                        <p class="text-gray-600 text-center mb-4">
-                            지역 검색 1위 달성 전략
+                <!-- Story Content -->
+                <div class="space-y-8 mb-16">
+                    <!-- 시작 -->
+                    <div class="bg-white rounded-2xl p-8 lg:p-12 shadow-lg hover:shadow-xl transition-shadow">
+                        <p class="text-xl lg:text-2xl text-gray-700 leading-relaxed mb-6">
+                            <span class="font-bold text-purple-600">인천 서구에서 공부방을 운영하던 저희</span>는 
+                            처음에 학생 모집에 큰 어려움을 겪었습니다.
                         </p>
-                        <div class="text-center">
-                            <span class="text-purple-600 font-bold group-hover:text-purple-700">
-                                자세히 보기 →
-                            </span>
-                        </div>
-                    </a>
-
-                    <!-- 블로그 버튼 -->
-                    <a href="/programs/blog" class="group bg-white rounded-2xl p-8 border-2 border-orange-200 hover:border-orange-500 hover:shadow-xl transition-all duration-300 hover:-translate-y-2">
-                        <div class="w-16 h-16 gradient-orange rounded-2xl flex items-center justify-center mb-6 mx-auto group-hover:scale-110 transition-transform">
-                            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
-                            </svg>
-                        </div>
-                        <h3 class="text-2xl font-bold text-gray-900 text-center mb-3">
-                            블로그<br>상위노출
-                        </h3>
-                        <p class="text-gray-600 text-center mb-4">
-                            검색 최상위 진입 전략
+                        <p class="text-lg lg:text-xl text-gray-700 leading-relaxed">
+                            하지만 <span class="font-semibold text-orange-500">네이버 플레이스 최적화, 블로그 마케팅, 퍼널 시스템</span>을 
+                            직접 공부하고 적용하면서 놀라운 변화를 경험했습니다.
                         </p>
-                        <div class="text-center">
-                            <span class="text-orange-500 font-bold group-hover:text-orange-600">
-                                자세히 보기 →
-                            </span>
-                        </div>
-                    </a>
+                    </div>
 
-                    <!-- 퍼널 마케팅 버튼 -->
-                    <a href="/programs/funnel" class="group bg-white rounded-2xl p-8 border-2 border-purple-200 hover:border-purple-600 hover:shadow-xl transition-all duration-300 hover:-translate-y-2">
-                        <div class="w-16 h-16 gradient-purple rounded-2xl flex items-center justify-center mb-6 mx-auto group-hover:scale-110 transition-transform">
-                            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                            </svg>
+                    <!-- 성장 -->
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div class="bg-gradient-to-br from-purple-100 to-purple-50 rounded-2xl p-8 border-2 border-purple-200">
+                            <div class="text-5xl font-bold text-purple-600 mb-4">2배</div>
+                            <p class="text-lg font-semibold text-gray-800">신규 문의 증가</p>
+                            <p class="text-gray-600 mt-2">3개월 만에 달성</p>
                         </div>
-                        <h3 class="text-2xl font-bold text-gray-900 text-center mb-3">
-                            퍼널<br>마케팅
-                        </h3>
-                        <p class="text-gray-600 text-center mb-4">
-                            24시간 자동 학생 모집
+                        <div class="bg-gradient-to-br from-orange-100 to-orange-50 rounded-2xl p-8 border-2 border-orange-200">
+                            <div class="text-5xl font-bold text-orange-500 mb-4">3배</div>
+                            <p class="text-lg font-semibold text-gray-800">학원 규모 성장</p>
+                            <p class="text-gray-600 mt-2">몇 년 만에 달성</p>
+                        </div>
+                    </div>
+
+                    <!-- 문제 인식 -->
+                    <div class="bg-white rounded-2xl p-8 lg:p-12 shadow-lg">
+                        <p class="text-xl lg:text-2xl text-gray-700 leading-relaxed mb-6">
+                            하지만 학원생이 등록하는 만큼 <span class="font-bold text-red-600">이탈 학원생도 많았습니다.</span>
                         </p>
-                        <div class="text-center">
-                            <span class="text-purple-600 font-bold group-hover:text-purple-700">
-                                자세히 보기 →
-                            </span>
-                        </div>
-                    </a>
-                </div>
-
-                <!-- 마케팅 도구 (두 번째 줄) -->
-                <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-                    <!-- 네이버 검색량 조회 -->
-                    <a href="/features/search-volume" class="group bg-gradient-to-br from-cyan-500 to-cyan-700 rounded-2xl p-8 hover:shadow-xl transition-all duration-300 hover:-translate-y-2">
-                        <div class="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mb-6 mx-auto group-hover:scale-110 transition-transform">
-                            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                            </svg>
-                        </div>
-                        <h3 class="text-2xl font-bold text-white text-center mb-3">
-                            네이버 검색량<br>조회
-                        </h3>
-                        <p class="text-cyan-100 text-center mb-4">
-                            실시간 검색량 분석
+                        <p class="text-lg lg:text-xl text-gray-700 leading-relaxed">
+                            그래서 저희는 <span class="font-semibold text-purple-600">학원생 모집부터 원생 관리, 학부모 관리까지 
+                            모두 자동화로 사용할 수 있는 프로그램, 시스템을 완벽히 구축</span>하였습니다.
                         </p>
-                        <div class="text-center">
-                            <span class="text-white font-bold">
-                                자세히 보기 →
-                            </span>
-                        </div>
-                    </a>
+                    </div>
 
-                    <!-- 랜딩페이지 생성기 -->
-                    <a href="/features/landing-builder" class="group bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl p-8 hover:shadow-xl transition-all duration-300 hover:-translate-y-2">
-                        <div class="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mb-6 mx-auto group-hover:scale-110 transition-transform">
-                            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                            </svg>
-                        </div>
-                        <h3 class="text-2xl font-bold text-white text-center mb-3">
-                            랜딩페이지<br>생성기
-                        </h3>
-                        <p class="text-blue-100 text-center mb-4">
-                            AI 자동 페이지 제작
-                        </p>
-                        <div class="text-center">
-                            <span class="text-white font-bold">
-                                자세히 보기 →
-                            </span>
-                        </div>
-                    </a>
-
-                    <!-- SMS 문자 발송 -->
-                    <a href="/features/sms-sender" class="group bg-gradient-to-br from-purple-500 to-purple-700 rounded-2xl p-8 hover:shadow-xl transition-all duration-300 hover:-translate-y-2">
-                        <div class="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mb-6 mx-auto group-hover:scale-110 transition-transform">
-                            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
-                            </svg>
-                        </div>
-                        <h3 class="text-2xl font-bold text-white text-center mb-3">
-                            SMS<br>문자 발송
-                        </h3>
-                        <p class="text-purple-100 text-center mb-4">
-                            빠르고 효율적인 소통
-                        </p>
-                        <div class="text-center">
-                            <span class="text-white font-bold">
-                                자세히 보기 →
-                            </span>
-                        </div>
-                    </a>
-
-                    <!-- AI 학습 분석 리포트 -->
-                    <a href="/features/ai-learning-report" class="group bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-2xl p-8 hover:shadow-xl transition-all duration-300 hover:-translate-y-2">
-                        <div class="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mb-6 mx-auto group-hover:scale-110 transition-transform">
-                            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <!-- AI 시스템 -->
+                    <div class="bg-gradient-to-br from-cyan-50 to-blue-50 rounded-2xl p-8 lg:p-12 border-2 border-cyan-200">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+                            <svg class="w-8 h-8 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
                             </svg>
-                        </div>
-                        <h3 class="text-2xl font-bold text-white text-center mb-3">
-                            AI 학습<br>분석 리포트
+                            AI 기반 학생 분석 시스템
                         </h3>
-                        <p class="text-indigo-100 text-center mb-4">
-                            개인별 맞춤 분석
+                        <p class="text-lg text-gray-700 leading-relaxed mb-4">
+                            아이들이 숙제하면서 <span class="font-semibold">AI와 대화를 하며 나눈 모든 데이터를 
+                            심리 분석</span>을 진행하여 아이들의 <span class="font-semibold text-cyan-700">참여도, 이해도 등을 모두 분석</span>합니다.
                         </p>
-                        <div class="text-center">
-                            <span class="text-white font-bold">
-                                자세히 보기 →
-                            </span>
-                        </div>
-                    </a>
-                </div>
+                        <p class="text-lg text-gray-700 leading-relaxed">
+                            이 모든 분석지를 <span class="font-bold text-purple-600">학생 이름만 선택하면 랜딩페이지로 제작</span>되어 
+                            학부모에게 전달됩니다.
+                        </p>
+                    </div>
 
-                <!-- 대행 문의 큰 버튼 -->
-                <div class="text-center">
-                    <a href="/contact" class="inline-block gradient-purple text-white px-16 py-6 rounded-full text-xl font-bold shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
-                        <span class="flex items-center gap-3">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                    <!-- 미션 -->
+                    <div class="bg-gradient-to-br from-purple-600 to-purple-800 rounded-2xl p-8 lg:p-12 text-white shadow-2xl">
+                        <div class="flex items-start gap-4 mb-6">
+                            <svg class="w-10 h-10 text-orange-300 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
                             </svg>
-                            <span>대행 문의하기</span>
-                        </span>
-                    </a>
-                    <p class="text-gray-500 mt-4">
-                        24시간 내에 답변드립니다
-                    </p>
-                </div>
-            </div>
-        </section>
-
-        <!-- Why Us Section -->
-        <section id="success" class="py-32 px-6 bg-white">
-            <div class="max-w-7xl mx-auto">
-                <div class="text-center mb-20 animate-fade-in">
-                    <h2 class="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
-                        왜 우리를 선택해야 할까요?
-                    </h2>
-                    <p class="text-xl text-gray-600">
-                        현업 학원장이 직접 가르치는 실전 마케팅 교육
-                    </p>
-                </div>
-
-                <div class="grid lg:grid-cols-2 gap-8 mb-20">
-                    <!-- Left: Image Grid -->\n                    <div class="grid grid-cols-2 gap-4 animate-fade-in">
-                        <div class="col-span-2 rounded-2xl overflow-hidden">
-                            <img src="/static/images/seminar-education.jpg" 
-                                 alt="휴지통(休知通) 교육 세미나 - 학원장 교육 현장" 
-                                 class="w-full h-72 object-cover">
-                        </div>
-                        <div class="rounded-2xl overflow-hidden">
-                            <img src="/static/images/kumetang-classroom-2.jpg" 
-                                 alt="꾸메땅학원 학습 공간" 
-                                 class="w-full h-48 object-cover">
-                        </div>
-                        <div class="rounded-2xl overflow-hidden bg-white flex items-center justify-center p-4">
-                            <img src="/static/images/kumetang-logo.png" 
-                                 alt="꾸메땅학원 로고" 
-                                 class="w-full h-auto object-contain">
-                        </div>
-                    </div>
-                    
-                    <!-- Right: Features -->
-                    <div class="space-y-6 animate-fade-in" style="transition-delay: 0.1s">
-                        <div class="bg-gradient-to-br from-purple-50 to-white rounded-2xl p-8 border border-purple-100">
-                            <div class="flex items-start gap-4">
-                                <div class="w-14 h-14 gradient-purple rounded-xl flex items-center justify-center flex-shrink-0 text-white text-xl font-bold">
-                                    01
-                                </div>
-                                <div>
-                                    <h3 class="text-xl font-bold text-gray-900 mb-2">
-                                        현업 학원장의 살아있는 노하우
-                                    </h3>
-                                    <p class="text-gray-600 leading-relaxed">
-                                        꾸메땅학원을 운영하며 직접 검증한 실전 전략. 이론이 아닌 경험에서 우러나온 진짜 노하우를 배웁니다.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="bg-gradient-to-br from-orange-50 to-white rounded-2xl p-8 border border-orange-100">
-                            <div class="flex items-start gap-4">
-                                <div class="w-14 h-14 gradient-orange rounded-xl flex items-center justify-center flex-shrink-0 text-white text-xl font-bold">
-                                    02
-                                </div>
-                                <div>
-                                    <h3 class="text-xl font-bold text-gray-900 mb-2">
-                                        24/7 커뮤니티 & 오프라인 모임
-                                    </h3>
-                                    <p class="text-gray-600 leading-relaxed">
-                                        오픈채팅방에서 실시간 소통하고, 정기 오프라인 모임에서 전국 학원장님들과 네트워킹하세요.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="bg-gradient-to-br from-purple-50 to-white rounded-2xl p-8 border border-purple-100">
-                            <div class="flex items-start gap-4">
-                                <div class="w-14 h-14 gradient-purple rounded-xl flex items-center justify-center flex-shrink-0 text-white text-xl font-bold">
-                                    03
-                                </div>
-                                <div>
-                                    <h3 class="text-xl font-bold text-gray-900 mb-2">
-                                        500개 학원이 검증한 성과
-                                    </h3>
-                                    <p class="text-gray-600 leading-relaxed">
-                                        500개 이상 학원의 실제 성공 사례와 95% 만족도가 증명하는 확실한 효과를 경험하세요.
-                                    </p>
-                                </div>
+                            <div class="flex-1">
+                                <p class="text-2xl lg:text-3xl font-bold mb-4 leading-tight">
+                                    "이 노하우를 다른 학원장님들과 나누고 싶다"
+                                </p>
+                                <p class="text-xl text-purple-100 leading-relaxed">
+                                    그렇게 <span class="font-bold text-orange-300">'우리는 슈퍼플레이스다'</span>가 시작되었습니다.
+                                </p>
                             </div>
                         </div>
                     </div>
+
+                    <!-- 지속 발전 -->
+                    <div class="bg-white rounded-2xl p-8 lg:p-12 shadow-lg">
+                        <p class="text-xl lg:text-2xl text-gray-700 leading-relaxed text-center font-semibold">
+                            저희는 <span class="text-purple-600">멈춰있지 않고 지속적으로 업데이트</span>하며,<br>
+                            원장님들과 <span class="text-orange-500">함께 발전해 나아갑니다.</span>
+                        </p>
+                    </div>
+
+                    <!-- 진짜 마케팅 -->
+                    <div class="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-8 lg:p-12 text-white">
+                        <h3 class="text-3xl lg:text-4xl font-bold mb-8 text-center">
+                            <span class="text-orange-400">플랫폼에 노출되는 것</span>이<br>
+                            마케팅이 <span class="underline decoration-4 decoration-orange-400">아닙니다</span>
+                        </h3>
+                        <div class="space-y-4">
+                            <div class="flex items-start gap-4">
+                                <div class="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                                    <span class="text-white font-bold">1</span>
+                                </div>
+                                <p class="text-lg text-gray-100 leading-relaxed flex-1">
+                                    우리 학원을 <span class="font-semibold text-purple-300">모든 플랫폼에 노출</span>하고,
+                                </p>
+                            </div>
+                            <div class="flex items-start gap-4">
+                                <div class="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                                    <span class="text-white font-bold">2</span>
+                                </div>
+                                <p class="text-lg text-gray-100 leading-relaxed flex-1">
+                                    발견된 우리 학원에 <span class="font-semibold text-purple-300">오게끔 만들고</span>,
+                                </p>
+                            </div>
+                            <div class="flex items-start gap-4">
+                                <div class="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                                    <span class="text-white font-bold">3</span>
+                                </div>
+                                <p class="text-lg text-gray-100 leading-relaxed flex-1">
+                                    상담에서 <span class="font-semibold text-purple-300">등록으로 전환</span>시키며,
+                                </p>
+                            </div>
+                            <div class="flex items-start gap-4">
+                                <div class="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                                    <span class="text-white font-bold">4</span>
+                                </div>
+                                <p class="text-lg text-gray-100 leading-relaxed flex-1">
+                                    원생이 <span class="font-semibold text-purple-300">이탈하지 않도록 관리</span>하는 것
+                                </p>
+                            </div>
+                        </div>
+                        <p class="text-2xl font-bold text-center mt-8 text-orange-300">
+                            이것이 진짜 학원 마케팅입니다.
+                        </p>
+                    </div>
+
+                    <!-- 사용 편의성 -->
+                    <div class="bg-white rounded-2xl p-8 lg:p-12 shadow-lg border-2 border-purple-200">
+                        <p class="text-xl lg:text-2xl text-gray-700 leading-relaxed text-center mb-6">
+                            모든 과정을 <span class="font-bold text-purple-600">쉽게 컴맹이시더라도</span><br>
+                            <span class="font-bold text-orange-500 text-3xl">클릭으로 가능</span>하도록 설계하였습니다.
+                        </p>
+                    </div>
+
+                    <!-- 감사 인사 -->
+                    <div class="text-center">
+                        <p class="text-3xl lg:text-4xl font-bold text-gray-900">
+                            감사합니다.
+                        </p>
+                    </div>
                 </div>
+
 
                 <!-- Testimonial -->
                 <div class="bg-gradient-to-br from-purple-600 to-purple-800 rounded-3xl p-12 lg:p-16 max-w-5xl mx-auto animate-fade-in shadow-2xl">
@@ -21029,22 +20924,79 @@ app.get('/about', (c) => {
                 <div class="grid lg:grid-cols-2 gap-16 items-center">
                     <div>
                         <h2 class="text-4xl font-bold text-gray-900 mb-6">우리의 시작</h2>
-                        <div class="space-y-4 text-lg text-gray-600 leading-relaxed">
+                        <div class="space-y-6 text-lg text-gray-700 leading-relaxed">
                             <p>
-                                인천 서구에서 <strong class="text-gray-900">꾸메땅학원</strong>을 운영하던 우리 부부는 
-                                처음에는 학생 모집에 큰 어려움을 겪었습니다.
+                                <strong class="text-purple-600">인천 서구에서 공부방을 운영하던 저희</strong>는 
+                                처음에 학생 모집에 큰 어려움을 겪었습니다.
                             </p>
                             <p>
-                                하지만 네이버 플레이스 최적화, 블로그 마케팅, 퍼널 시스템을 
-                                직접 공부하고 적용하면서 <strong class="text-purple-600">놀라운 변화</strong>를 경험했습니다.
+                                하지만 <strong class="text-orange-500">네이버 플레이스 최적화, 블로그 마케팅, 퍼널 시스템</strong>을 
+                                직접 공부하고 적용하면서 놀라운 변화를 경험했습니다.
+                            </p>
+                            <div class="bg-purple-50 rounded-xl p-6 my-6">
+                                <p class="font-bold text-gray-900 text-xl mb-2">
+                                    <span class="text-purple-600">3개월 만에</span> 신규 문의가 <span class="text-purple-600">2배</span> 증가
+                                </p>
+                                <p class="font-bold text-gray-900 text-xl">
+                                    <span class="text-orange-500">몇 년 만에</span> 학원 규모가 <span class="text-orange-500">3배</span>로 성장
+                                </p>
+                            </div>
+                            <p>
+                                하지만 학원생이 등록하는 만큼 <strong class="text-red-600">이탈 학원생도 많았습니다.</strong>
                             </p>
                             <p>
-                                3개월 만에 신규 문의가 2배 증가했고,<br>
-                                1년 만에 학원 규모가 3배로 성장했습니다.
+                                그래서 저희는 <strong class="text-purple-600">학원생 모집부터 원생 관리, 학부모 관리까지 
+                                모두 자동화로 사용할 수 있는 프로그램, 시스템을 완벽히 구축</strong>하였습니다.
                             </p>
-                            <p class="text-gray-900 font-bold">
-                                "이 노하우를 다른 학원장님들과 나누고 싶다"<br>
-                                그렇게 '우리는 슈퍼플레이스다'가 시작되었습니다.
+                            <div class="bg-cyan-50 rounded-xl p-6 my-6 border-2 border-cyan-200">
+                                <h4 class="font-bold text-gray-900 text-lg mb-3 flex items-center gap-2">
+                                    <svg class="w-6 h-6 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                                    </svg>
+                                    AI 기반 학생 분석 시스템
+                                </h4>
+                                <p class="text-gray-700">
+                                    아이들이 숙제하면서 <strong>AI와 대화를 하며 나눈 모든 데이터를 
+                                    심리 분석</strong>을 진행하여 아이들의 <strong class="text-cyan-700">참여도, 이해도 등을 모두 분석</strong>합니다.
+                                </p>
+                                <p class="text-gray-700 mt-3">
+                                    이 모든 분석지를 <strong class="text-purple-600">학생 이름만 선택하면 랜딩페이지로 제작</strong>되어 
+                                    학부모에게 전달됩니다.
+                                </p>
+                            </div>
+                            <div class="bg-gradient-to-r from-purple-600 to-purple-800 rounded-xl p-6 my-6 text-white">
+                                <p class="text-2xl font-bold mb-3">
+                                    "이 노하우를 다른 학원장님들과 나누고 싶다"
+                                </p>
+                                <p class="text-xl">
+                                    그렇게 <strong class="text-orange-300">'우리는 슈퍼플레이스다'</strong>가 시작되었습니다.
+                                </p>
+                            </div>
+                            <p class="text-xl font-semibold text-center text-gray-900">
+                                저희는 <span class="text-purple-600">멈춰있지 않고 지속적으로 업데이트</span>하며,<br>
+                                원장님들과 <span class="text-orange-500">함께 발전해 나아갑니다.</span>
+                            </p>
+                            <div class="bg-gray-900 rounded-xl p-6 my-6 text-white">
+                                <p class="text-2xl font-bold mb-4 text-center">
+                                    <span class="text-orange-400">플랫폼에 노출되는 것</span>이<br>
+                                    마케팅이 <span class="underline decoration-2 decoration-orange-400">아닙니다</span>
+                                </p>
+                                <p class="text-gray-100 text-center mb-4">
+                                    우리 학원을 <strong>모든 플랫폼에 노출</strong>하고,<br>
+                                    발견된 우리 학원에 <strong>오게끔 만들고</strong>,<br>
+                                    상담에서 <strong>등록으로 전환</strong>시키며,<br>
+                                    원생이 <strong>이탈하지 않도록 관리</strong>하는 것
+                                </p>
+                                <p class="text-2xl font-bold text-center text-orange-300">
+                                    이것이 진짜 학원 마케팅입니다.
+                                </p>
+                            </div>
+                            <p class="text-xl text-center text-gray-900">
+                                모든 과정을 <strong class="text-purple-600">쉽게 컴맹이시더라도</strong><br>
+                                <strong class="text-orange-500 text-2xl">클릭으로 가능</strong>하도록 설계하였습니다.
+                            </p>
+                            <p class="text-3xl font-bold text-center text-gray-900 mt-8">
+                                감사합니다.
                             </p>
                         </div>
                     </div>
