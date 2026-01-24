@@ -1,15 +1,5 @@
 name = "superplace-academy"
 compatibility_date = "2024-01-01"
 
-[env.production]
-routes = [
-  { pattern = "superplace-academy.pages.dev/*", zone_name = "superplace-academy.pages.dev" }
-]
-
-[[env.production.services]]
-binding = "DB"
-database_name = "superplace-db"
-database_id = "your-database-id"
-
 [site]
 bucket = "./dist"
