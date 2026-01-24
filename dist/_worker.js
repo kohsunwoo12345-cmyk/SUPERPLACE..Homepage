@@ -5857,135 +5857,100 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
                     </div>
                 </div>
                 
-                <!-- Story Content -->
-                <div class="space-y-10 mb-16">
-
-                    <!-- 성장 -->
-                    <div class="grid md:grid-cols-2 gap-6">
-                        <div class="bg-gradient-to-br from-purple-100 to-purple-50 rounded-2xl p-8 border-2 border-purple-200">
-                            <div class="text-5xl font-bold text-purple-600 mb-4">2배</div>
-                            <p class="text-lg font-semibold text-gray-800">신규 문의 증가</p>
-                            <p class="text-gray-600 mt-2">3개월 만에 달성</p>
+                <!-- Story Content - Compact Version -->
+                <div class="max-w-4xl mx-auto space-y-8">
+                    
+                    <!-- 성과 카드 -->
+                    <div class="grid sm:grid-cols-2 gap-6">
+                        <div class="bg-white rounded-2xl p-8 shadow-lg border-l-4 border-purple-500">
+                            <div class="text-5xl font-bold text-purple-600 mb-2">2배</div>
+                            <p class="text-gray-900 font-semibold text-lg">신규 문의 증가</p>
+                            <p class="text-gray-600 text-sm mt-1">3개월 만에 달성</p>
                         </div>
-                        <div class="bg-gradient-to-br from-orange-100 to-orange-50 rounded-2xl p-8 border-2 border-orange-200">
-                            <div class="text-5xl font-bold text-orange-500 mb-4">3배</div>
-                            <p class="text-lg font-semibold text-gray-800">학원 규모 성장</p>
-                            <p class="text-gray-600 mt-2">몇 년 만에 달성</p>
+                        <div class="bg-white rounded-2xl p-8 shadow-lg border-l-4 border-orange-500">
+                            <div class="text-5xl font-bold text-orange-500 mb-2">3배</div>
+                            <p class="text-gray-900 font-semibold text-lg">학원 규모 성장</p>
+                            <p class="text-gray-600 text-sm mt-1">몇 년 만에 달성</p>
                         </div>
                     </div>
 
-                    <!-- 문제 인식 -->
-                    <div class="bg-white rounded-2xl p-8 lg:p-12 shadow-lg">
-                        <p class="text-xl lg:text-2xl text-gray-700 leading-relaxed mb-6">
-                            하지만 학원생이 등록하는 만큼 <span class="font-bold text-red-600">이탈 학원생도 많았습니다.</span>
+                    <!-- 핵심 메시지 -->
+                    <div class="bg-gradient-to-br from-purple-600 to-purple-800 rounded-2xl p-10 lg:p-12 text-white shadow-xl">
+                        <p class="text-xl lg:text-2xl leading-relaxed mb-8 text-center">
+                            하지만 학원생이 등록하는 만큼<br class="sm:hidden">
+                            <span class="font-bold text-orange-300">이탈 학원생도 많았습니다.</span>
                         </p>
-                        <p class="text-lg lg:text-xl text-gray-700 leading-relaxed">
-                            그래서 저희는 <span class="font-semibold text-purple-600">학원생 모집부터 원생 관리, 학부모 관리까지 
-                            모두 자동화로 사용할 수 있는 프로그램, 시스템을 완벽히 구축</span>하였습니다.
-                        </p>
+                        
+                        <div class="space-y-6">
+                            <div class="flex items-start gap-4">
+                                <svg class="w-7 h-7 text-orange-300 flex-shrink-0 mt-1" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                </svg>
+                                <p class="text-lg leading-relaxed">
+                                    학원생 모집부터 원생 관리, 학부모 관리까지<br>
+                                    <span class="font-bold">모두 자동화</span>로 사용 가능한 시스템 구축
+                                </p>
+                            </div>
+                            
+                            <div class="flex items-start gap-4">
+                                <svg class="w-7 h-7 text-orange-300 flex-shrink-0 mt-1" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                </svg>
+                                <p class="text-lg leading-relaxed">
+                                    <span class="font-bold">AI 기반 학생 분석</span> 시스템으로<br>
+                                    참여도·이해도 자동 분석 → 학부모에게 전달
+                                </p>
+                            </div>
+                            
+                            <div class="flex items-start gap-4">
+                                <svg class="w-7 h-7 text-orange-300 flex-shrink-0 mt-1" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                </svg>
+                                <p class="text-lg leading-relaxed">
+                                    <span class="font-bold">컴맹도 클릭 한 번</span>으로<br>
+                                    모든 과정 간편 사용 가능
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="mt-10 pt-8 border-t border-white/20 text-center">
+                            <p class="text-2xl lg:text-3xl font-bold text-orange-300 mb-4">
+                                "이 노하우를 나누고 싶다"
+                            </p>
+                            <p class="text-xl">
+                                그렇게 <span class="font-bold">'우리는 슈퍼플레이스다'</span>가 시작되었습니다.
+                            </p>
+                        </div>
                     </div>
 
-                    <!-- AI 시스템 -->
-                    <div class="bg-gradient-to-br from-cyan-50 to-blue-50 rounded-2xl p-8 lg:p-12 border-2 border-cyan-200">
-                        <h3 class="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
-                            <svg class="w-8 h-8 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
-                            </svg>
-                            AI 기반 학생 분석 시스템
+                    <!-- 진짜 마케팅 정의 -->
+                    <div class="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-10 text-white shadow-xl">
+                        <h3 class="text-2xl lg:text-3xl font-bold mb-6 text-center">
+                            진짜 <span class="text-orange-400">학원 마케팅</span>이란?
                         </h3>
-                        <p class="text-lg text-gray-700 leading-relaxed mb-4">
-                            아이들이 숙제하면서 <span class="font-semibold">AI와 대화를 하며 나눈 모든 데이터를 
-                            심리 분석</span>을 진행하여 아이들의 <span class="font-semibold text-cyan-700">참여도, 이해도 등을 모두 분석</span>합니다.
-                        </p>
-                        <p class="text-lg text-gray-700 leading-relaxed">
-                            이 모든 분석지를 <span class="font-bold text-purple-600">학생 이름만 선택하면 랜딩페이지로 제작</span>되어 
-                            학부모에게 전달됩니다.
-                        </p>
-                    </div>
-
-                    <!-- 미션 -->
-                    <div class="bg-gradient-to-br from-purple-600 to-purple-800 rounded-2xl p-8 lg:p-12 text-white shadow-2xl">
-                        <div class="flex items-start gap-4 mb-6">
-                            <svg class="w-10 h-10 text-orange-300 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                            </svg>
-                            <div class="flex-1">
-                                <p class="text-2xl lg:text-3xl font-bold mb-4 leading-tight">
-                                    "이 노하우를 다른 학원장님들과 나누고 싶다"
-                                </p>
-                                <p class="text-xl text-purple-100 leading-relaxed">
-                                    그렇게 <span class="font-bold text-orange-300">'우리는 슈퍼플레이스다'</span>가 시작되었습니다.
-                                </p>
+                        <div class="grid sm:grid-cols-2 gap-4 text-sm lg:text-base">
+                            <div class="flex items-center gap-3 bg-white/10 rounded-lg p-4">
+                                <span class="text-orange-400 font-bold text-xl">1</span>
+                                <span>모든 플랫폼 노출</span>
+                            </div>
+                            <div class="flex items-center gap-3 bg-white/10 rounded-lg p-4">
+                                <span class="text-orange-400 font-bold text-xl">2</span>
+                                <span>고객 방문 유도</span>
+                            </div>
+                            <div class="flex items-center gap-3 bg-white/10 rounded-lg p-4">
+                                <span class="text-orange-400 font-bold text-xl">3</span>
+                                <span>상담 → 등록 전환</span>
+                            </div>
+                            <div class="flex items-center gap-3 bg-white/10 rounded-lg p-4">
+                                <span class="text-orange-400 font-bold text-xl">4</span>
+                                <span>이탈 방지 관리</span>
                             </div>
                         </div>
-                    </div>
-
-                    <!-- 지속 발전 -->
-                    <div class="bg-white rounded-2xl p-8 lg:p-12 shadow-lg">
-                        <p class="text-xl lg:text-2xl text-gray-700 leading-relaxed text-center font-semibold">
-                            저희는 <span class="text-purple-600">멈춰있지 않고 지속적으로 업데이트</span>하며,<br>
-                            원장님들과 <span class="text-orange-500">함께 발전해 나아갑니다.</span>
-                        </p>
-                    </div>
-
-                    <!-- 진짜 마케팅 -->
-                    <div class="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-8 lg:p-12 text-white">
-                        <h3 class="text-3xl lg:text-4xl font-bold mb-8 text-center">
-                            <span class="text-orange-400">플랫폼에 노출되는 것</span>이<br>
-                            마케팅이 <span class="underline decoration-4 decoration-orange-400">아닙니다</span>
-                        </h3>
-                        <div class="space-y-4">
-                            <div class="flex items-start gap-4">
-                                <div class="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                                    <span class="text-white font-bold">1</span>
-                                </div>
-                                <p class="text-lg text-gray-100 leading-relaxed flex-1">
-                                    우리 학원을 <span class="font-semibold text-purple-300">모든 플랫폼에 노출</span>하고,
-                                </p>
-                            </div>
-                            <div class="flex items-start gap-4">
-                                <div class="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                                    <span class="text-white font-bold">2</span>
-                                </div>
-                                <p class="text-lg text-gray-100 leading-relaxed flex-1">
-                                    발견된 우리 학원에 <span class="font-semibold text-purple-300">오게끔 만들고</span>,
-                                </p>
-                            </div>
-                            <div class="flex items-start gap-4">
-                                <div class="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                                    <span class="text-white font-bold">3</span>
-                                </div>
-                                <p class="text-lg text-gray-100 leading-relaxed flex-1">
-                                    상담에서 <span class="font-semibold text-purple-300">등록으로 전환</span>시키며,
-                                </p>
-                            </div>
-                            <div class="flex items-start gap-4">
-                                <div class="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                                    <span class="text-white font-bold">4</span>
-                                </div>
-                                <p class="text-lg text-gray-100 leading-relaxed flex-1">
-                                    원생이 <span class="font-semibold text-purple-300">이탈하지 않도록 관리</span>하는 것
-                                </p>
-                            </div>
-                        </div>
-                        <p class="text-2xl font-bold text-center mt-8 text-orange-300">
-                            이것이 진짜 학원 마케팅입니다.
-                        </p>
-                    </div>
-
-                    <!-- 사용 편의성 -->
-                    <div class="bg-white rounded-2xl p-8 lg:p-12 shadow-lg border-2 border-purple-200">
-                        <p class="text-xl lg:text-2xl text-gray-700 leading-loose text-center mb-6" style="letter-spacing: 0.03em;">
-                            모든 과정을 <span class="font-bold text-purple-600">쉽게 컴맹이시더라도</span><br>
-                            <span class="font-bold text-orange-500 text-3xl">클릭으로 가능</span>하도록 설계하였습니다.
-                        </p>
                     </div>
 
                     <!-- 감사 인사 -->
-                    <div class="text-center">
-                        <p class="text-4xl lg:text-5xl font-bold text-gray-900" style="letter-spacing: 0.03em;">
-                            감사합니다.
-                        </p>
+                    <div class="text-center py-8">
+                        <p class="text-3xl lg:text-4xl font-bold text-gray-900">감사합니다.</p>
                     </div>
                 </div>
 
