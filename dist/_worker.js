@@ -24730,7 +24730,25 @@ ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.di
         FOREIGN KEY (subscription_id) REFERENCES subscriptions(id),
         FOREIGN KEY (user_id) REFERENCES users(id)
       )
-    `).run(),await t.prepare("CREATE INDEX IF NOT EXISTS idx_subscriptions_academy_id ON subscriptions(academy_id)").run(),await t.prepare("CREATE INDEX IF NOT EXISTS idx_subscriptions_status ON subscriptions(status)").run(),await t.prepare("CREATE INDEX IF NOT EXISTS idx_academies_owner_id ON academies(owner_id)").run(),await t.prepare("CREATE INDEX IF NOT EXISTS idx_usage_tracking_academy_id ON usage_tracking(academy_id)").run(),await t.prepare("CREATE INDEX IF NOT EXISTS idx_usage_tracking_subscription_id ON usage_tracking(subscription_id)").run(),await t.prepare("CREATE INDEX IF NOT EXISTS idx_payments_user_id ON payments(user_id)").run(),await t.prepare("CREATE INDEX IF NOT EXISTS idx_payments_subscription_id ON payments(subscription_id)").run();try{await t.prepare("ALTER TABLE users ADD COLUMN academy_id INTEGER").run()}catch{}return e.json({success:!0,message:"결제 관련 테이블이 성공적으로 생성되었습니다 (subscriptions, payments, academies, usage_tracking)"})}catch(t){return console.error("Init payment tables error:",t),e.json({success:!1,error:t.message},500)}});c.post("/api/admin/migrate-database",async e=>{try{const{DB:t}=e.env,s=[];try{await t.prepare("ALTER TABLE users ADD COLUMN academy_id INTEGER").run(),s.push("Added academy_id column to users table")}catch{s.push("users.academy_id already exists")}try{await t.prepare(`
+    `).run(),await t.prepare("CREATE INDEX IF NOT EXISTS idx_subscriptions_academy_id ON subscriptions(academy_id)").run(),await t.prepare("CREATE INDEX IF NOT EXISTS idx_subscriptions_status ON subscriptions(status)").run(),await t.prepare("CREATE INDEX IF NOT EXISTS idx_academies_owner_id ON academies(owner_id)").run(),await t.prepare("CREATE INDEX IF NOT EXISTS idx_usage_tracking_academy_id ON usage_tracking(academy_id)").run(),await t.prepare("CREATE INDEX IF NOT EXISTS idx_usage_tracking_subscription_id ON usage_tracking(subscription_id)").run(),await t.prepare("CREATE INDEX IF NOT EXISTS idx_payments_user_id ON payments(user_id)").run(),await t.prepare("CREATE INDEX IF NOT EXISTS idx_payments_subscription_id ON payments(subscription_id)").run();try{await t.prepare("ALTER TABLE users ADD COLUMN academy_id INTEGER").run()}catch{}return e.json({success:!0,message:"결제 관련 테이블이 성공적으로 생성되었습니다 (subscriptions, payments, academies, usage_tracking)"})}catch(t){return console.error("Init payment tables error:",t),e.json({success:!1,error:t.message},500)}});c.post("/api/admin/init-free-plan-table",async e=>{try{const{DB:t}=e.env;return await t.prepare(`
+      CREATE TABLE IF NOT EXISTS free_plan_requests (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        academy_name TEXT NOT NULL,
+        owner_name TEXT NOT NULL,
+        email TEXT NOT NULL,
+        phone TEXT NOT NULL,
+        reason TEXT,
+        status TEXT NOT NULL DEFAULT 'pending',
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        approved_at TEXT,
+        approved_by TEXT,
+        rejected_at TEXT,
+        rejected_by TEXT,
+        rejection_reason TEXT,
+        FOREIGN KEY (user_id) REFERENCES users(id)
+      )
+    `).run(),await t.prepare("CREATE INDEX IF NOT EXISTS idx_free_plan_user_id ON free_plan_requests(user_id)").run(),await t.prepare("CREATE INDEX IF NOT EXISTS idx_free_plan_status ON free_plan_requests(status)").run(),await t.prepare("CREATE INDEX IF NOT EXISTS idx_free_plan_created_at ON free_plan_requests(created_at)").run(),e.json({success:!0,message:"무료 플랜 테이블이 성공적으로 생성되었습니다 (free_plan_requests)"})}catch(t){return console.error("Init free plan table error:",t),e.json({success:!1,error:t.message},500)}});c.post("/api/admin/migrate-database",async e=>{try{const{DB:t}=e.env,s=[];try{await t.prepare("ALTER TABLE users ADD COLUMN academy_id INTEGER").run(),s.push("Added academy_id column to users table")}catch{s.push("users.academy_id already exists")}try{await t.prepare(`
         CREATE TABLE IF NOT EXISTS academies (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           academy_name TEXT NOT NULL,

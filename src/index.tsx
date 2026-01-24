@@ -34274,6 +34274,47 @@ app.post('/api/admin/init-payment-tables', async (c) => {
   }
 })
 
+// 무료 플랜 테이블 초기화 API
+app.post('/api/admin/init-free-plan-table', async (c) => {
+  try {
+    const { DB } = c.env
+    
+    // Create free_plan_requests table
+    await DB.prepare(`
+      CREATE TABLE IF NOT EXISTS free_plan_requests (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        academy_name TEXT NOT NULL,
+        owner_name TEXT NOT NULL,
+        email TEXT NOT NULL,
+        phone TEXT NOT NULL,
+        reason TEXT,
+        status TEXT NOT NULL DEFAULT 'pending',
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        approved_at TEXT,
+        approved_by TEXT,
+        rejected_at TEXT,
+        rejected_by TEXT,
+        rejection_reason TEXT,
+        FOREIGN KEY (user_id) REFERENCES users(id)
+      )
+    `).run()
+    
+    // Create indexes for better performance
+    await DB.prepare(`CREATE INDEX IF NOT EXISTS idx_free_plan_user_id ON free_plan_requests(user_id)`).run()
+    await DB.prepare(`CREATE INDEX IF NOT EXISTS idx_free_plan_status ON free_plan_requests(status)`).run()
+    await DB.prepare(`CREATE INDEX IF NOT EXISTS idx_free_plan_created_at ON free_plan_requests(created_at)`).run()
+    
+    return c.json({
+      success: true,
+      message: '무료 플랜 테이블이 성공적으로 생성되었습니다 (free_plan_requests)'
+    })
+  } catch (error: any) {
+    console.error('Init free plan table error:', error)
+    return c.json({ success: false, error: error.message }, 500)
+  }
+})
+
 // Database migration endpoint - run this to fix academy_id issues
 app.post('/api/admin/migrate-database', async (c) => {
   try {
