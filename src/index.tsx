@@ -4929,18 +4929,19 @@ app.delete('/api/landing/:id', async (c) => {
     
     console.log('Deleting landing page:', { id, userId: user.id })
     
-    // 1️⃣ 먼저 관련된 form_submissions 삭제 (FOREIGN KEY 제약 해결)
-    await c.env.DB.prepare(`
-      DELETE FROM form_submissions 
-      WHERE landing_page_id = ?
-    `).bind(id).run()
-    console.log('✅ Deleted form_submissions for landing_page_id:', id)
+    // D1 batch API를 사용하여 모든 삭제를 하나의 트랜잭션으로 실행
+    const results = await c.env.DB.batch([
+      // 1️⃣ 먼저 관련된 form_submissions 삭제 (FOREIGN KEY 제약 해결)
+      c.env.DB.prepare('DELETE FROM form_submissions WHERE landing_page_id = ?').bind(id),
+      // 2️⃣ 랜딩페이지 삭제
+      c.env.DB.prepare('DELETE FROM landing_pages WHERE id = ? AND user_id = ?').bind(id, user.id)
+    ])
     
-    // 2️⃣ 랜딩페이지 삭제
-    const result = await c.env.DB.prepare('DELETE FROM landing_pages WHERE id = ? AND user_id = ?').bind(id, user.id).run()
-    console.log('Delete result:', result)
+    console.log('Batch delete results:', results)
+    console.log('Form submissions deleted:', results[0].meta.changes)
+    console.log('Landing page deleted:', results[1].meta.changes)
     
-    if (result.meta.changes === 0) {
+    if (results[1].meta.changes === 0) {
       return c.json({ success: false, error: '삭제할 페이지를 찾을 수 없거나 권한이 없습니다.' }, 404)
     }
     
