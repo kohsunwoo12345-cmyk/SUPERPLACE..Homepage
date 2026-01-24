@@ -7530,98 +7530,77 @@ app.get('/', (c) => {
                 <div class="mt-20">
                     
                     <!-- Marketing Funnel Process -->
-                    <div class="pt-12 border-t border-gray-100">
-                        <h3 class="text-2xl lg:text-3xl font-bold text-center text-gray-900 mb-12">
-                            완벽한 학원 마케팅 프로세스
+                    <div class="pt-12 border-t border-gray-200">
+                        <h3 class="text-xl lg:text-2xl font-semibold text-center text-gray-800 mb-10">
+                            우리 학원의 완벽한 프로세스
                         </h3>
                         
-                        <!-- Horizontal Funnel -->
-                        <div class="relative flex items-center justify-between max-w-5xl mx-auto px-4">
-                            <!-- Step 1: 노출 -->
-                            <div class="flex-1 text-center relative group">
-                                <div class="relative inline-block">
-                                    <div class="w-24 h-24 lg:w-32 lg:h-32 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center shadow-lg transform transition-all duration-300 group-hover:scale-110 group-hover:shadow-2xl">
-                                        <svg class="w-12 h-12 lg:w-16 lg:h-16 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                                        </svg>
+                        <!-- Simple Horizontal Flow -->
+                        <div class="max-w-4xl mx-auto">
+                            <div class="flex items-center justify-between gap-3 lg:gap-4">
+                                <!-- Step 1 -->
+                                <div class="flex-1 text-center">
+                                    <div class="inline-flex items-center justify-center w-16 h-16 lg:w-20 lg:h-20 rounded-lg bg-gray-100 border-2 border-gray-300 mb-3">
+                                        <span class="text-2xl lg:text-3xl">📢</span>
                                     </div>
-                                    <div class="absolute -top-2 -right-2 w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center text-white font-bold shadow-md">1</div>
+                                    <p class="text-sm lg:text-base font-medium text-gray-800">노출</p>
+                                    <p class="text-xs text-gray-500 mt-1">홍보</p>
                                 </div>
-                                <p class="mt-4 text-lg lg:text-xl font-bold text-gray-900">노출 (홍보)</p>
-                                <p class="text-sm text-gray-600 mt-1">플랫폼 전체 노출</p>
-                            </div>
-                            
-                            <!-- Arrow 1 -->
-                            <div class="flex-none px-2">
-                                <svg class="w-8 h-8 lg:w-12 lg:h-12 text-purple-400" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd"/>
-                                </svg>
-                            </div>
-                            
-                            <!-- Step 2: 1차 전환 -->
-                            <div class="flex-1 text-center relative group">
-                                <div class="relative inline-block">
-                                    <div class="w-28 h-28 lg:w-36 lg:h-36 rounded-full bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center shadow-xl transform transition-all duration-300 group-hover:scale-110 group-hover:shadow-2xl">
-                                        <svg class="w-14 h-14 lg:w-18 lg:h-18 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
-                                        </svg>
+                                
+                                <!-- Arrow -->
+                                <div class="flex-none">
+                                    <svg class="w-6 h-6 lg:w-8 lg:h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+                                    </svg>
+                                </div>
+                                
+                                <!-- Step 2 -->
+                                <div class="flex-1 text-center">
+                                    <div class="inline-flex items-center justify-center w-18 h-18 lg:w-24 lg:h-24 rounded-lg bg-blue-50 border-2 border-blue-300 mb-3">
+                                        <span class="text-3xl lg:text-4xl">💬</span>
                                     </div>
-                                    <div class="absolute -top-2 -right-2 w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center text-white font-bold shadow-md">2</div>
+                                    <p class="text-sm lg:text-base font-medium text-gray-800">상담</p>
+                                    <p class="text-xs text-gray-500 mt-1">1차 전환</p>
                                 </div>
-                                <p class="mt-4 text-lg lg:text-xl font-bold text-gray-900">상담으로 오기</p>
-                                <p class="text-sm text-gray-600 mt-1">1차 전환</p>
-                            </div>
-                            
-                            <!-- Arrow 2 -->
-                            <div class="flex-none px-2">
-                                <svg class="w-8 h-8 lg:w-12 lg:h-12 text-purple-500" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd"/>
-                                </svg>
-                            </div>
-                            
-                            <!-- Step 3: 2차 전환 -->
-                            <div class="flex-1 text-center relative group">
-                                <div class="relative inline-block">
-                                    <div class="w-32 h-32 lg:w-40 lg:h-40 rounded-full bg-gradient-to-br from-purple-600 to-purple-800 flex items-center justify-center shadow-2xl transform transition-all duration-300 group-hover:scale-110 group-hover:shadow-2xl">
-                                        <svg class="w-16 h-16 lg:w-20 lg:h-20 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                        </svg>
+                                
+                                <!-- Arrow -->
+                                <div class="flex-none">
+                                    <svg class="w-6 h-6 lg:w-8 lg:h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+                                    </svg>
+                                </div>
+                                
+                                <!-- Step 3 -->
+                                <div class="flex-1 text-center">
+                                    <div class="inline-flex items-center justify-center w-20 h-20 lg:w-28 lg:h-28 rounded-lg bg-blue-100 border-2 border-blue-400 mb-3">
+                                        <span class="text-4xl lg:text-5xl">✅</span>
                                     </div>
-                                    <div class="absolute -top-2 -right-2 w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center text-white font-bold shadow-md">3</div>
+                                    <p class="text-sm lg:text-base font-medium text-gray-800">등록</p>
+                                    <p class="text-xs text-gray-500 mt-1">2차 전환</p>
                                 </div>
-                                <p class="mt-4 text-lg lg:text-xl font-bold text-gray-900">상담에서 등록</p>
-                                <p class="text-sm text-gray-600 mt-1">2차 전환</p>
-                            </div>
-                            
-                            <!-- Arrow 3 -->
-                            <div class="flex-none px-2">
-                                <svg class="w-8 h-8 lg:w-12 lg:h-12 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd"/>
-                                </svg>
-                            </div>
-                            
-                            <!-- Step 4: 이탈 방지 -->
-                            <div class="flex-1 text-center relative group">
-                                <div class="relative inline-block">
-                                    <div class="w-36 h-36 lg:w-44 lg:h-44 rounded-full bg-gradient-to-br from-orange-500 to-orange-700 flex items-center justify-center shadow-2xl transform transition-all duration-300 group-hover:scale-110 group-hover:shadow-2xl">
-                                        <svg class="w-18 h-18 lg:w-22 lg:h-22 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-                                        </svg>
+                                
+                                <!-- Arrow -->
+                                <div class="flex-none">
+                                    <svg class="w-6 h-6 lg:w-8 lg:h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+                                    </svg>
+                                </div>
+                                
+                                <!-- Step 4 -->
+                                <div class="flex-1 text-center">
+                                    <div class="inline-flex items-center justify-center w-24 h-24 lg:w-32 lg:h-32 rounded-lg bg-blue-200 border-2 border-blue-500 mb-3">
+                                        <span class="text-5xl lg:text-6xl">🎯</span>
                                     </div>
-                                    <div class="absolute -top-2 -right-2 w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold shadow-md">4</div>
+                                    <p class="text-sm lg:text-base font-medium text-gray-800">팬덤 유지</p>
+                                    <p class="text-xs text-gray-500 mt-1">이탈 방지</p>
                                 </div>
-                                <p class="mt-4 text-lg lg:text-xl font-bold text-gray-900">팬덤 고객 유지</p>
-                                <p class="text-sm text-gray-600 mt-1">이탈 방지</p>
                             </div>
                         </div>
                         
-                        <!-- Process Description -->
-                        <div class="mt-12 text-center max-w-3xl mx-auto">
-                            <p class="text-lg lg:text-xl text-gray-700 leading-relaxed">
-                                단순한 <span class="font-bold text-purple-600">노출</span>이 아닌,<br class="sm:hidden">
-                                <span class="font-bold text-purple-700">상담 유도 → 등록 전환 → 이탈 방지</span>까지<br>
-                                <span class="text-2xl font-bold bg-gradient-to-r from-purple-600 to-orange-500 bg-clip-text text-transparent">완벽한 프로세스를 설계합니다</span>
+                        <!-- Simple Description -->
+                        <div class="mt-8 text-center">
+                            <p class="text-sm lg:text-base text-gray-600">
+                                노출 → 상담 → 등록 → 유지까지 완벽한 프로세스
                             </p>
                         </div>
                     </div>
@@ -29416,18 +29395,18 @@ app.get('/admin/users', async (c) => {
                                 '<div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">' +
                                 '<p class="text-sm text-yellow-800"><i class="fas fa-exclamation-triangle mr-2"></i><strong>안내:</strong> 활성 구독이 없습니다. 수동으로 한도를 설정할 수 있습니다.</p></div>' +
                                 '<div class="bg-indigo-50 border-2 border-indigo-200 rounded-lg p-4 mb-4">' +
-                                '<div class="flex items-center mb-3"><span class="text-sm font-semibold text-gray-800">📅 구독 기간 (개월)</span></div>' +
-                                '<div><input type="number" id="subscriptionMonths" value="1" min="1" max="120" placeholder="예: 3" class="w-full px-3 py-2 text-sm border-2 border-indigo-300 rounded-lg focus:ring-2 focus:ring-indigo-500">' +
-                                '<p class="text-xs text-gray-600 mt-2">💡 설정한 개월 수만큼 구독이 유지됩니다.</p></div></div>' +
+                                '<div class="flex items-center mb-3"><span class="text-sm font-semibold text-gray-800">📅 구독 기간 (일/개월)</span></div>' +
+                                '<div><input type="number" id="subscriptionMonths" value="1" min="1" max="120" placeholder="예: 1일, 3개월, 12개월" class="w-full px-3 py-2 text-sm border-2 border-indigo-300 rounded-lg focus:ring-2 focus:ring-indigo-500">' +
+                                '<p class="text-xs text-gray-600 mt-2">💡 1일부터 120개월까지 설정 가능합니다.</p></div></div>' +
                                 '<div class="grid grid-cols-1 md:grid-cols-2 gap-4">' +
                                 '<div class="border-2 border-blue-200 rounded-lg p-4 bg-blue-50"><div class="flex items-center mb-3"><span class="text-sm font-semibold text-gray-800">👥 학생 수 한도</span></div>' +
-                                '<div><input type="number" id="studentLimit" value="30" min="0" class="w-full px-3 py-2 text-sm border-2 border-blue-300 rounded-lg"></div></div>' +
-                                '<div class="border-2 border-green-200 rounded-lg p-4 bg-green-50"><div class="flex items-center mb-3"><span class="text-sm font-semibold text-gray-800">📊 AI 리포트 한도</span></div>' +
-                                '<div><input type="number" id="aiReportLimit" value="30" min="0" class="w-full px-3 py-2 text-sm border-2 border-green-300 rounded-lg"></div></div>' +
-                                '<div class="border-2 border-purple-200 rounded-lg p-4 bg-purple-50"><div class="flex items-center mb-3"><span class="text-sm font-semibold text-gray-800">🎨 랜딩페이지 한도</span></div>' +
-                                '<div><input type="number" id="landingPageLimit" value="40" min="0" class="w-full px-3 py-2 text-sm border-2 border-purple-300 rounded-lg"></div></div>' +
-                                '<div class="border-2 border-orange-200 rounded-lg p-4 bg-orange-50"><div class="flex items-center mb-3"><span class="text-sm font-semibold text-gray-800">👨‍🏫 선생님 한도</span></div>' +
-                                '<div><input type="number" id="teacherLimit" value="2" min="0" class="w-full px-3 py-2 text-sm border-2 border-orange-300 rounded-lg"></div></div></div></div>';
+                                '<div><input type="number" id="studentLimit" value="30" min="1" placeholder="최소 1명" class="w-full px-3 py-2 text-sm border-2 border-blue-300 rounded-lg"><p class="text-xs text-gray-500 mt-1">최소 1명부터 설정 가능</p></div></div>' +
+                                '<div class="border-2 border-green-200 rounded-lg p-4 bg-green-50"><div class="flex items-center mb-3"><span class="text-sm font-semibold text-gray-800">📊 AI 리포트 한도 (개/월)</span></div>' +
+                                '<div><input type="number" id="aiReportLimit" value="30" min="1" placeholder="최소 1개" class="w-full px-3 py-2 text-sm border-2 border-green-300 rounded-lg"><p class="text-xs text-gray-500 mt-1">최소 1개부터 설정 가능</p></div></div>' +
+                                '<div class="border-2 border-purple-200 rounded-lg p-4 bg-purple-50"><div class="flex items-center mb-3"><span class="text-sm font-semibold text-gray-800">🎨 랜딩페이지 한도 (개)</span></div>' +
+                                '<div><input type="number" id="landingPageLimit" value="40" min="1" placeholder="최소 1개" class="w-full px-3 py-2 text-sm border-2 border-purple-300 rounded-lg"><p class="text-xs text-gray-500 mt-1">최소 1개부터 설정 가능</p></div></div>' +
+                                '<div class="border-2 border-orange-200 rounded-lg p-4 bg-orange-50"><div class="flex items-center mb-3"><span class="text-sm font-semibold text-gray-800">👨‍🏫 선생님 한도 (명)</span></div>' +
+                                '<div><input type="number" id="teacherLimit" value="2" min="1" placeholder="최소 1명" class="w-full px-3 py-2 text-sm border-2 border-orange-300 rounded-lg"><p class="text-xs text-gray-500 mt-1">최소 1명부터 설정 가능</p></div></div></div></div>';
                         } else {
                             var sub = data.subscription;
                             var use = data.usage;
@@ -29435,13 +29414,13 @@ app.get('/admin/users', async (c) => {
                                 '<div class="flex justify-between items-start"><div><h4 class="text-lg font-bold text-gray-900">' + sub.planName + '</h4>' +
                                 '<p class="text-sm text-gray-600 mt-1">' + sub.startDate + ' ~ ' + sub.endDate + '</p></div>' +
                                 '<span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">활성</span></div></div>' +
-                                '<div class="bg-indigo-50 border-2 border-indigo-200 rounded-lg p-4"><div class="flex items-center mb-3"><span class="text-sm font-semibold text-gray-800">📅 구독 기간 (개월)</span></div>' +
-                                '<div><input type="number" id="subscriptionMonths" value="1" min="1" max="120" class="w-full px-3 py-2 text-sm border-2 border-indigo-300 rounded-lg"></div></div>' +
+                                '<div class="bg-indigo-50 border-2 border-indigo-200 rounded-lg p-4"><div class="flex items-center mb-3"><span class="text-sm font-semibold text-gray-800">📅 구독 기간 (일/개월)</span></div>' +
+                                '<div><input type="number" id="subscriptionMonths" value="1" min="1" max="120" placeholder="1일 ~ 120개월" class="w-full px-3 py-2 text-sm border-2 border-indigo-300 rounded-lg"><p class="text-xs text-gray-500 mt-1">1일부터 120개월까지</p></div></div>' +
                                 '<div class="grid grid-cols-1 md:grid-cols-2 gap-4">' +
-                                '<div class="border-2 border-blue-200 rounded-lg p-4 bg-blue-50"><input type="number" id="studentLimit" value="' + sub.studentLimit + '" min="0" class="w-full px-3 py-2 text-sm border-2 border-blue-300 rounded-lg"></div>' +
-                                '<div class="border-2 border-green-200 rounded-lg p-4 bg-green-50"><input type="number" id="aiReportLimit" value="' + sub.aiReportLimit + '" min="0" class="w-full px-3 py-2 text-sm border-2 border-green-300 rounded-lg"></div>' +
-                                '<div class="border-2 border-purple-200 rounded-lg p-4 bg-purple-50"><input type="number" id="landingPageLimit" value="' + sub.landingPageLimit + '" min="0" class="w-full px-3 py-2 text-sm border-2 border-purple-300 rounded-lg"></div>' +
-                                '<div class="border-2 border-orange-200 rounded-lg p-4 bg-orange-50"><input type="number" id="teacherLimit" value="' + sub.teacherLimit + '" min="0" class="w-full px-3 py-2 text-sm border-2 border-orange-300 rounded-lg"></div></div></div>';
+                                '<div class="border-2 border-blue-200 rounded-lg p-4 bg-blue-50"><div class="text-sm font-semibold text-gray-700 mb-2">👥 학생 수 한도 (명)</div><input type="number" id="studentLimit" value="' + sub.studentLimit + '" min="1" class="w-full px-3 py-2 text-sm border-2 border-blue-300 rounded-lg"><p class="text-xs text-gray-500 mt-1">최소 1명</p></div>' +
+                                '<div class="border-2 border-green-200 rounded-lg p-4 bg-green-50"><div class="text-sm font-semibold text-gray-700 mb-2">📊 AI 리포트 한도 (개/월)</div><input type="number" id="aiReportLimit" value="' + sub.aiReportLimit + '" min="1" class="w-full px-3 py-2 text-sm border-2 border-green-300 rounded-lg"><p class="text-xs text-gray-500 mt-1">최소 1개</p></div>' +
+                                '<div class="border-2 border-purple-200 rounded-lg p-4 bg-purple-50"><div class="text-sm font-semibold text-gray-700 mb-2">🎨 랜딩페이지 한도 (개)</div><input type="number" id="landingPageLimit" value="' + sub.landingPageLimit + '" min="1" class="w-full px-3 py-2 text-sm border-2 border-purple-300 rounded-lg"><p class="text-xs text-gray-500 mt-1">최소 1개</p></div>' +
+                                '<div class="border-2 border-orange-200 rounded-lg p-4 bg-orange-50"><div class="text-sm font-semibold text-gray-700 mb-2">👨‍🏫 선생님 한도 (명)</div><input type="number" id="teacherLimit" value="' + sub.teacherLimit + '" min="1" class="w-full px-3 py-2 text-sm border-2 border-orange-300 rounded-lg"><p class="text-xs text-gray-500 mt-1">최소 1명</p></div></div></div>';
                         }
                         
                         setTimeout(function() {
@@ -29475,6 +29454,16 @@ app.get('/admin/users', async (c) => {
                 
                 if (isNaN(studentLimit) || isNaN(aiReportLimit) || isNaN(landingPageLimit) || isNaN(teacherLimit)) {
                     alert('❌ 모든 한도를 올바르게 입력해주세요');
+                    return;
+                }
+                
+                // 최소값 검증
+                if (subscriptionMonths < 1 || subscriptionMonths > 120) {
+                    alert('❌ 구독 기간은 1일부터 120개월까지 설정 가능합니다');
+                    return;
+                }
+                if (studentLimit < 1 || aiReportLimit < 1 || landingPageLimit < 1 || teacherLimit < 1) {
+                    alert('❌ 모든 한도는 최소 1 이상이어야 합니다');
                     return;
                 }
                 
