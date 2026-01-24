@@ -1,4 +1,4 @@
-var Nt=Object.defineProperty;var tt=e=>{throw TypeError(e)};var Mt=(e,t,s)=>t in e?Nt(e,t,{enumerable:!0,configurable:!0,writable:!0,value:s}):e[t]=s;var I=(e,t,s)=>Mt(e,typeof t!="symbol"?t+"":t,s),Ye=(e,t,s)=>t.has(e)||tt("Cannot "+s);var f=(e,t,s)=>(Ye(e,t,"read from private field"),s?s.call(e):t.get(e)),D=(e,t,s)=>t.has(e)?tt("Cannot add the same private member more than once"):t instanceof WeakSet?t.add(e):t.set(e,s),T=(e,t,s,r)=>(Ye(e,t,"write to private field"),r?r.call(e,s):t.set(e,s),s),R=(e,t,s)=>(Ye(e,t,"access private method"),s);var st=(e,t,s,r)=>({set _(a){T(e,t,a,s)},get _(){return f(e,t,r)}});var rt=(e,t,s)=>(r,a)=>{let o=-1;return n(0);async function n(i){if(i<=o)throw new Error("next() called multiple times");o=i;let l,d=!1,p;if(e[i]?(p=e[i][0][0],r.req.routeIndex=i):p=i===e.length&&a||void 0,p)try{l=await p(r,()=>n(i+1))}catch(u){if(u instanceof Error&&t)r.error=u,l=await t(u,r),d=!0;else throw u}else r.finalized===!1&&s&&(l=await s(r));return l&&(r.finalized===!1||d)&&(r.res=l),r}},At=Symbol(),Ot=async(e,t=Object.create(null))=>{const{all:s=!1,dot:r=!1}=t,o=(e instanceof ft?e.raw.headers:e.headers).get("Content-Type");return o!=null&&o.startsWith("multipart/form-data")||o!=null&&o.startsWith("application/x-www-form-urlencoded")?Ut(e,{all:s,dot:r}):{}};async function Ut(e,t){const s=await e.formData();return s?Pt(s,t):{}}function Pt(e,t){const s=Object.create(null);return e.forEach((r,a)=>{t.all||a.endsWith("[]")?Ft(s,a,r):s[a]=r}),t.dot&&Object.entries(s).forEach(([r,a])=>{r.includes(".")&&($t(s,r,a),delete s[r])}),s}var Ft=(e,t,s)=>{e[t]!==void 0?Array.isArray(e[t])?e[t].push(s):e[t]=[e[t],s]:t.endsWith("[]")?e[t]=[s]:e[t]=s},$t=(e,t,s)=>{let r=e;const a=t.split(".");a.forEach((o,n)=>{n===a.length-1?r[o]=s:((!r[o]||typeof r[o]!="object"||Array.isArray(r[o])||r[o]instanceof File)&&(r[o]=Object.create(null)),r=r[o])})},gt=e=>{const t=e.split("/");return t[0]===""&&t.shift(),t},Ht=e=>{const{groups:t,path:s}=qt(e),r=gt(s);return Wt(r,t)},qt=e=>{const t=[];return e=e.replace(/\{[^}]+\}/g,(s,r)=>{const a=`@${r}`;return t.push([a,s]),a}),{groups:t,path:e}},Wt=(e,t)=>{for(let s=t.length-1;s>=0;s--){const[r]=t[s];for(let a=e.length-1;a>=0;a--)if(e[a].includes(r)){e[a]=e[a].replace(r,t[s][1]);break}}return e},Pe={},Gt=(e,t)=>{if(e==="*")return"*";const s=e.match(/^\:([^\{\}]+)(?:\{(.+)\})?$/);if(s){const r=`${e}#${t}`;return Pe[r]||(s[2]?Pe[r]=t&&t[0]!==":"&&t[0]!=="*"?[r,s[1],new RegExp(`^${s[2]}(?=/${t})`)]:[e,s[1],new RegExp(`^${s[2]}$`)]:Pe[r]=[e,s[1],!0]),Pe[r]}return null},ze=(e,t)=>{try{return t(e)}catch{return e.replace(/(?:%[0-9A-Fa-f]{2})+/g,s=>{try{return t(s)}catch{return s}})}},zt=e=>ze(e,decodeURI),xt=e=>{const t=e.url,s=t.indexOf("/",t.indexOf(":")+4);let r=s;for(;r<t.length;r++){const a=t.charCodeAt(r);if(a===37){const o=t.indexOf("?",r),n=t.slice(s,o===-1?void 0:o);return zt(n.includes("%25")?n.replace(/%25/g,"%2525"):n)}else if(a===63)break}return t.slice(s,r)},Yt=e=>{const t=xt(e);return t.length>1&&t.at(-1)==="/"?t.slice(0,-1):t},fe=(e,t,...s)=>(s.length&&(t=fe(t,...s)),`${(e==null?void 0:e[0])==="/"?"":"/"}${e}${t==="/"?"":`${(e==null?void 0:e.at(-1))==="/"?"":"/"}${(t==null?void 0:t[0])==="/"?t.slice(1):t}`}`),bt=e=>{if(e.charCodeAt(e.length-1)!==63||!e.includes(":"))return null;const t=e.split("/"),s=[];let r="";return t.forEach(a=>{if(a!==""&&!/\:/.test(a))r+="/"+a;else if(/\:/.test(a))if(/\?/.test(a)){s.length===0&&r===""?s.push("/"):s.push(r);const o=a.replace("?","");r+="/"+o,s.push(r)}else r+="/"+a}),s.filter((a,o,n)=>n.indexOf(a)===o)},Ve=e=>/[%+]/.test(e)?(e.indexOf("+")!==-1&&(e=e.replace(/\+/g," ")),e.indexOf("%")!==-1?ze(e,Ze):e):e,ht=(e,t,s)=>{let r;if(!s&&t&&!/[%+]/.test(t)){let n=e.indexOf("?",8);if(n===-1)return;for(e.startsWith(t,n+1)||(n=e.indexOf(`&${t}`,n+1));n!==-1;){const i=e.charCodeAt(n+t.length+1);if(i===61){const l=n+t.length+2,d=e.indexOf("&",l);return Ve(e.slice(l,d===-1?void 0:d))}else if(i==38||isNaN(i))return"";n=e.indexOf(`&${t}`,n+1)}if(r=/[%+]/.test(e),!r)return}const a={};r??(r=/[%+]/.test(e));let o=e.indexOf("?",8);for(;o!==-1;){const n=e.indexOf("&",o+1);let i=e.indexOf("=",o);i>n&&n!==-1&&(i=-1);let l=e.slice(o+1,i===-1?n===-1?void 0:n:i);if(r&&(l=Ve(l)),o=n,l==="")continue;let d;i===-1?d="":(d=e.slice(i+1,n===-1?void 0:n),r&&(d=Ve(d))),s?(a[l]&&Array.isArray(a[l])||(a[l]=[]),a[l].push(d)):a[l]??(a[l]=d)}return t?a[t]:a},Vt=ht,Xt=(e,t)=>ht(e,t,!0),Ze=decodeURIComponent,at=e=>ze(e,Ze),we,G,te,vt,yt,Qe,se,lt,ft=(lt=class{constructor(e,t="/",s=[[]]){D(this,te);I(this,"raw");D(this,we);D(this,G);I(this,"routeIndex",0);I(this,"path");I(this,"bodyCache",{});D(this,se,e=>{const{bodyCache:t,raw:s}=this,r=t[e];if(r)return r;const a=Object.keys(t)[0];return a?t[a].then(o=>(a==="json"&&(o=JSON.stringify(o)),new Response(o)[e]())):t[e]=s[e]()});this.raw=e,this.path=t,T(this,G,s),T(this,we,{})}param(e){return e?R(this,te,vt).call(this,e):R(this,te,yt).call(this)}query(e){return Vt(this.url,e)}queries(e){return Xt(this.url,e)}header(e){if(e)return this.raw.headers.get(e)??void 0;const t={};return this.raw.headers.forEach((s,r)=>{t[r]=s}),t}async parseBody(e){var t;return(t=this.bodyCache).parsedBody??(t.parsedBody=await Ot(this,e))}json(){return f(this,se).call(this,"text").then(e=>JSON.parse(e))}text(){return f(this,se).call(this,"text")}arrayBuffer(){return f(this,se).call(this,"arrayBuffer")}blob(){return f(this,se).call(this,"blob")}formData(){return f(this,se).call(this,"formData")}addValidatedData(e,t){f(this,we)[e]=t}valid(e){return f(this,we)[e]}get url(){return this.raw.url}get method(){return this.raw.method}get[At](){return f(this,G)}get matchedRoutes(){return f(this,G)[0].map(([[,e]])=>e)}get routePath(){return f(this,G)[0].map(([[,e]])=>e)[this.routeIndex].path}},we=new WeakMap,G=new WeakMap,te=new WeakSet,vt=function(e){const t=f(this,G)[0][this.routeIndex][1][e],s=R(this,te,Qe).call(this,t);return s&&/\%/.test(s)?at(s):s},yt=function(){const e={},t=Object.keys(f(this,G)[0][this.routeIndex][1]);for(const s of t){const r=R(this,te,Qe).call(this,f(this,G)[0][this.routeIndex][1][s]);r!==void 0&&(e[s]=/\%/.test(r)?at(r):r)}return e},Qe=function(e){return f(this,G)[1]?f(this,G)[1][e]:e},se=new WeakMap,lt),Jt={Stringify:1},wt=async(e,t,s,r,a)=>{typeof e=="object"&&!(e instanceof String)&&(e instanceof Promise||(e=e.toString()),e instanceof Promise&&(e=await e));const o=e.callbacks;return o!=null&&o.length?(a?a[0]+=e:a=[e],Promise.all(o.map(i=>i({phase:t,buffer:a,context:r}))).then(i=>Promise.all(i.filter(Boolean).map(l=>wt(l,t,!1,r,a))).then(()=>a[0]))):Promise.resolve(e)},Kt="text/plain; charset=UTF-8",Xe=(e,t)=>({"Content-Type":e,...t}),Le,je,K,Ee,Q,$,Be,_e,Te,ce,Ne,Me,re,ve,dt,Qt=(dt=class{constructor(e,t){D(this,re);D(this,Le);D(this,je);I(this,"env",{});D(this,K);I(this,"finalized",!1);I(this,"error");D(this,Ee);D(this,Q);D(this,$);D(this,Be);D(this,_e);D(this,Te);D(this,ce);D(this,Ne);D(this,Me);I(this,"render",(...e)=>(f(this,_e)??T(this,_e,t=>this.html(t)),f(this,_e).call(this,...e)));I(this,"setLayout",e=>T(this,Be,e));I(this,"getLayout",()=>f(this,Be));I(this,"setRenderer",e=>{T(this,_e,e)});I(this,"header",(e,t,s)=>{this.finalized&&T(this,$,new Response(f(this,$).body,f(this,$)));const r=f(this,$)?f(this,$).headers:f(this,ce)??T(this,ce,new Headers);t===void 0?r.delete(e):s!=null&&s.append?r.append(e,t):r.set(e,t)});I(this,"status",e=>{T(this,Ee,e)});I(this,"set",(e,t)=>{f(this,K)??T(this,K,new Map),f(this,K).set(e,t)});I(this,"get",e=>f(this,K)?f(this,K).get(e):void 0);I(this,"newResponse",(...e)=>R(this,re,ve).call(this,...e));I(this,"body",(e,t,s)=>R(this,re,ve).call(this,e,t,s));I(this,"text",(e,t,s)=>!f(this,ce)&&!f(this,Ee)&&!t&&!s&&!this.finalized?new Response(e):R(this,re,ve).call(this,e,t,Xe(Kt,s)));I(this,"json",(e,t,s)=>R(this,re,ve).call(this,JSON.stringify(e),t,Xe("application/json",s)));I(this,"html",(e,t,s)=>{const r=a=>R(this,re,ve).call(this,a,t,Xe("text/html; charset=UTF-8",s));return typeof e=="object"?wt(e,Jt.Stringify,!1,{}).then(r):r(e)});I(this,"redirect",(e,t)=>{const s=String(e);return this.header("Location",/[^\x00-\xFF]/.test(s)?encodeURI(s):s),this.newResponse(null,t??302)});I(this,"notFound",()=>(f(this,Te)??T(this,Te,()=>new Response),f(this,Te).call(this,this)));T(this,Le,e),t&&(T(this,Q,t.executionCtx),this.env=t.env,T(this,Te,t.notFoundHandler),T(this,Me,t.path),T(this,Ne,t.matchResult))}get req(){return f(this,je)??T(this,je,new ft(f(this,Le),f(this,Me),f(this,Ne))),f(this,je)}get event(){if(f(this,Q)&&"respondWith"in f(this,Q))return f(this,Q);throw Error("This context has no FetchEvent")}get executionCtx(){if(f(this,Q))return f(this,Q);throw Error("This context has no ExecutionContext")}get res(){return f(this,$)||T(this,$,new Response(null,{headers:f(this,ce)??T(this,ce,new Headers)}))}set res(e){if(f(this,$)&&e){e=new Response(e.body,e);for(const[t,s]of f(this,$).headers.entries())if(t!=="content-type")if(t==="set-cookie"){const r=f(this,$).headers.getSetCookie();e.headers.delete("set-cookie");for(const a of r)e.headers.append("set-cookie",a)}else e.headers.set(t,s)}T(this,$,e),this.finalized=!0}get var(){return f(this,K)?Object.fromEntries(f(this,K)):{}}},Le=new WeakMap,je=new WeakMap,K=new WeakMap,Ee=new WeakMap,Q=new WeakMap,$=new WeakMap,Be=new WeakMap,_e=new WeakMap,Te=new WeakMap,ce=new WeakMap,Ne=new WeakMap,Me=new WeakMap,re=new WeakSet,ve=function(e,t,s){const r=f(this,$)?new Headers(f(this,$).headers):f(this,ce)??new Headers;if(typeof t=="object"&&"headers"in t){const o=t.headers instanceof Headers?t.headers:new Headers(t.headers);for(const[n,i]of o)n.toLowerCase()==="set-cookie"?r.append(n,i):r.set(n,i)}if(s)for(const[o,n]of Object.entries(s))if(typeof n=="string")r.set(o,n);else{r.delete(o);for(const i of n)r.append(o,i)}const a=typeof t=="number"?t:(t==null?void 0:t.status)??f(this,Ee);return new Response(e,{status:a,headers:r})},dt),M="ALL",Zt="all",es=["get","post","put","delete","options","patch"],Et="Can not add a route since the matcher is already built.",_t=class extends Error{},ts="__COMPOSED_HANDLER",ss=e=>e.text("404 Not Found",404),ot=(e,t)=>{if("getResponse"in e){const s=e.getResponse();return t.newResponse(s.body,s)}return console.error(e),t.text("Internal Server Error",500)},z,A,Tt,Y,le,Fe,$e,Ie,rs=(Ie=class{constructor(t={}){D(this,A);I(this,"get");I(this,"post");I(this,"put");I(this,"delete");I(this,"options");I(this,"patch");I(this,"all");I(this,"on");I(this,"use");I(this,"router");I(this,"getPath");I(this,"_basePath","/");D(this,z,"/");I(this,"routes",[]);D(this,Y,ss);I(this,"errorHandler",ot);I(this,"onError",t=>(this.errorHandler=t,this));I(this,"notFound",t=>(T(this,Y,t),this));I(this,"fetch",(t,...s)=>R(this,A,$e).call(this,t,s[1],s[0],t.method));I(this,"request",(t,s,r,a)=>t instanceof Request?this.fetch(s?new Request(t,s):t,r,a):(t=t.toString(),this.fetch(new Request(/^https?:\/\//.test(t)?t:`http://localhost${fe("/",t)}`,s),r,a)));I(this,"fire",()=>{addEventListener("fetch",t=>{t.respondWith(R(this,A,$e).call(this,t.request,t,void 0,t.request.method))})});[...es,Zt].forEach(o=>{this[o]=(n,...i)=>(typeof n=="string"?T(this,z,n):R(this,A,le).call(this,o,f(this,z),n),i.forEach(l=>{R(this,A,le).call(this,o,f(this,z),l)}),this)}),this.on=(o,n,...i)=>{for(const l of[n].flat()){T(this,z,l);for(const d of[o].flat())i.map(p=>{R(this,A,le).call(this,d.toUpperCase(),f(this,z),p)})}return this},this.use=(o,...n)=>(typeof o=="string"?T(this,z,o):(T(this,z,"*"),n.unshift(o)),n.forEach(i=>{R(this,A,le).call(this,M,f(this,z),i)}),this);const{strict:r,...a}=t;Object.assign(this,a),this.getPath=r??!0?t.getPath??xt:Yt}route(t,s){const r=this.basePath(t);return s.routes.map(a=>{var n;let o;s.errorHandler===ot?o=a.handler:(o=async(i,l)=>(await rt([],s.errorHandler)(i,()=>a.handler(i,l))).res,o[ts]=a.handler),R(n=r,A,le).call(n,a.method,a.path,o)}),this}basePath(t){const s=R(this,A,Tt).call(this);return s._basePath=fe(this._basePath,t),s}mount(t,s,r){let a,o;r&&(typeof r=="function"?o=r:(o=r.optionHandler,r.replaceRequest===!1?a=l=>l:a=r.replaceRequest));const n=o?l=>{const d=o(l);return Array.isArray(d)?d:[d]}:l=>{let d;try{d=l.executionCtx}catch{}return[l.env,d]};a||(a=(()=>{const l=fe(this._basePath,t),d=l==="/"?0:l.length;return p=>{const u=new URL(p.url);return u.pathname=u.pathname.slice(d)||"/",new Request(u,p)}})());const i=async(l,d)=>{const p=await s(a(l.req.raw),...n(l));if(p)return p;await d()};return R(this,A,le).call(this,M,fe(t,"*"),i),this}},z=new WeakMap,A=new WeakSet,Tt=function(){const t=new Ie({router:this.router,getPath:this.getPath});return t.errorHandler=this.errorHandler,T(t,Y,f(this,Y)),t.routes=this.routes,t},Y=new WeakMap,le=function(t,s,r){t=t.toUpperCase(),s=fe(this._basePath,s);const a={basePath:this._basePath,path:s,method:t,handler:r};this.router.add(t,s,[r,a]),this.routes.push(a)},Fe=function(t,s){if(t instanceof Error)return this.errorHandler(t,s);throw t},$e=function(t,s,r,a){if(a==="HEAD")return(async()=>new Response(null,await R(this,A,$e).call(this,t,s,r,"GET")))();const o=this.getPath(t,{env:r}),n=this.router.match(a,o),i=new Qt(t,{path:o,matchResult:n,env:r,executionCtx:s,notFoundHandler:f(this,Y)});if(n[0].length===1){let d;try{d=n[0][0][0][0](i,async()=>{i.res=await f(this,Y).call(this,i)})}catch(p){return R(this,A,Fe).call(this,p,i)}return d instanceof Promise?d.then(p=>p||(i.finalized?i.res:f(this,Y).call(this,i))).catch(p=>R(this,A,Fe).call(this,p,i)):d??f(this,Y).call(this,i)}const l=rt(n[0],this.errorHandler,f(this,Y));return(async()=>{try{const d=await l(i);if(!d.finalized)throw new Error("Context is not finalized. Did you forget to return a Response object or `await next()`?");return d.res}catch(d){return R(this,A,Fe).call(this,d,i)}})()},Ie),It=[];function as(e,t){const s=this.buildAllMatchers(),r=((a,o)=>{const n=s[a]||s[M],i=n[2][o];if(i)return i;const l=o.match(n[0]);if(!l)return[[],It];const d=l.indexOf("",1);return[n[1][d],l]});return this.match=r,r(e,t)}var qe="[^/]+",Ce=".*",Re="(?:|/.*)",ye=Symbol(),os=new Set(".\\+*[^]$()");function ns(e,t){return e.length===1?t.length===1?e<t?-1:1:-1:t.length===1||e===Ce||e===Re?1:t===Ce||t===Re?-1:e===qe?1:t===qe?-1:e.length===t.length?e<t?-1:1:t.length-e.length}var pe,ue,V,xe,is=(xe=class{constructor(){D(this,pe);D(this,ue);D(this,V,Object.create(null))}insert(t,s,r,a,o){if(t.length===0){if(f(this,pe)!==void 0)throw ye;if(o)return;T(this,pe,s);return}const[n,...i]=t,l=n==="*"?i.length===0?["","",Ce]:["","",qe]:n==="/*"?["","",Re]:n.match(/^\:([^\{\}]+)(?:\{(.+)\})?$/);let d;if(l){const p=l[1];let u=l[2]||qe;if(p&&l[2]&&(u===".*"||(u=u.replace(/^\((?!\?:)(?=[^)]+\)$)/,"(?:"),/\((?!\?:)/.test(u))))throw ye;if(d=f(this,V)[u],!d){if(Object.keys(f(this,V)).some(m=>m!==Ce&&m!==Re))throw ye;if(o)return;d=f(this,V)[u]=new xe,p!==""&&T(d,ue,a.varIndex++)}!o&&p!==""&&r.push([p,f(d,ue)])}else if(d=f(this,V)[n],!d){if(Object.keys(f(this,V)).some(p=>p.length>1&&p!==Ce&&p!==Re))throw ye;if(o)return;d=f(this,V)[n]=new xe}d.insert(i,s,r,a,o)}buildRegExpStr(){const s=Object.keys(f(this,V)).sort(ns).map(r=>{const a=f(this,V)[r];return(typeof f(a,ue)=="number"?`(${r})@${f(a,ue)}`:os.has(r)?`\\${r}`:r)+a.buildRegExpStr()});return typeof f(this,pe)=="number"&&s.unshift(`#${f(this,pe)}`),s.length===0?"":s.length===1?s[0]:"(?:"+s.join("|")+")"}},pe=new WeakMap,ue=new WeakMap,V=new WeakMap,xe),We,Ae,ct,ls=(ct=class{constructor(){D(this,We,{varIndex:0});D(this,Ae,new is)}insert(e,t,s){const r=[],a=[];for(let n=0;;){let i=!1;if(e=e.replace(/\{[^}]+\}/g,l=>{const d=`@\\${n}`;return a[n]=[d,l],n++,i=!0,d}),!i)break}const o=e.match(/(?::[^\/]+)|(?:\/\*$)|./g)||[];for(let n=a.length-1;n>=0;n--){const[i]=a[n];for(let l=o.length-1;l>=0;l--)if(o[l].indexOf(i)!==-1){o[l]=o[l].replace(i,a[n][1]);break}}return f(this,Ae).insert(o,t,r,f(this,We),s),r}buildRegExp(){let e=f(this,Ae).buildRegExpStr();if(e==="")return[/^$/,[],[]];let t=0;const s=[],r=[];return e=e.replace(/#(\d+)|@(\d+)|\.\*\$/g,(a,o,n)=>o!==void 0?(s[++t]=Number(o),"$()"):(n!==void 0&&(r[Number(n)]=++t),"")),[new RegExp(`^${e}`),s,r]}},We=new WeakMap,Ae=new WeakMap,ct),ds=[/^$/,[],Object.create(null)],He=Object.create(null);function kt(e){return He[e]??(He[e]=new RegExp(e==="*"?"":`^${e.replace(/\/\*$|([.\\+*[^\]$()])/g,(t,s)=>s?`\\${s}`:"(?:|/.*)")}$`))}function cs(){He=Object.create(null)}function ps(e){var d;const t=new ls,s=[];if(e.length===0)return ds;const r=e.map(p=>[!/\*|\/:/.test(p[0]),...p]).sort(([p,u],[m,g])=>p?1:m?-1:u.length-g.length),a=Object.create(null);for(let p=0,u=-1,m=r.length;p<m;p++){const[g,x,b]=r[p];g?a[x]=[b.map(([E])=>[E,Object.create(null)]),It]:u++;let h;try{h=t.insert(x,u,g)}catch(E){throw E===ye?new _t(x):E}g||(s[u]=b.map(([E,w])=>{const v=Object.create(null);for(w-=1;w>=0;w--){const[y,_]=h[w];v[y]=_}return[E,v]}))}const[o,n,i]=t.buildRegExp();for(let p=0,u=s.length;p<u;p++)for(let m=0,g=s[p].length;m<g;m++){const x=(d=s[p][m])==null?void 0:d[1];if(!x)continue;const b=Object.keys(x);for(let h=0,E=b.length;h<E;h++)x[b[h]]=i[x[b[h]]]}const l=[];for(const p in n)l[p]=s[n[p]];return[o,l,a]}function he(e,t){if(e){for(const s of Object.keys(e).sort((r,a)=>a.length-r.length))if(kt(s).test(t))return[...e[s]]}}var ae,oe,Ge,St,pt,us=(pt=class{constructor(){D(this,Ge);I(this,"name","RegExpRouter");D(this,ae);D(this,oe);I(this,"match",as);T(this,ae,{[M]:Object.create(null)}),T(this,oe,{[M]:Object.create(null)})}add(e,t,s){var i;const r=f(this,ae),a=f(this,oe);if(!r||!a)throw new Error(Et);r[e]||[r,a].forEach(l=>{l[e]=Object.create(null),Object.keys(l[M]).forEach(d=>{l[e][d]=[...l[M][d]]})}),t==="/*"&&(t="*");const o=(t.match(/\/:/g)||[]).length;if(/\*$/.test(t)){const l=kt(t);e===M?Object.keys(r).forEach(d=>{var p;(p=r[d])[t]||(p[t]=he(r[d],t)||he(r[M],t)||[])}):(i=r[e])[t]||(i[t]=he(r[e],t)||he(r[M],t)||[]),Object.keys(r).forEach(d=>{(e===M||e===d)&&Object.keys(r[d]).forEach(p=>{l.test(p)&&r[d][p].push([s,o])})}),Object.keys(a).forEach(d=>{(e===M||e===d)&&Object.keys(a[d]).forEach(p=>l.test(p)&&a[d][p].push([s,o]))});return}const n=bt(t)||[t];for(let l=0,d=n.length;l<d;l++){const p=n[l];Object.keys(a).forEach(u=>{var m;(e===M||e===u)&&((m=a[u])[p]||(m[p]=[...he(r[u],p)||he(r[M],p)||[]]),a[u][p].push([s,o-d+l+1]))})}}buildAllMatchers(){const e=Object.create(null);return Object.keys(f(this,oe)).concat(Object.keys(f(this,ae))).forEach(t=>{e[t]||(e[t]=R(this,Ge,St).call(this,t))}),T(this,ae,T(this,oe,void 0)),cs(),e}},ae=new WeakMap,oe=new WeakMap,Ge=new WeakSet,St=function(e){const t=[];let s=e===M;return[f(this,ae),f(this,oe)].forEach(r=>{const a=r[e]?Object.keys(r[e]).map(o=>[o,r[e][o]]):[];a.length!==0?(s||(s=!0),t.push(...a)):e!==M&&t.push(...Object.keys(r[M]).map(o=>[o,r[M][o]]))}),s?ps(t):null},pt),ne,Z,ut,ms=(ut=class{constructor(e){I(this,"name","SmartRouter");D(this,ne,[]);D(this,Z,[]);T(this,ne,e.routers)}add(e,t,s){if(!f(this,Z))throw new Error(Et);f(this,Z).push([e,t,s])}match(e,t){if(!f(this,Z))throw new Error("Fatal error");const s=f(this,ne),r=f(this,Z),a=s.length;let o=0,n;for(;o<a;o++){const i=s[o];try{for(let l=0,d=r.length;l<d;l++)i.add(...r[l]);n=i.match(e,t)}catch(l){if(l instanceof _t)continue;throw l}this.match=i.match.bind(i),T(this,ne,[i]),T(this,Z,void 0);break}if(o===a)throw new Error("Fatal error");return this.name=`SmartRouter + ${this.activeRouter.name}`,n}get activeRouter(){if(f(this,Z)||f(this,ne).length!==1)throw new Error("No active router has been determined yet.");return f(this,ne)[0]}},ne=new WeakMap,Z=new WeakMap,ut),De=Object.create(null),ie,P,me,ke,U,ee,de,Se,gs=(Se=class{constructor(t,s,r){D(this,ee);D(this,ie);D(this,P);D(this,me);D(this,ke,0);D(this,U,De);if(T(this,P,r||Object.create(null)),T(this,ie,[]),t&&s){const a=Object.create(null);a[t]={handler:s,possibleKeys:[],score:0},T(this,ie,[a])}T(this,me,[])}insert(t,s,r){T(this,ke,++st(this,ke)._);let a=this;const o=Ht(s),n=[];for(let i=0,l=o.length;i<l;i++){const d=o[i],p=o[i+1],u=Gt(d,p),m=Array.isArray(u)?u[0]:d;if(m in f(a,P)){a=f(a,P)[m],u&&n.push(u[1]);continue}f(a,P)[m]=new Se,u&&(f(a,me).push(u),n.push(u[1])),a=f(a,P)[m]}return f(a,ie).push({[t]:{handler:r,possibleKeys:n.filter((i,l,d)=>d.indexOf(i)===l),score:f(this,ke)}}),a}search(t,s){var l;const r=[];T(this,U,De);let o=[this];const n=gt(s),i=[];for(let d=0,p=n.length;d<p;d++){const u=n[d],m=d===p-1,g=[];for(let x=0,b=o.length;x<b;x++){const h=o[x],E=f(h,P)[u];E&&(T(E,U,f(h,U)),m?(f(E,P)["*"]&&r.push(...R(this,ee,de).call(this,f(E,P)["*"],t,f(h,U))),r.push(...R(this,ee,de).call(this,E,t,f(h,U)))):g.push(E));for(let w=0,v=f(h,me).length;w<v;w++){const y=f(h,me)[w],_=f(h,U)===De?{}:{...f(h,U)};if(y==="*"){const N=f(h,P)["*"];N&&(r.push(...R(this,ee,de).call(this,N,t,f(h,U))),T(N,U,_),g.push(N));continue}const[k,L,B]=y;if(!u&&!(B instanceof RegExp))continue;const C=f(h,P)[k],q=n.slice(d).join("/");if(B instanceof RegExp){const N=B.exec(q);if(N){if(_[L]=N[0],r.push(...R(this,ee,de).call(this,C,t,f(h,U),_)),Object.keys(f(C,P)).length){T(C,U,_);const J=((l=N[0].match(/\//))==null?void 0:l.length)??0;(i[J]||(i[J]=[])).push(C)}continue}}(B===!0||B.test(u))&&(_[L]=u,m?(r.push(...R(this,ee,de).call(this,C,t,_,f(h,U))),f(C,P)["*"]&&r.push(...R(this,ee,de).call(this,f(C,P)["*"],t,_,f(h,U)))):(T(C,U,_),g.push(C)))}}o=g.concat(i.shift()??[])}return r.length>1&&r.sort((d,p)=>d.score-p.score),[r.map(({handler:d,params:p})=>[d,p])]}},ie=new WeakMap,P=new WeakMap,me=new WeakMap,ke=new WeakMap,U=new WeakMap,ee=new WeakSet,de=function(t,s,r,a){const o=[];for(let n=0,i=f(t,ie).length;n<i;n++){const l=f(t,ie)[n],d=l[s]||l[M],p={};if(d!==void 0&&(d.params=Object.create(null),o.push(d),r!==De||a&&a!==De))for(let u=0,m=d.possibleKeys.length;u<m;u++){const g=d.possibleKeys[u],x=p[d.score];d.params[g]=a!=null&&a[g]&&!x?a[g]:r[g]??(a==null?void 0:a[g]),p[d.score]=!0}}return o},Se),ge,mt,xs=(mt=class{constructor(){I(this,"name","TrieRouter");D(this,ge);T(this,ge,new gs)}add(e,t,s){const r=bt(t);if(r){for(let a=0,o=r.length;a<o;a++)f(this,ge).insert(e,r[a],s);return}f(this,ge).insert(e,t,s)}match(e,t){return f(this,ge).search(e,t)}},ge=new WeakMap,mt),et=class extends rs{constructor(e={}){super(e),this.router=e.router??new ms({routers:[new us,new xs]})}},bs=e=>{const s={...{origin:"*",allowMethods:["GET","HEAD","PUT","POST","DELETE","PATCH"],allowHeaders:[],exposeHeaders:[]},...e},r=(o=>typeof o=="string"?o==="*"?()=>o:n=>o===n?n:null:typeof o=="function"?o:n=>o.includes(n)?n:null)(s.origin),a=(o=>typeof o=="function"?o:Array.isArray(o)?()=>o:()=>[])(s.allowMethods);return async function(n,i){var p;function l(u,m){n.res.headers.set(u,m)}const d=await r(n.req.header("origin")||"",n);if(d&&l("Access-Control-Allow-Origin",d),s.credentials&&l("Access-Control-Allow-Credentials","true"),(p=s.exposeHeaders)!=null&&p.length&&l("Access-Control-Expose-Headers",s.exposeHeaders.join(",")),n.req.method==="OPTIONS"){s.origin!=="*"&&l("Vary","Origin"),s.maxAge!=null&&l("Access-Control-Max-Age",s.maxAge.toString());const u=await a(n.req.header("origin")||"",n);u.length&&l("Access-Control-Allow-Methods",u.join(","));let m=s.allowHeaders;if(!(m!=null&&m.length)){const g=n.req.header("Access-Control-Request-Headers");g&&(m=g.split(/\s*,\s*/))}return m!=null&&m.length&&(l("Access-Control-Allow-Headers",m.join(",")),n.res.headers.append("Vary","Access-Control-Request-Headers")),n.res.headers.delete("Content-Length"),n.res.headers.delete("Content-Type"),new Response(null,{headers:n.res.headers,status:204,statusText:"No Content"})}await i(),s.origin!=="*"&&n.header("Vary","Origin",{append:!0})}},hs=/^[\w!#$%&'*.^`|~+-]+$/,fs=/^[ !#-:<-[\]-~]*$/,vs=(e,t)=>{if(e.indexOf(t)===-1)return{};const s=e.trim().split(";"),r={};for(let a of s){a=a.trim();const o=a.indexOf("=");if(o===-1)continue;const n=a.substring(0,o).trim();if(t!==n||!hs.test(n))continue;let i=a.substring(o+1).trim();if(i.startsWith('"')&&i.endsWith('"')&&(i=i.slice(1,-1)),fs.test(i)){r[n]=i.indexOf("%")!==-1?ze(i,Ze):i;break}}return r},O=(e,t,s)=>{const r=e.req.raw.headers.get("Cookie");{if(!r)return;let a=t;return vs(r,a)[a]}},ys=/^\s*(?:text\/(?!event-stream(?:[;\s]|$))[^;\s]+|application\/(?:javascript|json|xml|xml-dtd|ecmascript|dart|postscript|rtf|tar|toml|vnd\.dart|vnd\.ms-fontobject|vnd\.ms-opentype|wasm|x-httpd-php|x-javascript|x-ns-proxy-autoconfig|x-sh|x-tar|x-virtualbox-hdd|x-virtualbox-ova|x-virtualbox-ovf|x-virtualbox-vbox|x-virtualbox-vdi|x-virtualbox-vhd|x-virtualbox-vmdk|x-www-form-urlencoded)|font\/(?:otf|ttf)|image\/(?:bmp|vnd\.adobe\.photoshop|vnd\.microsoft\.icon|vnd\.ms-dds|x-icon|x-ms-bmp)|message\/rfc822|model\/gltf-binary|x-shader\/x-fragment|x-shader\/x-vertex|[^;\s]+?\+(?:json|text|xml|yaml))(?:[;\s]|$)/i,nt=(e,t=Es)=>{const s=/\.([a-zA-Z0-9]+?)$/,r=e.match(s);if(!r)return;let a=t[r[1]];return a&&a.startsWith("text")&&(a+="; charset=utf-8"),a},ws={aac:"audio/aac",avi:"video/x-msvideo",avif:"image/avif",av1:"video/av1",bin:"application/octet-stream",bmp:"image/bmp",css:"text/css",csv:"text/csv",eot:"application/vnd.ms-fontobject",epub:"application/epub+zip",gif:"image/gif",gz:"application/gzip",htm:"text/html",html:"text/html",ico:"image/x-icon",ics:"text/calendar",jpeg:"image/jpeg",jpg:"image/jpeg",js:"text/javascript",json:"application/json",jsonld:"application/ld+json",map:"application/json",mid:"audio/x-midi",midi:"audio/x-midi",mjs:"text/javascript",mp3:"audio/mpeg",mp4:"video/mp4",mpeg:"video/mpeg",oga:"audio/ogg",ogv:"video/ogg",ogx:"application/ogg",opus:"audio/opus",otf:"font/otf",pdf:"application/pdf",png:"image/png",rtf:"application/rtf",svg:"image/svg+xml",tif:"image/tiff",tiff:"image/tiff",ts:"video/mp2t",ttf:"font/ttf",txt:"text/plain",wasm:"application/wasm",webm:"video/webm",weba:"audio/webm",webmanifest:"application/manifest+json",webp:"image/webp",woff:"font/woff",woff2:"font/woff2",xhtml:"application/xhtml+xml",xml:"application/xml",zip:"application/zip","3gp":"video/3gpp","3g2":"video/3gpp2",gltf:"model/gltf+json",glb:"model/gltf-binary"},Es=ws,_s=(...e)=>{let t=e.filter(a=>a!=="").join("/");t=t.replace(new RegExp("(?<=\\/)\\/+","g"),"");const s=t.split("/"),r=[];for(const a of s)a===".."&&r.length>0&&r.at(-1)!==".."?r.pop():a!=="."&&r.push(a);return r.join("/")||"."},Dt={br:".br",zstd:".zst",gzip:".gz"},Ts=Object.keys(Dt),Is="index.html",ks=e=>{const t=e.root??"./",s=e.path,r=e.join??_s;return async(a,o)=>{var p,u,m,g;if(a.finalized)return o();let n;if(e.path)n=e.path;else try{if(n=decodeURIComponent(a.req.path),/(?:^|[\/\\])\.\.(?:$|[\/\\])/.test(n))throw new Error}catch{return await((p=e.onNotFound)==null?void 0:p.call(e,a.req.path,a)),o()}let i=r(t,!s&&e.rewriteRequestPath?e.rewriteRequestPath(n):n);e.isDir&&await e.isDir(i)&&(i=r(i,Is));const l=e.getContent;let d=await l(i,a);if(d instanceof Response)return a.newResponse(d.body,d);if(d){const x=e.mimes&&nt(i,e.mimes)||nt(i);if(a.header("Content-Type",x||"application/octet-stream"),e.precompressed&&(!x||ys.test(x))){const b=new Set((u=a.req.header("Accept-Encoding"))==null?void 0:u.split(",").map(h=>h.trim()));for(const h of Ts){if(!b.has(h))continue;const E=await l(i+Dt[h],a);if(E){d=E,a.header("Content-Encoding",h),a.header("Vary","Accept-Encoding",{append:!0});break}}}return await((m=e.onFound)==null?void 0:m.call(e,i,a)),a.body(d)}await((g=e.onNotFound)==null?void 0:g.call(e,i,a)),await o()}},Ss=async(e,t)=>{let s;t&&t.manifest?typeof t.manifest=="string"?s=JSON.parse(t.manifest):s=t.manifest:typeof __STATIC_CONTENT_MANIFEST=="string"?s=JSON.parse(__STATIC_CONTENT_MANIFEST):s=__STATIC_CONTENT_MANIFEST;let r;t&&t.namespace?r=t.namespace:r=__STATIC_CONTENT;const a=s[e]||e;if(!a)return null;const o=await r.get(a,{type:"stream"});return o||null},Ds=e=>async function(s,r){return ks({...e,getContent:async o=>Ss(o,{manifest:e.manifest,namespace:e.namespace?e.namespace:s.env?s.env.__STATIC_CONTENT:void 0})})(s,r)},Cs=e=>Ds(e);const Rs=`
+var Nt=Object.defineProperty;var tt=e=>{throw TypeError(e)};var Mt=(e,t,s)=>t in e?Nt(e,t,{enumerable:!0,configurable:!0,writable:!0,value:s}):e[t]=s;var I=(e,t,s)=>Mt(e,typeof t!="symbol"?t+"":t,s),Ye=(e,t,s)=>t.has(e)||tt("Cannot "+s);var f=(e,t,s)=>(Ye(e,t,"read from private field"),s?s.call(e):t.get(e)),D=(e,t,s)=>t.has(e)?tt("Cannot add the same private member more than once"):t instanceof WeakSet?t.add(e):t.set(e,s),T=(e,t,s,r)=>(Ye(e,t,"write to private field"),r?r.call(e,s):t.set(e,s),s),R=(e,t,s)=>(Ye(e,t,"access private method"),s);var st=(e,t,s,r)=>({set _(a){T(e,t,a,s)},get _(){return f(e,t,r)}});var rt=(e,t,s)=>(r,a)=>{let o=-1;return n(0);async function n(i){if(i<=o)throw new Error("next() called multiple times");o=i;let l,d=!1,p;if(e[i]?(p=e[i][0][0],r.req.routeIndex=i):p=i===e.length&&a||void 0,p)try{l=await p(r,()=>n(i+1))}catch(u){if(u instanceof Error&&t)r.error=u,l=await t(u,r),d=!0;else throw u}else r.finalized===!1&&s&&(l=await s(r));return l&&(r.finalized===!1||d)&&(r.res=l),r}},At=Symbol(),Ot=async(e,t=Object.create(null))=>{const{all:s=!1,dot:r=!1}=t,o=(e instanceof ft?e.raw.headers:e.headers).get("Content-Type");return o!=null&&o.startsWith("multipart/form-data")||o!=null&&o.startsWith("application/x-www-form-urlencoded")?Ut(e,{all:s,dot:r}):{}};async function Ut(e,t){const s=await e.formData();return s?Pt(s,t):{}}function Pt(e,t){const s=Object.create(null);return e.forEach((r,a)=>{t.all||a.endsWith("[]")?Ft(s,a,r):s[a]=r}),t.dot&&Object.entries(s).forEach(([r,a])=>{r.includes(".")&&($t(s,r,a),delete s[r])}),s}var Ft=(e,t,s)=>{e[t]!==void 0?Array.isArray(e[t])?e[t].push(s):e[t]=[e[t],s]:t.endsWith("[]")?e[t]=[s]:e[t]=s},$t=(e,t,s)=>{let r=e;const a=t.split(".");a.forEach((o,n)=>{n===a.length-1?r[o]=s:((!r[o]||typeof r[o]!="object"||Array.isArray(r[o])||r[o]instanceof File)&&(r[o]=Object.create(null)),r=r[o])})},gt=e=>{const t=e.split("/");return t[0]===""&&t.shift(),t},qt=e=>{const{groups:t,path:s}=Ht(e),r=gt(s);return Wt(r,t)},Ht=e=>{const t=[];return e=e.replace(/\{[^}]+\}/g,(s,r)=>{const a=`@${r}`;return t.push([a,s]),a}),{groups:t,path:e}},Wt=(e,t)=>{for(let s=t.length-1;s>=0;s--){const[r]=t[s];for(let a=e.length-1;a>=0;a--)if(e[a].includes(r)){e[a]=e[a].replace(r,t[s][1]);break}}return e},Pe={},Gt=(e,t)=>{if(e==="*")return"*";const s=e.match(/^\:([^\{\}]+)(?:\{(.+)\})?$/);if(s){const r=`${e}#${t}`;return Pe[r]||(s[2]?Pe[r]=t&&t[0]!==":"&&t[0]!=="*"?[r,s[1],new RegExp(`^${s[2]}(?=/${t})`)]:[e,s[1],new RegExp(`^${s[2]}$`)]:Pe[r]=[e,s[1],!0]),Pe[r]}return null},ze=(e,t)=>{try{return t(e)}catch{return e.replace(/(?:%[0-9A-Fa-f]{2})+/g,s=>{try{return t(s)}catch{return s}})}},zt=e=>ze(e,decodeURI),xt=e=>{const t=e.url,s=t.indexOf("/",t.indexOf(":")+4);let r=s;for(;r<t.length;r++){const a=t.charCodeAt(r);if(a===37){const o=t.indexOf("?",r),n=t.slice(s,o===-1?void 0:o);return zt(n.includes("%25")?n.replace(/%25/g,"%2525"):n)}else if(a===63)break}return t.slice(s,r)},Yt=e=>{const t=xt(e);return t.length>1&&t.at(-1)==="/"?t.slice(0,-1):t},fe=(e,t,...s)=>(s.length&&(t=fe(t,...s)),`${(e==null?void 0:e[0])==="/"?"":"/"}${e}${t==="/"?"":`${(e==null?void 0:e.at(-1))==="/"?"":"/"}${(t==null?void 0:t[0])==="/"?t.slice(1):t}`}`),bt=e=>{if(e.charCodeAt(e.length-1)!==63||!e.includes(":"))return null;const t=e.split("/"),s=[];let r="";return t.forEach(a=>{if(a!==""&&!/\:/.test(a))r+="/"+a;else if(/\:/.test(a))if(/\?/.test(a)){s.length===0&&r===""?s.push("/"):s.push(r);const o=a.replace("?","");r+="/"+o,s.push(r)}else r+="/"+a}),s.filter((a,o,n)=>n.indexOf(a)===o)},Ve=e=>/[%+]/.test(e)?(e.indexOf("+")!==-1&&(e=e.replace(/\+/g," ")),e.indexOf("%")!==-1?ze(e,Ze):e):e,ht=(e,t,s)=>{let r;if(!s&&t&&!/[%+]/.test(t)){let n=e.indexOf("?",8);if(n===-1)return;for(e.startsWith(t,n+1)||(n=e.indexOf(`&${t}`,n+1));n!==-1;){const i=e.charCodeAt(n+t.length+1);if(i===61){const l=n+t.length+2,d=e.indexOf("&",l);return Ve(e.slice(l,d===-1?void 0:d))}else if(i==38||isNaN(i))return"";n=e.indexOf(`&${t}`,n+1)}if(r=/[%+]/.test(e),!r)return}const a={};r??(r=/[%+]/.test(e));let o=e.indexOf("?",8);for(;o!==-1;){const n=e.indexOf("&",o+1);let i=e.indexOf("=",o);i>n&&n!==-1&&(i=-1);let l=e.slice(o+1,i===-1?n===-1?void 0:n:i);if(r&&(l=Ve(l)),o=n,l==="")continue;let d;i===-1?d="":(d=e.slice(i+1,n===-1?void 0:n),r&&(d=Ve(d))),s?(a[l]&&Array.isArray(a[l])||(a[l]=[]),a[l].push(d)):a[l]??(a[l]=d)}return t?a[t]:a},Vt=ht,Xt=(e,t)=>ht(e,t,!0),Ze=decodeURIComponent,at=e=>ze(e,Ze),we,G,te,vt,yt,Qe,se,lt,ft=(lt=class{constructor(e,t="/",s=[[]]){D(this,te);I(this,"raw");D(this,we);D(this,G);I(this,"routeIndex",0);I(this,"path");I(this,"bodyCache",{});D(this,se,e=>{const{bodyCache:t,raw:s}=this,r=t[e];if(r)return r;const a=Object.keys(t)[0];return a?t[a].then(o=>(a==="json"&&(o=JSON.stringify(o)),new Response(o)[e]())):t[e]=s[e]()});this.raw=e,this.path=t,T(this,G,s),T(this,we,{})}param(e){return e?R(this,te,vt).call(this,e):R(this,te,yt).call(this)}query(e){return Vt(this.url,e)}queries(e){return Xt(this.url,e)}header(e){if(e)return this.raw.headers.get(e)??void 0;const t={};return this.raw.headers.forEach((s,r)=>{t[r]=s}),t}async parseBody(e){var t;return(t=this.bodyCache).parsedBody??(t.parsedBody=await Ot(this,e))}json(){return f(this,se).call(this,"text").then(e=>JSON.parse(e))}text(){return f(this,se).call(this,"text")}arrayBuffer(){return f(this,se).call(this,"arrayBuffer")}blob(){return f(this,se).call(this,"blob")}formData(){return f(this,se).call(this,"formData")}addValidatedData(e,t){f(this,we)[e]=t}valid(e){return f(this,we)[e]}get url(){return this.raw.url}get method(){return this.raw.method}get[At](){return f(this,G)}get matchedRoutes(){return f(this,G)[0].map(([[,e]])=>e)}get routePath(){return f(this,G)[0].map(([[,e]])=>e)[this.routeIndex].path}},we=new WeakMap,G=new WeakMap,te=new WeakSet,vt=function(e){const t=f(this,G)[0][this.routeIndex][1][e],s=R(this,te,Qe).call(this,t);return s&&/\%/.test(s)?at(s):s},yt=function(){const e={},t=Object.keys(f(this,G)[0][this.routeIndex][1]);for(const s of t){const r=R(this,te,Qe).call(this,f(this,G)[0][this.routeIndex][1][s]);r!==void 0&&(e[s]=/\%/.test(r)?at(r):r)}return e},Qe=function(e){return f(this,G)[1]?f(this,G)[1][e]:e},se=new WeakMap,lt),Jt={Stringify:1},wt=async(e,t,s,r,a)=>{typeof e=="object"&&!(e instanceof String)&&(e instanceof Promise||(e=e.toString()),e instanceof Promise&&(e=await e));const o=e.callbacks;return o!=null&&o.length?(a?a[0]+=e:a=[e],Promise.all(o.map(i=>i({phase:t,buffer:a,context:r}))).then(i=>Promise.all(i.filter(Boolean).map(l=>wt(l,t,!1,r,a))).then(()=>a[0]))):Promise.resolve(e)},Kt="text/plain; charset=UTF-8",Xe=(e,t)=>({"Content-Type":e,...t}),Le,je,K,Ee,Q,$,Be,_e,Te,ce,Ne,Me,re,ve,dt,Qt=(dt=class{constructor(e,t){D(this,re);D(this,Le);D(this,je);I(this,"env",{});D(this,K);I(this,"finalized",!1);I(this,"error");D(this,Ee);D(this,Q);D(this,$);D(this,Be);D(this,_e);D(this,Te);D(this,ce);D(this,Ne);D(this,Me);I(this,"render",(...e)=>(f(this,_e)??T(this,_e,t=>this.html(t)),f(this,_e).call(this,...e)));I(this,"setLayout",e=>T(this,Be,e));I(this,"getLayout",()=>f(this,Be));I(this,"setRenderer",e=>{T(this,_e,e)});I(this,"header",(e,t,s)=>{this.finalized&&T(this,$,new Response(f(this,$).body,f(this,$)));const r=f(this,$)?f(this,$).headers:f(this,ce)??T(this,ce,new Headers);t===void 0?r.delete(e):s!=null&&s.append?r.append(e,t):r.set(e,t)});I(this,"status",e=>{T(this,Ee,e)});I(this,"set",(e,t)=>{f(this,K)??T(this,K,new Map),f(this,K).set(e,t)});I(this,"get",e=>f(this,K)?f(this,K).get(e):void 0);I(this,"newResponse",(...e)=>R(this,re,ve).call(this,...e));I(this,"body",(e,t,s)=>R(this,re,ve).call(this,e,t,s));I(this,"text",(e,t,s)=>!f(this,ce)&&!f(this,Ee)&&!t&&!s&&!this.finalized?new Response(e):R(this,re,ve).call(this,e,t,Xe(Kt,s)));I(this,"json",(e,t,s)=>R(this,re,ve).call(this,JSON.stringify(e),t,Xe("application/json",s)));I(this,"html",(e,t,s)=>{const r=a=>R(this,re,ve).call(this,a,t,Xe("text/html; charset=UTF-8",s));return typeof e=="object"?wt(e,Jt.Stringify,!1,{}).then(r):r(e)});I(this,"redirect",(e,t)=>{const s=String(e);return this.header("Location",/[^\x00-\xFF]/.test(s)?encodeURI(s):s),this.newResponse(null,t??302)});I(this,"notFound",()=>(f(this,Te)??T(this,Te,()=>new Response),f(this,Te).call(this,this)));T(this,Le,e),t&&(T(this,Q,t.executionCtx),this.env=t.env,T(this,Te,t.notFoundHandler),T(this,Me,t.path),T(this,Ne,t.matchResult))}get req(){return f(this,je)??T(this,je,new ft(f(this,Le),f(this,Me),f(this,Ne))),f(this,je)}get event(){if(f(this,Q)&&"respondWith"in f(this,Q))return f(this,Q);throw Error("This context has no FetchEvent")}get executionCtx(){if(f(this,Q))return f(this,Q);throw Error("This context has no ExecutionContext")}get res(){return f(this,$)||T(this,$,new Response(null,{headers:f(this,ce)??T(this,ce,new Headers)}))}set res(e){if(f(this,$)&&e){e=new Response(e.body,e);for(const[t,s]of f(this,$).headers.entries())if(t!=="content-type")if(t==="set-cookie"){const r=f(this,$).headers.getSetCookie();e.headers.delete("set-cookie");for(const a of r)e.headers.append("set-cookie",a)}else e.headers.set(t,s)}T(this,$,e),this.finalized=!0}get var(){return f(this,K)?Object.fromEntries(f(this,K)):{}}},Le=new WeakMap,je=new WeakMap,K=new WeakMap,Ee=new WeakMap,Q=new WeakMap,$=new WeakMap,Be=new WeakMap,_e=new WeakMap,Te=new WeakMap,ce=new WeakMap,Ne=new WeakMap,Me=new WeakMap,re=new WeakSet,ve=function(e,t,s){const r=f(this,$)?new Headers(f(this,$).headers):f(this,ce)??new Headers;if(typeof t=="object"&&"headers"in t){const o=t.headers instanceof Headers?t.headers:new Headers(t.headers);for(const[n,i]of o)n.toLowerCase()==="set-cookie"?r.append(n,i):r.set(n,i)}if(s)for(const[o,n]of Object.entries(s))if(typeof n=="string")r.set(o,n);else{r.delete(o);for(const i of n)r.append(o,i)}const a=typeof t=="number"?t:(t==null?void 0:t.status)??f(this,Ee);return new Response(e,{status:a,headers:r})},dt),M="ALL",Zt="all",es=["get","post","put","delete","options","patch"],Et="Can not add a route since the matcher is already built.",_t=class extends Error{},ts="__COMPOSED_HANDLER",ss=e=>e.text("404 Not Found",404),ot=(e,t)=>{if("getResponse"in e){const s=e.getResponse();return t.newResponse(s.body,s)}return console.error(e),t.text("Internal Server Error",500)},z,A,Tt,Y,le,Fe,$e,Ie,rs=(Ie=class{constructor(t={}){D(this,A);I(this,"get");I(this,"post");I(this,"put");I(this,"delete");I(this,"options");I(this,"patch");I(this,"all");I(this,"on");I(this,"use");I(this,"router");I(this,"getPath");I(this,"_basePath","/");D(this,z,"/");I(this,"routes",[]);D(this,Y,ss);I(this,"errorHandler",ot);I(this,"onError",t=>(this.errorHandler=t,this));I(this,"notFound",t=>(T(this,Y,t),this));I(this,"fetch",(t,...s)=>R(this,A,$e).call(this,t,s[1],s[0],t.method));I(this,"request",(t,s,r,a)=>t instanceof Request?this.fetch(s?new Request(t,s):t,r,a):(t=t.toString(),this.fetch(new Request(/^https?:\/\//.test(t)?t:`http://localhost${fe("/",t)}`,s),r,a)));I(this,"fire",()=>{addEventListener("fetch",t=>{t.respondWith(R(this,A,$e).call(this,t.request,t,void 0,t.request.method))})});[...es,Zt].forEach(o=>{this[o]=(n,...i)=>(typeof n=="string"?T(this,z,n):R(this,A,le).call(this,o,f(this,z),n),i.forEach(l=>{R(this,A,le).call(this,o,f(this,z),l)}),this)}),this.on=(o,n,...i)=>{for(const l of[n].flat()){T(this,z,l);for(const d of[o].flat())i.map(p=>{R(this,A,le).call(this,d.toUpperCase(),f(this,z),p)})}return this},this.use=(o,...n)=>(typeof o=="string"?T(this,z,o):(T(this,z,"*"),n.unshift(o)),n.forEach(i=>{R(this,A,le).call(this,M,f(this,z),i)}),this);const{strict:r,...a}=t;Object.assign(this,a),this.getPath=r??!0?t.getPath??xt:Yt}route(t,s){const r=this.basePath(t);return s.routes.map(a=>{var n;let o;s.errorHandler===ot?o=a.handler:(o=async(i,l)=>(await rt([],s.errorHandler)(i,()=>a.handler(i,l))).res,o[ts]=a.handler),R(n=r,A,le).call(n,a.method,a.path,o)}),this}basePath(t){const s=R(this,A,Tt).call(this);return s._basePath=fe(this._basePath,t),s}mount(t,s,r){let a,o;r&&(typeof r=="function"?o=r:(o=r.optionHandler,r.replaceRequest===!1?a=l=>l:a=r.replaceRequest));const n=o?l=>{const d=o(l);return Array.isArray(d)?d:[d]}:l=>{let d;try{d=l.executionCtx}catch{}return[l.env,d]};a||(a=(()=>{const l=fe(this._basePath,t),d=l==="/"?0:l.length;return p=>{const u=new URL(p.url);return u.pathname=u.pathname.slice(d)||"/",new Request(u,p)}})());const i=async(l,d)=>{const p=await s(a(l.req.raw),...n(l));if(p)return p;await d()};return R(this,A,le).call(this,M,fe(t,"*"),i),this}},z=new WeakMap,A=new WeakSet,Tt=function(){const t=new Ie({router:this.router,getPath:this.getPath});return t.errorHandler=this.errorHandler,T(t,Y,f(this,Y)),t.routes=this.routes,t},Y=new WeakMap,le=function(t,s,r){t=t.toUpperCase(),s=fe(this._basePath,s);const a={basePath:this._basePath,path:s,method:t,handler:r};this.router.add(t,s,[r,a]),this.routes.push(a)},Fe=function(t,s){if(t instanceof Error)return this.errorHandler(t,s);throw t},$e=function(t,s,r,a){if(a==="HEAD")return(async()=>new Response(null,await R(this,A,$e).call(this,t,s,r,"GET")))();const o=this.getPath(t,{env:r}),n=this.router.match(a,o),i=new Qt(t,{path:o,matchResult:n,env:r,executionCtx:s,notFoundHandler:f(this,Y)});if(n[0].length===1){let d;try{d=n[0][0][0][0](i,async()=>{i.res=await f(this,Y).call(this,i)})}catch(p){return R(this,A,Fe).call(this,p,i)}return d instanceof Promise?d.then(p=>p||(i.finalized?i.res:f(this,Y).call(this,i))).catch(p=>R(this,A,Fe).call(this,p,i)):d??f(this,Y).call(this,i)}const l=rt(n[0],this.errorHandler,f(this,Y));return(async()=>{try{const d=await l(i);if(!d.finalized)throw new Error("Context is not finalized. Did you forget to return a Response object or `await next()`?");return d.res}catch(d){return R(this,A,Fe).call(this,d,i)}})()},Ie),It=[];function as(e,t){const s=this.buildAllMatchers(),r=((a,o)=>{const n=s[a]||s[M],i=n[2][o];if(i)return i;const l=o.match(n[0]);if(!l)return[[],It];const d=l.indexOf("",1);return[n[1][d],l]});return this.match=r,r(e,t)}var He="[^/]+",Ce=".*",Re="(?:|/.*)",ye=Symbol(),os=new Set(".\\+*[^]$()");function ns(e,t){return e.length===1?t.length===1?e<t?-1:1:-1:t.length===1||e===Ce||e===Re?1:t===Ce||t===Re?-1:e===He?1:t===He?-1:e.length===t.length?e<t?-1:1:t.length-e.length}var pe,ue,V,xe,is=(xe=class{constructor(){D(this,pe);D(this,ue);D(this,V,Object.create(null))}insert(t,s,r,a,o){if(t.length===0){if(f(this,pe)!==void 0)throw ye;if(o)return;T(this,pe,s);return}const[n,...i]=t,l=n==="*"?i.length===0?["","",Ce]:["","",He]:n==="/*"?["","",Re]:n.match(/^\:([^\{\}]+)(?:\{(.+)\})?$/);let d;if(l){const p=l[1];let u=l[2]||He;if(p&&l[2]&&(u===".*"||(u=u.replace(/^\((?!\?:)(?=[^)]+\)$)/,"(?:"),/\((?!\?:)/.test(u))))throw ye;if(d=f(this,V)[u],!d){if(Object.keys(f(this,V)).some(m=>m!==Ce&&m!==Re))throw ye;if(o)return;d=f(this,V)[u]=new xe,p!==""&&T(d,ue,a.varIndex++)}!o&&p!==""&&r.push([p,f(d,ue)])}else if(d=f(this,V)[n],!d){if(Object.keys(f(this,V)).some(p=>p.length>1&&p!==Ce&&p!==Re))throw ye;if(o)return;d=f(this,V)[n]=new xe}d.insert(i,s,r,a,o)}buildRegExpStr(){const s=Object.keys(f(this,V)).sort(ns).map(r=>{const a=f(this,V)[r];return(typeof f(a,ue)=="number"?`(${r})@${f(a,ue)}`:os.has(r)?`\\${r}`:r)+a.buildRegExpStr()});return typeof f(this,pe)=="number"&&s.unshift(`#${f(this,pe)}`),s.length===0?"":s.length===1?s[0]:"(?:"+s.join("|")+")"}},pe=new WeakMap,ue=new WeakMap,V=new WeakMap,xe),We,Ae,ct,ls=(ct=class{constructor(){D(this,We,{varIndex:0});D(this,Ae,new is)}insert(e,t,s){const r=[],a=[];for(let n=0;;){let i=!1;if(e=e.replace(/\{[^}]+\}/g,l=>{const d=`@\\${n}`;return a[n]=[d,l],n++,i=!0,d}),!i)break}const o=e.match(/(?::[^\/]+)|(?:\/\*$)|./g)||[];for(let n=a.length-1;n>=0;n--){const[i]=a[n];for(let l=o.length-1;l>=0;l--)if(o[l].indexOf(i)!==-1){o[l]=o[l].replace(i,a[n][1]);break}}return f(this,Ae).insert(o,t,r,f(this,We),s),r}buildRegExp(){let e=f(this,Ae).buildRegExpStr();if(e==="")return[/^$/,[],[]];let t=0;const s=[],r=[];return e=e.replace(/#(\d+)|@(\d+)|\.\*\$/g,(a,o,n)=>o!==void 0?(s[++t]=Number(o),"$()"):(n!==void 0&&(r[Number(n)]=++t),"")),[new RegExp(`^${e}`),s,r]}},We=new WeakMap,Ae=new WeakMap,ct),ds=[/^$/,[],Object.create(null)],qe=Object.create(null);function kt(e){return qe[e]??(qe[e]=new RegExp(e==="*"?"":`^${e.replace(/\/\*$|([.\\+*[^\]$()])/g,(t,s)=>s?`\\${s}`:"(?:|/.*)")}$`))}function cs(){qe=Object.create(null)}function ps(e){var d;const t=new ls,s=[];if(e.length===0)return ds;const r=e.map(p=>[!/\*|\/:/.test(p[0]),...p]).sort(([p,u],[m,g])=>p?1:m?-1:u.length-g.length),a=Object.create(null);for(let p=0,u=-1,m=r.length;p<m;p++){const[g,x,b]=r[p];g?a[x]=[b.map(([E])=>[E,Object.create(null)]),It]:u++;let h;try{h=t.insert(x,u,g)}catch(E){throw E===ye?new _t(x):E}g||(s[u]=b.map(([E,w])=>{const v=Object.create(null);for(w-=1;w>=0;w--){const[y,_]=h[w];v[y]=_}return[E,v]}))}const[o,n,i]=t.buildRegExp();for(let p=0,u=s.length;p<u;p++)for(let m=0,g=s[p].length;m<g;m++){const x=(d=s[p][m])==null?void 0:d[1];if(!x)continue;const b=Object.keys(x);for(let h=0,E=b.length;h<E;h++)x[b[h]]=i[x[b[h]]]}const l=[];for(const p in n)l[p]=s[n[p]];return[o,l,a]}function he(e,t){if(e){for(const s of Object.keys(e).sort((r,a)=>a.length-r.length))if(kt(s).test(t))return[...e[s]]}}var ae,oe,Ge,St,pt,us=(pt=class{constructor(){D(this,Ge);I(this,"name","RegExpRouter");D(this,ae);D(this,oe);I(this,"match",as);T(this,ae,{[M]:Object.create(null)}),T(this,oe,{[M]:Object.create(null)})}add(e,t,s){var i;const r=f(this,ae),a=f(this,oe);if(!r||!a)throw new Error(Et);r[e]||[r,a].forEach(l=>{l[e]=Object.create(null),Object.keys(l[M]).forEach(d=>{l[e][d]=[...l[M][d]]})}),t==="/*"&&(t="*");const o=(t.match(/\/:/g)||[]).length;if(/\*$/.test(t)){const l=kt(t);e===M?Object.keys(r).forEach(d=>{var p;(p=r[d])[t]||(p[t]=he(r[d],t)||he(r[M],t)||[])}):(i=r[e])[t]||(i[t]=he(r[e],t)||he(r[M],t)||[]),Object.keys(r).forEach(d=>{(e===M||e===d)&&Object.keys(r[d]).forEach(p=>{l.test(p)&&r[d][p].push([s,o])})}),Object.keys(a).forEach(d=>{(e===M||e===d)&&Object.keys(a[d]).forEach(p=>l.test(p)&&a[d][p].push([s,o]))});return}const n=bt(t)||[t];for(let l=0,d=n.length;l<d;l++){const p=n[l];Object.keys(a).forEach(u=>{var m;(e===M||e===u)&&((m=a[u])[p]||(m[p]=[...he(r[u],p)||he(r[M],p)||[]]),a[u][p].push([s,o-d+l+1]))})}}buildAllMatchers(){const e=Object.create(null);return Object.keys(f(this,oe)).concat(Object.keys(f(this,ae))).forEach(t=>{e[t]||(e[t]=R(this,Ge,St).call(this,t))}),T(this,ae,T(this,oe,void 0)),cs(),e}},ae=new WeakMap,oe=new WeakMap,Ge=new WeakSet,St=function(e){const t=[];let s=e===M;return[f(this,ae),f(this,oe)].forEach(r=>{const a=r[e]?Object.keys(r[e]).map(o=>[o,r[e][o]]):[];a.length!==0?(s||(s=!0),t.push(...a)):e!==M&&t.push(...Object.keys(r[M]).map(o=>[o,r[M][o]]))}),s?ps(t):null},pt),ne,Z,ut,ms=(ut=class{constructor(e){I(this,"name","SmartRouter");D(this,ne,[]);D(this,Z,[]);T(this,ne,e.routers)}add(e,t,s){if(!f(this,Z))throw new Error(Et);f(this,Z).push([e,t,s])}match(e,t){if(!f(this,Z))throw new Error("Fatal error");const s=f(this,ne),r=f(this,Z),a=s.length;let o=0,n;for(;o<a;o++){const i=s[o];try{for(let l=0,d=r.length;l<d;l++)i.add(...r[l]);n=i.match(e,t)}catch(l){if(l instanceof _t)continue;throw l}this.match=i.match.bind(i),T(this,ne,[i]),T(this,Z,void 0);break}if(o===a)throw new Error("Fatal error");return this.name=`SmartRouter + ${this.activeRouter.name}`,n}get activeRouter(){if(f(this,Z)||f(this,ne).length!==1)throw new Error("No active router has been determined yet.");return f(this,ne)[0]}},ne=new WeakMap,Z=new WeakMap,ut),De=Object.create(null),ie,P,me,ke,U,ee,de,Se,gs=(Se=class{constructor(t,s,r){D(this,ee);D(this,ie);D(this,P);D(this,me);D(this,ke,0);D(this,U,De);if(T(this,P,r||Object.create(null)),T(this,ie,[]),t&&s){const a=Object.create(null);a[t]={handler:s,possibleKeys:[],score:0},T(this,ie,[a])}T(this,me,[])}insert(t,s,r){T(this,ke,++st(this,ke)._);let a=this;const o=qt(s),n=[];for(let i=0,l=o.length;i<l;i++){const d=o[i],p=o[i+1],u=Gt(d,p),m=Array.isArray(u)?u[0]:d;if(m in f(a,P)){a=f(a,P)[m],u&&n.push(u[1]);continue}f(a,P)[m]=new Se,u&&(f(a,me).push(u),n.push(u[1])),a=f(a,P)[m]}return f(a,ie).push({[t]:{handler:r,possibleKeys:n.filter((i,l,d)=>d.indexOf(i)===l),score:f(this,ke)}}),a}search(t,s){var l;const r=[];T(this,U,De);let o=[this];const n=gt(s),i=[];for(let d=0,p=n.length;d<p;d++){const u=n[d],m=d===p-1,g=[];for(let x=0,b=o.length;x<b;x++){const h=o[x],E=f(h,P)[u];E&&(T(E,U,f(h,U)),m?(f(E,P)["*"]&&r.push(...R(this,ee,de).call(this,f(E,P)["*"],t,f(h,U))),r.push(...R(this,ee,de).call(this,E,t,f(h,U)))):g.push(E));for(let w=0,v=f(h,me).length;w<v;w++){const y=f(h,me)[w],_=f(h,U)===De?{}:{...f(h,U)};if(y==="*"){const N=f(h,P)["*"];N&&(r.push(...R(this,ee,de).call(this,N,t,f(h,U))),T(N,U,_),g.push(N));continue}const[k,L,B]=y;if(!u&&!(B instanceof RegExp))continue;const C=f(h,P)[k],H=n.slice(d).join("/");if(B instanceof RegExp){const N=B.exec(H);if(N){if(_[L]=N[0],r.push(...R(this,ee,de).call(this,C,t,f(h,U),_)),Object.keys(f(C,P)).length){T(C,U,_);const J=((l=N[0].match(/\//))==null?void 0:l.length)??0;(i[J]||(i[J]=[])).push(C)}continue}}(B===!0||B.test(u))&&(_[L]=u,m?(r.push(...R(this,ee,de).call(this,C,t,_,f(h,U))),f(C,P)["*"]&&r.push(...R(this,ee,de).call(this,f(C,P)["*"],t,_,f(h,U)))):(T(C,U,_),g.push(C)))}}o=g.concat(i.shift()??[])}return r.length>1&&r.sort((d,p)=>d.score-p.score),[r.map(({handler:d,params:p})=>[d,p])]}},ie=new WeakMap,P=new WeakMap,me=new WeakMap,ke=new WeakMap,U=new WeakMap,ee=new WeakSet,de=function(t,s,r,a){const o=[];for(let n=0,i=f(t,ie).length;n<i;n++){const l=f(t,ie)[n],d=l[s]||l[M],p={};if(d!==void 0&&(d.params=Object.create(null),o.push(d),r!==De||a&&a!==De))for(let u=0,m=d.possibleKeys.length;u<m;u++){const g=d.possibleKeys[u],x=p[d.score];d.params[g]=a!=null&&a[g]&&!x?a[g]:r[g]??(a==null?void 0:a[g]),p[d.score]=!0}}return o},Se),ge,mt,xs=(mt=class{constructor(){I(this,"name","TrieRouter");D(this,ge);T(this,ge,new gs)}add(e,t,s){const r=bt(t);if(r){for(let a=0,o=r.length;a<o;a++)f(this,ge).insert(e,r[a],s);return}f(this,ge).insert(e,t,s)}match(e,t){return f(this,ge).search(e,t)}},ge=new WeakMap,mt),et=class extends rs{constructor(e={}){super(e),this.router=e.router??new ms({routers:[new us,new xs]})}},bs=e=>{const s={...{origin:"*",allowMethods:["GET","HEAD","PUT","POST","DELETE","PATCH"],allowHeaders:[],exposeHeaders:[]},...e},r=(o=>typeof o=="string"?o==="*"?()=>o:n=>o===n?n:null:typeof o=="function"?o:n=>o.includes(n)?n:null)(s.origin),a=(o=>typeof o=="function"?o:Array.isArray(o)?()=>o:()=>[])(s.allowMethods);return async function(n,i){var p;function l(u,m){n.res.headers.set(u,m)}const d=await r(n.req.header("origin")||"",n);if(d&&l("Access-Control-Allow-Origin",d),s.credentials&&l("Access-Control-Allow-Credentials","true"),(p=s.exposeHeaders)!=null&&p.length&&l("Access-Control-Expose-Headers",s.exposeHeaders.join(",")),n.req.method==="OPTIONS"){s.origin!=="*"&&l("Vary","Origin"),s.maxAge!=null&&l("Access-Control-Max-Age",s.maxAge.toString());const u=await a(n.req.header("origin")||"",n);u.length&&l("Access-Control-Allow-Methods",u.join(","));let m=s.allowHeaders;if(!(m!=null&&m.length)){const g=n.req.header("Access-Control-Request-Headers");g&&(m=g.split(/\s*,\s*/))}return m!=null&&m.length&&(l("Access-Control-Allow-Headers",m.join(",")),n.res.headers.append("Vary","Access-Control-Request-Headers")),n.res.headers.delete("Content-Length"),n.res.headers.delete("Content-Type"),new Response(null,{headers:n.res.headers,status:204,statusText:"No Content"})}await i(),s.origin!=="*"&&n.header("Vary","Origin",{append:!0})}},hs=/^[\w!#$%&'*.^`|~+-]+$/,fs=/^[ !#-:<-[\]-~]*$/,vs=(e,t)=>{if(e.indexOf(t)===-1)return{};const s=e.trim().split(";"),r={};for(let a of s){a=a.trim();const o=a.indexOf("=");if(o===-1)continue;const n=a.substring(0,o).trim();if(t!==n||!hs.test(n))continue;let i=a.substring(o+1).trim();if(i.startsWith('"')&&i.endsWith('"')&&(i=i.slice(1,-1)),fs.test(i)){r[n]=i.indexOf("%")!==-1?ze(i,Ze):i;break}}return r},O=(e,t,s)=>{const r=e.req.raw.headers.get("Cookie");{if(!r)return;let a=t;return vs(r,a)[a]}},ys=/^\s*(?:text\/(?!event-stream(?:[;\s]|$))[^;\s]+|application\/(?:javascript|json|xml|xml-dtd|ecmascript|dart|postscript|rtf|tar|toml|vnd\.dart|vnd\.ms-fontobject|vnd\.ms-opentype|wasm|x-httpd-php|x-javascript|x-ns-proxy-autoconfig|x-sh|x-tar|x-virtualbox-hdd|x-virtualbox-ova|x-virtualbox-ovf|x-virtualbox-vbox|x-virtualbox-vdi|x-virtualbox-vhd|x-virtualbox-vmdk|x-www-form-urlencoded)|font\/(?:otf|ttf)|image\/(?:bmp|vnd\.adobe\.photoshop|vnd\.microsoft\.icon|vnd\.ms-dds|x-icon|x-ms-bmp)|message\/rfc822|model\/gltf-binary|x-shader\/x-fragment|x-shader\/x-vertex|[^;\s]+?\+(?:json|text|xml|yaml))(?:[;\s]|$)/i,nt=(e,t=Es)=>{const s=/\.([a-zA-Z0-9]+?)$/,r=e.match(s);if(!r)return;let a=t[r[1]];return a&&a.startsWith("text")&&(a+="; charset=utf-8"),a},ws={aac:"audio/aac",avi:"video/x-msvideo",avif:"image/avif",av1:"video/av1",bin:"application/octet-stream",bmp:"image/bmp",css:"text/css",csv:"text/csv",eot:"application/vnd.ms-fontobject",epub:"application/epub+zip",gif:"image/gif",gz:"application/gzip",htm:"text/html",html:"text/html",ico:"image/x-icon",ics:"text/calendar",jpeg:"image/jpeg",jpg:"image/jpeg",js:"text/javascript",json:"application/json",jsonld:"application/ld+json",map:"application/json",mid:"audio/x-midi",midi:"audio/x-midi",mjs:"text/javascript",mp3:"audio/mpeg",mp4:"video/mp4",mpeg:"video/mpeg",oga:"audio/ogg",ogv:"video/ogg",ogx:"application/ogg",opus:"audio/opus",otf:"font/otf",pdf:"application/pdf",png:"image/png",rtf:"application/rtf",svg:"image/svg+xml",tif:"image/tiff",tiff:"image/tiff",ts:"video/mp2t",ttf:"font/ttf",txt:"text/plain",wasm:"application/wasm",webm:"video/webm",weba:"audio/webm",webmanifest:"application/manifest+json",webp:"image/webp",woff:"font/woff",woff2:"font/woff2",xhtml:"application/xhtml+xml",xml:"application/xml",zip:"application/zip","3gp":"video/3gpp","3g2":"video/3gpp2",gltf:"model/gltf+json",glb:"model/gltf-binary"},Es=ws,_s=(...e)=>{let t=e.filter(a=>a!=="").join("/");t=t.replace(new RegExp("(?<=\\/)\\/+","g"),"");const s=t.split("/"),r=[];for(const a of s)a===".."&&r.length>0&&r.at(-1)!==".."?r.pop():a!=="."&&r.push(a);return r.join("/")||"."},Dt={br:".br",zstd:".zst",gzip:".gz"},Ts=Object.keys(Dt),Is="index.html",ks=e=>{const t=e.root??"./",s=e.path,r=e.join??_s;return async(a,o)=>{var p,u,m,g;if(a.finalized)return o();let n;if(e.path)n=e.path;else try{if(n=decodeURIComponent(a.req.path),/(?:^|[\/\\])\.\.(?:$|[\/\\])/.test(n))throw new Error}catch{return await((p=e.onNotFound)==null?void 0:p.call(e,a.req.path,a)),o()}let i=r(t,!s&&e.rewriteRequestPath?e.rewriteRequestPath(n):n);e.isDir&&await e.isDir(i)&&(i=r(i,Is));const l=e.getContent;let d=await l(i,a);if(d instanceof Response)return a.newResponse(d.body,d);if(d){const x=e.mimes&&nt(i,e.mimes)||nt(i);if(a.header("Content-Type",x||"application/octet-stream"),e.precompressed&&(!x||ys.test(x))){const b=new Set((u=a.req.header("Accept-Encoding"))==null?void 0:u.split(",").map(h=>h.trim()));for(const h of Ts){if(!b.has(h))continue;const E=await l(i+Dt[h],a);if(E){d=E,a.header("Content-Encoding",h),a.header("Vary","Accept-Encoding",{append:!0});break}}}return await((m=e.onFound)==null?void 0:m.call(e,i,a)),a.body(d)}await((g=e.onNotFound)==null?void 0:g.call(e,i,a)),await o()}},Ss=async(e,t)=>{let s;t&&t.manifest?typeof t.manifest=="string"?s=JSON.parse(t.manifest):s=t.manifest:typeof __STATIC_CONTENT_MANIFEST=="string"?s=JSON.parse(__STATIC_CONTENT_MANIFEST):s=__STATIC_CONTENT_MANIFEST;let r;t&&t.namespace?r=t.namespace:r=__STATIC_CONTENT;const a=s[e]||e;if(!a)return null;const o=await r.get(a,{type:"stream"});return o||null},Ds=e=>async function(s,r){return ks({...e,getContent:async o=>Ss(o,{manifest:e.manifest,namespace:e.namespace?e.namespace:s.env?s.env.__STATIC_CONTENT:void 0})})(s,r)},Cs=e=>Ds(e);const Rs=`
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -2589,22 +2589,22 @@ var Nt=Object.defineProperty;var tt=e=>{throw TypeError(e)};var Mt=(e,t,s)=>t in
     <\/script>
 </body>
 </html>
-`,Oe={classesPage:Rs,studentsListPage:Ls,dailyRecordPage:js,studentDetailPage:Bs,coursesPage:Ns},H=new et,X=async(e,t)=>{try{const s=e.req.header("cookie");let r=null;if(s){const n=s.split(";").map(i=>i.trim()).find(i=>i.startsWith("session_id="));n&&(r=n.split("=")[1])}if(!r)return e.json({error:"로그인이 필요합니다"},401);const a=await e.env.DB.prepare(`
+`,Oe={classesPage:Rs,studentsListPage:Ls,dailyRecordPage:js,studentDetailPage:Bs,coursesPage:Ns},q=new et,X=async(e,t)=>{try{const s=e.req.header("cookie");let r=null;if(s){const n=s.split(";").map(i=>i.trim()).find(i=>i.startsWith("session_id="));n&&(r=n.split("=")[1])}if(!r)return e.json({error:"로그인이 필요합니다"},401);const a=await e.env.DB.prepare(`
       SELECT user_id FROM sessions WHERE session_id = ? AND expires_at > datetime('now')
-    `).bind(r).first();if(!a)return e.json({error:"세션이 만료되었습니다"},401);e.set("userId",a.user_id),await t()}catch(s){return console.error("Auth middleware error:",s),e.json({error:"인증 처리 중 오류가 발생했습니다: "+s.message},500)}};H.get("/api/form-templates",X,async e=>{try{const t=e.get("userId"),s=await e.env.DB.prepare(`
+    `).bind(r).first();if(!a)return e.json({error:"세션이 만료되었습니다"},401);e.set("userId",a.user_id),await t()}catch(s){return console.error("Auth middleware error:",s),e.json({error:"인증 처리 중 오류가 발생했습니다: "+s.message},500)}};q.get("/api/form-templates",X,async e=>{try{const t=e.get("userId"),s=await e.env.DB.prepare(`
       SELECT * FROM form_templates 
       WHERE user_id = ? 
       ORDER BY created_at DESC
-    `).bind(t).all();return e.json(s.results||[])}catch(t){return console.error("Error fetching templates:",t),e.json({error:"템플릿을 불러올 수 없습니다"},500)}});H.get("/api/form-templates/:id",X,async e=>{try{const t=e.get("userId"),s=e.req.param("id"),r=await e.env.DB.prepare(`
+    `).bind(t).all();return e.json(s.results||[])}catch(t){return console.error("Error fetching templates:",t),e.json({error:"템플릿을 불러올 수 없습니다"},500)}});q.get("/api/form-templates/:id",X,async e=>{try{const t=e.get("userId"),s=e.req.param("id"),r=await e.env.DB.prepare(`
       SELECT * FROM form_templates 
       WHERE id = ? AND user_id = ?
-    `).bind(s,t).first();return r?e.json(r):e.json({error:"템플릿을 찾을 수 없습니다"},404)}catch(t){return console.error("Error fetching template:",t),e.json({error:"템플릿을 불러올 수 없습니다"},500)}});H.post("/api/form-templates",X,async e=>{try{const t=e.get("userId"),s=await e.req.json();if(!s.name||!s.fields)return e.json({error:"필수 항목을 입력해주세요"},400);try{JSON.parse(s.fields)}catch{return e.json({error:"잘못된 필드 형식입니다"},400)}const r=await e.env.DB.prepare(`
+    `).bind(s,t).first();return r?e.json(r):e.json({error:"템플릿을 찾을 수 없습니다"},404)}catch(t){return console.error("Error fetching template:",t),e.json({error:"템플릿을 불러올 수 없습니다"},500)}});q.post("/api/form-templates",X,async e=>{try{const t=e.get("userId"),s=await e.req.json();if(!s.name||!s.fields)return e.json({error:"필수 항목을 입력해주세요"},400);try{JSON.parse(s.fields)}catch{return e.json({error:"잘못된 필드 형식입니다"},400)}const r=await e.env.DB.prepare(`
       INSERT INTO form_templates (
         name, description, user_id, fields, 
         submit_button_text, success_message,
         notification_email, notification_phone, send_sms_notification
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).bind(s.name,s.description||"",t,s.fields,s.submit_button_text||"신청하기",s.success_message||"신청이 완료되었습니다!",s.notification_email||"",s.notification_phone||"",s.send_sms_notification||0).run();return e.json({success:!0,id:r.meta.last_row_id,message:"템플릿이 생성되었습니다"})}catch(t){return console.error("Error creating template:",t),e.json({error:"템플릿 생성에 실패했습니다"},500)}});H.put("/api/form-templates/:id",X,async e=>{try{const t=e.get("userId"),s=e.req.param("id"),r=await e.req.json();if(!await e.env.DB.prepare(`
+    `).bind(s.name,s.description||"",t,s.fields,s.submit_button_text||"신청하기",s.success_message||"신청이 완료되었습니다!",s.notification_email||"",s.notification_phone||"",s.send_sms_notification||0).run();return e.json({success:!0,id:r.meta.last_row_id,message:"템플릿이 생성되었습니다"})}catch(t){return console.error("Error creating template:",t),e.json({error:"템플릿 생성에 실패했습니다"},500)}});q.put("/api/form-templates/:id",X,async e=>{try{const t=e.get("userId"),s=e.req.param("id"),r=await e.req.json();if(!await e.env.DB.prepare(`
       SELECT id FROM form_templates WHERE id = ? AND user_id = ?
     `).bind(s,t).first())return e.json({error:"템플릿을 찾을 수 없거나 권한이 없습니다"},404);if(!r.name||!r.fields)return e.json({error:"필수 항목을 입력해주세요"},400);try{JSON.parse(r.fields)}catch{return e.json({error:"잘못된 필드 형식입니다"},400)}return await e.env.DB.prepare(`
       UPDATE form_templates SET
@@ -2618,11 +2618,11 @@ var Nt=Object.defineProperty;var tt=e=>{throw TypeError(e)};var Mt=(e,t,s)=>t in
         send_sms_notification = ?,
         updated_at = CURRENT_TIMESTAMP
       WHERE id = ? AND user_id = ?
-    `).bind(r.name,r.description||"",r.fields,r.submit_button_text||"신청하기",r.success_message||"신청이 완료되었습니다!",r.notification_email||"",r.notification_phone||"",r.send_sms_notification||0,s,t).run(),e.json({success:!0,message:"템플릿이 수정되었습니다"})}catch(t){return console.error("Error updating template:",t),e.json({error:"템플릿 수정에 실패했습니다"},500)}});H.delete("/api/form-templates/:id",X,async e=>{try{const t=e.get("userId"),s=e.req.param("id");return await e.env.DB.prepare(`
+    `).bind(r.name,r.description||"",r.fields,r.submit_button_text||"신청하기",r.success_message||"신청이 완료되었습니다!",r.notification_email||"",r.notification_phone||"",r.send_sms_notification||0,s,t).run(),e.json({success:!0,message:"템플릿이 수정되었습니다"})}catch(t){return console.error("Error updating template:",t),e.json({error:"템플릿 수정에 실패했습니다"},500)}});q.delete("/api/form-templates/:id",X,async e=>{try{const t=e.get("userId"),s=e.req.param("id");return await e.env.DB.prepare(`
       SELECT id FROM form_templates WHERE id = ? AND user_id = ?
     `).bind(s,t).first()?(await e.env.DB.prepare(`
       DELETE FROM form_templates WHERE id = ? AND user_id = ?
-    `).bind(s,t).run(),e.json({success:!0,message:"템플릿이 삭제되었습니다"})):e.json({error:"템플릿을 찾을 수 없거나 권한이 없습니다"},404)}catch(t){return console.error("Error deleting template:",t),e.json({error:"템플릿 삭제에 실패했습니다"},500)}});H.get("/api/form-templates/:id/html",X,async e=>{try{const t=e.get("userId"),s=e.req.param("id"),r=await e.env.DB.prepare(`
+    `).bind(s,t).run(),e.json({success:!0,message:"템플릿이 삭제되었습니다"})):e.json({error:"템플릿을 찾을 수 없거나 권한이 없습니다"},404)}catch(t){return console.error("Error deleting template:",t),e.json({error:"템플릿 삭제에 실패했습니다"},500)}});q.get("/api/form-templates/:id/html",X,async e=>{try{const t=e.get("userId"),s=e.req.param("id"),r=await e.env.DB.prepare(`
       SELECT * FROM form_templates 
       WHERE id = ? AND user_id = ?
     `).bind(s,t).first();if(!r)return e.json({error:"템플릿을 찾을 수 없습니다"},404);const a=JSON.parse(r.fields);let o=`
@@ -2690,14 +2690,14 @@ var Nt=Object.defineProperty;var tt=e=>{throw TypeError(e)};var Mt=(e,t,s)=>t in
 `,o+=`}
 `,o+=`<\/script>
 `,o+=`<!-- 폼 끝 -->
-`,e.json({success:!0,html:o,template:{id:r.id,name:r.name}})}catch(t){return console.error("Error generating HTML:",t),e.json({error:"HTML 생성에 실패했습니다"},500)}});H.post("/api/form-submissions",async e=>{try{const t=await e.req.json();if(!t.form_template_id||!t.submission_data)return e.json({error:"필수 항목을 입력해주세요"},400);const s=await e.env.DB.prepare(`
+`,e.json({success:!0,html:o,template:{id:r.id,name:r.name}})}catch(t){return console.error("Error generating HTML:",t),e.json({error:"HTML 생성에 실패했습니다"},500)}});q.post("/api/form-submissions",async e=>{try{const t=await e.req.json();if(!t.form_template_id||!t.submission_data)return e.json({error:"필수 항목을 입력해주세요"},400);const s=await e.env.DB.prepare(`
       SELECT * FROM form_templates WHERE id = ?
     `).bind(t.form_template_id).first();if(!s)return e.json({error:"폼을 찾을 수 없습니다"},404);const r=e.req.header("cf-connecting-ip")||e.req.header("x-forwarded-for")||"unknown",a=e.req.header("user-agent")||"unknown",o=await e.env.DB.prepare(`
       INSERT INTO form_submissions (
         form_template_id, landing_page_id, submission_data,
         ip_address, user_agent, status
       ) VALUES (?, ?, ?, ?, ?, 'new')
-    `).bind(t.form_template_id,t.landing_page_id||null,t.submission_data,r,a).run();return e.json({success:!0,id:o.meta.last_row_id,message:s.success_message||"신청이 완료되었습니다!"})}catch(t){return console.error("Error submitting form:",t),e.json({error:"제출에 실패했습니다"},500)}});H.get("/api/form-submissions",X,async e=>{try{const t=e.get("userId"),s=e.req.query("template_id"),r=e.req.query("status");let a=`
+    `).bind(t.form_template_id,t.landing_page_id||null,t.submission_data,r,a).run();return e.json({success:!0,id:o.meta.last_row_id,message:s.success_message||"신청이 완료되었습니다!"})}catch(t){return console.error("Error submitting form:",t),e.json({error:"제출에 실패했습니다"},500)}});q.get("/api/form-submissions",X,async e=>{try{const t=e.get("userId"),s=e.req.query("template_id"),r=e.req.query("status");let a=`
       SELECT 
         fs.*,
         ft.name as template_name,
@@ -2706,7 +2706,7 @@ var Nt=Object.defineProperty;var tt=e=>{throw TypeError(e)};var Mt=(e,t,s)=>t in
       JOIN form_templates ft ON fs.form_template_id = ft.id
       LEFT JOIN landing_pages lp ON fs.landing_page_id = lp.id
       WHERE ft.user_id = ?
-    `;const o=[t];s&&(a+=" AND fs.form_template_id = ?",o.push(s)),r&&(a+=" AND fs.status = ?",o.push(r)),a+=" ORDER BY fs.submitted_at DESC";const n=await e.env.DB.prepare(a).bind(...o).all();return e.json(n.results||[])}catch(t){return console.error("Error fetching submissions:",t),e.json({error:"제출 내역을 불러올 수 없습니다"},500)}});H.get("/api/form-submissions/:id",X,async e=>{try{const t=e.get("userId"),s=e.req.param("id"),r=await e.env.DB.prepare(`
+    `;const o=[t];s&&(a+=" AND fs.form_template_id = ?",o.push(s)),r&&(a+=" AND fs.status = ?",o.push(r)),a+=" ORDER BY fs.submitted_at DESC";const n=await e.env.DB.prepare(a).bind(...o).all();return e.json(n.results||[])}catch(t){return console.error("Error fetching submissions:",t),e.json({error:"제출 내역을 불러올 수 없습니다"},500)}});q.get("/api/form-submissions/:id",X,async e=>{try{const t=e.get("userId"),s=e.req.param("id"),r=await e.env.DB.prepare(`
       SELECT 
         fs.*,
         ft.name as template_name,
@@ -2716,7 +2716,7 @@ var Nt=Object.defineProperty;var tt=e=>{throw TypeError(e)};var Mt=(e,t,s)=>t in
       WHERE fs.id = ?
     `).bind(s).first();return!r||r.template_owner!==t?e.json({error:"제출 내역을 찾을 수 없거나 권한이 없습니다"},404):(r.viewed_at||await e.env.DB.prepare(`
         UPDATE form_submissions SET viewed_at = CURRENT_TIMESTAMP WHERE id = ?
-      `).bind(s).run(),e.json(r))}catch(t){return console.error("Error fetching submission:",t),e.json({error:"제출 내역을 불러올 수 없습니다"},500)}});H.patch("/api/form-submissions/:id",X,async e=>{try{const t=e.get("userId"),s=e.req.param("id"),r=await e.req.json(),a=await e.env.DB.prepare(`
+      `).bind(s).run(),e.json(r))}catch(t){return console.error("Error fetching submission:",t),e.json({error:"제출 내역을 불러올 수 없습니다"},500)}});q.patch("/api/form-submissions/:id",X,async e=>{try{const t=e.get("userId"),s=e.req.param("id"),r=await e.req.json(),a=await e.env.DB.prepare(`
       SELECT ft.user_id 
       FROM form_submissions fs
       JOIN form_templates ft ON fs.form_template_id = ft.id
@@ -2725,14 +2725,14 @@ var Nt=Object.defineProperty;var tt=e=>{throw TypeError(e)};var Mt=(e,t,s)=>t in
       UPDATE form_submissions 
       SET status = ?, notes = ?
       WHERE id = ?
-    `).bind(r.status||"new",r.notes||"",s).run(),e.json({success:!0,message:"상태가 변경되었습니다"}))}catch(t){return console.error("Error updating submission:",t),e.json({error:"상태 변경에 실패했습니다"},500)}});H.delete("/api/form-submissions/:id",X,async e=>{try{const t=e.get("userId"),s=e.req.param("id"),r=await e.env.DB.prepare(`
+    `).bind(r.status||"new",r.notes||"",s).run(),e.json({success:!0,message:"상태가 변경되었습니다"}))}catch(t){return console.error("Error updating submission:",t),e.json({error:"상태 변경에 실패했습니다"},500)}});q.delete("/api/form-submissions/:id",X,async e=>{try{const t=e.get("userId"),s=e.req.param("id"),r=await e.env.DB.prepare(`
       SELECT ft.user_id 
       FROM form_submissions fs
       JOIN form_templates ft ON fs.form_template_id = ft.id
       WHERE fs.id = ?
     `).bind(s).first();return!r||r.user_id!==t?e.json({error:"제출 내역을 찾을 수 없거나 권한이 없습니다"},404):(await e.env.DB.prepare(`
       DELETE FROM form_submissions WHERE id = ?
-    `).bind(s).run(),e.json({success:!0,message:"제출 내역이 삭제되었습니다"}))}catch(t){return console.error("Error deleting submission:",t),e.json({error:"제출 내역 삭제에 실패했습니다"},500)}});H.get("/api/form-submissions/stats",X,async e=>{try{const t=e.get("userId"),s=e.req.query("template_id");let r=`
+    `).bind(s).run(),e.json({success:!0,message:"제출 내역이 삭제되었습니다"}))}catch(t){return console.error("Error deleting submission:",t),e.json({error:"제출 내역 삭제에 실패했습니다"},500)}});q.get("/api/form-submissions/stats",X,async e=>{try{const t=e.get("userId"),s=e.req.query("template_id");let r=`
       SELECT 
         COUNT(*) as total,
         SUM(CASE WHEN status = 'new' THEN 1 ELSE 0 END) as new_count,
@@ -2742,7 +2742,7 @@ var Nt=Object.defineProperty;var tt=e=>{throw TypeError(e)};var Mt=(e,t,s)=>t in
       FROM form_submissions fs
       JOIN form_templates ft ON fs.form_template_id = ft.id
       WHERE ft.user_id = ?
-    `;const a=[t];s&&(r+=" AND fs.form_template_id = ?",a.push(s));const o=await e.env.DB.prepare(r).bind(...a).first();return e.json(o||{total:0,new_count:0,contacted_count:0,completed_count:0,rejected_count:0})}catch(t){return console.error("Error fetching stats:",t),e.json({error:"통계를 불러올 수 없습니다"},500)}});const c=new et;c.use("/api/*",bs());c.use("/static/*",Cs({root:"./public"}));c.route("/",H);c.post("/api/contact",async e=>{try{const{name:t,email:s,phone:r,academy_name:a,message:o}=await e.req.json();if(!t||!s||!r||!o)return e.json({success:!1,error:"필수 항목을 입력해주세요."},400);const n=await e.env.DB.prepare(`
+    `;const a=[t];s&&(r+=" AND fs.form_template_id = ?",a.push(s));const o=await e.env.DB.prepare(r).bind(...a).first();return e.json(o||{total:0,new_count:0,contacted_count:0,completed_count:0,rejected_count:0})}catch(t){return console.error("Error fetching stats:",t),e.json({error:"통계를 불러올 수 없습니다"},500)}});const c=new et;c.use("/api/*",bs());c.use("/static/*",Cs({root:"./public"}));c.route("/",q);c.post("/api/contact",async e=>{try{const{name:t,email:s,phone:r,academy_name:a,message:o}=await e.req.json();if(!t||!s||!r||!o)return e.json({success:!1,error:"필수 항목을 입력해주세요."},400);const n=await e.env.DB.prepare(`
       INSERT INTO contacts (name, email, phone, academy_name, message)
       VALUES (?, ?, ?, ?, ?)
     `).bind(t,s,r,a||"",o).run();return e.json({success:!0,message:"문의가 접수되었습니다. 빠른 시일 내에 연락드리겠습니다.",id:n.meta.last_row_id})}catch(t){return console.error("Contact submission error:",t),e.json({success:!1,error:"문의 접수 중 오류가 발생했습니다."},500)}});c.post("/api/signup",async e=>{try{const{email:t,password:s,name:r,phone:a,academy_name:o,academy_location:n,marketing_consent:i}=await e.req.json();if(!t||!s||!r||!a||!o)return e.json({success:!1,error:"필수 항목을 입력해주세요."},400);if(await e.env.DB.prepare(`
@@ -3425,15 +3425,15 @@ var Nt=Object.defineProperty;var tt=e=>{throw TypeError(e)};var Mt=(e,t,s)=>t in
       WHERE subscription_id = ?
     `).bind(g.id).first(),b=(x==null?void 0:x.landing_pages_created)||0,h=g.landing_page_limit,E=7700;let w=!1;if(b>=h){const C=await e.env.DB.prepare(`
         SELECT id, points FROM users WHERE id = ?
-      `).bind(p.id).first(),q=(C==null?void 0:C.points)||0;if(q<E)return e.json({success:!1,needsPoints:!0,requiredPoints:E,currentPoints:q,error:`⛔ 랜딩페이지 한도를 모두 사용하셨습니다.
+      `).bind(p.id).first(),H=(C==null?void 0:C.points)||0;if(H<E)return e.json({success:!1,needsPoints:!0,requiredPoints:E,currentPoints:H,error:`⛔ 랜딩페이지 한도를 모두 사용하셨습니다.
 
 생성된 랜딩페이지: ${b}개 / 한도: ${h}개
-현재 포인트: ${q.toLocaleString()}P
+현재 포인트: ${H.toLocaleString()}P
 
 추가로 랜딩페이지를 제작하시겠어요?
 랜딩페이지 1개당 7,700포인트가 필요합니다.
 
-포인트 충전 페이지로 이동하시겠습니까?`},403);w=!0,console.log(`🪙 Using points for landing page: ${E}P (Current: ${q}P)`)}const v=Math.random().toString(36).substring(2,10),y=Ms(s,r),_=`${e.req.header("origin")||"https://example.com"}/landing/${v}`,k=`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(_)}`,B=await e.env.DB.prepare(`
+포인트 충전 페이지로 이동하시겠습니까?`},403);w=!0,console.log(`🪙 Using points for landing page: ${E}P (Current: ${H}P)`)}const v=Math.random().toString(36).substring(2,10),y=Ms(s,r),_=`${e.req.header("origin")||"https://example.com"}/landing/${v}`,k=`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(_)}`,B=await e.env.DB.prepare(`
       INSERT INTO landing_pages (user_id, slug, title, template_type, content_json, html_content, qr_code_url, thumbnail_url, og_title, og_description, folder_id, form_id, status)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active')
     `).bind(p.id,v,t,s,JSON.stringify(r),y,k,a||null,o||null,n||null,i||null,l||null).run();return await e.env.DB.prepare(`
@@ -3445,7 +3445,7 @@ var Nt=Object.defineProperty;var tt=e=>{throw TypeError(e)};var Mt=(e,t,s)=>t in
         UPDATE users 
         SET points = points - ?
         WHERE id = ?
-      `).bind(E,p.id).run(),console.log(`✅ Points deducted: ${E}P from user ${p.id}`)),console.log("✅ Landing page created and usage incremented:",b+1,"/",h,w?"(포인트 사용)":""),e.json({success:!0,message:w?`랜딩페이지가 생성되었습니다. (${E}P 차감)`:"랜딩페이지가 생성되었습니다.",slug:v,url:`/landing/${v}`,usage:{current:b+1,limit:h},usedPoints:w,pointsDeducted:w?E:0,qrCodeUrl:k,id:B.meta.last_row_id})}catch(t){return console.error("Landing page creation error:",t),e.json({success:!1,error:"랜딩페이지 생성 실패: "+t.message},500)}});c.get("/api/landing/my-pages",async e=>{try{const t=e.req.query("userId"),s=e.req.query("folderId");let r="SELECT id, slug, title, template_type, view_count, status, folder_id, form_id, created_at FROM landing_pages WHERE user_id = ?",a=[t];s?(r+=" AND folder_id = ?",a.push(s)):(s===null||s==="null")&&(r+=" AND folder_id IS NULL"),r+=" ORDER BY created_at DESC";const{results:o}=await e.env.DB.prepare(r).bind(...a).all();return e.json({success:!0,pages:o})}catch(t){return console.error("목록 조회 실패:",t),e.json({success:!1,error:"목록 조회 실패"},500)}});c.get("/api/landing/folders",async e=>{try{const t=e.req.query("userId"),s="SELECT id, name, created_at FROM landing_folders WHERE user_id = ? ORDER BY created_at DESC",{results:r}=await e.env.DB.prepare(s).bind(t).all(),a=await Promise.all(r.map(async i=>{const d=await e.env.DB.prepare("SELECT COUNT(*) as count FROM landing_pages WHERE folder_id = ?").bind(i.id).first();return{...i,page_count:d.count||0}})),n=await e.env.DB.prepare("SELECT COUNT(*) as count FROM landing_pages WHERE user_id = ?").bind(t).first();return e.json({success:!0,folders:a,totalPages:n.count||0})}catch(t){return console.error("폴더 목록 조회 실패:",t),e.json({success:!1,error:"폴더 목록 조회 실패"},500)}});c.post("/api/landing/folders",async e=>{try{const{userId:t,name:s,description:r}=await e.req.json();if(!s||!s.trim())return e.json({success:!1,error:"폴더 이름을 입력하세요."},400);const o=await e.env.DB.prepare("INSERT INTO landing_folders (user_id, name, description) VALUES (?, ?, ?)").bind(t,s.trim(),r||null).run();return e.json({success:!0,folderId:o.meta.last_row_id,message:"폴더가 생성되었습니다."})}catch(t){return console.error("폴더 생성 실패:",t),e.json({success:!1,error:"폴더 생성 실패"},500)}});c.put("/api/landing/folders/:id",async e=>{try{const t=e.req.param("id"),{name:s,description:r}=await e.req.json();return!s||!s.trim()?e.json({success:!1,error:"폴더 이름을 입력하세요."},400):(await e.env.DB.prepare("UPDATE landing_folders SET name = ?, description = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?").bind(s.trim(),r||null,t).run(),e.json({success:!0,message:"폴더가 수정되었습니다."}))}catch(t){return console.error("폴더 수정 실패:",t),e.json({success:!1,error:"폴더 수정 실패"},500)}});c.delete("/api/landing/folders/:id",async e=>{try{const t=e.req.param("id"),s=e.req.query("userId");return await e.env.DB.prepare("UPDATE landing_pages SET folder_id = NULL WHERE folder_id = ?").bind(t).run(),await e.env.DB.prepare("DELETE FROM landing_folders WHERE id = ? AND user_id = ?").bind(t,s).run(),e.json({success:!0,message:"폴더가 삭제되었습니다."})}catch(t){return console.error("폴더 삭제 실패:",t),e.json({success:!1,error:"폴더 삭제 실패"},500)}});c.put("/api/landing/move-to-folder",async e=>{try{const{pageId:t,folderId:s}=await e.req.json();return await e.env.DB.prepare("UPDATE landing_pages SET folder_id = ? WHERE id = ?").bind(s,t).run(),e.json({success:!0,message:"폴더로 이동되었습니다."})}catch(t){return console.error("폴더 이동 실패:",t),e.json({success:!1,error:"폴더 이동 실패"},500)}});c.get("/api/landing/:slug",async e=>{try{const t=e.req.param("slug"),r=await e.env.DB.prepare("SELECT * FROM landing_pages WHERE slug = ? AND status = ?").bind(t,"active").first();return r?(await e.env.DB.prepare("UPDATE landing_pages SET view_count = view_count + 1 WHERE slug = ?").bind(t).run(),await e.env.DB.prepare("INSERT INTO landing_page_views (landing_page_id, user_agent, referrer) VALUES (?, ?, ?)").bind(r.id,e.req.header("user-agent")||"",e.req.header("referer")||"").run(),e.json({success:!0,page:r})):e.json({success:!1,error:"페이지를 찾을 수 없습니다."},404)}catch{return e.json({success:!1,error:"페이지 조회 실패"},500)}});c.get("/api/landing/stats/summary",async e=>{try{const t=e.req.header("X-User-Data"),s=t?JSON.parse(t):{id:1},r=await e.env.DB.prepare("SELECT COUNT(*) as count FROM landing_pages WHERE user_id = ?").bind(s.id).first(),a=await e.env.DB.prepare("SELECT SUM(view_count) as total FROM landing_pages WHERE user_id = ?").bind(s.id).first(),o=await e.env.DB.prepare("SELECT id, title, slug, view_count FROM landing_pages WHERE user_id = ? ORDER BY view_count DESC LIMIT 5").bind(s.id).all();return e.json({success:!0,stats:{totalPages:(r==null?void 0:r.count)||0,totalViews:(a==null?void 0:a.total)||0,topPages:o.results||[]}})}catch{return e.json({success:!1,error:"통계 조회 실패"},500)}});c.delete("/api/landing/:id",async e=>{try{const t=e.req.param("id"),s=e.req.query("userId"),r=e.req.header("X-User-Data");let a;if(s)a={id:parseInt(s)};else if(r)a=JSON.parse(r);else return e.json({success:!1,error:"사용자 인증 정보가 없습니다."},401);console.log("Deleting landing page:",{id:t,userId:a.id});const o=await e.env.DB.prepare("DELETE FROM landing_pages WHERE id = ? AND user_id = ?").bind(t,a.id).run();return console.log("Delete result:",o),o.meta.changes===0?e.json({success:!1,error:"삭제할 페이지를 찾을 수 없거나 권한이 없습니다."},404):e.json({success:!0,message:"삭제되었습니다."})}catch(t){return console.error("Landing page delete error:",t),e.json({success:!1,error:t.message||"삭제 실패"},500)}});function Ms(e,t){const s={"academy-intro":As,"program-promo":Os,"event-promo":Us,"parent-letter":Ps,"student-report":Fs,"admission-info":$s,"academy-stats":Hs,"teacher-intro":qs,"vacation-course":Ws};return(s[e]||s["academy-intro"])(t)}function Ct(){return`
+      `).bind(E,p.id).run(),console.log(`✅ Points deducted: ${E}P from user ${p.id}`)),console.log("✅ Landing page created and usage incremented:",b+1,"/",h,w?"(포인트 사용)":""),e.json({success:!0,message:w?`랜딩페이지가 생성되었습니다. (${E}P 차감)`:"랜딩페이지가 생성되었습니다.",slug:v,url:`/landing/${v}`,usage:{current:b+1,limit:h},usedPoints:w,pointsDeducted:w?E:0,qrCodeUrl:k,id:B.meta.last_row_id})}catch(t){return console.error("Landing page creation error:",t),e.json({success:!1,error:"랜딩페이지 생성 실패: "+t.message},500)}});c.get("/api/landing/my-pages",async e=>{try{const t=e.req.query("userId"),s=e.req.query("folderId");let r="SELECT id, slug, title, template_type, view_count, status, folder_id, form_id, created_at FROM landing_pages WHERE user_id = ?",a=[t];s?(r+=" AND folder_id = ?",a.push(s)):(s===null||s==="null")&&(r+=" AND folder_id IS NULL"),r+=" ORDER BY created_at DESC";const{results:o}=await e.env.DB.prepare(r).bind(...a).all();return e.json({success:!0,pages:o})}catch(t){return console.error("목록 조회 실패:",t),e.json({success:!1,error:"목록 조회 실패"},500)}});c.get("/api/landing/folders",async e=>{try{const t=e.req.query("userId"),s="SELECT id, name, created_at FROM landing_folders WHERE user_id = ? ORDER BY created_at DESC",{results:r}=await e.env.DB.prepare(s).bind(t).all(),a=await Promise.all(r.map(async i=>{const d=await e.env.DB.prepare("SELECT COUNT(*) as count FROM landing_pages WHERE folder_id = ?").bind(i.id).first();return{...i,page_count:d.count||0}})),n=await e.env.DB.prepare("SELECT COUNT(*) as count FROM landing_pages WHERE user_id = ?").bind(t).first();return e.json({success:!0,folders:a,totalPages:n.count||0})}catch(t){return console.error("폴더 목록 조회 실패:",t),e.json({success:!1,error:"폴더 목록 조회 실패"},500)}});c.post("/api/landing/folders",async e=>{try{const{userId:t,name:s,description:r}=await e.req.json();if(!s||!s.trim())return e.json({success:!1,error:"폴더 이름을 입력하세요."},400);const o=await e.env.DB.prepare("INSERT INTO landing_folders (user_id, name, description) VALUES (?, ?, ?)").bind(t,s.trim(),r||null).run();return e.json({success:!0,folderId:o.meta.last_row_id,message:"폴더가 생성되었습니다."})}catch(t){return console.error("폴더 생성 실패:",t),e.json({success:!1,error:"폴더 생성 실패"},500)}});c.put("/api/landing/folders/:id",async e=>{try{const t=e.req.param("id"),{name:s,description:r}=await e.req.json();return!s||!s.trim()?e.json({success:!1,error:"폴더 이름을 입력하세요."},400):(await e.env.DB.prepare("UPDATE landing_folders SET name = ?, description = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?").bind(s.trim(),r||null,t).run(),e.json({success:!0,message:"폴더가 수정되었습니다."}))}catch(t){return console.error("폴더 수정 실패:",t),e.json({success:!1,error:"폴더 수정 실패"},500)}});c.delete("/api/landing/folders/:id",async e=>{try{const t=e.req.param("id"),s=e.req.query("userId");return await e.env.DB.prepare("UPDATE landing_pages SET folder_id = NULL WHERE folder_id = ?").bind(t).run(),await e.env.DB.prepare("DELETE FROM landing_folders WHERE id = ? AND user_id = ?").bind(t,s).run(),e.json({success:!0,message:"폴더가 삭제되었습니다."})}catch(t){return console.error("폴더 삭제 실패:",t),e.json({success:!1,error:"폴더 삭제 실패"},500)}});c.put("/api/landing/move-to-folder",async e=>{try{const{pageId:t,folderId:s}=await e.req.json();return await e.env.DB.prepare("UPDATE landing_pages SET folder_id = ? WHERE id = ?").bind(s,t).run(),e.json({success:!0,message:"폴더로 이동되었습니다."})}catch(t){return console.error("폴더 이동 실패:",t),e.json({success:!1,error:"폴더 이동 실패"},500)}});c.get("/api/landing/:slug",async e=>{try{const t=e.req.param("slug"),r=await e.env.DB.prepare("SELECT * FROM landing_pages WHERE slug = ? AND status = ?").bind(t,"active").first();return r?(await e.env.DB.prepare("UPDATE landing_pages SET view_count = view_count + 1 WHERE slug = ?").bind(t).run(),await e.env.DB.prepare("INSERT INTO landing_page_views (landing_page_id, user_agent, referrer) VALUES (?, ?, ?)").bind(r.id,e.req.header("user-agent")||"",e.req.header("referer")||"").run(),e.json({success:!0,page:r})):e.json({success:!1,error:"페이지를 찾을 수 없습니다."},404)}catch{return e.json({success:!1,error:"페이지 조회 실패"},500)}});c.get("/api/landing/stats/summary",async e=>{try{const t=e.req.header("X-User-Data"),s=t?JSON.parse(t):{id:1},r=await e.env.DB.prepare("SELECT COUNT(*) as count FROM landing_pages WHERE user_id = ?").bind(s.id).first(),a=await e.env.DB.prepare("SELECT SUM(view_count) as total FROM landing_pages WHERE user_id = ?").bind(s.id).first(),o=await e.env.DB.prepare("SELECT id, title, slug, view_count FROM landing_pages WHERE user_id = ? ORDER BY view_count DESC LIMIT 5").bind(s.id).all();return e.json({success:!0,stats:{totalPages:(r==null?void 0:r.count)||0,totalViews:(a==null?void 0:a.total)||0,topPages:o.results||[]}})}catch{return e.json({success:!1,error:"통계 조회 실패"},500)}});c.delete("/api/landing/:id",async e=>{try{const t=e.req.param("id"),s=e.req.query("userId"),r=e.req.header("X-User-Data");let a;if(s)a={id:parseInt(s)};else if(r)a=JSON.parse(r);else return e.json({success:!1,error:"사용자 인증 정보가 없습니다."},401);console.log("Deleting landing page:",{id:t,userId:a.id});const o=await e.env.DB.prepare("DELETE FROM landing_pages WHERE id = ? AND user_id = ?").bind(t,a.id).run();return console.log("Delete result:",o),o.meta.changes===0?e.json({success:!1,error:"삭제할 페이지를 찾을 수 없거나 권한이 없습니다."},404):e.json({success:!0,message:"삭제되었습니다."})}catch(t){return console.error("Landing page delete error:",t),e.json({success:!1,error:t.message||"삭제 실패"},500)}});function Ms(e,t){const s={"academy-intro":As,"program-promo":Os,"event-promo":Us,"parent-letter":Ps,"student-report":Fs,"admission-info":$s,"academy-stats":qs,"teacher-intro":Hs,"vacation-course":Ws};return(s[e]||s["academy-intro"])(t)}function Ct(){return`
     <!-- QR 코드 섹션 -->
     <div class="container" style="margin-top: 3rem; margin-bottom: 2rem;">
         <div style="background: white; border-radius: 20px; padding: 2.5rem; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.1);">
@@ -4629,7 +4629,7 @@ var Nt=Object.defineProperty;var tt=e=>{throw TypeError(e)};var Mt=(e,t,s)=>t in
     </div>
 </body>
 </html>
-  `}function Hs(e){const{academyName:t,period:s,totalStudents:r,achievements:a,testimonials:o,gradeImprovement:n}=e;return`
+  `}function qs(e){const{academyName:t,period:s,totalStudents:r,achievements:a,testimonials:o,gradeImprovement:n}=e;return`
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -4695,7 +4695,7 @@ var Nt=Object.defineProperty;var tt=e=>{throw TypeError(e)};var Mt=(e,t,s)=>t in
     </div>
 </body>
 </html>
-  `}function qs(e){const{teacherName:t,subject:s,experience:r,education:a,specialty:o,achievements:n,teachingStyle:i,contact:l}=e;return`
+  `}function Hs(e){const{teacherName:t,subject:s,experience:r,education:a,specialty:o,achievements:n,teachingStyle:i,contact:l}=e;return`
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -7651,7 +7651,8 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
         <!-- Pricing Cards -->
         <section class="pb-24 px-6">
             <div class="max-w-7xl mx-auto">
-                <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <!-- 무료 플랜 (상단 1개) -->
+                <div class="max-w-md mx-auto mb-12">
                     
                     <!-- 무료 플랜 -->
                     <div class="pricing-card bg-gradient-to-br from-green-50 to-emerald-50 rounded-3xl p-8 border-2 border-green-300 hover:border-green-400 hover:shadow-2xl relative">
@@ -7707,6 +7708,10 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
                             무료 신청하기
                         </a>
                     </div>
+                </div>
+                
+                <!-- 유료 플랜들 (3개 + 3개) -->
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                     
                     <!-- 스타터 플랜 -->
                     <div class="pricing-card bg-white rounded-3xl p-8 border-2 border-gray-200 hover:border-purple-300 hover:shadow-2xl">
@@ -17584,11 +17589,11 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
     `).bind(w).first();if(!B)return e.json({success:!1,error:"활성 구독이 없습니다. 요금제를 구매해주세요."},403);const C=await e.env.DB.prepare(`
       SELECT * FROM usage_tracking 
       WHERE academy_id = ? AND subscription_id = ?
-    `).bind(w,B.id).first(),q=(C==null?void 0:C.current_students)||0;if(q>=B.student_limit)return e.json({success:!1,error:`⛔ 사용 한도가 모두 소진되었습니다.
+    `).bind(w,B.id).first(),H=(C==null?void 0:C.current_students)||0;if(H>=B.student_limit)return e.json({success:!1,error:`⛔ 사용 한도가 모두 소진되었습니다.
 
-현재 학생 수: ${q}명 / 한도: ${B.student_limit}명
+현재 학생 수: ${H}명 / 한도: ${B.student_limit}명
 
-더 많은 학생을 등록하시려면 상위 플랜으로 업그레이드해주세요.`},403);console.log(`✅ [AddStudent] Limit check passed: ${q}/${B.student_limit}`);let N;try{N=await e.env.DB.prepare(`
+더 많은 학생을 등록하시려면 상위 플랜으로 업그레이드해주세요.`},403);console.log(`✅ [AddStudent] Limit check passed: ${H}/${B.student_limit}`);let N;try{N=await e.env.DB.prepare(`
         INSERT INTO students (
           name, phone, grade, subjects, school, parent_name, parent_phone, 
           academy_id, class_id, notes, status, created_at
@@ -18824,7 +18829,7 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
 
 출석 데이터를 먼저 입력한 후 리포트를 생성해주세요.`},400);console.log("📊 [GenerateReport] Attendance rate:",b+"%","(source:",w+")");let v=null,y="none";if(p.length>0)v=(p.reduce((S,j)=>S+j.score/j.max_score*100,0)/p.length).toFixed(1),y="grades";else if(g.length>0){const S=g.filter(W=>W.lesson_understanding).map(W=>parseFloat(W.lesson_understanding)),j=g.filter(W=>W.lesson_participation).map(W=>parseFloat(W.lesson_participation));if(S.length>0||j.length>0){const W=[...S,...j];v=(W.reduce((jt,Bt)=>jt+Bt,0)/W.length*10).toFixed(1),y="daily_records"}}if(v===null)return console.error("❌ [GenerateReport] No score data available"),e.json({success:!1,error:`${a}에 성적/학습 데이터가 없습니다.
 
-성적 데이터 또는 일일 성과 기록을 먼저 입력한 후 리포트를 생성해주세요.`},400);console.log("📊 [GenerateReport] Average score:",v,"(source:",y+")");let _="평가 불가";b>=95&&v>=85?_="매우 우수":b>=90&&v>=80?_="우수":b>=80&&v>=70?_="양호":_="개선 필요";let k="";const L=p.length>0?p.reduce((S,j)=>j.score/j.max_score>S.score/S.max_score?j:S):null;L?k=L.subject+" 과목에서 "+(L.score/L.max_score*100).toFixed(1)+"점으로 우수한 성적을 보였습니다. 꾸준한 노력이 돋보입니다.":g.length>0&&g.filter(S=>S.lesson_participation).length>0?k="수업 참여도가 평균 "+(g.filter(j=>j.lesson_participation).reduce((j,W)=>j+parseFloat(W.lesson_participation),0)/g.filter(j=>j.lesson_participation).length).toFixed(1)+"점으로 적극적인 학습 태도를 보이고 있습니다.":k="현재 기간의 성적 데이터가 부족하여 강점을 파악하기 어렵습니다. 지속적인 학습 활동 기록이 필요합니다.";let B="";const C=p.length>0?p.reduce((S,j)=>j.score/j.max_score<S.score/S.max_score?j:S):null;C&&C.score/C.max_score*100<75?B=C.subject+" 과목에서 "+(C.score/C.max_score*100).toFixed(1)+"점으로 보완이 필요합니다.":g.length>0&&g.filter(S=>S.homework_status==="미완료").length>0?B="과제 완성률이 낮습니다. 복습 시간을 늘려 과제를 완료하는 습관을 기르면 좋겠습니다.":B="전반적으로 균형잡힌 학습을 하고 있습니다.";const q=b<90?"출석률 개선이 필요합니다. 규칙적인 수업 참여가 성적 향상의 기본입니다.":v<80?"기본 개념 복습에 더 많은 시간을 투자하면 좋겠습니다.":"현재 학습 패턴을 유지하면서 심화 학습으로 나아가면 좋겠습니다.",N=v>=85?"상위권 유지를 위해 심화 문제 풀이를 추천합니다. 경시대회 준비도 고려해볼 만합니다.":v>=75?"기본기 강화와 함께 문제 풀이 속도를 높이는 연습이 필요합니다.":"개념 이해를 위한 1:1 보충 수업을 추천합니다. 기초부터 차근차근 다져가면 충분히 성적이 오를 수 있습니다.",J=v>=85?"현재 평균 "+v+"점 수준을 유지하면서, "+((C==null?void 0:C.subject)||"취약 과목")+"에서 5점 이상 향상 목표":"평균 점수 "+v+"점에서 "+Math.min(100,parseFloat(v)+10).toFixed(0)+"점으로 향상, 출석률 "+b+"%에서 95% 이상 달성",F=n.name+" 학생은 이번 달 평균 "+v+"점의 성적을 기록했으며, 출석률은 "+b+"%입니다. "+(_==="매우 우수"||_==="우수"?"전반적으로 성실하게 학업에 임하고 있으며, 지속적인 성장이 기대됩니다.":"학습 태도와 출석 관리에 더 많은 관심이 필요합니다.")+(L?" 특히 "+L.subject+" 과목에서 강점을 보이고 있습니다.":"")+" 꾸준한 노력으로 더욱 발전할 수 있습니다.",be=`학부모님, 안녕하세요.
+성적 데이터 또는 일일 성과 기록을 먼저 입력한 후 리포트를 생성해주세요.`},400);console.log("📊 [GenerateReport] Average score:",v,"(source:",y+")");let _="평가 불가";b>=95&&v>=85?_="매우 우수":b>=90&&v>=80?_="우수":b>=80&&v>=70?_="양호":_="개선 필요";let k="";const L=p.length>0?p.reduce((S,j)=>j.score/j.max_score>S.score/S.max_score?j:S):null;L?k=L.subject+" 과목에서 "+(L.score/L.max_score*100).toFixed(1)+"점으로 우수한 성적을 보였습니다. 꾸준한 노력이 돋보입니다.":g.length>0&&g.filter(S=>S.lesson_participation).length>0?k="수업 참여도가 평균 "+(g.filter(j=>j.lesson_participation).reduce((j,W)=>j+parseFloat(W.lesson_participation),0)/g.filter(j=>j.lesson_participation).length).toFixed(1)+"점으로 적극적인 학습 태도를 보이고 있습니다.":k="현재 기간의 성적 데이터가 부족하여 강점을 파악하기 어렵습니다. 지속적인 학습 활동 기록이 필요합니다.";let B="";const C=p.length>0?p.reduce((S,j)=>j.score/j.max_score<S.score/S.max_score?j:S):null;C&&C.score/C.max_score*100<75?B=C.subject+" 과목에서 "+(C.score/C.max_score*100).toFixed(1)+"점으로 보완이 필요합니다.":g.length>0&&g.filter(S=>S.homework_status==="미완료").length>0?B="과제 완성률이 낮습니다. 복습 시간을 늘려 과제를 완료하는 습관을 기르면 좋겠습니다.":B="전반적으로 균형잡힌 학습을 하고 있습니다.";const H=b<90?"출석률 개선이 필요합니다. 규칙적인 수업 참여가 성적 향상의 기본입니다.":v<80?"기본 개념 복습에 더 많은 시간을 투자하면 좋겠습니다.":"현재 학습 패턴을 유지하면서 심화 학습으로 나아가면 좋겠습니다.",N=v>=85?"상위권 유지를 위해 심화 문제 풀이를 추천합니다. 경시대회 준비도 고려해볼 만합니다.":v>=75?"기본기 강화와 함께 문제 풀이 속도를 높이는 연습이 필요합니다.":"개념 이해를 위한 1:1 보충 수업을 추천합니다. 기초부터 차근차근 다져가면 충분히 성적이 오를 수 있습니다.",J=v>=85?"현재 평균 "+v+"점 수준을 유지하면서, "+((C==null?void 0:C.subject)||"취약 과목")+"에서 5점 이상 향상 목표":"평균 점수 "+v+"점에서 "+Math.min(100,parseFloat(v)+10).toFixed(0)+"점으로 향상, 출석률 "+b+"%에서 95% 이상 달성",F=n.name+" 학생은 이번 달 평균 "+v+"점의 성적을 기록했으며, 출석률은 "+b+"%입니다. "+(_==="매우 우수"||_==="우수"?"전반적으로 성실하게 학업에 임하고 있으며, 지속적인 성장이 기대됩니다.":"학습 태도와 출석 관리에 더 많은 관심이 필요합니다.")+(L?" 특히 "+L.subject+" 과목에서 강점을 보이고 있습니다.":"")+" 꾸준한 노력으로 더욱 발전할 수 있습니다.",be=`학부모님, 안녕하세요.
 
 ${n.name} 학생의 ${a} 학습 분석 리포트를 전달드립니다.
 
@@ -18851,7 +18856,7 @@ ${N}
       INSERT INTO learning_reports 
       (student_id, report_month, overall_score, study_attitude, strengths, weaknesses, improvements, recommendations, next_month_goals, ai_analysis, parent_message, folder_id)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).bind(r,a,v,_,k,B,q,N,J,F,be,o||null).run();console.log("✅ [GenerateReport] Report saved successfully, ID:",Ue.meta.last_row_id);try{await e.env.DB.prepare(`
+    `).bind(r,a,v,_,k,B,H,N,J,F,be,o||null).run();console.log("✅ [GenerateReport] Report saved successfully, ID:",Ue.meta.last_row_id);try{await e.env.DB.prepare(`
         UPDATE usage_tracking 
         SET ai_reports_used_this_month = ai_reports_used_this_month + 1, updated_at = CURRENT_TIMESTAMP
         WHERE academy_id = ? AND subscription_id = ?
@@ -34108,4 +34113,389 @@ ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.di
         `).bind(a.name).first()||(await e.env.DB.prepare(`
             INSERT INTO store_products (name, description, category, price, display_order, enabled)
             VALUES (?, ?, ?, ?, ?, 1)
-          `).bind(a.name,a.description,a.category,a.price,a.order).run(),r++)}catch(o){console.error("Failed to insert product:",a.name,o)}return t.push("✅ Inserted "+r+" initial products"),e.json({success:!0,message:"스토어 시스템 초기화 완료",results:t})}catch(t){return console.error("[Store Init] Error:",t),e.json({success:!1,error:t.message},500)}});const it=new et,Xs=Object.assign({"/src/index.tsx":c});let Lt=!1;for(const[,e]of Object.entries(Xs))e&&(it.all("*",t=>{let s;try{s=t.executionCtx}catch{}return e.fetch(t.req.raw,t.env,s)}),it.notFound(t=>{let s;try{s=t.executionCtx}catch{}return e.fetch(t.req.raw,t.env,s)}),Lt=!0);if(!Lt)throw new Error("Can't import modules from ['/src/index.ts','/src/index.tsx','/app/server.ts']");export{it as default};
+          `).bind(a.name,a.description,a.category,a.price,a.order).run(),r++)}catch(o){console.error("Failed to insert product:",a.name,o)}return t.push("✅ Inserted "+r+" initial products"),e.json({success:!0,message:"스토어 시스템 초기화 완료",results:t})}catch(t){return console.error("[Store Init] Error:",t),e.json({success:!1,error:t.message},500)}});c.get("/services/landing-page",e=>e.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>랜딩페이지 제작 - 슈퍼플레이스</title>
+        <script src="https://cdn.tailwindcss.com"><\/script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <style>
+          @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
+          * { font-family: 'Pretendard Variable', sans-serif; }
+        </style>
+    </head>
+    <body class="bg-gray-50">
+        <!-- Navigation -->
+        <nav class="fixed w-full top-0 z-50 bg-white/90 backdrop-blur-md shadow-sm">
+            <div class="max-w-7xl mx-auto px-6 lg:px-8">
+                <div class="flex justify-between items-center h-20">
+                    <a href="/" class="text-xl font-bold text-gray-900">우리는 슈퍼플레이스다</a>
+                    <div class="hidden md:flex items-center space-x-8">
+                        <a href="/" class="text-gray-700 hover:text-purple-600">홈</a>
+                        <a href="/pricing" class="text-gray-700 hover:text-purple-600">요금제</a>
+                        <a href="/contact" class="text-gray-700 hover:text-purple-600">문의하기</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Hero Section -->
+        <section class="pt-32 pb-16 px-6 bg-gradient-to-br from-purple-50 to-white">
+            <div class="max-w-4xl mx-auto text-center">
+                <div class="inline-block mb-6 px-5 py-2 bg-purple-100 rounded-full text-purple-700 text-sm font-semibold">
+                    🎨 전문 랜딩페이지 제작
+                </div>
+                <h1 class="text-5xl font-bold text-gray-900 mb-6">
+                    전환율을 높이는<br>
+                    <span class="text-purple-600">맞춤형 랜딩페이지</span>
+                </h1>
+                <p class="text-xl text-gray-600 mb-8">
+                    학원 특성에 최적화된 랜딩페이지로<br>
+                    상담 신청률을 극대화하세요
+                </p>
+                <a href="#inquiry" class="inline-block px-8 py-4 bg-purple-600 text-white rounded-full font-bold hover:bg-purple-700 transition-all shadow-lg hover:shadow-xl">
+                    지금 문의하기 <i class="fas fa-arrow-right ml-2"></i>
+                </a>
+            </div>
+        </section>
+
+        <!-- Features -->
+        <section class="py-16 px-6">
+            <div class="max-w-6xl mx-auto">
+                <h2 class="text-3xl font-bold text-center mb-12">랜딩페이지 제작 서비스</h2>
+                <div class="grid md:grid-cols-3 gap-8">
+                    <div class="bg-white rounded-2xl p-8 shadow-md hover:shadow-xl transition">
+                        <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mb-6">
+                            <i class="fas fa-desktop text-3xl text-purple-600"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-4">반응형 디자인</h3>
+                        <p class="text-gray-600">PC, 모바일, 태블릿 모든 기기에서 완벽하게 최적화된 디자인을 제공합니다.</p>
+                    </div>
+                    <div class="bg-white rounded-2xl p-8 shadow-md hover:shadow-xl transition">
+                        <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-6">
+                            <i class="fas fa-bolt text-3xl text-blue-600"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-4">빠른 로딩 속도</h3>
+                        <p class="text-gray-600">최적화된 코드로 페이지 로딩 시간을 최소화하여 이탈률을 줄입니다.</p>
+                    </div>
+                    <div class="bg-white rounded-2xl p-8 shadow-md hover:shadow-xl transition">
+                        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-6">
+                            <i class="fas fa-chart-line text-3xl text-green-600"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-4">전환율 최적화</h3>
+                        <p class="text-gray-600">데이터 기반 UX/UI로 상담 신청 전환율을 극대화합니다.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Process -->
+        <section class="py-16 px-6 bg-gray-100">
+            <div class="max-w-6xl mx-auto">
+                <h2 class="text-3xl font-bold text-center mb-12">제작 프로세스</h2>
+                <div class="grid md:grid-cols-4 gap-6">
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-purple-600 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold">1</div>
+                        <h3 class="font-bold mb-2">상담</h3>
+                        <p class="text-sm text-gray-600">학원 특성 파악</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-purple-600 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold">2</div>
+                        <h3 class="font-bold mb-2">기획</h3>
+                        <p class="text-sm text-gray-600">맞춤형 구성안 제작</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-purple-600 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold">3</div>
+                        <h3 class="font-bold mb-2">디자인 & 개발</h3>
+                        <p class="text-sm text-gray-600">전문 디자이너 제작</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-purple-600 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold">4</div>
+                        <h3 class="font-bold mb-2">배포 & 운영</h3>
+                        <p class="text-sm text-gray-600">실시간 모니터링</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Inquiry Form -->
+        <section id="inquiry" class="py-16 px-6">
+            <div class="max-w-2xl mx-auto">
+                <h2 class="text-3xl font-bold text-center mb-4">문의하기</h2>
+                <p class="text-center text-gray-600 mb-8">랜딩페이지 제작 상담을 원하시면 아래 양식을 작성해주세요</p>
+                
+                <form id="inquiryForm" class="bg-white rounded-2xl p-8 shadow-lg">
+                    <div class="mb-6">
+                        <label class="block text-sm font-bold text-gray-700 mb-2">학원명 *</label>
+                        <input type="text" name="academy_name" required
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                    </div>
+                    <div class="mb-6">
+                        <label class="block text-sm font-bold text-gray-700 mb-2">담당자명 *</label>
+                        <input type="text" name="name" required
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                    </div>
+                    <div class="mb-6">
+                        <label class="block text-sm font-bold text-gray-700 mb-2">연락처 *</label>
+                        <input type="tel" name="phone" required
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                    </div>
+                    <div class="mb-6">
+                        <label class="block text-sm font-bold text-gray-700 mb-2">이메일 *</label>
+                        <input type="email" name="email" required
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                    </div>
+                    <div class="mb-6">
+                        <label class="block text-sm font-bold text-gray-700 mb-2">문의 내용 *</label>
+                        <textarea name="message" rows="5" required
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"></textarea>
+                    </div>
+                    <input type="hidden" name="service_type" value="landing_page">
+                    <button type="submit"
+                        class="w-full py-4 bg-purple-600 text-white rounded-lg font-bold hover:bg-purple-700 transition-all shadow-lg hover:shadow-xl">
+                        문의 제출하기
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <script>
+            document.getElementById('inquiryForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                const data = Object.fromEntries(formData);
+                
+                try {
+                    const response = await fetch('/api/service-inquiry', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+                    
+                    const result = await response.json();
+                    if (result.success) {
+                        alert('✅ 문의가 성공적으로 제출되었습니다! 빠른 시일 내에 연락드리겠습니다.');
+                        e.target.reset();
+                    } else {
+                        alert('❌ 오류: ' + result.error);
+                    }
+                } catch (err) {
+                    alert('❌ 문의 제출 중 오류가 발생했습니다.');
+                }
+            });
+        <\/script>
+    </body>
+    </html>
+  `));c.get("/services/marketing",e=>e.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>학원마케팅 대행 - 슈퍼플레이스</title>
+        <script src="https://cdn.tailwindcss.com"><\/script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <style>
+          @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
+          * { font-family: 'Pretendard Variable', sans-serif; }
+        </style>
+    </head>
+    <body class="bg-gray-50">
+        <!-- Navigation -->
+        <nav class="fixed w-full top-0 z-50 bg-white/90 backdrop-blur-md shadow-sm">
+            <div class="max-w-7xl mx-auto px-6 lg:px-8">
+                <div class="flex justify-between items-center h-20">
+                    <a href="/" class="text-xl font-bold text-gray-900">우리는 슈퍼플레이스다</a>
+                    <div class="hidden md:flex items-center space-x-8">
+                        <a href="/" class="text-gray-700 hover:text-purple-600">홈</a>
+                        <a href="/pricing" class="text-gray-700 hover:text-purple-600">요금제</a>
+                        <a href="/contact" class="text-gray-700 hover:text-purple-600">문의하기</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Hero Section -->
+        <section class="pt-32 pb-16 px-6 bg-gradient-to-br from-orange-50 to-white">
+            <div class="max-w-4xl mx-auto text-center">
+                <div class="inline-block mb-6 px-5 py-2 bg-orange-100 rounded-full text-orange-700 text-sm font-semibold">
+                    📈 전문 마케팅 대행
+                </div>
+                <h1 class="text-5xl font-bold text-gray-900 mb-6">
+                    학생 모집부터 유지까지<br>
+                    <span class="text-orange-600">올인원 마케팅 솔루션</span>
+                </h1>
+                <p class="text-xl text-gray-600 mb-8">
+                    전문 마케터가 학원 성장을 위한<br>
+                    모든 마케팅 업무를 대행합니다
+                </p>
+                <a href="#inquiry" class="inline-block px-8 py-4 bg-orange-600 text-white rounded-full font-bold hover:bg-orange-700 transition-all shadow-lg hover:shadow-xl">
+                    지금 상담하기 <i class="fas fa-arrow-right ml-2"></i>
+                </a>
+            </div>
+        </section>
+
+        <!-- Services -->
+        <section class="py-16 px-6">
+            <div class="max-w-6xl mx-auto">
+                <h2 class="text-3xl font-bold text-center mb-12">제공 서비스</h2>
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div class="bg-white rounded-2xl p-8 shadow-md hover:shadow-xl transition">
+                        <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-6">
+                            <i class="fas fa-bullhorn text-3xl text-blue-600"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-4">온라인 광고</h3>
+                        <p class="text-gray-600">네이버, 구글, SNS 등 각종 플랫폼 광고 운영 및 최적화</p>
+                    </div>
+                    <div class="bg-white rounded-2xl p-8 shadow-md hover:shadow-xl transition">
+                        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-6">
+                            <i class="fas fa-search text-3xl text-green-600"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-4">SEO 최적화</h3>
+                        <p class="text-gray-600">검색 엔진 최적화로 자연 유입 극대화</p>
+                    </div>
+                    <div class="bg-white rounded-2xl p-8 shadow-md hover:shadow-xl transition">
+                        <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mb-6">
+                            <i class="fas fa-share-alt text-3xl text-purple-600"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-4">SNS 마케팅</h3>
+                        <p class="text-gray-600">인스타그램, 페이스북 등 소셜 미디어 운영 대행</p>
+                    </div>
+                    <div class="bg-white rounded-2xl p-8 shadow-md hover:shadow-xl transition">
+                        <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mb-6">
+                            <i class="fas fa-file-alt text-3xl text-yellow-600"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-4">콘텐츠 제작</h3>
+                        <p class="text-gray-600">블로그, 카드뉴스, 영상 등 다양한 콘텐츠 제작</p>
+                    </div>
+                    <div class="bg-white rounded-2xl p-8 shadow-md hover:shadow-xl transition">
+                        <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-6">
+                            <i class="fas fa-chart-bar text-3xl text-red-600"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-4">데이터 분석</h3>
+                        <p class="text-gray-600">마케팅 성과 분석 및 개선 전략 수립</p>
+                    </div>
+                    <div class="bg-white rounded-2xl p-8 shadow-md hover:shadow-xl transition">
+                        <div class="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mb-6">
+                            <i class="fas fa-headset text-3xl text-indigo-600"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-4">상담 관리</h3>
+                        <p class="text-gray-600">문의 관리 및 상담 전환율 최적화</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Why Us -->
+        <section class="py-16 px-6 bg-gray-100">
+            <div class="max-w-6xl mx-auto">
+                <h2 class="text-3xl font-bold text-center mb-12">슈퍼플레이스를 선택해야 하는 이유</h2>
+                <div class="grid md:grid-cols-3 gap-8">
+                    <div class="text-center">
+                        <div class="text-4xl font-bold text-orange-600 mb-4">10+</div>
+                        <h3 class="font-bold mb-2">년간 경험</h3>
+                        <p class="text-gray-600">학원 마케팅 전문 경력</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-4xl font-bold text-orange-600 mb-4">300%</div>
+                        <h3 class="font-bold mb-2">평균 성장률</h3>
+                        <p class="text-gray-600">학생 수 증가</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-4xl font-bold text-orange-600 mb-4">100+</div>
+                        <h3 class="font-bold mb-2">학원 파트너</h3>
+                        <p class="text-gray-600">성공 사례</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Inquiry Form -->
+        <section id="inquiry" class="py-16 px-6">
+            <div class="max-w-2xl mx-auto">
+                <h2 class="text-3xl font-bold text-center mb-4">마케팅 상담 신청</h2>
+                <p class="text-center text-gray-600 mb-8">학원 마케팅 대행 상담을 원하시면 아래 양식을 작성해주세요</p>
+                
+                <form id="inquiryForm" class="bg-white rounded-2xl p-8 shadow-lg">
+                    <div class="mb-6">
+                        <label class="block text-sm font-bold text-gray-700 mb-2">학원명 *</label>
+                        <input type="text" name="academy_name" required
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                    </div>
+                    <div class="mb-6">
+                        <label class="block text-sm font-bold text-gray-700 mb-2">담당자명 *</label>
+                        <input type="text" name="name" required
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                    </div>
+                    <div class="mb-6">
+                        <label class="block text-sm font-bold text-gray-700 mb-2">연락처 *</label>
+                        <input type="tel" name="phone" required
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                    </div>
+                    <div class="mb-6">
+                        <label class="block text-sm font-bold text-gray-700 mb-2">이메일 *</label>
+                        <input type="email" name="email" required
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                    </div>
+                    <div class="mb-6">
+                        <label class="block text-sm font-bold text-gray-700 mb-2">현재 학생 수</label>
+                        <input type="number" name="student_count"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                    </div>
+                    <div class="mb-6">
+                        <label class="block text-sm font-bold text-gray-700 mb-2">문의 내용 *</label>
+                        <textarea name="message" rows="5" required
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"></textarea>
+                    </div>
+                    <input type="hidden" name="service_type" value="marketing">
+                    <button type="submit"
+                        class="w-full py-4 bg-orange-600 text-white rounded-lg font-bold hover:bg-orange-700 transition-all shadow-lg hover:shadow-xl">
+                        문의 제출하기
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <script>
+            document.getElementById('inquiryForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                const data = Object.fromEntries(formData);
+                
+                try {
+                    const response = await fetch('/api/service-inquiry', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+                    
+                    const result = await response.json();
+                    if (result.success) {
+                        alert('✅ 문의가 성공적으로 제출되었습니다! 빠른 시일 내에 연락드리겠습니다.');
+                        e.target.reset();
+                    } else {
+                        alert('❌ 오류: ' + result.error);
+                    }
+                } catch (err) {
+                    alert('❌ 문의 제출 중 오류가 발생했습니다.');
+                }
+            });
+        <\/script>
+    </body>
+    </html>
+  `));c.post("/api/service-inquiry",async e=>{try{const{academy_name:t,name:s,phone:r,email:a,message:o,service_type:n,student_count:i}=await e.req.json();if(!t||!s||!r||!a||!o||!n)return e.json({success:!1,error:"필수 항목을 모두 입력해주세요."},400);const d=`[${{landing_page:"랜딩페이지 제작",marketing:"학원마케팅 대행"}[n]}]
+
+학원명: ${t}
+담당자: ${s}
+연락처: ${r}
+이메일: ${a}${i?`
+현재 학생 수: ${i}명`:""}
+
+문의 내용:
+${o}`;return await e.env.DB.prepare(`
+      INSERT INTO contacts (name, email, phone, message, status, created_at)
+      VALUES (?, ?, ?, ?, 'pending', CURRENT_TIMESTAMP)
+    `).bind(s,a,r,d).run(),e.json({success:!0,message:"문의가 성공적으로 제출되었습니다."})}catch(t){return console.error("Service inquiry error:",t),e.json({success:!1,error:"문의 제출 중 오류가 발생했습니다."},500)}});const it=new et,Xs=Object.assign({"/src/index.tsx":c});let Lt=!1;for(const[,e]of Object.entries(Xs))e&&(it.all("*",t=>{let s;try{s=t.executionCtx}catch{}return e.fetch(t.req.raw,t.env,s)}),it.notFound(t=>{let s;try{s=t.executionCtx}catch{}return e.fetch(t.req.raw,t.env,s)}),Lt=!0);if(!Lt)throw new Error("Can't import modules from ['/src/index.ts','/src/index.tsx','/app/server.ts']");export{it as default};

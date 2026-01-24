@@ -11674,7 +11674,8 @@ app.get('/pricing', (c) => {
         <!-- Pricing Cards -->
         <section class="pb-24 px-6">
             <div class="max-w-7xl mx-auto">
-                <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <!-- 무료 플랜 (상단 1개) -->
+                <div class="max-w-md mx-auto mb-12">
                     
                     <!-- 무료 플랜 -->
                     <div class="pricing-card bg-gradient-to-br from-green-50 to-emerald-50 rounded-3xl p-8 border-2 border-green-300 hover:border-green-400 hover:shadow-2xl relative">
@@ -11730,6 +11731,10 @@ app.get('/pricing', (c) => {
                             무료 신청하기
                         </a>
                     </div>
+                </div>
+                
+                <!-- 유료 플랜들 (3개 + 3개) -->
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                     
                     <!-- 스타터 플랜 -->
                     <div class="pricing-card bg-white rounded-3xl p-8 border-2 border-gray-200 hover:border-purple-300 hover:shadow-2xl">
@@ -45202,3 +45207,417 @@ export default app
 // Force deploy Mon Jan 19 02:13:47 UTC 2026
 // Cache bust: 1768961503
 // Version: 2.0.4 - 1768962016
+// 랜딩페이지 제작 상세 페이지
+app.get('/services/landing-page', (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>랜딩페이지 제작 - 슈퍼플레이스</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <style>
+          @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
+          * { font-family: 'Pretendard Variable', sans-serif; }
+        </style>
+    </head>
+    <body class="bg-gray-50">
+        <!-- Navigation -->
+        <nav class="fixed w-full top-0 z-50 bg-white/90 backdrop-blur-md shadow-sm">
+            <div class="max-w-7xl mx-auto px-6 lg:px-8">
+                <div class="flex justify-between items-center h-20">
+                    <a href="/" class="text-xl font-bold text-gray-900">우리는 슈퍼플레이스다</a>
+                    <div class="hidden md:flex items-center space-x-8">
+                        <a href="/" class="text-gray-700 hover:text-purple-600">홈</a>
+                        <a href="/pricing" class="text-gray-700 hover:text-purple-600">요금제</a>
+                        <a href="/contact" class="text-gray-700 hover:text-purple-600">문의하기</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Hero Section -->
+        <section class="pt-32 pb-16 px-6 bg-gradient-to-br from-purple-50 to-white">
+            <div class="max-w-4xl mx-auto text-center">
+                <div class="inline-block mb-6 px-5 py-2 bg-purple-100 rounded-full text-purple-700 text-sm font-semibold">
+                    🎨 전문 랜딩페이지 제작
+                </div>
+                <h1 class="text-5xl font-bold text-gray-900 mb-6">
+                    전환율을 높이는<br>
+                    <span class="text-purple-600">맞춤형 랜딩페이지</span>
+                </h1>
+                <p class="text-xl text-gray-600 mb-8">
+                    학원 특성에 최적화된 랜딩페이지로<br>
+                    상담 신청률을 극대화하세요
+                </p>
+                <a href="#inquiry" class="inline-block px-8 py-4 bg-purple-600 text-white rounded-full font-bold hover:bg-purple-700 transition-all shadow-lg hover:shadow-xl">
+                    지금 문의하기 <i class="fas fa-arrow-right ml-2"></i>
+                </a>
+            </div>
+        </section>
+
+        <!-- Features -->
+        <section class="py-16 px-6">
+            <div class="max-w-6xl mx-auto">
+                <h2 class="text-3xl font-bold text-center mb-12">랜딩페이지 제작 서비스</h2>
+                <div class="grid md:grid-cols-3 gap-8">
+                    <div class="bg-white rounded-2xl p-8 shadow-md hover:shadow-xl transition">
+                        <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mb-6">
+                            <i class="fas fa-desktop text-3xl text-purple-600"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-4">반응형 디자인</h3>
+                        <p class="text-gray-600">PC, 모바일, 태블릿 모든 기기에서 완벽하게 최적화된 디자인을 제공합니다.</p>
+                    </div>
+                    <div class="bg-white rounded-2xl p-8 shadow-md hover:shadow-xl transition">
+                        <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-6">
+                            <i class="fas fa-bolt text-3xl text-blue-600"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-4">빠른 로딩 속도</h3>
+                        <p class="text-gray-600">최적화된 코드로 페이지 로딩 시간을 최소화하여 이탈률을 줄입니다.</p>
+                    </div>
+                    <div class="bg-white rounded-2xl p-8 shadow-md hover:shadow-xl transition">
+                        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-6">
+                            <i class="fas fa-chart-line text-3xl text-green-600"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-4">전환율 최적화</h3>
+                        <p class="text-gray-600">데이터 기반 UX/UI로 상담 신청 전환율을 극대화합니다.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Process -->
+        <section class="py-16 px-6 bg-gray-100">
+            <div class="max-w-6xl mx-auto">
+                <h2 class="text-3xl font-bold text-center mb-12">제작 프로세스</h2>
+                <div class="grid md:grid-cols-4 gap-6">
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-purple-600 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold">1</div>
+                        <h3 class="font-bold mb-2">상담</h3>
+                        <p class="text-sm text-gray-600">학원 특성 파악</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-purple-600 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold">2</div>
+                        <h3 class="font-bold mb-2">기획</h3>
+                        <p class="text-sm text-gray-600">맞춤형 구성안 제작</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-purple-600 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold">3</div>
+                        <h3 class="font-bold mb-2">디자인 & 개발</h3>
+                        <p class="text-sm text-gray-600">전문 디자이너 제작</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-purple-600 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold">4</div>
+                        <h3 class="font-bold mb-2">배포 & 운영</h3>
+                        <p class="text-sm text-gray-600">실시간 모니터링</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Inquiry Form -->
+        <section id="inquiry" class="py-16 px-6">
+            <div class="max-w-2xl mx-auto">
+                <h2 class="text-3xl font-bold text-center mb-4">문의하기</h2>
+                <p class="text-center text-gray-600 mb-8">랜딩페이지 제작 상담을 원하시면 아래 양식을 작성해주세요</p>
+                
+                <form id="inquiryForm" class="bg-white rounded-2xl p-8 shadow-lg">
+                    <div class="mb-6">
+                        <label class="block text-sm font-bold text-gray-700 mb-2">학원명 *</label>
+                        <input type="text" name="academy_name" required
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                    </div>
+                    <div class="mb-6">
+                        <label class="block text-sm font-bold text-gray-700 mb-2">담당자명 *</label>
+                        <input type="text" name="name" required
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                    </div>
+                    <div class="mb-6">
+                        <label class="block text-sm font-bold text-gray-700 mb-2">연락처 *</label>
+                        <input type="tel" name="phone" required
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                    </div>
+                    <div class="mb-6">
+                        <label class="block text-sm font-bold text-gray-700 mb-2">이메일 *</label>
+                        <input type="email" name="email" required
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                    </div>
+                    <div class="mb-6">
+                        <label class="block text-sm font-bold text-gray-700 mb-2">문의 내용 *</label>
+                        <textarea name="message" rows="5" required
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"></textarea>
+                    </div>
+                    <input type="hidden" name="service_type" value="landing_page">
+                    <button type="submit"
+                        class="w-full py-4 bg-purple-600 text-white rounded-lg font-bold hover:bg-purple-700 transition-all shadow-lg hover:shadow-xl">
+                        문의 제출하기
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <script>
+            document.getElementById('inquiryForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                const data = Object.fromEntries(formData);
+                
+                try {
+                    const response = await fetch('/api/service-inquiry', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+                    
+                    const result = await response.json();
+                    if (result.success) {
+                        alert('✅ 문의가 성공적으로 제출되었습니다! 빠른 시일 내에 연락드리겠습니다.');
+                        e.target.reset();
+                    } else {
+                        alert('❌ 오류: ' + result.error);
+                    }
+                } catch (err) {
+                    alert('❌ 문의 제출 중 오류가 발생했습니다.');
+                }
+            });
+        </script>
+    </body>
+    </html>
+  `)
+})
+
+// 학원마케팅 대행 상세 페이지  
+app.get('/services/marketing', (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>학원마케팅 대행 - 슈퍼플레이스</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <style>
+          @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
+          * { font-family: 'Pretendard Variable', sans-serif; }
+        </style>
+    </head>
+    <body class="bg-gray-50">
+        <!-- Navigation -->
+        <nav class="fixed w-full top-0 z-50 bg-white/90 backdrop-blur-md shadow-sm">
+            <div class="max-w-7xl mx-auto px-6 lg:px-8">
+                <div class="flex justify-between items-center h-20">
+                    <a href="/" class="text-xl font-bold text-gray-900">우리는 슈퍼플레이스다</a>
+                    <div class="hidden md:flex items-center space-x-8">
+                        <a href="/" class="text-gray-700 hover:text-purple-600">홈</a>
+                        <a href="/pricing" class="text-gray-700 hover:text-purple-600">요금제</a>
+                        <a href="/contact" class="text-gray-700 hover:text-purple-600">문의하기</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Hero Section -->
+        <section class="pt-32 pb-16 px-6 bg-gradient-to-br from-orange-50 to-white">
+            <div class="max-w-4xl mx-auto text-center">
+                <div class="inline-block mb-6 px-5 py-2 bg-orange-100 rounded-full text-orange-700 text-sm font-semibold">
+                    📈 전문 마케팅 대행
+                </div>
+                <h1 class="text-5xl font-bold text-gray-900 mb-6">
+                    학생 모집부터 유지까지<br>
+                    <span class="text-orange-600">올인원 마케팅 솔루션</span>
+                </h1>
+                <p class="text-xl text-gray-600 mb-8">
+                    전문 마케터가 학원 성장을 위한<br>
+                    모든 마케팅 업무를 대행합니다
+                </p>
+                <a href="#inquiry" class="inline-block px-8 py-4 bg-orange-600 text-white rounded-full font-bold hover:bg-orange-700 transition-all shadow-lg hover:shadow-xl">
+                    지금 상담하기 <i class="fas fa-arrow-right ml-2"></i>
+                </a>
+            </div>
+        </section>
+
+        <!-- Services -->
+        <section class="py-16 px-6">
+            <div class="max-w-6xl mx-auto">
+                <h2 class="text-3xl font-bold text-center mb-12">제공 서비스</h2>
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div class="bg-white rounded-2xl p-8 shadow-md hover:shadow-xl transition">
+                        <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-6">
+                            <i class="fas fa-bullhorn text-3xl text-blue-600"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-4">온라인 광고</h3>
+                        <p class="text-gray-600">네이버, 구글, SNS 등 각종 플랫폼 광고 운영 및 최적화</p>
+                    </div>
+                    <div class="bg-white rounded-2xl p-8 shadow-md hover:shadow-xl transition">
+                        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-6">
+                            <i class="fas fa-search text-3xl text-green-600"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-4">SEO 최적화</h3>
+                        <p class="text-gray-600">검색 엔진 최적화로 자연 유입 극대화</p>
+                    </div>
+                    <div class="bg-white rounded-2xl p-8 shadow-md hover:shadow-xl transition">
+                        <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mb-6">
+                            <i class="fas fa-share-alt text-3xl text-purple-600"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-4">SNS 마케팅</h3>
+                        <p class="text-gray-600">인스타그램, 페이스북 등 소셜 미디어 운영 대행</p>
+                    </div>
+                    <div class="bg-white rounded-2xl p-8 shadow-md hover:shadow-xl transition">
+                        <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mb-6">
+                            <i class="fas fa-file-alt text-3xl text-yellow-600"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-4">콘텐츠 제작</h3>
+                        <p class="text-gray-600">블로그, 카드뉴스, 영상 등 다양한 콘텐츠 제작</p>
+                    </div>
+                    <div class="bg-white rounded-2xl p-8 shadow-md hover:shadow-xl transition">
+                        <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-6">
+                            <i class="fas fa-chart-bar text-3xl text-red-600"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-4">데이터 분석</h3>
+                        <p class="text-gray-600">마케팅 성과 분석 및 개선 전략 수립</p>
+                    </div>
+                    <div class="bg-white rounded-2xl p-8 shadow-md hover:shadow-xl transition">
+                        <div class="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mb-6">
+                            <i class="fas fa-headset text-3xl text-indigo-600"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-4">상담 관리</h3>
+                        <p class="text-gray-600">문의 관리 및 상담 전환율 최적화</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Why Us -->
+        <section class="py-16 px-6 bg-gray-100">
+            <div class="max-w-6xl mx-auto">
+                <h2 class="text-3xl font-bold text-center mb-12">슈퍼플레이스를 선택해야 하는 이유</h2>
+                <div class="grid md:grid-cols-3 gap-8">
+                    <div class="text-center">
+                        <div class="text-4xl font-bold text-orange-600 mb-4">10+</div>
+                        <h3 class="font-bold mb-2">년간 경험</h3>
+                        <p class="text-gray-600">학원 마케팅 전문 경력</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-4xl font-bold text-orange-600 mb-4">300%</div>
+                        <h3 class="font-bold mb-2">평균 성장률</h3>
+                        <p class="text-gray-600">학생 수 증가</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-4xl font-bold text-orange-600 mb-4">100+</div>
+                        <h3 class="font-bold mb-2">학원 파트너</h3>
+                        <p class="text-gray-600">성공 사례</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Inquiry Form -->
+        <section id="inquiry" class="py-16 px-6">
+            <div class="max-w-2xl mx-auto">
+                <h2 class="text-3xl font-bold text-center mb-4">마케팅 상담 신청</h2>
+                <p class="text-center text-gray-600 mb-8">학원 마케팅 대행 상담을 원하시면 아래 양식을 작성해주세요</p>
+                
+                <form id="inquiryForm" class="bg-white rounded-2xl p-8 shadow-lg">
+                    <div class="mb-6">
+                        <label class="block text-sm font-bold text-gray-700 mb-2">학원명 *</label>
+                        <input type="text" name="academy_name" required
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                    </div>
+                    <div class="mb-6">
+                        <label class="block text-sm font-bold text-gray-700 mb-2">담당자명 *</label>
+                        <input type="text" name="name" required
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                    </div>
+                    <div class="mb-6">
+                        <label class="block text-sm font-bold text-gray-700 mb-2">연락처 *</label>
+                        <input type="tel" name="phone" required
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                    </div>
+                    <div class="mb-6">
+                        <label class="block text-sm font-bold text-gray-700 mb-2">이메일 *</label>
+                        <input type="email" name="email" required
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                    </div>
+                    <div class="mb-6">
+                        <label class="block text-sm font-bold text-gray-700 mb-2">현재 학생 수</label>
+                        <input type="number" name="student_count"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                    </div>
+                    <div class="mb-6">
+                        <label class="block text-sm font-bold text-gray-700 mb-2">문의 내용 *</label>
+                        <textarea name="message" rows="5" required
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"></textarea>
+                    </div>
+                    <input type="hidden" name="service_type" value="marketing">
+                    <button type="submit"
+                        class="w-full py-4 bg-orange-600 text-white rounded-lg font-bold hover:bg-orange-700 transition-all shadow-lg hover:shadow-xl">
+                        문의 제출하기
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <script>
+            document.getElementById('inquiryForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                const data = Object.fromEntries(formData);
+                
+                try {
+                    const response = await fetch('/api/service-inquiry', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+                    
+                    const result = await response.json();
+                    if (result.success) {
+                        alert('✅ 문의가 성공적으로 제출되었습니다! 빠른 시일 내에 연락드리겠습니다.');
+                        e.target.reset();
+                    } else {
+                        alert('❌ 오류: ' + result.error);
+                    }
+                } catch (err) {
+                    alert('❌ 문의 제출 중 오류가 발생했습니다.');
+                }
+            });
+        </script>
+    </body>
+    </html>
+  `)
+})
+
+// 서비스 문의 API
+app.post('/api/service-inquiry', async (c) => {
+  try {
+    const { academy_name, name, phone, email, message, service_type, student_count } = await c.req.json()
+    
+    if (!academy_name || !name || !phone || !email || !message || !service_type) {
+      return c.json({ success: false, error: '필수 항목을 모두 입력해주세요.' }, 400)
+    }
+    
+    // contacts 테이블에 저장
+    const serviceNames = {
+      landing_page: '랜딩페이지 제작',
+      marketing: '학원마케팅 대행'
+    }
+    
+    const fullMessage = `[${serviceNames[service_type]}]\n\n학원명: ${academy_name}\n담당자: ${name}\n연락처: ${phone}\n이메일: ${email}${student_count ? `\n현재 학생 수: ${student_count}명` : ''}\n\n문의 내용:\n${message}`
+    
+    await c.env.DB.prepare(`
+      INSERT INTO contacts (name, email, phone, message, status, created_at)
+      VALUES (?, ?, ?, ?, 'pending', CURRENT_TIMESTAMP)
+    `).bind(name, email, phone, fullMessage).run()
+    
+    return c.json({ 
+      success: true,
+      message: '문의가 성공적으로 제출되었습니다.'
+    })
+  } catch (err) {
+    console.error('Service inquiry error:', err)
+    return c.json({ success: false, error: '문의 제출 중 오류가 발생했습니다.' }, 500)
+  }
+})
