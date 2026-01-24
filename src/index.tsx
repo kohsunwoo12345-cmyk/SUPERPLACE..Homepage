@@ -4658,15 +4658,46 @@ app.put('/api/landing/:slug/edit', async (c) => {
       return c.json({ success: false, error: '랜딩페이지를 찾을 수 없습니다.' }, 404)
     }
     
-    await c.env.DB.prepare(`
-      UPDATE landing_pages 
-      SET html_content = ?, 
-          header_pixel = ?,
-          body_pixel = ?,
-          conversion_pixel = ?,
-          updated_at = CURRENT_TIMESTAMP
-      WHERE slug = ?
-    `).bind(html_content || page.html_content, header_pixel || null, body_pixel || null, conversion_pixel || null, slug).run()
+    // 픽셀 컬럼이 존재하는지 확인하고 적절한 쿼리 사용
+    try {
+      await c.env.DB.prepare(`
+        UPDATE landing_pages 
+        SET html_content = ?, 
+            header_pixel = ?,
+            body_pixel = ?,
+            conversion_pixel = ?,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE slug = ?
+      `).bind(html_content || page.html_content, header_pixel || null, body_pixel || null, conversion_pixel || null, slug).run()
+    } catch (columnErr) {
+      // 픽셀 컬럼이 없으면 HTML만 업데이트
+      console.log('Pixel columns not found, updating html_content only')
+      await c.env.DB.prepare(`
+        UPDATE landing_pages 
+        SET html_content = ?, 
+            updated_at = CURRENT_TIMESTAMP
+        WHERE slug = ?
+      `).bind(html_content || page.html_content, slug).run()
+      
+      // 마이그레이션 실행
+      try {
+        await c.env.DB.prepare(`ALTER TABLE landing_pages ADD COLUMN header_pixel TEXT`).run()
+        await c.env.DB.prepare(`ALTER TABLE landing_pages ADD COLUMN body_pixel TEXT`).run()
+        await c.env.DB.prepare(`ALTER TABLE landing_pages ADD COLUMN conversion_pixel TEXT`).run()
+        console.log('✅ Added pixel columns to landing_pages')
+        
+        // 픽셀 데이터 업데이트
+        await c.env.DB.prepare(`
+          UPDATE landing_pages 
+          SET header_pixel = ?,
+              body_pixel = ?,
+              conversion_pixel = ?
+          WHERE slug = ?
+        `).bind(header_pixel || null, body_pixel || null, conversion_pixel || null, slug).run()
+      } catch (migrateErr) {
+        console.log('Migration already applied or failed:', migrateErr)
+      }
+    }
     
     return c.json({ 
       success: true, 
