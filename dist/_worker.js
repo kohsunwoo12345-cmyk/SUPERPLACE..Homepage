@@ -5796,23 +5796,100 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
                 
                 <div class="mt-20">
                     
-                    <!-- Stats -->
-                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-8 pt-12 border-t border-gray-100">
-                        <div class="text-center">
-                            <div class="text-4xl lg:text-5xl font-bold text-purple-600 mb-2">500+</div>
-                            <div class="text-sm lg:text-base text-gray-600 font-medium">교육 수료 학원</div>
+                    <!-- Marketing Funnel Process -->
+                    <div class="pt-12 border-t border-gray-100">
+                        <h3 class="text-2xl lg:text-3xl font-bold text-center text-gray-900 mb-12">
+                            완벽한 학원 마케팅 프로세스
+                        </h3>
+                        
+                        <!-- Horizontal Funnel -->
+                        <div class="relative flex items-center justify-between max-w-5xl mx-auto px-4">
+                            <!-- Step 1: 노출 -->
+                            <div class="flex-1 text-center relative group">
+                                <div class="relative inline-block">
+                                    <div class="w-24 h-24 lg:w-32 lg:h-32 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center shadow-lg transform transition-all duration-300 group-hover:scale-110 group-hover:shadow-2xl">
+                                        <svg class="w-12 h-12 lg:w-16 lg:h-16 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                        </svg>
+                                    </div>
+                                    <div class="absolute -top-2 -right-2 w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center text-white font-bold shadow-md">1</div>
+                                </div>
+                                <p class="mt-4 text-lg lg:text-xl font-bold text-gray-900">노출 (홍보)</p>
+                                <p class="text-sm text-gray-600 mt-1">플랫폼 전체 노출</p>
+                            </div>
+                            
+                            <!-- Arrow 1 -->
+                            <div class="flex-none px-2">
+                                <svg class="w-8 h-8 lg:w-12 lg:h-12 text-purple-400" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                                </svg>
+                            </div>
+                            
+                            <!-- Step 2: 1차 전환 -->
+                            <div class="flex-1 text-center relative group">
+                                <div class="relative inline-block">
+                                    <div class="w-28 h-28 lg:w-36 lg:h-36 rounded-full bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center shadow-xl transform transition-all duration-300 group-hover:scale-110 group-hover:shadow-2xl">
+                                        <svg class="w-14 h-14 lg:w-18 lg:h-18 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                                        </svg>
+                                    </div>
+                                    <div class="absolute -top-2 -right-2 w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center text-white font-bold shadow-md">2</div>
+                                </div>
+                                <p class="mt-4 text-lg lg:text-xl font-bold text-gray-900">상담으로 오기</p>
+                                <p class="text-sm text-gray-600 mt-1">1차 전환</p>
+                            </div>
+                            
+                            <!-- Arrow 2 -->
+                            <div class="flex-none px-2">
+                                <svg class="w-8 h-8 lg:w-12 lg:h-12 text-purple-500" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                                </svg>
+                            </div>
+                            
+                            <!-- Step 3: 2차 전환 -->
+                            <div class="flex-1 text-center relative group">
+                                <div class="relative inline-block">
+                                    <div class="w-32 h-32 lg:w-40 lg:h-40 rounded-full bg-gradient-to-br from-purple-600 to-purple-800 flex items-center justify-center shadow-2xl transform transition-all duration-300 group-hover:scale-110 group-hover:shadow-2xl">
+                                        <svg class="w-16 h-16 lg:w-20 lg:h-20 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                        </svg>
+                                    </div>
+                                    <div class="absolute -top-2 -right-2 w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center text-white font-bold shadow-md">3</div>
+                                </div>
+                                <p class="mt-4 text-lg lg:text-xl font-bold text-gray-900">상담에서 등록</p>
+                                <p class="text-sm text-gray-600 mt-1">2차 전환</p>
+                            </div>
+                            
+                            <!-- Arrow 3 -->
+                            <div class="flex-none px-2">
+                                <svg class="w-8 h-8 lg:w-12 lg:h-12 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                                </svg>
+                            </div>
+                            
+                            <!-- Step 4: 이탈 방지 -->
+                            <div class="flex-1 text-center relative group">
+                                <div class="relative inline-block">
+                                    <div class="w-36 h-36 lg:w-44 lg:h-44 rounded-full bg-gradient-to-br from-orange-500 to-orange-700 flex items-center justify-center shadow-2xl transform transition-all duration-300 group-hover:scale-110 group-hover:shadow-2xl">
+                                        <svg class="w-18 h-18 lg:w-22 lg:h-22 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                                        </svg>
+                                    </div>
+                                    <div class="absolute -top-2 -right-2 w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold shadow-md">4</div>
+                                </div>
+                                <p class="mt-4 text-lg lg:text-xl font-bold text-gray-900">팬덤 고객 유지</p>
+                                <p class="text-sm text-gray-600 mt-1">이탈 방지</p>
+                            </div>
                         </div>
-                        <div class="text-center">
-                            <div class="text-4xl lg:text-5xl font-bold text-orange-500 mb-2">95%</div>
-                            <div class="text-sm lg:text-base text-gray-600 font-medium">만족도</div>
-                        </div>
-                        <div class="text-center">
-                            <div class="text-4xl lg:text-5xl font-bold text-purple-600 mb-2">24/7</div>
-                            <div class="text-sm lg:text-base text-gray-600 font-medium">커뮤니티 운영</div>
-                        </div>
-                        <div class="text-center">
-                            <div class="text-4xl lg:text-5xl font-bold text-orange-500 mb-2">1:1</div>
-                            <div class="text-sm lg:text-base text-gray-600 font-medium">맞춤 컨설팅</div>
+                        
+                        <!-- Process Description -->
+                        <div class="mt-12 text-center max-w-3xl mx-auto">
+                            <p class="text-lg lg:text-xl text-gray-700 leading-relaxed">
+                                단순한 <span class="font-bold text-purple-600">노출</span>이 아닌,<br class="sm:hidden">
+                                <span class="font-bold text-purple-700">상담 유도 → 등록 전환 → 이탈 방지</span>까지<br>
+                                <span class="text-2xl font-bold bg-gradient-to-r from-purple-600 to-orange-500 bg-clip-text text-transparent">완벽한 프로세스를 설계합니다</span>
+                            </p>
                         </div>
                     </div>
                 </div>
