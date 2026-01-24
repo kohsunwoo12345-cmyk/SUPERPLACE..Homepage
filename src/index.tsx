@@ -5329,7 +5329,9 @@ function generateAcademyIntroHTML(data: any): string {
 
 // 프로그램 홍보 페이지 템플릿
 function generateProgramPromoHTML(data: any): string {
-  const { programName, target, features, price, duration, cta } = data
+  const { programName, target, features, price, duration, cta, programImage } = data
+  const featuresList = Array.isArray(features) ? features : (features ? features.split('\n').filter((f: string) => f.trim()) : [])
+  
   return `
 <!DOCTYPE html>
 <html lang="ko">
@@ -5343,39 +5345,50 @@ function generateProgramPromoHTML(data: any): string {
       * { font-family: 'Pretendard Variable', sans-serif; }
     </style>
 </head>
-<body class="bg-gradient-to-br from-blue-50 to-purple-50 min-h-screen py-12 px-6">
-    <div class="max-w-3xl mx-auto">
-        <div class="bg-white rounded-3xl shadow-2xl overflow-hidden">
-            <div class="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-12 text-center">
-                <div class="inline-block bg-white/20 px-6 py-2 rounded-full text-sm font-medium mb-6">
-                    ${target || '누구나 참여 가능'}
+<body class="bg-gray-50 min-h-screen py-8 px-4">
+    <div class="max-w-4xl mx-auto">
+        <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+            <!-- Header -->
+            <div class="bg-blue-600 text-white p-8 text-center">
+                <div class="inline-block bg-white text-blue-600 px-4 py-1 rounded-full text-sm font-medium mb-4">
+                    ${target || '모집 중'}
                 </div>
-                <h1 class="text-4xl md:text-5xl font-bold mb-4">${programName}</h1>
-                <p class="text-xl opacity-90">${duration || '지금 바로 시작하세요'}</p>
+                <h1 class="text-3xl md:text-4xl font-bold mb-2">${programName}</h1>
+                <p class="text-lg opacity-90">${duration || ''}</p>
             </div>
             
-            <div class="p-10">
-                <h2 class="text-2xl font-bold text-gray-900 mb-6">🎯 이런 분들에게 추천합니다</h2>
-                <div class="space-y-4 mb-10">
-                    ${(features || []).map((f: string) => `
-                        <div class="flex items-center gap-3 p-4 bg-blue-50 rounded-xl">
-                            <span class="text-2xl">✅</span>
-                            <span class="text-lg text-gray-800">${f}</span>
+            ${programImage ? `
+            <!-- Program Image -->
+            <div class="p-6">
+                <img src="${programImage}" alt="${programName}" class="w-full h-64 object-cover rounded-xl" onerror="this.style.display='none'">
+            </div>
+            ` : ''}
+            
+            <div class="p-8">
+                <!-- Features -->
+                <h2 class="text-2xl font-bold text-gray-900 mb-4 border-b-2 border-blue-600 pb-2">📚 프로그램 특징</h2>
+                <div class="space-y-3 mb-8">
+                    ${featuresList.map((f: string) => `
+                        <div class="flex items-start gap-3 p-4 bg-blue-50 rounded-lg border border-blue-100">
+                            <span class="text-blue-600 text-xl mt-0.5">✓</span>
+                            <span class="text-gray-700 leading-relaxed">${f}</span>
                         </div>
                     `).join('')}
                 </div>
                 
-                <div class="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-2xl p-8 mb-10 border-2 border-yellow-200">
-                    <div class="text-center">
-                        <p class="text-gray-600 text-lg mb-2">특별 가격</p>
-                        <p class="text-5xl font-bold text-gray-900 mb-2">${price}원</p>
-                        <p class="text-gray-500">${duration}</p>
-                    </div>
+                <!-- Price -->
+                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 mb-8 text-center border-2 border-blue-200">
+                    <p class="text-gray-600 text-sm mb-1">수강료</p>
+                    <p class="text-4xl font-bold text-gray-900 mb-1">${price ? price.toLocaleString() : '문의'}원</p>
+                    <p class="text-gray-500 text-sm">${duration || ''}</p>
                 </div>
                 
-                <a href="${cta || '#'}" class="block w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white text-center py-5 rounded-xl text-xl font-bold hover:shadow-2xl transition transform hover:scale-105">
-                    🚀 지금 바로 신청하기
+                <!-- CTA Button -->
+                ${cta ? `
+                <a href="${cta.startsWith('http') ? cta : 'tel:' + cta}" class="block w-full bg-blue-600 text-white text-center py-4 rounded-xl text-lg font-bold hover:bg-blue-700 transition">
+                    📞 상담 신청하기
                 </a>
+                ` : ''}
             </div>
         </div>
     </div>
@@ -6021,7 +6034,10 @@ function generateAdmissionInfoHTML(data: any): string {
 
 // 학원 성과 통계 페이지 템플릿
 function generateAcademyStatsHTML(data: any): string {
-  const { academyName, period, totalStudents, achievements, testimonials, gradeImprovement } = data
+  const { academyName, period, totalStudents, achievements, testimonials, gradeImprovement, reEnrollmentRate, collegeAdmissions, topGradeStudents } = data
+  const achievementsList = Array.isArray(achievements) ? achievements : (achievements ? achievements.split('\n').filter((a: string) => a.trim()) : [])
+  const testimonialsList = Array.isArray(testimonials) ? testimonials : (testimonials ? testimonials.split('\n').filter((t: string) => t.trim()) : [])
+  
   return `
 <!DOCTYPE html>
 <html lang="ko">
@@ -6030,54 +6046,74 @@ function generateAcademyStatsHTML(data: any): string {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>${academyName} - 성과 통계</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
       @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
       * { font-family: 'Pretendard Variable', sans-serif; }
     </style>
 </head>
-<body class="bg-gray-50 py-12 px-6">
+<body class="bg-gray-50 py-8 px-4">
     <div class="max-w-5xl mx-auto">
-        <div class="text-center mb-12">
-            <h1 class="text-5xl font-bold text-gray-900 mb-4">${academyName}</h1>
-            <p class="text-2xl text-gray-600">${period} 성과 보고서</p>
+        <!-- Header -->
+        <div class="bg-white rounded-2xl shadow-lg p-8 mb-6 text-center">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-2">${academyName}</h1>
+            <p class="text-xl text-blue-600 font-semibold">${period} 성과 보고서</p>
         </div>
         
-        <div class="grid md:grid-cols-3 gap-6 mb-12">
-            <div class="bg-gradient-to-br from-blue-300 to-blue-400 rounded-2xl p-8 text-white text-center">
-                <div class="text-5xl font-bold mb-2">${totalStudents || 0}</div>
-                <div class="text-xl opacity-90">총 재학생</div>
+        <!-- Stats Grid -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div class="bg-white rounded-xl shadow p-6 text-center border-t-4 border-blue-500">
+                <div class="text-3xl font-bold text-gray-900 mb-1">${totalStudents || 0}명</div>
+                <div class="text-sm text-gray-600">총 재학생</div>
             </div>
-            <div class="bg-gradient-to-br from-green-300 to-green-400 rounded-2xl p-8 text-white text-center">
-                <div class="text-5xl font-bold mb-2">${gradeImprovement || '2'}등급</div>
-                <div class="text-xl opacity-90">평균 성적 향상</div>
+            <div class="bg-white rounded-xl shadow p-6 text-center border-t-4 border-green-500">
+                <div class="text-3xl font-bold text-gray-900 mb-1">${gradeImprovement || '2'}등급↑</div>
+                <div class="text-sm text-gray-600">평균 향상</div>
             </div>
-            <div class="bg-gradient-to-br from-purple-300 to-purple-400 rounded-2xl p-8 text-white text-center">
-                <div class="text-5xl font-bold mb-2">95%</div>
-                <div class="text-xl opacity-90">재등록률</div>
+            <div class="bg-white rounded-xl shadow p-6 text-center border-t-4 border-purple-500">
+                <div class="text-3xl font-bold text-gray-900 mb-1">${reEnrollmentRate || '95%'}</div>
+                <div class="text-sm text-gray-600">재등록률</div>
+            </div>
+            <div class="bg-white rounded-xl shadow p-6 text-center border-t-4 border-orange-500">
+                <div class="text-3xl font-bold text-gray-900 mb-1">${topGradeStudents || '30'}명</div>
+                <div class="text-sm text-gray-600">1등급 달성</div>
             </div>
         </div>
         
-        <div class="bg-white rounded-2xl shadow-xl p-10 mb-12">
-            <h2 class="text-3xl font-bold text-gray-900 mb-8 text-center">🏆 주요 성과</h2>
-            <div class="space-y-4">
-                ${(achievements || []).map((ach: string) => `
-                    <div class="flex items-start gap-4 p-5 bg-yellow-50 border-l-4 border-yellow-500 rounded-r-xl">
-                        <span class="text-3xl">🎯</span>
-                        <p class="text-gray-800 text-lg leading-relaxed flex-1">${ach}</p>
+        ${collegeAdmissions ? `
+        <!-- College Admissions -->
+        <div class="bg-blue-50 rounded-xl p-6 mb-6 border-l-4 border-blue-500">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-lg font-bold text-gray-900 mb-1">🎓 명문대 합격</h3>
+                    <p class="text-gray-600">우리 학원의 자랑스러운 성과입니다</p>
+                </div>
+                <div class="text-4xl font-bold text-blue-600">${collegeAdmissions}명</div>
+            </div>
+        </div>
+        ` : ''}
+        
+        <!-- Achievements -->
+        <div class="bg-white rounded-2xl shadow-lg p-8 mb-6">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6 pb-3 border-b-2 border-blue-600">🏆 주요 성과</h2>
+            <div class="space-y-3">
+                ${achievementsList.map((ach: string) => `
+                    <div class="flex items-start gap-3 p-4 bg-yellow-50 rounded-lg border-l-4 border-yellow-400">
+                        <span class="text-yellow-600 text-xl">✓</span>
+                        <p class="text-gray-700 leading-relaxed">${ach}</p>
                     </div>
                 `).join('')}
             </div>
         </div>
         
-        <div class="bg-white rounded-2xl shadow-xl p-10">
-            <h2 class="text-3xl font-bold text-gray-900 mb-8 text-center">💬 학부모 후기</h2>
-            <div class="space-y-6">
-                ${(testimonials || []).map((test: string) => `
-                    <div class="bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-6 border border-gray-200">
-                        <div class="flex items-center gap-2 mb-3">
-                            <div class="flex text-yellow-400">
-                                ${'⭐'.repeat(5)}
+        <!-- Testimonials -->
+        <div class="bg-white rounded-2xl shadow-lg p-8">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6 pb-3 border-b-2 border-green-600">💬 학부모 후기</h2>
+            <div class="space-y-4">
+                ${testimonialsList.map((test: string) => `
+                    <div class="bg-green-50 rounded-lg p-5 border border-green-200">
+                        <div class="flex items-center gap-2 mb-2">
+                            <div class="flex text-yellow-500">
+                                ${'★'.repeat(5)}
                             </div>
                         </div>
                         <p class="text-gray-700 leading-relaxed">"${test}"</p>
@@ -6093,7 +6129,9 @@ function generateAcademyStatsHTML(data: any): string {
 
 // 선생님 소개 페이지 템플릿
 function generateTeacherIntroHTML(data: any): string {
-  const { teacherName, subject, experience, education, specialty, achievements, teachingStyle, contact } = data
+  const { teacherName, subject, experience, education, specialty, achievements, teachingStyle, contact, teacherPhoto } = data
+  const achievementsList = Array.isArray(achievements) ? achievements : (achievements ? achievements.split('\n').filter((a: string) => a.trim()) : [])
+  
   return `
 <!DOCTYPE html>
 <html lang="ko">
@@ -6107,60 +6145,74 @@ function generateTeacherIntroHTML(data: any): string {
       * { font-family: 'Pretendard Variable', sans-serif; }
     </style>
 </head>
-<body class="bg-gradient-to-br from-teal-50 to-cyan-50 min-h-screen py-12 px-6">
+<body class="bg-gray-50 min-h-screen py-8 px-4">
     <div class="max-w-4xl mx-auto">
-        <div class="bg-white rounded-3xl shadow-2xl overflow-hidden">
-            <div class="bg-gradient-to-r from-teal-400 to-cyan-400 text-white p-12 text-center">
-                <div class="w-32 h-32 bg-white/20 rounded-full mx-auto mb-6 flex items-center justify-center">
+        <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+            <!-- Header -->
+            <div class="bg-teal-600 text-white p-8 text-center">
+                ${teacherPhoto ? `
+                <div class="w-32 h-32 mx-auto mb-4 rounded-full overflow-hidden bg-white">
+                    <img src="${teacherPhoto}" alt="${teacherName}" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='<div class=\\'w-full h-full flex items-center justify-center text-6xl\\'>👨‍🏫</div>'">
+                </div>
+                ` : `
+                <div class="w-32 h-32 bg-white/20 rounded-full mx-auto mb-4 flex items-center justify-center">
                     <span class="text-6xl">👨‍🏫</span>
                 </div>
-                <h1 class="text-4xl font-bold mb-3">${teacherName} 선생님</h1>
-                <p class="text-2xl opacity-90">${subject} 전문</p>
-                <div class="mt-6 inline-block bg-white/20 px-6 py-2 rounded-full">
-                    <span class="text-lg font-medium">경력 ${experience}년</span>
+                `}
+                <h1 class="text-3xl font-bold mb-2">${teacherName} 선생님</h1>
+                <p class="text-xl opacity-90">${subject} 전문</p>
+                <div class="mt-4 inline-block bg-white/20 px-4 py-2 rounded-full">
+                    <span class="font-medium">경력 ${experience}년</span>
                 </div>
             </div>
             
-            <div class="p-10">
-                <div class="mb-10">
-                    <h2 class="text-2xl font-bold text-gray-900 mb-4">🎓 학력</h2>
-                    <div class="bg-teal-50 rounded-xl p-6">
-                        <p class="text-gray-800 text-lg leading-relaxed">${education}</p>
+            <div class="p-8">
+                <!-- Education -->
+                <div class="mb-8">
+                    <h2 class="text-xl font-bold text-gray-900 mb-3 pb-2 border-b-2 border-teal-600">🎓 학력</h2>
+                    <div class="bg-teal-50 rounded-lg p-5 border border-teal-100">
+                        <p class="text-gray-700 leading-relaxed">${education}</p>
                     </div>
                 </div>
                 
-                <div class="mb-10">
-                    <h2 class="text-2xl font-bold text-gray-900 mb-4">💡 전문 분야</h2>
-                    <div class="bg-cyan-50 rounded-xl p-6">
-                        <p class="text-gray-800 text-lg leading-relaxed">${specialty}</p>
+                <!-- Specialty -->
+                <div class="mb-8">
+                    <h2 class="text-xl font-bold text-gray-900 mb-3 pb-2 border-b-2 border-teal-600">💡 전문 분야</h2>
+                    <div class="bg-blue-50 rounded-lg p-5 border border-blue-100">
+                        <p class="text-gray-700 leading-relaxed">${specialty}</p>
                     </div>
                 </div>
                 
-                <div class="mb-10">
-                    <h2 class="text-2xl font-bold text-gray-900 mb-6">🏆 주요 실적</h2>
+                <!-- Achievements -->
+                <div class="mb-8">
+                    <h2 class="text-xl font-bold text-gray-900 mb-3 pb-2 border-b-2 border-teal-600">🏆 주요 실적</h2>
                     <div class="space-y-3">
-                        ${(achievements || []).map((ach: string) => `
-                            <div class="flex items-center gap-3 p-4 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-xl">
-                                <span class="text-2xl">🎯</span>
-                                <span class="text-gray-800">${ach}</span>
+                        ${achievementsList.map((ach: string) => `
+                            <div class="flex items-start gap-3 p-4 bg-yellow-50 rounded-lg border-l-4 border-yellow-400">
+                                <span class="text-yellow-600 text-xl">✓</span>
+                                <span class="text-gray-700">${ach}</span>
                             </div>
                         `).join('')}
                     </div>
                 </div>
                 
-                <div class="mb-10">
-                    <h2 class="text-2xl font-bold text-gray-900 mb-4">📚 수업 방식</h2>
-                    <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-6 border border-gray-200">
-                        <p class="text-gray-700 text-lg leading-relaxed">${teachingStyle}</p>
+                <!-- Teaching Style -->
+                <div class="mb-8">
+                    <h2 class="text-xl font-bold text-gray-900 mb-3 pb-2 border-b-2 border-teal-600">📚 수업 방식</h2>
+                    <div class="bg-gray-50 rounded-lg p-5 border border-gray-200">
+                        <p class="text-gray-700 leading-relaxed">${teachingStyle}</p>
                     </div>
                 </div>
                 
-                <div class="bg-gradient-to-r from-teal-400 to-cyan-400 rounded-2xl p-8 text-white text-center">
-                    <h3 class="text-2xl font-bold mb-4">수업 문의</h3>
-                    <a href="tel:${contact}" class="inline-block bg-white text-teal-600 px-10 py-4 rounded-full text-xl font-bold hover:bg-gray-100 transition">
-                        📞 ${contact || '문의하기'}
+                <!-- Contact -->
+                ${contact ? `
+                <div class="bg-teal-600 rounded-xl p-6 text-white text-center">
+                    <h3 class="text-lg font-bold mb-3">수업 문의</h3>
+                    <a href="tel:${contact}" class="inline-block bg-white text-teal-600 px-8 py-3 rounded-lg font-bold hover:bg-gray-100 transition">
+                        📞 ${contact}
                     </a>
                 </div>
+                ` : ''}
             </div>
         </div>
     </div>
@@ -19957,6 +20009,11 @@ app.get('/tools/landing-builder', (c) => {
                             <input type="text" name="target" placeholder="예: 중1~중3" required class="w-full px-4 py-3 border border-gray-300 rounded-xl">
                         </div>
                         <div>
+                            <label class="block text-sm font-medium text-gray-900 mb-2">프로그램 사진 URL</label>
+                            <input type="text" name="programImage" placeholder="이미지 URL을 입력하세요" class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                            <p class="text-xs text-gray-500 mt-1">📌 이미지 업로드: 미디어 관리 → 사진 업로드 → URL 복사</p>
+                        </div>
+                        <div>
                             <label class="block text-sm font-medium text-gray-900 mb-2">특징 (1개당 한 줄) *</label>
                             <textarea name="features" rows="3" placeholder="내신 대비 완벽 준비&#10;문법부터 독해까지 체계적 학습&#10;주 3회 소그룹 수업" required class="w-full px-4 py-3 border border-gray-300 rounded-xl"></textarea>
                         </div>
@@ -20192,7 +20249,7 @@ app.get('/tools/landing-builder', (c) => {
                             <label class="block text-sm font-medium text-gray-900 mb-2">기간 *</label>
                             <input type="text" name="period" placeholder="예: 2024년 2학기" required class="w-full px-4 py-3 border border-gray-300 rounded-xl">
                         </div>
-                        <div class="grid grid-cols-2 gap-4">
+                        <div class="grid grid-cols-3 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-900 mb-2">총 재학생 수</label>
                                 <input type="text" name="totalStudents" placeholder="예: 150" class="w-full px-4 py-3 border border-gray-300 rounded-xl">
@@ -20200,6 +20257,20 @@ app.get('/tools/landing-builder', (c) => {
                             <div>
                                 <label class="block text-sm font-medium text-gray-900 mb-2">평균 성적 향상</label>
                                 <input type="text" name="gradeImprovement" placeholder="예: 2등급" class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-900 mb-2">재등록률</label>
+                                <input type="text" name="reEnrollmentRate" placeholder="예: 95%" class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-900 mb-2">명문대 합격자 수</label>
+                                <input type="text" name="collegeAdmissions" placeholder="예: 50명" class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-900 mb-2">1등급 달성 학생 수</label>
+                                <input type="text" name="topGradeStudents" placeholder="예: 30명" class="w-full px-4 py-3 border border-gray-300 rounded-xl">
                             </div>
                         </div>
                         <div>
@@ -20217,6 +20288,11 @@ app.get('/tools/landing-builder', (c) => {
                         <div>
                             <label class="block text-sm font-medium text-gray-900 mb-2">선생님 이름 *</label>
                             <input type="text" name="teacherName" required class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 mb-2">선생님 사진 URL</label>
+                            <input type="text" name="teacherPhoto" placeholder="이미지 URL을 입력하세요" class="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                            <p class="text-xs text-gray-500 mt-1">📌 이미지 업로드: 미디어 관리 → 사진 업로드 → URL 복사</p>
                         </div>
                         <div class="grid grid-cols-2 gap-4">
                             <div>
