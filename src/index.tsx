@@ -21255,10 +21255,10 @@ app.get('/tools/landing-manager', (c) => {
                 if (result.success && result.pages.length > 0) {
                     const html = result.pages.map(p => {
                         const typeNames = {
-                            'academy-intro': '🏫 학원 소개',
-                            'program-promo': '📚 프로그램 홍보',
-                            'event-promo': '🎉 이벤트',
-                            'student-report': '📊 학생 리포트'
+                            'academy-intro': '\uD83C\uDFEB \uD559\uC6D0 \uC18C\uAC1C',
+                            'program-promo': '\uD83D\uDCDA \uD504\uB85C\uADF8\uB7A8 \uD64D\uBCF4',
+                            'event-promo': '\uD83C\uDF89 \uC774\uBCA4\uD2B8',
+                            'student-report': '\uD83D\uDCCA \uD559\uC0DD \uB9AC\uD3EC\uD2B8'
                         };
                         const url = window.location.origin + '/landing/' + p.slug;
                         return '<div class="bg-white rounded-xl p-6 border border-gray-200 hover:shadow-lg transition">' +
@@ -21268,21 +21268,21 @@ app.get('/tools/landing-manager', (c) => {
                                             '<span class="px-3 py-1 bg-purple-100 text-purple-700 text-xs rounded-full font-medium">' +
                                                 (typeNames[p.template_type] || p.template_type) +
                                             '</span>' +
-                                            '<span class="text-sm text-gray-500">조회수: ' + p.view_count + '</span>' +
+                                            '<span class="text-sm text-gray-500">\uC870\uD68C\uC218: ' + p.view_count + '</span>' +
                                         '</div>' +
                                         '<h3 class="text-xl font-bold text-gray-900 mb-3">' + p.title + '</h3>' +
                                         '<div class="flex items-center gap-2 mb-3">' +
                                             '<input type="text" value="' + url + '" readonly class="flex-1 px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg text-sm">' +
-                                            '<button onclick="copyUrl(' + JSON.stringify(url) + ')" class="px-4 py-2 bg-gray-600 text-white rounded-lg text-sm hover:bg-gray-700">복사</button>' +
+                                            '<button onclick="copyUrl(' + JSON.stringify(url) + ')" class="px-4 py-2 bg-gray-600 text-white rounded-lg text-sm hover:bg-gray-700">\uBCF5\uC0AC</button>' +
                                         '</div>' +
-                                        '<p class="text-sm text-gray-500">생성일: ' + new Date(p.created_at).toLocaleString('ko-KR') + '</p>' +
+                                        '<p class="text-sm text-gray-500">\uC0DD\uC131\uC77C: ' + new Date(p.created_at).toLocaleString('ko-KR') + '</p>' +
                                     '</div>' +
                                     '<div class="flex flex-col gap-2 ml-4">' +
-                                        '<a href="/landing/' + p.slug + '" target="_blank" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm text-center">미리보기</a>' +
-                                        '<button onclick="generateQR(&apos;' + p.slug + '&apos;)" class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 text-sm flex items-center justify-center gap-2"><i class="fas fa-qrcode"></i> QR 생성</button>' +
-                                        '<a href="/landing/' + p.slug + '/submissions" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm text-center flex items-center justify-center gap-2"><i class="fas fa-users"></i> 신청자</a>' +
-                                        '<button onclick="openMoveFolderModal(' + p.id + ')" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm">폴더 이동</button>' +
-                                        '<button onclick="deletePage(' + p.id + ')" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm">삭제</button>' +
+                                        '<a href="/landing/' + p.slug + '" target="_blank" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm text-center">\uBBF8\uB9AC\uBCF4\uAE30</a>' +
+                                        '<button onclick="generateQR(\'' + p.slug + '\')" class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 text-sm flex items-center justify-center gap-2"><i class="fas fa-qrcode"></i> QR \\uC0DD\\uC131</button>' +
+                                        '<a href="/landing/' + p.slug + '/submissions" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm text-center flex items-center justify-center gap-2"><i class="fas fa-users"></i> \uC2E0\uCCAD\uC790</a>' +
+                                        '<button onclick="openMoveFolderModal(' + p.id + ')" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm">\uD3F4\uB354 \uC774\uB3D9</button>' +
+                                        '<button onclick="deletePage(' + p.id + ')" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm">\uC0AD\uC81C</button>' +
                                     '</div>' +
                                 '</div>' +
                             '</div>';
