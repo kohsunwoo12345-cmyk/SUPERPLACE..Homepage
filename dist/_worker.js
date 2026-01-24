@@ -16914,6 +16914,7 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
                                     '</div>' +
                                     '<div class="flex flex-col gap-2 ml-4">' +
                                         '<a href="/landing/' + p.slug + '" target="_blank" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm text-center">미리보기</a>' +
+                                        // QR button - fixed with JSON.stringify
                                         '<button onclick="generateQR(' + JSON.stringify(p.slug) + ')" class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 text-sm flex items-center justify-center gap-2"><i class="fas fa-qrcode"></i> QR 생성</button>' +
                                         '<a href="/landing/' + p.slug + '/submissions" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm text-center flex items-center justify-center gap-2"><i class="fas fa-users"></i> 신청자</a>' +
                                         '<button onclick="openMoveFolderModal(' + p.id + ')" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm">폴더 이동</button>' +
@@ -35739,4 +35740,3 @@ ${o}`;return await e.env.DB.prepare(`
       INSERT INTO contacts (name, email, phone, message, status, created_at)
       VALUES (?, ?, ?, ?, 'pending', CURRENT_TIMESTAMP)
     `).bind(s,r,a,d).run(),e.json({success:!0,message:"문의가 성공적으로 제출되었습니다."})}catch(t){return console.error("Service inquiry error:",t),e.json({success:!1,error:"문의 제출 중 오류가 발생했습니다."},500)}});const lt=new et,Xs=Object.assign({"/src/index.tsx":c});let Lt=!1;for(const[,e]of Object.entries(Xs))e&&(lt.all("*",t=>{let s;try{s=t.executionCtx}catch{}return e.fetch(t.req.raw,t.env,s)}),lt.notFound(t=>{let s;try{s=t.executionCtx}catch{}return e.fetch(t.req.raw,t.env,s)}),Lt=!0);if(!Lt)throw new Error("Can't import modules from ['/src/index.ts','/src/index.tsx','/app/server.ts']");export{lt as default};
-/* Build 20260124185529 */

@@ -21751,6 +21751,7 @@ app.get('/tools/landing-manager', (c) => {
                                     '</div>' +
                                     '<div class="flex flex-col gap-2 ml-4">' +
                                         '<a href="/landing/' + p.slug + '" target="_blank" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm text-center">\uBBF8\uB9AC\uBCF4\uAE30</a>' +
+                                        // QR button - fixed with JSON.stringify
                                         '<button onclick="generateQR(' + JSON.stringify(p.slug) + ')" class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 text-sm flex items-center justify-center gap-2"><i class="fas fa-qrcode"></i> QR \uC0DD\uC131</button>' +
                                         '<a href="/landing/' + p.slug + '/submissions" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm text-center flex items-center justify-center gap-2"><i class="fas fa-users"></i> \uC2E0\uCCAD\uC790</a>' +
                                         '<button onclick="openMoveFolderModal(' + p.id + ')" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm">\uD3F4\uB354 \uC774\uB3D9</button>' +
