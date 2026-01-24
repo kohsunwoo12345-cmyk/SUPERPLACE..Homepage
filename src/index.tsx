@@ -37109,12 +37109,24 @@ app.get('/admin/active-sessions', async (c) => {
     </nav>
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <!-- Header with Stats -->
+        <!-- Header with Tabs -->
         <div class="mb-8">
             <h1 class="text-3xl font-bold text-gray-900 mb-6">
-                <i class="fas fa-users text-purple-600 mr-3"></i>실시간 접속자
+                <i class="fas fa-users text-purple-600 mr-3"></i>접속자 관리
             </h1>
             
+            <!-- Tabs -->
+            <div class="flex gap-2 mb-6 border-b border-gray-200">
+                <button onclick="switchTab('realtime')" id="tabRealtime" class="px-6 py-3 font-semibold text-purple-600 border-b-2 border-purple-600">
+                    <i class="fas fa-signal mr-2"></i>실시간 접속자
+                </button>
+                <button onclick="switchTab('history')" id="tabHistory" class="px-6 py-3 font-semibold text-gray-500 hover:text-purple-600">
+                    <i class="fas fa-chart-bar mr-2"></i>접속자 통계
+                </button>
+            </div>
+            
+            <!-- Realtime Tab Content -->
+            <div id="contentRealtime">
             <!-- Stats Cards -->
             <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                 <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-6 text-white shadow-lg">
@@ -37224,16 +37236,279 @@ app.get('/admin/active-sessions', async (c) => {
                 <p>현재 비회원 방문자가 없습니다</p>
             </div>
         </div>
+        </div>
+        <!-- End Realtime Tab -->
+        
+        <!-- History Tab Content -->
+        <div id="contentHistory" class="hidden">
+            <!-- Filters -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+                <h2 class="text-xl font-bold text-gray-900 mb-4">
+                    <i class="fas fa-filter text-purple-600 mr-2"></i>필터
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">시작 날짜</label>
+                        <input type="date" id="startDate" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">종료 날짜</label>
+                        <input type="date" id="endDate" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">검색 (이름, 이메일, IP)</label>
+                        <input type="text" id="searchKeyword" placeholder="검색어 입력" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                    </div>
+                </div>
+                <div class="mt-4 flex gap-3">
+                    <button onclick="loadSessionHistory()" class="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 flex items-center gap-2">
+                        <i class="fas fa-search"></i>
+                        조회
+                    </button>
+                    <button onclick="resetFilters()" class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">
+                        <i class="fas fa-redo mr-2"></i>초기화
+                    </button>
+                    <button onclick="downloadCSV()" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2">
+                        <i class="fas fa-download"></i>
+                        CSV 다운로드
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Daily Stats -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-6">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h2 class="text-xl font-bold text-gray-900">
+                        <i class="fas fa-chart-line text-blue-600 mr-2"></i>
+                        일별 통계
+                    </h2>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">날짜</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">총 세션</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">로그인</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">게스트</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">고유 사용자</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dailyStatsTable" class="divide-y divide-gray-200"></tbody>
+                    </table>
+                </div>
+                <div id="emptyDailyStats" class="hidden px-6 py-12 text-center text-gray-500">
+                    <i class="fas fa-chart-bar text-4xl mb-3"></i>
+                    <p>조회된 통계가 없습니다</p>
+                </div>
+            </div>
+            
+            <!-- Sessions List -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h2 class="text-xl font-bold text-gray-900">
+                        <i class="fas fa-list text-indigo-600 mr-2"></i>
+                        세션 목록 (<span id="sessionCount">0</span>개)
+                    </h2>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">사용자</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">학원명</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">로그인</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">접속 시간</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">로그아웃</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">마지막 활동</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">IP 주소</th>
+                            </tr>
+                        </thead>
+                        <tbody id="sessionsTable" class="divide-y divide-gray-200"></tbody>
+                    </table>
+                </div>
+                <div id="emptySessions" class="hidden px-6 py-12 text-center text-gray-500">
+                    <i class="fas fa-inbox text-4xl mb-3"></i>
+                    <p>조회된 세션이 없습니다</p>
+                </div>
+            </div>
+        </div>
+        <!-- End History Tab -->
     </div>
 
     <script>
         let autoRefreshInterval = null;
+        let currentSessionsData = null;
 
         // UTF-8 safe base64 encoding
         function base64Encode(str) {
             return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (match, p1) => {
                 return String.fromCharCode('0x' + p1);
             }));
+        }
+        
+        // Tab switching
+        function switchTab(tab) {
+            if (tab === 'realtime') {
+                document.getElementById('tabRealtime').className = 'px-6 py-3 font-semibold text-purple-600 border-b-2 border-purple-600';
+                document.getElementById('tabHistory').className = 'px-6 py-3 font-semibold text-gray-500 hover:text-purple-600';
+                document.getElementById('contentRealtime').classList.remove('hidden');
+                document.getElementById('contentHistory').classList.add('hidden');
+                loadActiveSessions();
+            } else {
+                document.getElementById('tabRealtime').className = 'px-6 py-3 font-semibold text-gray-500 hover:text-purple-600';
+                document.getElementById('tabHistory').className = 'px-6 py-3 font-semibold text-purple-600 border-b-2 border-purple-600';
+                document.getElementById('contentRealtime').classList.add('hidden');
+                document.getElementById('contentHistory').classList.remove('hidden');
+                
+                // Set default dates (last 7 days)
+                const today = new Date();
+                const weekAgo = new Date(today);
+                weekAgo.setDate(today.getDate() - 7);
+                document.getElementById('endDate').value = today.toISOString().split('T')[0];
+                document.getElementById('startDate').value = weekAgo.toISOString().split('T')[0];
+                
+                loadSessionHistory();
+            }
+        }
+        
+        // Load session history
+        async function loadSessionHistory() {
+            try {
+                const user = JSON.parse(localStorage.getItem('user') || '{}');
+                if (!user.id || user.role !== 'admin') {
+                    alert('관리자 권한이 필요합니다.');
+                    return;
+                }
+                
+                const startDate = document.getElementById('startDate').value;
+                const endDate = document.getElementById('endDate').value;
+                const searchKeyword = document.getElementById('searchKeyword').value;
+                
+                const params = new URLSearchParams();
+                if (startDate) params.append('startDate', startDate);
+                if (endDate) params.append('endDate', endDate);
+                if (searchKeyword) params.append('search', searchKeyword);
+                
+                const userDataBase64 = base64Encode(JSON.stringify(user));
+                const response = await fetch('/api/admin/sessions/history?' + params.toString(), {
+                    headers: {
+                        'X-User-Data-Base64': userDataBase64
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (!result.success) {
+                    alert(result.error || '데이터를 불러오는데 실패했습니다.');
+                    return;
+                }
+                
+                currentSessionsData = result;
+                
+                // Render daily stats
+                renderDailyStats(result.dailyStats);
+                
+                // Render sessions list
+                renderSessions(result.sessions);
+                
+            } catch (err) {
+                console.error('Load history error:', err);
+                alert('데이터 로드 중 오류가 발생했습니다.');
+            }
+        }
+        
+        function renderDailyStats(stats) {
+            const table = document.getElementById('dailyStatsTable');
+            const empty = document.getElementById('emptyDailyStats');
+            
+            if (!stats || stats.length === 0) {
+                table.innerHTML = '';
+                empty.classList.remove('hidden');
+                return;
+            }
+            
+            empty.classList.add('hidden');
+            table.innerHTML = stats.map(stat => \`
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">\${stat.date}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">\${stat.total_sessions}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-green-600">\${stat.logged_in_sessions}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-orange-600">\${stat.guest_sessions}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-blue-600">\${stat.unique_users}</td>
+                </tr>
+            \`).join('');
+        }
+        
+        function renderSessions(sessions) {
+            const table = document.getElementById('sessionsTable');
+            const empty = document.getElementById('emptySessions');
+            const count = document.getElementById('sessionCount');
+            
+            count.textContent = sessions.length;
+            
+            if (!sessions || sessions.length === 0) {
+                table.innerHTML = '';
+                empty.classList.remove('hidden');
+                return;
+            }
+            
+            empty.classList.add('hidden');
+            table.innerHTML = sessions.map(session => \`
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900">\${session.user_name || '-'}</div>
+                        <div class="text-sm text-gray-500">\${session.user_email || '-'}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">\${session.academy_name || '-'}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        \${session.is_logged_in === 1 
+                            ? '<span class="px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">회원</span>'
+                            : '<span class="px-2 py-1 text-xs bg-gray-100 text-gray-800 rounded-full">게스트</span>'}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">\${formatKoreanTime(session.created_at)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">\${formatKoreanTime(session.logout_time)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">\${formatKoreanTime(session.last_activity)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">\${session.ip_address || '-'}</td>
+                </tr>
+            \`).join('');
+        }
+        
+        function resetFilters() {
+            const today = new Date();
+            const weekAgo = new Date(today);
+            weekAgo.setDate(today.getDate() - 7);
+            document.getElementById('endDate').value = today.toISOString().split('T')[0];
+            document.getElementById('startDate').value = weekAgo.toISOString().split('T')[0];
+            document.getElementById('searchKeyword').value = '';
+            loadSessionHistory();
+        }
+        
+        function downloadCSV() {
+            if (!currentSessionsData || !currentSessionsData.sessions) {
+                alert('다운로드할 데이터가 없습니다.');
+                return;
+            }
+            
+            const sessions = currentSessionsData.sessions;
+            const headers = ['사용자명', '이메일', '학원명', '로그인여부', '접속시간', '로그아웃시간', '마지막활동', 'IP주소'];
+            const rows = sessions.map(s => [
+                s.user_name || '',
+                s.user_email || '',
+                s.academy_name || '',
+                s.is_logged_in === 1 ? '회원' : '게스트',
+                s.created_at || '',
+                s.logout_time || '',
+                s.last_activity || '',
+                s.ip_address || ''
+            ]);
+            
+            const csv = [headers, ...rows].map(row => row.map(cell => \`"\${cell}"\`).join(',')).join('\\n');
+            const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = \`접속자통계_\${new Date().toISOString().split('T')[0]}.csv\`;
+            link.click();
         }
 
         function formatKoreanTime(isoString) {
