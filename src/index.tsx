@@ -8838,6 +8838,42 @@ app.get('/', (c) => {
                 // Add visible class to hero immediately
                 document.querySelector('section .animate-fade-in')?.classList.add('visible');
             });
+            
+            // 🔥 세션 추적
+            (function() {
+                try {
+                    let sessionId = localStorage.getItem('sessionId');
+                    if (!sessionId) {
+                        sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                        localStorage.setItem('sessionId', sessionId);
+                    }
+                    
+                    const user = JSON.parse(localStorage.getItem('user') || 'null');
+                    
+                    fetch('/api/session/track', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            sessionId: sessionId,
+                            userId: user?.id || null
+                        })
+                    }).catch(err => console.log('Session track error:', err));
+                    
+                    // 5분마다 활동 업데이트
+                    setInterval(() => {
+                        fetch('/api/session/track', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                sessionId: sessionId,
+                                userId: user?.id || null
+                            })
+                        }).catch(err => console.log('Session track error:', err));
+                    }, 5 * 60 * 1000);
+                } catch (e) {
+                    console.log('Session tracking init error:', e);
+                }
+            })();
         </script>
     </body>
     </html>
