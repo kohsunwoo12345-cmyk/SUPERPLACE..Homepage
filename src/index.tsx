@@ -4897,12 +4897,25 @@ app.delete('/api/landing/:id', async (c) => {
     }
     
     console.log('Deleting landing page:', { id, userId: user.id })
+    
+    // 1️⃣ 먼저 관련된 form_submissions 삭제 (FOREIGN KEY 제약 해결)
+    await c.env.DB.prepare(`
+      DELETE FROM form_submissions 
+      WHERE landing_page_id = ?
+    `).bind(id).run()
+    console.log('✅ Deleted form_submissions for landing_page_id:', id)
+    
+    // 2️⃣ 랜딩페이지 삭제
     const result = await c.env.DB.prepare('DELETE FROM landing_pages WHERE id = ? AND user_id = ?').bind(id, user.id).run()
     console.log('Delete result:', result)
     
     if (result.meta.changes === 0) {
       return c.json({ success: false, error: '삭제할 페이지를 찾을 수 없거나 권한이 없습니다.' }, 404)
     }
+    
+    // 3️⃣ 중요: usage_tracking의 landing_pages_created는 감소시키지 않음!
+    // → 누적 카운트 유지 (49개 생성 후 1개 삭제 = 49개 유지)
+    console.log('✅ Landing page deleted. Usage tracking count NOT decreased (cumulative count maintained)')
     
     return c.json({ success: true, message: '삭제되었습니다.' })
   } catch (err: any) {
