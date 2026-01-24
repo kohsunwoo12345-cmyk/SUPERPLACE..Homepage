@@ -4929,14 +4929,16 @@ app.delete('/api/landing/:id', async (c) => {
     
     console.log('Deleting landing page:', { id, userId: user.id })
     
-    // 먼저 관련된 form_submissions를 NULL로 업데이트 (FOREIGN KEY 우회)
+    // FOREIGN KEY constraint를 우회하기 위해 form_submissions를 먼저 삭제
+    // landing_page_id는 NULL 가능하므로 삭제해도 문제없음
     try {
-      const updateResult = await c.env.DB.prepare(
-        'UPDATE form_submissions SET landing_page_id = NULL WHERE landing_page_id = ?'
+      const deleteSubmissions = await c.env.DB.prepare(
+        'DELETE FROM form_submissions WHERE landing_page_id = ?'
       ).bind(id).run()
-      console.log('✅ Updated form_submissions (set landing_page_id to NULL):', updateResult.meta.changes)
-    } catch (updateErr) {
-      console.log('⚠️ Could not update form_submissions:', updateErr)
+      console.log('✅ Deleted form_submissions:', deleteSubmissions.meta.changes)
+    } catch (deleteErr) {
+      console.log('⚠️ Could not delete form_submissions:', deleteErr)
+      // form_submissions 삭제 실패해도 계속 진행
     }
     
     // 이제 랜딩페이지 삭제
