@@ -6631,6 +6631,94 @@ app.get('/api/forms/:id/submissions', async (c) => {
   }
 })
 
+// QR 코드 생성 API
+app.get('/api/landing/:slug/qr', async (c) => {
+  try {
+    const slug = c.req.param('slug')
+    const size = c.req.query('size') || '300'
+    
+    // 랜딩페이지 존재 확인
+    const page = await c.env.DB.prepare('SELECT id, slug, title FROM landing_pages WHERE slug = ?').bind(slug).first()
+    
+    if (!page) {
+      return c.json({ success: false, error: 'Landing page not found' }, 404)
+    }
+    
+    const landingUrl = `${new URL(c.req.url).origin}/landing/${slug}`
+    
+    // QR 코드 생성 (Google Chart API 사용)
+    const qrUrl = `https://chart.googleapis.com/chart?cht=qr&chs=${size}x${size}&chl=${encodeURIComponent(landingUrl)}&choe=UTF-8`
+    
+    return c.json({ 
+      success: true, 
+      qrCodeUrl: qrUrl,
+      landingUrl: landingUrl,
+      title: page.title
+    })
+  } catch (err) {
+    console.error('QR generation error:', err)
+    return c.json({ success: false, error: 'QR 생성 실패' }, 500)
+  }
+})
+
+// 랜딩페이지별 신청자 목록 조회 API
+app.get('/api/landing/:slug/submissions', async (c) => {
+  try {
+    const slug = c.req.param('slug')
+    
+    // Base64 인코딩된 사용자 데이터 디코딩
+    const userHeaderBase64 = c.req.header('X-User-Data-Base64')
+    let user = { id: 1 }
+    if (userHeaderBase64) {
+      try {
+        const userDataStr = atob(userHeaderBase64)
+        user = JSON.parse(userDataStr)
+      } catch (e) {
+        console.warn('Failed to decode user data:', e)
+      }
+    }
+    
+    // 랜딩페이지 정보 가져오기
+    const page = await c.env.DB.prepare(`
+      SELECT id, title, user_id, form_id FROM landing_pages WHERE slug = ?
+    `).bind(slug).first()
+    
+    if (!page) {
+      return c.json({ success: false, error: 'Landing page not found' }, 404)
+    }
+    
+    // 소유자 확인
+    if (page.user_id !== user.id) {
+      return c.json({ success: false, error: 'Unauthorized' }, 403)
+    }
+    
+    // 신청자 목록 조회
+    const submissions = await c.env.DB.prepare(`
+      SELECT 
+        id, name, phone, email, additional_data, 
+        created_at, ip_address, user_agent
+      FROM form_submissions 
+      WHERE landing_page_id = ? 
+      ORDER BY created_at DESC
+    `).bind(page.id).all()
+    
+    return c.json({ 
+      success: true, 
+      landingPage: {
+        id: page.id,
+        title: page.title,
+        slug: slug
+      },
+      submissions: submissions.results || [],
+      total: submissions.results?.length || 0
+    })
+  } catch (err) {
+    console.error('Submissions fetch error:', err)
+    return c.json({ success: false, error: '신청자 조회 실패' }, 500)
+  }
+})
+
+
 // AI 학부모 메시지 생성 API
 app.post('/api/generate-parent-message', async (c) => {
   try {
@@ -20156,6 +20244,257 @@ app.get('/tools/landing-builder', (c) => {
 
 // 폼 관리 페이지
 app.get('/tools/form-manager', (c) => {
+
+// 신청자 관리 페이지
+app.get('/landing/:slug/submissions', async (c) => {
+  const slug = c.req.param('slug')
+  
+  return c.html(`<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>신청자 관리 - 슈퍼플레이스</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg border-b-4 border-purple-600">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="/" class="text-2xl font-bold text-purple-600">슈퍼플레이스</a>
+                </div>
+                <div class="flex items-center gap-4">
+                    <a href="/tools/landing-builder" class="text-gray-700 hover:text-purple-600">내 랜딩페이지</a>
+                    <button onclick="logout()" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+                        <i class="fas fa-sign-out-alt mr-2"></i>로그아웃
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <div class="flex items-center gap-2 text-sm text-gray-600 mb-4">
+                <a href="/tools/landing-builder" class="hover:text-purple-600">내 랜딩페이지</a>
+                <i class="fas fa-chevron-right text-xs"></i>
+                <span id="pageTitle" class="text-gray-900 font-medium">신청자 관리</span>
+            </div>
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900 mb-2">
+                        <i class="fas fa-users text-purple-600 mr-3"></i>신청자 관리
+                    </h1>
+                    <p class="text-gray-600">랜딩페이지를 통해 신청한 고객 목록입니다</p>
+                </div>
+                <div class="text-right">
+                    <div class="text-sm text-gray-600 mb-1">총 신청자</div>
+                    <div id="totalCount" class="text-3xl font-bold text-purple-600">0</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200 mb-6">
+            <div class="flex items-center gap-4">
+                <div class="flex-1">
+                    <input type="text" id="searchInput" placeholder="이름, 전화번호, 이메일로 검색..." 
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                </div>
+                <button onclick="exportToCSV()" class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2">
+                    <i class="fas fa-file-excel"></i>
+                    엑셀 다운로드
+                </button>
+                <button onclick="loadSubmissions()" class="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 flex items-center gap-2">
+                    <i class="fas fa-sync-alt"></i>
+                    새로고침
+                </button>
+            </div>
+        </div>
+
+        <!-- Submissions Table -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50 border-b border-gray-200">
+                        <tr>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">번호</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">이름</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">연락처</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">이메일</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">추가정보</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">신청일시</th>
+                        </tr>
+                    </thead>
+                    <tbody id="submissionsTableBody" class="divide-y divide-gray-200">
+                        <tr>
+                            <td colspan="6" class="px-6 py-12 text-center text-gray-500">
+                                <i class="fas fa-spinner fa-spin text-3xl mb-4"></i>
+                                <p>데이터를 불러오는 중...</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="hidden text-center py-16">
+            <i class="fas fa-inbox text-6xl text-gray-300 mb-4"></i>
+            <h3 class="text-xl font-semibold text-gray-700 mb-2">아직 신청자가 없습니다</h3>
+            <p class="text-gray-500 mb-6">랜딩페이지를 공유하고 첫 신청자를 받아보세요!</p>
+            <a href="/tools/landing-builder" class="inline-block px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
+                <i class="fas fa-arrow-left mr-2"></i>랜딩페이지 목록으로
+            </a>
+        </div>
+    </div>
+
+    <script>
+        let allSubmissions = [];
+        let landingPageData = null;
+
+        async function loadSubmissions() {
+            try {
+                const user = JSON.parse(localStorage.getItem('user') || '{}');
+                if (!user.id) {
+                    alert('로그인이 필요합니다.');
+                    window.location.href = '/login';
+                    return;
+                }
+
+                const userDataBase64 = btoa(JSON.stringify(user));
+                const response = await fetch('/api/landing/${slug}/submissions', {
+                    headers: {
+                        'X-User-Data-Base64': userDataBase64
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (!result.success) {
+                    alert(result.error || '신청자 목록을 불러오는데 실패했습니다.');
+                    return;
+                }
+                
+                landingPageData = result.landingPage;
+                allSubmissions = result.submissions || [];
+                
+                document.getElementById('pageTitle').textContent = landingPageData.title;
+                document.getElementById('totalCount').textContent = result.total;
+                
+                renderSubmissions(allSubmissions);
+            } catch (err) {
+                console.error('Error loading submissions:', err);
+                alert('신청자 목록을 불러오는데 실패했습니다.');
+            }
+        }
+
+        function renderSubmissions(submissions) {
+            const tbody = document.getElementById('submissionsTableBody');
+            const emptyState = document.getElementById('emptyState');
+            const table = tbody.closest('.bg-white');
+            
+            if (submissions.length === 0) {
+                table.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+                return;
+            }
+            
+            table.classList.remove('hidden');
+            emptyState.classList.add('hidden');
+            
+            tbody.innerHTML = submissions.map((sub, index) => {
+                const additionalData = sub.additional_data ? JSON.parse(sub.additional_data) : {};
+                const additionalDataStr = Object.entries(additionalData)
+                    .map(([key, value]) => \`\${key}: \${value}\`)
+                    .join('<br>') || '-';
+                
+                return \`
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 text-sm text-gray-900">\${submissions.length - index}</td>
+                        <td class="px-6 py-4">
+                            <div class="text-sm font-medium text-gray-900">\${sub.name}</div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="text-sm text-gray-900">\${sub.phone || '-'}</div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="text-sm text-gray-600">\${sub.email || '-'}</div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="text-xs text-gray-600">\${additionalDataStr}</div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="text-sm text-gray-900">\${new Date(sub.created_at).toLocaleString('ko-KR')}</div>
+                        </td>
+                    </tr>
+                \`;
+            }).join('');
+        }
+
+        function exportToCSV() {
+            if (allSubmissions.length === 0) {
+                alert('다운로드할 데이터가 없습니다.');
+                return;
+            }
+            
+            const headers = ['번호', '이름', '연락처', '이메일', '추가정보', '신청일시'];
+            const rows = allSubmissions.map((sub, index) => {
+                const additionalData = sub.additional_data ? JSON.parse(sub.additional_data) : {};
+                const additionalDataStr = Object.entries(additionalData)
+                    .map(([key, value]) => \`\${key}: \${value}\`)
+                    .join(' | ');
+                
+                return [
+                    allSubmissions.length - index,
+                    sub.name,
+                    sub.phone || '-',
+                    sub.email || '-',
+                    additionalDataStr || '-',
+                    new Date(sub.created_at).toLocaleString('ko-KR')
+                ];
+            });
+            
+            const csvContent = [headers, ...rows]
+                .map(row => row.map(cell => \`"\${cell}"\`).join(','))
+                .join('\\n');
+            
+            const BOM = '\\uFEFF';
+            const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = \`신청자목록_\${landingPageData?.title || 'landing'}_\${new Date().toISOString().split('T')[0]}.csv\`;
+            link.click();
+        }
+
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const filtered = allSubmissions.filter(sub => 
+                sub.name.toLowerCase().includes(searchTerm) ||
+                (sub.phone && sub.phone.includes(searchTerm)) ||
+                (sub.email && sub.email.toLowerCase().includes(searchTerm))
+            );
+            renderSubmissions(filtered);
+        });
+
+        function logout() {
+            localStorage.removeItem('user');
+            localStorage.removeItem('loginTime');
+            window.location.href = '/';
+        }
+
+        // Load on page load
+        loadSubmissions();
+    </script>
+</body>
+</html>`)
+})
+
   return c.html(`
     <!DOCTYPE html>
     <html lang="ko">
@@ -20883,6 +21222,8 @@ app.get('/tools/landing-manager', (c) => {
                                     '</div>' +
                                     '<div class="flex flex-col gap-2 ml-4">' +
                                         '<a href="/landing/' + p.slug + '" target="_blank" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm text-center">미리보기</a>' +
+                                        '<button onclick="generateQR(\'' + p.slug + '\')" class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 text-sm flex items-center justify-center gap-2"><i class="fas fa-qrcode"></i> QR 생성</button>' +
+                                        '<a href="/landing/' + p.slug + '/submissions" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm text-center flex items-center justify-center gap-2"><i class="fas fa-users"></i> 신청자</a>' +
                                         '<button onclick="openMoveFolderModal(' + p.id + ')" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm">폴더 이동</button>' +
                                         '<button onclick="deletePage(' + p.id + ')" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm">삭제</button>' +
                                     '</div>' +
@@ -20905,6 +21246,48 @@ app.get('/tools/landing-manager', (c) => {
             navigator.clipboard.writeText(url).then(() => {
                 alert('링크가 복사되었습니다!');
             });
+        }
+
+        // QR 코드 생성 및 다운로드
+        async function generateQR(slug) {
+            try {
+                const response = await fetch('/api/landing/' + slug + '/qr?size=500');
+                const result = await response.json();
+                
+                if (result.success) {
+                    // QR 코드를 다운로드
+                    const qrImage = new Image();
+                    qrImage.crossOrigin = 'anonymous';
+                    qrImage.src = result.qrCodeUrl;
+                    
+                    qrImage.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        canvas.width = qrImage.width;
+                        canvas.height = qrImage.height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(qrImage, 0, 0);
+                        
+                        canvas.toBlob(function(blob) {
+                            const link = document.createElement('a');
+                            link.href = URL.createObjectURL(blob);
+                            link.download = 'QR_' + result.title.replace(/[^a-zA-Z0-9가-힣]/g, '_') + '.png';
+                            link.click();
+                            alert('QR 코드가 다운로드되었습니다!\\n\\n랜딩페이지: ' + result.title + '\\nURL: ' + result.landingUrl);
+                        });
+                    };
+                    
+                    qrImage.onerror = function() {
+                        // Fallback: 새 창에서 열기
+                        window.open(result.qrCodeUrl, '_blank');
+                        alert('QR 코드가 새 탭에서 열렸습니다.\\n오른쪽 클릭하여 이미지를 저장하세요.\\n\\n랜딩페이지: ' + result.title + '\\nURL: ' + result.landingUrl);
+                    };
+                } else {
+                    alert('QR 코드 생성 실패: ' + result.error);
+                }
+            } catch (err) {
+                console.error('QR generation error:', err);
+                alert('QR 코드 생성 중 오류가 발생했습니다.');
+            }
         }
 
         // 폴더 모달
