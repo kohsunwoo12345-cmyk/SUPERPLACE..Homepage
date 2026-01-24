@@ -9399,6 +9399,242 @@ app.post('/api/usage/increment-landing-pages', async (c) => {
 })
 
 // ========================================
+// 무료 플랜 신청 API
+// ========================================
+
+// 무료 플랜 신청
+app.post('/api/free-plan/apply', async (c) => {
+  try {
+    const { userId, academyName, ownerName, email, phone, reason } = await c.req.json()
+    
+    if (!userId || !academyName || !ownerName || !email || !phone) {
+      return c.json({ success: false, error: '필수 정보를 모두 입력해주세요.' }, 400)
+    }
+
+    // 이미 신청한 내역이 있는지 확인
+    const existing = await c.env.DB.prepare(`
+      SELECT id, status FROM free_plan_requests 
+      WHERE user_id = ? AND status = 'pending'
+    `).bind(userId).first()
+
+    if (existing) {
+      return c.json({ success: false, error: '이미 승인 대기 중인 신청이 있습니다.' }, 400)
+    }
+
+    // 이미 무료 플랜을 사용 중인지 확인
+    const existingPlan = await c.env.DB.prepare(`
+      SELECT id FROM subscriptions 
+      WHERE academy_id = ? AND plan_name = '무료 플랜' AND status = 'active'
+    `).bind(userId).first()
+
+    if (existingPlan) {
+      return c.json({ success: false, error: '이미 무료 플랜을 사용 중입니다.' }, 400)
+    }
+
+    const result = await c.env.DB.prepare(`
+      INSERT INTO free_plan_requests 
+      (user_id, academy_name, owner_name, email, phone, reason, status, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, 'pending', CURRENT_TIMESTAMP)
+    `).bind(userId, academyName, ownerName, email, phone, reason || null).run()
+
+    return c.json({
+      success: true,
+      message: '무료 플랜 신청이 완료되었습니다.',
+      requestId: result.meta.last_row_id
+    })
+  } catch (error) {
+    console.error('무료 플랜 신청 실패:', error)
+    return c.json({ success: false, error: '신청 처리 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
+// 관리자: 무료 플랜 신청 목록 조회
+app.get('/api/free-plan/requests', async (c) => {
+  try {
+    const adminEmail = c.req.query('adminEmail')
+    
+    // 관리자 권한 체크
+    if (adminEmail !== 'admin@superplace.co.kr') {
+      return c.json({ success: false, error: '관리자 권한이 필요합니다.' }, 403)
+    }
+
+    const requests = await c.env.DB.prepare(`
+      SELECT * FROM free_plan_requests
+      ORDER BY 
+        CASE status
+          WHEN 'pending' THEN 1
+          WHEN 'approved' THEN 2
+          WHEN 'rejected' THEN 3
+        END,
+        created_at DESC
+    `).all()
+
+    return c.json({ success: true, requests: requests.results })
+  } catch (error) {
+    console.error('신청 목록 조회 실패:', error)
+    return c.json({ success: false, error: '조회 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
+// 관리자: 무료 플랜 승인
+app.post('/api/free-plan/approve', async (c) => {
+  try {
+    const { requestId, adminEmail } = await c.req.json()
+    
+    // 관리자 권한 체크
+    if (adminEmail !== 'admin@superplace.co.kr') {
+      return c.json({ success: false, error: '관리자 권한이 필요합니다.' }, 403)
+    }
+
+    // 신청 정보 조회
+    const request: any = await c.env.DB.prepare(`
+      SELECT * FROM free_plan_requests WHERE id = ?
+    `).bind(requestId).first()
+
+    if (!request) {
+      return c.json({ success: false, error: '신청을 찾을 수 없습니다.' }, 404)
+    }
+
+    if (request.status !== 'pending') {
+      return c.json({ success: false, error: '이미 처리된 신청입니다.' }, 400)
+    }
+
+    const userId = request.user_id
+
+    console.log('[Free Plan Approve] Starting approval for user:', userId)
+
+    // 사용자 정보 조회
+    const user: any = await c.env.DB.prepare(`
+      SELECT id, academy_id, name FROM users WHERE id = ?
+    `).bind(userId).first()
+
+    if (!user) {
+      return c.json({ success: false, error: '사용자를 찾을 수 없습니다.' }, 404)
+    }
+
+    // academy_id 설정 (없으면 user.id 사용)
+    const academyId = user.academy_id || user.id
+    
+    if (!user.academy_id) {
+      await c.env.DB.prepare(`
+        UPDATE users SET academy_id = ? WHERE id = ?
+      `).bind(academyId, userId).run()
+    }
+
+    // 구독 시작일과 종료일 계산 (영구 - 10년)
+    const startDate = new Date()
+    const endDate = new Date()
+    endDate.setFullYear(endDate.getFullYear() + 10)
+    
+    const startDateStr = startDate.toISOString().split('T')[0]
+    const endDateStr = endDate.toISOString().split('T')[0]
+    console.log('[Free Plan Approve] Date range:', startDateStr, 'to', endDateStr)
+
+    // 구독 생성 (무료 플랜)
+    const subscriptionResult = await c.env.DB.prepare(`
+      INSERT INTO subscriptions (
+        academy_id, plan_name, plan_price, student_limit, ai_report_limit, 
+        landing_page_limit, teacher_limit, subscription_start_date, 
+        subscription_end_date, status, payment_method, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', 'free', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+    `).bind(
+      academyId,
+      '무료 플랜',
+      0,
+      50,  // 학생 50명
+      0,   // AI 리포트 없음
+      0,   // 랜딩페이지 없음
+      0,   // 선생님 없음
+      startDateStr,
+      endDateStr
+    ).run()
+
+    const subscriptionId = subscriptionResult.meta.last_row_id
+    console.log('[Free Plan Approve] Created subscription:', subscriptionId)
+
+    // 기존 usage_tracking 삭제 (있다면)
+    await c.env.DB.prepare(`
+      DELETE FROM usage_tracking WHERE academy_id = ?
+    `).bind(academyId).run()
+
+    // usage_tracking 생성
+    await c.env.DB.prepare(`
+      INSERT INTO usage_tracking (
+        academy_id, subscription_id, current_students, ai_reports_used_this_month,
+        landing_pages_created, current_teachers, sms_sent_this_month,
+        last_ai_report_reset_date, last_sms_reset_date, created_at, updated_at
+      ) VALUES (?, ?, 0, 0, 0, 0, 0, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+    `).bind(
+      academyId, 
+      subscriptionId,
+      startDateStr,
+      startDateStr
+    ).run()
+    console.log('[Free Plan Approve] Created usage_tracking')
+
+    // 🔥 학생 관리 프로그램만 자동 등록
+    const studentManagementProgram = { route: '/students', name: '학생 관리' }
+    
+    try {
+      await c.env.DB.prepare(`
+        INSERT OR IGNORE INTO user_programs (user_id, program_route, program_name, enabled, created_at)
+        VALUES (?, ?, ?, 1, CURRENT_TIMESTAMP)
+      `).bind(userId, studentManagementProgram.route, studentManagementProgram.name).run()
+      
+      console.log('[Free Plan Approve] Added student management program for user:', userId)
+    } catch (e) {
+      console.error('[Free Plan Approve] Failed to add program:', e)
+    }
+
+    // 신청 상태 업데이트
+    await c.env.DB.prepare(`
+      UPDATE free_plan_requests
+      SET status = 'approved', approved_at = CURRENT_TIMESTAMP, approved_by = ?
+      WHERE id = ?
+    `).bind(adminEmail, requestId).run()
+
+    return c.json({
+      success: true,
+      message: '무료 플랜이 승인되고 활성화되었습니다.',
+      subscription_id: subscriptionId,
+      academy_id: academyId
+    })
+  } catch (error) {
+    console.error('[Free Plan Approve] Error:', error)
+    return c.json({ 
+      success: false, 
+      error: '승인 처리 중 오류가 발생했습니다: ' + (error as Error).message 
+    }, 500)
+  }
+})
+
+// 관리자: 무료 플랜 거절
+app.post('/api/free-plan/reject', async (c) => {
+  try {
+    const { requestId, adminEmail, reason } = await c.req.json()
+    
+    // 관리자 권한 체크
+    if (adminEmail !== 'admin@superplace.co.kr') {
+      return c.json({ success: false, error: '관리자 권한이 필요합니다.' }, 403)
+    }
+
+    await c.env.DB.prepare(`
+      UPDATE free_plan_requests
+      SET status = 'rejected', rejected_at = CURRENT_TIMESTAMP, rejected_by = ?, rejection_reason = ?
+      WHERE id = ?
+    `).bind(adminEmail, reason || null, requestId).run()
+
+    return c.json({
+      success: true,
+      message: '무료 플랜 신청이 거절되었습니다.'
+    })
+  } catch (error) {
+    console.error('거절 처리 실패:', error)
+    return c.json({ success: false, error: '거절 처리 중 오류가 발생했습니다.' }, 500)
+  }
+})
+
+// ========================================
 // 계좌이체 결제 API
 // ========================================
 
@@ -10946,6 +11182,219 @@ app.get('/pricing/starter', (c) => {
   `)
 })
 
+// 무료 플랜 신청 페이지
+app.get('/pricing/free', (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>무료 플랜 신청 - 우리는 슈퍼플레이스다</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <style>
+          @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
+          * { font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
+        </style>
+    </head>
+    <body class="bg-gradient-to-br from-green-50 via-white to-emerald-50">
+        <nav class="fixed w-full top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-200">
+            <div class="max-w-7xl mx-auto px-6 lg:px-8">
+                <div class="flex justify-between items-center h-20">
+                    <a href="/" class="flex items-center space-x-3">
+                        <span class="text-xl font-bold text-gray-900">우리는 슈퍼플레이스다</span>
+                    </a>
+                    <div class="flex items-center space-x-6">
+                        <a href="/pricing" class="text-gray-600 hover:text-gray-900">← 요금제</a>
+                        <a href="/dashboard" class="px-6 py-2.5 bg-green-500 text-white rounded-full hover:bg-green-600">대시보드</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <div class="pt-32 pb-24 px-6">
+            <div class="max-w-4xl mx-auto">
+                <div class="text-center mb-12">
+                    <div class="inline-block px-4 py-2 bg-green-100 rounded-full text-green-700 text-sm font-semibold mb-4">
+                        🎁 무료 플랜
+                    </div>
+                    <h1 class="text-5xl font-bold text-gray-900 mb-4">
+                        학생 관리 시스템<br>
+                        <span class="text-green-600">무료로 시작하기</span>
+                    </h1>
+                    <p class="text-xl text-gray-600 max-w-2xl mx-auto">
+                        학생 50명까지 관리할 수 있는 학생 관리 시스템을<br>
+                        무료로 사용해보세요. 관리자 승인 후 즉시 이용 가능합니다.
+                    </p>
+                </div>
+
+                <div class="bg-white rounded-3xl p-10 shadow-2xl border-2 border-green-200 mb-8">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6">무료 플랜 혜택</h2>
+                    <div class="grid md:grid-cols-2 gap-6 mb-8">
+                        <div class="flex items-start gap-3">
+                            <svg class="w-6 h-6 text-green-500 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            <div>
+                                <h3 class="font-bold text-gray-900 mb-1">학생 최대 50명</h3>
+                                <p class="text-sm text-gray-600">학생 정보 관리, 출결 관리, 성적 관리 가능</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <svg class="w-6 h-6 text-green-500 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            <div>
+                                <h3 class="font-bold text-gray-900 mb-1">학생 관리 시스템만 제공</h3>
+                                <p class="text-sm text-gray-600">AI 리포트, 랜딩페이지 등은 유료 플랜에서</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <svg class="w-6 h-6 text-green-500 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            <div>
+                                <h3 class="font-bold text-gray-900 mb-1">선생님 계정 미제공</h3>
+                                <p class="text-sm text-gray-600">원장님 계정 1개만 사용 가능</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <svg class="w-6 h-6 text-green-500 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            <div>
+                                <h3 class="font-bold text-gray-900 mb-1">관리자 승인 필요</h3>
+                                <p class="text-sm text-gray-600">신청 후 24시간 내 승인 처리</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-yellow-50 border-2 border-yellow-200 rounded-xl p-4 mb-8">
+                        <h3 class="font-bold text-yellow-800 mb-2">⚠️ 주의사항</h3>
+                        <ul class="text-sm text-yellow-700 space-y-1">
+                            <li>• 무료 플랜은 <strong>학생 관리 시스템</strong>만 이용 가능합니다</li>
+                            <li>• AI 리포트, 랜딩페이지, 선생님 계정은 유료 플랜에서 제공됩니다</li>
+                            <li>• 신청 후 관리자 승인이 완료되면 이용 가능합니다</li>
+                            <li>• 언제든지 유료 플랜으로 업그레이드 가능합니다</li>
+                        </ul>
+                    </div>
+
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6">신청 정보</h2>
+                    <div class="space-y-4 mb-8">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">학원명</label>
+                            <input type="text" id="academyName" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-green-500 focus:outline-none" placeholder="예: 슈퍼학원">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">원장님 성함</label>
+                            <input type="text" id="ownerName" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-green-500 focus:outline-none" placeholder="예: 홍길동">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">이메일</label>
+                            <input type="email" id="email" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-green-500 focus:outline-none" placeholder="예: hong@example.com">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">연락처</label>
+                            <input type="tel" id="phone" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-green-500 focus:outline-none" placeholder="예: 010-1234-5678">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">신청 사유 (선택)</label>
+                            <textarea id="reason" rows="3" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-green-500 focus:outline-none" placeholder="무료 플랜 신청 사유를 간단히 작성해주세요"></textarea>
+                        </div>
+                    </div>
+
+                    <label class="flex items-start gap-3 mb-6 cursor-pointer">
+                        <input type="checkbox" id="agreeTerms" class="w-5 h-5 text-green-500 mt-0.5">
+                        <span class="text-sm text-gray-700">
+                            무료 플랜 이용약관 및 개인정보 처리방침에 동의합니다. 
+                            <span class="text-gray-500">(필수)</span>
+                        </span>
+                    </label>
+
+                    <button onclick="submitFreeApplication()" class="w-full py-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl font-bold text-lg hover:shadow-2xl transition-all">
+                        🎁 무료 플랜 신청하기
+                    </button>
+
+                    <p class="text-center text-sm text-gray-500 mt-4">
+                        신청 후 24시간 내 승인 결과를 이메일로 알려드립니다
+                    </p>
+                </div>
+
+                <div class="text-center">
+                    <p class="text-gray-600 mb-4">더 많은 기능이 필요하신가요?</p>
+                    <a href="/pricing" class="inline-block px-8 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-bold hover:border-green-500 hover:text-green-600 transition-all">
+                        유료 플랜 보기
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            // 사용자 정보 자동 입력
+            const user = JSON.parse(localStorage.getItem('user') || 'null');
+            if (user) {
+                document.getElementById('ownerName').value = user.name || '';
+                document.getElementById('email').value = user.email || '';
+                document.getElementById('phone').value = user.phone || '';
+            }
+
+            async function submitFreeApplication() {
+                // 입력 검증
+                const academyName = document.getElementById('academyName').value.trim();
+                const ownerName = document.getElementById('ownerName').value.trim();
+                const email = document.getElementById('email').value.trim();
+                const phone = document.getElementById('phone').value.trim();
+                const reason = document.getElementById('reason').value.trim();
+                const agreeTerms = document.getElementById('agreeTerms').checked;
+
+                if (!academyName || !ownerName || !email || !phone) {
+                    alert('필수 정보를 모두 입력해주세요.');
+                    return;
+                }
+
+                if (!agreeTerms) {
+                    alert('이용약관에 동의해주세요.');
+                    return;
+                }
+
+                if (!user || !user.id) {
+                    alert('로그인이 필요한 서비스입니다.');
+                    window.location.href = '/login';
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/api/free-plan/apply', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            userId: user.id,
+                            academyName,
+                            ownerName,
+                            email,
+                            phone,
+                            reason
+                        })
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        alert('✅ 무료 플랜 신청이 완료되었습니다!\\n\\n관리자 승인 후 이메일로 알려드리겠습니다.\\n보통 24시간 내에 처리됩니다.');
+                        window.location.href = '/dashboard';
+                    } else {
+                        alert('❌ 신청 실패: ' + result.error);
+                    }
+                } catch (error) {
+                    alert('❌ 오류가 발생했습니다: ' + error.message);
+                }
+            }
+        </script>
+    </body>
+    </html>
+  `)
+})
+
 // 베이직 플랜 구매 페이지
 app.get('/pricing/basic', (c) => {
   return c.html(`
@@ -11167,7 +11616,62 @@ app.get('/pricing', (c) => {
         <!-- Pricing Cards -->
         <section class="pb-24 px-6">
             <div class="max-w-7xl mx-auto">
-                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+                    
+                    <!-- 무료 플랜 -->
+                    <div class="pricing-card bg-gradient-to-br from-green-50 to-emerald-50 rounded-3xl p-8 border-2 border-green-300 hover:border-green-400 hover:shadow-2xl relative">
+                        <div class="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                            <div class="bg-green-500 text-white px-4 py-1.5 rounded-full text-xs font-bold shadow-lg">
+                                🎁 무료
+                            </div>
+                        </div>
+                        <div class="mb-6">
+                            <div class="inline-block px-4 py-2 bg-green-100 rounded-full text-green-700 text-sm font-semibold mb-4">
+                                무료
+                            </div>
+                            <div class="flex items-end gap-2 mb-2">
+                                <span class="text-5xl font-bold text-gray-900">₩0</span>
+                                <span class="text-gray-600 mb-2">/월</span>
+                            </div>
+                            <p class="text-gray-600">학생 관리 시스템 체험</p>
+                        </div>
+                        
+                        <div class="space-y-3 mb-8">
+                            <div class="flex items-start gap-3">
+                                <svg class="check-icon w-5 h-5 text-green-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                <span class="text-gray-700">학생 최대 50명</span>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <svg class="w-5 h-5 text-gray-300 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                                <span class="text-gray-400 line-through">AI 리포트</span>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <svg class="w-5 h-5 text-gray-300 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                                <span class="text-gray-400 line-through">랜딩페이지</span>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <svg class="w-5 h-5 text-gray-300 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                                <span class="text-gray-400 line-through">선생님 계정</span>
+                            </div>
+                            <div class="pt-3 border-t border-green-200">
+                                <p class="text-xs text-gray-500">✓ 학생 관리 시스템만 사용 가능</p>
+                                <p class="text-xs text-gray-500">✓ 관리자 승인 필요</p>
+                            </div>
+                        </div>
+                        
+                        <a href="/pricing/free"
+                            class="block text-center w-full py-4 bg-green-500 text-white rounded-xl font-bold hover:bg-green-600 transition-all hover:shadow-lg">
+                            무료 신청하기
+                        </a>
+                    </div>
                     
                     <!-- 스타터 플랜 -->
                     <div class="pricing-card bg-white rounded-3xl p-8 border-2 border-gray-200 hover:border-purple-300 hover:shadow-2xl">
@@ -38548,6 +39052,258 @@ app.get('/admin/deposits', async (c) => {
   `)
 })
 
+// 관리자: 무료 플랜 신청 관리
+app.get('/admin/free-plan-requests', async (c) => {
+  try {
+    const { env } = c
+    
+    if (!env.DB) {
+      return c.html(`
+        <!DOCTYPE html>
+        <html><body>
+          <h1>Database Error</h1>
+          <p>데이터베이스가 초기화되지 않았습니다.</p>
+        </body></html>
+      `)
+    }
+    
+    // 무료 플랜 신청 목록 조회
+    let requests: any = { results: [] }
+    try {
+      requests = await env.DB.prepare(`
+        SELECT * FROM free_plan_requests
+        ORDER BY 
+          CASE status
+            WHEN 'pending' THEN 1
+            WHEN 'approved' THEN 2
+            WHEN 'rejected' THEN 3
+          END,
+          created_at DESC
+        LIMIT 100
+      `).all()
+    } catch (dbError) {
+      console.error('DB query error:', dbError)
+      requests = { results: [] }
+    }
+    
+    const formatKoreanTime = (utcTimeString: string) => {
+      if (!utcTimeString) return '-'
+      const date = new Date(utcTimeString)
+      const koreaTime = new Date(date.getTime() + (9 * 60 * 60 * 1000))
+      const year = koreaTime.getFullYear()
+      const month = String(koreaTime.getMonth() + 1).padStart(2, '0')
+      const day = String(koreaTime.getDate()).padStart(2, '0')
+      const hours = String(koreaTime.getHours()).padStart(2, '0')
+      const minutes = String(koreaTime.getMinutes()).padStart(2, '0')
+      return `${year}-${month}-${day} ${hours}:${minutes}`
+    }
+    
+    return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>무료 플랜 신청 관리 - 슈퍼플레이스 관리자</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    </head>
+    <body class="bg-gray-50">
+        <nav class="bg-white border-b border-gray-200">
+            <div class="max-w-7xl mx-auto px-6 py-4">
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center gap-8">
+                        <a href="/admin/dashboard" class="text-2xl font-bold text-purple-600">슈퍼플레이스 관리자</a>
+                        <div class="flex gap-4">
+                            <a href="/admin/dashboard" class="text-gray-600 hover:text-purple-600">대시보드</a>
+                            <a href="/admin/users" class="text-gray-600 hover:text-purple-600">사용자</a>
+                            <a href="/admin/contacts" class="text-gray-600 hover:text-purple-600">문의</a>
+                            <a href="/admin/deposits" class="text-gray-600 hover:text-purple-600">포인트 입금</a>
+                            <a href="/admin/bank-transfers" class="text-gray-600 hover:text-purple-600">계좌이체</a>
+                            <a href="/admin/free-plan-requests" class="text-purple-600 font-semibold">무료 플랜</a>
+                        </div>
+                    </div>
+                    <button onclick="logout()" class="text-gray-600 hover:text-red-600">
+                        <i class="fas fa-sign-out-alt mr-2"></i>로그아웃
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <div class="max-w-7xl mx-auto px-6 py-8">
+            <div class="flex justify-between items-center mb-8">
+                <h1 class="text-3xl font-bold text-gray-900">🎁 무료 플랜 신청 관리</h1>
+                <button onclick="location.reload()" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
+                    <i class="fas fa-sync-alt mr-2"></i>새로고침
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-yellow-50 border-2 border-yellow-200 rounded-xl p-6">
+                    <div class="flex items-center gap-3 mb-2">
+                        <i class="fas fa-clock text-2xl text-yellow-600"></i>
+                        <h3 class="text-lg font-bold text-gray-900">대기 중</h3>
+                    </div>
+                    <p class="text-3xl font-bold text-yellow-600">\${requests.results.filter(r => r.status === 'pending').length}건</p>
+                </div>
+                <div class="bg-green-50 border-2 border-green-200 rounded-xl p-6">
+                    <div class="flex items-center gap-3 mb-2">
+                        <i class="fas fa-check-circle text-2xl text-green-600"></i>
+                        <h3 class="text-lg font-bold text-gray-900">승인 완료</h3>
+                    </div>
+                    <p class="text-3xl font-bold text-green-600">\${requests.results.filter(r => r.status === 'approved').length}건</p>
+                </div>
+                <div class="bg-red-50 border-2 border-red-200 rounded-xl p-6">
+                    <div class="flex items-center gap-3 mb-2">
+                        <i class="fas fa-times-circle text-2xl text-red-600"></i>
+                        <h3 class="text-lg font-bold text-gray-900">거절</h3>
+                    </div>
+                    <p class="text-3xl font-bold text-red-600">\${requests.results.filter(r => r.status === 'rejected').length}건</p>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">ID</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">학원명</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">원장님</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">연락처</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">신청일</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">상태</th>
+                                <th class="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">관리</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            \${requests.results.map((request: any) => \`
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#\${request.id}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-gray-900">\${request.academy_name}</div>
+                                        <div class="text-xs text-gray-500">\${request.email}</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">\${request.owner_name}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">\${request.phone}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">\${formatKoreanTime(request.created_at)}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        \${request.status === 'pending' ? '<span class="px-3 py-1 text-xs font-semibold text-yellow-800 bg-yellow-100 rounded-full">대기 중</span>' : ''}
+                                        \${request.status === 'approved' ? '<span class="px-3 py-1 text-xs font-semibold text-green-800 bg-green-100 rounded-full">승인 완료</span>' : ''}
+                                        \${request.status === 'rejected' ? '<span class="px-3 py-1 text-xs font-semibold text-red-800 bg-red-100 rounded-full">거절</span>' : ''}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-center text-sm">
+                                        \${request.status === 'pending' ? \`
+                                            <button onclick="approveRequest(\${request.id}, '\${request.academy_name}')" class="px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700 mr-2">
+                                                <i class="fas fa-check mr-1"></i>승인
+                                            </button>
+                                            <button onclick="rejectRequest(\${request.id}, '\${request.academy_name}')" class="px-3 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700">
+                                                <i class="fas fa-times mr-1"></i>거절
+                                            </button>
+                                        \` : '-'}
+                                        \${request.reason ? \`<button onclick="showReason('\${request.reason.replace(/'/g, "\\\\'")}', '\${request.academy_name}')" class="ml-2 px-3 py-1 bg-gray-500 text-white rounded-lg hover:bg-gray-600"><i class="fas fa-info-circle mr-1"></i>사유</button>\` : ''}
+                                    </td>
+                                </tr>
+                            \`).join('')}
+                        </tbody>
+                    </table>
+                    \${requests.results.length === 0 ? \`
+                        <div class="text-center py-12">
+                            <i class="fas fa-inbox text-6xl text-gray-300 mb-4"></i>
+                            <p class="text-gray-500">신청 내역이 없습니다</p>
+                        </div>
+                    \` : ''}
+                </div>
+            </div>
+        </div>
+
+        <script>
+            const ADMIN_EMAIL = 'admin@superplace.co.kr';
+
+            function logout() {
+                localStorage.clear();
+                sessionStorage.clear();
+                window.location.href = '/login';
+            }
+
+            function showReason(reason, academyName) {
+                alert(\`[\${academyName}] 신청 사유:\\n\\n\${reason}\`);
+            }
+
+            async function approveRequest(requestId, academyName) {
+                if (!confirm(\`무료 플랜을 승인하시겠습니까?\\n\\n학원: \${academyName}\\n\\n승인 시 학생 50명까지 관리 가능한 무료 플랜이 활성화됩니다.\`)) {
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/api/free-plan/approve', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            requestId: requestId,
+                            adminEmail: ADMIN_EMAIL
+                        })
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        alert(\`✅ 승인 완료!\\n\\n학원: \${academyName}\\n무료 플랜이 활성화되었습니다.\`);
+                        location.reload();
+                    } else {
+                        alert('❌ 승인 실패: ' + result.error);
+                    }
+                } catch (error) {
+                    alert('❌ 오류 발생: ' + error.message);
+                }
+            }
+
+            async function rejectRequest(requestId, academyName) {
+                const reason = prompt(\`무료 플랜 신청을 거절하시겠습니까?\\n\\n학원: \${academyName}\\n\\n거절 사유를 입력해주세요:\`);
+                
+                if (!reason || reason.trim() === '') {
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/api/free-plan/reject', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            requestId: requestId,
+                            adminEmail: ADMIN_EMAIL,
+                            reason: reason.trim()
+                        })
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        alert(\`✅ 거절 처리 완료\\n\\n학원: \${academyName}\\n사유: \${reason}\`);
+                        location.reload();
+                    } else {
+                        alert('❌ 거절 실패: ' + result.error);
+                    }
+                } catch (error) {
+                    alert('❌ 오류 발생: ' + error.message);
+                }
+            }
+        </script>
+    </body>
+    </html>
+    `)
+  } catch (error) {
+    console.error('Free plan requests page error:', error)
+    return c.html(`
+      <!DOCTYPE html>
+      <html><body>
+        <h1>Error</h1>
+        <p>${(error as Error).message}</p>
+      </body></html>
+    `)
+  }
+})
+
 // 관리자: 계좌이체 신청 관리
 app.get('/admin/bank-transfers', async (c) => {
   try {
@@ -38622,6 +39378,7 @@ app.get('/admin/bank-transfers', async (c) => {
                             <a href="/admin/contacts" class="text-gray-600 hover:text-purple-600">문의</a>
                             <a href="/admin/deposits" class="text-gray-600 hover:text-purple-600">포인트 입금</a>
                             <a href="/admin/bank-transfers" class="text-purple-600 font-semibold">계좌이체</a>
+                            <a href="/admin/free-plan-requests" class="text-gray-600 hover:text-purple-600">무료 플랜</a>
                         </div>
                     </div>
                     <button onclick="logout()" class="text-gray-600 hover:text-red-600">
