@@ -39163,6 +39163,48 @@ app.get('/admin/free-plan-requests', async (c) => {
       requests = { results: [] }
     }
     
+    // 통계 계산
+    const pendingCount = requests.results.filter((r: any) => r.status === 'pending').length
+    const approvedCount = requests.results.filter((r: any) => r.status === 'approved').length
+    const rejectedCount = requests.results.filter((r: any) => r.status === 'rejected').length
+    
+    // 테이블 행 생성
+    const tableRows = requests.results.map((request: any) => {
+      const statusBadge = request.status === 'pending' 
+        ? '<span class="px-3 py-1 text-xs font-semibold text-yellow-800 bg-yellow-100 rounded-full">대기 중</span>'
+        : request.status === 'approved'
+        ? '<span class="px-3 py-1 text-xs font-semibold text-green-800 bg-green-100 rounded-full">승인 완료</span>'
+        : '<span class="px-3 py-1 text-xs font-semibold text-red-800 bg-red-100 rounded-full">거절</span>'
+      
+      const actionButtons = request.status === 'pending' 
+        ? `<button onclick="approveRequest(${request.id}, '${request.academy_name.replace(/'/g, "\\'")}'))" class="px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700 mr-2">
+             <i class="fas fa-check mr-1"></i>승인
+           </button>
+           <button onclick="rejectRequest(${request.id}, '${request.academy_name.replace(/'/g, "\\'")}'))" class="px-3 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700">
+             <i class="fas fa-times mr-1"></i>거절
+           </button>`
+        : '-'
+      
+      const reasonButton = request.reason 
+        ? `<button onclick="showReason('${request.reason.replace(/'/g, "\\'")}', '${request.academy_name.replace(/'/g, "\\'")}'))" class="ml-2 px-3 py-1 bg-gray-500 text-white rounded-lg hover:bg-gray-600">
+             <i class="fas fa-info-circle mr-1"></i>사유
+           </button>`
+        : ''
+      
+      return `<tr class="hover:bg-gray-50">
+        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#${request.id}</td>
+        <td class="px-6 py-4 whitespace-nowrap">
+          <div class="text-sm font-medium text-gray-900">${request.academy_name}</div>
+          <div class="text-xs text-gray-500">${request.email}</div>
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${request.owner_name}</td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${request.phone}</td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${formatKoreanTime(request.created_at)}</td>
+        <td class="px-6 py-4 whitespace-nowrap">${statusBadge}</td>
+        <td class="px-6 py-4 whitespace-nowrap text-center text-sm">${actionButtons}${reasonButton}</td>
+      </tr>`
+    }).join('')
+    
     const formatKoreanTime = (utcTimeString: string) => {
       if (!utcTimeString) return '-'
       const date = new Date(utcTimeString)
@@ -39243,7 +39285,7 @@ app.get('/admin/free-plan-requests', async (c) => {
                             <h3 class="text-lg font-bold text-gray-900">대기 중</h3>
                         </div>
                     </div>
-                    <p class="text-4xl font-black text-yellow-600 mb-1">\${requests.results.filter(r => r.status === 'pending').length}</p>
+                    <p class="text-4xl font-black text-yellow-600 mb-1">${pendingCount}</p>
                     <p class="text-sm text-yellow-700">승인 대기 중인 신청</p>
                 </div>
                 <div class="bg-gradient-to-br from-green-50 to-green-100 border-2 border-green-300 rounded-2xl p-6 hover-lift">
@@ -39255,7 +39297,7 @@ app.get('/admin/free-plan-requests', async (c) => {
                             <h3 class="text-lg font-bold text-gray-900">승인 완료</h3>
                         </div>
                     </div>
-                    <p class="text-4xl font-black text-green-600 mb-1">\${requests.results.filter(r => r.status === 'approved').length}</p>
+                    <p class="text-4xl font-black text-green-600 mb-1">${approvedCount}</p>
                     <p class="text-sm text-green-700">무료 플랜 이용 중</p>
                 </div>
                 <div class="bg-gradient-to-br from-red-50 to-red-100 border-2 border-red-300 rounded-2xl p-6 hover-lift">
@@ -39267,7 +39309,7 @@ app.get('/admin/free-plan-requests', async (c) => {
                             <h3 class="text-lg font-bold text-gray-900">거절</h3>
                         </div>
                     </div>
-                    <p class="text-4xl font-black text-red-600 mb-1">\${requests.results.filter(r => r.status === 'rejected').length}</p>
+                    <p class="text-4xl font-black text-red-600 mb-1">${rejectedCount}</p>
                     <p class="text-sm text-red-700">거절된 신청</p>
                 </div>
             </div>
@@ -39293,37 +39335,10 @@ app.get('/admin/free-plan-requests', async (c) => {
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
-                            \${requests.results.map((request: any) => \`
-                                <tr class="hover:bg-gray-50">
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#\${request.id}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm font-medium text-gray-900">\${request.academy_name}</div>
-                                        <div class="text-xs text-gray-500">\${request.email}</div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">\${request.owner_name}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">\${request.phone}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">\${formatKoreanTime(request.created_at)}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        \${request.status === 'pending' ? '<span class="px-3 py-1 text-xs font-semibold text-yellow-800 bg-yellow-100 rounded-full">대기 중</span>' : ''}
-                                        \${request.status === 'approved' ? '<span class="px-3 py-1 text-xs font-semibold text-green-800 bg-green-100 rounded-full">승인 완료</span>' : ''}
-                                        \${request.status === 'rejected' ? '<span class="px-3 py-1 text-xs font-semibold text-red-800 bg-red-100 rounded-full">거절</span>' : ''}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-center text-sm">
-                                        \${request.status === 'pending' ? \`
-                                            <button onclick="approveRequest(\${request.id}, '\${request.academy_name}')" class="px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700 mr-2">
-                                                <i class="fas fa-check mr-1"></i>승인
-                                            </button>
-                                            <button onclick="rejectRequest(\${request.id}, '\${request.academy_name}')" class="px-3 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700">
-                                                <i class="fas fa-times mr-1"></i>거절
-                                            </button>
-                                        \` : '-'}
-                                        \${request.reason ? \`<button onclick="showReason('\${request.reason.replace(/'/g, "\\\\'")}', '\${request.academy_name}')" class="ml-2 px-3 py-1 bg-gray-500 text-white rounded-lg hover:bg-gray-600"><i class="fas fa-info-circle mr-1"></i>사유</button>\` : ''}
-                                    </td>
-                                </tr>
-                            \`).join('')}
+                            ${tableRows}
                         </tbody>
                     </table>
-                    \${requests.results.length === 0 ? \`
+                    ${requests.results.length === 0 ? `
                         <div class="text-center py-20">
                             <div class="mb-6">
                                 <i class="fas fa-inbox text-8xl text-gray-300"></i>
@@ -39339,7 +39354,7 @@ app.get('/admin/free-plan-requests', async (c) => {
                                 </a>
                             </div>
                         </div>
-                    \` : ''}
+                    ` : ''}
                 </div>
             </div>
         </div>
@@ -39354,11 +39369,11 @@ app.get('/admin/free-plan-requests', async (c) => {
             }
 
             function showReason(reason, academyName) {
-                alert(\`[\${academyName}] 신청 사유:\\n\\n\${reason}\`);
+                alert('[' + academyName + '] 신청 사유:\\n\\n' + reason);
             }
 
             async function approveRequest(requestId, academyName) {
-                if (!confirm(\`무료 플랜을 승인하시겠습니까?\\n\\n학원: \${academyName}\\n\\n승인 시 학생 50명까지 관리 가능한 무료 플랜이 활성화됩니다.\`)) {
+                if (!confirm('무료 플랜을 승인하시겠습니까?\\n\\n학원: ' + academyName + '\\n\\n승인 시 학생 50명까지 관리 가능한 무료 플랜이 활성화됩니다.')) {
                     return;
                 }
 
@@ -39375,7 +39390,7 @@ app.get('/admin/free-plan-requests', async (c) => {
                     const result = await response.json();
 
                     if (result.success) {
-                        alert(\`✅ 승인 완료!\\n\\n학원: \${academyName}\\n무료 플랜이 활성화되었습니다.\`);
+                        alert('✅ 승인 완료!\\n\\n학원: ' + academyName + '\\n무료 플랜이 활성화되었습니다.');
                         location.reload();
                     } else {
                         alert('❌ 승인 실패: ' + result.error);
@@ -39386,7 +39401,7 @@ app.get('/admin/free-plan-requests', async (c) => {
             }
 
             async function rejectRequest(requestId, academyName) {
-                const reason = prompt(\`무료 플랜 신청을 거절하시겠습니까?\\n\\n학원: \${academyName}\\n\\n거절 사유를 입력해주세요:\`);
+                const reason = prompt('무료 플랜 신청을 거절하시겠습니까?\\n\\n학원: ' + academyName + '\\n\\n거절 사유를 입력해주세요:');
                 
                 if (!reason || reason.trim() === '') {
                     return;
@@ -39406,7 +39421,7 @@ app.get('/admin/free-plan-requests', async (c) => {
                     const result = await response.json();
 
                     if (result.success) {
-                        alert(\`✅ 거절 처리 완료\\n\\n학원: \${academyName}\\n사유: \${reason}\`);
+                        alert('✅ 거절 처리 완료\\n\\n학원: ' + academyName + '\\n사유: ' + reason);
                         location.reload();
                     } else {
                         alert('❌ 거절 실패: ' + result.error);
