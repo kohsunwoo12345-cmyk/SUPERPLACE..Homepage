@@ -269,13 +269,13 @@ landingRoutes.get('/tools/landing-manager', (c) => {
                             '</div>' +
                             '<div class="flex gap-2">' +
                             '<a href="/landing/' + page.slug + '" target="_blank" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">미리보기</a>' +
-                            '<button onclick="showQR(\'' + page.slug + '\')" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">QR 코드</button>' +
+                            '<button onclick="showQR(\\'' + page.slug + '\\')" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">QR 코드</button>' +
                             '<button onclick="deletePage(' + page.id + ')" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">삭제</button>' +
                             '</div>' +
                             '</div>' +
                             '<div class="flex gap-2">' +
                             '<input type="text" value="' + shareUrl + '" readonly class="flex-1 px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-sm">' +
-                            '<button onclick="copyToClipboard(\'' + shareUrl + '\')" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">복사</button>' +
+                            '<button onclick="copyToClipboard(\\'' + shareUrl + '\\')" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">복사</button>' +
                             '</div>' +
                             '</div>';
                     }).join('');
