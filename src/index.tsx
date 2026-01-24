@@ -4982,21 +4982,25 @@ app.delete('/api/landing/:id', async (c) => {
     
     console.log('Deleting landing page:', { id, userId: user.id })
     
-    // FOREIGN KEY constraint를 우회하기 위해 form_submissions를 먼저 삭제
-    // landing_page_id는 NULL 가능하므로 삭제해도 문제없음
+    // PRAGMA foreign_keys = OFF를 사용하여 FOREIGN KEY 제약 비활성화
     try {
-      const deleteSubmissions = await c.env.DB.prepare(
-        'DELETE FROM form_submissions WHERE landing_page_id = ?'
-      ).bind(id).run()
-      console.log('✅ Deleted form_submissions:', deleteSubmissions.meta.changes)
-    } catch (deleteErr) {
-      console.log('⚠️ Could not delete form_submissions:', deleteErr)
-      // form_submissions 삭제 실패해도 계속 진행
+      await c.env.DB.prepare('PRAGMA foreign_keys = OFF').run()
+      console.log('✅ Disabled foreign_keys pragma')
+    } catch (pragmaErr) {
+      console.log('⚠️ Could not disable foreign_keys:', pragmaErr)
     }
     
-    // 이제 랜딩페이지 삭제
+    // 랜딩페이지 삭제
     const result = await c.env.DB.prepare('DELETE FROM landing_pages WHERE id = ? AND user_id = ?').bind(id, user.id).run()
     console.log('Delete result:', result)
+    
+    // PRAGMA foreign_keys = ON으로 다시 활성화
+    try {
+      await c.env.DB.prepare('PRAGMA foreign_keys = ON').run()
+      console.log('✅ Re-enabled foreign_keys pragma')
+    } catch (pragmaErr) {
+      console.log('⚠️ Could not re-enable foreign_keys:', pragmaErr)
+    }
     
     if (result.meta.changes === 0) {
       return c.json({ success: false, error: '삭제할 페이지를 찾을 수 없거나 권한이 없습니다.' }, 404)
