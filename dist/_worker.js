@@ -29293,8 +29293,26 @@ ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.di
         <title>무료 플랜 신청 관리 - 슈퍼플레이스 관리자</title>
         <script src="https://cdn.tailwindcss.com"><\/script>
         <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+        <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css" rel="stylesheet">
+        <style>
+          * { font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
+          .status-badge {
+            animation: fadeIn 0.3s ease-in-out;
+          }
+          @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
+          .hover-lift {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+          }
+          .hover-lift:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+          }
+        </style>
     </head>
-    <body class="bg-gray-50">
+    <body class="bg-gradient-to-br from-gray-50 to-purple-50"
         <nav class="bg-white border-b border-gray-200">
             <div class="max-w-7xl mx-auto px-6 py-4">
                 <div class="flex justify-between items-center">
@@ -29325,30 +29343,51 @@ ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.di
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div class="bg-yellow-50 border-2 border-yellow-200 rounded-xl p-6">
-                    <div class="flex items-center gap-3 mb-2">
-                        <i class="fas fa-clock text-2xl text-yellow-600"></i>
-                        <h3 class="text-lg font-bold text-gray-900">대기 중</h3>
+                <div class="bg-gradient-to-br from-yellow-50 to-yellow-100 border-2 border-yellow-300 rounded-2xl p-6 hover-lift">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 bg-yellow-500 rounded-xl flex items-center justify-center">
+                                <i class="fas fa-clock text-2xl text-white"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-gray-900">대기 중</h3>
+                        </div>
                     </div>
-                    <p class="text-3xl font-bold text-yellow-600">\${requests.results.filter(r => r.status === 'pending').length}건</p>
+                    <p class="text-4xl font-black text-yellow-600 mb-1">\${requests.results.filter(r => r.status === 'pending').length}</p>
+                    <p class="text-sm text-yellow-700">승인 대기 중인 신청</p>
                 </div>
-                <div class="bg-green-50 border-2 border-green-200 rounded-xl p-6">
-                    <div class="flex items-center gap-3 mb-2">
-                        <i class="fas fa-check-circle text-2xl text-green-600"></i>
-                        <h3 class="text-lg font-bold text-gray-900">승인 완료</h3>
+                <div class="bg-gradient-to-br from-green-50 to-green-100 border-2 border-green-300 rounded-2xl p-6 hover-lift">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center">
+                                <i class="fas fa-check-circle text-2xl text-white"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-gray-900">승인 완료</h3>
+                        </div>
                     </div>
-                    <p class="text-3xl font-bold text-green-600">\${requests.results.filter(r => r.status === 'approved').length}건</p>
+                    <p class="text-4xl font-black text-green-600 mb-1">\${requests.results.filter(r => r.status === 'approved').length}</p>
+                    <p class="text-sm text-green-700">무료 플랜 이용 중</p>
                 </div>
-                <div class="bg-red-50 border-2 border-red-200 rounded-xl p-6">
-                    <div class="flex items-center gap-3 mb-2">
-                        <i class="fas fa-times-circle text-2xl text-red-600"></i>
-                        <h3 class="text-lg font-bold text-gray-900">거절</h3>
+                <div class="bg-gradient-to-br from-red-50 to-red-100 border-2 border-red-300 rounded-2xl p-6 hover-lift">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 bg-red-500 rounded-xl flex items-center justify-center">
+                                <i class="fas fa-times-circle text-2xl text-white"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-gray-900">거절</h3>
+                        </div>
                     </div>
-                    <p class="text-3xl font-bold text-red-600">\${requests.results.filter(r => r.status === 'rejected').length}건</p>
+                    <p class="text-4xl font-black text-red-600 mb-1">\${requests.results.filter(r => r.status === 'rejected').length}</p>
+                    <p class="text-sm text-red-700">거절된 신청</p>
                 </div>
             </div>
 
-            <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+            <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200">
+                <div class="bg-gradient-to-r from-purple-600 to-purple-700 px-6 py-4">
+                    <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                        <i class="fas fa-list"></i>
+                        신청 목록
+                    </h2>
+                </div>
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
@@ -29394,9 +29433,20 @@ ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.di
                         </tbody>
                     </table>
                     \${requests.results.length === 0 ? \`
-                        <div class="text-center py-12">
-                            <i class="fas fa-inbox text-6xl text-gray-300 mb-4"></i>
-                            <p class="text-gray-500">신청 내역이 없습니다</p>
+                        <div class="text-center py-20">
+                            <div class="mb-6">
+                                <i class="fas fa-inbox text-8xl text-gray-300"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold text-gray-700 mb-2">신청 내역이 없습니다</h3>
+                            <p class="text-gray-500 mb-6">아직 무료 플랜 신청이 없습니다.<br>신청이 들어오면 이곳에 표시됩니다.</p>
+                            <div class="flex gap-4 justify-center">
+                                <button onclick="location.reload()" class="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-semibold">
+                                    <i class="fas fa-sync-alt mr-2"></i>새로고침
+                                </button>
+                                <a href="/pricing/free" target="_blank" class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold">
+                                    <i class="fas fa-external-link-alt mr-2"></i>신청 페이지 보기
+                                </a>
+                            </div>
                         </div>
                     \` : ''}
                 </div>
