@@ -16614,142 +16614,227 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
                     <h2 class="text-4xl lg:text-5xl font-bold text-gray-900 mb-4">우리의 시작</h2>
                     <div class="w-24 h-1 bg-gradient-to-r from-purple-600 to-orange-500 mx-auto"></div>
                 </div>
-                
-                <div class="grid lg:grid-cols-2 gap-16 items-start">
-                    <div>
-                        <div class="space-y-6 text-lg text-gray-700 leading-relaxed">
-                            <p>
-                                <strong class="text-purple-600">인천 서구에서 공부방을 운영하던 저희</strong>는 
+
+                <!-- CEO Profile and Story -->
+                <div class="grid lg:grid-cols-[400px_1fr] gap-12 items-start mb-20">
+                    <!-- Left: CEO Photo -->
+                    <div class="flex justify-center lg:justify-start">
+                        <div class="relative">
+                            <img src="/static/images/ceo-profile.jpg" 
+                                 alt="고희준 대표이사" 
+                                 class="w-full max-w-sm rounded-3xl shadow-2xl object-cover">
+                            <div class="absolute -bottom-6 left-1/2 transform -translate-x-1/2 bg-white px-8 py-4 rounded-full shadow-xl border-2 border-purple-200">
+                                <p class="font-bold text-gray-900 text-lg whitespace-nowrap">고희준 대표이사</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Story Content -->
+                    <div class="space-y-8 pt-8">
+                        <div class="fade-in-up" style="animation-delay: 0.2s">
+                            <p class="text-xl text-gray-700 leading-relaxed">
+                                <strong class="text-purple-600 text-2xl">인천 서구에서 공부방을 운영하던 저희</strong>는 
                                 처음에 학생 모집에 큰 어려움을 겪었습니다.
                             </p>
-                            <p>
+                        </div>
+
+                        <div class="fade-in-up" style="animation-delay: 0.4s">
+                            <p class="text-xl text-gray-700 leading-relaxed">
                                 하지만 <strong class="text-orange-500">네이버 플레이스 최적화, 블로그 마케팅, 퍼널 시스템</strong>을 
                                 직접 공부하고 적용하면서 놀라운 변화를 경험했습니다.
                             </p>
-                            <div class="bg-purple-50 rounded-xl p-6 my-6">
-                                <p class="font-bold text-gray-900 text-xl mb-2">
-                                    <span class="text-purple-600">3개월 만에</span> 신규 문의가 <span class="text-purple-600">2배</span> 증가
-                                </p>
-                                <p class="font-bold text-gray-900 text-xl">
-                                    <span class="text-orange-500">몇 년 만에</span> 학원 규모가 <span class="text-orange-500">3배</span>로 성장
-                                </p>
+                        </div>
+
+                        <div class="fade-in-up bg-gradient-to-r from-purple-50 to-orange-50 rounded-2xl p-8" style="animation-delay: 0.6s">
+                            <div class="grid sm:grid-cols-2 gap-6">
+                                <div>
+                                    <p class="text-5xl font-bold text-purple-600 mb-2">2배</p>
+                                    <p class="text-lg font-semibold text-gray-900">신규 문의 증가</p>
+                                    <p class="text-gray-600">3개월 만에 달성</p>
+                                </div>
+                                <div>
+                                    <p class="text-5xl font-bold text-orange-500 mb-2">3배</p>
+                                    <p class="text-lg font-semibold text-gray-900">학원 규모 성장</p>
+                                    <p class="text-gray-600">몇 년 만에 달성</p>
+                                </div>
                             </div>
-                            <p>
+                        </div>
+
+                        <div class="fade-in-up" style="animation-delay: 0.8s">
+                            <p class="text-xl text-gray-700 leading-relaxed">
                                 하지만 학원생이 등록하는 만큼 <strong class="text-red-600">이탈 학원생도 많았습니다.</strong>
                             </p>
-                            <p>
+                        </div>
+
+                        <div class="fade-in-up" style="animation-delay: 1s">
+                            <p class="text-xl text-gray-700 leading-relaxed">
                                 그래서 저희는 <strong class="text-purple-600">학원생 모집부터 원생 관리, 학부모 관리까지 
                                 모두 자동화로 사용할 수 있는 프로그램, 시스템을 완벽히 구축</strong>하였습니다.
                             </p>
-                            <div class="bg-cyan-50 rounded-xl p-6 my-6 border-2 border-cyan-200">
-                                <h4 class="font-bold text-gray-900 text-lg mb-3 flex items-center gap-2">
-                                    <svg class="w-6 h-6 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
-                                    </svg>
-                                    AI 기반 학생 분석 시스템
-                                </h4>
-                                <p class="text-gray-700">
-                                    아이들이 숙제하면서 <strong>AI와 대화를 하며 나눈 모든 데이터를 
-                                    심리 분석</strong>을 진행하여 아이들의 <strong class="text-cyan-700">참여도, 이해도 등을 모두 분석</strong>합니다.
-                                </p>
-                                <p class="text-gray-700 mt-3">
-                                    이 모든 분석지를 <strong class="text-purple-600">학생 이름만 선택하면 랜딩페이지로 제작</strong>되어 
-                                    학부모에게 전달됩니다.
-                                </p>
-                            </div>
-                            <div class="bg-gradient-to-r from-purple-600 to-purple-800 rounded-xl p-6 my-6 text-white">
-                                <p class="text-2xl font-bold mb-3">
-                                    "이 노하우를 다른 학원장님들과 나누고 싶다"
-                                </p>
-                                <p class="text-xl">
-                                    그렇게 <strong class="text-orange-300">'우리는 슈퍼플레이스다'</strong>가 시작되었습니다.
-                                </p>
-                            </div>
-                            <p class="text-xl font-semibold text-center text-gray-900">
-                                저희는 <span class="text-purple-600">멈춰있지 않고 지속적으로 업데이트</span>하며,<br>
-                                원장님들과 <span class="text-orange-500">함께 발전해 나아갑니다.</span>
+                        </div>
+
+                        <div class="fade-in-up bg-cyan-50 rounded-2xl p-8 border-2 border-cyan-200" style="animation-delay: 1.2s">
+                            <h4 class="font-bold text-gray-900 text-2xl mb-4 flex items-center gap-3">
+                                <svg class="w-8 h-8 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                                </svg>
+                                AI 기반 학생 분석 시스템
+                            </h4>
+                            <p class="text-lg text-gray-700 leading-relaxed mb-3">
+                                아이들이 숙제하면서 AI와 대화를 하며 나눈 모든 데이터를 심리 분석하여 
+                                아이들의 <strong class="text-cyan-700">참여도, 이해도 등을 모두 분석</strong>합니다.
                             </p>
-                            <div class="bg-gray-900 rounded-xl p-6 my-6 text-white">
-                                <p class="text-2xl font-bold mb-4 text-center">
-                                    <span class="text-orange-400">플랫폼에 노출되는 것</span>이<br>
-                                    마케팅이 <span class="underline decoration-2 decoration-orange-400">아닙니다</span>
-                                </p>
-                                <p class="text-gray-100 text-center mb-4">
-                                    우리 학원을 <strong>모든 플랫폼에 노출</strong>하고,<br>
-                                    발견된 우리 학원에 <strong>오게끔 만들고</strong>,<br>
-                                    상담에서 <strong>등록으로 전환</strong>시키며,<br>
-                                    원생이 <strong>이탈하지 않도록 관리</strong>하는 것
-                                </p>
-                                <p class="text-2xl font-bold text-center text-orange-300">
-                                    이것이 진짜 학원 마케팅입니다.
-                                </p>
-                            </div>
-                            <p class="text-xl text-center text-gray-900">
-                                모든 과정을 <strong class="text-purple-600">쉽게 컴맹이시더라도</strong><br>
-                                <strong class="text-orange-500 text-2xl">클릭으로 가능</strong>하도록 설계하였습니다.
-                            </p>
-                            <p class="text-3xl font-bold text-center text-gray-900 mt-8">
-                                감사합니다.
+                            <p class="text-lg text-gray-700 leading-relaxed">
+                                학생 이름만 선택하면 <strong class="text-purple-600">랜딩페이지로 자동 제작</strong>되어 학부모에게 전달됩니다.
                             </p>
                         </div>
-                    </div>
-                    
-                    <!-- CEO Profile Card -->
-                    <div class="bg-white rounded-3xl shadow-xl p-10">
-                        <div class="flex flex-col items-center text-center mb-8">
-                            <img src="/static/images/ceo-profile.jpg" 
-                                 alt="고희준 대표이사" 
-                                 class="w-40 h-40 rounded-full shadow-lg object-cover mb-6">
-                            <h3 class="text-2xl font-bold text-gray-900 mb-2">고희준</h3>
-                            <p class="text-lg text-purple-600 font-semibold">대표이사</p>
-                            <p class="text-gray-600">인문학 박사</p>
-                        </div>
-                        <div class="border-t border-gray-200 pt-6">
-                            <h4 class="font-bold text-gray-900 mb-4 text-center">경력</h4>
-                            <div class="space-y-3 text-sm text-gray-700">
-                                <p>• 2005~ 공부방 시작</p>
-                                <p>• 2012~ 인문학 박사 취득</p>
-                                <p>• 2015~ 꾸메땅학원 창립</p>
-                                <p>• 2022~ (주)맘스온 대표이사</p>
-                                <p>• 2022~ 킹클래스 학원장소통 오픈</p>
-                                <p>• 2024~ 한국학원대학교 협업</p>
-                                <p>• 2025~ (주)우리는 슈퍼플레이스다 대표이사</p>
-                            </div>
+
+                        <div class="fade-in-up bg-gradient-to-r from-purple-600 to-purple-800 rounded-2xl p-8 text-white" style="animation-delay: 1.4s">
+                            <p class="text-3xl font-bold mb-4">
+                                "이 노하우를 다른 학원장님들과 나누고 싶다"
+                            </p>
+                            <p class="text-2xl">
+                                그렇게 <strong class="text-orange-300">'우리는 슈퍼플레이스다'</strong>가 시작되었습니다.
+                            </p>
                         </div>
                     </div>
                 </div>
-                
-                <!-- Timeline -->
+
+                <!-- Timeline with Animation -->
                 <div class="mt-20">
-                    <h3 class="text-3xl font-bold text-gray-900 text-center mb-12">성장 스토리</h3>
-                    <div class="grid md:grid-cols-4 gap-8">
-                        <div class="text-center">
-                            <div class="w-16 h-16 rounded-full bg-purple-100 flex items-center justify-center mx-auto mb-4">
-                                <span class="text-2xl font-bold text-purple-600">1</span>
+                    <h3 class="text-4xl font-bold text-gray-900 text-center mb-16">성장 스토리</h3>
+                    <div class="grid md:grid-cols-4 gap-8 max-w-6xl mx-auto">
+                        <div class="timeline-item text-center" style="animation-delay: 0.2s">
+                            <div class="w-20 h-20 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center mx-auto mb-6 shadow-xl">
+                                <span class="text-4xl font-bold text-white">1</span>
                             </div>
-                            <h4 class="font-bold text-gray-900 mb-2">2015년</h4>
-                            <p class="text-gray-600 text-sm">꾸메땅학원 개원<br>학생 모집 어려움</p>
+                            <h4 class="text-2xl font-bold text-gray-900 mb-3">2015년</h4>
+                            <p class="text-gray-600 leading-relaxed">꾸메땅학원 개원<br>학생 모집 어려움</p>
                         </div>
-                        <div class="text-center">
-                            <div class="w-16 h-16 rounded-full bg-orange-100 flex items-center justify-center mx-auto mb-4">
-                                <span class="text-2xl font-bold text-orange-600">2</span>
+                        <div class="timeline-item text-center" style="animation-delay: 0.4s">
+                            <div class="w-20 h-20 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center mx-auto mb-6 shadow-xl">
+                                <span class="text-4xl font-bold text-white">2</span>
                             </div>
-                            <h4 class="font-bold text-gray-900 mb-2">2020년</h4>
-                            <p class="text-gray-600 text-sm">플레이스 마케팅 독학<br>1위 달성</p>
+                            <h4 class="text-2xl font-bold text-gray-900 mb-3">2020년</h4>
+                            <p class="text-gray-600 leading-relaxed">플레이스 마케팅 독학<br>지역 1위 달성</p>
                         </div>
-                        <div class="text-center">
-                            <div class="w-16 h-16 rounded-full bg-purple-100 flex items-center justify-center mx-auto mb-4">
-                                <span class="text-2xl font-bold text-purple-600">3</span>
+                        <div class="timeline-item text-center" style="animation-delay: 0.6s">
+                            <div class="w-20 h-20 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center mx-auto mb-6 shadow-xl">
+                                <span class="text-4xl font-bold text-white">3</span>
                             </div>
-                            <h4 class="font-bold text-gray-900 mb-2">2021년</h4>
-                            <p class="text-gray-600 text-sm">오픈채팅방 시작<br>노하우 공유</p>
+                            <h4 class="text-2xl font-bold text-gray-900 mb-3">2021년</h4>
+                            <p class="text-gray-600 leading-relaxed">오픈채팅방 시작<br>노하우 공유</p>
                         </div>
-                        <div class="text-center">
-                            <div class="w-16 h-16 rounded-full bg-orange-100 flex items-center justify-center mx-auto mb-4">
-                                <span class="text-2xl font-bold text-orange-600">4</span>
+                        <div class="timeline-item text-center" style="animation-delay: 0.8s">
+                            <div class="w-20 h-20 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center mx-auto mb-6 shadow-xl">
+                                <span class="text-4xl font-bold text-white">4</span>
                             </div>
-                            <h4 class="font-bold text-gray-900 mb-2">2022년~현재</h4>
-                            <p class="text-gray-600 text-sm">전국 500개 학원<br>교육 진행</p>
+                            <h4 class="text-2xl font-bold text-gray-900 mb-3">2022년~현재</h4>
+                            <p class="text-gray-600 leading-relaxed">전국 500개 학원<br>교육 진행</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <style>
+            @keyframes fadeInUp {
+                from {
+                    opacity: 0;
+                    transform: translateY(30px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            @keyframes scaleIn {
+                from {
+                    opacity: 0;
+                    transform: scale(0.8);
+                }
+                to {
+                    opacity: 1;
+                    transform: scale(1);
+                }
+            }
+
+            .fade-in-up {
+                animation: fadeInUp 0.8s ease-out forwards;
+                opacity: 0;
+            }
+
+            .timeline-item {
+                animation: scaleIn 0.6s ease-out forwards;
+                opacity: 0;
+            }
+        </style>
+
+        <!-- Marketing Team Leader Section -->
+        <section class="py-20 px-6 bg-gradient-to-br from-gray-50 to-white">
+            <div class="max-w-7xl mx-auto">
+                <div class="grid lg:grid-cols-[400px_1fr] gap-12 items-start">
+                    <!-- Left: Team Leader Photo -->
+                    <div class="flex justify-center lg:justify-start">
+                        <div class="relative">
+                            <img src="/static/images/team-ko-sunwoo.jpg" 
+                                 alt="고선우 마케팅 1팀장" 
+                                 class="w-full max-w-sm rounded-3xl shadow-2xl object-cover">
+                            <div class="absolute -bottom-6 left-1/2 transform -translate-x-1/2 bg-white px-8 py-4 rounded-full shadow-xl border-2 border-orange-200">
+                                <p class="font-bold text-gray-900 text-lg whitespace-nowrap">고선우 마케팅 1팀장</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Introduction -->
+                    <div class="space-y-6 pt-8">
+                        <div class="bg-white rounded-2xl p-8 shadow-lg border-2 border-orange-200">
+                            <h3 class="text-3xl font-bold text-gray-900 mb-6">마케팅 전문가</h3>
+                            <div class="space-y-4 text-lg text-gray-700">
+                                <div class="flex items-start gap-3">
+                                    <svg class="w-6 h-6 text-orange-500 flex-shrink-0 mt-1" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                    </svg>
+                                    <p><strong class="text-orange-600">자동화 퍼널 전문가</strong><br>
+                                    <span class="text-gray-600 text-base">학생 모집부터 등록까지 자동화 시스템 구축</span></p>
+                                </div>
+                                <div class="flex items-start gap-3">
+                                    <svg class="w-6 h-6 text-orange-500 flex-shrink-0 mt-1" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                    </svg>
+                                    <p><strong class="text-orange-600">인스타그램 바이럴 영상 제작</strong><br>
+                                    <span class="text-gray-600 text-base">SNS 마케팅 및 콘텐츠 제작 전문</span></p>
+                                </div>
+                                <div class="flex items-start gap-3">
+                                    <svg class="w-6 h-6 text-orange-500 flex-shrink-0 mt-1" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                    </svg>
+                                    <p><strong class="text-orange-600">네이버 플레이스 상위노출</strong><br>
+                                    <span class="text-gray-600 text-base">지역 검색 최적화 및 리뷰 관리</span></p>
+                                </div>
+                                <div class="flex items-start gap-3">
+                                    <svg class="w-6 h-6 text-orange-500 flex-shrink-0 mt-1" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                    </svg>
+                                    <p><strong class="text-orange-600">랜딩페이지 제작 및 개발</strong><br>
+                                    <span class="text-gray-600 text-base">전환율 높은 페이지 디자인 및 개발</span></p>
+                                </div>
+                                <div class="flex items-start gap-3">
+                                    <svg class="w-6 h-6 text-orange-500 flex-shrink-0 mt-1" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                    </svg>
+                                    <p><strong class="text-orange-600">블로그 상위노출 글 작성</strong><br>
+                                    <span class="text-gray-600 text-base">SEO 최적화 콘텐츠 작성</span></p>
+                                </div>
+                                <div class="flex items-start gap-3">
+                                    <svg class="w-6 h-6 text-orange-500 flex-shrink-0 mt-1" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                    </svg>
+                                    <p><strong class="text-orange-600">AI 컨설턴트 전문가</strong><br>
+                                    <span class="text-gray-600 text-base">AI 도구 활용 및 자동화 컨설팅</span></p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -16835,56 +16920,6 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
                         <div class="text-5xl font-bold text-orange-500 mb-3">4년+</div>
                         <div class="text-lg text-gray-700 font-medium">운영 경험</div>
                         <div class="text-sm text-gray-500 mt-2">축적된 노하우</div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Team Section -->
-        <section class="py-20 px-6 bg-gradient-to-br from-gray-50 to-white">
-            <div class="max-w-7xl mx-auto">
-                <div class="text-center mb-16">
-                    <h2 class="text-4xl font-bold text-gray-900 mb-4">팀 소개</h2>
-                    <p class="text-xl text-gray-600">현업 전문가가 직접 가르칩니다</p>
-                </div>
-
-                <div class="grid md:grid-cols-2 gap-12 max-w-5xl mx-auto">
-                    <!-- 고희준 대표 -->
-                    <div class="bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow">
-                        <div class="h-80 overflow-hidden">
-                            <img src="/static/images/ceo-profile.jpg" 
-                                 alt="고희준 대표이사" 
-                                 class="w-full h-full object-cover">
-                        </div>
-                        <div class="p-8">
-                            <h3 class="text-2xl font-bold text-gray-900 mb-2">고희준</h3>
-                            <p class="text-purple-600 font-semibold mb-4">대표이사 · 인문학 박사</p>
-                            <div class="space-y-2 text-sm text-gray-600">
-                                <p>• 2005~ 공부방 시작</p>
-                                <p>• 2015~ 꾸메땅학원 창립</p>
-                                <p>• 2022~ (주)맘스온 대표이사</p>
-                                <p>• 2025~ (주)우리는 슈퍼플레이스다</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 고선우 마케팅 팀장 -->
-                    <div class="bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow">
-                        <div class="h-80 overflow-hidden">
-                            <img src="/static/images/team-ko-sunwoo.jpg" 
-                                 alt="고선우 마케팅 1팀장" 
-                                 class="w-full h-full object-cover">
-                        </div>
-                        <div class="p-8">
-                            <h3 class="text-2xl font-bold text-gray-900 mb-2">고선우</h3>
-                            <p class="text-orange-600 font-semibold mb-4">마케팅 1팀장</p>
-                            <div class="space-y-2 text-sm text-gray-600">
-                                <p>• 자동화 퍼널 전문가</p>
-                                <p>• 네이버 플레이스 상위노출</p>
-                                <p>• 랜딩페이지 제작 및 개발</p>
-                                <p>• AI 컨설턴트 전문가</p>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
