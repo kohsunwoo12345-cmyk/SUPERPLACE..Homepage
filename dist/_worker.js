@@ -2802,14 +2802,14 @@ var Nt=Object.defineProperty;var tt=e=>{throw TypeError(e)};var Mt=(e,t,s)=>t in
     `).bind(t).first();return s?e.json({success:!0,points:s.points||0,user:{id:s.id,email:s.email,name:s.name,points:s.points||0}}):e.json({success:!1,error:"사용자를 찾을 수 없습니다."},404)}catch(t){return console.error("Get points error:",t),e.json({success:!1,error:"포인트 조회 중 오류가 발생했습니다."},500)}});c.post("/api/admin/users/:id/password",async e=>{try{const t=e.req.param("id"),{newPassword:s}=await e.req.json();return!s||s.length<6?e.json({success:!1,error:"비밀번호는 최소 6자 이상이어야 합니다."},400):(await e.env.DB.prepare(`
       UPDATE users SET password = ? WHERE id = ?
     `).bind(s,t).run(),e.json({success:!0,message:"비밀번호가 변경되었습니다."}))}catch(t){return console.error("Password change error:",t),e.json({success:!1,error:"비밀번호 변경 중 오류가 발생했습니다."},500)}});c.put("/api/admin/users/:id/points",async e=>{try{const t=e.req.param("id"),{points:s}=await e.req.json();if(!s||s<=0)return e.json({success:!1,error:"올바른 포인트를 입력하세요."},400);const r=await e.env.DB.prepare(`
-      SELECT points FROM users WHERE id = ?
-    `).bind(t).first(),a=((r==null?void 0:r.points)||0)+s;return await e.env.DB.prepare(`
-      UPDATE users SET points = ? WHERE id = ?
-    `).bind(a,t).run(),e.json({success:!0,message:"포인트가 지급되었습니다.",newPoints:a})}catch(t){return console.error("Points update error:",t),e.json({success:!1,error:"포인트 지급 중 오류가 발생했습니다."},500)}});c.put("/api/admin/users/:id/points/deduct",async e=>{try{const t=e.req.param("id"),{points:s}=await e.req.json();if(!s||s<=0)return e.json({success:!1,error:"올바른 포인트를 입력하세요."},400);const r=await e.env.DB.prepare(`
-      SELECT id, email, name, points FROM users WHERE id = ?
-    `).bind(t).first();if(!r)return e.json({success:!1,error:"사용자를 찾을 수 없습니다."},404);const a=(r==null?void 0:r.points)||0,o=a-s;return console.log("Deduct points:",{userId:t,userName:r.name,currentPoints:a,deductPoints:s,newPoints:o}),await e.env.DB.prepare(`
-      UPDATE users SET points = ? WHERE id = ?
-    `).bind(o,t).run(),e.json({success:!0,message:s+"P가 차감되었습니다.",deductedPoints:s,newPoints:o})}catch(t){return console.error("Points deduct error:",t),e.json({success:!1,error:"포인트 차감 중 오류가 발생했습니다."},500)}});c.post("/api/admin/login-as/:id",async e=>{try{const t=e.req.param("id"),s=await e.env.DB.prepare(`
+      SELECT balance FROM users WHERE id = ?
+    `).bind(t).first(),a=((r==null?void 0:r.balance)||0)+s;return await e.env.DB.prepare(`
+      UPDATE users SET balance = ?, points = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?
+    `).bind(a,a,t).run(),e.json({success:!0,message:"포인트가 지급되었습니다.",newPoints:a})}catch(t){return console.error("Points update error:",t),e.json({success:!1,error:"포인트 지급 중 오류가 발생했습니다."},500)}});c.put("/api/admin/users/:id/points/deduct",async e=>{try{const t=e.req.param("id"),{points:s}=await e.req.json();if(!s||s<=0)return e.json({success:!1,error:"올바른 포인트를 입력하세요."},400);const r=await e.env.DB.prepare(`
+      SELECT id, email, name, balance FROM users WHERE id = ?
+    `).bind(t).first();if(!r)return e.json({success:!1,error:"사용자를 찾을 수 없습니다."},404);const a=(r==null?void 0:r.balance)||0,o=a-s;return console.log("Deduct points:",{userId:t,userName:r.name,currentBalance:a,deductPoints:s,newBalance:o}),await e.env.DB.prepare(`
+      UPDATE users SET balance = ?, points = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?
+    `).bind(o,o,t).run(),e.json({success:!0,message:s+"P가 차감되었습니다.",deductedPoints:s,newPoints:o})}catch(t){return console.error("Points deduct error:",t),e.json({success:!1,error:"포인트 차감 중 오류가 발생했습니다."},500)}});c.post("/api/admin/login-as/:id",async e=>{try{const t=e.req.param("id"),s=await e.env.DB.prepare(`
       SELECT id, email, name, role FROM users WHERE id = ?
     `).bind(t).first();return s?e.json({success:!0,message:"로그인 성공",user:{id:s.id,email:s.email,name:s.name,role:s.role}}):e.json({success:!1,error:"사용자를 찾을 수 없습니다."},404)}catch(t){return console.error("Login as error:",t),e.json({success:!1,error:"로그인 중 오류가 발생했습니다."},500)}});c.post("/api/register",async e=>{try{const{email:t,password:s,name:r,phone:a,academy_name:o,academy_location:n,google_id:i,kakao_id:l,profile_image:d,social_provider:p}=await e.req.json();if(!t||!r)return e.json({success:!1,error:"필수 정보를 모두 입력해주세요."},400);if(!p&&!s)return e.json({success:!1,error:"비밀번호를 입력해주세요."},400);if(await e.env.DB.prepare(`
       SELECT id FROM users WHERE email = ?
@@ -3299,13 +3299,13 @@ var Nt=Object.defineProperty;var tt=e=>{throw TypeError(e)};var Mt=(e,t,s)=>t in
       `).bind(r).first();if(!n||n.role!=="admin")return e.json({success:!1,error:"관리자 권한이 필요합니다."},403)}const a=await e.env.DB.prepare(`
       SELECT * FROM deposit_requests WHERE id = ?
     `).bind(t).first();if(console.log("Found request:",a),!a)return e.json({success:!1,error:"입금 신청을 찾을 수 없습니다."},404);if(a.status!=="pending")return e.json({success:!1,error:"이미 처리된 신청입니다."},400);let o=0;if(s==="approved"){const n=a.amount;console.log("Approving deposit for user:",a.user_id,"adding:",n);const i=await e.env.DB.prepare(`
-        SELECT points, balance FROM users WHERE id = ?
-      `).bind(a.user_id).first(),l=(i==null?void 0:i.points)||0,d=(i==null?void 0:i.balance)||0,p=l||d;if(o=p+n,await e.env.DB.prepare(`
-        UPDATE users SET points = ?, balance = ? WHERE id = ?
-      `).bind(o,o,a.user_id).run(),console.log("Points/Balance updated:",p,"->",o),await e.env.DB.prepare(`
+        SELECT balance FROM users WHERE id = ?
+      `).bind(a.user_id).first(),l=(i==null?void 0:i.balance)||0;if(o=l+n,await e.env.DB.prepare(`
+        UPDATE users SET balance = ?, points = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?
+      `).bind(o,o,a.user_id).run(),console.log("Points/Balance updated:",l,"->",o),await e.env.DB.prepare(`
         INSERT INTO point_transactions (user_id, transaction_type, amount, balance_before, balance_after, description, admin_id)
         VALUES (?, 'deposit_approval', ?, ?, ?, ?, ?)
-      `).bind(a.user_id,n,p,o,`입금 신청 승인 (신청 ID: ${t})`,r||null).run(),a.user_email)try{const u=e.env.RESEND_API_KEY;if(u){const m=await fetch("https://api.resend.com/emails",{method:"POST",headers:{"Content-Type":"application/json",Authorization:`Bearer ${u}`},body:JSON.stringify({from:"슈퍼플레이스 <noreply@superplace.co.kr>",to:a.user_email,subject:"✅ 포인트 충전이 완료되었습니다",html:`
+      `).bind(a.user_id,n,l,o,`입금 신청 승인 (신청 ID: ${t})`,r||null).run(),a.user_email)try{const d=e.env.RESEND_API_KEY;if(d){const p=await fetch("https://api.resend.com/emails",{method:"POST",headers:{"Content-Type":"application/json",Authorization:`Bearer ${d}`},body:JSON.stringify({from:"슈퍼플레이스 <noreply@superplace.co.kr>",to:a.user_email,subject:"✅ 포인트 충전이 완료되었습니다",html:`
                   <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
                     <div style="background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
                       <h1 style="color: white; margin: 0; font-size: 24px;">💰 포인트 충전 완료</h1>
@@ -3353,7 +3353,7 @@ var Nt=Object.defineProperty;var tt=e=>{throw TypeError(e)};var Mt=(e,t,s)=>t in
                       </p>
                     </div>
                   </div>
-                `})});m.ok?console.log("Email notification sent successfully"):console.error("Failed to send email notification:",await m.text())}}catch(u){console.error("Email sending error:",u)}}return await e.env.DB.prepare(`
+                `})});p.ok?console.log("Email notification sent successfully"):console.error("Failed to send email notification:",await p.text())}}catch(d){console.error("Email sending error:",d)}}return await e.env.DB.prepare(`
       UPDATE deposit_requests SET status = ?, processed_at = CURRENT_TIMESTAMP WHERE id = ?
     `).bind(s,t).run(),e.json({success:!0,message:s==="approved"?"입금이 승인되고 포인트가 충전되었습니다.":"입금 신청이 거절되었습니다."})}catch(t){return console.error("Process deposit request error:",t),e.json({success:!1,error:"입금 신청 처리 중 오류가 발생했습니다.",details:error.message},500)}});c.put("/api/admin/users/:id/password",async e=>{try{const t=e.req.param("id"),{newPassword:s}=await e.req.json();return!s||s.length<6?e.json({success:!1,error:"비밀번호는 최소 6자 이상이어야 합니다."},400):(await e.env.DB.prepare(`
       UPDATE users SET password = ? WHERE id = ?

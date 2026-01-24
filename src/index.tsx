@@ -608,19 +608,19 @@ app.put('/api/admin/users/:id/points', async (c) => {
       return c.json({ success: false, error: '올바른 포인트를 입력하세요.' }, 400)
     }
 
-    // 현재 포인트 조회
+    // 현재 잔액 조회
     const user = await c.env.DB.prepare(`
-      SELECT points FROM users WHERE id = ?
+      SELECT balance FROM users WHERE id = ?
     `).bind(userId).first()
 
-    const newPoints = (user?.points || 0) + points
+    const newBalance = (user?.balance || 0) + points
 
-    // 포인트 업데이트
+    // 잔액 업데이트 (balance와 points 동기화)
     await c.env.DB.prepare(`
-      UPDATE users SET points = ? WHERE id = ?
-    `).bind(newPoints, userId).run()
+      UPDATE users SET balance = ?, points = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?
+    `).bind(newBalance, newBalance, userId).run()
 
-    return c.json({ success: true, message: '포인트가 지급되었습니다.', newPoints })
+    return c.json({ success: true, message: '포인트가 지급되었습니다.', newPoints: newBalance })
   } catch (err) {
     console.error('Points update error:', err)
     return c.json({ success: false, error: '포인트 지급 중 오류가 발생했습니다.' }, 500)
@@ -637,30 +637,30 @@ app.put('/api/admin/users/:id/points/deduct', async (c) => {
       return c.json({ success: false, error: '올바른 포인트를 입력하세요.' }, 400)
     }
 
-    // 현재 포인트 조회
+    // 현재 잔액 조회
     const user = await c.env.DB.prepare(`
-      SELECT id, email, name, points FROM users WHERE id = ?
+      SELECT id, email, name, balance FROM users WHERE id = ?
     `).bind(userId).first()
 
     if (!user) {
       return c.json({ success: false, error: '사용자를 찾을 수 없습니다.' }, 404)
     }
 
-    const currentPoints = user?.points || 0
-    const newPoints = currentPoints - points
+    const currentBalance = user?.balance || 0
+    const newBalance = currentBalance - points
 
-    console.log('Deduct points:', { userId, userName: user.name, currentPoints, deductPoints: points, newPoints })
+    console.log('Deduct points:', { userId, userName: user.name, currentBalance, deductPoints: points, newBalance })
 
-    // 포인트 차감 (마이너스 허용)
+    // 포인트 차감 (마이너스 허용, balance와 points 동기화)
     await c.env.DB.prepare(`
-      UPDATE users SET points = ? WHERE id = ?
-    `).bind(newPoints, userId).run()
+      UPDATE users SET balance = ?, points = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?
+    `).bind(newBalance, newBalance, userId).run()
 
     return c.json({ 
       success: true, 
       message: points + 'P가 차감되었습니다.',
       deductedPoints: points,
-      newPoints: newPoints 
+      newPoints: newBalance 
     })
   } catch (err) {
     console.error('Points deduct error:', err)
@@ -3143,19 +3143,17 @@ app.put('/api/admin/deposit/requests/:id/process', async (c) => {
       const points = request.amount
       console.log('Approving deposit for user:', request.user_id, 'adding:', points)
       
-      // 현재 잔액 조회 (points와 balance 모두 확인)
+      // 현재 잔액 조회 (balance 필드만 사용)
       const user = await c.env.DB.prepare(`
-        SELECT points, balance FROM users WHERE id = ?
+        SELECT balance FROM users WHERE id = ?
       `).bind(request.user_id).first()
 
-      const currentPoints = user?.points || 0
-      const currentBalance = user?.balance || 0
-      const balanceBefore = currentPoints || currentBalance
+      const balanceBefore = user?.balance || 0
       balanceAfter = balanceBefore + points
 
-      // 포인트 충전 (points와 balance 둘 다 업데이트)
+      // 포인트 충전 (balance 필드 업데이트)
       await c.env.DB.prepare(`
-        UPDATE users SET points = ?, balance = ? WHERE id = ?
+        UPDATE users SET balance = ?, points = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?
       `).bind(balanceAfter, balanceAfter, request.user_id).run()
       
       console.log('Points/Balance updated:', balanceBefore, '->', balanceAfter)
