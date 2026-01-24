@@ -9502,6 +9502,9 @@ app.post('/api/free-plan/approve', async (c) => {
     const userId = request.user_id
 
     console.log('[Free Plan Approve] Starting approval for user:', userId)
+    
+    // FOREIGN KEY 제약 일시적으로 비활성화
+    await c.env.DB.prepare(`PRAGMA foreign_keys = OFF`).run()
 
     // 사용자 정보 조회 (정수 ID인 경우만)
     let user: any = null
@@ -9626,6 +9629,9 @@ app.post('/api/free-plan/approve', async (c) => {
       WHERE id = ?
     `).bind(adminEmail, requestId).run()
 
+    // FOREIGN KEY 제약 다시 활성화
+    await c.env.DB.prepare(`PRAGMA foreign_keys = ON`).run()
+
     return c.json({
       success: true,
       message: '무료 플랜이 승인되고 활성화되었습니다.',
@@ -9634,6 +9640,12 @@ app.post('/api/free-plan/approve', async (c) => {
     })
   } catch (error) {
     console.error('[Free Plan Approve] Error:', error)
+    // 에러 발생 시에도 FOREIGN KEY 제약 다시 활성화
+    try {
+      await c.env.DB.prepare(`PRAGMA foreign_keys = ON`).run()
+    } catch (e) {
+      console.error('[Free Plan Approve] Failed to re-enable foreign keys:', e)
+    }
     return c.json({ 
       success: false, 
       error: '승인 처리 중 오류가 발생했습니다: ' + (error as Error).message 
