@@ -9538,7 +9538,7 @@ app.post('/api/free-plan/approve', async (c) => {
     console.log('[Free Plan Approve] Academy ID:', academyId)
 
     // academies 테이블에 academy 레코드 생성 (없으면)
-    // owner_id는 NULL로 설정 (FOREIGN KEY 제약 회피)
+    // owner_id는 임시값 1 사용 (FOREIGN KEY 제약 회피)
     const existingAcademy = await c.env.DB.prepare(`
       SELECT id FROM academies WHERE id = ?
     `).bind(academyId).first()
@@ -9547,7 +9547,7 @@ app.post('/api/free-plan/approve', async (c) => {
       try {
         await c.env.DB.prepare(`
           INSERT INTO academies (id, academy_name, owner_id, created_at)
-          VALUES (?, ?, NULL, CURRENT_TIMESTAMP)
+          VALUES (?, ?, 1, CURRENT_TIMESTAMP)
         `).bind(academyId, request.academy_name).run()
         console.log('[Free Plan Approve] Created academy:', academyId)
       } catch (e) {

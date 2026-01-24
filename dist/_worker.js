@@ -6622,7 +6622,7 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
       SELECT id FROM academies WHERE id = ?
     `).bind(n).first())try{await e.env.DB.prepare(`
           INSERT INTO academies (id, academy_name, owner_id, created_at)
-          VALUES (?, ?, NULL, CURRENT_TIMESTAMP)
+          VALUES (?, ?, 1, CURRENT_TIMESTAMP)
         `).bind(n,r.academy_name).run(),console.log("[Free Plan Approve] Created academy:",n)}catch(b){console.log("[Free Plan Approve] Academy creation error:",b)}const l=new Date,d=new Date;d.setFullYear(d.getFullYear()+10);const p=l.toISOString().split("T")[0],u=d.toISOString().split("T")[0];console.log("[Free Plan Approve] Date range:",p,"to",u);const g=(await e.env.DB.prepare(`
       INSERT INTO subscriptions (
         academy_id, plan_name, plan_price, student_limit, ai_report_limit, 
