@@ -4136,11 +4136,32 @@ app.post('/api/landing/create', async (c) => {
     const currentPages = usage?.landing_pages_created || 0
     const pageLimit = activeSubscription.landing_page_limit
     
+    // 한도 초과 체크 및 포인트 사용 로직
+    const LANDING_PAGE_POINT_COST = 7700
+    let usePoints = false
+    
     if (currentPages >= pageLimit) {
-      return c.json({ 
-        success: false, 
-        error: `⛔ 사용 한도가 모두 소진되었습니다.\n\n생성된 랜딩페이지: ${currentPages}개 / 한도: ${pageLimit}개\n\n더 많은 랜딩페이지를 생성하시려면 상위 플랜으로 업그레이드해주세요.` 
-      }, 403)
+      // 한도 초과: 포인트로 생성 시도
+      const userWithPoints = await c.env.DB.prepare(`
+        SELECT id, points FROM users WHERE id = ?
+      `).bind(user.id).first()
+      
+      const userPoints = userWithPoints?.points || 0
+      
+      if (userPoints < LANDING_PAGE_POINT_COST) {
+        // 포인트도 부족
+        return c.json({ 
+          success: false,
+          needsPoints: true,
+          requiredPoints: LANDING_PAGE_POINT_COST,
+          currentPoints: userPoints,
+          error: `⛔ 랜딩페이지 한도를 모두 사용하셨습니다.\n\n생성된 랜딩페이지: ${currentPages}개 / 한도: ${pageLimit}개\n현재 포인트: ${userPoints.toLocaleString()}P\n\n추가로 랜딩페이지를 제작하시겠어요?\n랜딩페이지 1개당 7,700포인트가 필요합니다.\n\n포인트 충전 페이지로 이동하시겠습니까?`
+        }, 403)
+      }
+      
+      // 포인트 충분: 포인트 사용
+      usePoints = true
+      console.log(`🪙 Using points for landing page: ${LANDING_PAGE_POINT_COST}P (Current: ${userPoints}P)`)
     }
     
     // 고유 slug 생성 (랜덤 8자리)
@@ -4170,17 +4191,30 @@ app.post('/api/landing/create', async (c) => {
       WHERE subscription_id = ?
     `).bind(activeSubscription.id).run()
     
-    console.log('✅ Landing page created and usage incremented:', currentPages + 1, '/', pageLimit)
+    // 🪙 포인트 차감 (한도 초과 시)
+    if (usePoints) {
+      await c.env.DB.prepare(`
+        UPDATE users 
+        SET points = points - ?
+        WHERE id = ?
+      `).bind(LANDING_PAGE_POINT_COST, user.id).run()
+      
+      console.log(`✅ Points deducted: ${LANDING_PAGE_POINT_COST}P from user ${user.id}`)
+    }
+    
+    console.log('✅ Landing page created and usage incremented:', currentPages + 1, '/', pageLimit, usePoints ? '(포인트 사용)' : '')
     
     return c.json({ 
       success: true, 
-      message: '랜딩페이지가 생성되었습니다.',
+      message: usePoints ? `랜딩페이지가 생성되었습니다. (${LANDING_PAGE_POINT_COST}P 차감)` : '랜딩페이지가 생성되었습니다.',
       slug,
       url: `/landing/${slug}`,
       usage: {
         current: currentPages + 1,
         limit: pageLimit
       },
+      usedPoints: usePoints,
+      pointsDeducted: usePoints ? LANDING_PAGE_POINT_COST : 0,
       qrCodeUrl,
       id: result.meta.last_row_id
     })
@@ -9102,7 +9136,7 @@ app.post('/api/usage/check-ai-report-limit', async (c) => {
   }
 })
 
-// 랜딩페이지 생성 전 한도 체크
+// 랜딩페이지 생성 전 한도 체크 (포인트 시스템 포함)
 app.post('/api/usage/check-landing-page-limit', async (c) => {
   try {
     const session = getCookie(c, 'session_id')
@@ -9112,6 +9146,13 @@ app.post('/api/usage/check-landing-page-limit', async (c) => {
 
     const sessionData = JSON.parse(session)
     const academyId = sessionData.id
+
+    // 사용자 포인트 조회
+    const user = await c.env.DB.prepare(`
+      SELECT id, points FROM users WHERE id = ?
+    `).bind(academyId).first()
+    
+    const userPoints = user?.points || 0
 
     const subscription = await c.env.DB.prepare(`
       SELECT * FROM subscriptions 
@@ -9132,14 +9173,27 @@ app.post('/api/usage/check-landing-page-limit', async (c) => {
     `).bind(academyId, subscription.id).first()
 
     const currentPages = usage?.landing_pages_created || 0
-    const canCreate = currentPages < subscription.landing_page_limit
+    const pageLimit = subscription.landing_page_limit
+    const withinLimit = currentPages < pageLimit
+    
+    // 포인트로 추가 생성 가능 여부 (랜딩페이지 1개당 7700포인트)
+    const LANDING_PAGE_POINT_COST = 7700
+    const canUsePoints = userPoints >= LANDING_PAGE_POINT_COST
 
     return c.json({
       success: true,
-      canCreate,
+      canCreate: withinLimit || canUsePoints,
+      withinLimit: withinLimit,
+      canUsePoints: canUsePoints,
       current: currentPages,
-      limit: subscription.landing_page_limit,
-      message: canCreate ? '랜딩페이지를 생성할 수 있습니다' : '랜딩페이지 한도에 도달했습니다'
+      limit: pageLimit,
+      userPoints: userPoints,
+      pointCost: LANDING_PAGE_POINT_COST,
+      message: withinLimit 
+        ? '랜딩페이지를 생성할 수 있습니다' 
+        : canUsePoints 
+          ? `한도 초과: 포인트로 생성 가능 (${LANDING_PAGE_POINT_COST}P 차감)`
+          : '랜딩페이지 한도 초과 및 포인트 부족'
     })
   } catch (error) {
     return c.json({ success: false, error: error.message }, 500)
@@ -19377,8 +19431,22 @@ app.get('/tools/landing-builder', (c) => {
                     document.getElementById('previewBtn').href = result.url;
                     document.getElementById('resultArea').classList.remove('hidden');
                     document.getElementById('resultArea').scrollIntoView({ behavior: 'smooth' });
+                    
+                    // 포인트 사용 시 알림
+                    if (result.usedPoints) {
+                        alert('✅ 랜딩페이지가 생성되었습니다!\\n\\n💰 ' + result.pointsDeducted.toLocaleString() + '포인트가 차감되었습니다.');
+                    }
                 } else {
-                    alert('오류: ' + result.error);
+                    // 포인트 부족으로 인한 에러 처리
+                    if (result.needsPoints) {
+                        const goToCharge = confirm(result.error);
+                        if (goToCharge) {
+                            // 대시보드의 포인트 관리 섹션으로 이동
+                            window.location.href = '/dashboard#points';
+                        }
+                    } else {
+                        alert('오류: ' + result.error);
+                    }
                 }
             } catch (err) {
                 console.error('랜딩페이지 생성 에러:', err);
