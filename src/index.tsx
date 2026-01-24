@@ -5313,8 +5313,6 @@ function generateAcademyIntroHTML(data: any): string {
         </div>
     </section>
 
-    ${generateQRCodeSection()}
-
     <!-- Footer -->
     <footer style="background: #1a202c; color: #a0aec0; padding: 3rem 1.5rem; text-align: center;">
         <div class="container">
@@ -6714,8 +6712,6 @@ function generateVacationCourseHTML(data: any): string {
                 📞 ${contact}
             </p>
         </div>
-
-        ${generateQRCodeSection()}
 
         <!-- Footer -->
         <footer>
