@@ -1883,6 +1883,12 @@ app.post('/api/session/logout', async (c) => {
 // 관리자: 실시간 접속자 조회 API
 app.get('/api/admin/active-sessions', async (c) => {
   try {
+    // DB 확인
+    if (!c.env?.DB) {
+      console.error('[Active Sessions] DB not available')
+      return c.json({ success: false, error: 'Database not available' }, 500)
+    }
+    
     // 관리자 확인
     const userHeaderBase64 = c.req.header('X-User-Data-Base64')
     if (!userHeaderBase64) {
@@ -1894,12 +1900,15 @@ app.get('/api/admin/active-sessions', async (c) => {
       const userDataStr = atob(userHeaderBase64)
       user = JSON.parse(userDataStr)
     } catch (e) {
+      console.error('[Active Sessions] User data decode error:', e)
       return c.json({ success: false, error: 'Invalid user data' }, 401)
     }
     
     if (user.role !== 'admin') {
       return c.json({ success: false, error: 'Admin only' }, 403)
     }
+    
+    console.log('[Active Sessions] Fetching active sessions...')
     
     // 최근 10분 이내 활동한 세션 조회 (실시간으로 간주)
     const activeSessions = await c.env.DB.prepare(`
@@ -1915,9 +1924,11 @@ app.get('/api/admin/active-sessions', async (c) => {
       ORDER BY s.last_activity DESC
     `).all()
     
+    console.log('[Active Sessions] Found sessions:', activeSessions.results?.length || 0)
+    
     // 회원/비회원 구분
-    const loggedInUsers = activeSessions.results.filter(s => s.is_logged_in === 1)
-    const guests = activeSessions.results.filter(s => s.is_logged_in === 0)
+    const loggedInUsers = (activeSessions.results || []).filter(s => s.is_logged_in === 1)
+    const guests = (activeSessions.results || []).filter(s => s.is_logged_in === 0)
     
     // 총 접속자 통계 (전체 기간)
     const totalStats = await c.env.DB.prepare(`
@@ -1933,15 +1944,19 @@ app.get('/api/admin/active-sessions', async (c) => {
       activeSessions: {
         loggedIn: loggedInUsers,
         guests: guests,
-        total: activeSessions.results.length,
+        total: (activeSessions.results || []).length,
         loggedInCount: loggedInUsers.length,
         guestsCount: guests.length
       },
-      totalStats: totalStats
+      totalStats: totalStats || { total_sessions: 0, total_logged_in: 0, total_guests: 0 }
     })
   } catch (err) {
-    console.error('Active sessions error:', err)
-    return c.json({ success: false, error: 'Failed to fetch active sessions' }, 500)
+    console.error('[Active Sessions] Error:', err)
+    return c.json({ 
+      success: false, 
+      error: 'Failed to fetch active sessions',
+      details: err.message || String(err)
+    }, 500)
   }
 })
 
@@ -4303,7 +4318,7 @@ app.post('/api/landing/create', async (c) => {
     }
     
     const activeSubscription = await c.env.DB.prepare(`
-      SELECT id, landing_page_limit 
+      SELECT id, landing_page_limit, plan_name, subscription_end_date, payment_method
       FROM subscriptions 
       WHERE academy_id = ?
         AND status = 'active' 
@@ -4317,6 +4332,70 @@ app.post('/api/landing/create', async (c) => {
         success: false, 
         error: '활성화된 구독이 없습니다. 플랜을 구매해주세요.' 
       }, 403)
+    }
+    
+    // 무료 플랜 자동 갱신 체크
+    if (activeSubscription.payment_method === 'free') {
+      const endDate = new Date(activeSubscription.subscription_end_date)
+      const now = new Date()
+      
+      // 구독이 만료되었으면 자동으로 다음 달 구독 생성
+      if (endDate <= now) {
+        console.log('🔄 [Free Plan] Auto-renewing expired free subscription')
+        
+        const newStartDate = new Date()
+        const newEndDate = new Date()
+        newEndDate.setMonth(newEndDate.getMonth() + 1)
+        newEndDate.setDate(1)
+        newEndDate.setHours(0, 0, 0, 0)
+        
+        // 이전 구독 비활성화
+        await c.env.DB.prepare(`
+          UPDATE subscriptions SET status = 'expired' WHERE id = ?
+        `).bind(activeSubscription.id).run()
+        
+        // 새 구독 생성
+        const newSubResult = await c.env.DB.prepare(`
+          INSERT INTO subscriptions (
+            academy_id, plan_name, plan_price, student_limit, ai_report_limit, 
+            landing_page_limit, teacher_limit, subscription_start_date, 
+            subscription_end_date, status, payment_method, created_at, updated_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', 'free', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+        `).bind(
+          academyIdToUse,
+          '무료 플랜',
+          0, 50, 0, 1, 0,
+          newStartDate.toISOString().split('T')[0],
+          newEndDate.toISOString().split('T')[0]
+        ).run()
+        
+        const newSubId = newSubResult.meta.last_row_id
+        
+        // usage_tracking 생성
+        await c.env.DB.prepare(`
+          INSERT INTO usage_tracking (
+            academy_id, subscription_id, current_students, ai_reports_used_this_month,
+            landing_pages_created, current_teachers, sms_sent_this_month,
+            last_ai_report_reset_date, last_sms_reset_date, created_at, updated_at
+          ) VALUES (?, ?, 0, 0, 0, 0, 0, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+        `).bind(
+          academyIdToUse,
+          newSubId,
+          newStartDate.toISOString().split('T')[0],
+          newStartDate.toISOString().split('T')[0]
+        ).run()
+        
+        console.log('✅ [Free Plan] Created new monthly subscription:', newSubId)
+        
+        // 새로운 구독으로 교체
+        const renewedSub = await c.env.DB.prepare(`
+          SELECT id, landing_page_limit 
+          FROM subscriptions 
+          WHERE id = ?
+        `).bind(newSubId).first()
+        
+        Object.assign(activeSubscription, renewedSub)
+      }
     }
     
     const usage = await c.env.DB.prepare(`
@@ -9952,7 +10031,17 @@ app.post('/api/free-plan/approve', async (c) => {
     const endDateStr = endDate.toISOString().split('T')[0]
     console.log('[Free Plan Approve] Date range:', startDateStr, 'to', endDateStr)
 
-    // 구독 생성 (무료 플랜)
+    // 구독 생성 (무료 플랜 - 매달 1개 랜딩페이지)
+    // 매달 1일에 자동 갱신되도록 1개월 기간 설정
+    const monthlyStartDate = new Date()
+    const monthlyEndDate = new Date()
+    monthlyEndDate.setMonth(monthlyEndDate.getMonth() + 1)
+    monthlyEndDate.setDate(1) // 다음 달 1일
+    monthlyEndDate.setHours(0, 0, 0, 0)
+    
+    const monthlyStartStr = monthlyStartDate.toISOString().split('T')[0]
+    const monthlyEndStr = monthlyEndDate.toISOString().split('T')[0]
+    
     const subscriptionResult = await c.env.DB.prepare(`
       INSERT INTO subscriptions (
         academy_id, plan_name, plan_price, student_limit, ai_report_limit, 
@@ -9965,10 +10054,10 @@ app.post('/api/free-plan/approve', async (c) => {
       0,
       50,  // 학생 50명
       0,   // AI 리포트 없음
-      0,   // 랜딩페이지 없음
+      1,   // 랜딩페이지 매달 1개
       0,   // 선생님 없음
-      startDateStr,
-      endDateStr
+      monthlyStartStr,
+      monthlyEndStr
     ).run()
 
     const subscriptionId = subscriptionResult.meta.last_row_id
