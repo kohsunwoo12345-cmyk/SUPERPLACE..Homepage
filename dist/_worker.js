@@ -15981,7 +15981,7 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
             const slug = qrBtn.dataset.slug;
             
             if (!slug) {
-                alert('QR 코드를 생성할 랜딩페이지 정보가 없습니다.');
+                console.error('QR 코드 정보가 없습니다.');
                 return;
             }
             
@@ -16007,7 +16007,7 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
                             link.href = URL.createObjectURL(blob);
                             link.download = 'QR_' + result.title.replace(/[^a-zA-Z0-9가-힣]/g, '_') + '.png';
                             link.click();
-                            alert('✅ QR 코드가 다운로드되었습니다!\\n\\n랜딩페이지: ' + result.title + '\\nURL: ' + result.landingUrl);
+                            console.log('✅ QR 코드가 다운로드되었습니다!');
                         });
                     };
                     
@@ -16507,28 +16507,21 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
                             link.href = URL.createObjectURL(blob);
                             link.download = 'QR_' + result.title.replace(/[^a-zA-Z0-9가-힣]/g, '_') + '.png';
                             link.click();
-                            alert('QR 코드가 다운로드되었습니다!
-
-랜딩페이지: ' + result.title + '
-URL: ' + result.landingUrl);
+                            console.log('QR 코드가 다운로드되었습니다!');
                         });
                     };
                     
                     qrImage.onerror = function() {
                         // Fallback: 새 창에서 열기
                         window.open(result.qrCodeUrl, '_blank');
-                        alert('QR 코드가 새 탭에서 열렸습니다.
-오른쪽 클릭하여 이미지를 저장하세요.
-
-랜딩페이지: ' + result.title + '
-URL: ' + result.landingUrl);
+                        console.log('QR 코드가 새 탭에서 열렸습니다.');
                     };
                 } else {
-                    alert('QR 코드 생성 실패: ' + result.error);
+                    console.error('QR 코드 생성 실패:', result.error);
                 }
             } catch (err) {
                 console.error('QR generation error:', err);
-                alert('QR 코드 생성 중 오류가 발생했습니다.');
+                console.error('QR 코드 생성 오류:', err);
             }
         }
 

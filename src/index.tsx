@@ -20826,7 +20826,7 @@ app.get('/tools/landing-builder', (c) => {
             const slug = qrBtn.dataset.slug;
             
             if (!slug) {
-                alert('QR 코드를 생성할 랜딩페이지 정보가 없습니다.');
+                console.error('QR 코드 정보가 없습니다.');
                 return;
             }
             
@@ -20852,7 +20852,7 @@ app.get('/tools/landing-builder', (c) => {
                             link.href = URL.createObjectURL(blob);
                             link.download = 'QR_' + result.title.replace(/[^a-zA-Z0-9가-힣]/g, '_') + '.png';
                             link.click();
-                            alert('✅ QR 코드가 다운로드되었습니다!\\n\\n랜딩페이지: ' + result.title + '\\nURL: ' + result.landingUrl);
+                            console.log('✅ QR 코드가 다운로드되었습니다!');
                         });
                     };
                     
@@ -21365,21 +21365,21 @@ app.get('/tools/landing-manager', (c) => {
                             link.href = URL.createObjectURL(blob);
                             link.download = 'QR_' + result.title.replace(/[^a-zA-Z0-9\uAC00-\uD7A3]/g, '_') + '.png';
                             link.click();
-                            alert('QR \uCF54\uB4DC\uAC00 \uB2E4\uC6B4\uB85C\uB4DC\uB418\uC5C8\uC2B5\uB2C8\uB2E4!\n\n\uB79C\uB529\uD398\uC774\uC9C0: ' + result.title + '\nURL: ' + result.landingUrl);
+                            console.log('QR \uCF54\uB4DC\uAC00 \uB2E4\uC6B4\uB85C\uB4DC\uB418\uC5C8\uC2B5\uB2C8\uB2E4!');
                         });
                     };
                     
                     qrImage.onerror = function() {
                         // Fallback: 새 창에서 열기
                         window.open(result.qrCodeUrl, '_blank');
-                        alert('QR \uCF54\uB4DC\uAC00 \uC0C8 \uD0ED\uC5D0\uC11C \uC5F4\uB838\uC2B5\uB2C8\uB2E4.\n\uC624\uB978\uCABD \uD074\uB9AD\uD558\uC5EC \uC774\uBBF8\uC9C0\uB97C \uC800\uC7A5\uD558\uC138\uC694.\n\n\uB79C\uB529\uD398\uC774\uC9C0: ' + result.title + '\nURL: ' + result.landingUrl);
+                        console.log('QR \uCF54\uB4DC\uAC00 \uC0C8 \uD0ED\uC5D0\uC11C \uC5F4\uB838\uC2B5\uB2C8\uB2E4.');
                     };
                 } else {
-                    alert('QR \uCF54\uB4DC \uC0DD\uC131 \uC2E4\uD328: ' + result.error);
+                    console.error('QR \uCF54\uB4DC \uC0DD\uC131 \uC2E4\uD328:', result.error);
                 }
             } catch (err) {
                 console.error('QR generation error:', err);
-                alert('QR \uCF54\uB4DC \uC0DD\uC131 \uC911 \uC624\uB958\uAC00 \uBC1C\uC0DD\uD588\uC2B5\uB2C8\uB2E4.');
+                console.error('QR \uCF54\uB4DC \uC0DD\uC131 \uC624\uB958:', err);
             }
         }
 
