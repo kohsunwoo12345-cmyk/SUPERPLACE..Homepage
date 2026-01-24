@@ -8026,8 +8026,8 @@ app.get('/', (c) => {
                         <h4 class="font-bold text-gray-900 mb-4">회사</h4>
                         <ul class="space-y-3 text-sm">
                             <li><a href="/about" class="hover:text-purple-600 transition">회사 소개</a></li>
-                            <li><a href="#" class="hover:text-purple-600 transition">이용약관</a></li>
-                            <li><a href="#" class="hover:text-purple-600 transition">개인정보처리방침</a></li>
+                            <li><a href="/terms" class="hover:text-purple-600 transition">이용약관</a></li>
+                            <li><a href="/privacy" class="hover:text-purple-600 transition">개인정보처리방침</a></li>
                         </ul>
                     </div>
                     <div>
@@ -21262,8 +21262,8 @@ app.get('/about', (c) => {
                         <h4 class="font-bold text-gray-900 mb-4">회사</h4>
                         <ul class="space-y-3 text-sm">
                             <li><a href="/about" class="hover:text-purple-600 transition">회사 소개</a></li>
-                            <li><a href="#" class="hover:text-purple-600 transition">이용약관</a></li>
-                            <li><a href="#" class="hover:text-purple-600 transition">개인정보처리방침</a></li>
+                            <li><a href="/terms" class="hover:text-purple-600 transition">이용약관</a></li>
+                            <li><a href="/privacy" class="hover:text-purple-600 transition">개인정보처리방침</a></li>
                         </ul>
                     </div>
                     <div>
@@ -32724,6 +32724,396 @@ app.get('/admin/contacts', async (c) => {
                 }
             }
         </script>
+    </body>
+    </html>
+  `)
+})
+
+// 개인정보처리방침 페이지
+app.get('/privacy', (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>개인정보처리방침 - 우리는 슈퍼플레이스다</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <style>
+          @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
+          * {
+            font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+          }
+          .section-title {
+            color: #7c3aed;
+            font-weight: 700;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+          }
+          .subsection-title {
+            font-weight: 600;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+          }
+        </style>
+    </head>
+    <body class="bg-gray-50">
+        <!-- Navigation -->
+        <nav class="fixed w-full top-0 z-50 bg-white border-b border-gray-100 shadow-sm">
+            <div class="max-w-7xl mx-auto px-6 lg:px-8">
+                <div class="flex justify-between items-center h-20">
+                    <a href="/" class="flex items-center space-x-3">
+                        <img src="/static/images/logo.png" alt="SUPER PLACE" class="h-10" onerror="this.style.display='none'">
+                        <span class="text-xl font-bold text-gray-900">우리는 슈퍼플레이스다</span>
+                    </a>
+                    <a href="/" class="text-gray-700 hover:text-purple-600 font-medium transition">
+                        홈으로 돌아가기
+                    </a>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="pt-32 pb-20 px-6">
+            <div class="max-w-4xl mx-auto bg-white rounded-2xl shadow-lg p-8 md:p-12">
+                <h1 class="text-4xl font-bold text-gray-900 mb-4">개인정보처리방침</h1>
+                <p class="text-gray-600 mb-8">최종 수정일: 2026년 1월 23일</p>
+                
+                <div class="prose prose-lg max-w-none text-gray-700 leading-relaxed">
+                    <p class="mb-6">
+                        주식회사 우리는 슈퍼플레이스다(이하 "회사"라 합니다)는 이용자의 개인정보를 중요시하며, 
+                        「개인정보보호법」, 「정보통신망 이용촉진 및 정보보호 등에 관한 법률」 등 관련 법령을 준수하고 있습니다. 
+                        회사는 본 개인정보처리방침을 통하여 이용자가 제공하는 개인정보가 어떠한 용도와 방식으로 이용되고 있으며, 
+                        개인정보보호를 위해 어떠한 조치가 취해지고 있는지 알려드립니다.
+                    </p>
+
+                    <h2 class="section-title text-2xl">1. 개인정보의 수집 항목 및 수집 방법</h2>
+                    
+                    <h3 class="subsection-title text-xl">가. 수집하는 개인정보의 항목</h3>
+                    <p class="mb-4">회사는 회원가입, 원활한 고객상담, 서비스 제공(AI 리포트, 문자 발송 등)을 위해 아래와 같은 개인정보를 수집하고 있습니다.</p>
+                    <ul class="list-disc pl-8 mb-4 space-y-2">
+                        <li><strong>[필수항목]</strong> 아이디, 비밀번호, 성명, 휴대전화번호, 이메일 주소, 학원명, 학원 주소</li>
+                        <li><strong>[유료 결제 시]</strong> 카드사명, 카드번호(일부), 은행계좌 정보, 사업자등록번호</li>
+                        <li><strong>[서비스 이용 과정]</strong> 서비스 이용기록, 접속 로그, 쿠키, 접속 IP 정보, 결제 기록, 불량 이용 기록</li>
+                        <li><strong>[AI 서비스 이용 시]</strong> 회원이 입력하는 학습 데이터(학생 이름(식별 불가 처리 권장), 성적, 평가 내용 등)</li>
+                    </ul>
+
+                    <h3 class="subsection-title text-xl">나. 수집방법</h3>
+                    <p class="mb-6">홈페이지(회원가입, 게시판, 결제창), 서면 양식, 전화/팩스, 생성형 AI 서비스 이용 과정</p>
+
+                    <h2 class="section-title text-2xl">2. 개인정보의 이용목적</h2>
+                    <p class="mb-4">회사는 수집한 개인정보를 다음의 목적을 위해 활용합니다.</p>
+                    <ul class="list-disc pl-8 mb-6 space-y-2">
+                        <li><strong>서비스 제공 및 계약 이행:</strong> AI 기반 콘텐츠(리포트, 랜딩페이지) 생성, 문자 메시지(SMS/LMS) 발송, 네이버 검색량 조회, 요금 결제 및 정산</li>
+                        <li><strong>회원 관리:</strong> 회원제 서비스 이용에 따른 본인확인, 개인 식별, 불량 회원의 부정 이용 방지, 가입 의사 확인, 민원 처리, 고지사항 전달</li>
+                        <li><strong>마케팅 및 광고 (동의 시):</strong> 신규 서비스(Gems) 개발 및 맞춤 서비스 제공, 이벤트 및 광고성 정보 제공</li>
+                    </ul>
+
+                    <h2 class="section-title text-2xl">3. 개인정보의 제3자 제공</h2>
+                    <p class="mb-4">회사는 이용자의 개인정보를 원칙적으로 외부에 제공하지 않습니다. 다만, 아래의 경우에는 예외로 합니다.</p>
+                    <ul class="list-disc pl-8 mb-6 space-y-2">
+                        <li>이용자들이 사전에 동의한 경우</li>
+                        <li>법령의 규정에 의거하거나, 수사 목적으로 법령에 정해진 절차와 방법에 따라 수사기관의 요구가 있는 경우</li>
+                    </ul>
+
+                    <h2 class="section-title text-2xl">4. 개인정보 처리의 위탁 ⭐</h2>
+                    <p class="mb-4">회사는 서비스 향상 및 원활한 계약 이행을 위해 아래와 같이 개인정보 처리를 위탁하고 있습니다.</p>
+                    <div class="overflow-x-auto mb-6">
+                        <table class="min-w-full border-collapse border border-gray-300">
+                            <thead class="bg-gray-100">
+                                <tr>
+                                    <th class="border border-gray-300 px-4 py-3 text-left font-semibold">수탁업체</th>
+                                    <th class="border border-gray-300 px-4 py-3 text-left font-semibold">위탁 업무 내용</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="border border-gray-300 px-4 py-3">OpenAI, L.L.C., Google AI (미국)</td>
+                                    <td class="border border-gray-300 px-4 py-3">AI 기반 리포트 및 랜딩페이지 생성을 위한 데이터 처리</td>
+                                </tr>
+                                <tr class="bg-gray-50">
+                                    <td class="border border-gray-300 px-4 py-3">(주)길컴퍼니 또는 알리고</td>
+                                    <td class="border border-gray-300 px-4 py-3">문자 메시지(SMS/LMS) 발송 시스템 운영</td>
+                                </tr>
+                                <tr>
+                                    <td class="border border-gray-300 px-4 py-3">Cloudflare / Vercel</td>
+                                    <td class="border border-gray-300 px-4 py-3">서비스 데이터 호스팅 및 보안 서버 운영</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h2 class="section-title text-2xl">5. 개인정보의 보유 및 이용기간</h2>
+                    <p class="mb-4">
+                        회사는 원칙적으로 개인정보 수집 및 이용목적이 달성된 후에는 해당 정보를 지체 없이 파기합니다. 
+                        단, 관계법령의 규정에 의하여 보존할 필요가 있는 경우 아래와 같이 일정 기간 보관합니다.
+                    </p>
+                    <ul class="list-disc pl-8 mb-6 space-y-2">
+                        <li>계약 또는 청약철회 등에 관한 기록: 5년 (전자상거래법)</li>
+                        <li>대금결제 및 재화 등의 공급에 관한 기록: 5년 (전자상거래법)</li>
+                        <li>소비자의 불만 또는 분쟁처리에 관한 기록: 3년 (전자상거래법)</li>
+                        <li>웹사이트 방문 기록(로그): 3개월 (통신비밀보호법)</li>
+                    </ul>
+
+                    <h2 class="section-title text-2xl">6. 개인정보의 파기절차 및 방법</h2>
+                    
+                    <h3 class="subsection-title text-xl">가. 파기절차</h3>
+                    <p class="mb-4">
+                        이용자의 정보는 목적이 달성된 후 별도의 DB로 옮겨져(종이의 경우 별도의 서류함) 
+                        내부 방침 및 기타 관련 법령에 의한 정보보호 사유에 따라 일정 기간 저장된 후 파기됩니다.
+                    </p>
+
+                    <h3 class="subsection-title text-xl">나. 파기방법</h3>
+                    <p class="mb-6">
+                        전자적 파일 형태로 저장된 개인정보는 기록을 재생할 수 없는 기술적 방법을 사용하여 삭제하며, 
+                        종이 문서는 분쇄하거나 소각하여 파기합니다.
+                    </p>
+
+                    <h2 class="section-title text-2xl">7. 이용자 및 법정대리인의 권리와 그 행사방법</h2>
+                    <p class="mb-6">
+                        이용자는 언제든지 등록되어 있는 자신의 개인정보를 조회하거나 수정할 수 있으며 가입 해지를 요청할 수 있습니다. 
+                        개인정보 조회/수정을 위해서는 '개인정보변경'(또는 '회원정보수정')을, 
+                        가입 해지를 위해서는 '회원탈퇴'를 클릭하여 본인 확인 절차를 거친 후 직접 열람, 정정 또는 탈퇴가 가능합니다.
+                    </p>
+
+                    <h2 class="section-title text-2xl">8. 개인정보 자동 수집 장치의 설치/운영 및 거부에 관한 사항</h2>
+                    <p class="mb-6">
+                        회사는 이용자에게 특화된 맞춤서비스를 제공하기 위해서 이용자들의 정보를 수시로 저장하고 찾아내는 '쿠키(cookie)' 등을 운용합니다. 
+                        이용자는 쿠키 설치에 대한 선택권을 가지고 있으며, 웹브라우저 설정을 통해 쿠키 저장을 거부할 수 있습니다. 
+                        단, 쿠키 저장을 거부할 경우 로그인이 필요한 일부 서비스 이용에 어려움이 있을 수 있습니다.
+                    </p>
+
+                    <h2 class="section-title text-2xl">9. 개인정보의 기술적/관리적 보호 대책</h2>
+                    <p class="mb-4">
+                        회사는 이용자의 개인정보를 처리함에 있어 분실, 도난, 유출, 변조 또는 훼손되지 않도록 다음과 같은 대책을 강구하고 있습니다.
+                    </p>
+                    <ul class="list-disc pl-8 mb-6 space-y-2">
+                        <li><strong>암호화:</strong> 비밀번호와 중요 데이터는 암호화되어 저장 및 관리됩니다.</li>
+                        <li><strong>해킹 대비:</strong> 해킹이나 컴퓨터 바이러스 등에 의한 피해를 방지하기 위해 보안 프로그램을 설치하고 주기적인 갱신·점검을 하며, 외부로부터 접근이 통제된 구역에 시스템을 설치하고 기술적/물리적으로 감시 및 차단하고 있습니다.</li>
+                        <li><strong>취급 직원의 최소화:</strong> 개인정보를 처리하는 직원을 최소한으로 지정하고 담당자에 대한 수시 교육을 통해 본 정책의 준수를 강조하고 있습니다.</li>
+                    </ul>
+
+                    <h2 class="section-title text-2xl">10. 개인정보보호책임자 및 연락처</h2>
+                    <p class="mb-4">회사는 회원의 개인정보를 보호하고 개인정보와 관련한 불만을 처리하기 위하여 아래와 같이 관련 부서 및 개인정보보호책임자를 지정하고 있습니다.</p>
+                    <div class="bg-purple-50 border-l-4 border-purple-600 p-6 mb-6">
+                        <p class="font-semibold mb-2">개인정보보호책임자(CPO): 고희준 (대표)</p>
+                        <p class="mb-1">연락처: 010-8739-9697</p>
+                        <p>이메일: wangholy1@naver.com</p>
+                    </div>
+                    <p class="mb-6">기타 개인정보침해에 대한 신고나 상담이 필요하신 경우에는 아래 기관에 문의하시기 바랍니다.</p>
+                    <ul class="list-disc pl-8 mb-6 space-y-2">
+                        <li>개인정보침해신고센터 (privacy.kisa.or.kr / 118)</li>
+                        <li>대검찰청 사이버수사과 (www.spo.go.kr / 1301)</li>
+                        <li>경찰청 사이버수사국 (ecrm.police.go.kr / 182)</li>
+                    </ul>
+
+                    <h2 class="section-title text-2xl">11. 고지의 의무</h2>
+                    <p class="mb-6">
+                        이 개인정보처리방침은 2026년 1월 23일부터 적용됩니다. 
+                        내용의 추가, 삭제 및 수정이 있을 시에는 개정 최소 7일 전부터 홈페이지의 '공지사항'을 통해 고지할 것입니다.
+                    </p>
+                </div>
+
+                <div class="mt-12 pt-8 border-t border-gray-200 text-center">
+                    <a href="/" class="inline-block px-8 py-3 bg-purple-600 text-white font-semibold rounded-lg hover:bg-purple-700 transition">
+                        홈으로 돌아가기
+                    </a>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-gray-900 text-gray-400 py-8 px-6">
+            <div class="max-w-7xl mx-auto text-center">
+                <p class="text-sm">&copy; 2024 주식회사 우리는 슈퍼플레이스다. All rights reserved.</p>
+            </div>
+        </footer>
+    </body>
+    </html>
+  `)
+})
+
+// 이용약관 페이지
+app.get('/terms', (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>서비스 이용약관 - 우리는 슈퍼플레이스다</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <style>
+          @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
+          * {
+            font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+          }
+          .section-title {
+            color: #7c3aed;
+            font-weight: 700;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+          }
+          .subsection-title {
+            font-weight: 600;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+          }
+          .chapter-title {
+            color: #fb923c;
+            font-weight: 700;
+            margin-top: 2.5rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid #fb923c;
+          }
+        </style>
+    </head>
+    <body class="bg-gray-50">
+        <!-- Navigation -->
+        <nav class="fixed w-full top-0 z-50 bg-white border-b border-gray-100 shadow-sm">
+            <div class="max-w-7xl mx-auto px-6 lg:px-8">
+                <div class="flex justify-between items-center h-20">
+                    <a href="/" class="flex items-center space-x-3">
+                        <img src="/static/images/logo.png" alt="SUPER PLACE" class="h-10" onerror="this.style.display='none'">
+                        <span class="text-xl font-bold text-gray-900">우리는 슈퍼플레이스다</span>
+                    </a>
+                    <a href="/" class="text-gray-700 hover:text-purple-600 font-medium transition">
+                        홈으로 돌아가기
+                    </a>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="pt-32 pb-20 px-6">
+            <div class="max-w-4xl mx-auto bg-white rounded-2xl shadow-lg p-8 md:p-12">
+                <h1 class="text-4xl font-bold text-gray-900 mb-4">서비스 이용약관</h1>
+                <p class="text-gray-600 mb-8">시행일: 2026년 1월 23일</p>
+                
+                <div class="prose prose-lg max-w-none text-gray-700 leading-relaxed">
+                    <h2 class="chapter-title text-3xl">제 1 장 총 칙</h2>
+
+                    <h3 class="section-title text-xl">제 1 조 (목적)</h3>
+                    <p class="mb-6">
+                        이 약관은 주식회사 우리는 슈퍼플레이스다(이하 "회사"라 합니다)가 제공하는 학원 관리 플랫폼, 
+                        AI 마케팅 자동화 솔루션, 문자 발송 서비스 및 기타 제반 서비스(이하 "서비스"라 합니다)의 이용과 관련하여 
+                        회사와 회원 간의 권리, 의무 및 책임사항, 기타 필요한 사항을 규정함을 목적으로 합니다.
+                    </p>
+
+                    <h3 class="section-title text-xl">제 2 조 (용어의 정의)</h3>
+                    <p class="mb-4">이 약관에서 사용하는 용어의 정의는 다음과 같습니다.</p>
+                    <ul class="list-decimal pl-8 mb-6 space-y-3">
+                        <li>"서비스"라 함은 구현되는 단말기(PC, 휴대형 단말기 등)와 상관없이 회원이 이용할 수 있는 '슈퍼플레이스 아카데미' 및 관련 제반 서비스를 의미합니다.</li>
+                        <li>"회원"이라 함은 회사의 서비스에 접속하여 이 약관에 따라 회사와 이용계약을 체결하고 회사가 제공하는 서비스를 이용하는 고객(학원장 및 학원 관계자)을 말합니다.</li>
+                        <li>"아이디(ID)"라 함은 회원의 식별과 서비스 이용을 위하여 회원이 정하고 회사가 승인하는 문자와 숫자의 조합을 의미합니다.</li>
+                        <li>"비밀번호"라 함은 회원이 부여받은 ID와 일치된 회원임을 확인하고 비밀보호를 위해 회원 자신이 정한 문자 또는 숫자의 조합을 의미합니다.</li>
+                        <li>"포인트"라 함은 서비스 내에서 문자 메시지(SMS/LMS) 발송 등을 이용하기 위해 회원이 유상으로 충전하거나 회사가 무상으로 지급하는 가상의 결제 수단을 의미합니다.</li>
+                        <li>"AI 결과물"이라 함은 회원이 입력한 데이터를 기반으로 인공지능(OpenAI 등) 알고리즘을 통해 생성된 리포트, 랜딩페이지, 텍스트 등을 의미합니다.</li>
+                    </ul>
+
+                    <h3 class="section-title text-xl">제 3 조 (약관의 효력 및 변경)</h3>
+                    <p class="mb-2">① 이 약관은 서비스 화면에 게시하거나 기타의 방법으로 회원에게 공지함으로써 효력이 발생합니다.</p>
+                    <p class="mb-2">② 회사는 필요하다고 인정되는 경우 「약관의 규제에 관한 법률」 등 관련 법령을 위배하지 않는 범위에서 이 약관을 변경할 수 있습니다.</p>
+                    <p class="mb-2">③ 회사가 약관을 변경할 경우에는 적용일자 및 변경사유를 명시하여 현행약관과 함께 서비스 초기화면에 그 적용일자 7일 전부터 공지합니다. 단, 회원에게 불리한 변경의 경우에는 30일 전부터 공지하고, 이메일이나 문자 등으로 개별 통지합니다.</p>
+                    <p class="mb-6">④ 회원이 변경된 약관에 동의하지 않을 경우 이용계약을 해지(회원탈퇴)할 수 있으며, 변경된 약관의 효력 발생일 이후에도 서비스를 계속 이용하는 경우 약관의 변경사항에 동의한 것으로 간주합니다.</p>
+
+                    <h2 class="chapter-title text-3xl">제 2 장 이용계약의 체결</h2>
+
+                    <h3 class="section-title text-xl">제 4 조 (이용계약의 성립)</h3>
+                    <p class="mb-2">① 이용계약은 회원이 되고자 하는 자(이하 "가입신청자")가 약관의 내용에 대하여 동의를 한 다음 회원가입 신청을 하고 회사가 이러한 신청에 대하여 승낙함으로써 체결됩니다.</p>
+                    <p class="mb-6">② 가입신청자는 만 14세 이상이어야 하며, 만 14세 미만 아동의 회원가입은 제한됩니다.</p>
+
+                    <h3 class="section-title text-xl">제 5 조 (이용신청의 승낙과 제한)</h3>
+                    <p class="mb-4">① 회사는 가입신청자의 신청에 대하여 서비스 이용을 승낙함을 원칙으로 합니다. 다만, 회사는 다음 각 호에 해당하는 신청에 대하여는 승낙을 하지 않거나 사후에 이용계약을 해지할 수 있습니다.</p>
+                    <ul class="list-decimal pl-8 mb-6 space-y-2">
+                        <li>가입신청자가 이 약관에 의하여 이전에 회원자격을 상실한 적이 있는 경우</li>
+                        <li>실명이 아니거나 타인의 명의를 이용한 경우</li>
+                        <li>허위의 정보를 기재하거나, 회사가 제시하는 내용을 기재하지 않은 경우</li>
+                        <li>부정한 용도(스팸 문자 발송, 해킹 등)로 서비스를 이용하고자 하는 경우</li>
+                        <li>회원의 귀책사유로 인하여 승인이 불가능하거나 기타 규정한 제반 사항을 위반하며 신청하는 경우</li>
+                    </ul>
+
+                    <h2 class="chapter-title text-3xl">제 3 장 계약 당사자의 의무</h2>
+
+                    <h3 class="section-title text-xl">제 6 조 (회사의 의무)</h3>
+                    <p class="mb-2">① 회사는 관련 법령과 이 약관이 금지하거나 미풍양속에 반하는 행위를 하지 않으며, 계속적이고 안정적으로 서비스를 제공하기 위하여 최선을 다하여 노력합니다.</p>
+                    <p class="mb-2">② 회사는 회원이 안전하게 서비스를 이용할 수 있도록 개인정보 보호를 위해 보안 시스템을 갖추어야 하며 개인정보처리방침을 공시하고 준수합니다.</p>
+                    <p class="mb-6">③ 회사는 AI 서비스 및 외부 API(네이버 등)의 기술적 한계나 오류가 발생할 경우, 이를 시정하거나 회원에게 고지하기 위해 노력합니다.</p>
+
+                    <h3 class="section-title text-xl">제 7 조 (회원의 의무)</h3>
+                    <p class="mb-4">① 회원은 다음 행위를 하여서는 안 됩니다.</p>
+                    <ul class="list-decimal pl-8 mb-6 space-y-2">
+                        <li>신청 또는 변경 시 허위내용의 등록</li>
+                        <li>타인의 정보 도용</li>
+                        <li>회사가 게시한 정보의 변경 또는 서비스 내 데이터(템플릿 등)의 무단 크롤링 및 복제</li>
+                        <li>회사의 동의 없이 영리 목적으로 서비스를 사용하는 행위 (단, 학원 운영 목적의 정상적 이용은 제외)</li>
+                        <li>정보통신망법을 위반하여 수신자의 동의 없는 광고성 정보(스팸 문자)를 전송하는 행위</li>
+                        <li>기타 불법적이거나 부당한 행위</li>
+                    </ul>
+
+                    <h2 class="chapter-title text-3xl">제 4 장 서비스의 이용</h2>
+
+                    <h3 class="section-title text-xl">제 8 조 (서비스의 제공 및 변경)</h3>
+                    <p class="mb-2">① 서비스는 연중무휴, 1일 24시간 제공함을 원칙으로 합니다.</p>
+                    <p class="mb-6">② 회사는 AI 알고리즘 업데이트, 외부 제휴사(OpenAI, 네이버, 통신사)의 정책 변경, 기술적 필요에 따라 서비스의 내용을 변경하거나 중단할 수 있습니다. 이 경우 회사는 사전에 공지하며, 회사의 고의 또는 중과실이 없는 한 이로 인한 회원의 손해에 대해 책임지지 않습니다.</p>
+
+                    <h3 class="section-title text-xl">제 9 조 (AI 서비스 이용 및 면책 특약) [중요]</h3>
+                    <p class="mb-2">① 회사가 제공하는 AI 기반 서비스(랜딩페이지 생성, 학생 리포트 등)는 확률적 생성 모델을 기반으로 하므로, 결과물의 완전한 정확성, 적법성, 무결성을 보장하지 않습니다.</p>
+                    <p class="mb-2">② 회원은 AI가 생성한 결과물을 학부모 상담, 마케팅 등에 활용하기 전에 반드시 내용을 검수하여야 하며, 검수하지 않고 활용하여 발생한 문제(학습 정보 오류, 저작권 침해 등)에 대한 책임은 회원 본인에게 있습니다.</p>
+                    <p class="mb-6">③ 회사는 AI 서비스 이용 결과로 인한 회원의 영업 손실, 기대 수익 상실 등에 대하여 배상 책임을 지지 않습니다.</p>
+
+                    <h3 class="section-title text-xl">제 10 조 (문자 발송 서비스 이용 및 스팸 방지) [중요]</h3>
+                    <p class="mb-2">① 회원은 문자 메시지 발송 시 「정보통신망 이용촉진 및 정보보호 등에 관한 법률」 및 KISA의 스팸방지 가이드라인을 준수하여야 합니다.</p>
+                    <p class="mb-2">② 수신자의 사전 동의 없는 광고성 정보 전송으로 인해 발생하는 민·형사상 책임 및 과태료는 전적으로 회원이 부담하며, 회사는 이에 대해 면책됩니다.</p>
+                    <p class="mb-6">③ 회사는 회원이 불법 스팸을 전송하는 것으로 의심되거나 관계 기관의 요청이 있는 경우, 즉시 서비스 이용을 정지하고 잔여 포인트의 환불을 거부할 수 있습니다.</p>
+
+                    <h3 class="section-title text-xl">제 11 조 (권리의 귀속 및 저작권)</h3>
+                    <p class="mb-2">① 서비스에 대한 저작권 및 지적재산권은 회사에 귀속됩니다.</p>
+                    <p class="mb-2">② 회원이 서비스를 이용하여 생성한 콘텐츠(랜딩페이지 등)의 저작권은 회원에게 있으나, 회사는 서비스 품질 개선, AI 모델 학습, 통계 작성 등을 위하여 회원의 데이터를 개인을 식별할 수 없는 익명화된 형태로 가공하여 영구적으로 사용(복제, 수정, 전송 등)할 수 있습니다.</p>
+                    <p class="mb-6">③ 회원은 회사가 제공하는 템플릿, 디자인 소스 등을 회사의 사전 허락 없이 외부로 유출하거나 재판매할 수 없습니다.</p>
+
+                    <h2 class="chapter-title text-3xl">제 5 장 이용요금 및 환불</h2>
+
+                    <h3 class="section-title text-xl">제 12 조 (유료 서비스 및 환불 규정)</h3>
+                    <p class="mb-2">① 회사가 제공하는 유료 서비스는 '정기 구독형'과 '포인트 충전형'으로 구분됩니다.</p>
+                    <p class="mb-2">② 디지털 콘텐츠(AI 리포트, 랜딩페이지 템플릿 등)의 경우: 「전자상거래 등에서의 소비자보호에 관한 법률」에 따라 콘텐츠를 열람하거나 사용한(AI 생성 등) 경우 청약철회(환불)가 제한됩니다.</p>
+                    <p class="mb-2">③ 문자 발송 포인트의 경우: 회원은 충전 후 사용하지 않은 잔여 포인트에 대해 환불을 요청할 수 있습니다. 단, 이 경우 결제 수수료 및 위약금(잔액의 10% 또는 최소 1,000원)을 공제한 금액을 환불합니다.</p>
+                    <p class="mb-6">④ 회원이 관계 법령 및 약관을 위반하여 이용이 정지된 경우, 잔여 이용기간 및 포인트에 대한 환불은 이루어지지 않습니다.</p>
+
+                    <h2 class="chapter-title text-3xl">제 6 장 손해배상 및 기타사항</h2>
+
+                    <h3 class="section-title text-xl">제 13 조 (손해배상)</h3>
+                    <p class="mb-2">① 회사가 고의 또는 중과실로 회원에게 손해를 끼친 경우, 그 손해를 배상할 책임이 있습니다.</p>
+                    <p class="mb-6">② 회원은 이 약관을 위반하거나 불법행위로 인하여 회사에 손해를 끼친 경우, 그 손해를 배상하여야 합니다. (스팸 발송으로 인한 통신사 과태료 구상권 청구 등 포함)</p>
+
+                    <h3 class="section-title text-xl">제 14 조 (면책조항)</h3>
+                    <p class="mb-2">① 회사는 천재지변, 디도스(DDoS) 공격, IDC 장애, 기간통신사업자의 회선 장애 등 불가항력으로 인하여 서비스를 제공할 수 없는 경우에는 책임이 면제됩니다.</p>
+                    <p class="mb-2">② 회사는 회원이 입력한 정보(학생 성적, 개인정보 등)의 부정확성으로 인해 발생하는 손해에 대하여 책임을 지지 않습니다.</p>
+                    <p class="mb-6">③ 회사는 무료로 제공되는 서비스 이용과 관련하여 관련 법령에 특별한 규정이 없는 한 책임을 지지 않습니다.</p>
+
+                    <h3 class="section-title text-xl">제 15 조 (재판권 및 준거법)</h3>
+                    <p class="mb-2">① 서비스 이용과 관련하여 회사와 회원 간에 발생한 분쟁에 대해서는 회사의 본점 소재지를 관할하는 법원을 관할법원으로 합니다.</p>
+                    <p class="mb-6">② 이 약관의 해석 및 분쟁의 해결에는 대한민국 법률을 적용합니다.</p>
+
+                    <h2 class="section-title text-2xl">부 칙</h2>
+                    <p class="mb-6">이 약관은 2026년 1월 23일부터 시행합니다.</p>
+                </div>
+
+                <div class="mt-12 pt-8 border-t border-gray-200 text-center">
+                    <a href="/" class="inline-block px-8 py-3 bg-purple-600 text-white font-semibold rounded-lg hover:bg-purple-700 transition">
+                        홈으로 돌아가기
+                    </a>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-gray-900 text-gray-400 py-8 px-6">
+            <div class="max-w-7xl mx-auto text-center">
+                <p class="text-sm">&copy; 2024 주식회사 우리는 슈퍼플레이스다. All rights reserved.</p>
+            </div>
+        </footer>
     </body>
     </html>
   `)
