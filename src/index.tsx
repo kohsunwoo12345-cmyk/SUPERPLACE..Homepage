@@ -1636,6 +1636,16 @@ app.get('/api/db/migrate', async (c) => {
       results.push('ℹ️ usage_tracking.academy_id: exists')
     }
     
+    // Migration 10.5: Add last_landing_page_reset_date to usage_tracking
+    try {
+      await c.env.DB.prepare(`ALTER TABLE usage_tracking ADD COLUMN last_landing_page_reset_date DATE`).run()
+      console.log('✅ [Migration] Added last_landing_page_reset_date to usage_tracking')
+      results.push('✅ Added last_landing_page_reset_date')
+    } catch (e) {
+      console.log('ℹ️ [Migration] usage_tracking.last_landing_page_reset_date:', e.message)
+      results.push('ℹ️ last_landing_page_reset_date: exists')
+    }
+    
     // Migration 11: Create usage_tracking for all existing subscriptions without tracking
     try {
       const subsWithoutUsage = await c.env.DB.prepare(`
@@ -4380,11 +4390,12 @@ app.post('/api/landing/create', async (c) => {
           INSERT INTO usage_tracking (
             academy_id, subscription_id, current_students, ai_reports_used_this_month,
             landing_pages_created, current_teachers, sms_sent_this_month,
-            last_ai_report_reset_date, last_sms_reset_date, created_at, updated_at
-          ) VALUES (?, ?, 0, 0, 0, 0, 0, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+            last_ai_report_reset_date, last_sms_reset_date, last_landing_page_reset_date, created_at, updated_at
+          ) VALUES (?, ?, 0, 0, 0, 0, 0, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
         `).bind(
           academyIdToUse,
           newSubId,
+          newStartDate.toISOString().split('T')[0],
           newStartDate.toISOString().split('T')[0],
           newStartDate.toISOString().split('T')[0]
         ).run()
@@ -4403,19 +4414,39 @@ app.post('/api/landing/create', async (c) => {
     }
     
     const usage = await c.env.DB.prepare(`
-      SELECT landing_pages_created 
+      SELECT landing_pages_created, last_landing_page_reset_date
       FROM usage_tracking 
       WHERE subscription_id = ?
     `).bind(activeSubscription.id).first()
     
-    const currentPages = usage?.landing_pages_created || 0
+    let currentPages = usage?.landing_pages_created || 0
+    const lastResetDate = usage?.last_landing_page_reset_date
     const pageLimit = activeSubscription.landing_page_limit
+    
+    // 🔥 월별 리셋 로직 (AI 리포트와 동일)
+    const now = new Date()
+    const currentMonth = now.toISOString().slice(0, 7) // YYYY-MM
+    const lastResetMonth = lastResetDate ? lastResetDate.slice(0, 7) : null
+    
+    if (!lastResetMonth || lastResetMonth !== currentMonth) {
+      console.log(`🔄 [Landing Page] Resetting monthly count. Last: ${lastResetMonth}, Current: ${currentMonth}`)
+      
+      await c.env.DB.prepare(`
+        UPDATE usage_tracking
+        SET landing_pages_created = 0,
+            last_landing_page_reset_date = ?,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE subscription_id = ?
+      `).bind(now.toISOString().split('T')[0], activeSubscription.id).run()
+      
+      currentPages = 0
+    }
     
     // 한도 초과 체크 (포인트 시스템 제거)
     if (currentPages >= pageLimit) {
       return c.json({ 
         success: false,
-        error: `⛔ 랜딩페이지 생성 한도를 모두 사용하셨습니다.\n\n생성된 랜딩페이지: ${currentPages}개 / 한도: ${pageLimit}개\n\n더 많은 랜딩페이지를 만들려면 상위 플랜으로 업그레이드하세요.`
+        error: `⛔ 이번 달 랜딩페이지 생성 한도를 모두 사용하셨습니다.\n\n생성된 랜딩페이지: ${currentPages}개 / 월 한도: ${pageLimit}개\n\n더 많은 랜딩페이지를 만들려면 상위 플랜으로 업그레이드하세요.`
       }, 403)
     }
     
@@ -10308,8 +10339,8 @@ app.post('/api/free-plan/approve', async (c) => {
       INSERT INTO usage_tracking (
         academy_id, subscription_id, current_students, ai_reports_used_this_month,
         landing_pages_created, current_teachers, sms_sent_this_month,
-        last_ai_report_reset_date, last_sms_reset_date, created_at, updated_at
-      ) VALUES (?, ?, 0, 0, 0, 0, 0, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+        last_ai_report_reset_date, last_sms_reset_date, last_landing_page_reset_date, created_at, updated_at
+      ) VALUES (?, ?, 0, 0, 0, 0, 0, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
     `).bind(
       academyId, 
       subscriptionId,
@@ -10588,8 +10619,8 @@ app.post('/api/bank-transfer/approve', async (c) => {
         INSERT INTO usage_tracking (
           academy_id, subscription_id, current_students, ai_reports_used_this_month,
           landing_pages_created, current_teachers, sms_sent_this_month,
-          last_ai_report_reset_date, last_sms_reset_date, created_at, updated_at
-        ) VALUES (?, ?, 0, 0, 0, 0, 0, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+          last_ai_report_reset_date, last_sms_reset_date, last_landing_page_reset_date, created_at, updated_at
+        ) VALUES (?, ?, 0, 0, 0, 0, 0, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
       `).bind(
         actualAcademyId, 
         subscriptionId,
@@ -12379,7 +12410,7 @@ app.get('/pricing', (c) => {
                             </div>
                             <div class="flex items-center gap-3">
                                 <i class="fas fa-check text-green-500 text-sm"></i>
-                                <span>랜딩페이지 <strong>1개</strong></span>
+                                <span>랜딩페이지 <strong>1개/월</strong></span>
                             </div>
                             <div class="flex items-center gap-3">
                                 <i class="fas fa-check text-green-500 text-sm"></i>
@@ -12415,7 +12446,7 @@ app.get('/pricing', (c) => {
                             </div>
                             <div class="flex items-center gap-3">
                                 <i class="fas fa-check text-green-500 text-sm"></i>
-                                <span>랜딩페이지 <strong>50개</strong></span>
+                                <span>랜딩페이지 <strong>50개/월</strong></span>
                             </div>
                             <div class="flex items-center gap-3">
                                 <i class="fas fa-check text-green-500 text-sm"></i>
@@ -12452,7 +12483,7 @@ app.get('/pricing', (c) => {
                             </div>
                             <div class="flex items-center gap-3">
                                 <i class="fas fa-check text-green-500 text-sm"></i>
-                                <span>랜딩페이지 <strong>160개</strong></span>
+                                <span>랜딩페이지 <strong>160개/월</strong></span>
                             </div>
                             <div class="flex items-center gap-3">
                                 <i class="fas fa-check text-green-500 text-sm"></i>
@@ -12491,7 +12522,7 @@ app.get('/pricing', (c) => {
                             </div>
                             <div class="flex items-center gap-3">
                                 <i class="fas fa-check text-green-500 text-sm"></i>
-                                <span>랜딩페이지 <strong>530개</strong></span>
+                                <span>랜딩페이지 <strong>530개/월</strong></span>
                             </div>
                             <div class="flex items-center gap-3">
                                 <i class="fas fa-check text-green-500 text-sm"></i>
@@ -12527,7 +12558,7 @@ app.get('/pricing', (c) => {
                             </div>
                             <div class="flex items-center gap-3">
                                 <i class="fas fa-check text-green-500 text-sm"></i>
-                                <span>랜딩페이지 <strong>1,100개</strong></span>
+                                <span>랜딩페이지 <strong>1,100개/월</strong></span>
                             </div>
                             <div class="flex items-center gap-3">
                                 <i class="fas fa-check text-green-500 text-sm"></i>
@@ -12564,7 +12595,7 @@ app.get('/pricing', (c) => {
                             </div>
                             <div class="flex items-center gap-3">
                                 <i class="fas fa-check text-yellow-300 text-sm"></i>
-                                <span>랜딩페이지 <strong>5,000개</strong></span>
+                                <span>랜딩페이지 <strong>5,000개/월</strong></span>
                             </div>
                             <div class="flex items-center gap-3">
                                 <i class="fas fa-check text-yellow-300 text-sm"></i>
