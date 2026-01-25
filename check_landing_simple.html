@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>랜딩페이지 확인</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 p-8">
+    <div class="max-w-2xl mx-auto">
+        <h1 class="text-3xl font-bold mb-8">🔍 랜딩페이지 개수 확인</h1>
+        
+        <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">1. 랜딩페이지 목록 페이지로 이동</h2>
+            <a href="/landing-pages" target="_blank" class="inline-block bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition">
+                📄 랜딩페이지 목록 보기
+            </a>
+            <p class="mt-4 text-gray-600">↑ 클릭해서 실제로 몇 개 있는지 확인하세요</p>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">2. 새 랜딩페이지 만들기</h2>
+            <a href="/tools/landing-builder" target="_blank" class="inline-block bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition">
+                ➕ 새 랜딩페이지 생성
+            </a>
+            <p class="mt-4 text-gray-600">↑ 만약 0개라면 새로 만들어보세요</p>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-xl font-semibold mb-4">3. 대시보드 확인</h2>
+            <a href="/dashboard" target="_blank" class="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition">
+                📊 대시보드로 이동
+            </a>
+            <p class="mt-4 text-gray-600">↑ 새로고침하면 자동으로 동기화됩니다</p>
+        </div>
+        
+        <div class="mt-8 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <p class="font-semibold text-yellow-800">💡 중요:</p>
+            <ul class="list-disc list-inside mt-2 text-yellow-700">
+                <li>2026-01-25 이후에 만든 랜딩페이지만 현재 플랜에서 카운트됩니다</li>
+                <li>대시보드에 접속하면 자동으로 실제 개수와 동기화됩니다</li>
+                <li>만약 여전히 0이라면 실제로 랜딩페이지가 없는 것입니다</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>
