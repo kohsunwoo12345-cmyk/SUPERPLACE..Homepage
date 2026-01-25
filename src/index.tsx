@@ -33909,9 +33909,9 @@ app.get('/api/classes', async (c) => {
 // 반 추가
 app.post('/api/classes', async (c) => {
   try {
-    let { academyId, userId, className, grade, description, scheduleDays, startTime, endTime } = await c.req.json()
+    let { academyId, userId, className, grade, description, scheduleDays, startTime, endTime, color, daySchedule } = await c.req.json()
     
-    console.log('➕ [CreateClass] Received payload:', { academyId, userId, className })
+    console.log('➕ [CreateClass] Received payload:', { academyId, userId, className, color, daySchedule })
     
     // academyId 또는 userId 사용 (호환성)
     userId = userId || academyId
@@ -33942,15 +33942,19 @@ app.post('/api/classes', async (c) => {
     
     console.log('➕ [CreateClass] Creating class for academy_id:', userId, 'name:', className)
     
-    // 🔧 스키마 호환성: schedule_days 컬럼이 없을 수 있으므로 try-catch
+    // 🔧 스키마 호환성: color, day_schedule 컬럼이 없을 수 있으므로 try-catch
     let result
     try {
-      // schedule_days 컬럼이 있는 경우
-      result = await c.env.DB.prepare('INSERT INTO classes (academy_id, class_name, grade, description, schedule_days, start_time, end_time, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, datetime(\'now\'))').bind(userId, className, grade || null, description || null, scheduleDays || null, startTime || null, endTime || null).run()
+      // color, day_schedule 컬럼이 있는 경우
+      result = await c.env.DB.prepare('INSERT INTO classes (academy_id, class_name, grade, description, schedule_days, start_time, end_time, color, day_schedule, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime(\'now\'))').bind(userId, className, grade || null, description || null, scheduleDays || null, startTime || null, endTime || null, color || '#8B5CF6', daySchedule || null).run()
     } catch (err) {
-      console.log('⚠️ [CreateClass] schedule_days column not found, trying without it')
-      // schedule_days 컬럼이 없는 경우 (기본 테이블)
-      result = await c.env.DB.prepare('INSERT INTO classes (academy_id, class_name, grade, description, created_at) VALUES (?, ?, ?, ?, datetime(\'now\'))').bind(userId, className, grade || null, description || null).run()
+      console.log('⚠️ [CreateClass] new columns not found, trying without them')
+      // 기본 컬럼만 사용
+      try {
+        result = await c.env.DB.prepare('INSERT INTO classes (academy_id, class_name, grade, description, schedule_days, start_time, end_time, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, datetime(\'now\'))').bind(userId, className, grade || null, description || null, scheduleDays || null, startTime || null, endTime || null).run()
+      } catch (err2) {
+        result = await c.env.DB.prepare('INSERT INTO classes (academy_id, class_name, grade, description, created_at) VALUES (?, ?, ?, ?, datetime(\'now\'))').bind(userId, className, grade || null, description || null).run()
+      }
     }
     
     console.log('✅ [CreateClass] Class created with id:', result.meta.last_row_id)
@@ -33967,9 +33971,9 @@ app.post('/api/classes', async (c) => {
 app.put('/api/classes/:id', async (c) => {
   try {
     const classId = c.req.param('id')
-    const { className, grade, description, scheduleDays, startTime, endTime } = await c.req.json()
+    const { className, grade, description, scheduleDays, startTime, endTime, color, daySchedule } = await c.req.json()
     
-    console.log('🔧 [UpdateClass] Received classId:', classId, 'className:', className)
+    console.log('🔧 [UpdateClass] Received classId:', classId, 'className:', className, 'color:', color)
     
     if (!className) {
       return c.json({ success: false, error: '반 이름은 필수입니다.' }, 400)
@@ -33985,12 +33989,16 @@ app.put('/api/classes/:id', async (c) => {
     // 반 수정 (academy_id 조건 없이)
     let result
     try {
-      // schedule_days 컬럼이 있는 경우
-      result = await c.env.DB.prepare('UPDATE classes SET class_name = ?, grade = ?, description = ?, schedule_days = ?, start_time = ?, end_time = ? WHERE id = ?').bind(className, grade || null, description || null, scheduleDays || null, startTime || null, endTime || null, classId).run()
+      // color, day_schedule 컬럼이 있는 경우
+      result = await c.env.DB.prepare('UPDATE classes SET class_name = ?, grade = ?, description = ?, schedule_days = ?, start_time = ?, end_time = ?, color = ?, day_schedule = ? WHERE id = ?').bind(className, grade || null, description || null, scheduleDays || null, startTime || null, endTime || null, color || '#8B5CF6', daySchedule || null, classId).run()
     } catch (err) {
-      console.log('⚠️ [UpdateClass] schedule_days column not found, trying without it')
-      // schedule_days 컬럼이 없는 경우
-      result = await c.env.DB.prepare('UPDATE classes SET class_name = ?, grade = ?, description = ? WHERE id = ?').bind(className, grade || null, description || null, classId).run()
+      console.log('⚠️ [UpdateClass] new columns not found, trying without them')
+      // 기본 컬럼만 사용
+      try {
+        result = await c.env.DB.prepare('UPDATE classes SET class_name = ?, grade = ?, description = ?, schedule_days = ?, start_time = ?, end_time = ? WHERE id = ?').bind(className, grade || null, description || null, scheduleDays || null, startTime || null, endTime || null, classId).run()
+      } catch (err2) {
+        result = await c.env.DB.prepare('UPDATE classes SET class_name = ?, grade = ?, description = ? WHERE id = ?').bind(className, grade || null, description || null, classId).run()
+      }
     }
     
     if (result.meta.changes === 0) {
@@ -46389,6 +46397,16 @@ app.get('/api/init-student-tables', async (c) => {
       await DB.prepare(`ALTER TABLE classes ADD COLUMN end_time TEXT`).run()
     } catch (e) {
       console.log('end_time column already exists')
+    }
+    try {
+      await DB.prepare(`ALTER TABLE classes ADD COLUMN color TEXT DEFAULT '#8B5CF6'`).run()
+    } catch (e) {
+      console.log('color column already exists')
+    }
+    try {
+      await DB.prepare(`ALTER TABLE classes ADD COLUMN day_schedule TEXT`).run()
+    } catch (e) {
+      console.log('day_schedule column already exists')
     }
     
     // 과목(Course) 테이블 생성

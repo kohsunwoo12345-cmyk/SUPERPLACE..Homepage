@@ -34,8 +34,8 @@ export const classesPage = `
     </div>
 
     <!-- 추가/수정 모달 -->
-    <div id="classModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-white rounded-xl p-8 max-w-md w-full mx-4">
+    <div id="classModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+        <div class="bg-white rounded-xl p-8 max-w-2xl w-full mx-4 my-8 max-h-[90vh] overflow-y-auto">
             <h2 id="modalTitle" class="text-2xl font-bold mb-6">새 반 추가</h2>
             <form id="classForm">
                 <input type="hidden" id="classId">
@@ -63,48 +63,82 @@ export const classesPage = `
                         </select>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">수업 요일 *</label>
-                        <div class="grid grid-cols-4 gap-2">
-                            <label class="flex items-center space-x-2 cursor-pointer">
-                                <input type="checkbox" class="schedule-day rounded text-purple-600 focus:ring-purple-500" value="월" id="day-mon">
-                                <span class="text-sm">월</span>
-                            </label>
-                            <label class="flex items-center space-x-2 cursor-pointer">
-                                <input type="checkbox" class="schedule-day rounded text-purple-600 focus:ring-purple-500" value="화" id="day-tue">
-                                <span class="text-sm">화</span>
-                            </label>
-                            <label class="flex items-center space-x-2 cursor-pointer">
-                                <input type="checkbox" class="schedule-day rounded text-purple-600 focus:ring-purple-500" value="수" id="day-wed">
-                                <span class="text-sm">수</span>
-                            </label>
-                            <label class="flex items-center space-x-2 cursor-pointer">
-                                <input type="checkbox" class="schedule-day rounded text-purple-600 focus:ring-purple-500" value="목" id="day-thu">
-                                <span class="text-sm">목</span>
-                            </label>
-                            <label class="flex items-center space-x-2 cursor-pointer">
-                                <input type="checkbox" class="schedule-day rounded text-purple-600 focus:ring-purple-500" value="금" id="day-fri">
-                                <span class="text-sm">금</span>
-                            </label>
-                            <label class="flex items-center space-x-2 cursor-pointer">
-                                <input type="checkbox" class="schedule-day rounded text-purple-600 focus:ring-purple-500" value="토" id="day-sat">
-                                <span class="text-sm">토</span>
-                            </label>
-                            <label class="flex items-center space-x-2 cursor-pointer">
-                                <input type="checkbox" class="schedule-day rounded text-purple-600 focus:ring-purple-500" value="일" id="day-sun">
-                                <span class="text-sm">일</span>
-                            </label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">반 색상 *</label>
+                        <div id="colorPicker" class="grid grid-cols-8 gap-2 mb-4">
+                            <button type="button" class="color-option w-10 h-10 rounded-lg border-2 border-transparent hover:border-gray-400 transition" style="background-color: #EF4444" data-color="#EF4444" title="빨강"></button>
+                            <button type="button" class="color-option w-10 h-10 rounded-lg border-2 border-transparent hover:border-gray-400 transition" style="background-color: #F59E0B" data-color="#F59E0B" title="주황"></button>
+                            <button type="button" class="color-option w-10 h-10 rounded-lg border-2 border-transparent hover:border-gray-400 transition" style="background-color: #F9BC0B" data-color="#F9BC0B" title="노랑"></button>
+                            <button type="button" class="color-option w-10 h-10 rounded-lg border-2 border-transparent hover:border-gray-400 transition" style="background-color: #84CC16" data-color="#84CC16" title="연두"></button>
+                            <button type="button" class="color-option w-10 h-10 rounded-lg border-2 border-transparent hover:border-gray-400 transition" style="background-color: #10B981" data-color="#10B981" title="초록"></button>
+                            <button type="button" class="color-option w-10 h-10 rounded-lg border-2 border-transparent hover:border-gray-400 transition" style="background-color: #06B6D4" data-color="#06B6D4" title="하늘"></button>
+                            <button type="button" class="color-option w-10 h-10 rounded-lg border-2 border-transparent hover:border-gray-400 transition" style="background-color: #3B82F6" data-color="#3B82F6" title="파랑"></button>
+                            <button type="button" class="color-option w-10 h-10 rounded-lg border-2 border-transparent hover:border-gray-400 transition" style="background-color: #6366F1" data-color="#6366F1" title="남색"></button>
+                            <button type="button" class="color-option w-10 h-10 rounded-lg border-2 border-transparent hover:border-gray-400 transition" style="background-color: #8B5CF6" data-color="#8B5CF6" title="보라"></button>
+                            <button type="button" class="color-option w-10 h-10 rounded-lg border-2 border-transparent hover:border-gray-400 transition" style="background-color: #A855F7" data-color="#A855F7" title="자주"></button>
+                            <button type="button" class="color-option w-10 h-10 rounded-lg border-2 border-transparent hover:border-gray-400 transition" style="background-color: #D946EF" data-color="#D946EF" title="분홍"></button>
+                            <button type="button" class="color-option w-10 h-10 rounded-lg border-2 border-transparent hover:border-gray-400 transition" style="background-color: #EC4899" data-color="#EC4899" title="핑크"></button>
+                            <button type="button" class="color-option w-10 h-10 rounded-lg border-2 border-transparent hover:border-gray-400 transition" style="background-color: #F43F5E" data-color="#F43F5E" title="장미"></button>
+                            <button type="button" class="color-option w-10 h-10 rounded-lg border-2 border-transparent hover:border-gray-400 transition" style="background-color: #0EA5E9" data-color="#0EA5E9" title="청록"></button>
+                            <button type="button" class="color-option w-10 h-10 rounded-lg border-2 border-transparent hover:border-gray-400 transition" style="background-color: #14B8A6" data-color="#14B8A6" title="민트"></button>
+                            <button type="button" class="color-option w-10 h-10 rounded-lg border-2 border-transparent hover:border-gray-400 transition" style="background-color: #64748B" data-color="#64748B" title="회색"></button>
+                            <button type="button" class="color-option w-10 h-10 rounded-lg border-2 border-transparent hover:border-gray-400 transition" style="background-color: #475569" data-color="#475569" title="진회색"></button>
+                            <button type="button" class="color-option w-10 h-10 rounded-lg border-2 border-transparent hover:border-gray-400 transition" style="background-color: #1E293B" data-color="#1E293B" title="검정"></button>
+                            <button type="button" class="color-option w-10 h-10 rounded-lg border-2 border-transparent hover:border-gray-400 transition" style="background-color: #78350F" data-color="#78350F" title="갈색"></button>
+                            <button type="button" class="color-option w-10 h-10 rounded-lg border-2 border-transparent hover:border-gray-400 transition" style="background-color: #BE123C" data-color="#BE123C" title="진빨강"></button>
                         </div>
+                        <input type="hidden" id="classColor" required>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">수업 시간</label>
-                        <div class="grid grid-cols-2 gap-3">
-                            <div>
-                                <label class="block text-xs text-gray-500 mb-1">시작 시간</label>
-                                <input type="time" id="startTime" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                        <label class="block text-sm font-medium text-gray-700 mb-3">수업 요일 및 시간 *</label>
+                        <div class="space-y-3" id="scheduleContainer">
+                            <div class="schedule-day-item flex items-center space-x-2 p-3 border border-gray-200 rounded-lg">
+                                <input type="checkbox" class="schedule-day-check rounded text-purple-600 focus:ring-purple-500" value="월" id="day-mon">
+                                <label for="day-mon" class="font-medium w-8">월</label>
+                                <input type="time" class="day-start-time flex-1 px-2 py-1 border border-gray-300 rounded text-sm" data-day="월" placeholder="시작">
+                                <span class="text-gray-400">~</span>
+                                <input type="time" class="day-end-time flex-1 px-2 py-1 border border-gray-300 rounded text-sm" data-day="월" placeholder="종료">
                             </div>
-                            <div>
-                                <label class="block text-xs text-gray-500 mb-1">종료 시간</label>
-                                <input type="time" id="endTime" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                            <div class="schedule-day-item flex items-center space-x-2 p-3 border border-gray-200 rounded-lg">
+                                <input type="checkbox" class="schedule-day-check rounded text-purple-600 focus:ring-purple-500" value="화" id="day-tue">
+                                <label for="day-tue" class="font-medium w-8">화</label>
+                                <input type="time" class="day-start-time flex-1 px-2 py-1 border border-gray-300 rounded text-sm" data-day="화" placeholder="시작">
+                                <span class="text-gray-400">~</span>
+                                <input type="time" class="day-end-time flex-1 px-2 py-1 border border-gray-300 rounded text-sm" data-day="화" placeholder="종료">
+                            </div>
+                            <div class="schedule-day-item flex items-center space-x-2 p-3 border border-gray-200 rounded-lg">
+                                <input type="checkbox" class="schedule-day-check rounded text-purple-600 focus:ring-purple-500" value="수" id="day-wed">
+                                <label for="day-wed" class="font-medium w-8">수</label>
+                                <input type="time" class="day-start-time flex-1 px-2 py-1 border border-gray-300 rounded text-sm" data-day="수" placeholder="시작">
+                                <span class="text-gray-400">~</span>
+                                <input type="time" class="day-end-time flex-1 px-2 py-1 border border-gray-300 rounded text-sm" data-day="수" placeholder="종료">
+                            </div>
+                            <div class="schedule-day-item flex items-center space-x-2 p-3 border border-gray-200 rounded-lg">
+                                <input type="checkbox" class="schedule-day-check rounded text-purple-600 focus:ring-purple-500" value="목" id="day-thu">
+                                <label for="day-thu" class="font-medium w-8">목</label>
+                                <input type="time" class="day-start-time flex-1 px-2 py-1 border border-gray-300 rounded text-sm" data-day="목" placeholder="시작">
+                                <span class="text-gray-400">~</span>
+                                <input type="time" class="day-end-time flex-1 px-2 py-1 border border-gray-300 rounded text-sm" data-day="목" placeholder="종료">
+                            </div>
+                            <div class="schedule-day-item flex items-center space-x-2 p-3 border border-gray-200 rounded-lg">
+                                <input type="checkbox" class="schedule-day-check rounded text-purple-600 focus:ring-purple-500" value="금" id="day-fri">
+                                <label for="day-fri" class="font-medium w-8">금</label>
+                                <input type="time" class="day-start-time flex-1 px-2 py-1 border border-gray-300 rounded text-sm" data-day="금" placeholder="시작">
+                                <span class="text-gray-400">~</span>
+                                <input type="time" class="day-end-time flex-1 px-2 py-1 border border-gray-300 rounded text-sm" data-day="금" placeholder="종료">
+                            </div>
+                            <div class="schedule-day-item flex items-center space-x-2 p-3 border border-gray-200 rounded-lg">
+                                <input type="checkbox" class="schedule-day-check rounded text-purple-600 focus:ring-purple-500" value="토" id="day-sat">
+                                <label for="day-sat" class="font-medium w-8">토</label>
+                                <input type="time" class="day-start-time flex-1 px-2 py-1 border border-gray-300 rounded text-sm" data-day="토" placeholder="시작">
+                                <span class="text-gray-400">~</span>
+                                <input type="time" class="day-end-time flex-1 px-2 py-1 border border-gray-300 rounded text-sm" data-day="토" placeholder="종료">
+                            </div>
+                            <div class="schedule-day-item flex items-center space-x-2 p-3 border border-gray-200 rounded-lg">
+                                <input type="checkbox" class="schedule-day-check rounded text-purple-600 focus:ring-purple-500" value="일" id="day-sun">
+                                <label for="day-sun" class="font-medium w-8">일</label>
+                                <input type="time" class="day-start-time flex-1 px-2 py-1 border border-gray-300 rounded text-sm" data-day="일" placeholder="시작">
+                                <span class="text-gray-400">~</span>
+                                <input type="time" class="day-end-time flex-1 px-2 py-1 border border-gray-300 rounded text-sm" data-day="일" placeholder="종료">
                             </div>
                         </div>
                     </div>
@@ -181,51 +215,68 @@ export const classesPage = `
                 return;
             }
 
-            container.innerHTML = classes.map(cls => \`
-                <div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition">
-                    <div class="flex justify-between items-start mb-4">
-                        <div>
-                            <h3 class="text-xl font-bold text-gray-900">\${cls.class_name}</h3>
-                            <p class="text-sm text-gray-500">\${cls.grade || '학년 미지정'}</p>
-                        </div>
-                        <div class="flex space-x-2">
-                            <button onclick="editClass(\${cls.id})" class="text-blue-600 hover:text-blue-800">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button onclick="deleteClass(\${cls.id}, '\${cls.class_name}')" class="text-red-600 hover:text-red-800">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    </div>
-                    \${cls.schedule_days ? \`
-                        <div class="mb-2">
-                            <span class="text-xs text-gray-500"><i class="fas fa-calendar mr-1"></i>수업 요일:</span>
-                            <span class="text-sm font-medium text-purple-600 ml-1">\${cls.schedule_days}</span>
-                        </div>
-                    \` : ''}
-                    \${cls.start_time && cls.end_time ? \`
-                        <div class="mb-3">
-                            <span class="text-xs text-gray-500"><i class="fas fa-clock mr-1"></i>수업 시간:</span>
-                            <span class="text-sm font-medium text-blue-600 ml-1">\${cls.start_time} - \${cls.end_time}</span>
-                        </div>
-                    \` : ''}
-                    <p class="text-gray-600 mb-4 text-sm">\${cls.description || '설명 없음'}</p>
-                    <div class="flex justify-between items-center pt-4 border-t">
-                        <span class="text-sm text-gray-500">
-                            <i class="fas fa-users mr-2"></i>학생 \${cls.student_count}명
-                        </span>
-                        <a href="/students/list?classId=\${cls.id}" class="text-purple-600 hover:text-purple-800 font-medium">
-                            학생 보기 →
-                        </a>
-                    </div>
-                </div>
-            \`).join('');
+            container.innerHTML = classes.map(cls => {
+                const schedule = cls.day_schedule ? JSON.parse(cls.day_schedule) : {};
+                const scheduleDisplay = Object.keys(schedule).map(day => {
+                    const time = schedule[day];
+                    return day + ': ' + time.start + '~' + time.end;
+                }).join(', ');
+                
+                return '<div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition border-l-4" style="border-left-color: ' + (cls.color || '#8B5CF6') + '">' +
+                    '<div class="flex justify-between items-start mb-4">' +
+                        '<div>' +
+                            '<div class="flex items-center space-x-2">' +
+                                '<div class="w-4 h-4 rounded-full" style="background-color: ' + (cls.color || '#8B5CF6') + '"></div>' +
+                                '<h3 class="text-xl font-bold text-gray-900">' + cls.class_name + '</h3>' +
+                            '</div>' +
+                            '<p class="text-sm text-gray-500 mt-1">' + (cls.grade || '학년 미지정') + '</p>' +
+                        '</div>' +
+                        '<div class="flex space-x-2">' +
+                            '<button onclick="editClass(' + cls.id + ')" class="text-blue-600 hover:text-blue-800">' +
+                                '<i class="fas fa-edit"></i>' +
+                            '</button>' +
+                            '<button onclick="deleteClass(' + cls.id + ', \'' + cls.class_name + '\')" class="text-red-600 hover:text-red-800">' +
+                                '<i class="fas fa-trash"></i>' +
+                            '</button>' +
+                        '</div>' +
+                    '</div>' +
+                    (scheduleDisplay ? 
+                        '<div class="mb-3 bg-gray-50 p-3 rounded-lg">' +
+                            '<span class="text-xs text-gray-500 block mb-1"><i class="fas fa-calendar-alt mr-1"></i>수업 스케줄:</span>' +
+                            '<span class="text-xs font-medium text-gray-700">' + scheduleDisplay + '</span>' +
+                        '</div>'
+                     : '') +
+                    '<p class="text-gray-600 mb-4 text-sm">' + (cls.description || '설명 없음') + '</p>' +
+                    '<div class="flex justify-between items-center pt-4 border-t">' +
+                        '<span class="text-sm text-gray-500">' +
+                            '<i class="fas fa-users mr-2"></i>학생 ' + cls.student_count + '명' +
+                        '</span>' +
+                        '<a href="/students/list?classId=' + cls.id + '" class="text-purple-600 hover:text-purple-800 font-medium">' +
+                            '학생 보기 →' +
+                        '</a>' +
+                    '</div>' +
+                '</div>';
+            }).join('');
         }
 
         function showAddModal() {
             document.getElementById('modalTitle').textContent = '새 반 추가';
             document.getElementById('classForm').reset();
             document.getElementById('classId').value = '';
+            document.getElementById('classColor').value = '';
+            
+            // 모든 색상 버튼 선택 해제
+            document.querySelectorAll('.color-option').forEach(btn => {
+                btn.classList.remove('border-purple-600', 'border-4');
+            });
+            
+            // 모든 스케줄 체크박스와 시간 초기화
+            document.querySelectorAll('.schedule-day-check').forEach(cb => cb.checked = false);
+            document.querySelectorAll('.day-start-time, .day-end-time').forEach(input => {
+                input.value = '';
+                input.disabled = true;
+            });
+            
             document.getElementById('classModal').classList.remove('hidden');
         }
 
@@ -243,19 +294,38 @@ export const classesPage = `
             document.getElementById('grade').value = cls.grade || '';
             document.getElementById('description').value = cls.description || '';
             
-            // 요일 체크박스 설정
-            document.querySelectorAll('.schedule-day').forEach(cb => cb.checked = false);
-            if (cls.schedule_days) {
-                const days = cls.schedule_days.split(',').map(d => d.trim());
-                days.forEach(day => {
-                    const checkbox = document.querySelector(\`.schedule-day[value="\${day}"]\`);
-                    if (checkbox) checkbox.checked = true;
-                });
-            }
+            // 색상 설정
+            document.getElementById('classColor').value = cls.color || '#8B5CF6';
+            document.querySelectorAll('.color-option').forEach(btn => {
+                if (btn.dataset.color === cls.color) {
+                    btn.classList.add('border-purple-600', 'border-4');
+                } else {
+                    btn.classList.remove('border-purple-600', 'border-4');
+                }
+            });
             
-            // 시간 설정
-            document.getElementById('startTime').value = cls.start_time || '';
-            document.getElementById('endTime').value = cls.end_time || '';
+            // 요일별 시간 설정
+            const daySchedule = cls.day_schedule ? JSON.parse(cls.day_schedule) : {};
+            
+            document.querySelectorAll('.schedule-day-check').forEach(cb => {
+                const day = cb.value;
+                cb.checked = daySchedule[day] !== undefined;
+                
+                const startInput = document.querySelector('.day-start-time[data-day="' + day + '"]');
+                const endInput = document.querySelector('.day-end-time[data-day="' + day + '"]');
+                
+                if (daySchedule[day]) {
+                    startInput.value = daySchedule[day].start || '';
+                    endInput.value = daySchedule[day].end || '';
+                    startInput.disabled = false;
+                    endInput.disabled = false;
+                } else {
+                    startInput.value = '';
+                    endInput.value = '';
+                    startInput.disabled = true;
+                    endInput.disabled = true;
+                }
+            });
             
             document.getElementById('classModal').classList.remove('hidden');
         }
@@ -320,32 +390,52 @@ export const classesPage = `
             e.preventDefault();
             
             const classId = document.getElementById('classId').value;
+            const color = document.getElementById('classColor').value;
             
-            // 선택된 요일 수집
-            const selectedDays = Array.from(document.querySelectorAll('.schedule-day:checked'))
-                .map(cb => cb.value);
+            if (!color) {
+                alert('반 색상을 선택해주세요.');
+                return;
+            }
+            
+            // 요일별 시간 수집
+            const daySchedule = {};
+            let hasSchedule = false;
+            
+            document.querySelectorAll('.schedule-day-check:checked').forEach(cb => {
+                const day = cb.value;
+                const startInput = document.querySelector('.day-start-time[data-day="' + day + '"]');
+                const endInput = document.querySelector('.day-end-time[data-day="' + day + '"]');
+                
+                if (startInput && endInput && startInput.value && endInput.value) {
+                    daySchedule[day] = {
+                        start: startInput.value,
+                        end: endInput.value
+                    };
+                    hasSchedule = true;
+                }
+            });
+            
+            if (!hasSchedule) {
+                alert('최소 하나의 수업 요일과 시간을 설정해주세요.');
+                return;
+            }
             
             const payload = {
                 academyId,
                 className: document.getElementById('className').value,
                 grade: document.getElementById('grade').value,
                 description: document.getElementById('description').value,
-                scheduleDays: selectedDays.join(', '),
-                startTime: document.getElementById('startTime').value,
-                endTime: document.getElementById('endTime').value
+                color: color,
+                daySchedule: JSON.stringify(daySchedule)
             };
 
             console.log('📤 Submitting class:', payload);
-            console.log('📤 currentUser:', currentUser);
-            console.log('📤 academyId:', academyId);
 
             try {
                 const url = classId ? '/api/classes/' + classId : '/api/classes';
                 const method = classId ? 'PUT' : 'POST';
                 
                 const userDataHeader = btoa(unescape(encodeURIComponent(JSON.stringify(currentUser))));
-                console.log('📤 Sending request to:', url, 'method:', method);
-                console.log('📤 Header length:', userDataHeader.length);
                 
                 const res = await fetch(url, {
                     method,
@@ -356,28 +446,50 @@ export const classesPage = `
                     body: JSON.stringify(payload)
                 });
 
-                console.log('📥 Response status:', res.status);
                 const data = await res.json();
-                console.log('📥 Response data:', data);
-                console.log('📥 Full response:', JSON.stringify(data, null, 2));
                 
                 if (data.success) {
-                    console.log('✅ Save successful, reloading classes...');
                     hideModal();
-                    // 반 목록을 먼저 새로고침한 후 알림 표시
                     await loadClasses();
                     alert(classId ? '반이 수정되었습니다.' : '새 반이 추가되었습니다.');
-                    console.log('✅ Classes reloaded and displayed');
                 } else {
                     alert('저장 실패: ' + data.error);
-                    if (data.details) {
-                        console.error('Error details:', data.details);
-                    }
                 }
             } catch (error) {
                 console.error('❌ Request error:', error);
                 alert('저장 중 오류가 발생했습니다.');
             }
+        });
+        
+        // 색상 선택 이벤트
+        document.querySelectorAll('.color-option').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                document.querySelectorAll('.color-option').forEach(b => {
+                    b.classList.remove('border-purple-600', 'border-4');
+                });
+                btn.classList.add('border-purple-600', 'border-4');
+                document.getElementById('classColor').value = btn.dataset.color;
+            });
+        });
+        
+        // 요일 체크박스 이벤트
+        document.querySelectorAll('.schedule-day-check').forEach(cb => {
+            cb.addEventListener('change', (e) => {
+                const day = e.target.value;
+                const startInput = document.querySelector('.day-start-time[data-day="' + day + '"]');
+                const endInput = document.querySelector('.day-end-time[data-day="' + day + '"]');
+                
+                if (e.target.checked) {
+                    startInput.disabled = false;
+                    endInput.disabled = false;
+                } else {
+                    startInput.disabled = true;
+                    endInput.disabled = true;
+                    startInput.value = '';
+                    endInput.value = '';
+                }
+            });
         });
 
         loadClasses();
