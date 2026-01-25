@@ -75,7 +75,7 @@ app.get('/api/revenue/monthly', requireDirector, async (c) => {
       WHERE s.academy_id = ? 
         AND s.status = 'active'
         AND COALESCE(tp.status, 'unpaid') IN ('unpaid', 'partial', 'overdue')
-    `).bind(year, month, user.id).first()
+    `).bind(year, month, user.academy_id || user.id).first()
     
     return c.json({
       success: true,
