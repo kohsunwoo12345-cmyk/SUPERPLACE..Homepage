@@ -10180,15 +10180,19 @@ app.get('/api/usage/check', async (c) => {
       console.error('[Usage] students table error:', err.message)
     }
     
-    // 🔥 실제 데이터 조회: landing_pages 테이블에서 실제 랜딩페이지 수 계산
+    // 🔥 누적 랜딩페이지 개수 조회: usage_tracking에서 누적 생성 개수 사용 (삭제해도 누적 유지)
     let actualLandingPagesCount = 0
     try {
-      const result = await c.env.DB.prepare(`
-        SELECT COUNT(*) as count FROM landing_pages WHERE user_id = ?
-      `).bind(userId).first()
-      actualLandingPagesCount = result?.count || 0
+      // usage가 아직 조회되지 않은 경우를 대비해 미리 조회
+      if (!usage) {
+        usage = await c.env.DB.prepare(`
+          SELECT * FROM usage_tracking 
+          WHERE academy_id = ? AND subscription_id = ?
+        `).bind(academyId, subscription.id).first()
+      }
+      actualLandingPagesCount = usage?.landing_pages_created || 0
     } catch (err) {
-      console.error('[Usage] landing_pages table error:', err.message)
+      console.error('[Usage] landing_pages_created error:', err.message)
     }
     
     // 🔥 실제 데이터 조회: users 테이블에서 실제 선생님 수 계산
@@ -47101,13 +47105,11 @@ app.get('/api/debug/user/:userId/subscription', async (c) => {
         studentsCount = 'table_not_found'
       }
       
-      // landing_pages 테이블 확인
+      // landing_pages 누적 개수 확인 (usage_tracking에서 조회)
       let landingPagesCount = 0
       try {
-        const landingPages = await c.env.DB.prepare(`
-          SELECT COUNT(*) as count FROM landing_pages WHERE user_id = ?
-        `).bind(userId).first()
-        landingPagesCount = landingPages?.count || 0
+        // usage_tracking에서 누적 생성 개수 가져오기 (삭제해도 누적 유지)
+        landingPagesCount = usageTracking?.landing_pages_created || 0
       } catch (e) {
         landingPagesCount = 'table_not_found'
       }
