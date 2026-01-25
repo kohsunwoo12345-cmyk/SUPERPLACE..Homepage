@@ -233,18 +233,19 @@ export const classesPage = `
                     scheduleDisplay = '';
                 }
                 
-                const escapedClassName = (cls.class_name || '').replace(/'/g, "\\'").replace(/"/g, '&quot;').replace(/\\/g, '\\\\');
-                const escapedGrade = (cls.grade || '학년 미지정').replace(/'/g, "\\'").replace(/"/g, '&quot;');
-                const escapedDescription = (cls.description || '설명 없음').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                // HTML 표시용: 특수문자 이스케이프
+                const displayName = (cls.class_name || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+                const displayGrade = (cls.grade || '학년 미지정').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+                const displayDescription = (cls.description || '설명 없음').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
                 
                 return '<div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition border-l-4" style="border-left-color: ' + (cls.color || '#8B5CF6') + '">' +
                     '<div class="flex justify-between items-start mb-4">' +
                         '<div>' +
                             '<div class="flex items-center space-x-2">' +
                                 '<div class="w-4 h-4 rounded-full" style="background-color: ' + (cls.color || '#8B5CF6') + '"></div>' +
-                                '<h3 class="text-xl font-bold text-gray-900">' + escapedClassName.replace(/\\\\/g, '\\') + '</h3>' +
+                                '<h3 class="text-xl font-bold text-gray-900">' + displayName + '</h3>' +
                             '</div>' +
-                            '<p class="text-sm text-gray-500 mt-1">' + escapedGrade + '</p>' +
+                            '<p class="text-sm text-gray-500 mt-1">' + displayGrade + '</p>' +
                         '</div>' +
                         '<div class="flex space-x-2">' +
                             '<button onclick="editClass(' + cls.id + ')" class="text-blue-600 hover:text-blue-800">' +
@@ -261,7 +262,7 @@ export const classesPage = `
                             '<span class="text-xs font-medium text-gray-700">' + scheduleDisplay + '</span>' +
                         '</div>'
                      : '') +
-                    '<p class="text-gray-600 mb-4 text-sm">' + escapedDescription + '</p>' +
+                    '<p class="text-gray-600 mb-4 text-sm">' + displayDescription + '</p>' +
                     '<div class="flex justify-between items-center pt-4 border-t">' +
                         '<span class="text-sm text-gray-500">' +
                             '<i class="fas fa-users mr-2"></i>학생 ' + cls.student_count + '명' +
