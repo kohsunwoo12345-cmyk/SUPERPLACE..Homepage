@@ -651,49 +651,31 @@ app.get('/api/students', requireDirector, async (c) => {
     console.log('=== Students API Debug ===')
     console.log('User ID:', user.id)
     
-    let students
-    try {
-      // Try with 'name' column first
-      students = await c.env.DB.prepare(`
-        SELECT 
-          s.id,
-          s.name,
-          s.grade,
-          s.phone,
-          s.parent_name,
-          s.parent_phone,
-          s.user_id,
-          s.class_id,
-          s.status,
-          c.name as class_name,
-          COALESCE(c.monthly_fee, 0) as class_fee
-        FROM students s
-        LEFT JOIN classes c ON s.class_id = c.id
-        WHERE s.user_id = ? AND s.status = 'active'
-        ORDER BY s.name ASC
-      `).bind(user.id).all()
-    } catch (nameError) {
-      console.log('name column not found, trying class_name')
-      // Fallback to class_name column
-      students = await c.env.DB.prepare(`
-        SELECT 
-          s.id,
-          s.name,
-          s.grade,
-          s.phone,
-          s.parent_name,
-          s.parent_phone,
-          s.user_id,
-          s.class_id,
-          s.status,
-          c.class_name as class_name,
-          COALESCE(c.monthly_fee, 0) as class_fee
-        FROM students s
-        LEFT JOIN classes c ON s.class_id = c.id
-        WHERE s.user_id = ? AND s.status = 'active'
-        ORDER BY s.name ASC
-      `).bind(user.id).all()
-    }
+    // Check which column exists: 'name' or 'class_name'
+    const schemaInfo = await c.env.DB.prepare(`PRAGMA table_info(classes)`).all()
+    const hasNameColumn = schemaInfo.results?.some((col: any) => col.name === 'name')
+    const classNameCol = hasNameColumn ? 'name' : 'class_name'
+    
+    const query = `
+      SELECT 
+        s.id,
+        s.name,
+        s.grade,
+        s.phone,
+        s.parent_name,
+        s.parent_phone,
+        s.user_id,
+        s.class_id,
+        s.status,
+        c.${classNameCol} as class_name,
+        COALESCE(c.monthly_fee, 0) as class_fee
+      FROM students s
+      LEFT JOIN classes c ON s.class_id = c.id
+      WHERE s.user_id = ? AND s.status = 'active'
+      ORDER BY s.name ASC
+    `
+    
+    const students = await c.env.DB.prepare(query).bind(user.id).all()
     
     console.log('Students found:', students.results?.length || 0)
     if (students.results && students.results.length > 0) {
@@ -781,48 +763,33 @@ app.get('/api/tuition/classes', requireDirector, async (c) => {
       console.error('Auto-init error (non-fatal):', initError)
     }
     
-    // classes 테이블에서 class_name 또는 name 컬럼 사용
-    let classes
-    try {
-      // Try with 'name' column first
-      classes = await c.env.DB.prepare(`
-        SELECT 
-          c.id,
-          c.name as name,
-          c.description,
-          c.user_id,
-          c.teacher_id,
-          COALESCE(c.monthly_fee, 0) as monthly_fee,
-          u.name as teacher_name,
-          COUNT(DISTINCT s.id) as student_count
-        FROM classes c
-        LEFT JOIN users u ON c.teacher_id = u.id
-        LEFT JOIN students s ON (s.class_id = c.id AND s.status = 'active' AND s.user_id = ?)
-        WHERE c.user_id = ?
-        GROUP BY c.id, c.name, c.description, c.user_id, c.teacher_id, c.monthly_fee, u.name
-        ORDER BY c.name ASC
-      `).bind(user.id, user.id).all()
-    } catch (nameError) {
-      console.log('name column not found, trying class_name')
-      // Fallback to class_name column
-      classes = await c.env.DB.prepare(`
-        SELECT 
-          c.id,
-          c.class_name as name,
-          c.description,
-          c.user_id,
-          c.teacher_id,
-          COALESCE(c.monthly_fee, 0) as monthly_fee,
-          u.name as teacher_name,
-          COUNT(DISTINCT s.id) as student_count
-        FROM classes c
-        LEFT JOIN users u ON c.teacher_id = u.id
-        LEFT JOIN students s ON (s.class_id = c.id AND s.status = 'active' AND s.user_id = ?)
-        WHERE c.user_id = ?
-        GROUP BY c.id, c.class_name, c.description, c.user_id, c.teacher_id, c.monthly_fee, u.name
-        ORDER BY c.class_name ASC
-      `).bind(user.id, user.id).all()
-    }
+    // Check which column exists: 'name' or 'class_name'
+    const schemaInfo = await c.env.DB.prepare(`PRAGMA table_info(classes)`).all()
+    const hasNameColumn = schemaInfo.results?.some((col: any) => col.name === 'name')
+    const classNameCol = hasNameColumn ? 'name' : 'class_name'
+    
+    console.log('Using column:', classNameCol)
+    
+    // Build query string dynamically
+    const query = `
+      SELECT 
+        c.id,
+        c.${classNameCol} as name,
+        c.description,
+        c.user_id,
+        c.teacher_id,
+        COALESCE(c.monthly_fee, 0) as monthly_fee,
+        u.name as teacher_name,
+        COUNT(DISTINCT s.id) as student_count
+      FROM classes c
+      LEFT JOIN users u ON c.teacher_id = u.id
+      LEFT JOIN students s ON (s.class_id = c.id AND s.status = 'active' AND s.user_id = ?)
+      WHERE c.user_id = ?
+      GROUP BY c.id, c.${classNameCol}, c.description, c.user_id, c.teacher_id, c.monthly_fee, u.name
+      ORDER BY c.${classNameCol} ASC
+    `
+    
+    const classes = await c.env.DB.prepare(query).bind(user.id, user.id).all()
     
     console.log('Classes found:', classes.results?.length || 0)
     if (classes.results && classes.results.length > 0) {
