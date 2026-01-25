@@ -17068,15 +17068,15 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
         async function loadForms() {
             try {
                 const userDataBase64 = base64Encode(JSON.stringify(user));
-                const response = await fetch('/api/forms/list', {
+                const response = await fetch('/api/form-templates', {
                     headers: {
                         'X-User-Data-Base64': userDataBase64
                     }
                 });
-                const result = await response.json();
+                const forms = await response.json();
                 
-                if (result.success && result.forms && result.forms.length > 0) {
-                    const html = result.forms.map(form => {
+                if (Array.isArray(forms) && forms.length > 0) {
+                    const html = forms.map(form => {
                         return \`
                             <div class="bg-white rounded-xl p-6 border border-gray-200 hover:shadow-lg transition">
                                 <div class="flex items-start justify-between">
@@ -17151,14 +17151,14 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
             
             try {
                 const userDataBase64 = base64Encode(JSON.stringify(user));
-                const response = await fetch(\`/api/forms/\${formId}\`, {
+                const response = await fetch(\`/api/form-templates/\${formId}\`, {
                     method: 'DELETE',
                     headers: {
                         'X-User-Data-Base64': userDataBase64
                     }
                 });
                 const result = await response.json();
-                if (result.success) {
+                if (response.ok) {
                     alert('폼이 삭제되었습니다.');
                     loadForms();
                 } else {
@@ -17173,15 +17173,15 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
         // HTML 보기 함수들
         async function viewFormHtml(formId, formName) {
             try {
-                const response = await fetch(\`/api/forms/\${formId}/html\`);
-                const result = await response.json();
+                const response = await fetch(\`/api/form-templates/\${formId}/html\`);
+                const data = await response.json();
                 
-                if (result.success) {
+                if (response.ok && data.success) {
                     document.getElementById('htmlFormName').textContent = formName;
-                    document.getElementById('htmlCode').textContent = result.html;
+                    document.getElementById('htmlCode').textContent = data.html;
                     document.getElementById('htmlModal').classList.remove('hidden');
                 } else {
-                    alert('HTML을 불러올 수 없습니다: ' + (result.error || '알 수 없는 오류'));
+                    alert('HTML을 불러올 수 없습니다: ' + (data.error || '알 수 없는 오류'));
                 }
             } catch (err) {
                 console.error('HTML view error:', err);
