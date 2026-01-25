@@ -13005,19 +13005,19 @@ app.get('/pricing', (c) => {
                                 <svg class="check-icon w-5 h-5 text-green-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
                                 </svg>
-                                <span class="text-gray-700">학생 최대 30명</span>
+                                <span class="text-gray-700">학생 최대 50명</span>
                             </div>
                             <div class="flex items-start gap-3">
                                 <svg class="check-icon w-5 h-5 text-green-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
                                 </svg>
-                                <span class="text-gray-700">AI 리포트 월 30개</span>
+                                <span class="text-gray-700">AI 리포트 월 50개</span>
                             </div>
                             <div class="flex items-start gap-3">
                                 <svg class="check-icon w-5 h-5 text-green-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
                                 </svg>
-                                <span class="text-gray-700">랜딩페이지 40개</span>
+                                <span class="text-gray-700">랜딩페이지 50개</span>
                             </div>
                             <div class="flex items-start gap-3">
                                 <svg class="check-icon w-5 h-5 text-green-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -13035,12 +13035,17 @@ app.get('/pricing', (c) => {
 
                     <!-- 베이직 플랜 -->
                     <div class="pricing-card bg-white rounded-3xl p-8 border-2 border-blue-200 hover:border-blue-400 hover:shadow-2xl">
+                        <div class="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                            <div class="bg-blue-500 text-white px-4 py-1.5 rounded-full text-xs font-bold shadow-lg">
+                                ⭐ 인기
+                            </div>
+                        </div>
                         <div class="mb-6">
                             <div class="inline-block px-4 py-2 bg-blue-100 rounded-full text-blue-700 text-sm font-semibold mb-4">
                                 베이직
                             </div>
                             <div class="flex items-end gap-2 mb-2">
-                                <span class="text-5xl font-bold text-gray-900">₩77,000</span>
+                                <span class="text-5xl font-bold text-gray-900">₩143,000</span>
                                 <span class="text-gray-600 mb-2">/월</span>
                             </div>
                             <p class="text-gray-600">성장하는 학원을 위한 플랜</p>
@@ -13051,25 +13056,25 @@ app.get('/pricing', (c) => {
                                 <svg class="check-icon w-5 h-5 text-green-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
                                 </svg>
-                                <span class="text-gray-700">학생 최대 50명</span>
+                                <span class="text-gray-700">학생 최대 150명</span>
                             </div>
                             <div class="flex items-start gap-3">
                                 <svg class="check-icon w-5 h-5 text-green-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
                                 </svg>
-                                <span class="text-gray-700">AI 리포트 월 50개</span>
+                                <span class="text-gray-700">AI 리포트 월 150개</span>
                             </div>
                             <div class="flex items-start gap-3">
                                 <svg class="check-icon w-5 h-5 text-green-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
                                 </svg>
-                                <span class="text-gray-700">랜딩페이지 70개</span>
+                                <span class="text-gray-700">랜딩페이지 160개</span>
                             </div>
                             <div class="flex items-start gap-3">
                                 <svg class="check-icon w-5 h-5 text-green-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
                                 </svg>
-                                <span class="text-gray-700">선생님 계정 4명</span>
+                                <span class="text-gray-700">선생님 계정 6명</span>
                             </div>
                         </div>
                         
@@ -13081,19 +13086,13 @@ app.get('/pricing', (c) => {
                     </div>
 
                     <!-- 프로 플랜 (추천) -->
-                    <div class="pricing-card bg-gradient-to-br from-purple-600 to-purple-700 rounded-3xl p-8 border-2 border-purple-500 hover:shadow-2xl relative">
-                        <div class="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                            <div class="bg-orange-500 text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg">
-                                ⭐ 가장 인기
-                            </div>
-                        </div>
-                        
+                    <div class="pricing-card bg-gradient-to-br from-purple-600 to-purple-700 rounded-3xl p-8 border-2 border-purple-500 hover:shadow-2xl relative">                        
                         <div class="mb-6">
                             <div class="inline-block px-4 py-2 bg-white/20 rounded-full text-white text-sm font-semibold mb-4">
                                 프로
                             </div>
                             <div class="flex items-end gap-2 mb-2">
-                                <span class="text-5xl font-bold text-white">₩147,000</span>
+                                <span class="text-5xl font-bold text-white">₩187,000</span>
                                 <span class="text-purple-100 mb-2">/월</span>
                             </div>
                             <p class="text-purple-100">중형 학원을 위한 프리미엄 플랜</p>
@@ -13104,78 +13103,31 @@ app.get('/pricing', (c) => {
                                 <svg class="check-icon w-5 h-5 text-green-300 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
                                 </svg>
-                                <span class="text-white font-medium">학생 최대 100명</span>
+                                <span class="text-white font-medium">학생 최대 500명</span>
                             </div>
                             <div class="flex items-start gap-3">
                                 <svg class="check-icon w-5 h-5 text-green-300 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
                                 </svg>
-                                <span class="text-white font-medium">AI 리포트 월 100개</span>
+                                <span class="text-white font-medium">AI 리포트 월 500개</span>
                             </div>
                             <div class="flex items-start gap-3">
                                 <svg class="check-icon w-5 h-5 text-green-300 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
                                 </svg>
-                                <span class="text-white font-medium">랜딩페이지 140개</span>
+                                <span class="text-white font-medium">랜딩페이지 530개</span>
                             </div>
                             <div class="flex items-start gap-3">
                                 <svg class="check-icon w-5 h-5 text-green-300 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
                                 </svg>
-                                <span class="text-white font-medium">선생님 계정 6명</span>
+                                <span class="text-white font-medium">선생님 계정 20명</span>
                             </div>
                         </div>
                         
                         <button 
                             onclick="location.href='/pricing/pro'"
                             class="w-full py-4 bg-white text-purple-600 rounded-xl font-bold hover:bg-purple-50 transition-all hover:shadow-lg">
-                            구매하기
-                        </button>
-                    </div>
-
-                    <!-- 비즈니스 플랜 -->
-                    <div class="pricing-card bg-white rounded-3xl p-8 border-2 border-indigo-200 hover:border-indigo-400 hover:shadow-2xl">
-                        <div class="mb-6">
-                            <div class="inline-block px-4 py-2 bg-indigo-100 rounded-full text-indigo-700 text-sm font-semibold mb-4">
-                                비즈니스
-                            </div>
-                            <div class="flex items-end gap-2 mb-2">
-                                <span class="text-5xl font-bold text-gray-900">₩297,000</span>
-                                <span class="text-gray-600 mb-2">/월</span>
-                            </div>
-                            <p class="text-gray-600">대형 학원을 위한 완전한 솔루션</p>
-                        </div>
-                        
-                        <div class="space-y-3 mb-8">
-                            <div class="flex items-start gap-3">
-                                <svg class="check-icon w-5 h-5 text-green-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
-                                </svg>
-                                <span class="text-gray-700 font-medium">학생 최대 300명</span>
-                            </div>
-                            <div class="flex items-start gap-3">
-                                <svg class="check-icon w-5 h-5 text-green-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
-                                </svg>
-                                <span class="text-gray-700 font-medium">AI 리포트 월 600개</span>
-                            </div>
-                            <div class="flex items-start gap-3">
-                                <svg class="check-icon w-5 h-5 text-green-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
-                                </svg>
-                                <span class="text-gray-700 font-medium">랜딩페이지 550개</span>
-                            </div>
-                            <div class="flex items-start gap-3">
-                                <svg class="check-icon w-5 h-5 text-green-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
-                                </svg>
-                                <span class="text-gray-700 font-medium">선생님 계정 10명</span>
-                            </div>
-                        </div>
-                        
-                        <button 
-                            onclick="location.href='/pricing/business'"
-                            class="w-full py-4 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-all hover:shadow-lg">
                             구매하기
                         </button>
                     </div>
@@ -13187,7 +13139,7 @@ app.get('/pricing', (c) => {
                                 프리미엄
                             </div>
                             <div class="flex items-end gap-2 mb-2">
-                                <span class="text-5xl font-bold text-gray-900">₩440,000</span>
+                                <span class="text-5xl font-bold text-gray-900">₩330,000</span>
                                 <span class="text-gray-600 mb-2">/월</span>
                             </div>
                             <p class="text-gray-600">대규모 학원 최적화 솔루션</p>
@@ -13198,7 +13150,7 @@ app.get('/pricing', (c) => {
                                 <svg class="check-icon w-5 h-5 text-green-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
                                 </svg>
-                                <span class="text-gray-700 font-medium">학생 최대 500명</span>
+                                <span class="text-gray-700 font-medium">학생 최대 1,000명</span>
                             </div>
                             <div class="flex items-start gap-3">
                                 <svg class="check-icon w-5 h-5 text-green-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -13210,13 +13162,13 @@ app.get('/pricing', (c) => {
                                 <svg class="check-icon w-5 h-5 text-green-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
                                 </svg>
-                                <span class="text-gray-700 font-medium">랜딩페이지 900개</span>
+                                <span class="text-gray-700 font-medium">랜딩페이지 1,100개</span>
                             </div>
                             <div class="flex items-start gap-3">
                                 <svg class="check-icon w-5 h-5 text-green-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
                                 </svg>
-                                <span class="text-gray-700 font-medium">선생님 계정 15명</span>
+                                <span class="text-gray-700 font-medium">선생님 계정 40명</span>
                             </div>
                         </div>
                         
@@ -13245,7 +13197,7 @@ app.get('/pricing', (c) => {
                                 <svg class="check-icon w-5 h-5 text-green-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
                                 </svg>
-                                <span class="text-white font-medium">학생 최대 1,000명</span>
+                                <span class="text-white font-medium">학생 최대 3,000명</span>
                             </div>
                             <div class="flex items-start gap-3">
                                 <svg class="check-icon w-5 h-5 text-green-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -13257,13 +13209,13 @@ app.get('/pricing', (c) => {
                                 <svg class="check-icon w-5 h-5 text-green-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
                                 </svg>
-                                <span class="text-white font-medium">랜딩페이지 2,000개</span>
+                                <span class="text-white font-medium">랜딩페이지 5,000개</span>
                             </div>
                             <div class="flex items-start gap-3">
                                 <svg class="check-icon w-5 h-5 text-green-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
                                 </svg>
-                                <span class="text-white font-medium">선생님 계정 20명</span>
+                                <span class="text-white font-medium">선생님 계정 무제한</span>
                             </div>
                             <div class="flex items-start gap-3">
                                 <svg class="check-icon w-5 h-5 text-green-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -48131,6 +48083,16 @@ app.post('/api/service-inquiry', async (c) => {
     `).bind(name, email, phone, fullMessage).run()
     
     return c.json({ 
+      success: true,
+      message: '문의가 성공적으로 제출되었습니다.'
+    })
+  } catch (err) {
+    console.error('Service inquiry error:', err)
+    return c.json({ success: false, error: '문의 제출 중 오류가 발생했습니다.' }, 500)
+  }
+})
+// Force rebuild Sat Jan 24 20:41:42 UTC 2026
+ return c.json({ 
       success: true,
       message: '문의가 성공적으로 제출되었습니다.'
     })
