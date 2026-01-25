@@ -49571,6 +49571,9 @@ app.get('/tools/tuition-management', async (c) => {
                 <p class="text-gray-600">학생별 월별 교육비 납입 현황을 한눈에 확인하세요</p>
             </div>
             <div class="flex gap-3">
+                <button onclick="openClassFeeModal()" class="inline-flex items-center px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition font-medium shadow-lg">
+                    <i class="fas fa-cog mr-2"></i> 반 교육비 설정
+                </button>
                 <a href="/tools/revenue-management" class="inline-flex items-center px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium shadow-lg">
                     <i class="fas fa-chart-line mr-2"></i> 매출 관리
                 </a>
@@ -50103,6 +50106,12 @@ app.get('/tools/tuition-management', async (c) => {
             document.getElementById('yearFilter').value = currentYear;
             document.getElementById('monthFilter').value = currentMonth;
             loadCalendar();
+        }
+
+        // ========== 반 교육비 설정 기능 ==========
+        async function openClassFeeModal() {
+            alert('반 교육비 설정 기능은 /students/classes 페이지에서 이용하실 수 있습니다.');
+            window.location.href = '/students/classes';
         }
     </script>
 </body>

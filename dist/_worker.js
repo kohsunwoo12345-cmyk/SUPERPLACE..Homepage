@@ -3167,11 +3167,11 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
         COUNT(DISTINCT tp.student_id) as paying_students
       FROM tuition_payments tp
       JOIN students s ON tp.student_id = s.id
-      WHERE s.user_id = ? 
+      WHERE s.academy_id = ? 
         AND tp.year = ? 
         AND tp.month = ?
         AND tp.status IN ('paid', 'partial')
-    `).bind(t.id,s,a).first(),o=await e.env.DB.prepare(`
+    `).bind(t.academy_id||t.id,s,a).first(),o=await e.env.DB.prepare(`
       SELECT 
         COUNT(DISTINCT s.id) as total_students,
         COALESCE(SUM(tr.monthly_fee), 0) as expected_revenue,
@@ -3179,9 +3179,9 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
       FROM students s
       LEFT JOIN tuition_rates tr ON s.id = tr.student_id
         AND (tr.end_date IS NULL OR tr.end_date >= date('now'))
-      WHERE s.user_id = ?
+      WHERE s.academy_id = ?
         AND s.status = 'active'
-    `).bind(t.id).first(),n=await e.env.DB.prepare(`
+    `).bind(t.academy_id||t.id).first(),n=await e.env.DB.prepare(`
       SELECT 
         COALESCE(SUM(COALESCE(tp.amount, tr.monthly_fee, 0) - COALESCE(tp.paid_amount, 0)), 0) as total_unpaid,
         COUNT(DISTINCT s.id) as unpaid_students
@@ -3190,7 +3190,7 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
         AND tp.year = ? AND tp.month = ?
       LEFT JOIN tuition_rates tr ON s.id = tr.student_id
         AND (tr.end_date IS NULL OR tr.end_date >= date('now'))
-      WHERE s.user_id = ? 
+      WHERE s.academy_id = ? 
         AND s.status = 'active'
         AND COALESCE(tp.status, 'unpaid') IN ('unpaid', 'partial', 'overdue')
     `).bind(s,a,t.id).first();return e.json({success:!0,year:parseInt(s),month:parseInt(a),revenue:{total_paid:(r==null?void 0:r.total_paid)||0,expected_revenue:(o==null?void 0:o.expected_revenue)||0,total_unpaid:(n==null?void 0:n.total_unpaid)||0,collection_rate:(o==null?void 0:o.expected_revenue)>0?(((r==null?void 0:r.total_paid)||0)/o.expected_revenue*100).toFixed(1):0,total_students:(o==null?void 0:o.total_students)||0,paying_students:(r==null?void 0:r.paying_students)||0,unpaid_students:(n==null?void 0:n.unpaid_students)||0}})}catch(t){return console.error("Error fetching monthly revenue:",t),e.json({error:"매출 조회 실패",details:t.message},500)}});$e.get("/api/revenue/yearly",Je,async e=>{try{const t=e.get("user"),s=e.req.query("year")||new Date().getFullYear().toString(),a=[];for(let r=1;r<=12;r++){const o=await e.env.DB.prepare(`
@@ -3199,11 +3199,11 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
           COUNT(DISTINCT tp.student_id) as paying_students
         FROM tuition_payments tp
         JOIN students s ON tp.student_id = s.id
-        WHERE s.user_id = ? 
+        WHERE s.academy_id = ? 
           AND tp.year = ? 
           AND tp.month = ?
           AND tp.status IN ('paid', 'partial')
-      `).bind(t.id,s,r).first();a.push({month:r,total_paid:(o==null?void 0:o.total_paid)||0,paying_students:(o==null?void 0:o.paying_students)||0})}return e.json({success:!0,year:parseInt(s),monthly_data:a,total_yearly:a.reduce((r,o)=>r+(o.total_paid||0),0)})}catch(t){return console.error("Error fetching yearly revenue:",t),e.json({error:"연간 매출 조회 실패",details:t.message},500)}});$e.get("/api/revenue/by-student",Je,async e=>{try{const t=e.get("user"),s=e.req.query("year")||new Date().getFullYear().toString(),a=e.req.query("month")||(new Date().getMonth()+1).toString(),r=await e.env.DB.prepare(`
+      `).bind(t.academy_id||t.id,s,r).first();a.push({month:r,total_paid:(o==null?void 0:o.total_paid)||0,paying_students:(o==null?void 0:o.paying_students)||0})}return e.json({success:!0,year:parseInt(s),monthly_data:a,total_yearly:a.reduce((r,o)=>r+(o.total_paid||0),0)})}catch(t){return console.error("Error fetching yearly revenue:",t),e.json({error:"연간 매출 조회 실패",details:t.message},500)}});$e.get("/api/revenue/by-student",Je,async e=>{try{const t=e.get("user"),s=e.req.query("year")||new Date().getFullYear().toString(),a=e.req.query("month")||(new Date().getMonth()+1).toString(),r=await e.env.DB.prepare(`
       SELECT 
         s.id,
         s.name as student_name,
@@ -3217,7 +3217,7 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
         AND tp.year = ? AND tp.month = ?
       LEFT JOIN tuition_rates tr ON s.id = tr.student_id
         AND (tr.end_date IS NULL OR tr.end_date >= date('now'))
-      WHERE s.user_id = ?
+      WHERE s.academy_id = ?
         AND s.status = 'active'
       ORDER BY paid_amount DESC, s.name ASC
     `).bind(s,a,t.id).all();return e.json({success:!0,year:parseInt(s),month:parseInt(a),students:r.results||[]})}catch(t){return console.error("Error fetching revenue by student:",t),e.json({error:"학생별 매출 조회 실패",details:t.message},500)}});$e.get("/api/revenue/dashboard",Je,async e=>{try{const t=e.get("user"),s=new Date,a=s.getFullYear(),r=s.getMonth()+1,o=await e.env.DB.prepare(`
@@ -3225,41 +3225,41 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
         COALESCE(SUM(tp.paid_amount), 0) as total_paid
       FROM tuition_payments tp
       JOIN students s ON tp.student_id = s.id
-      WHERE s.user_id = ? 
+      WHERE s.academy_id = ? 
         AND tp.year = ? 
         AND tp.month = ?
         AND tp.status IN ('paid', 'partial')
-    `).bind(t.id,a,r).first(),n=r===1?12:r-1,i=r===1?a-1:a,l=await e.env.DB.prepare(`
+    `).bind(t.academy_id||t.id,a,r).first(),n=r===1?12:r-1,i=r===1?a-1:a,l=await e.env.DB.prepare(`
       SELECT 
         COALESCE(SUM(tp.paid_amount), 0) as total_paid
       FROM tuition_payments tp
       JOIN students s ON tp.student_id = s.id
-      WHERE s.user_id = ? 
+      WHERE s.academy_id = ? 
         AND tp.year = ? 
         AND tp.month = ?
         AND tp.status IN ('paid', 'partial')
-    `).bind(t.id,i,n).first(),d=await e.env.DB.prepare(`
+    `).bind(t.academy_id||t.id,i,n).first(),d=await e.env.DB.prepare(`
       SELECT 
         COALESCE(SUM(tp.paid_amount), 0) as total_paid
       FROM tuition_payments tp
       JOIN students s ON tp.student_id = s.id
-      WHERE s.user_id = ? 
+      WHERE s.academy_id = ? 
         AND tp.year = ?
         AND tp.status IN ('paid', 'partial')
-    `).bind(t.id,a).first(),p=await e.env.DB.prepare(`
+    `).bind(t.academy_id||t.id,a).first(),p=await e.env.DB.prepare(`
       SELECT 
         COUNT(*) as total_students,
         COALESCE(AVG(tr.monthly_fee), 0) as avg_fee
       FROM students s
       LEFT JOIN tuition_rates tr ON s.id = tr.student_id
         AND (tr.end_date IS NULL OR tr.end_date >= date('now'))
-      WHERE s.user_id = ?
+      WHERE s.academy_id = ?
         AND s.status = 'active'
-    `).bind(t.id).first(),u=await e.env.DB.prepare(`
+    `).bind(t.academy_id||t.id).first(),u=await e.env.DB.prepare(`
       SELECT COUNT(*) as total_teachers
       FROM users
       WHERE parent_user_id = ? AND user_type = 'teacher'
-    `).bind(t.id).first(),m=(o==null?void 0:o.total_paid)||0,g=(l==null?void 0:l.total_paid)||0,x=g>0?((m-g)/g*100).toFixed(1):0;return e.json({success:!0,dashboard:{this_month_revenue:m,last_month_revenue:g,growth_rate:parseFloat(x),yearly_revenue:(d==null?void 0:d.total_paid)||0,total_students:(p==null?void 0:p.total_students)||0,total_teachers:(u==null?void 0:u.total_teachers)||0,avg_monthly_fee:Math.round((p==null?void 0:p.avg_fee)||0)}})}catch(t){return console.error("Error fetching revenue dashboard:",t),e.json({error:"매출 대시보드 조회 실패",details:t.message},500)}});const c=new Fe;c.use("/api/*",ws());c.use("/static/*",js({root:"./public"}));c.route("/",G);c.route("/",H);c.route("/",$e);c.post("/api/contact",async e=>{try{const{name:t,email:s,phone:a,academy_name:r,message:o}=await e.req.json();if(!t||!s||!a||!o)return e.json({success:!1,error:"필수 항목을 입력해주세요."},400);const n=await e.env.DB.prepare(`
+    `).bind(t.academy_id||t.id).first(),m=(o==null?void 0:o.total_paid)||0,g=(l==null?void 0:l.total_paid)||0,x=g>0?((m-g)/g*100).toFixed(1):0;return e.json({success:!0,dashboard:{this_month_revenue:m,last_month_revenue:g,growth_rate:parseFloat(x),yearly_revenue:(d==null?void 0:d.total_paid)||0,total_students:(p==null?void 0:p.total_students)||0,total_teachers:(u==null?void 0:u.total_teachers)||0,avg_monthly_fee:Math.round((p==null?void 0:p.avg_fee)||0)}})}catch(t){return console.error("Error fetching revenue dashboard:",t),e.json({error:"매출 대시보드 조회 실패",details:t.message},500)}});const c=new Fe;c.use("/api/*",ws());c.use("/static/*",js({root:"./public"}));c.route("/",G);c.route("/",H);c.route("/",$e);c.post("/api/contact",async e=>{try{const{name:t,email:s,phone:a,academy_name:r,message:o}=await e.req.json();if(!t||!s||!a||!o)return e.json({success:!1,error:"필수 항목을 입력해주세요."},400);const n=await e.env.DB.prepare(`
       INSERT INTO contacts (name, email, phone, academy_name, message)
       VALUES (?, ?, ?, ?, ?)
     `).bind(t,s,a,r||"",o).run();return e.json({success:!0,message:"문의가 접수되었습니다. 빠른 시일 내에 연락드리겠습니다.",id:n.meta.last_row_id})}catch(t){return console.error("Contact submission error:",t),e.json({success:!1,error:"문의 접수 중 오류가 발생했습니다."},500)}});c.post("/api/signup",async e=>{try{const{email:t,password:s,name:a,phone:r,academy_name:o,academy_location:n,marketing_consent:i}=await e.req.json();if(!t||!s||!a||!r||!o)return e.json({success:!1,error:"필수 항목을 입력해주세요."},400);if(await e.env.DB.prepare(`
@@ -37499,6 +37499,9 @@ ${o}`;return await e.env.DB.prepare(`
                 <p class="text-gray-600">학생별 월별 교육비 납입 현황을 한눈에 확인하세요</p>
             </div>
             <div class="flex gap-3">
+                <button onclick="openClassFeeModal()" class="inline-flex items-center px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition font-medium shadow-lg">
+                    <i class="fas fa-cog mr-2"></i> 반 교육비 설정
+                </button>
                 <a href="/tools/revenue-management" class="inline-flex items-center px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium shadow-lg">
                     <i class="fas fa-chart-line mr-2"></i> 매출 관리
                 </a>
@@ -38031,6 +38034,12 @@ ${o}`;return await e.env.DB.prepare(`
             document.getElementById('yearFilter').value = currentYear;
             document.getElementById('monthFilter').value = currentMonth;
             loadCalendar();
+        }
+
+        // ========== 반 교육비 설정 기능 ==========
+        async function openClassFeeModal() {
+            alert('반 교육비 설정 기능은 /students/classes 페이지에서 이용하실 수 있습니다.');
+            window.location.href = '/students/classes';
         }
     <\/script>
 </body>
