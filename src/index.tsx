@@ -11088,6 +11088,128 @@ app.post('/api/card-payment/approve', async (c) => {
       return c.json({ success: false, error: '이미 승인된 신청입니다.' }, 400)
     }
 
+    // 플랜 한도 매핑
+    const planLimits: any = {
+      '스타터 플랜': { student: 50, ai_report: 50, landing_page: 50, teacher: 2, price: 55000 },
+      '베이직 플랜': { student: 150, ai_report: 150, landing_page: 160, teacher: 6, price: 143000 },
+      '프로 플랜': { student: 500, ai_report: 500, landing_page: 530, teacher: 20, price: 187000 },
+      '프리미엄 플랜': { student: 1000, ai_report: 1000, landing_page: 1100, teacher: 40, price: 330000 },
+      '엔터프라이즈 플랜': { student: 3000, ai_report: 3000, landing_page: 5000, teacher: 999, price: 750000 }
+    }
+
+    const limits = planLimits[request.plan_name] || planLimits['스타터 플랜']
+    const userId = request.user_id
+    const academyId = userId
+
+    // FK 제약 조건을 위해 academies 테이블에 레코드가 있는지 확인하고 없으면 생성
+    const academyExists = await c.env.DB.prepare('SELECT id FROM academies WHERE id = ?').bind(academyId).first()
+    if (!academyExists) {
+      await c.env.DB.prepare(`
+        INSERT INTO academies (id, name, created_at) 
+        VALUES (?, ?, CURRENT_TIMESTAMP)
+      `).bind(academyId, request.user_name + '의 학원', ).run()
+    }
+
+    // 기존 구독이 있으면 업데이트, 없으면 생성
+    const existingSubscription = await c.env.DB.prepare(`
+      SELECT id FROM subscriptions WHERE academy_id = ? AND status = 'active'
+    `).bind(academyId).first()
+
+    const startDate = new Date().toISOString().split('T')[0]
+    const endDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+
+    if (existingSubscription) {
+      // 기존 구독 업데이트
+      await c.env.DB.prepare(`
+        UPDATE subscriptions
+        SET plan_name = ?,
+            plan_price = ?,
+            student_limit = ?,
+            ai_report_limit = ?,
+            landing_page_limit = ?,
+            teacher_limit = ?,
+            subscription_start_date = ?,
+            subscription_end_date = ?,
+            status = 'active',
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+      `).bind(
+        request.plan_name,
+        limits.price,
+        limits.student,
+        limits.ai_report,
+        limits.landing_page,
+        limits.teacher,
+        startDate,
+        endDate,
+        existingSubscription.id
+      ).run()
+
+      // usage_tracking도 업데이트
+      await c.env.DB.prepare(`
+        UPDATE usage_tracking
+        SET student_limit = ?,
+            ai_report_limit = ?,
+            landing_page_limit = ?,
+            teacher_limit = ?,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE subscription_id = ?
+      `).bind(
+        limits.student,
+        limits.ai_report,
+        limits.landing_page,
+        limits.teacher,
+        existingSubscription.id
+      ).run()
+    } else {
+      // 새 구독 생성
+      const subscriptionResult = await c.env.DB.prepare(`
+        INSERT INTO subscriptions (
+          user_id, academy_id, plan_name, plan_price,
+          student_limit, ai_report_limit, landing_page_limit, teacher_limit,
+          subscription_start_date, subscription_end_date, status, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', CURRENT_TIMESTAMP)
+      `).bind(
+        userId,
+        academyId,
+        request.plan_name,
+        limits.price,
+        limits.student,
+        limits.ai_report,
+        limits.landing_page,
+        limits.teacher,
+        startDate,
+        endDate
+      ).run()
+
+      const subscriptionId = subscriptionResult.meta.last_row_id
+
+      // usage_tracking 생성
+      await c.env.DB.prepare(`
+        INSERT INTO usage_tracking (
+          subscription_id,
+          current_students,
+          ai_reports_used_this_month,
+          landing_pages_created,
+          current_teachers,
+          student_limit,
+          ai_report_limit,
+          landing_page_limit,
+          teacher_limit,
+          last_ai_report_reset_date,
+          last_sms_reset_date,
+          created_at,
+          updated_at
+        ) VALUES (?, 0, 0, 0, 0, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+      `).bind(
+        subscriptionId,
+        limits.student,
+        limits.ai_report,
+        limits.landing_page,
+        limits.teacher
+      ).run()
+    }
+
     // 신청 상태 업데이트
     await c.env.DB.prepare(`
       UPDATE card_payment_requests 
@@ -11095,9 +11217,11 @@ app.post('/api/card-payment/approve', async (c) => {
       WHERE id = ?
     `).bind(adminEmail, requestId).run()
 
+    console.log(`✅ 카드결제 승인 완료: ${request.user_name} - ${request.plan_name}`)
+
     return c.json({
       success: true,
-      message: '카드결제 신청이 승인되었습니다. 사용자에게 결제 링크를 발송해주세요.'
+      message: `카드결제 신청이 승인되고 ${request.plan_name}이 적용되었습니다. 사용자에게 결제 링크를 발송해주세요.`
     })
   } catch (error) {
     console.error('카드결제 신청 승인 실패:', error)
@@ -37857,7 +37981,7 @@ async function loadActiveSessionCount(){try{const user=JSON.parse(localStorage.g
 loadActiveSessionCount();
 setInterval(loadActiveSessionCount,30000);
 </script>`
-  const s=`<div class="mb-8"><h2 class="text-xl font-bold mb-4">신청 대기</h2><div class="grid md:grid-cols-4 gap-6"><div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow p-6 text-white"><div class="flex items-center justify-between mb-2"><span>입금 대기</span><i class="fas fa-money-bill-wave text-2xl"></i></div><p class="text-3xl font-bold">${pd}</p></div><div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow p-6 text-white"><div class="flex items-center justify-between mb-2"><span>발신번호 대기</span><i class="fas fa-phone text-2xl"></i></div><p class="text-3xl font-bold">${ps}</p></div><a href="/admin/bank-transfers" class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow p-6 text-white hover:shadow-lg transition"><div class="flex items-center justify-between mb-2"><span>계좌이체 대기</span><i class="fas fa-university text-2xl"></i></div><p class="text-3xl font-bold">${pbt}</p><p class="text-sm text-blue-100 mt-2">클릭하여 관리</p></a><a href="/admin/free-plan-requests" class="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl shadow p-6 text-white hover:shadow-lg transition"><div class="flex items-center justify-between mb-2"><span>무료 플랜 대기</span><i class="fas fa-gift text-2xl"></i></div><p class="text-3xl font-bold">${pfp}</p><p class="text-sm text-emerald-100 mt-2">클릭하여 관리</p></a><a href="/admin/card-payments" class="bg-gradient-to-br from-pink-500 to-pink-600 rounded-xl shadow p-6 text-white hover:shadow-lg transition"><div class="flex items-center justify-between mb-2"><span>카드결제 신청</span><i class="fas fa-credit-card text-2xl"></i></div><p class="text-3xl font-bold">${pcp}</p><p class="text-sm text-pink-100 mt-2">클릭하여 관리</p></a></div></div>`
+  const s=`<div class="mb-8"><h2 class="text-xl font-bold mb-4">신청 대기</h2><div class="grid md:grid-cols-5 gap-6"><div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow p-6 text-white"><div class="flex items-center justify-between mb-2"><span>입금 대기</span><i class="fas fa-money-bill-wave text-2xl"></i></div><p class="text-3xl font-bold">${pd}</p></div><div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow p-6 text-white"><div class="flex items-center justify-between mb-2"><span>발신번호 대기</span><i class="fas fa-phone text-2xl"></i></div><p class="text-3xl font-bold">${ps}</p></div><a href="/admin/bank-transfers" class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow p-6 text-white hover:shadow-lg transition"><div class="flex items-center justify-between mb-2"><span>계좌이체 대기</span><i class="fas fa-university text-2xl"></i></div><p class="text-3xl font-bold">${pbt}</p><p class="text-sm text-blue-100 mt-2">클릭하여 관리</p></a><a href="/admin/free-plan-requests" class="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl shadow p-6 text-white hover:shadow-lg transition"><div class="flex items-center justify-between mb-2"><span>무료 플랜 대기</span><i class="fas fa-gift text-2xl"></i></div><p class="text-3xl font-bold">${pfp}</p><p class="text-sm text-emerald-100 mt-2">클릭하여 관리</p></a><a href="/admin/card-payments" class="bg-gradient-to-br from-pink-500 to-pink-600 rounded-xl shadow p-6 text-white hover:shadow-lg transition"><div class="flex items-center justify-between mb-2"><span>카드결제 신청</span><i class="fas fa-credit-card text-2xl"></i></div><p class="text-3xl font-bold">${pcp}</p><p class="text-sm text-pink-100 mt-2">클릭하여 관리</p></a></div></div>`
   const l=`<div class="grid md:grid-cols-3 gap-6"><a href="/admin/users" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"><i class="fas fa-user-cog text-blue-600 text-xl"></i></div><div><h3 class="text-lg font-bold">사용자 관리</h3><p class="text-gray-600 text-sm">권한 관리</p></div></div></a><a href="/admin/contacts" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center"><i class="fas fa-comments text-green-600 text-xl"></i></div><div><h3 class="text-lg font-bold">문의 관리</h3><p class="text-gray-600 text-sm">문의 처리</p></div></div></a><a href="/admin/revenue" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center"><i class="fas fa-chart-line text-yellow-600 text-xl"></i></div><div><h3 class="text-lg font-bold">매출 관리</h3><p class="text-gray-600 text-sm">매출 통계</p></div></div></a><a href="/admin/sms" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"><i class="fas fa-sms text-blue-600 text-xl"></i></div><div><h3 class="text-lg font-bold">문자 관리</h3><p class="text-gray-600 text-sm">SMS 발송</p></div></div></a><a href="/admin/sender/verification" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center"><i class="fas fa-phone text-purple-600 text-xl"></i></div><div><h3 class="text-lg font-bold">발신번호</h3><p class="text-gray-600 text-sm">인증 승인</p></div></div></a><a href="/admin/deposits" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center"><i class="fas fa-money-bill-wave text-green-600 text-xl"></i></div><div><h3 class="text-lg font-bold">입금 관리</h3><p class="text-gray-600 text-sm">포인트 승인</p></div></div></a><a href="/admin/bank-transfers" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"><i class="fas fa-university text-blue-600 text-xl"></i></div><div><h3 class="text-lg font-bold">계좌이체</h3><p class="text-gray-600 text-sm">승인 관리</p></div></div></a><a href="/admin/programs" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center"><i class="fas fa-graduation-cap text-purple-600 text-xl"></i></div><div><h3 class="text-lg font-bold">프로그램</h3><p class="text-gray-600 text-sm">교육 관리</p></div></div></a><a href="/admin/card-payments" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-pink-100 rounded-lg flex items-center justify-center"><i class="fas fa-credit-card text-pink-600 text-xl"></i></div><div><h3 class="text-lg font-bold">카드결제 신청</h3><p class="text-gray-600 text-sm">결제 승인 관리</p></div></div></a></div></div><script>(function(){try{let sessionId=localStorage.getItem('sessionId');if(!sessionId){sessionId='session_'+Date.now()+'_'+Math.random().toString(36).substr(2,9);localStorage.setItem('sessionId',sessionId);}const user=JSON.parse(localStorage.getItem('user')||'null');fetch('/api/session/track',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:sessionId,userId:user?.id||null})}).catch(err=>console.log('Session track error:',err));setInterval(()=>{fetch('/api/session/track',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:sessionId,userId:user?.id||null})}).catch(err=>console.log('Session track error:',err));},5*60*1000);}catch(e){console.log('Session tracking init error:',e);}})();</script></body></html>`
   return c.html(h+n+b+s+l)
 })
