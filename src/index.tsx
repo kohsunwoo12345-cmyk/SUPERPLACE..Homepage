@@ -27955,7 +27955,28 @@ app.post('/api/learning-reports/generate', async (c) => {
       WHERE academy_id = ? AND subscription_id = ?
     `).bind(student.academy_id, subscription.id).first()
 
-    const currentReports = usage?.ai_reports_used_this_month || 0
+    // 🔥 usage_tracking 레코드가 없으면 자동 생성
+    let currentReports = 0
+    if (!usage) {
+      console.log('⚠️ [GenerateReport] No usage_tracking record, creating...')
+      try {
+        await c.env.DB.prepare(`
+          INSERT INTO usage_tracking (
+            academy_id, subscription_id, current_students, ai_reports_used_this_month,
+            landing_pages_created, current_teachers, sms_sent_this_month,
+            created_at, updated_at
+          ) VALUES (?, ?, 0, 0, 0, 0, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+        `).bind(student.academy_id, subscription.id).run()
+        console.log('✅ [GenerateReport] Auto-created usage_tracking')
+        currentReports = 0
+      } catch (createErr) {
+        console.error('❌ [GenerateReport] Failed to create usage_tracking:', createErr.message)
+        currentReports = 0
+      }
+    } else {
+      currentReports = usage.ai_reports_used_this_month || 0
+    }
+    
     if (currentReports >= subscription.ai_report_limit) {
       return c.json({ 
         success: false, 
@@ -28215,12 +28236,26 @@ ${recommendations}
     
     // ✅ 사용량 증가
     try {
-      await c.env.DB.prepare(`
+      const updateResult = await c.env.DB.prepare(`
         UPDATE usage_tracking 
         SET ai_reports_used_this_month = ai_reports_used_this_month + 1, updated_at = CURRENT_TIMESTAMP
         WHERE academy_id = ? AND subscription_id = ?
       `).bind(student.academy_id, subscription.id).run()
-      console.log('📈 [GenerateReport] Usage incremented successfully')
+      
+      // 🔥 UPDATE가 실패하면 (레코드가 없으면) INSERT
+      if (updateResult.meta.changes === 0) {
+        console.log('⚠️ [GenerateReport] No usage_tracking to update, creating with count=1...')
+        await c.env.DB.prepare(`
+          INSERT INTO usage_tracking (
+            academy_id, subscription_id, current_students, ai_reports_used_this_month,
+            landing_pages_created, current_teachers, sms_sent_this_month,
+            created_at, updated_at
+          ) VALUES (?, ?, 0, 1, 0, 0, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+        `).bind(student.academy_id, subscription.id).run()
+        console.log('✅ [GenerateReport] Auto-created usage_tracking with ai_reports=1')
+      } else {
+        console.log('📈 [GenerateReport] Usage incremented successfully')
+      }
     } catch (usageErr) {
       console.error('⚠️ [GenerateReport] Failed to increment usage:', usageErr)
     }
