@@ -11088,7 +11088,7 @@ app.post('/api/card-payment/approve', async (c) => {
       return c.json({ success: false, error: '이미 승인된 신청입니다.' }, 400)
     }
 
-    // 플랜 한도 매핑
+    // 플랜별 한도 설정
     const planLimits: any = {
       '스타터 플랜': { student: 50, ai_report: 50, landing_page: 50, teacher: 2, price: 55000 },
       '베이직 플랜': { student: 150, ai_report: 150, landing_page: 160, teacher: 6, price: 143000 },
@@ -11098,117 +11098,103 @@ app.post('/api/card-payment/approve', async (c) => {
     }
 
     const limits = planLimits[request.plan_name] || planLimits['스타터 플랜']
-    const userId = request.user_id
-    const academyId = userId
 
-    // FK 제약 조건을 위해 academies 테이블에 레코드가 있는지 확인하고 없으면 생성
-    const academyExists = await c.env.DB.prepare('SELECT id FROM academies WHERE id = ?').bind(academyId).first()
-    if (!academyExists) {
-      await c.env.DB.prepare(`
-        INSERT INTO academies (id, name, created_at) 
-        VALUES (?, ?, CURRENT_TIMESTAMP)
-      `).bind(academyId, request.user_name + '의 학원').run()
+    // 사용자의 academy_id는 user.id와 동일하게 설정
+    const academyId = request.user_id
+    console.log('[Card Payment Approve] Using academyId:', academyId, 'for user:', request.user_id)
+    
+    const actualAcademyId = academyId
+    console.log('[Card Payment Approve] Using academy_id = user.id:', actualAcademyId)
+    
+    // FOREIGN KEY 제약 만족: academies 테이블에 user.id를 id로 하는 레코드 생성
+    try {
+      const existingAcademy = await c.env.DB.prepare(`
+        SELECT id FROM academies WHERE id = ?
+      `).bind(actualAcademyId).first()
+      
+      if (!existingAcademy) {
+        console.log('[Card Payment Approve] Creating academy with explicit id:', actualAcademyId)
+        
+        await c.env.DB.prepare(`PRAGMA foreign_keys = OFF`).run()
+        
+        await c.env.DB.prepare(`
+          INSERT OR REPLACE INTO academies (id, academy_name, owner_id, created_at)
+          VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+        `).bind(actualAcademyId, request.user_name + ' 학원', actualAcademyId).run()
+        
+        await c.env.DB.prepare(`PRAGMA foreign_keys = ON`).run()
+        
+        console.log('[Card Payment Approve] Academy created with id:', actualAcademyId)
+      }
+    } catch (academyError) {
+      console.error('[Card Payment Approve] Academy creation error:', academyError)
     }
+    
+    // users 테이블에서 academy_id 업데이트
+    await c.env.DB.prepare(`
+      UPDATE users SET academy_id = ? WHERE id = ?
+    `).bind(actualAcademyId, request.user_id).run()
+    console.log('[Card Payment Approve] Updated users.academy_id')
 
-    // 기존 구독이 있으면 업데이트, 없으면 생성
-    const existingSubscription = await c.env.DB.prepare(`
-      SELECT id FROM subscriptions WHERE academy_id = ? AND status = 'active'
-    `).bind(academyId).first()
+    // 기존 활성 구독 비활성화
+    await c.env.DB.prepare(`
+      UPDATE subscriptions 
+      SET status = 'expired', updated_at = CURRENT_TIMESTAMP
+      WHERE academy_id = ? AND status = 'active'
+    `).bind(actualAcademyId).run()
+    console.log('[Card Payment Approve] Deactivated existing subscriptions')
 
-    const startDate = new Date().toISOString().split('T')[0]
-    const endDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+    // 구독 시작일과 종료일 계산 (1개월)
+    const startDate = new Date()
+    const endDate = new Date()
+    endDate.setMonth(endDate.getMonth() + 1)
+    
+    const startDateStr = startDate.toISOString().split('T')[0]
+    const endDateStr = endDate.toISOString().split('T')[0]
+    console.log('[Card Payment Approve] Date range:', startDateStr, 'to', endDateStr)
 
-    if (existingSubscription) {
-      // 기존 구독 업데이트
-      await c.env.DB.prepare(`
-        UPDATE subscriptions
-        SET plan_name = ?,
-            plan_price = ?,
-            student_limit = ?,
-            ai_report_limit = ?,
-            landing_page_limit = ?,
-            teacher_limit = ?,
-            subscription_start_date = ?,
-            subscription_end_date = ?,
-            status = 'active',
-            updated_at = CURRENT_TIMESTAMP
-        WHERE id = ?
-      `).bind(
-        request.plan_name,
-        limits.price,
-        limits.student,
-        limits.ai_report,
-        limits.landing_page,
-        limits.teacher,
-        startDate,
-        endDate,
-        existingSubscription.id
-      ).run()
+    // 구독 생성
+    const subscriptionResult = await c.env.DB.prepare(`
+      INSERT INTO subscriptions (
+        academy_id, plan_name, plan_price, student_limit, ai_report_limit, 
+        landing_page_limit, teacher_limit, subscription_start_date, 
+        subscription_end_date, status, payment_method, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', 'card_payment', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+    `).bind(
+      actualAcademyId,
+      request.plan_name,
+      limits.price,
+      limits.student,
+      limits.ai_report,
+      limits.landing_page,
+      limits.teacher,
+      startDateStr,
+      endDateStr
+    ).run()
 
-      // usage_tracking도 업데이트
-      await c.env.DB.prepare(`
-        UPDATE usage_tracking
-        SET student_limit = ?,
-            ai_report_limit = ?,
-            landing_page_limit = ?,
-            teacher_limit = ?,
-            updated_at = CURRENT_TIMESTAMP
-        WHERE subscription_id = ?
-      `).bind(
-        limits.student,
-        limits.ai_report,
-        limits.landing_page,
-        limits.teacher,
-        existingSubscription.id
-      ).run()
-    } else {
-      // 새 구독 생성
-      const subscriptionResult = await c.env.DB.prepare(`
-        INSERT INTO subscriptions (
-          user_id, academy_id, plan_name, plan_price,
-          student_limit, ai_report_limit, landing_page_limit, teacher_limit,
-          subscription_start_date, subscription_end_date, status, created_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', CURRENT_TIMESTAMP)
-      `).bind(
-        userId,
-        academyId,
-        request.plan_name,
-        limits.price,
-        limits.student,
-        limits.ai_report,
-        limits.landing_page,
-        limits.teacher,
-        startDate,
-        endDate
-      ).run()
+    const subscriptionId = subscriptionResult.meta.last_row_id
+    console.log('[Card Payment Approve] Created subscription:', subscriptionId)
 
-      const subscriptionId = subscriptionResult.meta.last_row_id
+    // 기존 usage_tracking 삭제
+    await c.env.DB.prepare(`
+      DELETE FROM usage_tracking WHERE academy_id = ?
+    `).bind(actualAcademyId).run()
+    console.log('[Card Payment Approve] Deleted old usage_tracking')
 
-      // usage_tracking 생성
-      await c.env.DB.prepare(`
-        INSERT INTO usage_tracking (
-          subscription_id,
-          current_students,
-          ai_reports_used_this_month,
-          landing_pages_created,
-          current_teachers,
-          student_limit,
-          ai_report_limit,
-          landing_page_limit,
-          teacher_limit,
-          last_ai_report_reset_date,
-          last_sms_reset_date,
-          created_at,
-          updated_at
-        ) VALUES (?, 0, 0, 0, 0, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-      `).bind(
-        subscriptionId,
-        limits.student,
-        limits.ai_report,
-        limits.landing_page,
-        limits.teacher
-      ).run()
-    }
+    // usage_tracking 생성
+    await c.env.DB.prepare(`
+      INSERT INTO usage_tracking (
+        academy_id, subscription_id, current_students, ai_reports_used_this_month,
+        landing_pages_created, current_teachers, sms_sent_this_month,
+        last_ai_report_reset_date, last_sms_reset_date, created_at, updated_at
+      ) VALUES (?, ?, 0, 0, 0, 0, 0, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+    `).bind(
+      actualAcademyId, 
+      subscriptionId,
+      startDateStr,
+      startDateStr
+    ).run()
+    console.log('[Card Payment Approve] Created usage_tracking')
 
     // 신청 상태 업데이트
     await c.env.DB.prepare(`
@@ -11225,10 +11211,12 @@ app.post('/api/card-payment/approve', async (c) => {
     })
   } catch (error: any) {
     console.error('카드결제 신청 승인 실패:', error)
+    console.error('Error stack:', error?.stack)
     return c.json({ 
       success: false, 
       error: '승인 처리 중 오류가 발생했습니다.', 
-      details: error?.message || String(error) 
+      details: error?.message || String(error),
+      stack: error?.stack || ''
     }, 500)
   }
 })
