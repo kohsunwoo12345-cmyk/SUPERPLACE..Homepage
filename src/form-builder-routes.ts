@@ -353,19 +353,26 @@ app.get('/api/form-templates/:id/html', requireAuth, async (c) => {
 // 폼 제출 (공개 API - 인증 불필요)
 app.post('/api/form-submissions', async (c) => {
   try {
+    console.log('[Form Submission] Starting...')
     const data = await c.req.json()
+    console.log('[Form Submission] Data:', JSON.stringify(data))
     
     if (!data.form_template_id || !data.submission_data) {
+      console.log('[Form Submission] Missing fields')
       return c.json({ error: '필수 항목을 입력해주세요' }, 400)
     }
 
+    console.log('[Form Submission] Looking up template...')
     const template: any = await c.env.DB.prepare(`
       SELECT * FROM form_templates WHERE id = ?
     `).bind(data.form_template_id).first()
 
     if (!template) {
+      console.log('[Form Submission] Template not found')
       return c.json({ error: '폼을 찾을 수 없습니다' }, 404)
     }
+    
+    console.log('[Form Submission] Template found, inserting...')
 
     const ipAddress = c.req.header('cf-connecting-ip') || c.req.header('x-forwarded-for') || 'unknown'
     const userAgent = c.req.header('user-agent') || 'unknown'
@@ -382,6 +389,8 @@ app.post('/api/form-submissions', async (c) => {
       ipAddress,
       userAgent
     ).run()
+    
+    console.log('[Form Submission] Success!')
 
     return c.json({ 
       success: true, 
@@ -390,7 +399,12 @@ app.post('/api/form-submissions', async (c) => {
     })
   } catch (error) {
     console.error('Error submitting form:', error)
-    return c.json({ error: '제출에 실패했습니다' }, 500)
+    const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류'
+    return c.json({ 
+      error: '제출에 실패했습니다', 
+      details: errorMessage,
+      stack: error instanceof Error ? error.stack : undefined
+    }, 500)
   }
 })
 
