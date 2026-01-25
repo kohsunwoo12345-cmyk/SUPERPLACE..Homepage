@@ -1350,13 +1350,27 @@ app.post('/api/emergency/sync-my-landing-pages', async (c) => {
     }
     
     // 현재 플랜 기간 내 랜딩페이지 개수 (원장 + 선생님)
-    const countResult = await c.env.DB.prepare(`
+    // ⚠️ 단, 새로 생성된 구독의 경우 전체 랜딩페이지 카운트 (플랜 변경 대응)
+    let countQuery = `
       SELECT COUNT(*) as count FROM landing_pages 
       WHERE user_id IN (
         SELECT id FROM users WHERE id = ? OR academy_id = ?
       )
-      AND created_at >= ?
-    `).bind(academyId, academyId, subscription.subscription_start_date).first()
+    `
+    
+    // 구독 생성 후 1시간 이내면 전체 랜딩페이지 카운트
+    const subscriptionCreatedAt = new Date(subscription.created_at)
+    const now = new Date()
+    const hoursSinceCreation = (now - subscriptionCreatedAt) / (1000 * 60 * 60)
+    
+    let countResult
+    if (hoursSinceCreation <= 1) {
+      console.log('[Emergency Sync] New subscription detected, counting ALL landing pages')
+      countResult = await c.env.DB.prepare(countQuery).bind(academyId, academyId).first()
+    } else {
+      countQuery += ` AND created_at >= ?`
+      countResult = await c.env.DB.prepare(countQuery).bind(academyId, academyId, subscription.subscription_start_date).first()
+    }
     
     const actualCount = countResult?.count || 0
     
@@ -1598,7 +1612,7 @@ app.post('/api/admin/sync-landing-pages-usage', async (c) => {
     
     // 모든 활성 구독 조회
     const subscriptions = await c.env.DB.prepare(`
-      SELECT id, academy_id, subscription_start_date FROM subscriptions 
+      SELECT id, academy_id, subscription_start_date, created_at FROM subscriptions 
       WHERE status = 'active'
     `).all()
     
@@ -1610,13 +1624,28 @@ app.post('/api/admin/sync-landing-pages-usage', async (c) => {
       try {
         // 🔥 현재 구독 기간 내에 생성된 랜딩페이지만 COUNT
         // 원장 본인 + 해당 학원 소속 선생님들의 랜딩페이지 모두 포함
-        const landingPagesCount = await c.env.DB.prepare(`
+        // ⚠️ 단, 새로 생성된 구독의 경우 전체 랜딩페이지 카운트 (플랜 변경 대응)
+        let countQuery = `
           SELECT COUNT(*) as count FROM landing_pages 
           WHERE user_id IN (
             SELECT id FROM users WHERE id = ? OR academy_id = ?
           )
-          AND created_at >= ?
-        `).bind(sub.academy_id, sub.academy_id, sub.subscription_start_date).first()
+        `
+        
+        // 구독 생성 후 1시간 이내면 전체 랜딩페이지 카운트
+        const subscriptionCreatedAt = new Date(sub.created_at)
+        const now = new Date()
+        const hoursSinceCreation = (now - subscriptionCreatedAt) / (1000 * 60 * 60)
+        
+        let landingPagesCount
+        if (hoursSinceCreation <= 1) {
+          // 새 구독: 전체 카운트
+          landingPagesCount = await c.env.DB.prepare(countQuery).bind(sub.academy_id, sub.academy_id).first()
+        } else {
+          // 기존 구독: 기간 내 카운트
+          countQuery += ` AND created_at >= ?`
+          landingPagesCount = await c.env.DB.prepare(countQuery).bind(sub.academy_id, sub.academy_id, sub.subscription_start_date).first()
+        }
         
         const actualCount = landingPagesCount?.count || 0
         
@@ -10812,15 +10841,33 @@ app.get('/api/usage/check', async (c) => {
       
       // 🔥 현재 구독 기간 내에 생성된 랜딩페이지만 COUNT
       // 원장 본인 + 해당 학원 소속 선생님들의 랜딩페이지 모두 포함
-      const countResult = await c.env.DB.prepare(`
+      // ⚠️ 단, 새로 생성된 구독의 경우 이전 랜딩페이지도 포함 (플랜 변경 대응)
+      let countQuery = `
         SELECT COUNT(*) as count FROM landing_pages 
         WHERE user_id IN (
           SELECT id FROM users WHERE id = ? OR academy_id = ?
         )
-        AND created_at >= ?
-      `).bind(academyId, academyId, subscription.subscription_start_date).first()
+      `
+      
+      // 구독 생성 후 1시간 이내면 전체 랜딩페이지 카운트 (플랜 변경 케이스)
+      const subscriptionCreatedAt = new Date(subscription.created_at)
+      const now = new Date()
+      const hoursSinceCreation = (now - subscriptionCreatedAt) / (1000 * 60 * 60)
+      
+      if (hoursSinceCreation <= 1) {
+        console.log('[Usage Check] ⚡ New subscription detected (', hoursSinceCreation.toFixed(2), 'hours old), counting ALL landing pages')
+        // 전체 랜딩페이지 카운트
+      } else {
+        // 구독 기간 내 랜딩페이지만 카운트
+        countQuery += ` AND created_at >= ?`
+      }
+      
+      const countResult = hoursSinceCreation <= 1 ? 
+        await c.env.DB.prepare(countQuery).bind(academyId, academyId).first() :
+        await c.env.DB.prepare(countQuery).bind(academyId, academyId, subscription.subscription_start_date).first()
+      
       const actualCount = countResult?.count || 0
-      console.log('[Usage Check] 📈 Landing pages created since', subscription.subscription_start_date, ':', actualCount, 'for academy_id:', academyId, '(including teachers)')
+      console.log('[Usage Check] 📈 Landing pages count:', actualCount, 'for academy_id:', academyId, '(including teachers)')
       
       if (usage && usage.landing_pages_created !== null && usage.landing_pages_created !== undefined) {
         const trackedCount = usage.landing_pages_created
