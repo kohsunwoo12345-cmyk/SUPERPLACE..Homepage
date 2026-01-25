@@ -45483,6 +45483,11 @@ app.get('/store', (c) => {
 `);
 });
 
+// Redirect /students/ to /students (remove trailing slash)
+app.get('/students/', (c) => {
+  return c.redirect('/students', 301);
+});
+
 app.get('/students', (c) => {
   // 캐시 무효화 헤더 추가
   c.header('Cache-Control', 'no-cache, no-store, must-revalidate');
