@@ -25678,12 +25678,20 @@ app.get('/api/students', async (c) => {
       console.log('👥 [GetStudents] Full access - loading all students')
       console.log('👥 [GetStudents] Using academyId:', academyId)
       
-      // ✅ academy_id로 조회 (선생님도 원장님과 동일한 academy_id 사용)
+      // ✅ academy_id로 조회 + classes JOIN으로 class_fee 가져오기
       try {
         console.log('👥 [GetStudents] Query: WHERE academy_id =', academyId)
-        const result1 = await c.env.DB.prepare(
-          "SELECT * FROM students WHERE academy_id = ? AND (status IS NULL OR status != 'deleted') ORDER BY id DESC"
-        ).bind(academyId).all()
+        const result1 = await c.env.DB.prepare(`
+          SELECT 
+            s.*,
+            c.class_name,
+            c.monthly_fee as class_fee
+          FROM students s
+          LEFT JOIN classes c ON s.class_id = c.id
+          WHERE s.academy_id = ? 
+            AND (s.status IS NULL OR s.status != 'deleted') 
+          ORDER BY s.id DESC
+        `).bind(academyId).all()
         
         students = result1.results || []
         console.log('✅ [GetStudents] SUCCESS! Found', students.length, 'students')
