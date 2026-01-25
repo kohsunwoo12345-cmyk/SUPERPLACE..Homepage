@@ -651,12 +651,8 @@ app.get('/api/students', requireDirector, async (c) => {
     console.log('=== Students API Debug ===')
     console.log('User ID:', user.id)
     
-    // Check which column exists: 'name' or 'class_name'
-    const schemaInfo = await c.env.DB.prepare(`PRAGMA table_info(classes)`).all()
-    const hasNameColumn = schemaInfo.results?.some((col: any) => col.name === 'name')
-    const classNameCol = hasNameColumn ? 'name' : 'class_name'
-    
-    const query = `
+    // Use COALESCE to handle both class_name and name columns
+    const students = await c.env.DB.prepare(`
       SELECT 
         s.id,
         s.name,
@@ -667,15 +663,13 @@ app.get('/api/students', requireDirector, async (c) => {
         s.user_id,
         s.class_id,
         s.status,
-        c.${classNameCol} as class_name,
+        COALESCE(c.class_name, c.name) as class_name,
         COALESCE(c.monthly_fee, 0) as class_fee
       FROM students s
       LEFT JOIN classes c ON s.class_id = c.id
       WHERE s.user_id = ? AND s.status = 'active'
       ORDER BY s.name ASC
-    `
-    
-    const students = await c.env.DB.prepare(query).bind(user.id).all()
+    `).bind(user.id).all()
     
     console.log('Students found:', students.results?.length || 0)
     if (students.results && students.results.length > 0) {
@@ -762,17 +756,11 @@ app.get('/api/tuition/classes', requireDirector, async (c) => {
     }
     
     // Check which column exists: 'name' or 'class_name'
-    const schemaInfo = await c.env.DB.prepare(`PRAGMA table_info(classes)`).all()
-    const hasNameColumn = schemaInfo.results?.some((col: any) => col.name === 'name')
-    const classNameCol = hasNameColumn ? 'name' : 'class_name'
-    
-    console.log('Using column:', classNameCol)
-    
-    // Build query string dynamically
-    const query = `
+    // Since we can't remove columns in SQLite, use COALESCE to handle both
+    const classes = await c.env.DB.prepare(`
       SELECT 
         c.id,
-        c.${classNameCol} as name,
+        COALESCE(c.class_name, c.name) as name,
         c.description,
         c.user_id,
         c.teacher_id,
@@ -783,11 +771,9 @@ app.get('/api/tuition/classes', requireDirector, async (c) => {
       LEFT JOIN users u ON c.teacher_id = u.id
       LEFT JOIN students s ON (s.class_id = c.id AND s.status = 'active' AND s.user_id = ?)
       WHERE c.user_id = ?
-      GROUP BY c.id, c.${classNameCol}, c.description, c.user_id, c.teacher_id, c.monthly_fee, u.name
-      ORDER BY c.${classNameCol} ASC
-    `
-    
-    const classes = await c.env.DB.prepare(query).bind(user.id, user.id).all()
+      GROUP BY c.id, c.class_name, c.name, c.description, c.user_id, c.teacher_id, c.monthly_fee, u.name
+      ORDER BY COALESCE(c.class_name, c.name) ASC
+    `).bind(user.id, user.id).all()
     
     console.log('Classes found:', classes.results?.length || 0)
     if (classes.results && classes.results.length > 0) {
