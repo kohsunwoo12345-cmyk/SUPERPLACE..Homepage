@@ -415,7 +415,7 @@
             }
         }
 
-        // 달력 렌더링
+        // 달력 렌더링 (학생별 결제일 기준)
         function renderCalendar(year, month) {
             const firstDay = new Date(year, month - 1, 1).getDay();
             const lastDate = new Date(year, month, 0).getDate();
@@ -433,6 +433,75 @@
                 if (i < 6) cell.className += ' border-r';
                 calendarBody.appendChild(cell);
             }
+            
+            // 날짜 셀
+            for (let day = 1; day <= lastDate; day++) {
+                const dayOfWeek = (firstDay + day - 1) % 7;
+                const cell = document.createElement('div');
+                cell.className = 'calendar-cell border-b border-gray-200 p-2';
+                if (dayOfWeek < 6) cell.className += ' border-r';
+                
+                // 오늘 날짜 강조
+                if (isCurrentMonth && day === todayDate) {
+                    cell.classList.add('bg-blue-50', 'ring-2', 'ring-blue-300');
+                }
+                
+                // 날짜 헤더
+                const dateHeader = document.createElement('div');
+                dateHeader.className = 'flex items-center justify-between mb-2 pb-1 border-b border-gray-200';
+                dateHeader.innerHTML = `
+                    <span class="text-sm font-bold ${isCurrentMonth && day === todayDate ? 'text-blue-600' : dayOfWeek === 0 ? 'text-red-600' : dayOfWeek === 6 ? 'text-blue-600' : 'text-gray-700'}">${day}</span>
+                    <span class="text-xs text-gray-400">${['일', '월', '화', '수', '목', '금', '토'][dayOfWeek]}</span>
+                `;
+                cell.appendChild(dateHeader);
+                
+                // 학생 목록 (enrollment_date의 일자가 day와 같은 학생들)
+                const studentList = document.createElement('div');
+                studentList.className = 'space-y-1 overflow-y-auto';
+                studentList.style.maxHeight = '80px';
+                
+                // 해당 날짜가 결제일인 학생 필터링
+                const studentsOnThisDay = allStudents.filter(payment => {
+                    if (!payment.enrollment_date) return false;
+                    const enrollDate = new Date(payment.enrollment_date);
+                    const paymentDay = enrollDate.getDate();
+                    return paymentDay === day;
+                });
+                
+                studentsOnThisDay.forEach(payment => {
+                    const badge = document.createElement('div');
+                    const statusClass = 
+                        payment.status === 'paid' ? 'bg-green-500' :
+                        payment.status === 'partial' ? 'bg-yellow-500' : 'bg-red-500';
+                    
+                    badge.className = `student-badge px-2 py-1 rounded text-white cursor-pointer hover:opacity-80 transition ${statusClass}`;
+                    badge.innerHTML = `
+                        <div class="flex items-center justify-between gap-1">
+                            <span class="font-medium truncate">${payment.student_name}</span>
+                            <span class="text-xs">${(payment.paid_amount || 0).toLocaleString()}원</span>
+                        </div>
+                    `;
+                    badge.onclick = (e) => {
+                        e.stopPropagation();
+                        editPayment(payment.student_id, day);
+                    };
+                    badge.title = `${payment.student_name} - ${payment.status === 'paid' ? '완납' : payment.status === 'partial' ? '부분납입' : '미납'}`;
+                    studentList.appendChild(badge);
+                });
+                
+                // 학생이 있을 때만 추가 버튼 표시
+                if (studentsOnThisDay.length > 0) {
+                    const addMoreBtn = document.createElement('button');
+                    addMoreBtn.className = 'w-full text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded hover:bg-gray-200 transition mt-1';
+                    addMoreBtn.innerHTML = '<i class="fas fa-plus mr-1"></i>추가';
+                    addMoreBtn.onclick = () => openPaymentModal(day);
+                    studentList.appendChild(addMoreBtn);
+                }
+                
+                cell.appendChild(studentList);
+                calendarBody.appendChild(cell);
+            }
+        }
             
             // 날짜 셀
             for (let day = 1; day <= lastDate; day++) {
