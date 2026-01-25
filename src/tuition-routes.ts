@@ -651,7 +651,7 @@ app.get('/api/students', requireDirector, async (c) => {
     console.log('=== Students API Debug ===')
     console.log('User ID:', user.id)
     
-    // Use class_name column only - ignore name column
+    // Use academy_id instead of user_id for compatibility with init-db schema
     const students = await c.env.DB.prepare(`
       SELECT 
         s.id,
@@ -660,14 +660,14 @@ app.get('/api/students', requireDirector, async (c) => {
         s.phone,
         s.parent_name,
         s.parent_phone,
-        s.user_id,
+        s.academy_id,
         s.class_id,
         s.status,
         c.class_name as class_name,
         COALESCE(c.monthly_fee, 0) as class_fee
       FROM students s
       LEFT JOIN classes c ON s.class_id = c.id
-      WHERE s.user_id = ? AND s.status = 'active'
+      WHERE s.academy_id = ? AND s.status = 'active'
       ORDER BY s.name ASC
     `).bind(user.id).all()
     
