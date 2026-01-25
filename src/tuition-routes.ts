@@ -644,7 +644,8 @@ app.get('/api/tuition/stats', requireDirector, async (c) => {
 // ========================================
 // 학생 목록 조회 (반 정보 포함) - DISABLED, use /api/students from index.tsx instead
 // ========================================
-// app.get('/api/students', requireDirector, async (c) => {
+/*
+app.get('/api/students', requireDirector, async (c) => {
   try {
     const user = c.get('user')
     
@@ -684,7 +685,8 @@ app.get('/api/tuition/stats', requireDirector, async (c) => {
     console.error('Error fetching students:', error)
     return c.json({ error: '학생 목록 조회 실패', details: error.message, stack: error.stack }, 500)
   }
-}) */
+})
+*/
 
 // ========================================
 // 반(클래스) 관리 API
