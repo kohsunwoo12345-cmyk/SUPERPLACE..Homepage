@@ -379,7 +379,7 @@ app.post('/api/form-submissions', async (c) => {
 
     const result = await c.env.DB.prepare(`
       INSERT INTO form_submissions (
-        form_template_id, landing_page_id, submission_data,
+        form_id, landing_page_id, submission_data,
         ip_address, user_agent, status
       ) VALUES (?, ?, ?, ?, ?, 'new')
     `).bind(
@@ -421,7 +421,7 @@ app.get('/api/form-submissions', requireAuth, async (c) => {
         ft.name as template_name,
         lp.title as landing_page_title
       FROM form_submissions fs
-      JOIN form_templates ft ON fs.form_template_id = ft.id
+      JOIN form_templates ft ON fs.form_id = ft.id
       LEFT JOIN landing_pages lp ON fs.landing_page_id = lp.id
       WHERE ft.user_id = ?
     `
@@ -429,7 +429,7 @@ app.get('/api/form-submissions', requireAuth, async (c) => {
     const params: any[] = [userId]
     
     if (templateId) {
-      query += ` AND fs.form_template_id = ?`
+      query += ` AND fs.form_id = ?`
       params.push(templateId)
     }
     
@@ -461,7 +461,7 @@ app.get('/api/form-submissions/:id', requireAuth, async (c) => {
         ft.name as template_name,
         ft.user_id as template_owner
       FROM form_submissions fs
-      JOIN form_templates ft ON fs.form_template_id = ft.id
+      JOIN form_templates ft ON fs.form_id = ft.id
       WHERE fs.id = ?
     `).bind(submissionId).first()
 
@@ -494,7 +494,7 @@ app.patch('/api/form-submissions/:id', requireAuth, async (c) => {
     const submission: any = await c.env.DB.prepare(`
       SELECT ft.user_id 
       FROM form_submissions fs
-      JOIN form_templates ft ON fs.form_template_id = ft.id
+      JOIN form_templates ft ON fs.form_id = ft.id
       WHERE fs.id = ?
     `).bind(submissionId).first()
 
@@ -532,7 +532,7 @@ app.delete('/api/form-submissions/:id', requireAuth, async (c) => {
     const submission: any = await c.env.DB.prepare(`
       SELECT ft.user_id 
       FROM form_submissions fs
-      JOIN form_templates ft ON fs.form_template_id = ft.id
+      JOIN form_templates ft ON fs.form_id = ft.id
       WHERE fs.id = ?
     `).bind(submissionId).first()
 
@@ -568,14 +568,14 @@ app.get('/api/form-submissions/stats', requireAuth, async (c) => {
         SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed_count,
         SUM(CASE WHEN status = 'rejected' THEN 1 ELSE 0 END) as rejected_count
       FROM form_submissions fs
-      JOIN form_templates ft ON fs.form_template_id = ft.id
+      JOIN form_templates ft ON fs.form_id = ft.id
       WHERE ft.user_id = ?
     `
     
     const params: any[] = [userId]
     
     if (templateId) {
-      query += ` AND fs.form_template_id = ?`
+      query += ` AND fs.form_id = ?`
       params.push(templateId)
     }
     
