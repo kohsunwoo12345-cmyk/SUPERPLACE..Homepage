@@ -1081,6 +1081,100 @@ app.post('/api/admin/fix-academies-table', async (c) => {
   }
 })
 
+// 🔧 관리자: 사용량 데이터 동기화 API (랜딩페이지 개수 수정)
+app.post('/api/admin/sync-landing-pages-usage', async (c) => {
+  try {
+    // 관리자 권한 확인
+    const userHeaderBase64 = c.req.header('X-User-Data-Base64')
+    if (!userHeaderBase64) {
+      return c.json({ success: false, error: 'Unauthorized' }, 401)
+    }
+    
+    let user
+    try {
+      const userDataStr = atob(userHeaderBase64)
+      user = JSON.parse(userDataStr)
+    } catch (e) {
+      return c.json({ success: false, error: 'Invalid user data' }, 401)
+    }
+    
+    if (user.role !== 'admin') {
+      return c.json({ success: false, error: 'Admin only' }, 403)
+    }
+    
+    console.log('[Sync Usage] Starting landing pages usage sync...')
+    
+    // 모든 활성 구독 조회
+    const subscriptions = await c.env.DB.prepare(`
+      SELECT id, academy_id FROM subscriptions 
+      WHERE status = 'active'
+    `).all()
+    
+    const results = []
+    let synced = 0
+    
+    for (const sub of subscriptions.results || []) {
+      try {
+        // 해당 academy의 실제 랜딩페이지 개수 조회
+        const landingPagesCount = await c.env.DB.prepare(`
+          SELECT COUNT(*) as count FROM landing_pages 
+          WHERE user_id IN (
+            SELECT id FROM users WHERE academy_id = ?
+          )
+        `).bind(sub.academy_id).first()
+        
+        const actualCount = landingPagesCount?.count || 0
+        
+        // usage_tracking 업데이트
+        const updateResult = await c.env.DB.prepare(`
+          UPDATE usage_tracking 
+          SET landing_pages_created = ?, updated_at = CURRENT_TIMESTAMP
+          WHERE subscription_id = ? AND academy_id = ?
+        `).bind(actualCount, sub.id, sub.academy_id).run()
+        
+        if (updateResult.meta.changes > 0) {
+          synced++
+          results.push(`✅ Academy ${sub.academy_id}: Updated to ${actualCount} pages`)
+          console.log(`[Sync Usage] Academy ${sub.academy_id}: ${actualCount} pages`)
+        } else {
+          // usage_tracking 레코드가 없는 경우 생성
+          try {
+            await c.env.DB.prepare(`
+              INSERT INTO usage_tracking (
+                academy_id, subscription_id, current_students, 
+                ai_reports_used_this_month, landing_pages_created, 
+                current_teachers, created_at, updated_at
+              ) VALUES (?, ?, 0, 0, ?, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+            `).bind(sub.academy_id, sub.id, actualCount).run()
+            synced++
+            results.push(`✅ Academy ${sub.academy_id}: Created with ${actualCount} pages`)
+            console.log(`[Sync Usage] Academy ${sub.academy_id}: Created with ${actualCount} pages`)
+          } catch (insertErr) {
+            results.push(`⚠️ Academy ${sub.academy_id}: Failed to create - ${insertErr.message}`)
+          }
+        }
+      } catch (err) {
+        results.push(`❌ Academy ${sub.academy_id}: ${err.message}`)
+        console.error(`[Sync Usage] Error for academy ${sub.academy_id}:`, err)
+      }
+    }
+    
+    return c.json({
+      success: true,
+      message: `동기화 완료: ${synced}개 구독 업데이트됨`,
+      synced,
+      total: subscriptions.results?.length || 0,
+      results
+    })
+  } catch (error) {
+    console.error('[Sync Usage] Error:', error)
+    return c.json({ 
+      success: false, 
+      error: '사용량 동기화 실패: ' + error.message 
+    }, 500)
+  }
+})
+
 // SMS API Routes
 // ========================================
 
