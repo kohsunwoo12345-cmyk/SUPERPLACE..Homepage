@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>매출 관리 - 슈퍼플레이스</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
+        * { font-family: 'Pretendard Variable', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <!-- 헤더 -->
+        <div class="mb-8 flex items-center justify-between">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">📊 매출 관리</h1>
+                <p class="text-gray-600">학원 매출 현황을 확인하고 분석하세요</p>
+            </div>
+            <a href="/dashboard" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium">
+                <i class="fas fa-arrow-left mr-2"></i> 대시보드
+            </a>
+        </div>
+
+        <!-- 대시보드 통계 -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-white">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm font-medium opacity-90">이번 달 매출</span>
+                    <i class="fas fa-chart-line text-2xl opacity-80"></i>
+                </div>
+                <div class="text-3xl font-bold mb-1" id="thisMonthRevenue">0원</div>
+                <div class="text-xs opacity-80" id="growthRate">전월 대비 0%</div>
+            </div>
+            
+            <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg p-6 text-white">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm font-medium opacity-90">올해 누적 매출</span>
+                    <i class="fas fa-calendar-alt text-2xl opacity-80"></i>
+                </div>
+                <div class="text-3xl font-bold" id="yearlyRevenue">0원</div>
+            </div>
+            
+            <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg p-6 text-white">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm font-medium opacity-90">총 학생 수</span>
+                    <i class="fas fa-users text-2xl opacity-80"></i>
+                </div>
+                <div class="text-3xl font-bold" id="totalStudents">0명</div>
+            </div>
+            
+            <div class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl shadow-lg p-6 text-white">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm font-medium opacity-90">평균 교육비</span>
+                    <i class="fas fa-won-sign text-2xl opacity-80"></i>
+                </div>
+                <div class="text-3xl font-bold" id="avgFee">0원</div>
+            </div>
+        </div>
+
+        <!-- 필터 영역 -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">년도</label>
+                    <select id="yearFilter" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        <!-- 동적으로 생성 -->
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">월</label>
+                    <select id="monthFilter" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        <option value="1">1월</option>
+                        <option value="2">2월</option>
+                        <option value="3">3월</option>
+                        <option value="4">4월</option>
+                        <option value="5">5월</option>
+                        <option value="6">6월</option>
+                        <option value="7">7월</option>
+                        <option value="8">8월</option>
+                        <option value="9">9월</option>
+                        <option value="10">10월</option>
+                        <option value="11">11월</option>
+                        <option value="12">12월</option>
+                    </select>
+                </div>
+                <div class="flex items-end">
+                    <button onclick="loadMonthlyRevenue()" class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium">
+                        <i class="fas fa-search mr-2"></i>조회
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 월별 매출 상세 -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+            <h2 class="text-xl font-bold text-gray-900 mb-4">월별 매출 상세</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="border-l-4 border-blue-500 pl-4">
+                    <div class="text-sm text-gray-600 mb-1">실제 납입액</div>
+                    <div class="text-2xl font-bold text-blue-600" id="totalPaid">0원</div>
+                </div>
+                <div class="border-l-4 border-green-500 pl-4">
+                    <div class="text-sm text-gray-600 mb-1">예상 매출</div>
+                    <div class="text-2xl font-bold text-green-600" id="expectedRevenue">0원</div>
+                </div>
+                <div class="border-l-4 border-red-500 pl-4">
+                    <div class="text-sm text-gray-600 mb-1">미납 금액</div>
+                    <div class="text-2xl font-bold text-red-600" id="totalUnpaid">0원</div>
+                </div>
+            </div>
+            <div class="mt-6 pt-6 border-t border-gray-200">
+                <div class="flex items-center justify-between">
+                    <span class="text-sm font-medium text-gray-600">수금률</span>
+                    <span class="text-lg font-bold text-gray-900" id="collectionRate">0%</span>
+                </div>
+                <div class="mt-2 bg-gray-200 rounded-full h-3">
+                    <div id="collectionBar" class="bg-gradient-to-r from-blue-500 to-green-500 h-3 rounded-full transition-all" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 연간 매출 차트 -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+            <h2 class="text-xl font-bold text-gray-900 mb-4">연간 매출 추이</h2>
+            <canvas id="yearlyChart" height="80"></canvas>
+        </div>
+
+        <!-- 학생별 매출 기여도 -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div class="p-6 border-b border-gray-200">
+                <h2 class="text-xl font-bold text-gray-900">학생별 매출 기여도</h2>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50 border-b border-gray-200">
+                        <tr>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">학생명</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">학년</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">월 교육비</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">납입액</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">상태</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">납입일</th>
+                        </tr>
+                    </thead>
+                    <tbody id="studentList" class="divide-y divide-gray-200">
+                        <tr>
+                            <td colspan="6" class="px-6 py-12 text-center text-gray-500">
+                                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                                로딩 중...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+        let yearlyChart = null;
+
+        // 사용자 정보 확인 및 권한 체크
+        function checkAuth() {
+            const user = JSON.parse(localStorage.getItem('user'));
+            if (!user || !user.id) {
+                alert('로그인이 필요합니다.');
+                window.location.href = '/login';
+                return null;
+            }
+            
+            // 선생님은 접근 불가
+            if (user.user_type === 'teacher') {
+                alert('접근 권한이 없습니다.');
+                window.location.href = '/dashboard';
+                return null;
+            }
+            
+            return user;
+        }
+
+        // 년도 필터 초기화
+        function initYearFilter() {
+            const yearFilter = document.getElementById('yearFilter');
+            const currentYear = new Date().getFullYear();
+            
+            for (let year = currentYear - 2; year <= currentYear + 1; year++) {
+                const option = document.createElement('option');
+                option.value = year;
+                option.textContent = year + '년';
+                if (year === currentYear) option.selected = true;
+                yearFilter.appendChild(option);
+            }
+        }
+
+        // 월 필터 초기화
+        function initMonthFilter() {
+            const monthFilter = document.getElementById('monthFilter');
+            const currentMonth = new Date().getMonth() + 1;
+            monthFilter.value = currentMonth;
+        }
+
+        // 대시보드 데이터 로드
+        async function loadDashboard() {
+            try {
+                const response = await fetch('/api/revenue/dashboard', {
+                    headers: {
+                        'X-User-Data-Base64': btoa(JSON.stringify(currentUser))
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success && data.dashboard) {
+                    const dash = data.dashboard;
+                    document.getElementById('thisMonthRevenue').textContent = (dash.this_month_revenue || 0).toLocaleString() + '원';
+                    document.getElementById('yearlyRevenue').textContent = (dash.yearly_revenue || 0).toLocaleString() + '원';
+                    document.getElementById('totalStudents').textContent = (dash.total_students || 0) + '명';
+                    document.getElementById('avgFee').textContent = (dash.avg_monthly_fee || 0).toLocaleString() + '원';
+                    
+                    const growthRate = dash.growth_rate || 0;
+                    const growthText = growthRate >= 0 
+                        ? `▲ ${Math.abs(growthRate).toFixed(1)}%` 
+                        : `▼ ${Math.abs(growthRate).toFixed(1)}%`;
+                    document.getElementById('growthRate').textContent = '전월 대비 ' + growthText;
+                }
+            } catch (error) {
+                console.error('대시보드 로드 실패:', error);
+            }
+        }
+
+        // 월별 매출 로드
+        async function loadMonthlyRevenue() {
+            const year = document.getElementById('yearFilter').value;
+            const month = document.getElementById('monthFilter').value;
+            
+            try {
+                const response = await fetch(`/api/revenue/monthly?year=${year}&month=${month}`, {
+                    headers: {
+                        'X-User-Data-Base64': btoa(JSON.stringify(currentUser))
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success && data.revenue) {
+                    const rev = data.revenue;
+                    document.getElementById('totalPaid').textContent = (rev.total_paid || 0).toLocaleString() + '원';
+                    document.getElementById('expectedRevenue').textContent = (rev.expected_revenue || 0).toLocaleString() + '원';
+                    document.getElementById('totalUnpaid').textContent = (rev.total_unpaid || 0).toLocaleString() + '원';
+                    
+                    const collectionRate = rev.collection_rate || 0;
+                    document.getElementById('collectionRate').textContent = collectionRate + '%';
+                    document.getElementById('collectionBar').style.width = collectionRate + '%';
+                }
+                
+                // 학생별 매출도 함께 로드
+                loadStudentRevenue(year, month);
+            } catch (error) {
+                console.error('월별 매출 로드 실패:', error);
+            }
+        }
+
+        // 학생별 매출 로드
+        async function loadStudentRevenue(year, month) {
+            const studentList = document.getElementById('studentList');
+            studentList.innerHTML = '<tr><td colspan="6" class="px-6 py-12 text-center text-gray-500"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>로딩 중...</td></tr>';
+            
+            try {
+                const response = await fetch(`/api/revenue/by-student?year=${year}&month=${month}`, {
+                    headers: {
+                        'X-User-Data-Base64': btoa(JSON.stringify(currentUser))
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (!data.success || !data.students || data.students.length === 0) {
+                    studentList.innerHTML = '<tr><td colspan="6" class="px-6 py-12 text-center text-gray-500"><i class="fas fa-inbox text-4xl text-gray-300 mb-4"></i><div>학생 데이터가 없습니다</div></td></tr>';
+                    return;
+                }
+                
+                studentList.innerHTML = data.students.map(student => {
+                    let statusBadge = '';
+                    if (student.payment_status === 'paid') {
+                        statusBadge = '<span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">완납</span>';
+                    } else if (student.payment_status === 'partial') {
+                        statusBadge = '<span class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-sm font-medium">부분납</span>';
+                    } else {
+                        statusBadge = '<span class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-medium">미납</span>';
+                    }
+                    
+                    return `<tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 text-sm font-medium text-gray-900">${student.student_name}</td>
+                        <td class="px-6 py-4 text-sm text-gray-600">${student.grade || '-'}</td>
+                        <td class="px-6 py-4 text-sm text-gray-900">${(student.monthly_fee || 0).toLocaleString()}원</td>
+                        <td class="px-6 py-4 text-sm font-bold text-blue-600">${(student.paid_amount || 0).toLocaleString()}원</td>
+                        <td class="px-6 py-4">${statusBadge}</td>
+                        <td class="px-6 py-4 text-sm text-gray-600">${student.paid_date || '-'}</td>
+                    </tr>`;
+                }).join('');
+            } catch (error) {
+                console.error('학생별 매출 로드 실패:', error);
+                studentList.innerHTML = '<tr><td colspan="6" class="px-6 py-12 text-center text-red-500"><i class="fas fa-exclamation-circle text-4xl mb-4"></i><div>학생별 매출을 불러오는데 실패했습니다</div></td></tr>';
+            }
+        }
+
+        // 연간 매출 차트 로드
+        async function loadYearlyChart() {
+            const year = document.getElementById('yearFilter').value;
+            
+            try {
+                const response = await fetch(`/api/revenue/yearly?year=${year}`, {
+                    headers: {
+                        'X-User-Data-Base64': btoa(JSON.stringify(currentUser))
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success && data.monthly_data) {
+                    const labels = data.monthly_data.map(m => m.month + '월');
+                    const revenues = data.monthly_data.map(m => m.total_paid || 0);
+                    
+                    if (yearlyChart) {
+                        yearlyChart.destroy();
+                    }
+                    
+                    const ctx = document.getElementById('yearlyChart').getContext('2d');
+                    yearlyChart = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: '월별 매출',
+                                data: revenues,
+                                borderColor: 'rgb(59, 130, 246)',
+                                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                                tension: 0.4,
+                                fill: true
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            plugins: {
+                                legend: {
+                                    display: false
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            return context.parsed.y.toLocaleString() + '원';
+                                        }
+                                    }
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        callback: function(value) {
+                                            return value.toLocaleString() + '원';
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error('연간 차트 로드 실패:', error);
+            }
+        }
+
+        // 페이지 로드 시 초기화
+        window.addEventListener('DOMContentLoaded', function() {
+            currentUser = checkAuth();
+            if (!currentUser) return;
+            
+            initYearFilter();
+            initMonthFilter();
+            loadDashboard();
+            loadMonthlyRevenue();
+            loadYearlyChart();
+        });
+    </script>
+</body>
+</html>
