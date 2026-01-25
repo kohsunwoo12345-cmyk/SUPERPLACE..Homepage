@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>소셜 트래픽 스토어 - 슈퍼플레이스</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
             margin: 0;
@@ -495,8 +496,23 @@
         <div class="header">
             <div class="logo-text">SUPERPLACE</div>
             <div class="header-subtitle">소셜 미디어 마케팅 서비스</div>
-            <div class="points-display">
-                보유 포인트: <span id="points-balance">0</span> P
+            <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
+                <div class="points-display">
+                    보유 포인트: <span id="points-balance">0</span> P
+                </div>
+                <div style="display: flex; align-items: center; gap: 12px; font-size: 12px; color: #6c757d;">
+                    <span>
+                        <i class="fas fa-clock" style="margin-right: 4px;"></i>
+                        마지막 업데이트: <span id="lastUpdateTime">-</span>
+                    </span>
+                    <label style="display: flex; align-items: center; cursor: pointer; user-select: none;">
+                        <input type="checkbox" id="autoRefreshToggle" checked style="margin-right: 6px;">
+                        <span>자동 새로고침 (30초)</span>
+                    </label>
+                    <button onclick="refreshStoreData()" style="padding: 6px 12px; background: #6366f1; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 6px;">
+                        <i class="fas fa-sync-alt" id="refreshIcon"></i> 새로고침
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -564,6 +580,56 @@
         const API_KEY = '14644c03bef19a85e4867e6d1d7939a1';
         let allProducts = [];
         let currentCategory = 'all';
+        let autoRefreshInterval = null;
+        let isRefreshing = false;
+        
+        // 마지막 업데이트 시간 갱신
+        function updateLastRefreshTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('ko-KR', { 
+                hour: '2-digit', 
+                minute: '2-digit', 
+                second: '2-digit' 
+            });
+            document.getElementById('lastUpdateTime').textContent = timeString;
+        }
+
+        // 데이터 새로고침
+        async function refreshStoreData() {
+            if (isRefreshing) return;
+            
+            isRefreshing = true;
+            const refreshIcon = document.getElementById('refreshIcon');
+            if (refreshIcon) refreshIcon.classList.add('fa-spin');
+            
+            try {
+                await loadUserPoints();
+                updateLastRefreshTime();
+            } catch (error) {
+                console.error('데이터 새로고침 실패:', error);
+            } finally {
+                isRefreshing = false;
+                if (refreshIcon) refreshIcon.classList.remove('fa-spin');
+            }
+        }
+
+        // 자동 새로고침 토글
+        function toggleAutoRefresh() {
+            const toggle = document.getElementById('autoRefreshToggle');
+            if (!toggle) return;
+            
+            if (toggle.checked) {
+                // 30초마다 자동 새로고침
+                autoRefreshInterval = setInterval(refreshStoreData, 30000);
+                console.log('자동 새로고침 활성화 (30초 간격)');
+            } else {
+                if (autoRefreshInterval) {
+                    clearInterval(autoRefreshInterval);
+                    autoRefreshInterval = null;
+                }
+                console.log('자동 새로고침 비활성화');
+            }
+        }
         
         // SVG 로고 정의
         const categoryLogos = {
@@ -730,6 +796,24 @@
                 await loadUserPoints();
                 renderProducts(allProducts);
                 setupCategoryButtons();
+                
+                // 초기 업데이트 시간 설정
+                updateLastRefreshTime();
+                
+                // 자동 새로고침 토글 이벤트 리스너
+                const toggle = document.getElementById('autoRefreshToggle');
+                if (toggle) {
+                    toggle.addEventListener('change', toggleAutoRefresh);
+                    // 자동 새로고침 시작
+                    toggleAutoRefresh();
+                }
+                
+                // 페이지를 떠날 때 자동 새로고침 정리
+                window.addEventListener('beforeunload', function() {
+                    if (autoRefreshInterval) {
+                        clearInterval(autoRefreshInterval);
+                    }
+                });
             } catch (error) {
                 console.error('초기화 실패:', error);
                 showAccessDenied();
