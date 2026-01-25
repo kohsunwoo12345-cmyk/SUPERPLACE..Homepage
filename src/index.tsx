@@ -25508,7 +25508,7 @@ app.get('/tools/ai-learning-report', (c) => {
             <div class="bg-white rounded-2xl p-8 border border-gray-200 mb-8">
                 <h2 class="text-2xl font-bold mb-6">📝 리포트 생성</h2>
                 
-                <div class="grid md:grid-cols-3 gap-6 mb-6">
+                <div class="grid md:grid-cols-4 gap-6 mb-6">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">저장할 폴더</label>
                         <select id="folderSelect" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent">
@@ -25522,8 +25522,12 @@ app.get('/tools/ai-learning-report', (c) => {
                         </select>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">리포트 월</label>
-                        <input type="month" id="reportMonth" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">시작 날짜</label>
+                        <input type="date" id="startDate" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">종료 날짜</label>
+                        <input type="date" id="endDate" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent">
                     </div>
                 </div>
 
@@ -25858,7 +25862,8 @@ app.get('/tools/ai-learning-report', (c) => {
             // AI 리포트 생성
             async function generateReport() {
                 const studentId = document.getElementById('studentSelect').value;
-                const reportMonth = document.getElementById('reportMonth').value;
+                const startDate = document.getElementById('startDate').value;
+                const endDate = document.getElementById('endDate').value;
                 const folderId = document.getElementById('folderSelect').value;
                 const resultDiv = document.getElementById('generateResult');
 
@@ -25867,8 +25872,13 @@ app.get('/tools/ai-learning-report', (c) => {
                     return;
                 }
 
-                if (!reportMonth) {
-                    resultDiv.innerHTML = '<div class="p-4 bg-red-50 text-red-600 rounded-xl">리포트 월을 선택해주세요.</div>';
+                if (!startDate || !endDate) {
+                    resultDiv.innerHTML = '<div class="p-4 bg-red-50 text-red-600 rounded-xl">시작 날짜와 종료 날짜를 모두 선택해주세요.</div>';
+                    return;
+                }
+
+                if (new Date(startDate) > new Date(endDate)) {
+                    resultDiv.innerHTML = '<div class="p-4 bg-red-50 text-red-600 rounded-xl">시작 날짜는 종료 날짜보다 이전이어야 합니다.</div>';
                     return;
                 }
 
@@ -25882,7 +25892,8 @@ app.get('/tools/ai-learning-report', (c) => {
                         },
                         body: JSON.stringify({
                             student_id: studentId,
-                            report_month: reportMonth,
+                            start_date: startDate,
+                            end_date: endDate,
                             folder_id: folderId || null
                         })
                     });
@@ -26778,11 +26789,11 @@ app.delete('/api/report-folders/:folderId', async (c) => {
 // AI 리포트 자동 생성
 app.post('/api/learning-reports/generate', async (c) => {
   try {
-    const { student_id, report_month, folder_id } = await c.req.json()
+    const { student_id, start_date, end_date, folder_id } = await c.req.json()
     
     console.log('📊 [GenerateReport] Starting report generation')
     console.log('📊 [GenerateReport] Student ID:', student_id)
-    console.log('📊 [GenerateReport] Report month:', report_month)
+    console.log('📊 [GenerateReport] Date range:', start_date, 'to', end_date)
     
     // 학생 정보 조회
     const student = await c.env.DB.prepare(`
@@ -26831,9 +26842,9 @@ app.post('/api/learning-reports/generate', async (c) => {
       const gradesResult = await c.env.DB.prepare(`
         SELECT * FROM grades 
         WHERE student_id = ? 
-        AND strftime('%Y-%m', test_date) = ?
+        AND DATE(test_date) BETWEEN ? AND ?
         ORDER BY test_date DESC
-      `).bind(student_id, report_month).all()
+      `).bind(student_id, start_date, end_date).all()
       grades = gradesResult.results || []
       console.log('📝 [GenerateReport] Grades found:', grades.length)
     } catch (err) {
@@ -26847,9 +26858,9 @@ app.post('/api/learning-reports/generate', async (c) => {
         SELECT status, COUNT(*) as count
         FROM attendance 
         WHERE student_id = ? 
-        AND strftime('%Y-%m', attendance_date) = ?
+        AND DATE(attendance_date) BETWEEN ? AND ?
         GROUP BY status
-      `).bind(student_id, report_month).all()
+      `).bind(student_id, start_date, end_date).all()
       attendance = attendanceResult.results || []
       console.log('📅 [GenerateReport] Attendance records found:', attendance.length)
     } catch (err) {
@@ -26862,10 +26873,10 @@ app.post('/api/learning-reports/generate', async (c) => {
       const counselingResult = await c.env.DB.prepare(`
         SELECT * FROM counseling 
         WHERE student_id = ? 
-        AND strftime('%Y-%m', counseling_date) = ?
+        AND DATE(counseling_date) BETWEEN ? AND ?
         ORDER BY counseling_date DESC
         LIMIT 3
-      `).bind(student_id, report_month).all()
+      `).bind(student_id, start_date, end_date).all()
       counselings = counselingResult.results || []
       console.log('💬 [GenerateReport] Counseling records found:', counselings.length)
     } catch (err) {
@@ -26878,9 +26889,9 @@ app.post('/api/learning-reports/generate', async (c) => {
       const dailyResult = await c.env.DB.prepare(`
         SELECT * FROM daily_records 
         WHERE student_id = ? 
-        AND strftime('%Y-%m', record_date) = ?
+        AND DATE(record_date) BETWEEN ? AND ?
         ORDER BY record_date DESC
-      `).bind(student_id, report_month).all()
+      `).bind(student_id, start_date, end_date).all()
       dailyRecords = dailyResult.results || []
       console.log('📋 [GenerateReport] Daily records found:', dailyRecords.length)
     } catch (err) {
@@ -26894,7 +26905,7 @@ app.post('/api/learning-reports/generate', async (c) => {
       console.warn('⚠️ [GenerateReport] No data available for this period')
       return c.json({ 
         success: false, 
-        error: `${report_month}에 해당하는 데이터가 없습니다.\n\n다음을 확인해주세요:\n1. 성적 데이터가 입력되었는지\n2. 출석 데이터가 입력되었는지\n3. 일일 성과 기록이 있는지\n\n데이터를 먼저 입력한 후 리포트를 생성해주세요.` 
+        error: `${start_date} ~ ${end_date} 기간에 해당하는 데이터가 없습니다.\n\n다음을 확인해주세요:\n1. 성적 데이터가 입력되었는지\n2. 출석 데이터가 입력되었는지\n3. 일일 성과 기록이 있는지\n\n데이터를 먼저 입력한 후 리포트를 생성해주세요.` 
       }, 400)
     }
     

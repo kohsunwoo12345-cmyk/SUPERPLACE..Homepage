@@ -216,11 +216,22 @@ export const classesPage = `
             }
 
             container.innerHTML = classes.map(cls => {
-                const schedule = cls.day_schedule ? JSON.parse(cls.day_schedule) : {};
-                const scheduleDisplay = Object.keys(schedule).map(day => {
-                    const time = schedule[day];
-                    return day + ': ' + time.start + '~' + time.end;
-                }).join(', ');
+                let schedule = {};
+                let scheduleDisplay = '';
+                
+                try {
+                    schedule = cls.day_schedule ? JSON.parse(cls.day_schedule) : {};
+                    scheduleDisplay = Object.keys(schedule).map(day => {
+                        const time = schedule[day];
+                        if (time && time.start && time.end) {
+                            return day + ': ' + time.start + '~' + time.end;
+                        }
+                        return '';
+                    }).filter(s => s).join(', ');
+                } catch (e) {
+                    console.error('Schedule parse error:', e);
+                    scheduleDisplay = '';
+                }
                 
                 const escapedClassName = (cls.class_name || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
                 const escapedGrade = (cls.grade || '학년 미지정').replace(/'/g, "\\'").replace(/"/g, '&quot;');
