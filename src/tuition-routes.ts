@@ -39,7 +39,7 @@ const requireDirector = async (c: any, next: any) => {
 // ========================================
 // DEBUG: Schema check API
 // ========================================
-app.get('/api/tuition/debug/schema', async (c) => {
+app.get('/debug/schema', async (c) => {
   try {
     const classesSchema = await c.env.DB.prepare(`
       PRAGMA table_info(classes)
@@ -63,7 +63,7 @@ app.get('/api/tuition/debug/schema', async (c) => {
 // ========================================
 // DEBUG: Initialize tuition tables
 // ========================================
-app.get('/api/tuition/debug/init', async (c) => {
+app.get('/debug/init', async (c) => {
   try {
     const results = []
     
