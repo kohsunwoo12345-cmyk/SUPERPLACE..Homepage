@@ -376,16 +376,35 @@ app.post('/api/form-submissions', async (c) => {
 
     const ipAddress = c.req.header('cf-connecting-ip') || c.req.header('x-forwarded-for') || 'unknown'
     const userAgent = c.req.header('user-agent') || 'unknown'
+    
+    // Parse submission data to extract name, phone, email
+    let parsedData: any = {}
+    try {
+      parsedData = typeof data.submission_data === 'string' 
+        ? JSON.parse(data.submission_data) 
+        : data.submission_data
+    } catch (e) {
+      console.error('[Form Submission] Failed to parse submission_data:', e)
+    }
+    
+    const name = parsedData.name || parsedData.이름 || '이름 없음'
+    const phone = parsedData.phone || parsedData.연락처 || parsedData.전화번호 || ''
+    const email = parsedData.email || parsedData.이메일 || ''
+    const agreedToTerms = parsedData.agreedToTerms || parsedData.agreed_to_terms || 0
 
     const result = await c.env.DB.prepare(`
       INSERT INTO form_submissions (
-        form_id, landing_page_id, submission_data,
-        ip_address, user_agent, status
-      ) VALUES (?, ?, ?, ?, ?, 'new')
+        form_id, landing_page_id, name, phone, email, additional_data,
+        agreed_to_terms, ip_address, user_agent
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).bind(
       data.form_template_id,
       data.landing_page_id || null,
+      name,
+      phone,
+      email,
       data.submission_data,
+      agreedToTerms,
       ipAddress,
       userAgent
     ).run()
