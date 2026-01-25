@@ -3109,7 +3109,7 @@ var Pt=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Ft=(e,t,s)=>t in
         c.id,
         c.class_name as name,
         c.description,
-        c.user_id,
+        c.academy_id,
         c.teacher_id,
         COALESCE(c.monthly_fee, 0) as monthly_fee,
         u.name as teacher_name,
@@ -3117,8 +3117,8 @@ var Pt=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Ft=(e,t,s)=>t in
       FROM classes c
       LEFT JOIN users u ON c.teacher_id = u.id
       LEFT JOIN students s ON (s.class_id = c.id AND s.status = 'active' AND s.academy_id = ?)
-      WHERE c.user_id = ?
-      GROUP BY c.id, c.class_name, c.description, c.user_id, c.teacher_id, c.monthly_fee, u.name
+      WHERE c.academy_id = ?
+      GROUP BY c.id, c.class_name, c.description, c.academy_id, c.teacher_id, c.monthly_fee, u.name
       ORDER BY c.class_name ASC
     `).bind(s.id,s.id).all();return console.log("Classes found:",((t=a.results)==null?void 0:t.length)||0),a.results&&a.results.length>0&&console.log("First class:",JSON.stringify(a.results[0])),e.json({success:!0,classes:a.results||[]})}catch(s){return console.error("Error fetching classes:",s),e.json({error:"반 목록 조회 실패",details:s.message,stack:s.stack},500)}});H.put("/api/tuition/classes/:id/fee",X,async e=>{try{const t=e.get("user"),s=e.req.param("id"),{monthly_fee:a}=await e.req.json();return a==null?e.json({error:"월 교육비를 입력해주세요"},400):await e.env.DB.prepare(`
       SELECT * FROM classes WHERE id = ? AND user_id = ?

@@ -763,7 +763,7 @@ app.get('/api/tuition/classes', requireDirector, async (c) => {
         c.id,
         c.class_name as name,
         c.description,
-        c.user_id,
+        c.academy_id,
         c.teacher_id,
         COALESCE(c.monthly_fee, 0) as monthly_fee,
         u.name as teacher_name,
@@ -771,8 +771,8 @@ app.get('/api/tuition/classes', requireDirector, async (c) => {
       FROM classes c
       LEFT JOIN users u ON c.teacher_id = u.id
       LEFT JOIN students s ON (s.class_id = c.id AND s.status = 'active' AND s.academy_id = ?)
-      WHERE c.user_id = ?
-      GROUP BY c.id, c.class_name, c.description, c.user_id, c.teacher_id, c.monthly_fee, u.name
+      WHERE c.academy_id = ?
+      GROUP BY c.id, c.class_name, c.description, c.academy_id, c.teacher_id, c.monthly_fee, u.name
       ORDER BY c.class_name ASC
     `).bind(user.id, user.id).all()
     
