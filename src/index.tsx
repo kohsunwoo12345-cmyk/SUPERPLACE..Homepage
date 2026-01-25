@@ -25236,22 +25236,44 @@ app.get('/api/students', async (c) => {
       console.log('👥 [GetStudents] Full access - loading all students')
       console.log('👥 [GetStudents] Using academyId:', academyId)
       
-      // ✅ academy_id로 조회 + classes JOIN으로 class_fee 가져오기
+      // ✅ academy_id로 조회 + student_classes JOIN으로 모든 반 정보 가져오기
       try {
         console.log('👥 [GetStudents] Query: WHERE academy_id =', academyId)
         const result1 = await c.env.DB.prepare(`
           SELECT 
             s.*,
             c.class_name,
-            c.monthly_fee as class_fee
+            c.monthly_fee as class_fee,
+            GROUP_CONCAT(
+              CASE 
+                WHEN sc.status = 'active' AND (sc.end_date IS NULL OR sc.end_date >= date('now'))
+                THEN c2.id || ':' || c2.class_name || ':' || COALESCE(sc.monthly_fee, c2.monthly_fee)
+              END
+            ) as all_classes
           FROM students s
           LEFT JOIN classes c ON s.class_id = c.id
+          LEFT JOIN student_classes sc ON s.id = sc.student_id
+          LEFT JOIN classes c2 ON sc.class_id = c2.id
           WHERE s.academy_id = ? 
             AND (s.status IS NULL OR s.status != 'deleted') 
+          GROUP BY s.id
           ORDER BY s.id DESC
         `).bind(academyId).all()
         
         students = result1.results || []
+        
+        // all_classes 파싱하여 배열로 변환
+        students = students.map(student => {
+          if (student.all_classes) {
+            const classes = student.all_classes.split(',').map(cls => {
+              const [id, name, fee] = cls.split(':')
+              return { id: parseInt(id), name, fee: parseInt(fee) }
+            })
+            return { ...student, classes }
+          }
+          return student
+        })
+        
         console.log('✅ [GetStudents] SUCCESS! Found', students.length, 'students')
         
         // ✅ 디버그: 만약 0명이면 전체 학생 수 확인
@@ -49483,11 +49505,31 @@ app.get('/tools/tuition-management', async (c) => {
                     data.students.forEach(student => {
                         const option = document.createElement('option');
                         option.value = student.id;
-                        option.textContent = \`\${student.name} (\${student.grade || '-'}) - \${student.class_name || '반 미배정'}\`;
+                        
+                        // 여러 반 표시
+                        let classesText = '';
+                        if (student.classes && student.classes.length > 0) {
+                            classesText = student.classes.map(c => c.name).join(', ');
+                        } else if (student.class_name) {
+                            classesText = student.class_name;
+                        } else {
+                            classesText = '반 미배정';
+                        }
+                        
+                        option.textContent = \`\${student.name} (\${student.grade || '-'}) - \${classesText}\`;
                         option.dataset.classId = student.class_id;
                         option.dataset.className = student.class_name || '-';
                         option.dataset.classFee = student.class_fee || 0;
                         option.dataset.enrollmentDate = student.enrollment_date || '';
+                        
+                        // 여러 반 정보 저장
+                        if (student.classes && student.classes.length > 0) {
+                            option.dataset.allClasses = JSON.stringify(student.classes);
+                            // 총 교육비 계산
+                            const totalFee = student.classes.reduce((sum, c) => sum + (c.fee || 0), 0);
+                            option.dataset.classFee = totalFee;
+                        }
+                        
                         if (studentId && student.id == studentId) {
                             option.selected = true;
                         }
@@ -49524,8 +49566,24 @@ app.get('/tools/tuition-management', async (c) => {
             
             const studentId = selectedOption.value;
             const studentName = selectedOption.textContent.split(' (')[0];
-            const className = selectedOption.dataset.className;
-            const classFee = parseInt(selectedOption.dataset.classFee) || 0;
+            let className = selectedOption.dataset.className;
+            let classFee = parseInt(selectedOption.dataset.classFee) || 0;
+            
+            // 여러 반 정보 처리
+            if (selectedOption.dataset.allClasses) {
+                try {
+                    const allClasses = JSON.parse(selectedOption.dataset.allClasses);
+                    className = allClasses.map(c => c.name).join(', ');
+                    classFee = allClasses.reduce((sum, c) => sum + (c.fee || 0), 0);
+                    
+                    console.log('👥 [Student] 여러 반 수강:', {
+                        classes: allClasses,
+                        totalFee: classFee
+                    });
+                } catch (e) {
+                    console.error('반 정보 파싱 실패:', e);
+                }
+            }
             
             document.getElementById('selectedStudentId').value = studentId;
             document.getElementById('selectedMonthlyFee').value = classFee; // 월 교육비 저장
@@ -49533,6 +49591,13 @@ app.get('/tools/tuition-management', async (c) => {
             document.getElementById('infoClassName').textContent = className;
             document.getElementById('infoMonthlyFee').textContent = classFee.toLocaleString() + '원';
             document.getElementById('paidAmount').value = classFee;
+            
+            console.log('📋 [Student] 학생 정보:', {
+                id: studentId,
+                name: studentName,
+                classes: className,
+                totalFee: classFee
+            });
             
             // 기존 납입 내역 확인
             const payment = allPayments[studentId];
