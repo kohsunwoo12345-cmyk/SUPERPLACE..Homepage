@@ -61,6 +61,111 @@ app.get('/api/tuition/debug/schema', async (c) => {
 })
 
 // ========================================
+// DEBUG: Initialize tuition tables
+// ========================================
+app.get('/api/tuition/debug/init', async (c) => {
+  try {
+    const results = []
+    
+    // 교육비 납입 기록 테이블 생성
+    try {
+      await c.env.DB.prepare(`
+        CREATE TABLE IF NOT EXISTS tuition_payments (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          student_id INTEGER NOT NULL,
+          academy_id INTEGER NOT NULL,
+          year INTEGER NOT NULL,
+          month INTEGER NOT NULL,
+          amount INTEGER NOT NULL,
+          status TEXT DEFAULT 'unpaid',
+          paid_amount INTEGER DEFAULT 0,
+          paid_date TEXT,
+          memo TEXT,
+          payment_method TEXT,
+          created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+          updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+          created_by INTEGER,
+          FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
+          FOREIGN KEY (academy_id) REFERENCES users(id) ON DELETE CASCADE,
+          FOREIGN KEY (created_by) REFERENCES users(id)
+        )
+      `).run()
+      results.push({ table: 'tuition_payments', status: 'success' })
+    } catch (error) {
+      results.push({ table: 'tuition_payments', status: 'error', error: error.message })
+    }
+    
+    // 월별 교육비 설정 테이블 생성
+    try {
+      await c.env.DB.prepare(`
+        CREATE TABLE IF NOT EXISTS tuition_rates (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          student_id INTEGER NOT NULL,
+          academy_id INTEGER NOT NULL,
+          monthly_fee INTEGER NOT NULL,
+          start_date TEXT NOT NULL,
+          end_date TEXT,
+          created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+          updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
+          FOREIGN KEY (academy_id) REFERENCES users(id) ON DELETE CASCADE
+        )
+      `).run()
+      results.push({ table: 'tuition_rates', status: 'success' })
+    } catch (error) {
+      results.push({ table: 'tuition_rates', status: 'error', error: error.message })
+    }
+    
+    // 인덱스 생성
+    const indexes = [
+      'CREATE INDEX IF NOT EXISTS idx_tuition_payments_student ON tuition_payments(student_id)',
+      'CREATE INDEX IF NOT EXISTS idx_tuition_payments_academy ON tuition_payments(academy_id)',
+      'CREATE INDEX IF NOT EXISTS idx_tuition_payments_year_month ON tuition_payments(year, month)',
+      'CREATE INDEX IF NOT EXISTS idx_tuition_payments_status ON tuition_payments(status)',
+      'CREATE INDEX IF NOT EXISTS idx_tuition_rates_student ON tuition_rates(student_id)',
+      'CREATE INDEX IF NOT EXISTS idx_tuition_rates_academy ON tuition_rates(academy_id)'
+    ]
+    
+    for (const sql of indexes) {
+      try {
+        await c.env.DB.prepare(sql).run()
+      } catch (error) {
+        // Ignore index errors
+      }
+    }
+    
+    // classes 테이블에 컬럼 추가
+    const alterColumns = [
+      { table: 'classes', column: 'monthly_fee', sql: 'ALTER TABLE classes ADD COLUMN monthly_fee INTEGER DEFAULT 0' },
+      { table: 'classes', column: 'user_id', sql: 'ALTER TABLE classes ADD COLUMN user_id INTEGER' },
+      { table: 'classes', column: 'teacher_id', sql: 'ALTER TABLE classes ADD COLUMN teacher_id INTEGER' },
+      { table: 'classes', column: 'name', sql: 'ALTER TABLE classes ADD COLUMN name TEXT' },
+      { table: 'students', column: 'user_id', sql: 'ALTER TABLE students ADD COLUMN user_id INTEGER' },
+      { table: 'users', column: 'user_type', sql: 'ALTER TABLE users ADD COLUMN user_type TEXT DEFAULT \'director\'' },
+      { table: 'users', column: 'parent_user_id', sql: 'ALTER TABLE users ADD COLUMN parent_user_id INTEGER' }
+    ]
+    
+    for (const { table, column, sql } of alterColumns) {
+      try {
+        await c.env.DB.prepare(sql).run()
+        results.push({ action: `add_column_${table}.${column}`, status: 'success' })
+      } catch (error) {
+        results.push({ action: `add_column_${table}.${column}`, status: 'exists', error: error.message })
+      }
+    }
+    
+    return c.json({
+      success: true,
+      message: '교육비 테이블 초기화 완료',
+      results
+    })
+  } catch (error) {
+    console.error('Error initializing tables:', error)
+    return c.json({ error: '테이블 초기화 실패', details: error.message }, 500)
+  }
+})
+
+// ========================================
 // 교육비 납입 기록 API
 // ========================================
 
