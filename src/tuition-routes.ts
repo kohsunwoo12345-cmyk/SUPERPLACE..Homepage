@@ -82,7 +82,7 @@ app.get('/api/tuition/students/:studentId/payments', requireDirector, async (c) 
   }
 })
 
-// 전체 학생 납입 현황 조회 (월별)
+// 전체 학생 납입 현황 조회 (월별) - 모든 학생 표시
 app.get('/api/tuition/payments', requireDirector, async (c) => {
   try {
     const user = c.get('user')
@@ -90,29 +90,41 @@ app.get('/api/tuition/payments', requireDirector, async (c) => {
     const month = c.req.query('month') || (new Date().getMonth() + 1).toString()
     const status = c.req.query('status') // unpaid, paid, partial, overdue
     
+    // 모든 활성 학생을 보여주되, 납입 기록이 있으면 조인
     let query = `
       SELECT 
-        tp.*,
+        s.id as student_id,
         s.name as student_name,
         s.grade,
         s.parent_name,
         s.parent_phone,
+        COALESCE(tp.id, 0) as id,
+        COALESCE(tp.year, ?) as year,
+        COALESCE(tp.month, ?) as month,
+        COALESCE(tp.amount, tr.monthly_fee, 0) as amount,
+        COALESCE(tp.paid_amount, 0) as paid_amount,
+        COALESCE(tp.status, 'unpaid') as status,
+        tp.paid_date,
+        tp.memo,
+        tp.payment_method,
         tr.monthly_fee
-      FROM tuition_payments tp
-      JOIN students s ON tp.student_id = s.id
-      LEFT JOIN tuition_rates tr ON tp.student_id = tr.student_id 
+      FROM students s
+      LEFT JOIN tuition_payments tp ON s.id = tp.student_id 
+        AND tp.year = ? AND tp.month = ?
+      LEFT JOIN tuition_rates tr ON s.id = tr.student_id
         AND (tr.end_date IS NULL OR tr.end_date >= date('now'))
-      WHERE tp.academy_id = ? AND tp.year = ? AND tp.month = ?
+      WHERE s.user_id = ?
+        AND s.status = 'active'
     `
     
-    const params: any[] = [user.id, year, month]
+    const params: any[] = [year, month, year, month, user.id]
     
     if (status) {
-      query += ` AND tp.status = ?`
+      query += ` AND COALESCE(tp.status, 'unpaid') = ?`
       params.push(status)
     }
     
-    query += ` ORDER BY tp.status DESC, s.name ASC`
+    query += ` ORDER BY COALESCE(tp.status, 'unpaid') DESC, s.name ASC`
     
     const result = await c.env.DB.prepare(query).bind(...params).all()
     
@@ -311,13 +323,14 @@ app.post('/api/tuition/rates', requireDirector, async (c) => {
 // 통계 API
 // ========================================
 
-// 미납 학생 목록
+// 미납 학생 목록 (납입 기록이 없는 학생 포함)
 app.get('/api/tuition/unpaid-students', requireDirector, async (c) => {
   try {
     const user = c.get('user')
     const year = c.req.query('year') || new Date().getFullYear().toString()
     const month = c.req.query('month') || (new Date().getMonth() + 1).toString()
     
+    // 모든 활성 학생을 가져오되, 납입 기록이 있으면 조인
     const result = await c.env.DB.prepare(`
       SELECT 
         s.id,
@@ -325,21 +338,24 @@ app.get('/api/tuition/unpaid-students', requireDirector, async (c) => {
         s.grade,
         s.parent_name,
         s.parent_phone,
-        tp.year,
-        tp.month,
-        tp.amount,
-        tp.paid_amount,
-        tp.status,
+        COALESCE(tp.year, ?) as year,
+        COALESCE(tp.month, ?) as month,
+        COALESCE(tp.amount, 0) as amount,
+        COALESCE(tp.paid_amount, 0) as paid_amount,
+        COALESCE(tp.status, 'unpaid') as status,
         tp.memo,
-        (tp.amount - tp.paid_amount) as unpaid_amount
+        COALESCE(tp.amount - tp.paid_amount, 0) as unpaid_amount,
+        tr.monthly_fee
       FROM students s
       LEFT JOIN tuition_payments tp ON s.id = tp.student_id 
         AND tp.year = ? AND tp.month = ?
+      LEFT JOIN tuition_rates tr ON s.id = tr.student_id
+        AND (tr.end_date IS NULL OR tr.end_date >= date('now'))
       WHERE s.user_id = ? 
         AND s.status = 'active'
-        AND (tp.status = 'unpaid' OR tp.status = 'partial' OR tp.status = 'overdue' OR tp.id IS NULL)
+        AND (tp.status IS NULL OR tp.status = 'unpaid' OR tp.status = 'partial' OR tp.status = 'overdue')
       ORDER BY s.name ASC
-    `).bind(year, month, user.id).all()
+    `).bind(year, month, year, month, user.id).all()
     
     return c.json({
       success: true,
@@ -353,7 +369,7 @@ app.get('/api/tuition/unpaid-students', requireDirector, async (c) => {
   }
 })
 
-// 교육비 통계
+// 교육비 통계 (모든 활성 학생 기준)
 app.get('/api/tuition/stats', requireDirector, async (c) => {
   try {
     const user = c.get('user')
@@ -362,16 +378,21 @@ app.get('/api/tuition/stats', requireDirector, async (c) => {
     
     const stats: any = await c.env.DB.prepare(`
       SELECT 
-        COUNT(*) as total_students,
-        SUM(CASE WHEN status = 'paid' THEN 1 ELSE 0 END) as paid_count,
-        SUM(CASE WHEN status = 'unpaid' THEN 1 ELSE 0 END) as unpaid_count,
-        SUM(CASE WHEN status = 'partial' THEN 1 ELSE 0 END) as partial_count,
-        SUM(CASE WHEN status = 'overdue' THEN 1 ELSE 0 END) as overdue_count,
-        SUM(amount) as total_amount,
-        SUM(paid_amount) as total_paid
-      FROM tuition_payments
-      WHERE academy_id = ? AND year = ? AND month = ?
-    `).bind(user.id, year, month).first()
+        COUNT(DISTINCT s.id) as total_students,
+        SUM(CASE WHEN COALESCE(tp.status, 'unpaid') = 'paid' THEN 1 ELSE 0 END) as paid_count,
+        SUM(CASE WHEN COALESCE(tp.status, 'unpaid') = 'unpaid' THEN 1 ELSE 0 END) as unpaid_count,
+        SUM(CASE WHEN COALESCE(tp.status, 'unpaid') = 'partial' THEN 1 ELSE 0 END) as partial_count,
+        SUM(CASE WHEN COALESCE(tp.status, 'unpaid') = 'overdue' THEN 1 ELSE 0 END) as overdue_count,
+        SUM(COALESCE(tp.amount, tr.monthly_fee, 0)) as total_amount,
+        SUM(COALESCE(tp.paid_amount, 0)) as total_paid
+      FROM students s
+      LEFT JOIN tuition_payments tp ON s.id = tp.student_id 
+        AND tp.year = ? AND tp.month = ?
+      LEFT JOIN tuition_rates tr ON s.id = tr.student_id
+        AND (tr.end_date IS NULL OR tr.end_date >= date('now'))
+      WHERE s.user_id = ? 
+        AND s.status = 'active'
+    `).bind(year, month, user.id).first()
     
     return c.json({
       success: true,
