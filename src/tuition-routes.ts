@@ -98,21 +98,22 @@ app.get('/api/tuition/payments', requireDirector, async (c) => {
         s.grade,
         s.parent_name,
         s.parent_phone,
-        CASE WHEN tp.id IS NULL THEN 0 ELSE tp.id END as id,
-        CASE WHEN tp.year IS NULL THEN ? ELSE tp.year END as year,
-        CASE WHEN tp.month IS NULL THEN ? ELSE tp.month END as month,
-        CASE WHEN tp.amount IS NULL THEN CASE WHEN tr.monthly_fee IS NULL THEN 0 ELSE tr.monthly_fee END ELSE tp.amount END as amount,
-        CASE WHEN tp.paid_amount IS NULL THEN 0 ELSE tp.paid_amount END as paid_amount,
-        CASE WHEN tp.status IS NULL THEN 'unpaid' ELSE tp.status END as status,
+        COALESCE(tp.id, 0) as id,
+        COALESCE(tp.year, ?) as year,
+        COALESCE(tp.month, ?) as month,
+        COALESCE(tp.amount, COALESCE(tr.monthly_fee, COALESCE(c.monthly_fee, 0))) as amount,
+        COALESCE(tp.paid_amount, 0) as paid_amount,
+        COALESCE(tp.status, 'unpaid') as status,
         tp.paid_date,
         tp.memo,
         tp.payment_method,
-        tr.monthly_fee
+        COALESCE(tr.monthly_fee, COALESCE(c.monthly_fee, 0)) as monthly_fee
       FROM students s
       LEFT JOIN tuition_payments tp ON s.id = tp.student_id 
         AND tp.year = ? AND tp.month = ?
       LEFT JOIN tuition_rates tr ON s.id = tr.student_id
         AND (tr.end_date IS NULL OR tr.end_date >= date('now'))
+      LEFT JOIN classes c ON s.class_id = c.id
       WHERE s.user_id = ?
         AND s.status = 'active'
     `
@@ -120,11 +121,11 @@ app.get('/api/tuition/payments', requireDirector, async (c) => {
     const params: any[] = [year, month, year, month, user.id]
     
     if (status) {
-      query += ` AND CASE WHEN tp.status IS NULL THEN 'unpaid' ELSE tp.status END = ?`
+      query += ` AND COALESCE(tp.status, 'unpaid') = ?`
       params.push(status)
     }
     
-    query += ` ORDER BY CASE WHEN tp.status IS NULL THEN 'unpaid' ELSE tp.status END DESC, s.name ASC`
+    query += ` ORDER BY COALESCE(tp.status, 'unpaid') DESC, s.name ASC`
     
     const result = await c.env.DB.prepare(query).bind(...params).all()
     
@@ -340,17 +341,18 @@ app.get('/api/tuition/unpaid-students', requireDirector, async (c) => {
         s.parent_phone,
         ? as year,
         ? as month,
-        COALESCE(tp.amount, tr.monthly_fee, 0) as amount,
+        COALESCE(tp.amount, COALESCE(tr.monthly_fee, COALESCE(c.monthly_fee, 0))) as amount,
         COALESCE(tp.paid_amount, 0) as paid_amount,
         COALESCE(tp.status, 'unpaid') as status,
         tp.memo,
-        COALESCE(tp.amount, tr.monthly_fee, 0) - COALESCE(tp.paid_amount, 0) as unpaid_amount,
-        tr.monthly_fee
+        COALESCE(tp.amount, COALESCE(tr.monthly_fee, COALESCE(c.monthly_fee, 0))) - COALESCE(tp.paid_amount, 0) as unpaid_amount,
+        COALESCE(tr.monthly_fee, c.monthly_fee) as monthly_fee
       FROM students s
       LEFT JOIN tuition_payments tp ON s.id = tp.student_id 
         AND tp.year = ? AND tp.month = ?
       LEFT JOIN tuition_rates tr ON s.id = tr.student_id
         AND (tr.end_date IS NULL OR tr.end_date >= date('now'))
+      LEFT JOIN classes c ON s.class_id = c.id
       WHERE s.user_id = ? 
         AND s.status = 'active'
         AND COALESCE(tp.status, 'unpaid') IN ('unpaid', 'partial', 'overdue')
@@ -383,13 +385,14 @@ app.get('/api/tuition/stats', requireDirector, async (c) => {
         SUM(CASE WHEN COALESCE(tp.status, 'unpaid') = 'unpaid' THEN 1 ELSE 0 END) as unpaid_count,
         SUM(CASE WHEN COALESCE(tp.status, 'unpaid') = 'partial' THEN 1 ELSE 0 END) as partial_count,
         SUM(CASE WHEN COALESCE(tp.status, 'unpaid') = 'overdue' THEN 1 ELSE 0 END) as overdue_count,
-        SUM(COALESCE(tp.amount, tr.monthly_fee, 0)) as total_amount,
+        SUM(COALESCE(tp.amount, COALESCE(tr.monthly_fee, COALESCE(c.monthly_fee, 0)))) as total_amount,
         SUM(COALESCE(tp.paid_amount, 0)) as total_paid
       FROM students s
       LEFT JOIN tuition_payments tp ON s.id = tp.student_id 
         AND tp.year = ? AND tp.month = ?
       LEFT JOIN tuition_rates tr ON s.id = tr.student_id
         AND (tr.end_date IS NULL OR tr.end_date >= date('now'))
+      LEFT JOIN classes c ON s.class_id = c.id
       WHERE s.user_id = ? 
         AND s.status = 'active'
     `).bind(year, month, user.id).first()

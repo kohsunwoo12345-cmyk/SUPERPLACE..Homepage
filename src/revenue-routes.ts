@@ -39,13 +39,14 @@ app.get('/api/revenue/monthly', requireDirector, async (c) => {
     // 실제 납입된 금액 (tuition_payments에서)
     const paidResult = await c.env.DB.prepare(`
       SELECT 
-        COALESCE(SUM(paid_amount), 0) as total_paid,
-        COUNT(DISTINCT student_id) as paying_students
-      FROM tuition_payments
-      WHERE academy_id = ? 
-        AND year = ? 
-        AND month = ?
-        AND status IN ('paid', 'partial')
+        COALESCE(SUM(tp.paid_amount), 0) as total_paid,
+        COUNT(DISTINCT tp.student_id) as paying_students
+      FROM tuition_payments tp
+      JOIN students s ON tp.student_id = s.id
+      WHERE s.user_id = ? 
+        AND tp.year = ? 
+        AND tp.month = ?
+        AND tp.status IN ('paid', 'partial')
     `).bind(user.id, year, month).first()
     
     // 예상 매출 (활성 학생 * 교육비)
@@ -109,13 +110,14 @@ app.get('/api/revenue/yearly', requireDirector, async (c) => {
     for (let month = 1; month <= 12; month++) {
       const result = await c.env.DB.prepare(`
         SELECT 
-          COALESCE(SUM(paid_amount), 0) as total_paid,
-          COUNT(DISTINCT student_id) as paying_students
-        FROM tuition_payments
-        WHERE academy_id = ? 
-          AND year = ? 
-          AND month = ?
-          AND status IN ('paid', 'partial')
+          COALESCE(SUM(tp.paid_amount), 0) as total_paid,
+          COUNT(DISTINCT tp.student_id) as paying_students
+        FROM tuition_payments tp
+        JOIN students s ON tp.student_id = s.id
+        WHERE s.user_id = ? 
+          AND tp.year = ? 
+          AND tp.month = ?
+          AND tp.status IN ('paid', 'partial')
       `).bind(user.id, year, month).first()
       
       monthlyData.push({
@@ -186,12 +188,13 @@ app.get('/api/revenue/dashboard', requireDirector, async (c) => {
     // 이번 달 매출
     const thisMonthResult = await c.env.DB.prepare(`
       SELECT 
-        COALESCE(SUM(paid_amount), 0) as total_paid
-      FROM tuition_payments
-      WHERE academy_id = ? 
-        AND year = ? 
-        AND month = ?
-        AND status IN ('paid', 'partial')
+        COALESCE(SUM(tp.paid_amount), 0) as total_paid
+      FROM tuition_payments tp
+      JOIN students s ON tp.student_id = s.id
+      WHERE s.user_id = ? 
+        AND tp.year = ? 
+        AND tp.month = ?
+        AND tp.status IN ('paid', 'partial')
     `).bind(user.id, currentYear, currentMonth).first()
     
     // 지난 달 매출
@@ -200,22 +203,24 @@ app.get('/api/revenue/dashboard', requireDirector, async (c) => {
     
     const lastMonthResult = await c.env.DB.prepare(`
       SELECT 
-        COALESCE(SUM(paid_amount), 0) as total_paid
-      FROM tuition_payments
-      WHERE academy_id = ? 
-        AND year = ? 
-        AND month = ?
-        AND status IN ('paid', 'partial')
+        COALESCE(SUM(tp.paid_amount), 0) as total_paid
+      FROM tuition_payments tp
+      JOIN students s ON tp.student_id = s.id
+      WHERE s.user_id = ? 
+        AND tp.year = ? 
+        AND tp.month = ?
+        AND tp.status IN ('paid', 'partial')
     `).bind(user.id, lastMonthYear, lastMonth).first()
     
     // 올해 누적 매출
     const yearlyResult = await c.env.DB.prepare(`
       SELECT 
-        COALESCE(SUM(paid_amount), 0) as total_paid
-      FROM tuition_payments
-      WHERE academy_id = ? 
-        AND year = ?
-        AND status IN ('paid', 'partial')
+        COALESCE(SUM(tp.paid_amount), 0) as total_paid
+      FROM tuition_payments tp
+      JOIN students s ON tp.student_id = s.id
+      WHERE s.user_id = ? 
+        AND tp.year = ?
+        AND tp.status IN ('paid', 'partial')
     `).bind(user.id, currentYear).first()
     
     // 총 학생 수 및 평균 교육비
