@@ -88,6 +88,99 @@ export async function onRequest(context: any) {
     await env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_daily_records_student_id ON daily_records(student_id)`).run();
     await env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_daily_records_date ON daily_records(record_date)`).run();
     
+    // 교육비 납입 기록 테이블 생성
+    await env.DB.prepare(`
+      CREATE TABLE IF NOT EXISTS tuition_payments (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        student_id INTEGER NOT NULL,
+        academy_id INTEGER NOT NULL,
+        year INTEGER NOT NULL,
+        month INTEGER NOT NULL,
+        amount INTEGER NOT NULL,
+        status TEXT DEFAULT 'unpaid',
+        paid_amount INTEGER DEFAULT 0,
+        paid_date TEXT,
+        memo TEXT,
+        payment_method TEXT,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        created_by INTEGER,
+        FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
+        FOREIGN KEY (academy_id) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (created_by) REFERENCES users(id)
+      )
+    `).run();
+    
+    // 월별 교육비 설정 테이블 생성
+    await env.DB.prepare(`
+      CREATE TABLE IF NOT EXISTS tuition_rates (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        student_id INTEGER NOT NULL,
+        academy_id INTEGER NOT NULL,
+        monthly_fee INTEGER NOT NULL,
+        start_date TEXT NOT NULL,
+        end_date TEXT,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
+        FOREIGN KEY (academy_id) REFERENCES users(id) ON DELETE CASCADE
+      )
+    `).run();
+    
+    // 교육비 테이블 인덱스
+    await env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_tuition_payments_student ON tuition_payments(student_id)`).run();
+    await env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_tuition_payments_academy ON tuition_payments(academy_id)`).run();
+    await env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_tuition_payments_year_month ON tuition_payments(year, month)`).run();
+    await env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_tuition_payments_status ON tuition_payments(status)`).run();
+    await env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_tuition_rates_student ON tuition_rates(student_id)`).run();
+    await env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_tuition_rates_academy ON tuition_rates(academy_id)`).run();
+    
+    // classes 테이블에 monthly_fee 컬럼 추가 (이미 존재할 경우 무시)
+    try {
+      await env.DB.prepare(`ALTER TABLE classes ADD COLUMN monthly_fee INTEGER DEFAULT 0`).run();
+    } catch (e) {
+      // Column already exists, ignore
+    }
+    
+    // users 테이블에 user_type 및 parent_user_id 추가
+    try {
+      await env.DB.prepare(`ALTER TABLE users ADD COLUMN user_type TEXT DEFAULT 'director'`).run();
+    } catch (e) {
+      // Column already exists, ignore
+    }
+    
+    try {
+      await env.DB.prepare(`ALTER TABLE users ADD COLUMN parent_user_id INTEGER`).run();
+    } catch (e) {
+      // Column already exists, ignore
+    }
+    
+    // classes 테이블에 user_id 및 teacher_id 추가
+    try {
+      await env.DB.prepare(`ALTER TABLE classes ADD COLUMN user_id INTEGER`).run();
+    } catch (e) {
+      // Column already exists, ignore
+    }
+    
+    try {
+      await env.DB.prepare(`ALTER TABLE classes ADD COLUMN teacher_id INTEGER`).run();
+    } catch (e) {
+      // Column already exists, ignore
+    }
+    
+    try {
+      await env.DB.prepare(`ALTER TABLE classes ADD COLUMN name TEXT`).run();
+    } catch (e) {
+      // Column already exists, ignore
+    }
+    
+    // students 테이블에 user_id 추가
+    try {
+      await env.DB.prepare(`ALTER TABLE students ADD COLUMN user_id INTEGER`).run();
+    } catch (e) {
+      // Column already exists, ignore
+    }
+    
     // 관리자 계정 추가
     await env.DB.prepare(`
       INSERT OR IGNORE INTO users (email, password, name, role, academy_name, phone) 
@@ -116,7 +209,7 @@ export async function onRequest(context: any) {
     
     return new Response(JSON.stringify({
       success: true,
-      message: '데이터베이스 초기화 완료! (학생 관리 테이블 포함)'
+      message: '데이터베이스 초기화 완료! (학생 관리 + 교육비 관리 테이블 포함)'
     }), {
       headers: { 'Content-Type': 'application/json' }
     });
