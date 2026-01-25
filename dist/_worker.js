@@ -15566,7 +15566,7 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
         <\/script>
     </body>
     </html>
-  `));c.get("/tools/landing-builder",e=>e.html(`
+  `));c.get("/tools/landing-builder/",e=>e.redirect("/tools/landing-builder",301));c.get("/tools/landing-builder",e=>e.html(`
     <!DOCTYPE html>
     <html lang="ko">
     <head>
@@ -19956,7 +19956,7 @@ ${m}`)),d&&(r.includes("<footer>")?r=r.replace(/<footer>/i,`${d}
             parent_name = ?, parent_phone = ?, class_id = ?, 
             enrollment_date = ?, notes = ?
         WHERE id = ?
-      `).bind(a,r||null,o,n||"",i||null,l,d,p||null,u||null,m||null,t).run();return console.log("✅ [UpdateStudent] Updated rows:",g.meta.changes),g.meta.changes===0?e.json({success:!1,error:"학생을 찾을 수 없습니다."},404):e.json({success:!0,message:"학생 정보가 수정되었습니다.",id:t})}catch(g){return console.error("❌ [UpdateStudent] Error:",g),e.json({success:!1,error:"학생 정보 수정 중 오류가 발생했습니다.",details:g.message},500)}}catch(t){return console.error("❌ [UpdateStudent] Fatal error:",t),e.json({success:!1,error:"학생 정보 수정 중 오류가 발생했습니다."},500)}});c.get("/tools/student-management",e=>e.redirect("/students"));c.get("/tools/ai-learning-report",e=>e.html(`
+      `).bind(a,r||null,o,n||"",i||null,l,d,p||null,u||null,m||null,t).run();return console.log("✅ [UpdateStudent] Updated rows:",g.meta.changes),g.meta.changes===0?e.json({success:!1,error:"학생을 찾을 수 없습니다."},404):e.json({success:!0,message:"학생 정보가 수정되었습니다.",id:t})}catch(g){return console.error("❌ [UpdateStudent] Error:",g),e.json({success:!1,error:"학생 정보 수정 중 오류가 발생했습니다.",details:g.message},500)}}catch(t){return console.error("❌ [UpdateStudent] Fatal error:",t),e.json({success:!1,error:"학생 정보 수정 중 오류가 발생했습니다."},500)}});c.get("/tools/student-management",e=>e.redirect("/students"));c.get("/tools/ai-learning-report/",e=>e.redirect("/tools/ai-learning-report",301));c.get("/tools/ai-learning-report",e=>e.html(`
     <!DOCTYPE html>
     <html lang="ko">
     <head>
@@ -20713,7 +20713,7 @@ ${m}`)),d&&(r.includes("<footer>")?r=r.replace(/<footer>/i,`${d}
         <\/script>
     </body>
     </html>
-  `));c.get("/tools/search-volume",e=>e.html(`
+  `));c.get("/tools/search-volume/",e=>e.redirect("/tools/search-volume",301));c.get("/tools/search-volume",e=>e.html(`
     <!DOCTYPE html>
     <html lang="ko">
     <head>
