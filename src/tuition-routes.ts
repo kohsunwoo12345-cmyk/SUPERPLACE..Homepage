@@ -48,8 +48,8 @@ app.get('/api/tuition/students/:studentId/payments', requireDirector, async (c) 
     
     // 학생이 해당 학원 소속인지 확인
     const student = await c.env.DB.prepare(`
-      SELECT * FROM students WHERE id = ? AND academy_id = ?
-    `).bind(studentId, user.academy_id || user.id).first()
+      SELECT * FROM students WHERE id = ? AND user_id = ?
+    `).bind(studentId, user.id).first()
     
     if (!student) {
       return c.json({ error: '학생을 찾을 수 없습니다' }, 404)
@@ -82,7 +82,7 @@ app.get('/api/tuition/students/:studentId/payments', requireDirector, async (c) 
   }
 })
 
-// 전체 학생 납입 현황 조회 (월별)
+// 전체 학생 납입 현황 조회 (월별) - 모든 학생 표시
 app.get('/api/tuition/payments', requireDirector, async (c) => {
   try {
     const user = c.get('user')
@@ -90,29 +90,42 @@ app.get('/api/tuition/payments', requireDirector, async (c) => {
     const month = c.req.query('month') || (new Date().getMonth() + 1).toString()
     const status = c.req.query('status') // unpaid, paid, partial, overdue
     
+    // 모든 활성 학생을 보여주되, 납입 기록이 있으면 조인
     let query = `
       SELECT 
-        tp.*,
+        s.id as student_id,
         s.name as student_name,
         s.grade,
         s.parent_name,
         s.parent_phone,
-        tr.monthly_fee
-      FROM tuition_payments tp
-      JOIN students s ON tp.student_id = s.id
-      LEFT JOIN tuition_rates tr ON tp.student_id = tr.student_id 
+        COALESCE(tp.id, 0) as id,
+        COALESCE(tp.year, ?) as year,
+        COALESCE(tp.month, ?) as month,
+        COALESCE(tp.amount, COALESCE(tr.monthly_fee, COALESCE(c.monthly_fee, 0))) as amount,
+        COALESCE(tp.paid_amount, 0) as paid_amount,
+        COALESCE(tp.status, 'unpaid') as status,
+        tp.paid_date,
+        tp.memo,
+        tp.payment_method,
+        COALESCE(tr.monthly_fee, COALESCE(c.monthly_fee, 0)) as monthly_fee
+      FROM students s
+      LEFT JOIN tuition_payments tp ON s.id = tp.student_id 
+        AND tp.year = ? AND tp.month = ?
+      LEFT JOIN tuition_rates tr ON s.id = tr.student_id
         AND (tr.end_date IS NULL OR tr.end_date >= date('now'))
-      WHERE tp.academy_id = ? AND tp.year = ? AND tp.month = ?
+      LEFT JOIN classes c ON s.class_id = c.id
+      WHERE s.user_id = ?
+        AND s.status = 'active'
     `
     
-    const params: any[] = [user.academy_id || user.id, year, month]
+    const params: any[] = [year, month, year, month, user.id]
     
     if (status) {
-      query += ` AND tp.status = ?`
+      query += ` AND COALESCE(tp.status, 'unpaid') = ?`
       params.push(status)
     }
     
-    query += ` ORDER BY tp.status DESC, s.name ASC`
+    query += ` ORDER BY COALESCE(tp.status, 'unpaid') DESC, s.name ASC`
     
     const result = await c.env.DB.prepare(query).bind(...params).all()
     
@@ -124,7 +137,7 @@ app.get('/api/tuition/payments', requireDirector, async (c) => {
     })
   } catch (error) {
     console.error('Error fetching payments:', error)
-    return c.json({ error: '납입 현황 조회 실패' }, 500)
+    return c.json({ error: '납입 현황 조회 실패', details: error.message }, 500)
   }
 })
 
@@ -142,8 +155,8 @@ app.post('/api/tuition/payments', requireDirector, async (c) => {
     
     // 학생 확인
     const student = await c.env.DB.prepare(`
-      SELECT * FROM students WHERE id = ? AND academy_id = ?
-    `).bind(student_id, user.academy_id || user.id).first()
+      SELECT * FROM students WHERE id = ? AND user_id = ?
+    `).bind(student_id, user.id).first()
     
     if (!student) {
       return c.json({ error: '학생을 찾을 수 없습니다' }, 404)
@@ -167,7 +180,7 @@ app.post('/api/tuition/payments', requireDirector, async (c) => {
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).bind(
       student_id,
-      user.academy_id || user.id,
+      user.id,
       year,
       month,
       amount,
@@ -199,8 +212,8 @@ app.put('/api/tuition/payments/:id', requireDirector, async (c) => {
     
     // 기존 기록 확인
     const existing: any = await c.env.DB.prepare(`
-      SELECT * FROM tuition_payments WHERE id = ? AND academy_id = ?
-    `).bind(paymentId, user.academy_id || user.id).first()
+      SELECT * FROM tuition_payments WHERE id = ? AND user_id = ?
+    `).bind(paymentId, user.id).first()
     
     if (!existing) {
       return c.json({ error: '납입 기록을 찾을 수 없습니다' }, 404)
@@ -239,8 +252,8 @@ app.delete('/api/tuition/payments/:id', requireDirector, async (c) => {
     const paymentId = c.req.param('id')
     
     await c.env.DB.prepare(`
-      DELETE FROM tuition_payments WHERE id = ? AND academy_id = ?
-    `).bind(paymentId, user.academy_id || user.id).run()
+      DELETE FROM tuition_payments WHERE id = ? AND user_id = ?
+    `).bind(paymentId, user.id).run()
     
     return c.json({
       success: true,
@@ -270,8 +283,8 @@ app.post('/api/tuition/rates', requireDirector, async (c) => {
     
     // 학생 확인
     const student = await c.env.DB.prepare(`
-      SELECT * FROM students WHERE id = ? AND academy_id = ?
-    `).bind(student_id, user.academy_id || user.id).first()
+      SELECT * FROM students WHERE id = ? AND user_id = ?
+    `).bind(student_id, user.id).first()
     
     if (!student) {
       return c.json({ error: '학생을 찾을 수 없습니다' }, 404)
@@ -290,7 +303,7 @@ app.post('/api/tuition/rates', requireDirector, async (c) => {
       VALUES (?, ?, ?, ?, ?)
     `).bind(
       student_id,
-      user.academy_id || user.id,
+      user.id,
       monthly_fee,
       start_date,
       end_date || null
@@ -311,13 +324,14 @@ app.post('/api/tuition/rates', requireDirector, async (c) => {
 // 통계 API
 // ========================================
 
-// 미납 학생 목록
+// 미납 학생 목록 (납입 기록이 없는 학생 포함)
 app.get('/api/tuition/unpaid-students', requireDirector, async (c) => {
   try {
     const user = c.get('user')
     const year = c.req.query('year') || new Date().getFullYear().toString()
     const month = c.req.query('month') || (new Date().getMonth() + 1).toString()
     
+    // 모든 활성 학생을 가져오되, 납입 기록이 있으면 조인
     const result = await c.env.DB.prepare(`
       SELECT 
         s.id,
@@ -325,21 +339,25 @@ app.get('/api/tuition/unpaid-students', requireDirector, async (c) => {
         s.grade,
         s.parent_name,
         s.parent_phone,
-        tp.year,
-        tp.month,
-        tp.amount,
-        tp.paid_amount,
-        tp.status,
+        ? as year,
+        ? as month,
+        COALESCE(tp.amount, COALESCE(tr.monthly_fee, COALESCE(c.monthly_fee, 0))) as amount,
+        COALESCE(tp.paid_amount, 0) as paid_amount,
+        COALESCE(tp.status, 'unpaid') as status,
         tp.memo,
-        (tp.amount - tp.paid_amount) as unpaid_amount
+        COALESCE(tp.amount, COALESCE(tr.monthly_fee, COALESCE(c.monthly_fee, 0))) - COALESCE(tp.paid_amount, 0) as unpaid_amount,
+        COALESCE(tr.monthly_fee, c.monthly_fee) as monthly_fee
       FROM students s
       LEFT JOIN tuition_payments tp ON s.id = tp.student_id 
         AND tp.year = ? AND tp.month = ?
-      WHERE s.academy_id = ? 
+      LEFT JOIN tuition_rates tr ON s.id = tr.student_id
+        AND (tr.end_date IS NULL OR tr.end_date >= date('now'))
+      LEFT JOIN classes c ON s.class_id = c.id
+      WHERE s.user_id = ? 
         AND s.status = 'active'
-        AND (tp.status = 'unpaid' OR tp.status = 'partial' OR tp.status = 'overdue' OR tp.id IS NULL)
+        AND COALESCE(tp.status, 'unpaid') IN ('unpaid', 'partial', 'overdue')
       ORDER BY s.name ASC
-    `).bind(year, month, user.academy_id || user.id).all()
+    `).bind(year, month, year, month, user.id).all()
     
     return c.json({
       success: true,
@@ -349,11 +367,11 @@ app.get('/api/tuition/unpaid-students', requireDirector, async (c) => {
     })
   } catch (error) {
     console.error('Error fetching unpaid students:', error)
-    return c.json({ error: '미납 학생 조회 실패' }, 500)
+    return c.json({ error: '미납 학생 조회 실패', details: error.message }, 500)
   }
 })
 
-// 교육비 통계
+// 교육비 통계 (모든 활성 학생 기준)
 app.get('/api/tuition/stats', requireDirector, async (c) => {
   try {
     const user = c.get('user')
@@ -362,16 +380,22 @@ app.get('/api/tuition/stats', requireDirector, async (c) => {
     
     const stats: any = await c.env.DB.prepare(`
       SELECT 
-        COUNT(*) as total_students,
-        SUM(CASE WHEN status = 'paid' THEN 1 ELSE 0 END) as paid_count,
-        SUM(CASE WHEN status = 'unpaid' THEN 1 ELSE 0 END) as unpaid_count,
-        SUM(CASE WHEN status = 'partial' THEN 1 ELSE 0 END) as partial_count,
-        SUM(CASE WHEN status = 'overdue' THEN 1 ELSE 0 END) as overdue_count,
-        SUM(amount) as total_amount,
-        SUM(paid_amount) as total_paid
-      FROM tuition_payments
-      WHERE academy_id = ? AND year = ? AND month = ?
-    `).bind(user.academy_id || user.id, year, month).first()
+        COUNT(DISTINCT s.id) as total_students,
+        SUM(CASE WHEN COALESCE(tp.status, 'unpaid') = 'paid' THEN 1 ELSE 0 END) as paid_count,
+        SUM(CASE WHEN COALESCE(tp.status, 'unpaid') = 'unpaid' THEN 1 ELSE 0 END) as unpaid_count,
+        SUM(CASE WHEN COALESCE(tp.status, 'unpaid') = 'partial' THEN 1 ELSE 0 END) as partial_count,
+        SUM(CASE WHEN COALESCE(tp.status, 'unpaid') = 'overdue' THEN 1 ELSE 0 END) as overdue_count,
+        SUM(COALESCE(tp.amount, COALESCE(tr.monthly_fee, COALESCE(c.monthly_fee, 0)))) as total_amount,
+        SUM(COALESCE(tp.paid_amount, 0)) as total_paid
+      FROM students s
+      LEFT JOIN tuition_payments tp ON s.id = tp.student_id 
+        AND tp.year = ? AND tp.month = ?
+      LEFT JOIN tuition_rates tr ON s.id = tr.student_id
+        AND (tr.end_date IS NULL OR tr.end_date >= date('now'))
+      LEFT JOIN classes c ON s.class_id = c.id
+      WHERE s.user_id = ? 
+        AND s.status = 'active'
+    `).bind(year, month, user.id).first()
     
     return c.json({
       success: true,
@@ -381,8 +405,193 @@ app.get('/api/tuition/stats', requireDirector, async (c) => {
     })
   } catch (error) {
     console.error('Error fetching stats:', error)
-    return c.json({ error: '통계 조회 실패' }, 500)
+    return c.json({ error: '통계 조회 실패', details: error.message }, 500)
   }
 })
 
 export default app
+
+// ========================================
+// 반(클래스) 관리 API
+// ========================================
+
+// 반 목록 조회
+app.get('/api/tuition/classes', requireDirector, async (c) => {
+  try {
+    const user = c.get('user')
+    
+    const classes = await c.env.DB.prepare(`
+      SELECT 
+        c.*,
+        COUNT(DISTINCT s.id) as student_count,
+        u.name as teacher_name
+      FROM classes c
+      LEFT JOIN students s ON s.class_id = c.id AND s.status = 'active'
+      LEFT JOIN users u ON c.teacher_id = u.id
+      WHERE c.user_id = ?
+      GROUP BY c.id
+      ORDER BY c.name ASC
+    `).bind(user.id).all()
+    
+    return c.json({
+      success: true,
+      classes: classes.results || []
+    })
+  } catch (error) {
+    console.error('Error fetching classes:', error)
+    return c.json({ error: '반 목록 조회 실패', details: error.message }, 500)
+  }
+})
+
+// 반 교육비 설정
+app.put('/api/tuition/classes/:id/fee', requireDirector, async (c) => {
+  try {
+    const user = c.get('user')
+    const classId = c.req.param('id')
+    const { monthly_fee } = await c.req.json()
+    
+    if (monthly_fee === undefined || monthly_fee === null) {
+      return c.json({ error: '월 교육비를 입력해주세요' }, 400)
+    }
+    
+    // 반 소유권 확인
+    const classInfo = await c.env.DB.prepare(`
+      SELECT * FROM classes WHERE id = ? AND user_id = ?
+    `).bind(classId, user.id).first()
+    
+    if (!classInfo) {
+      return c.json({ error: '반을 찾을 수 없습니다' }, 404)
+    }
+    
+    // 교육비 업데이트
+    await c.env.DB.prepare(`
+      UPDATE classes SET monthly_fee = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?
+    `).bind(monthly_fee, classId).run()
+    
+    return c.json({
+      success: true,
+      message: '반 교육비가 설정되었습니다'
+    })
+  } catch (error) {
+    console.error('Error updating class fee:', error)
+    return c.json({ error: '반 교육비 설정 실패', details: error.message }, 500)
+  }
+})
+
+// 학생별 해당 월 납입액 계산 API
+app.get('/api/tuition/student-fees/:studentId', requireDirector, async (c) => {
+  try {
+    const user = c.get('user')
+    const studentId = c.req.param('studentId')
+    const year = c.req.query('year') || new Date().getFullYear().toString()
+    const month = c.req.query('month') || (new Date().getMonth() + 1).toString()
+    
+    // 학생 정보 및 반 교육비 조회
+    const student = await c.env.DB.prepare(`
+      SELECT 
+        s.*,
+        c.monthly_fee as class_fee,
+        c.name as class_name,
+        tr.monthly_fee as custom_fee
+      FROM students s
+      LEFT JOIN classes c ON s.class_id = c.id
+      LEFT JOIN tuition_rates tr ON s.id = tr.student_id
+        AND (tr.end_date IS NULL OR tr.end_date >= date('now'))
+      WHERE s.id = ? AND s.user_id = ?
+    `).bind(studentId, user.id).first()
+    
+    if (!student) {
+      return c.json({ error: '학생을 찾을 수 없습니다' }, 404)
+    }
+    
+    // 우선순위: custom_fee > class_fee > 0
+    const monthlyFee = student.custom_fee || student.class_fee || 0
+    
+    // 해당 월 납입 기록 조회
+    const payment = await c.env.DB.prepare(`
+      SELECT * FROM tuition_payments 
+      WHERE student_id = ? AND year = ? AND month = ?
+    `).bind(studentId, year, month).first()
+    
+    return c.json({
+      success: true,
+      student: {
+        id: student.id,
+        name: student.name,
+        grade: student.grade,
+        class_name: student.class_name,
+        monthly_fee: monthlyFee
+      },
+      payment: payment || null,
+      amount_due: monthlyFee,
+      amount_paid: payment?.paid_amount || 0,
+      status: payment?.status || 'unpaid'
+    })
+  } catch (error) {
+    console.error('Error fetching student fee:', error)
+    return c.json({ error: '학생 납입액 조회 실패', details: error.message }, 500)
+  }
+})
+
+// 납입 완료 처리 (간편)
+app.post('/api/tuition/mark-paid', requireDirector, async (c) => {
+  try {
+    const user = c.get('user')
+    const { student_id, year, month } = await c.req.json()
+    
+    if (!student_id || !year || !month) {
+      return c.json({ error: '필수 항목을 입력해주세요' }, 400)
+    }
+    
+    // 학생 정보 및 월 납입액 조회
+    const student = await c.env.DB.prepare(`
+      SELECT 
+        s.*,
+        c.monthly_fee as class_fee,
+        tr.monthly_fee as custom_fee
+      FROM students s
+      LEFT JOIN classes c ON s.class_id = c.id
+      LEFT JOIN tuition_rates tr ON s.id = tr.student_id
+        AND (tr.end_date IS NULL OR tr.end_date >= date('now'))
+      WHERE s.id = ? AND s.user_id = ?
+    `).bind(student_id, user.id).first()
+    
+    if (!student) {
+      return c.json({ error: '학생을 찾을 수 없습니다' }, 404)
+    }
+    
+    const amount = student.custom_fee || student.class_fee || 0
+    
+    // 기존 납입 기록 확인
+    const existing = await c.env.DB.prepare(`
+      SELECT * FROM tuition_payments 
+      WHERE student_id = ? AND year = ? AND month = ?
+    `).bind(student_id, year, month).first()
+    
+    if (existing) {
+      // 업데이트
+      await c.env.DB.prepare(`
+        UPDATE tuition_payments 
+        SET status = 'paid', paid_amount = ?, paid_date = date('now'), updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+      `).bind(amount, existing.id).run()
+    } else {
+      // 새로 생성
+      await c.env.DB.prepare(`
+        INSERT INTO tuition_payments (
+          student_id, academy_id, year, month, amount, paid_amount, 
+          status, paid_date, created_by, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, 'paid', date('now'), ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+      `).bind(student_id, user.id, year, month, amount, amount, user.id).run()
+    }
+    
+    return c.json({
+      success: true,
+      message: '납입 완료 처리되었습니다'
+    })
+  } catch (error) {
+    console.error('Error marking paid:', error)
+    return c.json({ error: '납입 완료 처리 실패', details: error.message }, 500)
+  }
+})
+
