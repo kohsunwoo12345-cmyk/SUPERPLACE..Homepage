@@ -48095,13 +48095,3 @@ app.post('/api/service-inquiry', async (c) => {
   }
 })
 // Force rebuild Sat Jan 24 20:41:42 UTC 2026
- return c.json({ 
-      success: true,
-      message: '문의가 성공적으로 제출되었습니다.'
-    })
-  } catch (err) {
-    console.error('Service inquiry error:', err)
-    return c.json({ success: false, error: '문의 제출 중 오류가 발생했습니다.' }, 500)
-  }
-})
-// Force rebuild Sat Jan 24 20:41:42 UTC 2026
