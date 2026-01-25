@@ -7521,6 +7521,23 @@ app.get('/forms/:id/submissions', async (c) => {
     <script>
         let allSubmissions = [];
         const formId = ${formId};
+        
+        // 한국 시간으로 변환하는 함수
+        function formatKoreanTime(isoString) {
+            if (!isoString) return '-';
+            const date = new Date(isoString);
+            // UTC 시간을 KST (UTC+9)로 변환
+            const kstDate = new Date(date.getTime() + (9 * 60 * 60 * 1000));
+            return kstDate.toLocaleString('ko-KR', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false
+            });
+        }
 
         async function loadSubmissions() {
             try {
@@ -7584,7 +7601,7 @@ app.get('/forms/:id/submissions', async (c) => {
                             <div class="text-xs text-gray-600">\${additionalDataStr}</div>
                         </td>
                         <td class="px-6 py-4">
-                            <div class="text-sm text-gray-900">\${new Date(sub.created_at).toLocaleString('ko-KR')}</div>
+                            <div class="text-sm text-gray-900">\${formatKoreanTime(sub.created_at)}</div>
                         </td>
                     </tr>
                 \`;
@@ -7611,7 +7628,7 @@ app.get('/forms/:id/submissions', async (c) => {
                     sub.phone || '-',
                     sub.email || '-',
                     additionalDataStr,
-                    new Date(sub.created_at).toLocaleString('ko-KR')
+                    formatKoreanTime(sub.created_at)
                 ];
             });
 
@@ -21474,6 +21491,23 @@ app.get('/landing/:slug/submissions', async (c) => {
     <script>
         let allSubmissions = [];
         let landingPageData = null;
+        
+        // 한국 시간으로 변환하는 함수
+        function formatKoreanTime(isoString) {
+            if (!isoString) return '-';
+            const date = new Date(isoString);
+            // UTC 시간을 KST (UTC+9)로 변환
+            const kstDate = new Date(date.getTime() + (9 * 60 * 60 * 1000));
+            return kstDate.toLocaleString('ko-KR', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false
+            });
+        }
 
         async function loadSubmissions() {
             try {
@@ -21547,7 +21581,7 @@ app.get('/landing/:slug/submissions', async (c) => {
                             <div class="text-xs text-gray-600">\${additionalDataStr}</div>
                         </td>
                         <td class="px-6 py-4">
-                            <div class="text-sm text-gray-900">\${new Date(sub.created_at).toLocaleString('ko-KR')}</div>
+                            <div class="text-sm text-gray-900">\${formatKoreanTime(sub.created_at)}</div>
                         </td>
                     </tr>
                 \`;
@@ -21573,7 +21607,7 @@ app.get('/landing/:slug/submissions', async (c) => {
                     sub.phone || '-',
                     sub.email || '-',
                     additionalDataStr || '-',
-                    new Date(sub.created_at).toLocaleString('ko-KR')
+                    formatKoreanTime(sub.created_at)
                 ];
             });
             
@@ -22074,6 +22108,23 @@ app.get('/tools/form-manager', (c) => {
             user = JSON.parse(userData);
             loadForms();
         }
+        
+        // 한국 시간으로 변환하는 함수
+        function formatKoreanTime(isoString) {
+            if (!isoString) return '-';
+            const date = new Date(isoString);
+            // UTC 시간을 KST (UTC+9)로 변환
+            const kstDate = new Date(date.getTime() + (9 * 60 * 60 * 1000));
+            return kstDate.toLocaleString('ko-KR', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false
+            });
+        }
 
         function logout() {
             localStorage.removeItem('user');
@@ -22112,7 +22163,7 @@ app.get('/tools/form-manager', (c) => {
                                         </div>
                                         <p class="text-sm text-gray-600 mb-3">\${form.description || '설명 없음'}</p>
                                         <div class="flex items-center gap-4 text-sm text-gray-500">
-                                            <span><i class="fas fa-calendar mr-2"></i>생성일: \${new Date(form.created_at).toLocaleDateString('ko-KR')}</span>
+                                            <span><i class="fas fa-calendar mr-2"></i>생성일: \${formatKoreanTime(form.created_at)}</span>
                                             <span><i class="fas fa-paper-plane mr-2"></i>제출: \${form.submission_count || 0}건</span>
                                         </div>
                                     </div>
