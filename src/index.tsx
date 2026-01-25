@@ -1081,6 +1081,100 @@ app.post('/api/admin/fix-academies-table', async (c) => {
   }
 })
 
+// 🔧 관리자: 사용량 데이터 동기화 API (랜딩페이지 개수 수정)
+app.post('/api/admin/sync-landing-pages-usage', async (c) => {
+  try {
+    // 관리자 권한 확인
+    const userHeaderBase64 = c.req.header('X-User-Data-Base64')
+    if (!userHeaderBase64) {
+      return c.json({ success: false, error: 'Unauthorized' }, 401)
+    }
+    
+    let user
+    try {
+      const userDataStr = atob(userHeaderBase64)
+      user = JSON.parse(userDataStr)
+    } catch (e) {
+      return c.json({ success: false, error: 'Invalid user data' }, 401)
+    }
+    
+    if (user.role !== 'admin') {
+      return c.json({ success: false, error: 'Admin only' }, 403)
+    }
+    
+    console.log('[Sync Usage] Starting landing pages usage sync...')
+    
+    // 모든 활성 구독 조회
+    const subscriptions = await c.env.DB.prepare(`
+      SELECT id, academy_id FROM subscriptions 
+      WHERE status = 'active'
+    `).all()
+    
+    const results = []
+    let synced = 0
+    
+    for (const sub of subscriptions.results || []) {
+      try {
+        // 해당 academy의 실제 랜딩페이지 개수 조회
+        const landingPagesCount = await c.env.DB.prepare(`
+          SELECT COUNT(*) as count FROM landing_pages 
+          WHERE user_id IN (
+            SELECT id FROM users WHERE academy_id = ?
+          )
+        `).bind(sub.academy_id).first()
+        
+        const actualCount = landingPagesCount?.count || 0
+        
+        // usage_tracking 업데이트
+        const updateResult = await c.env.DB.prepare(`
+          UPDATE usage_tracking 
+          SET landing_pages_created = ?, updated_at = CURRENT_TIMESTAMP
+          WHERE subscription_id = ? AND academy_id = ?
+        `).bind(actualCount, sub.id, sub.academy_id).run()
+        
+        if (updateResult.meta.changes > 0) {
+          synced++
+          results.push(`✅ Academy ${sub.academy_id}: Updated to ${actualCount} pages`)
+          console.log(`[Sync Usage] Academy ${sub.academy_id}: ${actualCount} pages`)
+        } else {
+          // usage_tracking 레코드가 없는 경우 생성
+          try {
+            await c.env.DB.prepare(`
+              INSERT INTO usage_tracking (
+                academy_id, subscription_id, current_students, 
+                ai_reports_used_this_month, landing_pages_created, 
+                current_teachers, created_at, updated_at
+              ) VALUES (?, ?, 0, 0, ?, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+            `).bind(sub.academy_id, sub.id, actualCount).run()
+            synced++
+            results.push(`✅ Academy ${sub.academy_id}: Created with ${actualCount} pages`)
+            console.log(`[Sync Usage] Academy ${sub.academy_id}: Created with ${actualCount} pages`)
+          } catch (insertErr) {
+            results.push(`⚠️ Academy ${sub.academy_id}: Failed to create - ${insertErr.message}`)
+          }
+        }
+      } catch (err) {
+        results.push(`❌ Academy ${sub.academy_id}: ${err.message}`)
+        console.error(`[Sync Usage] Error for academy ${sub.academy_id}:`, err)
+      }
+    }
+    
+    return c.json({
+      success: true,
+      message: `동기화 완료: ${synced}개 구독 업데이트됨`,
+      synced,
+      total: subscriptions.results?.length || 0,
+      results
+    })
+  } catch (error) {
+    console.error('[Sync Usage] Error:', error)
+    return c.json({ 
+      success: false, 
+      error: '사용량 동기화 실패: ' + error.message 
+    }, 500)
+  }
+})
+
 // SMS API Routes
 // ========================================
 
@@ -4646,15 +4740,38 @@ app.post('/api/landing/create', async (c) => {
       .bind(user.id, slug, title, template_type, JSON.stringify(input_data), htmlContent, qrCodeUrl, thumbnail_url || null, og_title || null, og_description || null, folder_id || null, form_id || null)
       .run()
     
-    // 🔥 사용량 증가
-    await c.env.DB.prepare(`
-      UPDATE usage_tracking 
-      SET landing_pages_created = landing_pages_created + 1, 
-          updated_at = CURRENT_TIMESTAMP
-      WHERE subscription_id = ?
-    `).bind(activeSubscription.id).run()
-    
-    console.log('✅ Landing page created and usage incremented:', currentPages + 1, '/', pageLimit)
+    // 🔥 사용량 증가 (레코드가 없으면 자동 생성)
+    try {
+      // 먼저 usage_tracking 레코드 존재 여부 확인
+      const usageExists = await c.env.DB.prepare(`
+        SELECT id FROM usage_tracking WHERE subscription_id = ?
+      `).bind(activeSubscription.id).first()
+      
+      if (!usageExists) {
+        // 레코드가 없으면 생성
+        console.log('⚠️ [Landing] usage_tracking record not found, creating...')
+        await c.env.DB.prepare(`
+          INSERT INTO usage_tracking (
+            academy_id, subscription_id, current_students, ai_reports_used_this_month,
+            landing_pages_created, current_teachers, sms_sent_this_month,
+            created_at, updated_at
+          ) VALUES (?, ?, 0, 0, 1, 0, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+        `).bind(academyIdToUse, activeSubscription.id).run()
+        console.log('✅ [Landing] Created usage_tracking with landing_pages_created = 1')
+      } else {
+        // 레코드가 있으면 업데이트
+        await c.env.DB.prepare(`
+          UPDATE usage_tracking 
+          SET landing_pages_created = landing_pages_created + 1, 
+              updated_at = CURRENT_TIMESTAMP
+          WHERE subscription_id = ?
+        `).bind(activeSubscription.id).run()
+        console.log('✅ [Landing] Updated landing_pages_created:', currentPages + 1, '/', pageLimit)
+      }
+    } catch (usageErr) {
+      console.error('❌ [Landing] Failed to update usage:', usageErr)
+      // 에러가 나도 랜딩페이지 생성 자체는 성공으로 처리
+    }
     
     return c.json({ 
       success: true, 
@@ -10185,15 +10302,41 @@ app.get('/api/usage/check', async (c) => {
     
     // 🔥 누적 랜딩페이지 개수 조회: usage_tracking에서 누적 생성 개수 사용 (삭제해도 누적 유지)
     let actualLandingPagesCount = 0
+    let usage = null
     try {
-      // usage가 아직 조회되지 않은 경우를 대비해 미리 조회
-      if (!usage) {
-        usage = await c.env.DB.prepare(`
-          SELECT * FROM usage_tracking 
-          WHERE academy_id = ? AND subscription_id = ?
-        `).bind(academyId, subscription.id).first()
+      // usage_tracking에서 먼저 조회
+      usage = await c.env.DB.prepare(`
+        SELECT * FROM usage_tracking 
+        WHERE academy_id = ? AND subscription_id = ?
+      `).bind(academyId, subscription.id).first()
+      
+      if (usage && usage.landing_pages_created !== null && usage.landing_pages_created !== undefined) {
+        actualLandingPagesCount = usage.landing_pages_created
+        console.log('[Usage Check] ✅ Landing pages from usage_tracking:', actualLandingPagesCount)
+      } else {
+        // 🔥 Fallback: usage_tracking에 레코드가 없으면 실제 landing_pages 테이블에서 COUNT
+        console.log('[Usage Check] ⚠️ No usage_tracking record, counting from landing_pages table...')
+        const countResult = await c.env.DB.prepare(`
+          SELECT COUNT(*) as count FROM landing_pages 
+          WHERE user_id = ?
+        `).bind(academyId).first()
+        actualLandingPagesCount = countResult?.count || 0
+        console.log('[Usage Check] ✅ Landing pages from actual table:', actualLandingPagesCount)
+        
+        // 자동으로 usage_tracking 레코드 생성
+        try {
+          await c.env.DB.prepare(`
+            INSERT INTO usage_tracking (
+              academy_id, subscription_id, current_students, ai_reports_used_this_month,
+              landing_pages_created, current_teachers, sms_sent_this_month,
+              created_at, updated_at
+            ) VALUES (?, ?, 0, 0, ?, 0, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+          `).bind(academyId, subscription.id, actualLandingPagesCount).run()
+          console.log('[Usage Check] ✅ Auto-created usage_tracking with', actualLandingPagesCount, 'landing pages')
+        } catch (insertErr) {
+          console.error('[Usage Check] ❌ Failed to auto-create usage_tracking:', insertErr.message)
+        }
       }
-      actualLandingPagesCount = usage?.landing_pages_created || 0
     } catch (err) {
       console.error('[Usage] landing_pages_created error:', err.message)
     }
@@ -10254,16 +10397,14 @@ app.get('/api/usage/check', async (c) => {
       console.error('[Usage] teachers count error:', err.message)
     }
 
-    // 사용량 조회 (AI 리포트는 usage_tracking에서 조회)
-    let usage = await c.env.DB.prepare(`
-      SELECT * FROM usage_tracking 
-      WHERE academy_id = ? AND subscription_id = ?
-    `).bind(academyId, subscription.id).first()
-
+    // 🔥 usage는 이미 위에서 조회되었음 (line 10308)
     // AI 리포트 사용량 (usage_tracking에서만 조회)
     let aiReportsCount = 0
     if (usage) {
       aiReportsCount = usage.ai_reports_used_this_month || 0
+      console.log('[Usage Check] ✅ AI reports:', aiReportsCount)
+    } else {
+      console.log('[Usage Check] ⚠️ No usage_tracking for AI reports')
     }
 
     // 📊 최종 응답: 실제 데이터 반환
@@ -27814,7 +27955,28 @@ app.post('/api/learning-reports/generate', async (c) => {
       WHERE academy_id = ? AND subscription_id = ?
     `).bind(student.academy_id, subscription.id).first()
 
-    const currentReports = usage?.ai_reports_used_this_month || 0
+    // 🔥 usage_tracking 레코드가 없으면 자동 생성
+    let currentReports = 0
+    if (!usage) {
+      console.log('⚠️ [GenerateReport] No usage_tracking record, creating...')
+      try {
+        await c.env.DB.prepare(`
+          INSERT INTO usage_tracking (
+            academy_id, subscription_id, current_students, ai_reports_used_this_month,
+            landing_pages_created, current_teachers, sms_sent_this_month,
+            created_at, updated_at
+          ) VALUES (?, ?, 0, 0, 0, 0, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+        `).bind(student.academy_id, subscription.id).run()
+        console.log('✅ [GenerateReport] Auto-created usage_tracking')
+        currentReports = 0
+      } catch (createErr) {
+        console.error('❌ [GenerateReport] Failed to create usage_tracking:', createErr.message)
+        currentReports = 0
+      }
+    } else {
+      currentReports = usage.ai_reports_used_this_month || 0
+    }
+    
     if (currentReports >= subscription.ai_report_limit) {
       return c.json({ 
         success: false, 
@@ -28074,12 +28236,26 @@ ${recommendations}
     
     // ✅ 사용량 증가
     try {
-      await c.env.DB.prepare(`
+      const updateResult = await c.env.DB.prepare(`
         UPDATE usage_tracking 
         SET ai_reports_used_this_month = ai_reports_used_this_month + 1, updated_at = CURRENT_TIMESTAMP
         WHERE academy_id = ? AND subscription_id = ?
       `).bind(student.academy_id, subscription.id).run()
-      console.log('📈 [GenerateReport] Usage incremented successfully')
+      
+      // 🔥 UPDATE가 실패하면 (레코드가 없으면) INSERT
+      if (updateResult.meta.changes === 0) {
+        console.log('⚠️ [GenerateReport] No usage_tracking to update, creating with count=1...')
+        await c.env.DB.prepare(`
+          INSERT INTO usage_tracking (
+            academy_id, subscription_id, current_students, ai_reports_used_this_month,
+            landing_pages_created, current_teachers, sms_sent_this_month,
+            created_at, updated_at
+          ) VALUES (?, ?, 0, 1, 0, 0, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+        `).bind(student.academy_id, subscription.id).run()
+        console.log('✅ [GenerateReport] Auto-created usage_tracking with ai_reports=1')
+      } else {
+        console.log('📈 [GenerateReport] Usage incremented successfully')
+      }
     } catch (usageErr) {
       console.error('⚠️ [GenerateReport] Failed to increment usage:', usageErr)
     }
@@ -38160,6 +38336,147 @@ setInterval(loadActiveSessionCount,30000);
   const s=`<div class="mb-8"><h2 class="text-xl font-bold mb-4">신청 대기</h2><div class="grid md:grid-cols-5 gap-6"><div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow p-6 text-white"><div class="flex items-center justify-between mb-2"><span>입금 대기</span><i class="fas fa-money-bill-wave text-2xl"></i></div><p class="text-3xl font-bold">${pd}</p></div><div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow p-6 text-white"><div class="flex items-center justify-between mb-2"><span>발신번호 대기</span><i class="fas fa-phone text-2xl"></i></div><p class="text-3xl font-bold">${ps}</p></div><a href="/admin/bank-transfers" class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow p-6 text-white hover:shadow-lg transition"><div class="flex items-center justify-between mb-2"><span>계좌이체 대기</span><i class="fas fa-university text-2xl"></i></div><p class="text-3xl font-bold">${pbt}</p><p class="text-sm text-blue-100 mt-2">클릭하여 관리</p></a><a href="/admin/free-plan-requests" class="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl shadow p-6 text-white hover:shadow-lg transition"><div class="flex items-center justify-between mb-2"><span>무료 플랜 대기</span><i class="fas fa-gift text-2xl"></i></div><p class="text-3xl font-bold">${pfp}</p><p class="text-sm text-emerald-100 mt-2">클릭하여 관리</p></a><a href="/admin/card-payments" class="bg-gradient-to-br from-pink-500 to-pink-600 rounded-xl shadow p-6 text-white hover:shadow-lg transition"><div class="flex items-center justify-between mb-2"><span>카드결제 신청</span><i class="fas fa-credit-card text-2xl"></i></div><p class="text-3xl font-bold">${pcp}</p><p class="text-sm text-pink-100 mt-2">클릭하여 관리</p></a></div></div>`
   const l=`<div class="grid md:grid-cols-3 gap-6"><a href="/admin/users" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"><i class="fas fa-user-cog text-blue-600 text-xl"></i></div><div><h3 class="text-lg font-bold">사용자 관리</h3><p class="text-gray-600 text-sm">권한 관리</p></div></div></a><a href="/admin/contacts" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center"><i class="fas fa-comments text-green-600 text-xl"></i></div><div><h3 class="text-lg font-bold">문의 관리</h3><p class="text-gray-600 text-sm">문의 처리</p></div></div></a><a href="/admin/revenue" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center"><i class="fas fa-chart-line text-yellow-600 text-xl"></i></div><div><h3 class="text-lg font-bold">매출 관리</h3><p class="text-gray-600 text-sm">매출 통계</p></div></div></a><a href="/admin/sms" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"><i class="fas fa-sms text-blue-600 text-xl"></i></div><div><h3 class="text-lg font-bold">문자 관리</h3><p class="text-gray-600 text-sm">SMS 발송</p></div></div></a><a href="/admin/sender/verification" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center"><i class="fas fa-phone text-purple-600 text-xl"></i></div><div><h3 class="text-lg font-bold">발신번호</h3><p class="text-gray-600 text-sm">인증 승인</p></div></div></a><a href="/admin/deposits" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center"><i class="fas fa-money-bill-wave text-green-600 text-xl"></i></div><div><h3 class="text-lg font-bold">입금 관리</h3><p class="text-gray-600 text-sm">포인트 승인</p></div></div></a><a href="/admin/bank-transfers" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"><i class="fas fa-university text-blue-600 text-xl"></i></div><div><h3 class="text-lg font-bold">계좌이체</h3><p class="text-gray-600 text-sm">승인 관리</p></div></div></a><a href="/admin/programs" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center"><i class="fas fa-graduation-cap text-purple-600 text-xl"></i></div><div><h3 class="text-lg font-bold">프로그램</h3><p class="text-gray-600 text-sm">교육 관리</p></div></div></a><a href="/admin/card-payments" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-pink-100 rounded-lg flex items-center justify-center"><i class="fas fa-credit-card text-pink-600 text-xl"></i></div><div><h3 class="text-lg font-bold">카드결제 신청</h3><p class="text-gray-600 text-sm">결제 승인 관리</p></div></div></a></div></div><script>(function(){try{let sessionId=localStorage.getItem('sessionId');if(!sessionId){sessionId='session_'+Date.now()+'_'+Math.random().toString(36).substr(2,9);localStorage.setItem('sessionId',sessionId);}const user=JSON.parse(localStorage.getItem('user')||'null');fetch('/api/session/track',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:sessionId,userId:user?.id||null})}).catch(err=>console.log('Session track error:',err));setInterval(()=>{fetch('/api/session/track',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:sessionId,userId:user?.id||null})}).catch(err=>console.log('Session track error:',err));},5*60*1000);}catch(e){console.log('Session tracking init error:',e);}})();</script></body></html>`
   return c.html(h+n+b+s+l)
+})
+
+// 관리자: 사용량 동기화 페이지
+app.get('/admin/sync-usage', (c) => {
+  return c.html(`<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>사용량 동기화 - 관리자</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body class="bg-gray-50">
+    <nav class="bg-white shadow-sm border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <a href="/admin/dashboard" class="text-2xl font-bold text-purple-600">슈퍼플레이스 관리자</a>
+                <div class="flex gap-4">
+                    <a href="/admin/dashboard" class="text-gray-700 hover:text-purple-600">대시보드</a>
+                    <a href="/admin/sync-usage" class="text-purple-600 font-semibold">사용량 동기화</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-4xl mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">🔄 사용량 동기화</h1>
+        <p class="text-gray-600 mb-8">랜딩페이지 사용량을 실제 데이터와 동기화합니다.</p>
+
+        <div class="bg-white rounded-xl shadow p-8 mb-6">
+            <h2 class="text-xl font-bold mb-4">랜딩페이지 사용량 동기화</h2>
+            <p class="text-gray-600 mb-6">
+                이 기능은 모든 활성 구독에 대해 <code class="bg-gray-100 px-2 py-1 rounded">landing_pages</code> 테이블의 실제 데이터를 세어
+                <code class="bg-gray-100 px-2 py-1 rounded">usage_tracking</code> 테이블을 업데이트합니다.
+            </p>
+            
+            <button onclick="syncLandingPages()" id="syncBtn" class="w-full px-6 py-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-bold text-lg hover:from-purple-700 hover:to-indigo-700 transition-all shadow-lg hover:shadow-xl">
+                <i class="fas fa-sync-alt mr-2"></i>랜딩페이지 사용량 동기화
+            </button>
+            
+            <div id="syncResult" class="mt-6 hidden"></div>
+        </div>
+
+        <div class="bg-blue-50 border border-blue-200 rounded-xl p-6">
+            <h3 class="font-bold text-blue-900 mb-2">💡 언제 사용하나요?</h3>
+            <ul class="text-blue-800 text-sm space-y-2">
+                <li>• 대시보드에 랜딩페이지 사용량이 표시되지 않을 때</li>
+                <li>• 랜딩페이지를 생성했는데 카운트가 증가하지 않을 때</li>
+                <li>• <code class="bg-blue-100 px-2 py-1 rounded">usage_tracking</code> 테이블이 초기화되지 않았을 때</li>
+                <li>• 데이터 무결성을 확인하고 싶을 때</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        async function syncLandingPages() {
+            const btn = document.getElementById('syncBtn');
+            const resultDiv = document.getElementById('syncResult');
+            
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>동기화 중...';
+            resultDiv.classList.add('hidden');
+            
+            try {
+                const user = JSON.parse(localStorage.getItem('user') || 'null');
+                if (!user || user.role !== 'admin') {
+                    alert('관리자만 사용할 수 있습니다.');
+                    window.location.href = '/login';
+                    return;
+                }
+                
+                const userDataBase64 = btoa(unescape(encodeURIComponent(JSON.stringify(user))));
+                
+                const response = await fetch('/api/admin/sync-landing-pages-usage', {
+                    method: 'POST',
+                    headers: {
+                        'X-User-Data-Base64': userDataBase64
+                    }
+                });
+                
+                const data = await response.json();
+                
+                resultDiv.classList.remove('hidden');
+                
+                if (data.success) {
+                    resultDiv.innerHTML = `
+                        <div class="bg-green-50 border-2 border-green-200 rounded-xl p-6">
+                            <div class="flex items-start gap-3">
+                                <i class="fas fa-check-circle text-green-600 text-2xl mt-1"></i>
+                                <div class="flex-1">
+                                    <h3 class="font-bold text-green-900 text-lg mb-2">✅ 동기화 성공!</h3>
+                                    <p class="text-green-800 mb-4">${data.message}</p>
+                                    <div class="bg-white rounded-lg p-4 mb-3">
+                                        <div class="text-sm text-gray-600 mb-2">세부 결과:</div>
+                                        <div class="space-y-1 text-sm">
+                                            ${data.results.map(r => `<div class="text-gray-700">${r}</div>`).join('')}
+                                        </div>
+                                    </div>
+                                    <p class="text-sm text-green-700">
+                                        <strong>업데이트됨:</strong> ${data.synced}개 / 전체: ${data.total}개
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="bg-red-50 border-2 border-red-200 rounded-xl p-6">
+                            <div class="flex items-start gap-3">
+                                <i class="fas fa-times-circle text-red-600 text-2xl mt-1"></i>
+                                <div>
+                                    <h3 class="font-bold text-red-900 text-lg mb-2">❌ 동기화 실패</h3>
+                                    <p class="text-red-800">${data.error}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('동기화 오류:', error);
+                resultDiv.classList.remove('hidden');
+                resultDiv.innerHTML = `
+                    <div class="bg-red-50 border-2 border-red-200 rounded-xl p-6">
+                        <div class="flex items-start gap-3">
+                            <i class="fas fa-exclamation-triangle text-red-600 text-2xl mt-1"></i>
+                            <div>
+                                <h3 class="font-bold text-red-900 text-lg mb-2">⚠️ 오류 발생</h3>
+                                <p class="text-red-800">${error.message}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-sync-alt mr-2"></i>랜딩페이지 사용량 동기화';
+            }
+        }
+    </script>
+</body>
+</html>`)
 })
 
 // 관리자: 실시간 대기 건수 조회 API
