@@ -9379,12 +9379,11 @@ app.get('/', (c) => {
 
 // 플랜 정보 매핑
 const PLAN_INFO = {
-  'starter': { name: '스타터 플랜', price: 55000, studentLimit: 30, aiReportLimit: 30, landingPageLimit: 40, teacherLimit: 2 },
-  'basic': { name: '베이직 플랜', price: 77000, studentLimit: 50, aiReportLimit: 50, landingPageLimit: 70, teacherLimit: 4 },
-  'pro': { name: '프로 플랜', price: 147000, studentLimit: 100, aiReportLimit: 100, landingPageLimit: 140, teacherLimit: 6 },
-  'business': { name: '비즈니스 플랜', price: 297000, studentLimit: 300, aiReportLimit: 600, landingPageLimit: 550, teacherLimit: 10 },
-  'premium': { name: '프리미엄 플랜', price: 440000, studentLimit: 500, aiReportLimit: 1000, landingPageLimit: 900, teacherLimit: 15 },
-  'enterprise': { name: '엔터프라이즈 플랜', price: 750000, studentLimit: 1000, aiReportLimit: 3000, landingPageLimit: 2000, teacherLimit: 20 }
+  'starter': { name: '스타터 플랜', price: 55000, studentLimit: 50, aiReportLimit: 50, landingPageLimit: 50, teacherLimit: 2 },
+  'basic': { name: '베이직 플랜', price: 143000, studentLimit: 150, aiReportLimit: 150, landingPageLimit: 160, teacherLimit: 6 },
+  'pro': { name: '프로 플랜', price: 187000, studentLimit: 500, aiReportLimit: 500, landingPageLimit: 530, teacherLimit: 20 },
+  'premium': { name: '프리미엄 플랜', price: 330000, studentLimit: 1000, aiReportLimit: 1000, landingPageLimit: 1100, teacherLimit: 40 },
+  'enterprise': { name: '엔터프라이즈 플랜', price: 750000, studentLimit: 3000, aiReportLimit: 3000, landingPageLimit: 5000, teacherLimit: 999 }
 }
 
 // 결제 완료 웹훅 (아임포트에서 호출)
@@ -11007,12 +11006,11 @@ app.post('/api/bank-transfer/approve', async (c) => {
 
     // 플랜별 한도 설정
     const planLimits: any = {
-      '스타터 플랜': { student: 30, ai_report: 30, landing_page: 40, teacher: 2, price: 55000 },
-      '베이직 플랜': { student: 50, ai_report: 50, landing_page: 70, teacher: 3, price: 77000 },
-      '프로 플랜': { student: 100, ai_report: 100, landing_page: 140, teacher: 6, price: 147000 },
-      '비즈니스 플랜': { student: 300, ai_report: 600, landing_page: 550, teacher: 10, price: 297000 },
-      '프리미엄 플랜': { student: 500, ai_report: 1000, landing_page: 900, teacher: 15, price: 440000 },
-      '엔터프라이즈 플랜': { student: 1000, ai_report: 3000, landing_page: 2000, teacher: 20, price: 750000 }
+      '스타터 플랜': { student: 50, ai_report: 50, landing_page: 50, teacher: 2, price: 55000 },
+      '베이직 플랜': { student: 150, ai_report: 150, landing_page: 160, teacher: 6, price: 143000 },
+      '프로 플랜': { student: 500, ai_report: 500, landing_page: 530, teacher: 20, price: 187000 },
+      '프리미엄 플랜': { student: 1000, ai_report: 1000, landing_page: 1100, teacher: 40, price: 330000 },
+      '엔터프라이즈 플랜': { student: 3000, ai_report: 3000, landing_page: 5000, teacher: 999, price: 750000 }
     }
 
     const limits = planLimits[request.plan_name] || planLimits['스타터 플랜']
@@ -13002,19 +13000,19 @@ app.get('/pricing', (c) => {
                                 <svg class="check-icon w-5 h-5 text-green-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
                                 </svg>
-                                <span class="text-gray-700">학생 최대 30명</span>
+                                <span class="text-gray-700">학생 최대 50명</span>
                             </div>
                             <div class="flex items-start gap-3">
                                 <svg class="check-icon w-5 h-5 text-green-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
                                 </svg>
-                                <span class="text-gray-700">AI 리포트 월 30개</span>
+                                <span class="text-gray-700">AI 리포트 월 50개</span>
                             </div>
                             <div class="flex items-start gap-3">
                                 <svg class="check-icon w-5 h-5 text-green-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
                                 </svg>
-                                <span class="text-gray-700">랜딩페이지 40개</span>
+                                <span class="text-gray-700">랜딩페이지 50개</span>
                             </div>
                             <div class="flex items-start gap-3">
                                 <svg class="check-icon w-5 h-5 text-green-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -13049,7 +13047,7 @@ app.get('/pricing', (c) => {
                                 베이직
                             </div>
                             <div class="flex items-end gap-2 mb-2">
-                                <span class="text-5xl font-bold text-gray-900">₩77,000</span>
+                                <span class="text-5xl font-bold text-gray-900">₩143,000</span>
                                 <span class="text-gray-600 mb-2">/월</span>
                             </div>
                             <p class="text-gray-600">성장하는 학원을 위한 플랜</p>
@@ -13060,25 +13058,25 @@ app.get('/pricing', (c) => {
                                 <svg class="check-icon w-5 h-5 text-green-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
                                 </svg>
-                                <span class="text-gray-700">학생 최대 50명</span>
+                                <span class="text-gray-700">학생 최대 150명</span>
                             </div>
                             <div class="flex items-start gap-3">
                                 <svg class="check-icon w-5 h-5 text-green-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
                                 </svg>
-                                <span class="text-gray-700">AI 리포트 월 50개</span>
+                                <span class="text-gray-700">AI 리포트 월 150개</span>
                             </div>
                             <div class="flex items-start gap-3">
                                 <svg class="check-icon w-5 h-5 text-green-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
                                 </svg>
-                                <span class="text-gray-700">랜딩페이지 70개</span>
+                                <span class="text-gray-700">랜딩페이지 160개</span>
                             </div>
                             <div class="flex items-start gap-3">
                                 <svg class="check-icon w-5 h-5 text-green-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
                                 </svg>
-                                <span class="text-gray-700">선생님 계정 4명</span>
+                                <span class="text-gray-700">선생님 계정 6명</span>
                             </div>
                         </div>
                         
@@ -13103,7 +13101,7 @@ app.get('/pricing', (c) => {
                                 프로
                             </div>
                             <div class="flex items-end gap-2 mb-2">
-                                <span class="text-5xl font-bold text-white">₩147,000</span>
+                                <span class="text-5xl font-bold text-white">₩187,000</span>
                                 <span class="text-purple-100 mb-2">/월</span>
                             </div>
                             <p class="text-purple-100">중형 학원을 위한 프리미엄 플랜</p>
@@ -13114,25 +13112,25 @@ app.get('/pricing', (c) => {
                                 <svg class="check-icon w-5 h-5 text-green-300 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
                                 </svg>
-                                <span class="text-white font-medium">학생 최대 100명</span>
+                                <span class="text-white font-medium">학생 최대 500명</span>
                             </div>
                             <div class="flex items-start gap-3">
                                 <svg class="check-icon w-5 h-5 text-green-300 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
                                 </svg>
-                                <span class="text-white font-medium">AI 리포트 월 100개</span>
+                                <span class="text-white font-medium">AI 리포트 월 500개</span>
                             </div>
                             <div class="flex items-start gap-3">
                                 <svg class="check-icon w-5 h-5 text-green-300 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
                                 </svg>
-                                <span class="text-white font-medium">랜딩페이지 140개</span>
+                                <span class="text-white font-medium">랜딩페이지 530개</span>
                             </div>
                             <div class="flex items-start gap-3">
                                 <svg class="check-icon w-5 h-5 text-green-300 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
                                 </svg>
-                                <span class="text-white font-medium">선생님 계정 6명</span>
+                                <span class="text-white font-medium">선생님 계정 20명</span>
                             </div>
                         </div>
                         
@@ -13157,7 +13155,7 @@ app.get('/pricing', (c) => {
                                 프리미엄
                             </div>
                             <div class="flex items-end gap-2 mb-2">
-                                <span class="text-5xl font-bold text-gray-900">₩440,000</span>
+                                <span class="text-5xl font-bold text-gray-900">₩330,000</span>
                                 <span class="text-gray-600 mb-2">/월</span>
                             </div>
                             <p class="text-gray-600">대규모 학원 최적화 솔루션</p>
@@ -13168,7 +13166,7 @@ app.get('/pricing', (c) => {
                                 <svg class="check-icon w-5 h-5 text-green-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
                                 </svg>
-                                <span class="text-gray-700 font-medium">학생 최대 500명</span>
+                                <span class="text-gray-700 font-medium">학생 최대 1,000명</span>
                             </div>
                             <div class="flex items-start gap-3">
                                 <svg class="check-icon w-5 h-5 text-green-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -13180,13 +13178,13 @@ app.get('/pricing', (c) => {
                                 <svg class="check-icon w-5 h-5 text-green-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
                                 </svg>
-                                <span class="text-gray-700 font-medium">랜딩페이지 900개</span>
+                                <span class="text-gray-700 font-medium">랜딩페이지 1,100개</span>
                             </div>
                             <div class="flex items-start gap-3">
                                 <svg class="check-icon w-5 h-5 text-green-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
                                 </svg>
-                                <span class="text-gray-700 font-medium">선생님 계정 15명</span>
+                                <span class="text-gray-700 font-medium">선생님 계정 40명</span>
                             </div>
                         </div>
                         
@@ -13211,7 +13209,8 @@ app.get('/pricing', (c) => {
                                 엔터프라이즈
                             </div>
                             <div class="flex items-end gap-2 mb-2">
-                                <span class="text-4xl font-bold text-white">맞춤 상담</span>
+                                <span class="text-5xl font-bold text-white">₩750,000</span>
+                                <span class="text-gray-300 mb-2">/월</span>
                             </div>
                             <p class="text-gray-300">프랜차이즈 & 대형 학원 그룹</p>
                         </div>
@@ -13221,19 +13220,19 @@ app.get('/pricing', (c) => {
                                 <svg class="check-icon w-5 h-5 text-green-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
                                 </svg>
-                                <span class="text-white font-medium">학생 무제한</span>
+                                <span class="text-white font-medium">학생 최대 3,000명</span>
                             </div>
                             <div class="flex items-start gap-3">
                                 <svg class="check-icon w-5 h-5 text-green-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
                                 </svg>
-                                <span class="text-white font-medium">AI 리포트 무제한</span>
+                                <span class="text-white font-medium">AI 리포트 월 3,000개</span>
                             </div>
                             <div class="flex items-start gap-3">
                                 <svg class="check-icon w-5 h-5 text-green-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
                                 </svg>
-                                <span class="text-white font-medium">랜딩페이지 무제한</span>
+                                <span class="text-white font-medium">랜딩페이지 5,000개</span>
                             </div>
                             <div class="flex items-start gap-3">
                                 <svg class="check-icon w-5 h-5 text-green-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -13247,25 +13246,19 @@ app.get('/pricing', (c) => {
                                 </svg>
                                 <span class="text-white font-medium">전담 매니저 배정</span>
                             </div>
-                            <div class="flex items-start gap-3">
-                                <svg class="check-icon w-5 h-5 text-green-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
-                                </svg>
-                                <span class="text-white font-medium">맞춤형 기능 개발</span>
-                            </div>
                         </div>
                         
                         <div class="mb-6 p-3 bg-white/5 rounded-lg">
                             <p class="text-xs text-gray-300 leading-relaxed">
-                                📞 1:1 맞춤 상담으로 최적의 솔루션 제공<br>
-                                💼 규모와 니즈에 맞는 맞춤형 가격 책정
+                                🎯 대규모 학원을 위한 최고급 플랜<br>
+                                💼 전담 매니저의 1:1 케어
                             </p>
                         </div>
                         
                         <button 
-                            onclick="location.href='/contact'"
+                            onclick="location.href='/pricing/enterprise'"
                             class="w-full py-4 bg-white text-gray-900 rounded-xl font-bold hover:bg-gray-100 transition-all hover:shadow-lg">
-                            상담 신청하기
+                            구매하기
                         </button>
                     </div>
 
@@ -35893,12 +35886,11 @@ app.post('/api/payment/verify', async (c) => {
     
     // 플랜별 한도 설정
     const planLimits: any = {
-      '스타터 플랜': { student: 30, ai_report: 30, landing_page: 40, teacher: 2, price: 55000 },
-      '베이직 플랜': { student: 50, ai_report: 50, landing_page: 70, teacher: 3, price: 77000 },
-      '프로 플랜': { student: 100, ai_report: 100, landing_page: 140, teacher: 6, price: 147000 },
-      '비즈니스 플랜': { student: 300, ai_report: 600, landing_page: 550, teacher: 10, price: 297000 },
-      '프리미엄 플랜': { student: 500, ai_report: 1000, landing_page: 900, teacher: 15, price: 440000 },
-      '엔터프라이즈 플랜': { student: 1000, ai_report: 3000, landing_page: 2000, teacher: 20, price: 750000 }
+      '스타터 플랜': { student: 50, ai_report: 50, landing_page: 50, teacher: 2, price: 55000 },
+      '베이직 플랜': { student: 150, ai_report: 150, landing_page: 160, teacher: 6, price: 143000 },
+      '프로 플랜': { student: 500, ai_report: 500, landing_page: 530, teacher: 20, price: 187000 },
+      '프리미엄 플랜': { student: 1000, ai_report: 1000, landing_page: 1100, teacher: 40, price: 330000 },
+      '엔터프라이즈 플랜': { student: 3000, ai_report: 3000, landing_page: 5000, teacher: 999, price: 750000 }
     }
     
     const limits = planLimits[plan] || planLimits['스타터 플랜']
