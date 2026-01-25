@@ -17794,6 +17794,10 @@ app.get('/dashboard', (c) => {
                         marketingToolsSection.style.display = 'block'
                     }
                     
+                    // 교육비 관리는 구독 여부와 관계없이 권한에 따라 표시 (무료 기능)
+                    // checkPermissions()에서 별도로 처리됨
+                    console.log('[Dashboard] 교육비 관리 카드는 checkPermissions()에서 처리')
+                    
                     if (hasSubscription) {
                         const sub = data.subscription
                         
@@ -18004,7 +18008,7 @@ app.get('/dashboard', (c) => {
                     
                     // 구독이 없으면 모든 프로그램 카드 숨기기
                     if (!hasSubscription && user.role !== 'admin') {
-                        console.log('❌ 구독 없음 - 모든 프로그램 숨김')
+                        console.log('❌ 구독 없음 - 모든 프로그램 숨김 (교육비 관리 제외)')
                         const allToolCards = document.querySelectorAll('.tool-card, [href*="/tools/"], [href*="/programs/"], .program-card')
                         allToolCards.forEach(card => {
                             card.style.display = 'none'
@@ -18012,6 +18016,18 @@ app.get('/dashboard', (c) => {
                         // SMS 섹션도 숨김
                         const smsSection = document.getElementById('smsSection')
                         if (smsSection) smsSection.style.display = 'none'
+                        
+                        // 교육비 관리는 구독 없이도 표시 (무료 기능)
+                        const tuitionCard = document.getElementById('tuitionManagementCard')
+                        if (tuitionCard) {
+                            if (user.user_type === 'director' || user.user_type === 'academy' || user.role === 'admin') {
+                                console.log('✅ 구독 없음 but 학원장/관리자 - 교육비 관리 카드 표시')
+                                tuitionCard.style.display = 'block'
+                            } else {
+                                console.log('❌ 구독 없음 and 선생님 - 교육비 관리 카드 숨김')
+                                tuitionCard.style.display = 'none'
+                            }
+                        }
                         return
                     }
                     
