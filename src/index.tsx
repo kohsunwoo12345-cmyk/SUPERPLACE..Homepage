@@ -1082,6 +1082,78 @@ app.post('/api/admin/fix-academies-table', async (c) => {
 })
 
 // 🔧 관리자: 사용량 데이터 동기화 API (랜딩페이지 개수 수정)
+// 🔧 디버그: 특정 사용자의 랜딩페이지 정보 조회
+app.get('/api/debug/landing-pages/:userId', async (c) => {
+  try {
+    const userId = parseInt(c.req.param('userId'))
+    
+    console.log('[Debug] Checking landing pages for user:', userId)
+    
+    // 사용자 정보
+    const user = await c.env.DB.prepare(`
+      SELECT id, email, name, academy_id, user_type FROM users WHERE id = ?
+    `).bind(userId).first()
+    
+    if (!user) {
+      return c.json({ success: false, error: 'User not found' })
+    }
+    
+    // 실제 랜딩페이지 개수 (user_id 기준)
+    const countByUserId = await c.env.DB.prepare(`
+      SELECT COUNT(*) as count FROM landing_pages WHERE user_id = ?
+    `).bind(userId).first()
+    
+    // 랜딩페이지 목록
+    const pages = await c.env.DB.prepare(`
+      SELECT id, slug, title, user_id, created_at FROM landing_pages 
+      WHERE user_id = ? 
+      ORDER BY created_at DESC 
+      LIMIT 10
+    `).bind(userId).all()
+    
+    // 활성 구독
+    const subscription = await c.env.DB.prepare(`
+      SELECT * FROM subscriptions 
+      WHERE academy_id = ? AND status = 'active'
+      ORDER BY created_at DESC LIMIT 1
+    `).bind(user.academy_id || userId).first()
+    
+    // usage_tracking
+    const usage = subscription ? await c.env.DB.prepare(`
+      SELECT * FROM usage_tracking 
+      WHERE academy_id = ? AND subscription_id = ?
+    `).bind(user.academy_id || userId, subscription.id).first() : null
+    
+    return c.json({
+      success: true,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        academy_id: user.academy_id,
+        user_type: user.user_type
+      },
+      landing_pages: {
+        count: countByUserId?.count || 0,
+        pages: pages.results || []
+      },
+      subscription: subscription ? {
+        id: subscription.id,
+        plan_name: subscription.plan_name,
+        landing_page_limit: subscription.landing_page_limit,
+        status: subscription.status
+      } : null,
+      usage_tracking: usage ? {
+        landing_pages_created: usage.landing_pages_created,
+        ai_reports_used_this_month: usage.ai_reports_used_this_month,
+        current_students: usage.current_students
+      } : null
+    })
+  } catch (error) {
+    return c.json({ success: false, error: error.message }, 500)
+  }
+})
+
 app.post('/api/admin/sync-landing-pages-usage', async (c) => {
   try {
     // 관리자 권한 확인
@@ -1112,15 +1184,14 @@ app.post('/api/admin/sync-landing-pages-usage', async (c) => {
     
     const results = []
     let synced = 0
+    let created = 0
     
     for (const sub of subscriptions.results || []) {
       try {
         // 해당 academy의 실제 랜딩페이지 개수 조회
         const landingPagesCount = await c.env.DB.prepare(`
           SELECT COUNT(*) as count FROM landing_pages 
-          WHERE user_id IN (
-            SELECT id FROM users WHERE academy_id = ?
-          )
+          WHERE user_id = ?
         `).bind(sub.academy_id).first()
         
         const actualCount = landingPagesCount?.count || 0
@@ -1143,10 +1214,11 @@ app.post('/api/admin/sync-landing-pages-usage', async (c) => {
               INSERT INTO usage_tracking (
                 academy_id, subscription_id, current_students, 
                 ai_reports_used_this_month, landing_pages_created, 
-                current_teachers, created_at, updated_at
-              ) VALUES (?, ?, 0, 0, ?, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+                current_teachers, sms_sent_this_month, created_at, updated_at
+              ) VALUES (?, ?, 0, 0, ?, 0, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
             `).bind(sub.academy_id, sub.id, actualCount).run()
             synced++
+            created++
             results.push(`✅ Academy ${sub.academy_id}: Created with ${actualCount} pages`)
             console.log(`[Sync Usage] Academy ${sub.academy_id}: Created with ${actualCount} pages`)
           } catch (insertErr) {
@@ -1163,6 +1235,7 @@ app.post('/api/admin/sync-landing-pages-usage', async (c) => {
       success: true,
       message: `동기화 완료: ${synced}개 구독 업데이트됨`,
       synced,
+      created,
       total: subscriptions.results?.length || 0,
       results
     })
