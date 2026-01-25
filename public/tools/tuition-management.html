@@ -270,6 +270,11 @@
         let allStudents = [];
         let allPayments = {};
 
+        // Base64 인코딩 (UTF-8 지원)
+        function encodeBase64(str) {
+            return btoa(unescape(encodeURIComponent(str)));
+        }
+
         // 사용자 정보 확인 및 권한 체크
         function checkAuth() {
             const user = JSON.parse(localStorage.getItem('user'));
@@ -287,6 +292,13 @@
             }
             
             return user;
+        }
+
+        // API 헤더 생성
+        function getApiHeaders() {
+            return {
+                'X-User-Data-Base64': encodeBase64(JSON.stringify(currentUser))
+            };
         }
 
         // 년도 필터 초기화
@@ -353,9 +365,7 @@
             
             try {
                 const response = await fetch(`/api/tuition/stats?year=${year}&month=${month}`, {
-                    headers: {
-                        'X-User-Data-Base64': btoa(JSON.stringify(currentUser))
-                    }
+                    headers: getApiHeaders()
                 });
                 
                 const data = await response.json();
@@ -383,9 +393,7 @@
             // 해당 월의 학생 납입 현황 로드
             try {
                 const response = await fetch(`/api/tuition/payments?year=${year}&month=${month}`, {
-                    headers: {
-                        'X-User-Data-Base64': btoa(JSON.stringify(currentUser))
-                    }
+                    headers: getApiHeaders()
                 });
                 
                 const data = await response.json();
@@ -494,9 +502,7 @@
             // 학생 목록 로드
             try {
                 const response = await fetch('/api/students', {
-                    headers: {
-                        'X-User-Data-Base64': btoa(JSON.stringify(currentUser))
-                    }
+                    headers: getApiHeaders()
                 });
                 
                 const data = await response.json();
@@ -567,7 +573,6 @@
             const memo = document.getElementById('modalMemo').value;
             const year = document.getElementById('yearFilter').value;
             const month = document.getElementById('monthFilter').value;
-            const day = document.getElementById('modalDay').value;
             
             if (!studentId) {
                 alert('학생을 선택해주세요.');
@@ -579,14 +584,12 @@
                 return;
             }
             
-            const paidDate = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-            
             try {
                 const response = await fetch('/api/tuition/mark-paid', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-User-Data-Base64': btoa(JSON.stringify(currentUser))
+                        ...getApiHeaders()
                     },
                     body: JSON.stringify({
                         student_id: studentId,
@@ -649,9 +652,7 @@
             
             try {
                 const response = await fetch('/api/tuition/classes', {
-                    headers: {
-                        'X-User-Data-Base64': btoa(JSON.stringify(currentUser))
-                    }
+                    headers: getApiHeaders()
                 });
                 
                 const data = await response.json();
@@ -700,7 +701,7 @@
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-User-Data-Base64': btoa(JSON.stringify(currentUser))
+                        ...getApiHeaders()
                     },
                     body: JSON.stringify({ monthly_fee: fee })
                 });
