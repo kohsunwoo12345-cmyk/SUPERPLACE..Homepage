@@ -519,16 +519,32 @@ app.get('/api/students', requireDirector, async (c) => {
   try {
     const user = c.get('user')
     
+    console.log('=== Students API Debug ===')
+    console.log('User ID:', user.id)
+    
     const students = await c.env.DB.prepare(`
       SELECT 
-        s.*,
+        s.id,
+        s.name,
+        s.grade,
+        s.phone,
+        s.parent_name,
+        s.parent_phone,
+        s.user_id,
+        s.class_id,
+        s.status,
         c.name as class_name,
-        c.monthly_fee as class_fee
+        COALESCE(c.monthly_fee, 0) as class_fee
       FROM students s
       LEFT JOIN classes c ON s.class_id = c.id
       WHERE s.user_id = ? AND s.status = 'active'
       ORDER BY s.name ASC
     `).bind(user.id).all()
+    
+    console.log('Students found:', students.results?.length || 0)
+    if (students.results && students.results.length > 0) {
+      console.log('First student:', JSON.stringify(students.results[0]))
+    }
     
     return c.json({
       success: true,
@@ -536,7 +552,7 @@ app.get('/api/students', requireDirector, async (c) => {
     })
   } catch (error) {
     console.error('Error fetching students:', error)
-    return c.json({ error: '학생 목록 조회 실패', details: error.message }, 500)
+    return c.json({ error: '학생 목록 조회 실패', details: error.message, stack: error.stack }, 500)
   }
 })
 
@@ -551,29 +567,33 @@ app.get('/api/tuition/classes', requireDirector, async (c) => {
   try {
     const user = c.get('user')
     
-    console.log('Fetching classes for user:', user.id)
+    console.log('=== Classes API Debug ===')
+    console.log('User ID:', user.id)
+    console.log('User Type:', user.user_type)
     
-    // 먼저 classes 테이블의 모든 반 조회 (user_id 또는 academy_id로)
+    // classes 테이블 구조: id, name, description, user_id, teacher_id, monthly_fee
     const classes = await c.env.DB.prepare(`
       SELECT 
         c.id,
         c.name,
         c.description,
         c.user_id,
-        c.academy_id,
-        c.monthly_fee,
         c.teacher_id,
+        COALESCE(c.monthly_fee, 0) as monthly_fee,
         u.name as teacher_name,
         COUNT(DISTINCT s.id) as student_count
       FROM classes c
       LEFT JOIN users u ON c.teacher_id = u.id
-      LEFT JOIN students s ON (s.class_id = c.id AND s.status = 'active')
-      WHERE (c.user_id = ? OR c.academy_id = ?)
-      GROUP BY c.id, c.name, c.description, c.user_id, c.academy_id, c.monthly_fee, c.teacher_id, u.name
+      LEFT JOIN students s ON (s.class_id = c.id AND s.status = 'active' AND s.user_id = ?)
+      WHERE c.user_id = ?
+      GROUP BY c.id, c.name, c.description, c.user_id, c.teacher_id, c.monthly_fee, u.name
       ORDER BY c.name ASC
     `).bind(user.id, user.id).all()
     
     console.log('Classes found:', classes.results?.length || 0)
+    if (classes.results && classes.results.length > 0) {
+      console.log('First class:', JSON.stringify(classes.results[0]))
+    }
     
     return c.json({
       success: true,
@@ -581,7 +601,7 @@ app.get('/api/tuition/classes', requireDirector, async (c) => {
     })
   } catch (error) {
     console.error('Error fetching classes:', error)
-    return c.json({ error: '반 목록 조회 실패', details: error.message }, 500)
+    return c.json({ error: '반 목록 조회 실패', details: error.message, stack: error.stack }, 500)
   }
 })
 

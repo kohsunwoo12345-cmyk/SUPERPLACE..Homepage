@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Classes API Test</title>
+</head>
+<body>
+    <h1>Classes API Test</h1>
+    <button onclick="testAPI()">Test API</button>
+    <pre id="result"></pre>
+    
+    <script>
+        function encodeBase64(str) {
+            return btoa(unescape(encodeURIComponent(str)));
+        }
+        
+        async function testAPI() {
+            const user = JSON.parse(localStorage.getItem('user'));
+            const resultDiv = document.getElementById('result');
+            
+            if (!user) {
+                resultDiv.textContent = 'No user in localStorage';
+                return;
+            }
+            
+            resultDiv.textContent = 'User: ' + JSON.stringify(user, null, 2) + '\n\n';
+            
+            try {
+                const response = await fetch('/api/tuition/classes', {
+                    headers: {
+                        'X-User-Data-Base64': encodeBase64(JSON.stringify(user))
+                    }
+                });
+                
+                const data = await response.json();
+                resultDiv.textContent += 'Response: ' + JSON.stringify(data, null, 2);
+            } catch (error) {
+                resultDiv.textContent += 'Error: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>
