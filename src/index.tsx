@@ -37847,6 +37847,8 @@ app.get('/admin/dashboard', async (c) => {
   try{ps=(await env.DB.prepare('SELECT COUNT(*)c FROM sender_verification_requests WHERE status=?').bind('pending').first())?.c||0}catch(e){}
   try{pbt=(await env.DB.prepare('SELECT COUNT(*)c FROM bank_transfer_requests WHERE status=?').bind('pending').first())?.c||0}catch(e){}
   try{pfp=(await env.DB.prepare('SELECT COUNT(*)c FROM free_plan_requests WHERE status=?').bind('pending').first())?.c||0}catch(e){}
+  let pcp=0
+  try{pcp=(await env.DB.prepare('SELECT COUNT(*)c FROM card_payment_requests WHERE status=?').bind('pending').first())?.c||0}catch(e){}
   const h=`<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>관리자 대시보드</title><script src="https://cdn.tailwindcss.com"></script><link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet"></head><body class="bg-gray-50">`
   const n=`<nav class="bg-white border-b"><div class="max-w-7xl mx-auto px-6 py-4"><div class="flex justify-between items-center"><div class="flex items-center gap-8"><a href="/" class="text-2xl font-bold text-purple-600">슈퍼플레이스 관리자</a><div class="flex gap-4"><a href="/admin/dashboard" class="text-purple-600 font-semibold">대시보드</a><a href="/admin/users" class="text-gray-600 hover:text-purple-600">사용자</a><a href="/admin/contacts" class="text-gray-600 hover:text-purple-600">문의</a><a href="/admin/active-sessions" class="text-gray-600 hover:text-purple-600">실시간 접속자</a><a href="/admin/bank-transfers" class="text-gray-600 hover:text-purple-600">계좌이체</a><a href="/admin/sms" class="text-gray-600 hover:text-purple-600">문자</a><a href="/admin/sender/verification" class="text-gray-600 hover:text-purple-600">발신번호</a><a href="/admin/free-plan-requests" class="text-gray-600 hover:text-purple-600">무료 플랜</a></div></div><button onclick="localStorage.removeItem('user');
                 localStorage.removeItem('loginTime');location.href='/'" class="text-gray-600 hover:text-red-600"><i class="fas fa-sign-out-alt mr-2"></i>로그아웃</button></div></div></nav>`
@@ -37855,8 +37857,8 @@ async function loadActiveSessionCount(){try{const user=JSON.parse(localStorage.g
 loadActiveSessionCount();
 setInterval(loadActiveSessionCount,30000);
 </script>`
-  const s=`<div class="mb-8"><h2 class="text-xl font-bold mb-4">신청 대기</h2><div class="grid md:grid-cols-4 gap-6"><div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow p-6 text-white"><div class="flex items-center justify-between mb-2"><span>입금 대기</span><i class="fas fa-money-bill-wave text-2xl"></i></div><p class="text-3xl font-bold">${pd}</p></div><div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow p-6 text-white"><div class="flex items-center justify-between mb-2"><span>발신번호 대기</span><i class="fas fa-phone text-2xl"></i></div><p class="text-3xl font-bold">${ps}</p></div><a href="/admin/bank-transfers" class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow p-6 text-white hover:shadow-lg transition"><div class="flex items-center justify-between mb-2"><span>계좌이체 대기</span><i class="fas fa-university text-2xl"></i></div><p class="text-3xl font-bold">${pbt}</p><p class="text-sm text-blue-100 mt-2">클릭하여 관리</p></a><a href="/admin/free-plan-requests" class="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl shadow p-6 text-white hover:shadow-lg transition"><div class="flex items-center justify-between mb-2"><span>무료 플랜 대기</span><i class="fas fa-gift text-2xl"></i></div><p class="text-3xl font-bold">${pfp}</p><p class="text-sm text-emerald-100 mt-2">클릭하여 관리</p></a></div></div>`
-  const l=`<div class="grid md:grid-cols-3 gap-6"><a href="/admin/users" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"><i class="fas fa-user-cog text-blue-600 text-xl"></i></div><div><h3 class="text-lg font-bold">사용자 관리</h3><p class="text-gray-600 text-sm">권한 관리</p></div></div></a><a href="/admin/contacts" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center"><i class="fas fa-comments text-green-600 text-xl"></i></div><div><h3 class="text-lg font-bold">문의 관리</h3><p class="text-gray-600 text-sm">문의 처리</p></div></div></a><a href="/admin/revenue" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center"><i class="fas fa-chart-line text-yellow-600 text-xl"></i></div><div><h3 class="text-lg font-bold">매출 관리</h3><p class="text-gray-600 text-sm">매출 통계</p></div></div></a><a href="/admin/sms" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"><i class="fas fa-sms text-blue-600 text-xl"></i></div><div><h3 class="text-lg font-bold">문자 관리</h3><p class="text-gray-600 text-sm">SMS 발송</p></div></div></a><a href="/admin/sender/verification" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center"><i class="fas fa-phone text-purple-600 text-xl"></i></div><div><h3 class="text-lg font-bold">발신번호</h3><p class="text-gray-600 text-sm">인증 승인</p></div></div></a><a href="/admin/deposits" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center"><i class="fas fa-money-bill-wave text-green-600 text-xl"></i></div><div><h3 class="text-lg font-bold">입금 관리</h3><p class="text-gray-600 text-sm">포인트 승인</p></div></div></a><a href="/admin/bank-transfers" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"><i class="fas fa-university text-blue-600 text-xl"></i></div><div><h3 class="text-lg font-bold">계좌이체</h3><p class="text-gray-600 text-sm">승인 관리</p></div></div></a><a href="/admin/programs" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center"><i class="fas fa-graduation-cap text-purple-600 text-xl"></i></div><div><h3 class="text-lg font-bold">프로그램</h3><p class="text-gray-600 text-sm">교육 관리</p></div></div></a></div></div><script>(function(){try{let sessionId=localStorage.getItem('sessionId');if(!sessionId){sessionId='session_'+Date.now()+'_'+Math.random().toString(36).substr(2,9);localStorage.setItem('sessionId',sessionId);}const user=JSON.parse(localStorage.getItem('user')||'null');fetch('/api/session/track',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:sessionId,userId:user?.id||null})}).catch(err=>console.log('Session track error:',err));setInterval(()=>{fetch('/api/session/track',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:sessionId,userId:user?.id||null})}).catch(err=>console.log('Session track error:',err));},5*60*1000);}catch(e){console.log('Session tracking init error:',e);}})();</script></body></html>`
+  const s=`<div class="mb-8"><h2 class="text-xl font-bold mb-4">신청 대기</h2><div class="grid md:grid-cols-4 gap-6"><div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow p-6 text-white"><div class="flex items-center justify-between mb-2"><span>입금 대기</span><i class="fas fa-money-bill-wave text-2xl"></i></div><p class="text-3xl font-bold">${pd}</p></div><div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow p-6 text-white"><div class="flex items-center justify-between mb-2"><span>발신번호 대기</span><i class="fas fa-phone text-2xl"></i></div><p class="text-3xl font-bold">${ps}</p></div><a href="/admin/bank-transfers" class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow p-6 text-white hover:shadow-lg transition"><div class="flex items-center justify-between mb-2"><span>계좌이체 대기</span><i class="fas fa-university text-2xl"></i></div><p class="text-3xl font-bold">${pbt}</p><p class="text-sm text-blue-100 mt-2">클릭하여 관리</p></a><a href="/admin/free-plan-requests" class="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl shadow p-6 text-white hover:shadow-lg transition"><div class="flex items-center justify-between mb-2"><span>무료 플랜 대기</span><i class="fas fa-gift text-2xl"></i></div><p class="text-3xl font-bold">${pfp}</p><p class="text-sm text-emerald-100 mt-2">클릭하여 관리</p></a><a href="/admin/card-payments" class="bg-gradient-to-br from-pink-500 to-pink-600 rounded-xl shadow p-6 text-white hover:shadow-lg transition"><div class="flex items-center justify-between mb-2"><span>카드결제 신청</span><i class="fas fa-credit-card text-2xl"></i></div><p class="text-3xl font-bold">${pcp}</p><p class="text-sm text-pink-100 mt-2">클릭하여 관리</p></a></div></div>`
+  const l=`<div class="grid md:grid-cols-3 gap-6"><a href="/admin/users" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"><i class="fas fa-user-cog text-blue-600 text-xl"></i></div><div><h3 class="text-lg font-bold">사용자 관리</h3><p class="text-gray-600 text-sm">권한 관리</p></div></div></a><a href="/admin/contacts" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center"><i class="fas fa-comments text-green-600 text-xl"></i></div><div><h3 class="text-lg font-bold">문의 관리</h3><p class="text-gray-600 text-sm">문의 처리</p></div></div></a><a href="/admin/revenue" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center"><i class="fas fa-chart-line text-yellow-600 text-xl"></i></div><div><h3 class="text-lg font-bold">매출 관리</h3><p class="text-gray-600 text-sm">매출 통계</p></div></div></a><a href="/admin/sms" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"><i class="fas fa-sms text-blue-600 text-xl"></i></div><div><h3 class="text-lg font-bold">문자 관리</h3><p class="text-gray-600 text-sm">SMS 발송</p></div></div></a><a href="/admin/sender/verification" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center"><i class="fas fa-phone text-purple-600 text-xl"></i></div><div><h3 class="text-lg font-bold">발신번호</h3><p class="text-gray-600 text-sm">인증 승인</p></div></div></a><a href="/admin/deposits" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center"><i class="fas fa-money-bill-wave text-green-600 text-xl"></i></div><div><h3 class="text-lg font-bold">입금 관리</h3><p class="text-gray-600 text-sm">포인트 승인</p></div></div></a><a href="/admin/bank-transfers" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"><i class="fas fa-university text-blue-600 text-xl"></i></div><div><h3 class="text-lg font-bold">계좌이체</h3><p class="text-gray-600 text-sm">승인 관리</p></div></div></a><a href="/admin/programs" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center"><i class="fas fa-graduation-cap text-purple-600 text-xl"></i></div><div><h3 class="text-lg font-bold">프로그램</h3><p class="text-gray-600 text-sm">교육 관리</p></div></div></a><a href="/admin/card-payments" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-pink-100 rounded-lg flex items-center justify-center"><i class="fas fa-credit-card text-pink-600 text-xl"></i></div><div><h3 class="text-lg font-bold">카드결제 신청</h3><p class="text-gray-600 text-sm">결제 승인 관리</p></div></div></a></div></div><script>(function(){try{let sessionId=localStorage.getItem('sessionId');if(!sessionId){sessionId='session_'+Date.now()+'_'+Math.random().toString(36).substr(2,9);localStorage.setItem('sessionId',sessionId);}const user=JSON.parse(localStorage.getItem('user')||'null');fetch('/api/session/track',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:sessionId,userId:user?.id||null})}).catch(err=>console.log('Session track error:',err));setInterval(()=>{fetch('/api/session/track',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:sessionId,userId:user?.id||null})}).catch(err=>console.log('Session track error:',err));},5*60*1000);}catch(e){console.log('Session tracking init error:',e);}})();</script></body></html>`
   return c.html(h+n+b+s+l)
 })
 
@@ -49614,6 +49616,217 @@ app.get('/tools/revenue-management', async (c) => {
                 document.getElementById('studentList').innerHTML = '<p class="text-red-600">오류가 발생했습니다.</p>';
             }
         }
+        </script>
+    </body>
+    </html>
+  `)
+})
+
+
+// 관리자: 카드결제 신청 관리 페이지
+app.get('/admin/card-payments', async (c) => {
+  const { env } = c
+  if (!env?.DB) return c.html('<h1>DB Error</h1>')
+  
+  // 카드결제 신청 목록 조회
+  const requests = await env.DB.prepare(`
+    SELECT 
+      cpr.*,
+      u.name as user_name,
+      u.email as user_email,
+      u.phone as user_phone
+    FROM card_payment_requests cpr
+    LEFT JOIN users u ON cpr.user_id = u.id
+    ORDER BY 
+      CASE 
+        WHEN cpr.status = 'pending' THEN 1
+        WHEN cpr.status = 'approved' THEN 2
+        WHEN cpr.status = 'rejected' THEN 3
+      END,
+      cpr.created_at DESC
+  `).all()
+  
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>카드결제 신청 관리 - 슈퍼플레이스</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+        <style>
+            .gradient-pink { background: linear-gradient(135deg, #ec4899 0%, #f472b6 100%); }
+        </style>
+    </head>
+    <body class="bg-gray-50">
+        <nav class="bg-white border-b">
+            <div class="max-w-7xl mx-auto px-6 py-4">
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center gap-8">
+                        <a href="/admin/dashboard" class="text-2xl font-bold text-pink-600">
+                            <i class="fas fa-arrow-left mr-2"></i>관리자
+                        </a>
+                        <h1 class="text-xl font-semibold">카드결제 신청 관리</h1>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <div class="max-w-7xl mx-auto px-6 py-8">
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-2xl font-bold">
+                        <i class="fas fa-credit-card text-pink-600 mr-2"></i>
+                        카드결제 신청 목록
+                    </h2>
+                    <div class="text-sm text-gray-600">
+                        총 ${requests.results?.length || 0}건
+                    </div>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">상태</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">신청일시 (KST)</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">신청자</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">연락처</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">플랜</th>
+                                <th class="px-4 py-3 text-right text-sm font-semibold text-gray-700">금액</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">비고</th>
+                                <th class="px-4 py-3 text-center text-sm font-semibold text-gray-700">관리</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y">
+                            ${requests.results?.map(req => {
+                              const statusBadge = req.status === 'pending' 
+                                ? '<span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium">대기중</span>'
+                                : req.status === 'approved'
+                                ? '<span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">승인됨</span>'
+                                : '<span class="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium">거부됨</span>'
+                              
+                              return `
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-4 py-3">${statusBadge}</td>
+                                    <td class="px-4 py-3 text-sm" data-utc="${req.created_at}">
+                                        <div class="kst-time">${req.created_at}</div>
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <div class="font-medium">${req.user_name || '알 수 없음'}</div>
+                                        <div class="text-xs text-gray-500">${req.user_email || ''}</div>
+                                    </td>
+                                    <td class="px-4 py-3 text-sm">${req.user_phone || '-'}</td>
+                                    <td class="px-4 py-3">
+                                        <span class="px-2 py-1 bg-pink-100 text-pink-800 rounded text-xs font-medium">
+                                            ${req.plan_name}
+                                        </span>
+                                    </td>
+                                    <td class="px-4 py-3 text-right font-semibold">
+                                        ₩${req.amount?.toLocaleString() || 0}
+                                    </td>
+                                    <td class="px-4 py-3 text-sm text-gray-600">${req.note || '-'}</td>
+                                    <td class="px-4 py-3 text-center">
+                                        ${req.status === 'pending' ? `
+                                            <button onclick="approveRequest(${req.id}, '${req.user_name}', '${req.plan_name}')" 
+                                                    class="px-3 py-1 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 mr-2">
+                                                승인
+                                            </button>
+                                            <button onclick="rejectRequest(${req.id}, '${req.user_name}')" 
+                                                    class="px-3 py-1 bg-red-600 text-white rounded-lg text-sm hover:bg-red-700">
+                                                거부
+                                            </button>
+                                        ` : '<span class="text-gray-400 text-sm">처리완료</span>'}
+                                    </td>
+                                </tr>
+                              `
+                            }).join('') || '<tr><td colspan="8" class="px-4 py-8 text-center text-gray-500">신청 내역이 없습니다.</td></tr>'}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            // UTC to KST 변환 함수
+            function convertToKST() {
+                document.querySelectorAll('.kst-time').forEach(el => {
+                    const utcTime = el.closest('td').getAttribute('data-utc')
+                    if (utcTime) {
+                        const date = new Date(utcTime)
+                        // 한국 시간으로 변환 (UTC+9)
+                        const kstDate = new Date(date.getTime() + (9 * 60 * 60 * 1000))
+                        const formatted = kstDate.toLocaleString('ko-KR', {
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            second: '2-digit',
+                            hour12: false
+                        })
+                        el.textContent = formatted.replace(/\\. /g, '-').replace(/\\./g, '') + ' (KST)'
+                    }
+                })
+            }
+            
+            // 페이지 로드 시 변환
+            convertToKST()
+            
+            async function approveRequest(id, userName, planName) {
+                if (!confirm(\`\${userName}님의 \${planName} 카드결제 신청을 승인하시겠습니까?\`)) return
+                
+                try {
+                    const response = await fetch('/api/card-payment/approve', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            requestId: id,
+                            adminEmail: 'admin@superplace.co.kr'
+                        })
+                    })
+                    
+                    const result = await response.json()
+                    if (result.success) {
+                        alert('✅ 승인이 완료되었습니다.\\n\\n이제 사용자에게 결제 링크를 문자로 발송해주세요.')
+                        location.reload()
+                    } else {
+                        alert('❌ 승인 실패: ' + (result.error || '알 수 없는 오류'))
+                    }
+                } catch (error) {
+                    alert('❌ 오류가 발생했습니다.')
+                    console.error(error)
+                }
+            }
+            
+            async function rejectRequest(id, userName) {
+                const reason = prompt(\`\${userName}님의 신청을 거부하는 이유를 입력해주세요:\`)
+                if (!reason) return
+                
+                try {
+                    const response = await fetch('/api/card-payment/reject', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            requestId: id,
+                            adminEmail: 'admin@superplace.co.kr',
+                            reason: reason
+                        })
+                    })
+                    
+                    const result = await response.json()
+                    if (result.success) {
+                        alert('✅ 거부가 완료되었습니다.')
+                        location.reload()
+                    } else {
+                        alert('❌ 거부 실패: ' + (result.error || '알 수 없는 오류'))
+                    }
+                } catch (error) {
+                    alert('❌ 오류가 발생했습니다.')
+                    console.error(error)
+                }
+            }
         </script>
     </body>
     </html>
