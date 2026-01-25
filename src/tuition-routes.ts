@@ -405,18 +405,45 @@ app.post('/api/tuition/payments', requireDirector, async (c) => {
       return c.json({ error: '학생을 찾을 수 없습니다' }, 404)
     }
     
-    // 중복 체크
+    // 중복 체크 (기존 기록 있으면 UPDATE)
     const existing = await c.env.DB.prepare(`
       SELECT id FROM tuition_payments 
       WHERE student_id = ? AND academy_id = ? AND year = ? AND month = ?
     `).bind(student_id, academyId, year, month).first()
     
     if (existing) {
-      console.log('⚠️ [Payment] 중복 납입 기록:', existing.id)
-      return c.json({ error: '해당 월의 납입 기록이 이미 존재합니다' }, 400)
+      console.log('🔄 [Payment] 기존 기록 업데이트:', existing.id)
+      
+      // 기존 기록 업데이트
+      await c.env.DB.prepare(`
+        UPDATE tuition_payments 
+        SET amount = ?,
+            status = ?,
+            paid_amount = ?,
+            paid_date = ?,
+            memo = ?,
+            payment_method = ?
+        WHERE id = ?
+      `).bind(
+        amount,
+        status || 'unpaid',
+        paid_amount || 0,
+        paid_date || null,
+        memo || null,
+        payment_method || null,
+        existing.id
+      ).run()
+      
+      console.log('✅ [Payment] 납입 기록 업데이트 성공')
+      
+      return c.json({
+        success: true,
+        id: existing.id,
+        message: '납입 기록이 업데이트되었습니다'
+      })
     }
     
-    // 등록
+    // 신규 등록
     const result = await c.env.DB.prepare(`
       INSERT INTO tuition_payments (
         student_id, academy_id, year, month, amount,
