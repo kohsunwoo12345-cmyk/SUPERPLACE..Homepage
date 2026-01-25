@@ -25789,9 +25789,22 @@ app.get('/tools/ai-learning-report', (c) => {
             // 기본 월 설정 (이번 달)
             function setDefaultMonth() {
                 const now = new Date();
-                const month = String(now.getMonth() + 1).padStart(2, '0');
                 const year = now.getFullYear();
-                document.getElementById('reportMonth').value = \`\${year}-\${month}\`;
+                const month = now.getMonth();
+                
+                // 이번 달 1일
+                const startDate = new Date(year, month, 1);
+                const startDateStr = startDate.toISOString().split('T')[0];
+                
+                // 이번 달 마지막 날
+                const endDate = new Date(year, month + 1, 0);
+                const endDateStr = endDate.toISOString().split('T')[0];
+                
+                const startInput = document.getElementById('startDate');
+                const endInput = document.getElementById('endDate');
+                
+                if (startInput) startInput.value = startDateStr;
+                if (endInput) endInput.value = endDateStr;
             }
 
             // 학생 목록 로드
@@ -27063,6 +27076,9 @@ ${recommendations}
     
     console.log('💾 [GenerateReport] Saving report to database')
     
+    // 리포트 기간 문자열 생성 (예: "2024-01-01 ~ 2024-01-31")
+    const reportPeriod = `${start_date} ~ ${end_date}`;
+    
     // 리포트 저장
     const result = await c.env.DB.prepare(`
       INSERT INTO learning_reports 
@@ -27070,7 +27086,7 @@ ${recommendations}
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).bind(
       student_id, 
-      report_month, 
+      reportPeriod, 
       avgScore, 
       studyAttitude, 
       strengths, 
