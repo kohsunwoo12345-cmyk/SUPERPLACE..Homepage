@@ -565,14 +565,14 @@ app.get('/api/tuition/student-fees/:studentId', requireDirector, async (c) => {
 app.post('/api/tuition/mark-paid', requireDirector, async (c) => {
   try {
     const user = c.get('user')
-    const { student_id, year, month } = await c.req.json()
+    const { student_id, year, month, paid_amount, payment_method, memo } = await c.req.json()
     
     if (!student_id || !year || !month) {
       return c.json({ error: '필수 항목을 입력해주세요' }, 400)
     }
     
     // 학생 정보 및 월 납입액 조회
-    const student = await c.env.DB.prepare(`
+    const student: any = await c.env.DB.prepare(`
       SELECT 
         s.*,
         c.monthly_fee as class_fee,
@@ -588,10 +588,19 @@ app.post('/api/tuition/mark-paid', requireDirector, async (c) => {
       return c.json({ error: '학생을 찾을 수 없습니다' }, 404)
     }
     
-    const amount = student.custom_fee || student.class_fee || 0
+    const amount = paid_amount || student.custom_fee || student.class_fee || 0
+    
+    // 납입 상태 결정
+    const expectedAmount = student.custom_fee || student.class_fee || 0
+    let status = 'unpaid'
+    if (amount >= expectedAmount && expectedAmount > 0) {
+      status = 'paid'
+    } else if (amount > 0 && amount < expectedAmount) {
+      status = 'partial'
+    }
     
     // 기존 납입 기록 확인
-    const existing = await c.env.DB.prepare(`
+    const existing: any = await c.env.DB.prepare(`
       SELECT * FROM tuition_payments 
       WHERE student_id = ? AND year = ? AND month = ?
     `).bind(student_id, year, month).first()
@@ -600,17 +609,18 @@ app.post('/api/tuition/mark-paid', requireDirector, async (c) => {
       // 업데이트
       await c.env.DB.prepare(`
         UPDATE tuition_payments 
-        SET status = 'paid', paid_amount = ?, paid_date = date('now'), updated_at = CURRENT_TIMESTAMP
+        SET status = ?, paid_amount = ?, paid_date = date('now'), 
+            payment_method = ?, memo = ?, updated_at = CURRENT_TIMESTAMP
         WHERE id = ?
-      `).bind(amount, existing.id).run()
+      `).bind(status, amount, payment_method || null, memo || null, existing.id).run()
     } else {
       // 새로 생성
       await c.env.DB.prepare(`
         INSERT INTO tuition_payments (
           student_id, academy_id, year, month, amount, paid_amount, 
-          status, paid_date, created_by, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, 'paid', date('now'), ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-      `).bind(student_id, user.id, year, month, amount, amount, user.id).run()
+          status, paid_date, payment_method, memo, created_by, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, date('now'), ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+      `).bind(student_id, user.id, year, month, expectedAmount, amount, status, payment_method || null, memo || null, user.id).run()
     }
     
     return c.json({
