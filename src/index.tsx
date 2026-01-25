@@ -1082,6 +1082,147 @@ app.post('/api/admin/fix-academies-table', async (c) => {
 })
 
 // 🔧 관리자: 사용량 데이터 동기화 API (랜딩페이지 개수 수정)
+// 🔧 긴급 수동 동기화 페이지
+app.get('/emergency-sync', (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>긴급 동기화 - 슈퍼플레이스</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+    </head>
+    <body class="bg-gradient-to-br from-purple-50 to-blue-50 min-h-screen flex items-center justify-center p-6">
+        <div class="max-w-2xl w-full bg-white rounded-3xl shadow-2xl p-8">
+            <div class="text-center mb-8">
+                <h1 class="text-4xl font-bold text-gray-900 mb-3">🔧 긴급 동기화</h1>
+                <p class="text-lg text-gray-600">랜딩페이지 개수가 대시보드에 표시되지 않을 때 사용하세요</p>
+            </div>
+            
+            <div class="bg-yellow-50 border-2 border-yellow-200 rounded-xl p-6 mb-6">
+                <div class="flex items-start gap-3">
+                    <span class="text-3xl">⚠️</span>
+                    <div>
+                        <h3 class="font-bold text-yellow-900 text-lg mb-2">언제 사용하나요?</h3>
+                        <ul class="text-yellow-800 space-y-1 text-sm">
+                            <li>✓ 랜딩페이지를 만들었는데 대시보드에 0으로 표시될 때</li>
+                            <li>✓ 플랜 사용량이 정확하지 않을 때</li>
+                            <li>✓ 개수가 실제와 다를 때</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center mb-6">
+                <button id="syncBtn" onclick="syncNow()" 
+                        class="bg-gradient-to-r from-purple-600 to-blue-600 text-white text-xl font-bold px-12 py-5 rounded-2xl hover:from-purple-700 hover:to-blue-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-105">
+                    🚀 지금 동기화 실행
+                </button>
+            </div>
+            
+            <div id="result" class="hidden"></div>
+            
+            <div class="text-center mt-8">
+                <a href="/dashboard" class="text-purple-600 hover:text-purple-800 font-medium">
+                    ← 대시보드로 돌아가기
+                </a>
+            </div>
+        </div>
+        
+        <script>
+            async function syncNow() {
+                const btn = document.getElementById('syncBtn');
+                const result = document.getElementById('result');
+                
+                btn.disabled = true;
+                btn.textContent = '🔄 동기화 중...';
+                btn.classList.add('opacity-50', 'cursor-not-allowed');
+                
+                result.classList.remove('hidden');
+                result.innerHTML = '<div class="text-center text-blue-600 font-medium">동기화 진행 중...</div>';
+                
+                try {
+                    const response = await fetch('/api/emergency-sync-usage', {
+                        method: 'POST',
+                        credentials: 'include'
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        result.innerHTML = \`
+                            <div class="bg-green-50 border-2 border-green-500 rounded-xl p-6">
+                                <div class="flex items-start gap-3 mb-4">
+                                    <span class="text-4xl">✅</span>
+                                    <div class="flex-1">
+                                        <h3 class="font-bold text-green-900 text-2xl mb-2">동기화 성공!</h3>
+                                        <p class="text-green-800 text-lg mb-4">\${data.message}</p>
+                                        
+                                        <div class="bg-white rounded-lg p-4 mb-4">
+                                            <div class="text-sm font-bold text-gray-900 mb-2">📊 동기화 결과:</div>
+                                            <div class="space-y-2 text-sm text-gray-700">
+                                                <div>• 사용자 ID: \${data.data.user_id}</div>
+                                                <div>• 학원 ID: \${data.data.academy_id}</div>
+                                                <div>• 구독 시작일: \${data.data.subscription_start_date}</div>
+                                                <div class="font-bold text-purple-600">• 랜딩페이지 개수: \${data.data.landing_pages_count}개</div>
+                                                <div>• 작업: \${data.data.action === 'UPDATED' ? '업데이트 완료' : '새로 생성'}</div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="text-center">
+                                            <a href="/dashboard" class="inline-block bg-green-600 text-white font-bold px-8 py-3 rounded-xl hover:bg-green-700 transition">
+                                                대시보드에서 확인하기 →
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        \`;
+                        
+                        // 3초 후 자동 리다이렉트
+                        setTimeout(() => {
+                            window.location.href = '/dashboard';
+                        }, 3000);
+                    } else {
+                        result.innerHTML = \`
+                            <div class="bg-red-50 border-2 border-red-500 rounded-xl p-6">
+                                <div class="flex items-start gap-3">
+                                    <span class="text-3xl">❌</span>
+                                    <div>
+                                        <h3 class="font-bold text-red-900 text-lg mb-2">동기화 실패</h3>
+                                        <p class="text-red-800">\${data.error}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        \`;
+                        btn.disabled = false;
+                        btn.textContent = '🚀 다시 시도';
+                        btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    }
+                } catch (error) {
+                    result.innerHTML = \`
+                        <div class="bg-red-50 border-2 border-red-500 rounded-xl p-6">
+                            <div class="flex items-start gap-3">
+                                <span class="text-3xl">❌</span>
+                                <div>
+                                    <h3 class="font-bold text-red-900 text-lg mb-2">오류 발생</h3>
+                                    <p class="text-red-800">\${error.message}</p>
+                                </div>
+                            </div>
+                        </div>
+                    \`;
+                    btn.disabled = false;
+                    btn.textContent = '🚀 다시 시도';
+                    btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                }
+            }
+        </script>
+    </body>
+    </html>
+  `)
+})
+
 // 🔧 긴급 수동 동기화 API (관리자 권한 불필요)
 app.post('/api/emergency-sync-usage', async (c) => {
   try {
@@ -1274,11 +1415,14 @@ app.post('/api/admin/sync-landing-pages-usage', async (c) => {
     for (const sub of subscriptions.results || []) {
       try {
         // 🔥 현재 구독 기간 내에 생성된 랜딩페이지만 COUNT
+        // 원장 본인 + 해당 학원 소속 선생님들의 랜딩페이지 모두 포함
         const landingPagesCount = await c.env.DB.prepare(`
           SELECT COUNT(*) as count FROM landing_pages 
-          WHERE user_id = ?
+          WHERE user_id IN (
+            SELECT id FROM users WHERE id = ? OR academy_id = ?
+          )
           AND created_at >= ?
-        `).bind(sub.academy_id, sub.subscription_start_date).first()
+        `).bind(sub.academy_id, sub.academy_id, sub.subscription_start_date).first()
         
         const actualCount = landingPagesCount?.count || 0
         
@@ -10473,13 +10617,16 @@ app.get('/api/usage/check', async (c) => {
       console.log('[Usage Check] 📊 usage_tracking record:', usage ? 'EXISTS' : 'NOT FOUND')
       
       // 🔥 현재 구독 기간 내에 생성된 랜딩페이지만 COUNT
+      // 원장 본인 + 해당 학원 소속 선생님들의 랜딩페이지 모두 포함
       const countResult = await c.env.DB.prepare(`
         SELECT COUNT(*) as count FROM landing_pages 
-        WHERE user_id = ? 
+        WHERE user_id IN (
+          SELECT id FROM users WHERE id = ? OR academy_id = ?
+        )
         AND created_at >= ?
-      `).bind(academyId, subscription.subscription_start_date).first()
+      `).bind(academyId, academyId, subscription.subscription_start_date).first()
       const actualCount = countResult?.count || 0
-      console.log('[Usage Check] 📈 Landing pages created since', subscription.subscription_start_date, ':', actualCount, 'for user_id:', academyId)
+      console.log('[Usage Check] 📈 Landing pages created since', subscription.subscription_start_date, ':', actualCount, 'for academy_id:', academyId, '(including teachers)')
       
       if (usage && usage.landing_pages_created !== null && usage.landing_pages_created !== undefined) {
         const trackedCount = usage.landing_pages_created
