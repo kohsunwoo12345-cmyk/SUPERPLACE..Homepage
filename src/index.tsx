@@ -17569,6 +17569,29 @@ app.get('/dashboard', (c) => {
                             </div>
                         </div>
 
+                        <!-- 교육비 관리 카드 (원장님 전용 - 선생님에게는 표시 안 됨) -->
+                        <div id="tuitionManagementCard" class="hidden bg-gradient-to-br from-green-500 to-emerald-700 rounded-2xl p-8 hover:shadow-2xl transition-all hover:-translate-y-1">
+                            <div class="flex items-center gap-4 mb-4">
+                                <div class="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="text-2xl font-bold text-white">교육비 관리</h3>
+                                    <p class="text-green-100 text-sm">월별 납입 현황 추적</p>
+                                </div>
+                            </div>
+                            <p class="text-white/90 leading-relaxed mb-4">
+                                학생별 교육비 납입 현황을 월별로 관리하고, 미납 학생을 한눈에 확인하세요. 메모 기능으로 납입 내역을 기록할 수 있습니다.
+                            </p>
+                            <div class="flex items-center gap-3">
+                                <a href="/tools/tuition-management" class="flex-1 text-center py-2 bg-white text-green-600 rounded-lg font-medium hover:bg-green-50 transition">
+                                    바로 사용하기 →
+                                </a>
+                            </div>
+                        </div>
+
                         <div class="block bg-gradient-to-br from-violet-500 to-fuchsia-700 rounded-2xl p-8 hover:shadow-2xl transition-all hover:-translate-y-1">
                             <div class="flex items-center gap-4 mb-4">
                                 <div class="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
@@ -18009,7 +18032,24 @@ app.get('/dashboard', (c) => {
                             if (smsSection) smsSection.style.display = 'block'
                             const smsNavDropdown = document.getElementById('smsNavDropdown')
                             if (smsNavDropdown) smsNavDropdown.classList.remove('hidden')
+                            // 교육비 관리는 원장님만 표시
+                            const tuitionCard = document.getElementById('tuitionManagementCard')
+                            if (tuitionCard && user.user_type !== 'teacher') {
+                                tuitionCard.classList.remove('hidden')
+                            }
                             return
+                        }
+                        
+                        // 교육비 관리 카드 - 원장님만 표시 (선생님은 100% 숨김)
+                        const tuitionCard = document.getElementById('tuitionManagementCard')
+                        if (tuitionCard) {
+                            if (user.user_type === 'director' || user.role === 'admin') {
+                                console.log('✅ 원장님 계정 - 교육비 관리 카드 표시')
+                                tuitionCard.classList.remove('hidden')
+                            } else {
+                                console.log('❌ 선생님 계정 - 교육비 관리 카드 숨김')
+                                tuitionCard.classList.add('hidden')
+                            }
                         }
                         
                         // 각 도구별 권한 체크 및 숨김 처리
