@@ -2990,12 +2990,12 @@ var Ot=Object.defineProperty;var rt=e=>{throw TypeError(e)};var Ut=(e,t,s)=>t in
     `).bind(s,a,s,a,t.id).all();return e.json({success:!0,year:parseInt(s),month:parseInt(a),unpaidStudents:r.results||[]})}catch(t){return console.error("Error fetching unpaid students:",t),e.json({error:"미납 학생 조회 실패",details:t.message},500)}});ae.get("/api/tuition/stats",ce,async e=>{try{const t=e.get("user"),s=e.req.query("year")||new Date().getFullYear().toString(),a=e.req.query("month")||(new Date().getMonth()+1).toString(),r=await e.env.DB.prepare(`
       SELECT 
         COUNT(DISTINCT s.id) as total_students,
-        SUM(CASE WHEN CASE WHEN tp.status IS NULL THEN 'unpaid' ELSE tp.status END = 'paid' THEN 1 ELSE 0 END) as paid_count,
-        SUM(CASE WHEN CASE WHEN tp.status IS NULL THEN 'unpaid' ELSE tp.status END = 'unpaid' THEN 1 ELSE 0 END) as unpaid_count,
-        SUM(CASE WHEN CASE WHEN tp.status IS NULL THEN 'unpaid' ELSE tp.status END = 'partial' THEN 1 ELSE 0 END) as partial_count,
-        SUM(CASE WHEN CASE WHEN tp.status IS NULL THEN 'unpaid' ELSE tp.status END = 'overdue' THEN 1 ELSE 0 END) as overdue_count,
-        SUM(CASE WHEN tp.amount IS NULL THEN CASE WHEN tr.monthly_fee IS NULL THEN 0 ELSE tr.monthly_fee END ELSE tp.amount END) as total_amount,
-        SUM(CASE WHEN tp.paid_amount IS NULL THEN 0 ELSE tp.paid_amount END) as total_paid
+        SUM(CASE WHEN COALESCE(tp.status, 'unpaid') = 'paid' THEN 1 ELSE 0 END) as paid_count,
+        SUM(CASE WHEN COALESCE(tp.status, 'unpaid') = 'unpaid' THEN 1 ELSE 0 END) as unpaid_count,
+        SUM(CASE WHEN COALESCE(tp.status, 'unpaid') = 'partial' THEN 1 ELSE 0 END) as partial_count,
+        SUM(CASE WHEN COALESCE(tp.status, 'unpaid') = 'overdue' THEN 1 ELSE 0 END) as overdue_count,
+        SUM(COALESCE(tp.amount, tr.monthly_fee, 0)) as total_amount,
+        SUM(COALESCE(tp.paid_amount, 0)) as total_paid
       FROM students s
       LEFT JOIN tuition_payments tp ON s.id = tp.student_id 
         AND tp.year = ? AND tp.month = ?
