@@ -379,16 +379,27 @@ app.post('/api/tuition/payments', requireDirector, async (c) => {
     const user = c.get('user')
     const data = await c.req.json()
     
+    console.log('📥 [Payment] 납입 요청 데이터:', JSON.stringify(data))
+    console.log('👤 [Payment] 사용자:', { id: user.id, academy_id: user.academy_id })
+    
     const { student_id, year, month, amount, status, paid_amount, paid_date, memo, payment_method } = data
     
     if (!student_id || !year || !month || !amount) {
-      return c.json({ error: '필수 항목을 입력해주세요' }, 400)
+      console.error('❌ [Payment] 필수 항목 누락:', { student_id, year, month, amount })
+      return c.json({ 
+        error: '필수 항목을 입력해주세요',
+        details: { student_id: !!student_id, year: !!year, month: !!month, amount: !!amount }
+      }, 400)
     }
+    
+    const academyId = user.academy_id || user.id
     
     // 학생 확인
     const student = await c.env.DB.prepare(`
       SELECT * FROM students WHERE id = ? AND academy_id = ?
-    `).bind(student_id, user.id).first()
+    `).bind(student_id, academyId).first()
+    
+    console.log('🔍 [Payment] 학생 조회:', student ? '찾음' : '없음')
     
     if (!student) {
       return c.json({ error: '학생을 찾을 수 없습니다' }, 404)
@@ -397,10 +408,11 @@ app.post('/api/tuition/payments', requireDirector, async (c) => {
     // 중복 체크
     const existing = await c.env.DB.prepare(`
       SELECT id FROM tuition_payments 
-      WHERE student_id = ? AND year = ? AND month = ?
-    `).bind(student_id, year, month).first()
+      WHERE student_id = ? AND academy_id = ? AND year = ? AND month = ?
+    `).bind(student_id, academyId, year, month).first()
     
     if (existing) {
+      console.log('⚠️ [Payment] 중복 납입 기록:', existing.id)
       return c.json({ error: '해당 월의 납입 기록이 이미 존재합니다' }, 400)
     }
     
@@ -412,7 +424,7 @@ app.post('/api/tuition/payments', requireDirector, async (c) => {
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).bind(
       student_id,
-      user.id,
+      academyId,
       year,
       month,
       amount,
@@ -424,14 +436,16 @@ app.post('/api/tuition/payments', requireDirector, async (c) => {
       user.id
     ).run()
     
+    console.log('✅ [Payment] 납입 기록 생성 성공:', result.meta.last_row_id)
+    
     return c.json({
       success: true,
       id: result.meta.last_row_id,
       message: '납입 기록이 등록되었습니다'
     })
   } catch (error) {
-    console.error('Error creating payment:', error)
-    return c.json({ error: '납입 기록 등록 실패' }, 500)
+    console.error('❌ [Payment] Error creating payment:', error)
+    return c.json({ error: '납입 기록 등록 실패', details: error.message }, 500)
   }
 })
 
