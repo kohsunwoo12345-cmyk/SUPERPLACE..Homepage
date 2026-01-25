@@ -255,16 +255,16 @@
                     // 반 필터 드롭다운 채우기
                     const classFilter = document.getElementById('classFilter');
                     classFilter.innerHTML = '<option value="">전체 학생</option>' +
-                        classes.map(c => \`<option value="\${c.id}">\${c.class_name}</option>\`).join('');
+                        classes.map(c => `<option value="${c.id}">${c.class_name}</option>`).join('');
                     
                     // 반 배정 체크박스 채우기
                     const classCheckboxes = document.getElementById('classCheckboxes');
-                    classCheckboxes.innerHTML = classes.map(c => \`
+                    classCheckboxes.innerHTML = classes.map(c => `
                         <label class="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded cursor-pointer">
-                            <input type="checkbox" name="classCheckbox" value="\${c.id}" class="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer">
-                            <span class="text-sm">\${c.class_name}</span>
+                            <input type="checkbox" name="classCheckbox" value="${c.id}" class="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer">
+                            <span class="text-sm">${c.class_name}</span>
                         </label>
-                    \`).join('');
+                    `).join('');
                     
                     // 체크박스 변경 이벤트 리스너 추가 (최대 3개 제한)
                     document.querySelectorAll('input[name="classCheckbox"]').forEach(checkbox => {
@@ -305,7 +305,7 @@
                     
                     try {
                         const directorId = currentUser.parent_user_id || 1;
-                        const permRes = await fetch(\`/api/teachers/\${currentUser.id}/permissions?directorId=\${directorId}\`);
+                        const permRes = await fetch(`/api/teachers/${currentUser.id}/permissions?directorId=${directorId}`);
                         const permData = await permRes.json();
                         
                         if (permData.success && permData.permissions) {
@@ -379,46 +379,46 @@
                 return;
             }
 
-            container.innerHTML = students.map(student => \`
+            container.innerHTML = students.map(student => `
                 <div class="bg-white rounded-xl shadow p-6 hover:shadow-lg transition">
                     <div class="flex justify-between items-start">
                         <div class="flex items-start space-x-4 flex-1">
                             <div class="bg-blue-100 text-blue-600 rounded-full w-14 h-14 flex items-center justify-center text-xl font-bold flex-shrink-0">
-                                \${student.name.charAt(0)}
+                                ${student.name.charAt(0)}
                             </div>
                             <div class="flex-1">
                                 <div class="flex items-center space-x-3 mb-2">
-                                    <h3 class="text-xl font-bold text-gray-900">\${student.name}</h3>
+                                    <h3 class="text-xl font-bold text-gray-900">${student.name}</h3>
                                     <span class="px-3 py-1 bg-blue-100 text-blue-600 rounded-full text-sm font-medium">
-                                        \${student.current_grade || student.grade}
-                                        \${student.current_grade && student.current_grade !== student.entry_grade ? '<i class="fas fa-arrow-up ml-1 text-xs"></i>' : ''}
+                                        ${student.current_grade || student.grade}
+                                        ${student.current_grade && student.current_grade !== student.entry_grade ? '<i class="fas fa-arrow-up ml-1 text-xs"></i>' : ''}
                                     </span>
-                                    \${student.entry_grade && student.current_grade && student.current_grade !== student.entry_grade ? \`<span class="text-xs text-gray-400">(\${student.entry_grade}→\${student.current_grade})</span>\` : ''}
-                                    \${student.class_name ? \`<span class="px-3 py-1 bg-purple-100 text-purple-600 rounded-full text-sm">\${student.class_name}</span>\` : ''}
+                                    ${student.entry_grade && student.current_grade && student.current_grade !== student.entry_grade ? `<span class="text-xs text-gray-400">(${student.entry_grade}→${student.current_grade})</span>` : ''}
+                                    ${student.class_name ? `<span class="px-3 py-1 bg-purple-100 text-purple-600 rounded-full text-sm">${student.class_name}</span>` : ''}
                                 </div>
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-600">
-                                    <div><i class="fas fa-phone mr-2"></i>학생: \${student.phone || '미등록'}</div>
-                                    <div><i class="fas fa-book mr-2"></i>\${student.subjects}</div>
-                                    <div><i class="fas fa-user mr-2"></i>학부모: \${student.parent_name}</div>
-                                    <div><i class="fas fa-mobile-alt mr-2"></i>\${student.parent_phone}</div>
+                                    <div><i class="fas fa-phone mr-2"></i>학생: ${student.phone || '미등록'}</div>
+                                    <div><i class="fas fa-book mr-2"></i>${student.subjects}</div>
+                                    <div><i class="fas fa-user mr-2"></i>학부모: ${student.parent_name}</div>
+                                    <div><i class="fas fa-mobile-alt mr-2"></i>${student.parent_phone}</div>
                                 </div>
-                                \${student.notes ? \`<div class="mt-2 text-sm text-gray-500"><i class="fas fa-sticky-note mr-2"></i>\${student.notes}</div>\` : ''}
+                                ${student.notes ? `<div class="mt-2 text-sm text-gray-500"><i class="fas fa-sticky-note mr-2"></i>${student.notes}</div>` : ''}
                             </div>
                         </div>
                         <div class="flex space-x-2 ml-4">
-                            <a href="/students/detail/\${student.id}" class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">
+                            <a href="/students/detail/${student.id}" class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">
                                 <i class="fas fa-chart-line mr-1"></i>상세
                             </a>
-                            <button onclick="editStudent(\${student.id})" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+                            <button onclick="editStudent(${student.id})" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
                                 <i class="fas fa-edit"></i>
                             </button>
-                            <button onclick="deleteStudent(\${student.id}, '\${student.name}')" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">
+                            <button onclick="deleteStudent(${student.id}, '${student.name}')" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </div>
                     </div>
                 </div>
-            \`).join('');
+            `).join('');
         }
 
         async function showAddModal() {
@@ -474,7 +474,7 @@
                 // class_id가 쉼표로 구분된 문자열일 수 있음
                 const classIds = String(student.class_id).split(',').map(id => id.trim());
                 classIds.forEach(classId => {
-                    const checkbox = document.querySelector(\`input[name="classCheckbox"][value="\${classId}"]\`);
+                    const checkbox = document.querySelector(`input[name="classCheckbox"][value="${classId}"]`);
                     if (checkbox) checkbox.checked = true;
                 });
             }
@@ -483,7 +483,7 @@
             document.querySelectorAll('input[name="subject"]').forEach(cb => cb.checked = false);
             const subjects = student.subjects.split(',').map(s => s.trim());
             subjects.forEach(subject => {
-                const checkbox = document.querySelector(\`input[name="subject"][value="\${subject}"]\`);
+                const checkbox = document.querySelector(`input[name="subject"][value="${subject}"]`);
                 if (checkbox) checkbox.checked = true;
             });
             
@@ -500,7 +500,7 @@
         }
 
         async function deleteStudent(studentId, studentName) {
-            if (!confirm(\`"\${studentName}" 학생을 삭제하시겠습니까?\\n\\n⚠️ 모든 성과 기록도 함께 삭제됩니다.\`)) return;
+            if (!confirm(`"${studentName}" 학생을 삭제하시겠습니까?\\n\\n⚠️ 모든 성과 기록도 함께 삭제됩니다.`)) return;
 
             try {
                 console.log('🗑️ [DeleteStudent] Starting deletion');
@@ -967,4 +967,4 @@ export const dailyRecordPage = `
             const year = date.getFullYear();
             const month = String(date.getMonth() + 1).padStart(2, '0');
             const day = String(date.getDate()).padStart(2, '0');
-            return \`\${year}-\${month}-\${day}\
+            return `${year}-${month}-${day}\
