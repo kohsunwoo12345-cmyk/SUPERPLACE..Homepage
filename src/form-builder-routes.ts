@@ -394,7 +394,7 @@ app.post('/api/form-submissions', async (c) => {
 
     const result = await c.env.DB.prepare(`
       INSERT INTO form_submissions (
-        form_id, landing_page_id, name, phone, email, additional_data,
+        form_id, landing_page_id, name, phone, email, data,
         agreed_to_terms, ip_address, user_agent
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).bind(
