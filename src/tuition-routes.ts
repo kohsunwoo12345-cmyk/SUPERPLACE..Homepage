@@ -92,57 +92,103 @@ app.get('/api/tuition/payments', requireDirector, async (c) => {
     
     // 현재 날짜
     const now = new Date()
-    const currentYear = now.getFullYear()
-    const currentMonth = now.getMonth() + 1
-    const currentDay = now.getDate()
+    const currentDate = new Date(now.getFullYear(), now.getMonth(), now.getDate())
     
-    // 조회하는 월이 이번 달이고, 오늘이 28일 이후라면 미납 자동 생성
-    const shouldAutoCreateUnpaid = (
-      parseInt(year) === currentYear && 
-      parseInt(month) === currentMonth && 
-      currentDay >= 28
-    )
+    // 각 학생의 마지막 납입일로부터 1달이 지났는지 확인하고 자동으로 다음 달 미납 생성
+    const studentsWithLastPayment = await c.env.DB.prepare(`
+      SELECT 
+        s.id as student_id,
+        s.name as student_name,
+        MAX(tp.year) as last_year,
+        MAX(tp.month) as last_month,
+        MAX(tp.paid_date) as last_paid_date,
+        COALESCE(tr.monthly_fee, c.monthly_fee, 0) as monthly_fee
+      FROM students s
+      LEFT JOIN tuition_payments tp ON s.id = tp.student_id AND tp.status IN ('paid', 'partial')
+      LEFT JOIN tuition_rates tr ON s.id = tr.student_id
+        AND (tr.end_date IS NULL OR tr.end_date >= date('now'))
+      LEFT JOIN classes c ON s.class_id = c.id
+      WHERE s.user_id = ?
+        AND s.status = 'active'
+        AND (COALESCE(tr.monthly_fee, c.monthly_fee, 0) > 0)
+      GROUP BY s.id
+    `).bind(user.id).all()
     
-    // 또는 조회하는 월이 지난 달이라면 미납 자동 생성
-    const isOverdueMonth = (
-      parseInt(year) < currentYear ||
-      (parseInt(year) === currentYear && parseInt(month) < currentMonth)
-    )
-    
-    if (shouldAutoCreateUnpaid || isOverdueMonth) {
-      // 납입 기록이 없는 학생들 찾기
-      const studentsWithoutPayment = await c.env.DB.prepare(`
-        SELECT 
-          s.id as student_id,
-          COALESCE(tr.monthly_fee, c.monthly_fee, 0) as monthly_fee
-        FROM students s
-        LEFT JOIN tuition_payments tp ON s.id = tp.student_id 
-          AND tp.year = ? AND tp.month = ?
-        LEFT JOIN tuition_rates tr ON s.id = tr.student_id
-          AND (tr.end_date IS NULL OR tr.end_date >= date('now'))
-        LEFT JOIN classes c ON s.class_id = c.id
-        WHERE s.user_id = ?
-          AND s.status = 'active'
-          AND tp.id IS NULL
-          AND (COALESCE(tr.monthly_fee, c.monthly_fee, 0) > 0)
-      `).bind(year, month, user.id).all()
-      
-      // 미납 기록 자동 생성
-      if (studentsWithoutPayment.results && studentsWithoutPayment.results.length > 0) {
-        for (const student of studentsWithoutPayment.results) {
-          await c.env.DB.prepare(`
-            INSERT INTO tuition_payments (
-              student_id, academy_id, year, month, amount, paid_amount, 
-              status, created_by, created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, 0, 'unpaid', ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-          `).bind(
-            student.student_id,
-            user.id,
-            year,
-            month,
-            student.monthly_fee,
-            user.id
-          ).run()
+    // 각 학생별로 마지막 납입일로부터 1달씩 미납 기록 생성
+    if (studentsWithLastPayment.results) {
+      for (const student of studentsWithLastPayment.results) {
+        if (!student.last_paid_date) {
+          // 납입 기록이 없으면 현재 월 미납 생성
+          const existing = await c.env.DB.prepare(`
+            SELECT id FROM tuition_payments 
+            WHERE student_id = ? AND year = ? AND month = ?
+          `).bind(student.student_id, now.getFullYear(), now.getMonth() + 1).first()
+          
+          if (!existing && student.monthly_fee > 0) {
+            await c.env.DB.prepare(`
+              INSERT INTO tuition_payments (
+                student_id, academy_id, year, month, amount, paid_amount, 
+                status, created_by, created_at, updated_at
+              ) VALUES (?, ?, ?, ?, ?, 0, 'unpaid', ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+            `).bind(
+              student.student_id,
+              user.id,
+              now.getFullYear(),
+              now.getMonth() + 1,
+              student.monthly_fee,
+              user.id
+            ).run()
+          }
+        } else {
+          // 마지막 납입일로부터 1달씩 미납 생성
+          const lastPaidDate = new Date(student.last_paid_date)
+          let checkYear = student.last_year
+          let checkMonth = student.last_month
+          
+          // 마지막 납입 다음 달부터 현재까지 체크
+          while (true) {
+            // 다음 달 계산
+            checkMonth++
+            if (checkMonth > 12) {
+              checkMonth = 1
+              checkYear++
+            }
+            
+            // 현재 달을 넘으면 중단
+            if (checkYear > now.getFullYear() || 
+                (checkYear === now.getFullYear() && checkMonth > now.getMonth() + 1)) {
+              break
+            }
+            
+            // 마지막 납입일로부터 30일이 지났는지 확인
+            const targetDate = new Date(lastPaidDate)
+            targetDate.setMonth(targetDate.getMonth() + (checkMonth - student.last_month) + (checkYear - student.last_year) * 12)
+            
+            if (targetDate <= currentDate) {
+              // 해당 월의 납입 기록이 있는지 확인
+              const existing = await c.env.DB.prepare(`
+                SELECT id FROM tuition_payments 
+                WHERE student_id = ? AND year = ? AND month = ?
+              `).bind(student.student_id, checkYear, checkMonth).first()
+              
+              if (!existing && student.monthly_fee > 0) {
+                // 미납 기록 생성
+                await c.env.DB.prepare(`
+                  INSERT INTO tuition_payments (
+                    student_id, academy_id, year, month, amount, paid_amount, 
+                    status, created_by, created_at, updated_at
+                  ) VALUES (?, ?, ?, ?, ?, 0, 'unpaid', ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+                `).bind(
+                  student.student_id,
+                  user.id,
+                  checkYear,
+                  checkMonth,
+                  student.monthly_fee,
+                  user.id
+                ).run()
+              }
+            }
+          }
         }
       }
     }
@@ -511,12 +557,12 @@ app.get('/api/tuition/classes', requireDirector, async (c) => {
         COUNT(DISTINCT s.id) as student_count,
         u.name as teacher_name
       FROM classes c
-      LEFT JOIN students s ON s.class_id = c.id AND s.status = 'active'
+      LEFT JOIN students s ON s.class_id = c.id AND s.status = 'active' AND s.user_id = ?
       LEFT JOIN users u ON c.teacher_id = u.id
-      WHERE c.user_id = ?
+      WHERE (c.user_id = ? OR c.academy_id = ?)
       GROUP BY c.id
       ORDER BY c.name ASC
-    `).bind(user.id).all()
+    `).bind(user.id, user.id, user.id).all()
     
     return c.json({
       success: true,
