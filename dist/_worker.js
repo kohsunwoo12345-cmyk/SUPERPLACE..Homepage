@@ -2852,7 +2852,7 @@ var Mt=Object.defineProperty;var st=e=>{throw TypeError(e)};var At=(e,t,s)=>t in
       SELECT * FROM form_templates WHERE id = ?
     `).bind(t.form_template_id).first();if(!s)return console.log("[Form Submission] Template not found"),e.json({error:"폼을 찾을 수 없습니다"},404);console.log("[Form Submission] Template found, inserting...");const r=e.req.header("cf-connecting-ip")||e.req.header("x-forwarded-for")||"unknown",a=e.req.header("user-agent")||"unknown";let o={};try{o=typeof t.submission_data=="string"?JSON.parse(t.submission_data):t.submission_data}catch(u){console.error("[Form Submission] Failed to parse submission_data:",u)}const n=o.name||o.이름||"이름 없음",l=o.phone||o.연락처||o.전화번호||"",i=o.email||o.이메일||"",d=o.agreedToTerms||o.agreed_to_terms||0,p=await e.env.DB.prepare(`
       INSERT INTO form_submissions (
-        form_id, landing_page_id, name, phone, email, additional_data,
+        form_id, landing_page_id, name, phone, email, data,
         agreed_to_terms, ip_address, user_agent
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).bind(t.form_template_id,t.landing_page_id||null,n,l,i,t.submission_data,d,r,a).run();return console.log("[Form Submission] Success!"),e.json({success:!0,id:p.meta.last_row_id,message:s.success_message||"신청이 완료되었습니다!"})}catch(t){console.error("Error submitting form:",t);const s=t instanceof Error?t.message:"알 수 없는 오류";return e.json({error:"제출에 실패했습니다",details:s,stack:t instanceof Error?t.stack:void 0},500)}});W.get("/api/form-submissions",J,async e=>{try{const t=e.get("userId"),s=e.req.query("template_id"),r=e.req.query("status");let a=`
