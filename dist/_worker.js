@@ -35389,16 +35389,17 @@ setInterval(loadActiveSessionCount,30000);
                 try {
                     currentUser = JSON.parse(userStr);
                     
-                    // academy_id가 없으면 재로그인 요구
-                    if (!currentUser.academy_id) {
-                        console.error('❌ CRITICAL: academy_id missing in localStorage!');
+                    // academy_id가 없으면 id를 사용 (fallback)
+                    if (!currentUser.academy_id && !currentUser.id) {
+                        console.error('❌ CRITICAL: No academy_id or id in localStorage!');
                         console.log('Clearing localStorage and redirecting to login...');
                         localStorage.removeItem('user');
                 localStorage.removeItem('loginTime');
                         alert('세션이 만료되었습니다. 다시 로그인해주세요.');
                         shouldRedirect = true;
                     } else {
-                        academyId = currentUser.academy_id;
+                        // academy_id 우선, 없으면 id 사용
+                        academyId = currentUser.academy_id || currentUser.id;
                         console.log('✅ Current user:', currentUser);
                         console.log('✅ User ID:', currentUser.id);
                         console.log('✅ Academy ID:', academyId);
