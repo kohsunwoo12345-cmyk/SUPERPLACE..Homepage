@@ -8,6 +8,7 @@ import { serveStatic } from 'hono/cloudflare-workers'
 import studentPages from './student-pages'
 import formBuilderRoutes from './form-builder-routes'
 import tuitionRoutes from './tuition-routes'
+import revenueRoutes from './revenue-routes'
 
 type Bindings = {
   DB: D1Database
@@ -38,6 +39,9 @@ app.route('/', formBuilderRoutes)
 
 // Mount tuition management routes (교육비 관리 - 원장님 전용)
 app.route('/', tuitionRoutes)
+
+// Mount revenue management routes (매출 관리 - 원장님 전용)
+app.route('/', revenueRoutes)
 
 // ========================================
 // API Routes
@@ -17592,6 +17596,29 @@ app.get('/dashboard', (c) => {
                             </div>
                         </div>
 
+                        <!-- 매출 관리 카드 (관리자와 학원장 전용) -->
+                        <div id="revenueManagementCard" class="bg-gradient-to-br from-blue-500 to-indigo-700 rounded-2xl p-8 hover:shadow-2xl transition-all hover:-translate-y-1" style="display: none;">
+                            <div class="flex items-center gap-4 mb-4">
+                                <div class="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="text-2xl font-bold text-white">매출 관리</h3>
+                                    <p class="text-blue-100 text-sm">학원 매출 분석 및 통계</p>
+                                </div>
+                            </div>
+                            <p class="text-white/90 leading-relaxed mb-4">
+                                월별/연간 매출 추이를 그래프로 확인하고, 학생별 매출 기여도를 분석하세요. 수금률과 미수금을 실시간으로 파악할 수 있습니다.
+                            </p>
+                            <div class="flex items-center gap-3">
+                                <a href="/tools/revenue-management" class="flex-1 text-center py-2 bg-white text-blue-600 rounded-lg font-medium hover:bg-blue-50 transition">
+                                    바로 사용하기 →
+                                </a>
+                            </div>
+                        </div>
+
                         <div class="block bg-gradient-to-br from-violet-500 to-fuchsia-700 rounded-2xl p-8 hover:shadow-2xl transition-all hover:-translate-y-1">
                             <div class="flex items-center gap-4 mb-4">
                                 <div class="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
@@ -18030,6 +18057,18 @@ app.get('/dashboard', (c) => {
                                 tuitionCard.style.display = 'block'
                             }
                         }
+                        
+                        // 매출 관리도 구독 없이 표시 (무료 기능)
+                        const revenueCard = document.getElementById('revenueManagementCard')
+                        if (revenueCard) {
+                            if (user.user_type === 'teacher') {
+                                console.log('❌ 선생님 계정 - 매출 관리 카드 숨김')
+                                revenueCard.style.display = 'none'
+                            } else {
+                                console.log('✅ 학원장/관리자 계정 - 매출 관리 카드 표시')
+                                revenueCard.style.display = 'block'
+                            }
+                        }
                         return
                     }
                     
@@ -18048,6 +18087,18 @@ app.get('/dashboard', (c) => {
                             console.log('✅ 학원장/관리자 계정 - 교육비 관리 카드 표시')
                             console.log('   user.role:', user.role, 'user.user_type:', user.user_type)
                             tuitionCard.style.display = 'block'
+                        }
+                    }
+                    
+                    // 매출 관리 카드도 항상 처리 (API 성공/실패 무관)
+                    const revenueCard = document.getElementById('revenueManagementCard')
+                    if (revenueCard) {
+                        if (user.user_type === 'teacher') {
+                            console.log('❌ 선생님 계정 - 매출 관리 카드 숨김')
+                            revenueCard.style.display = 'none'
+                        } else {
+                            console.log('✅ 학원장/관리자 계정 - 매출 관리 카드 표시')
+                            revenueCard.style.display = 'block'
                         }
                     }
                     
@@ -48588,6 +48639,333 @@ app.get('/tools/tuition-management', async (c) => {
         function editPayment(paymentId) {
             // 납입 기록 수정 (추후 모달로 개선 가능)
             alert('수정 기능은 추후 추가됩니다. Payment ID: ' + paymentId);
+        }
+        </script>
+    </body>
+    </html>
+  `)
+})
+
+// ========================================
+// 매출 관리 페이지 (원장님 전용 - 선생님 100% 차단)
+// ========================================
+app.get('/tools/revenue-management', async (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>매출 관리 - 슈퍼플레이스</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+        <style>
+          @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
+          * { font-family: 'Pretendard Variable', sans-serif; }
+        </style>
+    </head>
+    <body class="bg-gray-50">
+        <nav class="fixed w-full top-0 z-50 bg-white border-b border-gray-100">
+            <div class="max-w-7xl mx-auto px-6">
+                <div class="flex justify-between items-center h-16">
+                    <span class="text-xl font-bold text-gray-900">💰 매출 관리</span>
+                    <div class="flex gap-4">
+                        <a href="/dashboard" class="text-gray-600 hover:text-purple-600">대시보드</a>
+                        <button onclick="logout()" class="text-gray-600 hover:text-red-600">로그아웃</button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <div class="pt-24 pb-12 px-6">
+            <div class="max-w-7xl mx-auto">
+                <!-- 월 선택 -->
+                <div class="mb-6 flex items-center gap-4">
+                    <select id="yearSelect" class="px-4 py-2 border border-gray-300 rounded-lg">
+                    </select>
+                    <select id="monthSelect" class="px-4 py-2 border border-gray-300 rounded-lg">
+                        <option value="1">1월</option>
+                        <option value="2">2월</option>
+                        <option value="3">3월</option>
+                        <option value="4">4월</option>
+                        <option value="5">5월</option>
+                        <option value="6">6월</option>
+                        <option value="7">7월</option>
+                        <option value="8">8월</option>
+                        <option value="9">9월</option>
+                        <option value="10">10월</option>
+                        <option value="11">11월</option>
+                        <option value="12">12월</option>
+                    </select>
+                    <button onclick="loadData()" class="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
+                        <i class="fas fa-sync mr-2"></i>조회
+                    </button>
+                </div>
+
+                <!-- 대시보드 통계 카드 -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                        <div class="text-sm text-gray-600 mb-2">이번 달 매출</div>
+                        <div id="thisMonthRevenue" class="text-3xl font-bold text-green-600">0원</div>
+                        <div id="growthRate" class="text-sm text-gray-500 mt-2"></div>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                        <div class="text-sm text-gray-600 mb-2">예상 매출</div>
+                        <div id="expectedRevenue" class="text-3xl font-bold text-blue-600">0원</div>
+                        <div id="collectionRate" class="text-sm text-gray-500 mt-2"></div>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                        <div class="text-sm text-gray-600 mb-2">미수금</div>
+                        <div id="unpaidAmount" class="text-3xl font-bold text-red-600">0원</div>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                        <div class="text-sm text-gray-600 mb-2">총 학생</div>
+                        <div id="totalStudents" class="text-3xl font-bold text-gray-900">0명</div>
+                        <div class="text-sm text-gray-500 mt-2">납입: <span id="payingStudents">0</span>명</div>
+                    </div>
+                </div>
+
+                <!-- 연간 매출 그래프 -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
+                    <h2 class="text-xl font-bold text-gray-900 mb-4">
+                        <i class="fas fa-chart-line mr-2"></i>연간 매출 추이
+                    </h2>
+                    <canvas id="revenueChart" height="80"></canvas>
+                </div>
+
+                <!-- 학생별 매출 기여도 -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <h2 class="text-xl font-bold text-gray-900 mb-4">
+                        <i class="fas fa-users mr-2"></i>학생별 납입 현황
+                    </h2>
+                    <div id="studentList" class="space-y-3">
+                        <p class="text-gray-500">로딩 중...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+        let user = null;
+        let revenueChart = null;
+
+        // 로그인 체크 및 선생님 차단
+        const userData = localStorage.getItem('user');
+        if (!userData) {
+            alert('로그인이 필요합니다.');
+            window.location.href = '/login';
+        } else {
+            user = JSON.parse(userData);
+            
+            // 선생님은 100% 차단
+            if (user.user_type === 'teacher') {
+                alert('접근 권한이 없습니다.');
+                window.location.href = '/dashboard';
+            } else {
+                initPage();
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('user');
+            window.location.href = '/';
+        }
+
+        function base64Encode(str) {
+            return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (match, p1) => {
+                return String.fromCharCode('0x' + p1);
+            }));
+        }
+
+        function initPage() {
+            // 연도 선택 초기화
+            const now = new Date();
+            const yearSelect = document.getElementById('yearSelect');
+            for (let i = now.getFullYear() - 2; i <= now.getFullYear() + 1; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = i + '년';
+                if (i === now.getFullYear()) option.selected = true;
+                yearSelect.appendChild(option);
+            }
+
+            // 월 선택 초기화
+            document.getElementById('monthSelect').value = now.getMonth() + 1;
+
+            // 데이터 로드
+            loadData();
+        }
+
+        async function loadData() {
+            const year = document.getElementById('yearSelect').value;
+            const month = document.getElementById('monthSelect').value;
+
+            await Promise.all([
+                loadMonthlyRevenue(year, month),
+                loadYearlyRevenue(year),
+                loadStudentRevenue(year, month)
+            ]);
+        }
+
+        async function loadMonthlyRevenue(year, month) {
+            try {
+                const userDataBase64 = base64Encode(JSON.stringify(user));
+                const response = await fetch(\`/api/revenue/monthly?year=\${year}&month=\${month}\`, {
+                    headers: { 'X-User-Data-Base64': userDataBase64 }
+                });
+                const data = await response.json();
+
+                if (data.success && data.revenue) {
+                    const r = data.revenue;
+                    document.getElementById('thisMonthRevenue').textContent = r.total_paid.toLocaleString() + '원';
+                    document.getElementById('expectedRevenue').textContent = r.expected_revenue.toLocaleString() + '원';
+                    document.getElementById('unpaidAmount').textContent = r.total_unpaid.toLocaleString() + '원';
+                    document.getElementById('totalStudents').textContent = r.total_students + '명';
+                    document.getElementById('payingStudents').textContent = r.paying_students;
+                    
+                    const rate = parseFloat(r.collection_rate) || 0;
+                    document.getElementById('collectionRate').textContent = \`수금률: \${rate}%\`;
+                    
+                    // 성장률 표시
+                    const growth = parseFloat(r.growth_rate) || 0;
+                    const growthEl = document.getElementById('growthRate');
+                    if (growth > 0) {
+                        growthEl.textContent = \`▲ \${growth}% 증가\`;
+                        growthEl.className = 'text-sm text-green-600 mt-2';
+                    } else if (growth < 0) {
+                        growthEl.textContent = \`▼ \${Math.abs(growth)}% 감소\`;
+                        growthEl.className = 'text-sm text-red-600 mt-2';
+                    } else {
+                        growthEl.textContent = '전월 대비 동일';
+                        growthEl.className = 'text-sm text-gray-500 mt-2';
+                    }
+                }
+            } catch (err) {
+                console.error('Monthly revenue error:', err);
+            }
+        }
+
+        async function loadYearlyRevenue(year) {
+            try {
+                const userDataBase64 = base64Encode(JSON.stringify(user));
+                const response = await fetch(\`/api/revenue/yearly?year=\${year}\`, {
+                    headers: { 'X-User-Data-Base64': userDataBase64 }
+                });
+                const data = await response.json();
+
+                if (data.success && data.monthly_data) {
+                    const labels = data.monthly_data.map(m => m.month + '월');
+                    const values = data.monthly_data.map(m => m.total_paid);
+
+                    const ctx = document.getElementById('revenueChart');
+                    
+                    if (revenueChart) {
+                        revenueChart.destroy();
+                    }
+
+                    revenueChart = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: '월별 매출',
+                                data: values,
+                                backgroundColor: 'rgba(147, 51, 234, 0.5)',
+                                borderColor: 'rgba(147, 51, 234, 1)',
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                legend: {
+                                    display: false
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            return context.parsed.y.toLocaleString() + '원';
+                                        }
+                                    }
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        callback: function(value) {
+                                            return value.toLocaleString() + '원';
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            } catch (err) {
+                console.error('Yearly revenue error:', err);
+            }
+        }
+
+        async function loadStudentRevenue(year, month) {
+            try {
+                const userDataBase64 = base64Encode(JSON.stringify(user));
+                const response = await fetch(\`/api/revenue/by-student?year=\${year}&month=\${month}\`, {
+                    headers: { 'X-User-Data-Base64': userDataBase64 }
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    const statusColors = {
+                        'paid': 'bg-green-50 border-green-300',
+                        'unpaid': 'bg-red-50 border-red-300',
+                        'partial': 'bg-yellow-50 border-yellow-300',
+                        'overdue': 'bg-orange-50 border-orange-300'
+                    };
+
+                    const statusLabels = {
+                        'paid': '완납',
+                        'unpaid': '미납',
+                        'partial': '부분납',
+                        'overdue': '연체'
+                    };
+
+                    const statusTextColors = {
+                        'paid': 'text-green-700',
+                        'unpaid': 'text-red-700',
+                        'partial': 'text-yellow-700',
+                        'overdue': 'text-orange-700'
+                    };
+
+                    const html = data.students.length === 0 
+                        ? '<p class="text-gray-500">학생이 없습니다.</p>'
+                        : data.students.map(s => \`
+                            <div class="p-4 rounded-lg border \${statusColors[s.payment_status] || 'bg-gray-50 border-gray-300'}">
+                                <div class="flex justify-between items-center">
+                                    <div class="flex-1">
+                                        <div class="font-bold text-gray-900">\${s.student_name} (\${s.grade || '-'})</div>
+                                        <div class="text-sm text-gray-600 mt-1">
+                                            교육비: \${s.monthly_fee.toLocaleString()}원 | 
+                                            납입: \${s.paid_amount.toLocaleString()}원
+                                        </div>
+                                    </div>
+                                    <div class="text-right">
+                                        <span class="px-3 py-1 rounded-full text-sm font-medium \${statusTextColors[s.payment_status] || 'text-gray-700'} \${statusColors[s.payment_status] || 'bg-gray-100'}">
+                                            \${statusLabels[s.payment_status] || s.payment_status}
+                                        </span>
+                                        \${s.paid_date ? \`<div class="text-xs text-gray-500 mt-1">\${s.paid_date}</div>\` : ''}
+                                    </div>
+                                </div>
+                            </div>
+                        \`).join('');
+
+                    document.getElementById('studentList').innerHTML = html;
+                }
+            } catch (err) {
+                console.error('Student revenue error:', err);
+                document.getElementById('studentList').innerHTML = '<p class="text-red-600">오류가 발생했습니다.</p>';
+            }
         }
         </script>
     </body>
