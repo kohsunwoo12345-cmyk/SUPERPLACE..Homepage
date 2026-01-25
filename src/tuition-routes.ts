@@ -551,18 +551,29 @@ app.get('/api/tuition/classes', requireDirector, async (c) => {
   try {
     const user = c.get('user')
     
+    console.log('Fetching classes for user:', user.id)
+    
+    // 먼저 classes 테이블의 모든 반 조회 (user_id 또는 academy_id로)
     const classes = await c.env.DB.prepare(`
       SELECT 
-        c.*,
-        COUNT(DISTINCT s.id) as student_count,
-        u.name as teacher_name
+        c.id,
+        c.name,
+        c.description,
+        c.user_id,
+        c.academy_id,
+        c.monthly_fee,
+        c.teacher_id,
+        u.name as teacher_name,
+        COUNT(DISTINCT s.id) as student_count
       FROM classes c
-      LEFT JOIN students s ON s.class_id = c.id AND s.status = 'active' AND s.user_id = ?
       LEFT JOIN users u ON c.teacher_id = u.id
+      LEFT JOIN students s ON (s.class_id = c.id AND s.status = 'active')
       WHERE (c.user_id = ? OR c.academy_id = ?)
-      GROUP BY c.id
+      GROUP BY c.id, c.name, c.description, c.user_id, c.academy_id, c.monthly_fee, c.teacher_id, u.name
       ORDER BY c.name ASC
-    `).bind(user.id, user.id, user.id).all()
+    `).bind(user.id, user.id).all()
+    
+    console.log('Classes found:', classes.results?.length || 0)
     
     return c.json({
       success: true,
