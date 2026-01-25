@@ -11107,7 +11107,7 @@ app.post('/api/card-payment/approve', async (c) => {
       await c.env.DB.prepare(`
         INSERT INTO academies (id, name, created_at) 
         VALUES (?, ?, CURRENT_TIMESTAMP)
-      `).bind(academyId, request.user_name + '의 학원', ).run()
+      `).bind(academyId, request.user_name + '의 학원').run()
     }
 
     // 기존 구독이 있으면 업데이트, 없으면 생성
@@ -11223,9 +11223,13 @@ app.post('/api/card-payment/approve', async (c) => {
       success: true,
       message: `카드결제 신청이 승인되고 ${request.plan_name}이 적용되었습니다. 사용자에게 결제 링크를 발송해주세요.`
     })
-  } catch (error) {
+  } catch (error: any) {
     console.error('카드결제 신청 승인 실패:', error)
-    return c.json({ success: false, error: '승인 처리 중 오류가 발생했습니다.' }, 500)
+    return c.json({ 
+      success: false, 
+      error: '승인 처리 중 오류가 발생했습니다.', 
+      details: error?.message || String(error) 
+    }, 500)
   }
 })
 
@@ -49913,14 +49917,19 @@ app.get('/admin/card-payments', async (c) => {
                     
                     const result = await response.json()
                     if (result.success) {
-                        alert('✅ 승인이 완료되었습니다.\\n\\n이제 사용자에게 결제 링크를 문자로 발송해주세요.')
+                        alert('✅ 승인이 완료되었습니다!\\n\\n' + (result.message || '사용자에게 결제 링크를 문자로 발송해주세요.'))
                         location.reload()
                     } else {
-                        alert('❌ 승인 실패: ' + (result.error || '알 수 없는 오류'))
+                        let errorMsg = '❌ 승인 실패: ' + (result.error || '알 수 없는 오류')
+                        if (result.details) {
+                            errorMsg += '\\n\\n상세 오류: ' + result.details
+                        }
+                        alert(errorMsg)
+                        console.error('Approval error:', result)
                     }
                 } catch (error) {
-                    alert('❌ 오류가 발생했습니다.')
-                    console.error(error)
+                    alert('❌ 네트워크 오류가 발생했습니다.\\n\\n' + error)
+                    console.error('Network error:', error)
                 }
             }
             
