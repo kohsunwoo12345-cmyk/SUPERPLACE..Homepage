@@ -21998,6 +21998,9 @@ app.get('/tools/form-manager', (c) => {
                 <div class="flex justify-between items-center h-16">
                     <span class="text-xl font-bold text-gray-900">폼 관리</span>
                     <div class="flex gap-4">
+                        <a href="/tools/form-builder" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-medium flex items-center gap-2">
+                            <i class="fas fa-plus"></i> 새 폼 만들기
+                        </a>
                         <a href="/dashboard" class="text-gray-600 hover:text-purple-600">대시보드</a>
                         <a href="/tools/landing-builder" class="text-gray-600 hover:text-purple-600">랜딩페이지</a>
                         <button onclick="logout()" class="text-gray-600 hover:text-red-600">로그아웃</button>
@@ -22131,9 +22134,9 @@ app.get('/tools/form-manager', (c) => {
                         <div class="text-center py-12">
                             <i class="fas fa-inbox text-6xl text-gray-300 mb-4"></i>
                             <p class="text-gray-500 mb-4">생성된 폼이 없습니다.</p>
-                            <p class="text-sm text-gray-400">랜딩페이지 생성 시 자동으로 폼이 생성됩니다.</p>
-                            <a href="/tools/landing-builder" class="inline-block mt-4 px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
-                                <i class="fas fa-plus mr-2"></i>랜딩페이지 만들기
+                            <p class="text-sm text-gray-400 mb-6">폼을 만들어서 랜딩페이지에 추가하거나 직접 사용하세요</p>
+                            <a href="/tools/form-builder" class="inline-block px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-medium">
+                                <i class="fas fa-plus mr-2"></i>첫 폼 만들기
                             </a>
                         </div>
                     \`;
