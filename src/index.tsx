@@ -1082,6 +1082,91 @@ app.post('/api/admin/fix-academies-table', async (c) => {
 })
 
 // 🔧 관리자: 사용량 데이터 동기화 API (랜딩페이지 개수 수정)
+// 🔧 긴급 수동 동기화 API (관리자 권한 불필요)
+app.post('/api/emergency-sync-usage', async (c) => {
+  try {
+    const sessionId = getCookie(c, 'session_id')
+    if (!sessionId) {
+      return c.json({ success: false, error: 'Not authenticated' }, 401)
+    }
+
+    const session = await c.env.DB.prepare(`
+      SELECT user_id FROM sessions WHERE session_id = ? AND expires_at > datetime('now')
+    `).bind(sessionId).first()
+    
+    if (!session) {
+      return c.json({ success: false, error: 'Session expired' }, 401)
+    }
+    
+    const userId = session.user_id
+    
+    // 사용자 정보
+    const user = await c.env.DB.prepare(`
+      SELECT id, academy_id FROM users WHERE id = ?
+    `).bind(userId).first()
+    
+    const academyId = user.academy_id || userId
+    
+    // 활성 구독
+    const subscription = await c.env.DB.prepare(`
+      SELECT * FROM subscriptions 
+      WHERE academy_id = ? AND status = 'active'
+      ORDER BY created_at DESC LIMIT 1
+    `).bind(academyId).first()
+    
+    if (!subscription) {
+      return c.json({ success: false, error: '활성 구독 없음' }, 403)
+    }
+    
+    // 현재 구독 기간 내 랜딩페이지 COUNT
+    const countResult = await c.env.DB.prepare(`
+      SELECT COUNT(*) as count FROM landing_pages 
+      WHERE user_id = ?
+      AND created_at >= ?
+    `).bind(academyId, subscription.subscription_start_date).first()
+    
+    const actualCount = countResult?.count || 0
+    
+    // usage_tracking 업데이트 또는 생성
+    const usageExists = await c.env.DB.prepare(`
+      SELECT id FROM usage_tracking 
+      WHERE academy_id = ? AND subscription_id = ?
+    `).bind(academyId, subscription.id).first()
+    
+    if (usageExists) {
+      await c.env.DB.prepare(`
+        UPDATE usage_tracking 
+        SET landing_pages_created = ?, updated_at = CURRENT_TIMESTAMP
+        WHERE academy_id = ? AND subscription_id = ?
+      `).bind(actualCount, academyId, subscription.id).run()
+    } else {
+      await c.env.DB.prepare(`
+        INSERT INTO usage_tracking (
+          academy_id, subscription_id, current_students, ai_reports_used_this_month,
+          landing_pages_created, current_teachers, sms_sent_this_month,
+          created_at, updated_at
+        ) VALUES (?, ?, 0, 0, ?, 0, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+      `).bind(academyId, subscription.id, actualCount).run()
+    }
+    
+    return c.json({
+      success: true,
+      message: '동기화 완료!',
+      data: {
+        user_id: userId,
+        academy_id: academyId,
+        subscription_id: subscription.id,
+        subscription_start_date: subscription.subscription_start_date,
+        landing_pages_count: actualCount,
+        action: usageExists ? 'UPDATED' : 'CREATED'
+      }
+    })
+  } catch (error) {
+    console.error('[Emergency Sync] Error:', error)
+    return c.json({ success: false, error: error.message }, 500)
+  }
+})
+
 // 🔧 디버그: 특정 사용자의 랜딩페이지 정보 조회
 app.get('/api/debug/landing-pages/:userId', async (c) => {
   try {
