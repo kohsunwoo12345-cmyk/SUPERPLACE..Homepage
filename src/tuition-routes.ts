@@ -700,6 +700,66 @@ app.get('/api/tuition/classes', requireDirector, async (c) => {
     console.log('User ID:', user.id)
     console.log('User Type:', user.user_type)
     
+    // AUTO-INIT: tuition_payments 테이블이 없으면 생성
+    try {
+      await c.env.DB.prepare(`
+        CREATE TABLE IF NOT EXISTS tuition_payments (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          student_id INTEGER NOT NULL,
+          academy_id INTEGER NOT NULL,
+          year INTEGER NOT NULL,
+          month INTEGER NOT NULL,
+          amount INTEGER NOT NULL,
+          status TEXT DEFAULT 'unpaid',
+          paid_amount INTEGER DEFAULT 0,
+          paid_date TEXT,
+          memo TEXT,
+          payment_method TEXT,
+          created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+          updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+          created_by INTEGER
+        )
+      `).run()
+      
+      await c.env.DB.prepare(`
+        CREATE TABLE IF NOT EXISTS tuition_rates (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          student_id INTEGER NOT NULL,
+          academy_id INTEGER NOT NULL,
+          monthly_fee INTEGER NOT NULL,
+          start_date TEXT NOT NULL,
+          end_date TEXT,
+          created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+          updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )
+      `).run()
+      
+      // Add columns to existing tables
+      try {
+        await c.env.DB.prepare(`ALTER TABLE classes ADD COLUMN monthly_fee INTEGER DEFAULT 0`).run()
+      } catch (e) {}
+      
+      try {
+        await c.env.DB.prepare(`ALTER TABLE classes ADD COLUMN user_id INTEGER`).run()
+      } catch (e) {}
+      
+      try {
+        await c.env.DB.prepare(`ALTER TABLE classes ADD COLUMN teacher_id INTEGER`).run()
+      } catch (e) {}
+      
+      try {
+        await c.env.DB.prepare(`ALTER TABLE classes ADD COLUMN name TEXT`).run()
+      } catch (e) {}
+      
+      try {
+        await c.env.DB.prepare(`ALTER TABLE students ADD COLUMN user_id INTEGER`).run()
+      } catch (e) {}
+      
+      console.log('Auto-init: Tuition tables ensured')
+    } catch (initError) {
+      console.error('Auto-init error (non-fatal):', initError)
+    }
+    
     // classes 테이블 구조: id, name, description, user_id, teacher_id, monthly_fee
     const classes = await c.env.DB.prepare(`
       SELECT 
