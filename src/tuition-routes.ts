@@ -662,7 +662,7 @@ app.get('/api/students', requireDirector, async (c) => {
         s.user_id,
         s.class_id,
         s.status,
-        c.name as class_name,
+        c.class_name as class_name,
         COALESCE(c.monthly_fee, 0) as class_fee
       FROM students s
       LEFT JOIN classes c ON s.class_id = c.id
@@ -842,7 +842,7 @@ app.get('/api/tuition/student-fees/:studentId', requireDirector, async (c) => {
       SELECT 
         s.*,
         c.monthly_fee as class_fee,
-        c.name as class_name,
+        c.class_name as class_name,
         tr.monthly_fee as custom_fee
       FROM students s
       LEFT JOIN classes c ON s.class_id = c.id
