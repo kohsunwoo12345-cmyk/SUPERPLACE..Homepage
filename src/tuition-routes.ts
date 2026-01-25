@@ -37,6 +37,30 @@ const requireDirector = async (c: any, next: any) => {
 }
 
 // ========================================
+// DEBUG: Schema check API
+// ========================================
+app.get('/api/tuition/debug/schema', async (c) => {
+  try {
+    const classesSchema = await c.env.DB.prepare(`
+      PRAGMA table_info(classes)
+    `).all()
+    
+    const studentsSchema = await c.env.DB.prepare(`
+      PRAGMA table_info(students)
+    `).all()
+    
+    return c.json({
+      success: true,
+      classes: classesSchema.results,
+      students: studentsSchema.results
+    })
+  } catch (error) {
+    console.error('Error fetching schema:', error)
+    return c.json({ error: 'Schema 조회 실패', details: error.message }, 500)
+  }
+})
+
+// ========================================
 // 교육비 납입 기록 API
 // ========================================
 
