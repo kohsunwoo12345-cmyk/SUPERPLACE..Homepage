@@ -7566,7 +7566,46 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
           WHEN 'rejected' THEN 3
         END,
         created_at DESC
-    `).all();return e.json({success:!0,requests:s.results||[]})}catch(t){return console.error("신청 목록 조회 실패:",t),e.json({success:!1,error:"목록 조회 중 오류가 발생했습니다."},500)}});c.post("/api/bank-transfer/approve",async e=>{try{const{requestId:t,adminEmail:s}=await e.req.json();if(s!=="admin@superplace.co.kr")return e.json({success:!1,error:"관리자 권한이 필요합니다."},403);const a=await e.env.DB.prepare(`
+    `).all();return e.json({success:!0,requests:s.results||[]})}catch(t){return console.error("신청 목록 조회 실패:",t),e.json({success:!1,error:"목록 조회 중 오류가 발생했습니다."},500)}});c.post("/api/card-payment/request",async e=>{try{const{userId:t,userName:s,userEmail:a,userPhone:r,planName:o,amount:n,note:l}=await e.req.json();if(!t||!s||!a||!r||!o||!n)return e.json({success:!1,error:"필수 정보를 모두 입력해주세요."},400);try{await e.env.DB.prepare(`
+        CREATE TABLE IF NOT EXISTS card_payment_requests (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          user_id INTEGER NOT NULL,
+          user_name TEXT NOT NULL,
+          user_email TEXT NOT NULL,
+          user_phone TEXT NOT NULL,
+          plan_name TEXT NOT NULL,
+          amount INTEGER NOT NULL,
+          note TEXT,
+          status TEXT DEFAULT 'pending',
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          approved_at DATETIME,
+          rejected_at DATETIME,
+          processed_by TEXT
+        )
+      `).run()}catch{console.log("[Card Payment] Table already exists")}const i=await e.env.DB.prepare(`
+      INSERT INTO card_payment_requests 
+      (user_id, user_name, user_email, user_phone, plan_name, amount, note, status, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', CURRENT_TIMESTAMP)
+    `).bind(t,s,a,r,o,n,l||null).run();return e.json({success:!0,message:"카드결제 신청이 완료되었습니다. 관리자 승인 후 결제 링크가 발송됩니다.",requestId:i.meta.last_row_id})}catch(t){return console.error("카드결제 신청 실패:",t),e.json({success:!1,error:"신청 처리 중 오류가 발생했습니다."},500)}});c.get("/api/card-payment/requests",async e=>{try{if(e.req.query("adminEmail")!=="admin@superplace.co.kr")return e.json({success:!1,error:"관리자 권한이 필요합니다."},403);const s=await e.env.DB.prepare(`
+      SELECT * FROM card_payment_requests
+      ORDER BY 
+        CASE status
+          WHEN 'pending' THEN 1
+          WHEN 'approved' THEN 2
+          WHEN 'rejected' THEN 3
+        END,
+        created_at DESC
+    `).all();return e.json({success:!0,requests:s.results||[]})}catch(t){return console.error("카드결제 신청 목록 조회 실패:",t),e.json({success:!1,error:"목록 조회 중 오류가 발생했습니다."},500)}});c.post("/api/card-payment/approve",async e=>{try{const{requestId:t,adminEmail:s}=await e.req.json();if(s!=="admin@superplace.co.kr")return e.json({success:!1,error:"관리자 권한이 필요합니다."},403);const a=await e.env.DB.prepare(`
+      SELECT * FROM card_payment_requests WHERE id = ?
+    `).bind(t).first();return a?a.status==="approved"?e.json({success:!1,error:"이미 승인된 신청입니다."},400):(await e.env.DB.prepare(`
+      UPDATE card_payment_requests 
+      SET status = 'approved', approved_at = CURRENT_TIMESTAMP, processed_by = ?
+      WHERE id = ?
+    `).bind(s,t).run(),e.json({success:!0,message:"카드결제 신청이 승인되었습니다. 사용자에게 결제 링크를 발송해주세요."})):e.json({success:!1,error:"신청 정보를 찾을 수 없습니다."},404)}catch(t){return console.error("카드결제 신청 승인 실패:",t),e.json({success:!1,error:"승인 처리 중 오류가 발생했습니다."},500)}});c.post("/api/card-payment/reject",async e=>{try{const{requestId:t,adminEmail:s,reason:a}=await e.req.json();return s!=="admin@superplace.co.kr"?e.json({success:!1,error:"관리자 권한이 필요합니다."},403):(await e.env.DB.prepare(`
+      UPDATE card_payment_requests 
+      SET status = 'rejected', rejected_at = CURRENT_TIMESTAMP, processed_by = ?, note = ?
+      WHERE id = ?
+    `).bind(s,a||"관리자에 의해 거부됨",t).run(),e.json({success:!0,message:"카드결제 신청이 거부되었습니다."}))}catch(t){return console.error("카드결제 신청 거부 실패:",t),e.json({success:!1,error:"거부 처리 중 오류가 발생했습니다."},500)}});c.post("/api/bank-transfer/approve",async e=>{try{const{requestId:t,adminEmail:s}=await e.req.json();if(s!=="admin@superplace.co.kr")return e.json({success:!1,error:"관리자 권한이 필요합니다."},403);const a=await e.env.DB.prepare(`
       SELECT * FROM bank_transfer_requests WHERE id = ?
     `).bind(t).first();if(!a)return e.json({success:!1,error:"신청 정보를 찾을 수 없습니다."},404);if(a.status==="approved")return e.json({success:!1,error:"이미 승인된 신청입니다."},400);const r={"스타터 플랜":{student:50,ai_report:50,landing_page:50,teacher:2,price:55e3},"베이직 플랜":{student:150,ai_report:150,landing_page:160,teacher:6,price:143e3},"프로 플랜":{student:500,ai_report:500,landing_page:530,teacher:20,price:187e3},"프리미엄 플랜":{student:1e3,ai_report:1e3,landing_page:1100,teacher:40,price:33e4},"엔터프라이즈 플랜":{student:3e3,ai_report:3e3,landing_page:5e3,teacher:999,price:75e4}},o=r[a.plan_name]||r["스타터 플랜"],n=a.user_id;console.log("[Bank Transfer Approve] Using academyId:",n,"for user:",a.user_id);const l=n;console.log("[Bank Transfer Approve] Using academy_id = user.id:",l);try{await e.env.DB.prepare(`
         SELECT id FROM academies WHERE id = ?
@@ -7885,7 +7924,7 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
                                         </svg>
                                     </div>
                                     <div>
-                                        <div class="font-semibold text-gray-900">학생 최대 30명</div>
+                                        <div class="font-semibold text-gray-900">학생 최대 50명</div>
                                         <div class="text-sm text-gray-600">소규모 학원에 최적화</div>
                                     </div>
                                 </div>
@@ -7896,7 +7935,7 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
                                         </svg>
                                     </div>
                                     <div>
-                                        <div class="font-semibold text-gray-900">AI 학습 리포트 월 30개</div>
+                                        <div class="font-semibold text-gray-900">AI 학습 리포트 월 50개</div>
                                         <div class="text-sm text-gray-600">학생별 맞춤 분석 리포트</div>
                                     </div>
                                 </div>
@@ -7907,7 +7946,7 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
                                         </svg>
                                     </div>
                                     <div>
-                                        <div class="font-semibold text-gray-900">랜딩페이지 40개</div>
+                                        <div class="font-semibold text-gray-900">랜딩페이지 50개</div>
                                         <div class="text-sm text-gray-600">전문 마케팅 페이지 제작</div>
                                     </div>
                                 </div>
@@ -8053,7 +8092,7 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
                 window.location.href = '/payment/bank-transfer?plan=스타터 플랜&amount=55000';
             }
 
-            function processPayment() {
+            async function processPayment() {
                 const name = document.getElementById('buyerName').value;
                 const email = document.getElementById('buyerEmail').value;
                 const phone = document.getElementById('buyerPhone').value;
@@ -8075,56 +8114,36 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
                     return;
                 }
 
-                // merchant_uid 생성
-                const merchantUid = \`academy_\${user.id}_starter_\${new Date().getTime()}\`;
+                // 카드결제 신청 API 호출
+                try {
+                    const response = await fetch('/api/card-payment/request', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            userId: user.id,
+                            userName: name,
+                            userEmail: email,
+                            userPhone: phone,
+                            planName: '스타터 플랜',
+                            amount: 55000,
+                            note: ''
+                        })
+                    });
 
-                console.log('[Payment] Starting payment:', { plan: 'starter', amount: 60500, merchantUid });
-
-                IMP.request_pay({
-                    pg: 'html5_inicis',
-                    pay_method: 'card',
-                    merchant_uid: merchantUid,
-                    name: '스타터 플랜 (월간)',
-                    amount: 60500,
-                    buyer_email: email,
-                    buyer_name: name,
-                    buyer_tel: phone,
-                    buyer_addr: '',
-                    buyer_postcode: ''
-                }, async function(rsp) {
-                    if (rsp.success) {
-                        console.log('[Payment] Payment success:', { imp_uid: rsp.imp_uid, merchant_uid: rsp.merchant_uid });
-                        
-                        try {
-                            const response = await fetch('/api/payments/complete', {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                },
-                                body: JSON.stringify({
-                                    imp_uid: rsp.imp_uid,
-                                    merchant_uid: rsp.merchant_uid
-                                })
-                            });
-
-                            const result = await response.json();
-                            
-                            if (result.success) {
-                                const sub = result.subscription;
-                                alert(\`결제가 완료되었습니다!\\n\\n플랜: \${sub.planName}\\n이용 기간: \${sub.startDate} ~ \${sub.endDate}\\n\\n대시보드로 이동합니다.\`);
-                                window.location.href = '/dashboard';
-                            } else {
-                                alert('결제 처리에 실패했습니다: ' + result.error);
-                            }
-                        } catch (error) {
-                            console.error('[Payment] Error:', error);
-                            alert('결제 처리 중 오류가 발생했습니다.');
-                        }
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        alert('✅ 카드결제 신청이 완료되었습니다!\\n\\n관리자 승인 후 결제 링크가 이메일로 발송됩니다.\\n승인까지 1-2 영업일이 소요될 수 있습니다.');
+                        window.location.href = '/dashboard';
                     } else {
-                        console.error('[Payment] Payment failed:', rsp.error_msg);
-                        alert('결제에 실패했습니다: ' + rsp.error_msg);
+                        alert('❌ 신청 실패: ' + result.error);
                     }
-                });
+                } catch (error) {
+                    console.error('[Card Payment Request] Error:', error);
+                    alert('신청 처리 중 오류가 발생했습니다.');
+                }
             }
         <\/script>
     </body>
