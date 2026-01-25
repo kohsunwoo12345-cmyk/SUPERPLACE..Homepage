@@ -813,7 +813,7 @@ app.put('/api/tuition/classes/:id/fee', requireDirector, async (c) => {
     
     // 교육비 업데이트
     await c.env.DB.prepare(`
-      UPDATE classes SET monthly_fee = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?
+      UPDATE classes SET monthly_fee = ? WHERE id = ?
     `).bind(monthly_fee, classId).run()
     
     return c.json({
