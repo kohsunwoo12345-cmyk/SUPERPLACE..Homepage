@@ -7,6 +7,7 @@ import { serveStatic } from 'hono/cloudflare-workers'
 // import studentRoutes from './student-routes'
 import studentPages from './student-pages'
 import formBuilderRoutes from './form-builder-routes'
+import tuitionRoutes from './tuition-routes'
 
 type Bindings = {
   DB: D1Database
@@ -34,6 +35,9 @@ app.use('/static/*', serveStatic({ root: './public' }))
 
 // Mount form builder routes (폼 템플릿 및 제출 관리)
 app.route('/', formBuilderRoutes)
+
+// Mount tuition management routes (교육비 관리 - 원장님 전용)
+app.route('/', tuitionRoutes)
 
 // ========================================
 // API Routes
