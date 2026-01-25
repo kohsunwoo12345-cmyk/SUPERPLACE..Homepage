@@ -237,7 +237,7 @@ app.get('/api/tuition/payments', requireDirector, async (c) => {
       LEFT JOIN tuition_rates tr ON s.id = tr.student_id
         AND (tr.end_date IS NULL OR tr.end_date >= date('now'))
       LEFT JOIN classes c ON s.class_id = c.id
-      WHERE s.user_id = ?
+      WHERE s.academy_id = ?
         AND s.status = 'active'
         AND (COALESCE(tr.monthly_fee, c.monthly_fee, 0) > 0)
       GROUP BY s.id
@@ -346,7 +346,7 @@ app.get('/api/tuition/payments', requireDirector, async (c) => {
       LEFT JOIN tuition_rates tr ON s.id = tr.student_id
         AND (tr.end_date IS NULL OR tr.end_date >= date('now'))
       LEFT JOIN classes c ON s.class_id = c.id
-      WHERE s.user_id = ?
+      WHERE s.academy_id = ?
         AND s.status = 'active'
     `
     
@@ -585,7 +585,7 @@ app.get('/api/tuition/unpaid-students', requireDirector, async (c) => {
       LEFT JOIN tuition_rates tr ON s.id = tr.student_id
         AND (tr.end_date IS NULL OR tr.end_date >= date('now'))
       LEFT JOIN classes c ON s.class_id = c.id
-      WHERE s.user_id = ? 
+      WHERE s.academy_id = ? 
         AND s.status = 'active'
         AND COALESCE(tp.status, 'unpaid') IN ('unpaid', 'partial', 'overdue')
       ORDER BY s.name ASC
@@ -625,7 +625,7 @@ app.get('/api/tuition/stats', requireDirector, async (c) => {
       LEFT JOIN tuition_rates tr ON s.id = tr.student_id
         AND (tr.end_date IS NULL OR tr.end_date >= date('now'))
       LEFT JOIN classes c ON s.class_id = c.id
-      WHERE s.user_id = ? 
+      WHERE s.academy_id = ? 
         AND s.status = 'active'
     `).bind(year, month, user.id).first()
     
@@ -768,7 +768,7 @@ app.get('/api/tuition/classes', requireDirector, async (c) => {
         COUNT(DISTINCT s.id) as student_count
       FROM classes c
       LEFT JOIN users u ON c.teacher_id = u.id
-      LEFT JOIN students s ON (s.class_id = c.id AND s.status = 'active' AND s.user_id = ?)
+      LEFT JOIN students s ON (s.class_id = c.id AND s.status = 'active' AND s.academy_id = ?)
       WHERE c.user_id = ?
       GROUP BY c.id, c.class_name, c.description, c.user_id, c.teacher_id, c.monthly_fee, u.name
       ORDER BY c.class_name ASC
@@ -843,7 +843,7 @@ app.get('/api/tuition/student-fees/:studentId', requireDirector, async (c) => {
       LEFT JOIN classes c ON s.class_id = c.id
       LEFT JOIN tuition_rates tr ON s.id = tr.student_id
         AND (tr.end_date IS NULL OR tr.end_date >= date('now'))
-      WHERE s.id = ? AND s.user_id = ?
+      WHERE s.id = ? AND s.academy_id = ?
     `).bind(studentId, user.id).first()
     
     if (!student) {
@@ -899,7 +899,7 @@ app.post('/api/tuition/mark-paid', requireDirector, async (c) => {
       LEFT JOIN classes c ON s.class_id = c.id
       LEFT JOIN tuition_rates tr ON s.id = tr.student_id
         AND (tr.end_date IS NULL OR tr.end_date >= date('now'))
-      WHERE s.id = ? AND s.user_id = ?
+      WHERE s.id = ? AND s.academy_id = ?
     `).bind(student_id, user.id).first()
     
     if (!student) {
