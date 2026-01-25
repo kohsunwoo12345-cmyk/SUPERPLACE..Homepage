@@ -4614,33 +4614,14 @@ app.post('/api/landing/create', async (c) => {
     const currentPages = usage?.landing_pages_created || 0
     const pageLimit = activeSubscription.landing_page_limit
     
-    // 한도 초과 체크 및 포인트 사용 로직
-    const LANDING_PAGE_POINT_COST = 7700
-    let usePoints = false
-    
+    // 🔥 랜딩페이지 생성 한도 체크 (포인트 시스템 제거)
     if (currentPages >= pageLimit) {
-      // 한도 초과: 포인트로 생성 시도
-      const userWithPoints = await c.env.DB.prepare(`
-        SELECT id, points FROM users WHERE id = ?
-      `).bind(user.id).first()
-      
-      const userPoints = userWithPoints?.points || 0
-      
-      if (userPoints < LANDING_PAGE_POINT_COST) {
-        // 포인트도 부족
-        return c.json({ 
-          success: false,
-          needsPoints: true,
-          requiredPoints: LANDING_PAGE_POINT_COST,
-          currentPoints: userPoints,
-          error: `⛔ 랜딩페이지 한도를 모두 사용하셨습니다.\n\n생성된 랜딩페이지: ${currentPages}개 / 한도: ${pageLimit}개\n현재 포인트: ${userPoints.toLocaleString()}P\n\n추가로 랜딩페이지를 제작하시겠어요?\n랜딩페이지 1개당 7,700포인트가 필요합니다.\n\n포인트 충전 페이지로 이동하시겠습니까?`
-        }, 403)
-      }
-      
-      // 포인트 충분: 포인트 사용
-      usePoints = true
-      console.log(`🪙 Using points for landing page: ${LANDING_PAGE_POINT_COST}P (Current: ${userPoints}P)`)
+      return c.json({ 
+        success: false, 
+        error: `⛔ 사용 한도가 모두 소진되었습니다.\n\n생성된 랜딩페이지: ${currentPages}개 / 한도: ${pageLimit}개\n\n더 많은 랜딩페이지를 제작하시려면 상위 플랜으로 업그레이드해주세요.` 
+      }, 403)
     }
+    console.log(`✅ [Landing] Limit check passed: ${currentPages}/${pageLimit}`)
     
     // 고유 slug 생성 (랜덤 8자리)
     const slug = Math.random().toString(36).substring(2, 10)
@@ -4669,30 +4650,17 @@ app.post('/api/landing/create', async (c) => {
       WHERE subscription_id = ?
     `).bind(activeSubscription.id).run()
     
-    // 🪙 포인트 차감 (한도 초과 시)
-    if (usePoints) {
-      await c.env.DB.prepare(`
-        UPDATE users 
-        SET points = points - ?
-        WHERE id = ?
-      `).bind(LANDING_PAGE_POINT_COST, user.id).run()
-      
-      console.log(`✅ Points deducted: ${LANDING_PAGE_POINT_COST}P from user ${user.id}`)
-    }
-    
-    console.log('✅ Landing page created and usage incremented:', currentPages + 1, '/', pageLimit, usePoints ? '(포인트 사용)' : '')
+    console.log('✅ Landing page created and usage incremented:', currentPages + 1, '/', pageLimit)
     
     return c.json({ 
       success: true, 
-      message: usePoints ? `랜딩페이지가 생성되었습니다. (${LANDING_PAGE_POINT_COST}P 차감)` : '랜딩페이지가 생성되었습니다.',
+      message: '랜딩페이지가 생성되었습니다.',
       slug,
       url: `/landing/${slug}`,
       usage: {
         current: currentPages + 1,
         limit: pageLimit
       },
-      usedPoints: usePoints,
-      pointsDeducted: usePoints ? LANDING_PAGE_POINT_COST : 0,
       qrCodeUrl,
       id: result.meta.last_row_id
     })
