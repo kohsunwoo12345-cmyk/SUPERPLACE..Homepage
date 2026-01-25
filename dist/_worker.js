@@ -1,4 +1,4 @@
-var Pt=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Ft=(e,t,s)=>t in e?Pt(e,t,{enumerable:!0,configurable:!0,writable:!0,value:s}):e[t]=s;var I=(e,t,s)=>Ft(e,typeof t!="symbol"?t+"":t,s),Qe=(e,t,s)=>t.has(e)||nt("Cannot "+s);var f=(e,t,s)=>(Qe(e,t,"read from private field"),s?s.call(e):t.get(e)),C=(e,t,s)=>t.has(e)?nt("Cannot add the same private member more than once"):t instanceof WeakSet?t.add(e):t.set(e,s),T=(e,t,s,a)=>(Qe(e,t,"write to private field"),a?a.call(e,s):t.set(e,s),s),R=(e,t,s)=>(Qe(e,t,"access private method"),s);var it=(e,t,s,a)=>({set _(r){T(e,t,r,s)},get _(){return f(e,t,a)}});var lt=(e,t,s)=>(a,r)=>{let o=-1;return n(0);async function n(i){if(i<=o)throw new Error("next() called multiple times");o=i;let l,d=!1,p;if(e[i]?(p=e[i][0][0],a.req.routeIndex=i):p=i===e.length&&r||void 0,p)try{l=await p(a,()=>n(i+1))}catch(u){if(u instanceof Error&&t)a.error=u,l=await t(u,a),d=!0;else throw u}else a.finalized===!1&&s&&(l=await s(a));return l&&(a.finalized===!1||d)&&(a.res=l),a}},$t=Symbol(),qt=async(e,t=Object.create(null))=>{const{all:s=!1,dot:a=!1}=t,o=(e instanceof _t?e.raw.headers:e.headers).get("Content-Type");return o!=null&&o.startsWith("multipart/form-data")||o!=null&&o.startsWith("application/x-www-form-urlencoded")?Ht(e,{all:s,dot:a}):{}};async function Ht(e,t){const s=await e.formData();return s?Wt(s,t):{}}function Wt(e,t){const s=Object.create(null);return e.forEach((a,r)=>{t.all||r.endsWith("[]")?Gt(s,r,a):s[r]=a}),t.dot&&Object.entries(s).forEach(([a,r])=>{a.includes(".")&&(Yt(s,a,r),delete s[a])}),s}var Gt=(e,t,s)=>{e[t]!==void 0?Array.isArray(e[t])?e[t].push(s):e[t]=[e[t],s]:t.endsWith("[]")?e[t]=[s]:e[t]=s},Yt=(e,t,s)=>{let a=e;const r=t.split(".");r.forEach((o,n)=>{n===r.length-1?a[o]=s:((!a[o]||typeof a[o]!="object"||Array.isArray(a[o])||a[o]instanceof File)&&(a[o]=Object.create(null)),a=a[o])})},vt=e=>{const t=e.split("/");return t[0]===""&&t.shift(),t},zt=e=>{const{groups:t,path:s}=Xt(e),a=vt(s);return Jt(a,t)},Xt=e=>{const t=[];return e=e.replace(/\{[^}]+\}/g,(s,a)=>{const r=`@${a}`;return t.push([r,s]),r}),{groups:t,path:e}},Jt=(e,t)=>{for(let s=t.length-1;s>=0;s--){const[a]=t[s];for(let r=e.length-1;r>=0;r--)if(e[r].includes(a)){e[r]=e[r].replace(a,t[s][1]);break}}return e},qe={},Vt=(e,t)=>{if(e==="*")return"*";const s=e.match(/^\:([^\{\}]+)(?:\{(.+)\})?$/);if(s){const a=`${e}#${t}`;return qe[a]||(s[2]?qe[a]=t&&t[0]!==":"&&t[0]!=="*"?[a,s[1],new RegExp(`^${s[2]}(?=/${t})`)]:[e,s[1],new RegExp(`^${s[2]}$`)]:qe[a]=[e,s[1],!0]),qe[a]}return null},Je=(e,t)=>{try{return t(e)}catch{return e.replace(/(?:%[0-9A-Fa-f]{2})+/g,s=>{try{return t(s)}catch{return s}})}},Kt=e=>Je(e,decodeURI),yt=e=>{const t=e.url,s=t.indexOf("/",t.indexOf(":")+4);let a=s;for(;a<t.length;a++){const r=t.charCodeAt(a);if(r===37){const o=t.indexOf("?",a),n=t.slice(s,o===-1?void 0:o);return Kt(n.includes("%25")?n.replace(/%25/g,"%2525"):n)}else if(r===63)break}return t.slice(s,a)},Qt=e=>{const t=yt(e);return t.length>1&&t.at(-1)==="/"?t.slice(0,-1):t},ye=(e,t,...s)=>(s.length&&(t=ye(t,...s)),`${(e==null?void 0:e[0])==="/"?"":"/"}${e}${t==="/"?"":`${(e==null?void 0:e.at(-1))==="/"?"":"/"}${(t==null?void 0:t[0])==="/"?t.slice(1):t}`}`),wt=e=>{if(e.charCodeAt(e.length-1)!==63||!e.includes(":"))return null;const t=e.split("/"),s=[];let a="";return t.forEach(r=>{if(r!==""&&!/\:/.test(r))a+="/"+r;else if(/\:/.test(r))if(/\?/.test(r)){s.length===0&&a===""?s.push("/"):s.push(a);const o=r.replace("?","");a+="/"+o,s.push(a)}else a+="/"+r}),s.filter((r,o,n)=>n.indexOf(r)===o)},Ze=e=>/[%+]/.test(e)?(e.indexOf("+")!==-1&&(e=e.replace(/\+/g," ")),e.indexOf("%")!==-1?Je(e,rt):e):e,Et=(e,t,s)=>{let a;if(!s&&t&&!/[%+]/.test(t)){let n=e.indexOf("?",8);if(n===-1)return;for(e.startsWith(t,n+1)||(n=e.indexOf(`&${t}`,n+1));n!==-1;){const i=e.charCodeAt(n+t.length+1);if(i===61){const l=n+t.length+2,d=e.indexOf("&",l);return Ze(e.slice(l,d===-1?void 0:d))}else if(i==38||isNaN(i))return"";n=e.indexOf(`&${t}`,n+1)}if(a=/[%+]/.test(e),!a)return}const r={};a??(a=/[%+]/.test(e));let o=e.indexOf("?",8);for(;o!==-1;){const n=e.indexOf("&",o+1);let i=e.indexOf("=",o);i>n&&n!==-1&&(i=-1);let l=e.slice(o+1,i===-1?n===-1?void 0:n:i);if(a&&(l=Ze(l)),o=n,l==="")continue;let d;i===-1?d="":(d=e.slice(i+1,n===-1?void 0:n),a&&(d=Ze(d))),s?(r[l]&&Array.isArray(r[l])||(r[l]=[]),r[l].push(d)):r[l]??(r[l]=d)}return t?r[t]:r},Zt=Et,es=(e,t)=>Et(e,t,!0),rt=decodeURIComponent,dt=e=>Je(e,rt),_e,z,ae,Tt,It,at,re,mt,_t=(mt=class{constructor(e,t="/",s=[[]]){C(this,ae);I(this,"raw");C(this,_e);C(this,z);I(this,"routeIndex",0);I(this,"path");I(this,"bodyCache",{});C(this,re,e=>{const{bodyCache:t,raw:s}=this,a=t[e];if(a)return a;const r=Object.keys(t)[0];return r?t[r].then(o=>(r==="json"&&(o=JSON.stringify(o)),new Response(o)[e]())):t[e]=s[e]()});this.raw=e,this.path=t,T(this,z,s),T(this,_e,{})}param(e){return e?R(this,ae,Tt).call(this,e):R(this,ae,It).call(this)}query(e){return Zt(this.url,e)}queries(e){return es(this.url,e)}header(e){if(e)return this.raw.headers.get(e)??void 0;const t={};return this.raw.headers.forEach((s,a)=>{t[a]=s}),t}async parseBody(e){var t;return(t=this.bodyCache).parsedBody??(t.parsedBody=await qt(this,e))}json(){return f(this,re).call(this,"text").then(e=>JSON.parse(e))}text(){return f(this,re).call(this,"text")}arrayBuffer(){return f(this,re).call(this,"arrayBuffer")}blob(){return f(this,re).call(this,"blob")}formData(){return f(this,re).call(this,"formData")}addValidatedData(e,t){f(this,_e)[e]=t}valid(e){return f(this,_e)[e]}get url(){return this.raw.url}get method(){return this.raw.method}get[$t](){return f(this,z)}get matchedRoutes(){return f(this,z)[0].map(([[,e]])=>e)}get routePath(){return f(this,z)[0].map(([[,e]])=>e)[this.routeIndex].path}},_e=new WeakMap,z=new WeakMap,ae=new WeakSet,Tt=function(e){const t=f(this,z)[0][this.routeIndex][1][e],s=R(this,ae,at).call(this,t);return s&&/\%/.test(s)?dt(s):s},It=function(){const e={},t=Object.keys(f(this,z)[0][this.routeIndex][1]);for(const s of t){const a=R(this,ae,at).call(this,f(this,z)[0][this.routeIndex][1][s]);a!==void 0&&(e[s]=/\%/.test(a)?dt(a):a)}return e},at=function(e){return f(this,z)[1]?f(this,z)[1][e]:e},re=new WeakMap,mt),ts={Stringify:1},St=async(e,t,s,a,r)=>{typeof e=="object"&&!(e instanceof String)&&(e instanceof Promise||(e=e.toString()),e instanceof Promise&&(e=await e));const o=e.callbacks;return o!=null&&o.length?(r?r[0]+=e:r=[e],Promise.all(o.map(i=>i({phase:t,buffer:r,context:a}))).then(i=>Promise.all(i.filter(Boolean).map(l=>St(l,t,!1,a,r))).then(()=>r[0]))):Promise.resolve(e)},ss="text/plain; charset=UTF-8",et=(e,t)=>({"Content-Type":e,...t}),Be,je,Z,Te,ee,q,Ae,Ie,Se,me,Me,Oe,oe,we,gt,as=(gt=class{constructor(e,t){C(this,oe);C(this,Be);C(this,je);I(this,"env",{});C(this,Z);I(this,"finalized",!1);I(this,"error");C(this,Te);C(this,ee);C(this,q);C(this,Ae);C(this,Ie);C(this,Se);C(this,me);C(this,Me);C(this,Oe);I(this,"render",(...e)=>(f(this,Ie)??T(this,Ie,t=>this.html(t)),f(this,Ie).call(this,...e)));I(this,"setLayout",e=>T(this,Ae,e));I(this,"getLayout",()=>f(this,Ae));I(this,"setRenderer",e=>{T(this,Ie,e)});I(this,"header",(e,t,s)=>{this.finalized&&T(this,q,new Response(f(this,q).body,f(this,q)));const a=f(this,q)?f(this,q).headers:f(this,me)??T(this,me,new Headers);t===void 0?a.delete(e):s!=null&&s.append?a.append(e,t):a.set(e,t)});I(this,"status",e=>{T(this,Te,e)});I(this,"set",(e,t)=>{f(this,Z)??T(this,Z,new Map),f(this,Z).set(e,t)});I(this,"get",e=>f(this,Z)?f(this,Z).get(e):void 0);I(this,"newResponse",(...e)=>R(this,oe,we).call(this,...e));I(this,"body",(e,t,s)=>R(this,oe,we).call(this,e,t,s));I(this,"text",(e,t,s)=>!f(this,me)&&!f(this,Te)&&!t&&!s&&!this.finalized?new Response(e):R(this,oe,we).call(this,e,t,et(ss,s)));I(this,"json",(e,t,s)=>R(this,oe,we).call(this,JSON.stringify(e),t,et("application/json",s)));I(this,"html",(e,t,s)=>{const a=r=>R(this,oe,we).call(this,r,t,et("text/html; charset=UTF-8",s));return typeof e=="object"?St(e,ts.Stringify,!1,{}).then(a):a(e)});I(this,"redirect",(e,t)=>{const s=String(e);return this.header("Location",/[^\x00-\xFF]/.test(s)?encodeURI(s):s),this.newResponse(null,t??302)});I(this,"notFound",()=>(f(this,Se)??T(this,Se,()=>new Response),f(this,Se).call(this,this)));T(this,Be,e),t&&(T(this,ee,t.executionCtx),this.env=t.env,T(this,Se,t.notFoundHandler),T(this,Oe,t.path),T(this,Me,t.matchResult))}get req(){return f(this,je)??T(this,je,new _t(f(this,Be),f(this,Oe),f(this,Me))),f(this,je)}get event(){if(f(this,ee)&&"respondWith"in f(this,ee))return f(this,ee);throw Error("This context has no FetchEvent")}get executionCtx(){if(f(this,ee))return f(this,ee);throw Error("This context has no ExecutionContext")}get res(){return f(this,q)||T(this,q,new Response(null,{headers:f(this,me)??T(this,me,new Headers)}))}set res(e){if(f(this,q)&&e){e=new Response(e.body,e);for(const[t,s]of f(this,q).headers.entries())if(t!=="content-type")if(t==="set-cookie"){const a=f(this,q).headers.getSetCookie();e.headers.delete("set-cookie");for(const r of a)e.headers.append("set-cookie",r)}else e.headers.set(t,s)}T(this,q,e),this.finalized=!0}get var(){return f(this,Z)?Object.fromEntries(f(this,Z)):{}}},Be=new WeakMap,je=new WeakMap,Z=new WeakMap,Te=new WeakMap,ee=new WeakMap,q=new WeakMap,Ae=new WeakMap,Ie=new WeakMap,Se=new WeakMap,me=new WeakMap,Me=new WeakMap,Oe=new WeakMap,oe=new WeakSet,we=function(e,t,s){const a=f(this,q)?new Headers(f(this,q).headers):f(this,me)??new Headers;if(typeof t=="object"&&"headers"in t){const o=t.headers instanceof Headers?t.headers:new Headers(t.headers);for(const[n,i]of o)n.toLowerCase()==="set-cookie"?a.append(n,i):a.set(n,i)}if(s)for(const[o,n]of Object.entries(s))if(typeof n=="string")a.set(o,n);else{a.delete(o);for(const i of n)a.append(o,i)}const r=typeof t=="number"?t:(t==null?void 0:t.status)??f(this,Te);return new Response(e,{status:r,headers:a})},gt),A="ALL",rs="all",os=["get","post","put","delete","options","patch"],kt="Can not add a route since the matcher is already built.",Dt=class extends Error{},ns="__COMPOSED_HANDLER",is=e=>e.text("404 Not Found",404),ct=(e,t)=>{if("getResponse"in e){const s=e.getResponse();return t.newResponse(s.body,s)}return console.error(e),t.text("Internal Server Error",500)},J,M,Ct,V,pe,He,We,ke,ls=(ke=class{constructor(t={}){C(this,M);I(this,"get");I(this,"post");I(this,"put");I(this,"delete");I(this,"options");I(this,"patch");I(this,"all");I(this,"on");I(this,"use");I(this,"router");I(this,"getPath");I(this,"_basePath","/");C(this,J,"/");I(this,"routes",[]);C(this,V,is);I(this,"errorHandler",ct);I(this,"onError",t=>(this.errorHandler=t,this));I(this,"notFound",t=>(T(this,V,t),this));I(this,"fetch",(t,...s)=>R(this,M,We).call(this,t,s[1],s[0],t.method));I(this,"request",(t,s,a,r)=>t instanceof Request?this.fetch(s?new Request(t,s):t,a,r):(t=t.toString(),this.fetch(new Request(/^https?:\/\//.test(t)?t:`http://localhost${ye("/",t)}`,s),a,r)));I(this,"fire",()=>{addEventListener("fetch",t=>{t.respondWith(R(this,M,We).call(this,t.request,t,void 0,t.request.method))})});[...os,rs].forEach(o=>{this[o]=(n,...i)=>(typeof n=="string"?T(this,J,n):R(this,M,pe).call(this,o,f(this,J),n),i.forEach(l=>{R(this,M,pe).call(this,o,f(this,J),l)}),this)}),this.on=(o,n,...i)=>{for(const l of[n].flat()){T(this,J,l);for(const d of[o].flat())i.map(p=>{R(this,M,pe).call(this,d.toUpperCase(),f(this,J),p)})}return this},this.use=(o,...n)=>(typeof o=="string"?T(this,J,o):(T(this,J,"*"),n.unshift(o)),n.forEach(i=>{R(this,M,pe).call(this,A,f(this,J),i)}),this);const{strict:a,...r}=t;Object.assign(this,r),this.getPath=a??!0?t.getPath??yt:Qt}route(t,s){const a=this.basePath(t);return s.routes.map(r=>{var n;let o;s.errorHandler===ct?o=r.handler:(o=async(i,l)=>(await lt([],s.errorHandler)(i,()=>r.handler(i,l))).res,o[ns]=r.handler),R(n=a,M,pe).call(n,r.method,r.path,o)}),this}basePath(t){const s=R(this,M,Ct).call(this);return s._basePath=ye(this._basePath,t),s}mount(t,s,a){let r,o;a&&(typeof a=="function"?o=a:(o=a.optionHandler,a.replaceRequest===!1?r=l=>l:r=a.replaceRequest));const n=o?l=>{const d=o(l);return Array.isArray(d)?d:[d]}:l=>{let d;try{d=l.executionCtx}catch{}return[l.env,d]};r||(r=(()=>{const l=ye(this._basePath,t),d=l==="/"?0:l.length;return p=>{const u=new URL(p.url);return u.pathname=u.pathname.slice(d)||"/",new Request(u,p)}})());const i=async(l,d)=>{const p=await s(r(l.req.raw),...n(l));if(p)return p;await d()};return R(this,M,pe).call(this,A,ye(t,"*"),i),this}},J=new WeakMap,M=new WeakSet,Ct=function(){const t=new ke({router:this.router,getPath:this.getPath});return t.errorHandler=this.errorHandler,T(t,V,f(this,V)),t.routes=this.routes,t},V=new WeakMap,pe=function(t,s,a){t=t.toUpperCase(),s=ye(this._basePath,s);const r={basePath:this._basePath,path:s,method:t,handler:a};this.router.add(t,s,[a,r]),this.routes.push(r)},He=function(t,s){if(t instanceof Error)return this.errorHandler(t,s);throw t},We=function(t,s,a,r){if(r==="HEAD")return(async()=>new Response(null,await R(this,M,We).call(this,t,s,a,"GET")))();const o=this.getPath(t,{env:a}),n=this.router.match(r,o),i=new as(t,{path:o,matchResult:n,env:a,executionCtx:s,notFoundHandler:f(this,V)});if(n[0].length===1){let d;try{d=n[0][0][0][0](i,async()=>{i.res=await f(this,V).call(this,i)})}catch(p){return R(this,M,He).call(this,p,i)}return d instanceof Promise?d.then(p=>p||(i.finalized?i.res:f(this,V).call(this,i))).catch(p=>R(this,M,He).call(this,p,i)):d??f(this,V).call(this,i)}const l=lt(n[0],this.errorHandler,f(this,V));return(async()=>{try{const d=await l(i);if(!d.finalized)throw new Error("Context is not finalized. Did you forget to return a Response object or `await next()`?");return d.res}catch(d){return R(this,M,He).call(this,d,i)}})()},ke),Rt=[];function ds(e,t){const s=this.buildAllMatchers(),a=((r,o)=>{const n=s[r]||s[A],i=n[2][o];if(i)return i;const l=o.match(n[0]);if(!l)return[[],Rt];const d=l.indexOf("",1);return[n[1][d],l]});return this.match=a,a(e,t)}var Ye="[^/]+",Le=".*",Ne="(?:|/.*)",Ee=Symbol(),cs=new Set(".\\+*[^]$()");function ps(e,t){return e.length===1?t.length===1?e<t?-1:1:-1:t.length===1||e===Le||e===Ne?1:t===Le||t===Ne?-1:e===Ye?1:t===Ye?-1:e.length===t.length?e<t?-1:1:t.length-e.length}var ge,xe,K,fe,us=(fe=class{constructor(){C(this,ge);C(this,xe);C(this,K,Object.create(null))}insert(t,s,a,r,o){if(t.length===0){if(f(this,ge)!==void 0)throw Ee;if(o)return;T(this,ge,s);return}const[n,...i]=t,l=n==="*"?i.length===0?["","",Le]:["","",Ye]:n==="/*"?["","",Ne]:n.match(/^\:([^\{\}]+)(?:\{(.+)\})?$/);let d;if(l){const p=l[1];let u=l[2]||Ye;if(p&&l[2]&&(u===".*"||(u=u.replace(/^\((?!\?:)(?=[^)]+\)$)/,"(?:"),/\((?!\?:)/.test(u))))throw Ee;if(d=f(this,K)[u],!d){if(Object.keys(f(this,K)).some(m=>m!==Le&&m!==Ne))throw Ee;if(o)return;d=f(this,K)[u]=new fe,p!==""&&T(d,xe,r.varIndex++)}!o&&p!==""&&a.push([p,f(d,xe)])}else if(d=f(this,K)[n],!d){if(Object.keys(f(this,K)).some(p=>p.length>1&&p!==Le&&p!==Ne))throw Ee;if(o)return;d=f(this,K)[n]=new fe}d.insert(i,s,a,r,o)}buildRegExpStr(){const s=Object.keys(f(this,K)).sort(ps).map(a=>{const r=f(this,K)[a];return(typeof f(r,xe)=="number"?`(${a})@${f(r,xe)}`:cs.has(a)?`\\${a}`:a)+r.buildRegExpStr()});return typeof f(this,ge)=="number"&&s.unshift(`#${f(this,ge)}`),s.length===0?"":s.length===1?s[0]:"(?:"+s.join("|")+")"}},ge=new WeakMap,xe=new WeakMap,K=new WeakMap,fe),ze,Ue,xt,ms=(xt=class{constructor(){C(this,ze,{varIndex:0});C(this,Ue,new us)}insert(e,t,s){const a=[],r=[];for(let n=0;;){let i=!1;if(e=e.replace(/\{[^}]+\}/g,l=>{const d=`@\\${n}`;return r[n]=[d,l],n++,i=!0,d}),!i)break}const o=e.match(/(?::[^\/]+)|(?:\/\*$)|./g)||[];for(let n=r.length-1;n>=0;n--){const[i]=r[n];for(let l=o.length-1;l>=0;l--)if(o[l].indexOf(i)!==-1){o[l]=o[l].replace(i,r[n][1]);break}}return f(this,Ue).insert(o,t,a,f(this,ze),s),a}buildRegExp(){let e=f(this,Ue).buildRegExpStr();if(e==="")return[/^$/,[],[]];let t=0;const s=[],a=[];return e=e.replace(/#(\d+)|@(\d+)|\.\*\$/g,(r,o,n)=>o!==void 0?(s[++t]=Number(o),"$()"):(n!==void 0&&(a[Number(n)]=++t),"")),[new RegExp(`^${e}`),s,a]}},ze=new WeakMap,Ue=new WeakMap,xt),gs=[/^$/,[],Object.create(null)],Ge=Object.create(null);function Lt(e){return Ge[e]??(Ge[e]=new RegExp(e==="*"?"":`^${e.replace(/\/\*$|([.\\+*[^\]$()])/g,(t,s)=>s?`\\${s}`:"(?:|/.*)")}$`))}function xs(){Ge=Object.create(null)}function bs(e){var d;const t=new ms,s=[];if(e.length===0)return gs;const a=e.map(p=>[!/\*|\/:/.test(p[0]),...p]).sort(([p,u],[m,g])=>p?1:m?-1:u.length-g.length),r=Object.create(null);for(let p=0,u=-1,m=a.length;p<m;p++){const[g,x,b]=a[p];g?r[x]=[b.map(([v])=>[v,Object.create(null)]),Rt]:u++;let h;try{h=t.insert(x,u,g)}catch(v){throw v===Ee?new Dt(x):v}g||(s[u]=b.map(([v,_])=>{const y=Object.create(null);for(_-=1;_>=0;_--){const[w,E]=h[_];y[w]=E}return[v,y]}))}const[o,n,i]=t.buildRegExp();for(let p=0,u=s.length;p<u;p++)for(let m=0,g=s[p].length;m<g;m++){const x=(d=s[p][m])==null?void 0:d[1];if(!x)continue;const b=Object.keys(x);for(let h=0,v=b.length;h<v;h++)x[b[h]]=i[x[b[h]]]}const l=[];for(const p in n)l[p]=s[n[p]];return[o,l,r]}function ve(e,t){if(e){for(const s of Object.keys(e).sort((a,r)=>r.length-a.length))if(Lt(s).test(t))return[...e[s]]}}var ne,ie,Xe,Nt,bt,hs=(bt=class{constructor(){C(this,Xe);I(this,"name","RegExpRouter");C(this,ne);C(this,ie);I(this,"match",ds);T(this,ne,{[A]:Object.create(null)}),T(this,ie,{[A]:Object.create(null)})}add(e,t,s){var i;const a=f(this,ne),r=f(this,ie);if(!a||!r)throw new Error(kt);a[e]||[a,r].forEach(l=>{l[e]=Object.create(null),Object.keys(l[A]).forEach(d=>{l[e][d]=[...l[A][d]]})}),t==="/*"&&(t="*");const o=(t.match(/\/:/g)||[]).length;if(/\*$/.test(t)){const l=Lt(t);e===A?Object.keys(a).forEach(d=>{var p;(p=a[d])[t]||(p[t]=ve(a[d],t)||ve(a[A],t)||[])}):(i=a[e])[t]||(i[t]=ve(a[e],t)||ve(a[A],t)||[]),Object.keys(a).forEach(d=>{(e===A||e===d)&&Object.keys(a[d]).forEach(p=>{l.test(p)&&a[d][p].push([s,o])})}),Object.keys(r).forEach(d=>{(e===A||e===d)&&Object.keys(r[d]).forEach(p=>l.test(p)&&r[d][p].push([s,o]))});return}const n=wt(t)||[t];for(let l=0,d=n.length;l<d;l++){const p=n[l];Object.keys(r).forEach(u=>{var m;(e===A||e===u)&&((m=r[u])[p]||(m[p]=[...ve(a[u],p)||ve(a[A],p)||[]]),r[u][p].push([s,o-d+l+1]))})}}buildAllMatchers(){const e=Object.create(null);return Object.keys(f(this,ie)).concat(Object.keys(f(this,ne))).forEach(t=>{e[t]||(e[t]=R(this,Xe,Nt).call(this,t))}),T(this,ne,T(this,ie,void 0)),xs(),e}},ne=new WeakMap,ie=new WeakMap,Xe=new WeakSet,Nt=function(e){const t=[];let s=e===A;return[f(this,ne),f(this,ie)].forEach(a=>{const r=a[e]?Object.keys(a[e]).map(o=>[o,a[e][o]]):[];r.length!==0?(s||(s=!0),t.push(...r)):e!==A&&t.push(...Object.keys(a[A]).map(o=>[o,a[A][o]]))}),s?bs(t):null},bt),le,te,ht,fs=(ht=class{constructor(e){I(this,"name","SmartRouter");C(this,le,[]);C(this,te,[]);T(this,le,e.routers)}add(e,t,s){if(!f(this,te))throw new Error(kt);f(this,te).push([e,t,s])}match(e,t){if(!f(this,te))throw new Error("Fatal error");const s=f(this,le),a=f(this,te),r=s.length;let o=0,n;for(;o<r;o++){const i=s[o];try{for(let l=0,d=a.length;l<d;l++)i.add(...a[l]);n=i.match(e,t)}catch(l){if(l instanceof Dt)continue;throw l}this.match=i.match.bind(i),T(this,le,[i]),T(this,te,void 0);break}if(o===r)throw new Error("Fatal error");return this.name=`SmartRouter + ${this.activeRouter.name}`,n}get activeRouter(){if(f(this,te)||f(this,le).length!==1)throw new Error("No active router has been determined yet.");return f(this,le)[0]}},le=new WeakMap,te=new WeakMap,ht),Re=Object.create(null),de,$,be,De,F,se,ue,Ce,vs=(Ce=class{constructor(t,s,a){C(this,se);C(this,de);C(this,$);C(this,be);C(this,De,0);C(this,F,Re);if(T(this,$,a||Object.create(null)),T(this,de,[]),t&&s){const r=Object.create(null);r[t]={handler:s,possibleKeys:[],score:0},T(this,de,[r])}T(this,be,[])}insert(t,s,a){T(this,De,++it(this,De)._);let r=this;const o=zt(s),n=[];for(let i=0,l=o.length;i<l;i++){const d=o[i],p=o[i+1],u=Vt(d,p),m=Array.isArray(u)?u[0]:d;if(m in f(r,$)){r=f(r,$)[m],u&&n.push(u[1]);continue}f(r,$)[m]=new Ce,u&&(f(r,be).push(u),n.push(u[1])),r=f(r,$)[m]}return f(r,de).push({[t]:{handler:a,possibleKeys:n.filter((i,l,d)=>d.indexOf(i)===l),score:f(this,De)}}),r}search(t,s){var l;const a=[];T(this,F,Re);let o=[this];const n=vt(s),i=[];for(let d=0,p=n.length;d<p;d++){const u=n[d],m=d===p-1,g=[];for(let x=0,b=o.length;x<b;x++){const h=o[x],v=f(h,$)[u];v&&(T(v,F,f(h,F)),m?(f(v,$)["*"]&&a.push(...R(this,se,ue).call(this,f(v,$)["*"],t,f(h,F))),a.push(...R(this,se,ue).call(this,v,t,f(h,F)))):g.push(v));for(let _=0,y=f(h,be).length;_<y;_++){const w=f(h,be)[_],E=f(h,F)===Re?{}:{...f(h,F)};if(w==="*"){const N=f(h,$)["*"];N&&(a.push(...R(this,se,ue).call(this,N,t,f(h,F))),T(N,F,E),g.push(N));continue}const[k,S,j]=w;if(!u&&!(j instanceof RegExp))continue;const L=f(h,$)[k],P=n.slice(d).join("/");if(j instanceof RegExp){const N=j.exec(P);if(N){if(E[S]=N[0],a.push(...R(this,se,ue).call(this,L,t,f(h,F),E)),Object.keys(f(L,$)).length){T(L,F,E);const W=((l=N[0].match(/\//))==null?void 0:l.length)??0;(i[W]||(i[W]=[])).push(L)}continue}}(j===!0||j.test(u))&&(E[S]=u,m?(a.push(...R(this,se,ue).call(this,L,t,E,f(h,F))),f(L,$)["*"]&&a.push(...R(this,se,ue).call(this,f(L,$)["*"],t,E,f(h,F)))):(T(L,F,E),g.push(L)))}}o=g.concat(i.shift()??[])}return a.length>1&&a.sort((d,p)=>d.score-p.score),[a.map(({handler:d,params:p})=>[d,p])]}},de=new WeakMap,$=new WeakMap,be=new WeakMap,De=new WeakMap,F=new WeakMap,se=new WeakSet,ue=function(t,s,a,r){const o=[];for(let n=0,i=f(t,de).length;n<i;n++){const l=f(t,de)[n],d=l[s]||l[A],p={};if(d!==void 0&&(d.params=Object.create(null),o.push(d),a!==Re||r&&r!==Re))for(let u=0,m=d.possibleKeys.length;u<m;u++){const g=d.possibleKeys[u],x=p[d.score];d.params[g]=r!=null&&r[g]&&!x?r[g]:a[g]??(r==null?void 0:r[g]),p[d.score]=!0}}return o},Ce),he,ft,ys=(ft=class{constructor(){I(this,"name","TrieRouter");C(this,he);T(this,he,new vs)}add(e,t,s){const a=wt(t);if(a){for(let r=0,o=a.length;r<o;r++)f(this,he).insert(e,a[r],s);return}f(this,he).insert(e,t,s)}match(e,t){return f(this,he).search(e,t)}},he=new WeakMap,ft),Pe=class extends ls{constructor(e={}){super(e),this.router=e.router??new fs({routers:[new hs,new ys]})}},ws=e=>{const s={...{origin:"*",allowMethods:["GET","HEAD","PUT","POST","DELETE","PATCH"],allowHeaders:[],exposeHeaders:[]},...e},a=(o=>typeof o=="string"?o==="*"?()=>o:n=>o===n?n:null:typeof o=="function"?o:n=>o.includes(n)?n:null)(s.origin),r=(o=>typeof o=="function"?o:Array.isArray(o)?()=>o:()=>[])(s.allowMethods);return async function(n,i){var p;function l(u,m){n.res.headers.set(u,m)}const d=await a(n.req.header("origin")||"",n);if(d&&l("Access-Control-Allow-Origin",d),s.credentials&&l("Access-Control-Allow-Credentials","true"),(p=s.exposeHeaders)!=null&&p.length&&l("Access-Control-Expose-Headers",s.exposeHeaders.join(",")),n.req.method==="OPTIONS"){s.origin!=="*"&&l("Vary","Origin"),s.maxAge!=null&&l("Access-Control-Max-Age",s.maxAge.toString());const u=await r(n.req.header("origin")||"",n);u.length&&l("Access-Control-Allow-Methods",u.join(","));let m=s.allowHeaders;if(!(m!=null&&m.length)){const g=n.req.header("Access-Control-Request-Headers");g&&(m=g.split(/\s*,\s*/))}return m!=null&&m.length&&(l("Access-Control-Allow-Headers",m.join(",")),n.res.headers.append("Vary","Access-Control-Request-Headers")),n.res.headers.delete("Content-Length"),n.res.headers.delete("Content-Type"),new Response(null,{headers:n.res.headers,status:204,statusText:"No Content"})}await i(),s.origin!=="*"&&n.header("Vary","Origin",{append:!0})}},Es=/^[\w!#$%&'*.^`|~+-]+$/,_s=/^[ !#-:<-[\]-~]*$/,Ts=(e,t)=>{if(e.indexOf(t)===-1)return{};const s=e.trim().split(";"),a={};for(let r of s){r=r.trim();const o=r.indexOf("=");if(o===-1)continue;const n=r.substring(0,o).trim();if(t!==n||!Es.test(n))continue;let i=r.substring(o+1).trim();if(i.startsWith('"')&&i.endsWith('"')&&(i=i.slice(1,-1)),_s.test(i)){a[n]=i.indexOf("%")!==-1?Je(i,rt):i;break}}return a},U=(e,t,s)=>{const a=e.req.raw.headers.get("Cookie");{if(!a)return;let r=t;return Ts(a,r)[r]}},Is=/^\s*(?:text\/(?!event-stream(?:[;\s]|$))[^;\s]+|application\/(?:javascript|json|xml|xml-dtd|ecmascript|dart|postscript|rtf|tar|toml|vnd\.dart|vnd\.ms-fontobject|vnd\.ms-opentype|wasm|x-httpd-php|x-javascript|x-ns-proxy-autoconfig|x-sh|x-tar|x-virtualbox-hdd|x-virtualbox-ova|x-virtualbox-ovf|x-virtualbox-vbox|x-virtualbox-vdi|x-virtualbox-vhd|x-virtualbox-vmdk|x-www-form-urlencoded)|font\/(?:otf|ttf)|image\/(?:bmp|vnd\.adobe\.photoshop|vnd\.microsoft\.icon|vnd\.ms-dds|x-icon|x-ms-bmp)|message\/rfc822|model\/gltf-binary|x-shader\/x-fragment|x-shader\/x-vertex|[^;\s]+?\+(?:json|text|xml|yaml))(?:[;\s]|$)/i,pt=(e,t=ks)=>{const s=/\.([a-zA-Z0-9]+?)$/,a=e.match(s);if(!a)return;let r=t[a[1]];return r&&r.startsWith("text")&&(r+="; charset=utf-8"),r},Ss={aac:"audio/aac",avi:"video/x-msvideo",avif:"image/avif",av1:"video/av1",bin:"application/octet-stream",bmp:"image/bmp",css:"text/css",csv:"text/csv",eot:"application/vnd.ms-fontobject",epub:"application/epub+zip",gif:"image/gif",gz:"application/gzip",htm:"text/html",html:"text/html",ico:"image/x-icon",ics:"text/calendar",jpeg:"image/jpeg",jpg:"image/jpeg",js:"text/javascript",json:"application/json",jsonld:"application/ld+json",map:"application/json",mid:"audio/x-midi",midi:"audio/x-midi",mjs:"text/javascript",mp3:"audio/mpeg",mp4:"video/mp4",mpeg:"video/mpeg",oga:"audio/ogg",ogv:"video/ogg",ogx:"application/ogg",opus:"audio/opus",otf:"font/otf",pdf:"application/pdf",png:"image/png",rtf:"application/rtf",svg:"image/svg+xml",tif:"image/tiff",tiff:"image/tiff",ts:"video/mp2t",ttf:"font/ttf",txt:"text/plain",wasm:"application/wasm",webm:"video/webm",weba:"audio/webm",webmanifest:"application/manifest+json",webp:"image/webp",woff:"font/woff",woff2:"font/woff2",xhtml:"application/xhtml+xml",xml:"application/xml",zip:"application/zip","3gp":"video/3gpp","3g2":"video/3gpp2",gltf:"model/gltf+json",glb:"model/gltf-binary"},ks=Ss,Ds=(...e)=>{let t=e.filter(r=>r!=="").join("/");t=t.replace(new RegExp("(?<=\\/)\\/+","g"),"");const s=t.split("/"),a=[];for(const r of s)r===".."&&a.length>0&&a.at(-1)!==".."?a.pop():r!=="."&&a.push(r);return a.join("/")||"."},Bt={br:".br",zstd:".zst",gzip:".gz"},Cs=Object.keys(Bt),Rs="index.html",Ls=e=>{const t=e.root??"./",s=e.path,a=e.join??Ds;return async(r,o)=>{var p,u,m,g;if(r.finalized)return o();let n;if(e.path)n=e.path;else try{if(n=decodeURIComponent(r.req.path),/(?:^|[\/\\])\.\.(?:$|[\/\\])/.test(n))throw new Error}catch{return await((p=e.onNotFound)==null?void 0:p.call(e,r.req.path,r)),o()}let i=a(t,!s&&e.rewriteRequestPath?e.rewriteRequestPath(n):n);e.isDir&&await e.isDir(i)&&(i=a(i,Rs));const l=e.getContent;let d=await l(i,r);if(d instanceof Response)return r.newResponse(d.body,d);if(d){const x=e.mimes&&pt(i,e.mimes)||pt(i);if(r.header("Content-Type",x||"application/octet-stream"),e.precompressed&&(!x||Is.test(x))){const b=new Set((u=r.req.header("Accept-Encoding"))==null?void 0:u.split(",").map(h=>h.trim()));for(const h of Cs){if(!b.has(h))continue;const v=await l(i+Bt[h],r);if(v){d=v,r.header("Content-Encoding",h),r.header("Vary","Accept-Encoding",{append:!0});break}}}return await((m=e.onFound)==null?void 0:m.call(e,i,r)),r.body(d)}await((g=e.onNotFound)==null?void 0:g.call(e,i,r)),await o()}},Ns=async(e,t)=>{let s;t&&t.manifest?typeof t.manifest=="string"?s=JSON.parse(t.manifest):s=t.manifest:typeof __STATIC_CONTENT_MANIFEST=="string"?s=JSON.parse(__STATIC_CONTENT_MANIFEST):s=__STATIC_CONTENT_MANIFEST;let a;t&&t.namespace?a=t.namespace:a=__STATIC_CONTENT;const r=s[e]||e;if(!r)return null;const o=await a.get(r,{type:"stream"});return o||null},Bs=e=>async function(s,a){return Ls({...e,getContent:async o=>Ns(o,{manifest:e.manifest,namespace:e.namespace?e.namespace:s.env?s.env.__STATIC_CONTENT:void 0})})(s,a)},js=e=>Bs(e);const As=`
+var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in e?Ft(e,t,{enumerable:!0,configurable:!0,writable:!0,value:s}):e[t]=s;var I=(e,t,s)=>Pt(e,typeof t!="symbol"?t+"":t,s),Qe=(e,t,s)=>t.has(e)||nt("Cannot "+s);var f=(e,t,s)=>(Qe(e,t,"read from private field"),s?s.call(e):t.get(e)),C=(e,t,s)=>t.has(e)?nt("Cannot add the same private member more than once"):t instanceof WeakSet?t.add(e):t.set(e,s),T=(e,t,s,a)=>(Qe(e,t,"write to private field"),a?a.call(e,s):t.set(e,s),s),R=(e,t,s)=>(Qe(e,t,"access private method"),s);var it=(e,t,s,a)=>({set _(r){T(e,t,r,s)},get _(){return f(e,t,a)}});var lt=(e,t,s)=>(a,r)=>{let o=-1;return n(0);async function n(i){if(i<=o)throw new Error("next() called multiple times");o=i;let l,d=!1,p;if(e[i]?(p=e[i][0][0],a.req.routeIndex=i):p=i===e.length&&r||void 0,p)try{l=await p(a,()=>n(i+1))}catch(u){if(u instanceof Error&&t)a.error=u,l=await t(u,a),d=!0;else throw u}else a.finalized===!1&&s&&(l=await s(a));return l&&(a.finalized===!1||d)&&(a.res=l),a}},$t=Symbol(),qt=async(e,t=Object.create(null))=>{const{all:s=!1,dot:a=!1}=t,o=(e instanceof _t?e.raw.headers:e.headers).get("Content-Type");return o!=null&&o.startsWith("multipart/form-data")||o!=null&&o.startsWith("application/x-www-form-urlencoded")?Ht(e,{all:s,dot:a}):{}};async function Ht(e,t){const s=await e.formData();return s?Wt(s,t):{}}function Wt(e,t){const s=Object.create(null);return e.forEach((a,r)=>{t.all||r.endsWith("[]")?Gt(s,r,a):s[r]=a}),t.dot&&Object.entries(s).forEach(([a,r])=>{a.includes(".")&&(Yt(s,a,r),delete s[a])}),s}var Gt=(e,t,s)=>{e[t]!==void 0?Array.isArray(e[t])?e[t].push(s):e[t]=[e[t],s]:t.endsWith("[]")?e[t]=[s]:e[t]=s},Yt=(e,t,s)=>{let a=e;const r=t.split(".");r.forEach((o,n)=>{n===r.length-1?a[o]=s:((!a[o]||typeof a[o]!="object"||Array.isArray(a[o])||a[o]instanceof File)&&(a[o]=Object.create(null)),a=a[o])})},vt=e=>{const t=e.split("/");return t[0]===""&&t.shift(),t},zt=e=>{const{groups:t,path:s}=Xt(e),a=vt(s);return Vt(a,t)},Xt=e=>{const t=[];return e=e.replace(/\{[^}]+\}/g,(s,a)=>{const r=`@${a}`;return t.push([r,s]),r}),{groups:t,path:e}},Vt=(e,t)=>{for(let s=t.length-1;s>=0;s--){const[a]=t[s];for(let r=e.length-1;r>=0;r--)if(e[r].includes(a)){e[r]=e[r].replace(a,t[s][1]);break}}return e},qe={},Jt=(e,t)=>{if(e==="*")return"*";const s=e.match(/^\:([^\{\}]+)(?:\{(.+)\})?$/);if(s){const a=`${e}#${t}`;return qe[a]||(s[2]?qe[a]=t&&t[0]!==":"&&t[0]!=="*"?[a,s[1],new RegExp(`^${s[2]}(?=/${t})`)]:[e,s[1],new RegExp(`^${s[2]}$`)]:qe[a]=[e,s[1],!0]),qe[a]}return null},Ve=(e,t)=>{try{return t(e)}catch{return e.replace(/(?:%[0-9A-Fa-f]{2})+/g,s=>{try{return t(s)}catch{return s}})}},Kt=e=>Ve(e,decodeURI),yt=e=>{const t=e.url,s=t.indexOf("/",t.indexOf(":")+4);let a=s;for(;a<t.length;a++){const r=t.charCodeAt(a);if(r===37){const o=t.indexOf("?",a),n=t.slice(s,o===-1?void 0:o);return Kt(n.includes("%25")?n.replace(/%25/g,"%2525"):n)}else if(r===63)break}return t.slice(s,a)},Qt=e=>{const t=yt(e);return t.length>1&&t.at(-1)==="/"?t.slice(0,-1):t},ye=(e,t,...s)=>(s.length&&(t=ye(t,...s)),`${(e==null?void 0:e[0])==="/"?"":"/"}${e}${t==="/"?"":`${(e==null?void 0:e.at(-1))==="/"?"":"/"}${(t==null?void 0:t[0])==="/"?t.slice(1):t}`}`),wt=e=>{if(e.charCodeAt(e.length-1)!==63||!e.includes(":"))return null;const t=e.split("/"),s=[];let a="";return t.forEach(r=>{if(r!==""&&!/\:/.test(r))a+="/"+r;else if(/\:/.test(r))if(/\?/.test(r)){s.length===0&&a===""?s.push("/"):s.push(a);const o=r.replace("?","");a+="/"+o,s.push(a)}else a+="/"+r}),s.filter((r,o,n)=>n.indexOf(r)===o)},Ze=e=>/[%+]/.test(e)?(e.indexOf("+")!==-1&&(e=e.replace(/\+/g," ")),e.indexOf("%")!==-1?Ve(e,rt):e):e,Et=(e,t,s)=>{let a;if(!s&&t&&!/[%+]/.test(t)){let n=e.indexOf("?",8);if(n===-1)return;for(e.startsWith(t,n+1)||(n=e.indexOf(`&${t}`,n+1));n!==-1;){const i=e.charCodeAt(n+t.length+1);if(i===61){const l=n+t.length+2,d=e.indexOf("&",l);return Ze(e.slice(l,d===-1?void 0:d))}else if(i==38||isNaN(i))return"";n=e.indexOf(`&${t}`,n+1)}if(a=/[%+]/.test(e),!a)return}const r={};a??(a=/[%+]/.test(e));let o=e.indexOf("?",8);for(;o!==-1;){const n=e.indexOf("&",o+1);let i=e.indexOf("=",o);i>n&&n!==-1&&(i=-1);let l=e.slice(o+1,i===-1?n===-1?void 0:n:i);if(a&&(l=Ze(l)),o=n,l==="")continue;let d;i===-1?d="":(d=e.slice(i+1,n===-1?void 0:n),a&&(d=Ze(d))),s?(r[l]&&Array.isArray(r[l])||(r[l]=[]),r[l].push(d)):r[l]??(r[l]=d)}return t?r[t]:r},Zt=Et,es=(e,t)=>Et(e,t,!0),rt=decodeURIComponent,dt=e=>Ve(e,rt),_e,z,ae,Tt,It,at,re,mt,_t=(mt=class{constructor(e,t="/",s=[[]]){C(this,ae);I(this,"raw");C(this,_e);C(this,z);I(this,"routeIndex",0);I(this,"path");I(this,"bodyCache",{});C(this,re,e=>{const{bodyCache:t,raw:s}=this,a=t[e];if(a)return a;const r=Object.keys(t)[0];return r?t[r].then(o=>(r==="json"&&(o=JSON.stringify(o)),new Response(o)[e]())):t[e]=s[e]()});this.raw=e,this.path=t,T(this,z,s),T(this,_e,{})}param(e){return e?R(this,ae,Tt).call(this,e):R(this,ae,It).call(this)}query(e){return Zt(this.url,e)}queries(e){return es(this.url,e)}header(e){if(e)return this.raw.headers.get(e)??void 0;const t={};return this.raw.headers.forEach((s,a)=>{t[a]=s}),t}async parseBody(e){var t;return(t=this.bodyCache).parsedBody??(t.parsedBody=await qt(this,e))}json(){return f(this,re).call(this,"text").then(e=>JSON.parse(e))}text(){return f(this,re).call(this,"text")}arrayBuffer(){return f(this,re).call(this,"arrayBuffer")}blob(){return f(this,re).call(this,"blob")}formData(){return f(this,re).call(this,"formData")}addValidatedData(e,t){f(this,_e)[e]=t}valid(e){return f(this,_e)[e]}get url(){return this.raw.url}get method(){return this.raw.method}get[$t](){return f(this,z)}get matchedRoutes(){return f(this,z)[0].map(([[,e]])=>e)}get routePath(){return f(this,z)[0].map(([[,e]])=>e)[this.routeIndex].path}},_e=new WeakMap,z=new WeakMap,ae=new WeakSet,Tt=function(e){const t=f(this,z)[0][this.routeIndex][1][e],s=R(this,ae,at).call(this,t);return s&&/\%/.test(s)?dt(s):s},It=function(){const e={},t=Object.keys(f(this,z)[0][this.routeIndex][1]);for(const s of t){const a=R(this,ae,at).call(this,f(this,z)[0][this.routeIndex][1][s]);a!==void 0&&(e[s]=/\%/.test(a)?dt(a):a)}return e},at=function(e){return f(this,z)[1]?f(this,z)[1][e]:e},re=new WeakMap,mt),ts={Stringify:1},St=async(e,t,s,a,r)=>{typeof e=="object"&&!(e instanceof String)&&(e instanceof Promise||(e=e.toString()),e instanceof Promise&&(e=await e));const o=e.callbacks;return o!=null&&o.length?(r?r[0]+=e:r=[e],Promise.all(o.map(i=>i({phase:t,buffer:r,context:a}))).then(i=>Promise.all(i.filter(Boolean).map(l=>St(l,t,!1,a,r))).then(()=>r[0]))):Promise.resolve(e)},ss="text/plain; charset=UTF-8",et=(e,t)=>({"Content-Type":e,...t}),Be,je,Z,Te,ee,q,Ae,Ie,Se,me,Me,Oe,oe,we,gt,as=(gt=class{constructor(e,t){C(this,oe);C(this,Be);C(this,je);I(this,"env",{});C(this,Z);I(this,"finalized",!1);I(this,"error");C(this,Te);C(this,ee);C(this,q);C(this,Ae);C(this,Ie);C(this,Se);C(this,me);C(this,Me);C(this,Oe);I(this,"render",(...e)=>(f(this,Ie)??T(this,Ie,t=>this.html(t)),f(this,Ie).call(this,...e)));I(this,"setLayout",e=>T(this,Ae,e));I(this,"getLayout",()=>f(this,Ae));I(this,"setRenderer",e=>{T(this,Ie,e)});I(this,"header",(e,t,s)=>{this.finalized&&T(this,q,new Response(f(this,q).body,f(this,q)));const a=f(this,q)?f(this,q).headers:f(this,me)??T(this,me,new Headers);t===void 0?a.delete(e):s!=null&&s.append?a.append(e,t):a.set(e,t)});I(this,"status",e=>{T(this,Te,e)});I(this,"set",(e,t)=>{f(this,Z)??T(this,Z,new Map),f(this,Z).set(e,t)});I(this,"get",e=>f(this,Z)?f(this,Z).get(e):void 0);I(this,"newResponse",(...e)=>R(this,oe,we).call(this,...e));I(this,"body",(e,t,s)=>R(this,oe,we).call(this,e,t,s));I(this,"text",(e,t,s)=>!f(this,me)&&!f(this,Te)&&!t&&!s&&!this.finalized?new Response(e):R(this,oe,we).call(this,e,t,et(ss,s)));I(this,"json",(e,t,s)=>R(this,oe,we).call(this,JSON.stringify(e),t,et("application/json",s)));I(this,"html",(e,t,s)=>{const a=r=>R(this,oe,we).call(this,r,t,et("text/html; charset=UTF-8",s));return typeof e=="object"?St(e,ts.Stringify,!1,{}).then(a):a(e)});I(this,"redirect",(e,t)=>{const s=String(e);return this.header("Location",/[^\x00-\xFF]/.test(s)?encodeURI(s):s),this.newResponse(null,t??302)});I(this,"notFound",()=>(f(this,Se)??T(this,Se,()=>new Response),f(this,Se).call(this,this)));T(this,Be,e),t&&(T(this,ee,t.executionCtx),this.env=t.env,T(this,Se,t.notFoundHandler),T(this,Oe,t.path),T(this,Me,t.matchResult))}get req(){return f(this,je)??T(this,je,new _t(f(this,Be),f(this,Oe),f(this,Me))),f(this,je)}get event(){if(f(this,ee)&&"respondWith"in f(this,ee))return f(this,ee);throw Error("This context has no FetchEvent")}get executionCtx(){if(f(this,ee))return f(this,ee);throw Error("This context has no ExecutionContext")}get res(){return f(this,q)||T(this,q,new Response(null,{headers:f(this,me)??T(this,me,new Headers)}))}set res(e){if(f(this,q)&&e){e=new Response(e.body,e);for(const[t,s]of f(this,q).headers.entries())if(t!=="content-type")if(t==="set-cookie"){const a=f(this,q).headers.getSetCookie();e.headers.delete("set-cookie");for(const r of a)e.headers.append("set-cookie",r)}else e.headers.set(t,s)}T(this,q,e),this.finalized=!0}get var(){return f(this,Z)?Object.fromEntries(f(this,Z)):{}}},Be=new WeakMap,je=new WeakMap,Z=new WeakMap,Te=new WeakMap,ee=new WeakMap,q=new WeakMap,Ae=new WeakMap,Ie=new WeakMap,Se=new WeakMap,me=new WeakMap,Me=new WeakMap,Oe=new WeakMap,oe=new WeakSet,we=function(e,t,s){const a=f(this,q)?new Headers(f(this,q).headers):f(this,me)??new Headers;if(typeof t=="object"&&"headers"in t){const o=t.headers instanceof Headers?t.headers:new Headers(t.headers);for(const[n,i]of o)n.toLowerCase()==="set-cookie"?a.append(n,i):a.set(n,i)}if(s)for(const[o,n]of Object.entries(s))if(typeof n=="string")a.set(o,n);else{a.delete(o);for(const i of n)a.append(o,i)}const r=typeof t=="number"?t:(t==null?void 0:t.status)??f(this,Te);return new Response(e,{status:r,headers:a})},gt),A="ALL",rs="all",os=["get","post","put","delete","options","patch"],kt="Can not add a route since the matcher is already built.",Dt=class extends Error{},ns="__COMPOSED_HANDLER",is=e=>e.text("404 Not Found",404),ct=(e,t)=>{if("getResponse"in e){const s=e.getResponse();return t.newResponse(s.body,s)}return console.error(e),t.text("Internal Server Error",500)},V,M,Ct,J,pe,He,We,ke,ls=(ke=class{constructor(t={}){C(this,M);I(this,"get");I(this,"post");I(this,"put");I(this,"delete");I(this,"options");I(this,"patch");I(this,"all");I(this,"on");I(this,"use");I(this,"router");I(this,"getPath");I(this,"_basePath","/");C(this,V,"/");I(this,"routes",[]);C(this,J,is);I(this,"errorHandler",ct);I(this,"onError",t=>(this.errorHandler=t,this));I(this,"notFound",t=>(T(this,J,t),this));I(this,"fetch",(t,...s)=>R(this,M,We).call(this,t,s[1],s[0],t.method));I(this,"request",(t,s,a,r)=>t instanceof Request?this.fetch(s?new Request(t,s):t,a,r):(t=t.toString(),this.fetch(new Request(/^https?:\/\//.test(t)?t:`http://localhost${ye("/",t)}`,s),a,r)));I(this,"fire",()=>{addEventListener("fetch",t=>{t.respondWith(R(this,M,We).call(this,t.request,t,void 0,t.request.method))})});[...os,rs].forEach(o=>{this[o]=(n,...i)=>(typeof n=="string"?T(this,V,n):R(this,M,pe).call(this,o,f(this,V),n),i.forEach(l=>{R(this,M,pe).call(this,o,f(this,V),l)}),this)}),this.on=(o,n,...i)=>{for(const l of[n].flat()){T(this,V,l);for(const d of[o].flat())i.map(p=>{R(this,M,pe).call(this,d.toUpperCase(),f(this,V),p)})}return this},this.use=(o,...n)=>(typeof o=="string"?T(this,V,o):(T(this,V,"*"),n.unshift(o)),n.forEach(i=>{R(this,M,pe).call(this,A,f(this,V),i)}),this);const{strict:a,...r}=t;Object.assign(this,r),this.getPath=a??!0?t.getPath??yt:Qt}route(t,s){const a=this.basePath(t);return s.routes.map(r=>{var n;let o;s.errorHandler===ct?o=r.handler:(o=async(i,l)=>(await lt([],s.errorHandler)(i,()=>r.handler(i,l))).res,o[ns]=r.handler),R(n=a,M,pe).call(n,r.method,r.path,o)}),this}basePath(t){const s=R(this,M,Ct).call(this);return s._basePath=ye(this._basePath,t),s}mount(t,s,a){let r,o;a&&(typeof a=="function"?o=a:(o=a.optionHandler,a.replaceRequest===!1?r=l=>l:r=a.replaceRequest));const n=o?l=>{const d=o(l);return Array.isArray(d)?d:[d]}:l=>{let d;try{d=l.executionCtx}catch{}return[l.env,d]};r||(r=(()=>{const l=ye(this._basePath,t),d=l==="/"?0:l.length;return p=>{const u=new URL(p.url);return u.pathname=u.pathname.slice(d)||"/",new Request(u,p)}})());const i=async(l,d)=>{const p=await s(r(l.req.raw),...n(l));if(p)return p;await d()};return R(this,M,pe).call(this,A,ye(t,"*"),i),this}},V=new WeakMap,M=new WeakSet,Ct=function(){const t=new ke({router:this.router,getPath:this.getPath});return t.errorHandler=this.errorHandler,T(t,J,f(this,J)),t.routes=this.routes,t},J=new WeakMap,pe=function(t,s,a){t=t.toUpperCase(),s=ye(this._basePath,s);const r={basePath:this._basePath,path:s,method:t,handler:a};this.router.add(t,s,[a,r]),this.routes.push(r)},He=function(t,s){if(t instanceof Error)return this.errorHandler(t,s);throw t},We=function(t,s,a,r){if(r==="HEAD")return(async()=>new Response(null,await R(this,M,We).call(this,t,s,a,"GET")))();const o=this.getPath(t,{env:a}),n=this.router.match(r,o),i=new as(t,{path:o,matchResult:n,env:a,executionCtx:s,notFoundHandler:f(this,J)});if(n[0].length===1){let d;try{d=n[0][0][0][0](i,async()=>{i.res=await f(this,J).call(this,i)})}catch(p){return R(this,M,He).call(this,p,i)}return d instanceof Promise?d.then(p=>p||(i.finalized?i.res:f(this,J).call(this,i))).catch(p=>R(this,M,He).call(this,p,i)):d??f(this,J).call(this,i)}const l=lt(n[0],this.errorHandler,f(this,J));return(async()=>{try{const d=await l(i);if(!d.finalized)throw new Error("Context is not finalized. Did you forget to return a Response object or `await next()`?");return d.res}catch(d){return R(this,M,He).call(this,d,i)}})()},ke),Rt=[];function ds(e,t){const s=this.buildAllMatchers(),a=((r,o)=>{const n=s[r]||s[A],i=n[2][o];if(i)return i;const l=o.match(n[0]);if(!l)return[[],Rt];const d=l.indexOf("",1);return[n[1][d],l]});return this.match=a,a(e,t)}var Ye="[^/]+",Le=".*",Ne="(?:|/.*)",Ee=Symbol(),cs=new Set(".\\+*[^]$()");function ps(e,t){return e.length===1?t.length===1?e<t?-1:1:-1:t.length===1||e===Le||e===Ne?1:t===Le||t===Ne?-1:e===Ye?1:t===Ye?-1:e.length===t.length?e<t?-1:1:t.length-e.length}var ge,xe,K,fe,us=(fe=class{constructor(){C(this,ge);C(this,xe);C(this,K,Object.create(null))}insert(t,s,a,r,o){if(t.length===0){if(f(this,ge)!==void 0)throw Ee;if(o)return;T(this,ge,s);return}const[n,...i]=t,l=n==="*"?i.length===0?["","",Le]:["","",Ye]:n==="/*"?["","",Ne]:n.match(/^\:([^\{\}]+)(?:\{(.+)\})?$/);let d;if(l){const p=l[1];let u=l[2]||Ye;if(p&&l[2]&&(u===".*"||(u=u.replace(/^\((?!\?:)(?=[^)]+\)$)/,"(?:"),/\((?!\?:)/.test(u))))throw Ee;if(d=f(this,K)[u],!d){if(Object.keys(f(this,K)).some(m=>m!==Le&&m!==Ne))throw Ee;if(o)return;d=f(this,K)[u]=new fe,p!==""&&T(d,xe,r.varIndex++)}!o&&p!==""&&a.push([p,f(d,xe)])}else if(d=f(this,K)[n],!d){if(Object.keys(f(this,K)).some(p=>p.length>1&&p!==Le&&p!==Ne))throw Ee;if(o)return;d=f(this,K)[n]=new fe}d.insert(i,s,a,r,o)}buildRegExpStr(){const s=Object.keys(f(this,K)).sort(ps).map(a=>{const r=f(this,K)[a];return(typeof f(r,xe)=="number"?`(${a})@${f(r,xe)}`:cs.has(a)?`\\${a}`:a)+r.buildRegExpStr()});return typeof f(this,ge)=="number"&&s.unshift(`#${f(this,ge)}`),s.length===0?"":s.length===1?s[0]:"(?:"+s.join("|")+")"}},ge=new WeakMap,xe=new WeakMap,K=new WeakMap,fe),ze,Ue,xt,ms=(xt=class{constructor(){C(this,ze,{varIndex:0});C(this,Ue,new us)}insert(e,t,s){const a=[],r=[];for(let n=0;;){let i=!1;if(e=e.replace(/\{[^}]+\}/g,l=>{const d=`@\\${n}`;return r[n]=[d,l],n++,i=!0,d}),!i)break}const o=e.match(/(?::[^\/]+)|(?:\/\*$)|./g)||[];for(let n=r.length-1;n>=0;n--){const[i]=r[n];for(let l=o.length-1;l>=0;l--)if(o[l].indexOf(i)!==-1){o[l]=o[l].replace(i,r[n][1]);break}}return f(this,Ue).insert(o,t,a,f(this,ze),s),a}buildRegExp(){let e=f(this,Ue).buildRegExpStr();if(e==="")return[/^$/,[],[]];let t=0;const s=[],a=[];return e=e.replace(/#(\d+)|@(\d+)|\.\*\$/g,(r,o,n)=>o!==void 0?(s[++t]=Number(o),"$()"):(n!==void 0&&(a[Number(n)]=++t),"")),[new RegExp(`^${e}`),s,a]}},ze=new WeakMap,Ue=new WeakMap,xt),gs=[/^$/,[],Object.create(null)],Ge=Object.create(null);function Lt(e){return Ge[e]??(Ge[e]=new RegExp(e==="*"?"":`^${e.replace(/\/\*$|([.\\+*[^\]$()])/g,(t,s)=>s?`\\${s}`:"(?:|/.*)")}$`))}function xs(){Ge=Object.create(null)}function bs(e){var d;const t=new ms,s=[];if(e.length===0)return gs;const a=e.map(p=>[!/\*|\/:/.test(p[0]),...p]).sort(([p,u],[m,g])=>p?1:m?-1:u.length-g.length),r=Object.create(null);for(let p=0,u=-1,m=a.length;p<m;p++){const[g,x,b]=a[p];g?r[x]=[b.map(([v])=>[v,Object.create(null)]),Rt]:u++;let h;try{h=t.insert(x,u,g)}catch(v){throw v===Ee?new Dt(x):v}g||(s[u]=b.map(([v,_])=>{const y=Object.create(null);for(_-=1;_>=0;_--){const[w,E]=h[_];y[w]=E}return[v,y]}))}const[o,n,i]=t.buildRegExp();for(let p=0,u=s.length;p<u;p++)for(let m=0,g=s[p].length;m<g;m++){const x=(d=s[p][m])==null?void 0:d[1];if(!x)continue;const b=Object.keys(x);for(let h=0,v=b.length;h<v;h++)x[b[h]]=i[x[b[h]]]}const l=[];for(const p in n)l[p]=s[n[p]];return[o,l,r]}function ve(e,t){if(e){for(const s of Object.keys(e).sort((a,r)=>r.length-a.length))if(Lt(s).test(t))return[...e[s]]}}var ne,ie,Xe,Nt,bt,hs=(bt=class{constructor(){C(this,Xe);I(this,"name","RegExpRouter");C(this,ne);C(this,ie);I(this,"match",ds);T(this,ne,{[A]:Object.create(null)}),T(this,ie,{[A]:Object.create(null)})}add(e,t,s){var i;const a=f(this,ne),r=f(this,ie);if(!a||!r)throw new Error(kt);a[e]||[a,r].forEach(l=>{l[e]=Object.create(null),Object.keys(l[A]).forEach(d=>{l[e][d]=[...l[A][d]]})}),t==="/*"&&(t="*");const o=(t.match(/\/:/g)||[]).length;if(/\*$/.test(t)){const l=Lt(t);e===A?Object.keys(a).forEach(d=>{var p;(p=a[d])[t]||(p[t]=ve(a[d],t)||ve(a[A],t)||[])}):(i=a[e])[t]||(i[t]=ve(a[e],t)||ve(a[A],t)||[]),Object.keys(a).forEach(d=>{(e===A||e===d)&&Object.keys(a[d]).forEach(p=>{l.test(p)&&a[d][p].push([s,o])})}),Object.keys(r).forEach(d=>{(e===A||e===d)&&Object.keys(r[d]).forEach(p=>l.test(p)&&r[d][p].push([s,o]))});return}const n=wt(t)||[t];for(let l=0,d=n.length;l<d;l++){const p=n[l];Object.keys(r).forEach(u=>{var m;(e===A||e===u)&&((m=r[u])[p]||(m[p]=[...ve(a[u],p)||ve(a[A],p)||[]]),r[u][p].push([s,o-d+l+1]))})}}buildAllMatchers(){const e=Object.create(null);return Object.keys(f(this,ie)).concat(Object.keys(f(this,ne))).forEach(t=>{e[t]||(e[t]=R(this,Xe,Nt).call(this,t))}),T(this,ne,T(this,ie,void 0)),xs(),e}},ne=new WeakMap,ie=new WeakMap,Xe=new WeakSet,Nt=function(e){const t=[];let s=e===A;return[f(this,ne),f(this,ie)].forEach(a=>{const r=a[e]?Object.keys(a[e]).map(o=>[o,a[e][o]]):[];r.length!==0?(s||(s=!0),t.push(...r)):e!==A&&t.push(...Object.keys(a[A]).map(o=>[o,a[A][o]]))}),s?bs(t):null},bt),le,te,ht,fs=(ht=class{constructor(e){I(this,"name","SmartRouter");C(this,le,[]);C(this,te,[]);T(this,le,e.routers)}add(e,t,s){if(!f(this,te))throw new Error(kt);f(this,te).push([e,t,s])}match(e,t){if(!f(this,te))throw new Error("Fatal error");const s=f(this,le),a=f(this,te),r=s.length;let o=0,n;for(;o<r;o++){const i=s[o];try{for(let l=0,d=a.length;l<d;l++)i.add(...a[l]);n=i.match(e,t)}catch(l){if(l instanceof Dt)continue;throw l}this.match=i.match.bind(i),T(this,le,[i]),T(this,te,void 0);break}if(o===r)throw new Error("Fatal error");return this.name=`SmartRouter + ${this.activeRouter.name}`,n}get activeRouter(){if(f(this,te)||f(this,le).length!==1)throw new Error("No active router has been determined yet.");return f(this,le)[0]}},le=new WeakMap,te=new WeakMap,ht),Re=Object.create(null),de,$,be,De,P,se,ue,Ce,vs=(Ce=class{constructor(t,s,a){C(this,se);C(this,de);C(this,$);C(this,be);C(this,De,0);C(this,P,Re);if(T(this,$,a||Object.create(null)),T(this,de,[]),t&&s){const r=Object.create(null);r[t]={handler:s,possibleKeys:[],score:0},T(this,de,[r])}T(this,be,[])}insert(t,s,a){T(this,De,++it(this,De)._);let r=this;const o=zt(s),n=[];for(let i=0,l=o.length;i<l;i++){const d=o[i],p=o[i+1],u=Jt(d,p),m=Array.isArray(u)?u[0]:d;if(m in f(r,$)){r=f(r,$)[m],u&&n.push(u[1]);continue}f(r,$)[m]=new Ce,u&&(f(r,be).push(u),n.push(u[1])),r=f(r,$)[m]}return f(r,de).push({[t]:{handler:a,possibleKeys:n.filter((i,l,d)=>d.indexOf(i)===l),score:f(this,De)}}),r}search(t,s){var l;const a=[];T(this,P,Re);let o=[this];const n=vt(s),i=[];for(let d=0,p=n.length;d<p;d++){const u=n[d],m=d===p-1,g=[];for(let x=0,b=o.length;x<b;x++){const h=o[x],v=f(h,$)[u];v&&(T(v,P,f(h,P)),m?(f(v,$)["*"]&&a.push(...R(this,se,ue).call(this,f(v,$)["*"],t,f(h,P))),a.push(...R(this,se,ue).call(this,v,t,f(h,P)))):g.push(v));for(let _=0,y=f(h,be).length;_<y;_++){const w=f(h,be)[_],E=f(h,P)===Re?{}:{...f(h,P)};if(w==="*"){const N=f(h,$)["*"];N&&(a.push(...R(this,se,ue).call(this,N,t,f(h,P))),T(N,P,E),g.push(N));continue}const[k,S,j]=w;if(!u&&!(j instanceof RegExp))continue;const L=f(h,$)[k],F=n.slice(d).join("/");if(j instanceof RegExp){const N=j.exec(F);if(N){if(E[S]=N[0],a.push(...R(this,se,ue).call(this,L,t,f(h,P),E)),Object.keys(f(L,$)).length){T(L,P,E);const W=((l=N[0].match(/\//))==null?void 0:l.length)??0;(i[W]||(i[W]=[])).push(L)}continue}}(j===!0||j.test(u))&&(E[S]=u,m?(a.push(...R(this,se,ue).call(this,L,t,E,f(h,P))),f(L,$)["*"]&&a.push(...R(this,se,ue).call(this,f(L,$)["*"],t,E,f(h,P)))):(T(L,P,E),g.push(L)))}}o=g.concat(i.shift()??[])}return a.length>1&&a.sort((d,p)=>d.score-p.score),[a.map(({handler:d,params:p})=>[d,p])]}},de=new WeakMap,$=new WeakMap,be=new WeakMap,De=new WeakMap,P=new WeakMap,se=new WeakSet,ue=function(t,s,a,r){const o=[];for(let n=0,i=f(t,de).length;n<i;n++){const l=f(t,de)[n],d=l[s]||l[A],p={};if(d!==void 0&&(d.params=Object.create(null),o.push(d),a!==Re||r&&r!==Re))for(let u=0,m=d.possibleKeys.length;u<m;u++){const g=d.possibleKeys[u],x=p[d.score];d.params[g]=r!=null&&r[g]&&!x?r[g]:a[g]??(r==null?void 0:r[g]),p[d.score]=!0}}return o},Ce),he,ft,ys=(ft=class{constructor(){I(this,"name","TrieRouter");C(this,he);T(this,he,new vs)}add(e,t,s){const a=wt(t);if(a){for(let r=0,o=a.length;r<o;r++)f(this,he).insert(e,a[r],s);return}f(this,he).insert(e,t,s)}match(e,t){return f(this,he).search(e,t)}},he=new WeakMap,ft),Fe=class extends ls{constructor(e={}){super(e),this.router=e.router??new fs({routers:[new hs,new ys]})}},ws=e=>{const s={...{origin:"*",allowMethods:["GET","HEAD","PUT","POST","DELETE","PATCH"],allowHeaders:[],exposeHeaders:[]},...e},a=(o=>typeof o=="string"?o==="*"?()=>o:n=>o===n?n:null:typeof o=="function"?o:n=>o.includes(n)?n:null)(s.origin),r=(o=>typeof o=="function"?o:Array.isArray(o)?()=>o:()=>[])(s.allowMethods);return async function(n,i){var p;function l(u,m){n.res.headers.set(u,m)}const d=await a(n.req.header("origin")||"",n);if(d&&l("Access-Control-Allow-Origin",d),s.credentials&&l("Access-Control-Allow-Credentials","true"),(p=s.exposeHeaders)!=null&&p.length&&l("Access-Control-Expose-Headers",s.exposeHeaders.join(",")),n.req.method==="OPTIONS"){s.origin!=="*"&&l("Vary","Origin"),s.maxAge!=null&&l("Access-Control-Max-Age",s.maxAge.toString());const u=await r(n.req.header("origin")||"",n);u.length&&l("Access-Control-Allow-Methods",u.join(","));let m=s.allowHeaders;if(!(m!=null&&m.length)){const g=n.req.header("Access-Control-Request-Headers");g&&(m=g.split(/\s*,\s*/))}return m!=null&&m.length&&(l("Access-Control-Allow-Headers",m.join(",")),n.res.headers.append("Vary","Access-Control-Request-Headers")),n.res.headers.delete("Content-Length"),n.res.headers.delete("Content-Type"),new Response(null,{headers:n.res.headers,status:204,statusText:"No Content"})}await i(),s.origin!=="*"&&n.header("Vary","Origin",{append:!0})}},Es=/^[\w!#$%&'*.^`|~+-]+$/,_s=/^[ !#-:<-[\]-~]*$/,Ts=(e,t)=>{if(e.indexOf(t)===-1)return{};const s=e.trim().split(";"),a={};for(let r of s){r=r.trim();const o=r.indexOf("=");if(o===-1)continue;const n=r.substring(0,o).trim();if(t!==n||!Es.test(n))continue;let i=r.substring(o+1).trim();if(i.startsWith('"')&&i.endsWith('"')&&(i=i.slice(1,-1)),_s.test(i)){a[n]=i.indexOf("%")!==-1?Ve(i,rt):i;break}}return a},U=(e,t,s)=>{const a=e.req.raw.headers.get("Cookie");{if(!a)return;let r=t;return Ts(a,r)[r]}},Is=/^\s*(?:text\/(?!event-stream(?:[;\s]|$))[^;\s]+|application\/(?:javascript|json|xml|xml-dtd|ecmascript|dart|postscript|rtf|tar|toml|vnd\.dart|vnd\.ms-fontobject|vnd\.ms-opentype|wasm|x-httpd-php|x-javascript|x-ns-proxy-autoconfig|x-sh|x-tar|x-virtualbox-hdd|x-virtualbox-ova|x-virtualbox-ovf|x-virtualbox-vbox|x-virtualbox-vdi|x-virtualbox-vhd|x-virtualbox-vmdk|x-www-form-urlencoded)|font\/(?:otf|ttf)|image\/(?:bmp|vnd\.adobe\.photoshop|vnd\.microsoft\.icon|vnd\.ms-dds|x-icon|x-ms-bmp)|message\/rfc822|model\/gltf-binary|x-shader\/x-fragment|x-shader\/x-vertex|[^;\s]+?\+(?:json|text|xml|yaml))(?:[;\s]|$)/i,pt=(e,t=ks)=>{const s=/\.([a-zA-Z0-9]+?)$/,a=e.match(s);if(!a)return;let r=t[a[1]];return r&&r.startsWith("text")&&(r+="; charset=utf-8"),r},Ss={aac:"audio/aac",avi:"video/x-msvideo",avif:"image/avif",av1:"video/av1",bin:"application/octet-stream",bmp:"image/bmp",css:"text/css",csv:"text/csv",eot:"application/vnd.ms-fontobject",epub:"application/epub+zip",gif:"image/gif",gz:"application/gzip",htm:"text/html",html:"text/html",ico:"image/x-icon",ics:"text/calendar",jpeg:"image/jpeg",jpg:"image/jpeg",js:"text/javascript",json:"application/json",jsonld:"application/ld+json",map:"application/json",mid:"audio/x-midi",midi:"audio/x-midi",mjs:"text/javascript",mp3:"audio/mpeg",mp4:"video/mp4",mpeg:"video/mpeg",oga:"audio/ogg",ogv:"video/ogg",ogx:"application/ogg",opus:"audio/opus",otf:"font/otf",pdf:"application/pdf",png:"image/png",rtf:"application/rtf",svg:"image/svg+xml",tif:"image/tiff",tiff:"image/tiff",ts:"video/mp2t",ttf:"font/ttf",txt:"text/plain",wasm:"application/wasm",webm:"video/webm",weba:"audio/webm",webmanifest:"application/manifest+json",webp:"image/webp",woff:"font/woff",woff2:"font/woff2",xhtml:"application/xhtml+xml",xml:"application/xml",zip:"application/zip","3gp":"video/3gpp","3g2":"video/3gpp2",gltf:"model/gltf+json",glb:"model/gltf-binary"},ks=Ss,Ds=(...e)=>{let t=e.filter(r=>r!=="").join("/");t=t.replace(new RegExp("(?<=\\/)\\/+","g"),"");const s=t.split("/"),a=[];for(const r of s)r===".."&&a.length>0&&a.at(-1)!==".."?a.pop():r!=="."&&a.push(r);return a.join("/")||"."},Bt={br:".br",zstd:".zst",gzip:".gz"},Cs=Object.keys(Bt),Rs="index.html",Ls=e=>{const t=e.root??"./",s=e.path,a=e.join??Ds;return async(r,o)=>{var p,u,m,g;if(r.finalized)return o();let n;if(e.path)n=e.path;else try{if(n=decodeURIComponent(r.req.path),/(?:^|[\/\\])\.\.(?:$|[\/\\])/.test(n))throw new Error}catch{return await((p=e.onNotFound)==null?void 0:p.call(e,r.req.path,r)),o()}let i=a(t,!s&&e.rewriteRequestPath?e.rewriteRequestPath(n):n);e.isDir&&await e.isDir(i)&&(i=a(i,Rs));const l=e.getContent;let d=await l(i,r);if(d instanceof Response)return r.newResponse(d.body,d);if(d){const x=e.mimes&&pt(i,e.mimes)||pt(i);if(r.header("Content-Type",x||"application/octet-stream"),e.precompressed&&(!x||Is.test(x))){const b=new Set((u=r.req.header("Accept-Encoding"))==null?void 0:u.split(",").map(h=>h.trim()));for(const h of Cs){if(!b.has(h))continue;const v=await l(i+Bt[h],r);if(v){d=v,r.header("Content-Encoding",h),r.header("Vary","Accept-Encoding",{append:!0});break}}}return await((m=e.onFound)==null?void 0:m.call(e,i,r)),r.body(d)}await((g=e.onNotFound)==null?void 0:g.call(e,i,r)),await o()}},Ns=async(e,t)=>{let s;t&&t.manifest?typeof t.manifest=="string"?s=JSON.parse(t.manifest):s=t.manifest:typeof __STATIC_CONTENT_MANIFEST=="string"?s=JSON.parse(__STATIC_CONTENT_MANIFEST):s=__STATIC_CONTENT_MANIFEST;let a;t&&t.namespace?a=t.namespace:a=__STATIC_CONTENT;const r=s[e]||e;if(!r)return null;const o=await a.get(r,{type:"stream"});return o||null},Bs=e=>async function(s,a){return Ls({...e,getContent:async o=>Ns(o,{manifest:e.manifest,namespace:e.namespace?e.namespace:s.env?s.env.__STATIC_CONTENT:void 0})})(s,a)},js=e=>Bs(e);const As=`
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -2448,7 +2448,7 @@ var Pt=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Ft=(e,t,s)=>t in
     <\/script>
 </body>
 </html>
-`,Ps=`
+`,Fs=`
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -2747,7 +2747,7 @@ var Pt=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Ft=(e,t,s)=>t in
     <\/script>
 </body>
 </html>
-`,Fe={classesPage:As,studentsListPage:Ms,dailyRecordPage:Os,studentDetailPage:Us,coursesPage:Ps},G=new Pe,Q=async(e,t)=>{try{const s=e.req.header("cookie");let a=null;if(s){const n=s.split(";").map(i=>i.trim()).find(i=>i.startsWith("session_id="));n&&(a=n.split("=")[1])}if(!a)return e.json({error:"로그인이 필요합니다"},401);const r=await e.env.DB.prepare(`
+`,Pe={classesPage:As,studentsListPage:Ms,dailyRecordPage:Os,studentDetailPage:Us,coursesPage:Fs},G=new Fe,Q=async(e,t)=>{try{const s=e.req.header("cookie");let a=null;if(s){const n=s.split(";").map(i=>i.trim()).find(i=>i.startsWith("session_id="));n&&(a=n.split("=")[1])}if(!a)return e.json({error:"로그인이 필요합니다"},401);const r=await e.env.DB.prepare(`
       SELECT user_id FROM sessions WHERE session_id = ? AND expires_at > datetime('now')
     `).bind(a).first();if(!r)return e.json({error:"세션이 만료되었습니다"},401);e.set("userId",r.user_id),await t()}catch(s){return console.error("Auth middleware error:",s),e.json({error:"인증 처리 중 오류가 발생했습니다: "+s.message},500)}};G.get("/api/form-templates",Q,async e=>{try{const t=e.get("userId"),s=await e.env.DB.prepare(`
       SELECT * FROM form_templates 
@@ -2900,7 +2900,7 @@ var Pt=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Ft=(e,t,s)=>t in
       FROM form_submissions fs
       JOIN form_templates ft ON fs.form_id = ft.id
       WHERE ft.user_id = ?
-    `;const r=[t];s&&(a+=" AND fs.form_id = ?",r.push(s));const o=await e.env.DB.prepare(a).bind(...r).first();return e.json(o||{total:0,new_count:0,contacted_count:0,completed_count:0,rejected_count:0})}catch(t){return console.error("Error fetching stats:",t),e.json({error:"통계를 불러올 수 없습니다"},500)}});const H=new Pe,X=async(e,t)=>{try{const s=e.req.header("X-User-Data-Base64");if(!s)return e.json({error:"인증이 필요합니다"},401);const a=Buffer.from(s,"base64").toString("utf-8"),r=JSON.parse(a);if(r.user_type==="teacher")return e.json({error:"접근 권한이 없습니다"},403);if(!r.id)return e.json({error:"유효하지 않은 사용자입니다"},403);e.set("user",r),await t()}catch(s){return console.error("Auth error:",s),e.json({error:"인증 처리 중 오류가 발생했습니다"},500)}};H.get("/api/tuition/debug/schema",async e=>{try{const t=await e.env.DB.prepare(`
+    `;const r=[t];s&&(a+=" AND fs.form_id = ?",r.push(s));const o=await e.env.DB.prepare(a).bind(...r).first();return e.json(o||{total:0,new_count:0,contacted_count:0,completed_count:0,rejected_count:0})}catch(t){return console.error("Error fetching stats:",t),e.json({error:"통계를 불러올 수 없습니다"},500)}});const H=new Fe,X=async(e,t)=>{try{const s=e.req.header("X-User-Data-Base64");if(!s)return e.json({error:"인증이 필요합니다"},401);const a=Buffer.from(s,"base64").toString("utf-8"),r=JSON.parse(a);if(r.user_type==="teacher")return e.json({error:"접근 권한이 없습니다"},403);if(!r.id)return e.json({error:"유효하지 않은 사용자입니다"},403);e.set("user",r),await t()}catch(s){return console.error("Auth error:",s),e.json({error:"인증 처리 중 오류가 발생했습니다"},500)}};H.get("/api/tuition/debug/schema",async e=>{try{const t=await e.env.DB.prepare(`
       PRAGMA table_info(classes)
     `).all(),s=await e.env.DB.prepare(`
       PRAGMA table_info(students)
@@ -3161,7 +3161,7 @@ var Pt=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Ft=(e,t,s)=>t in
           student_id, academy_id, year, month, amount, paid_amount, 
           status, paid_date, payment_method, memo, created_by, created_at, updated_at
         ) VALUES (?, ?, ?, ?, ?, ?, ?, date('now'), ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-      `).bind(s,t.id,a,r,p,d,u,n||null,i||null,t.id).run(),e.json({success:!0,message:"납입 완료 처리되었습니다"})}catch(t){return console.error("Error marking paid:",t),e.json({error:"납입 완료 처리 실패",details:t.message},500)}});const $e=new Pe,Ve=async(e,t)=>{try{const s=e.req.header("X-User-Data-Base64");if(!s)return e.json({error:"인증 정보가 필요합니다"},401);const a=atob(s),r=JSON.parse(decodeURIComponent(a));if(r.user_type==="teacher")return e.json({error:"접근 권한이 없습니다"},403);e.set("user",r),await t()}catch{return e.json({error:"인증 실패"},401)}};$e.get("/api/revenue/monthly",Ve,async e=>{try{const t=e.get("user"),s=e.req.query("year")||new Date().getFullYear().toString(),a=e.req.query("month")||(new Date().getMonth()+1).toString(),r=await e.env.DB.prepare(`
+      `).bind(s,t.id,a,r,p,d,u,n||null,i||null,t.id).run(),e.json({success:!0,message:"납입 완료 처리되었습니다"})}catch(t){return console.error("Error marking paid:",t),e.json({error:"납입 완료 처리 실패",details:t.message},500)}});const $e=new Fe,Je=async(e,t)=>{try{const s=e.req.header("X-User-Data-Base64");if(!s)return e.json({error:"인증 정보가 필요합니다"},401);const a=atob(s),r=JSON.parse(decodeURIComponent(a));if(r.user_type==="teacher")return e.json({error:"접근 권한이 없습니다"},403);e.set("user",r),await t()}catch{return e.json({error:"인증 실패"},401)}};$e.get("/api/revenue/monthly",Je,async e=>{try{const t=e.get("user"),s=e.req.query("year")||new Date().getFullYear().toString(),a=e.req.query("month")||(new Date().getMonth()+1).toString(),r=await e.env.DB.prepare(`
       SELECT 
         COALESCE(SUM(tp.paid_amount), 0) as total_paid,
         COUNT(DISTINCT tp.student_id) as paying_students
@@ -3193,7 +3193,7 @@ var Pt=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Ft=(e,t,s)=>t in
       WHERE s.user_id = ? 
         AND s.status = 'active'
         AND COALESCE(tp.status, 'unpaid') IN ('unpaid', 'partial', 'overdue')
-    `).bind(s,a,t.id).first();return e.json({success:!0,year:parseInt(s),month:parseInt(a),revenue:{total_paid:(r==null?void 0:r.total_paid)||0,expected_revenue:(o==null?void 0:o.expected_revenue)||0,total_unpaid:(n==null?void 0:n.total_unpaid)||0,collection_rate:(o==null?void 0:o.expected_revenue)>0?(((r==null?void 0:r.total_paid)||0)/o.expected_revenue*100).toFixed(1):0,total_students:(o==null?void 0:o.total_students)||0,paying_students:(r==null?void 0:r.paying_students)||0,unpaid_students:(n==null?void 0:n.unpaid_students)||0}})}catch(t){return console.error("Error fetching monthly revenue:",t),e.json({error:"매출 조회 실패",details:t.message},500)}});$e.get("/api/revenue/yearly",Ve,async e=>{try{const t=e.get("user"),s=e.req.query("year")||new Date().getFullYear().toString(),a=[];for(let r=1;r<=12;r++){const o=await e.env.DB.prepare(`
+    `).bind(s,a,t.id).first();return e.json({success:!0,year:parseInt(s),month:parseInt(a),revenue:{total_paid:(r==null?void 0:r.total_paid)||0,expected_revenue:(o==null?void 0:o.expected_revenue)||0,total_unpaid:(n==null?void 0:n.total_unpaid)||0,collection_rate:(o==null?void 0:o.expected_revenue)>0?(((r==null?void 0:r.total_paid)||0)/o.expected_revenue*100).toFixed(1):0,total_students:(o==null?void 0:o.total_students)||0,paying_students:(r==null?void 0:r.paying_students)||0,unpaid_students:(n==null?void 0:n.unpaid_students)||0}})}catch(t){return console.error("Error fetching monthly revenue:",t),e.json({error:"매출 조회 실패",details:t.message},500)}});$e.get("/api/revenue/yearly",Je,async e=>{try{const t=e.get("user"),s=e.req.query("year")||new Date().getFullYear().toString(),a=[];for(let r=1;r<=12;r++){const o=await e.env.DB.prepare(`
         SELECT 
           COALESCE(SUM(tp.paid_amount), 0) as total_paid,
           COUNT(DISTINCT tp.student_id) as paying_students
@@ -3203,7 +3203,7 @@ var Pt=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Ft=(e,t,s)=>t in
           AND tp.year = ? 
           AND tp.month = ?
           AND tp.status IN ('paid', 'partial')
-      `).bind(t.id,s,r).first();a.push({month:r,total_paid:(o==null?void 0:o.total_paid)||0,paying_students:(o==null?void 0:o.paying_students)||0})}return e.json({success:!0,year:parseInt(s),monthly_data:a,total_yearly:a.reduce((r,o)=>r+(o.total_paid||0),0)})}catch(t){return console.error("Error fetching yearly revenue:",t),e.json({error:"연간 매출 조회 실패",details:t.message},500)}});$e.get("/api/revenue/by-student",Ve,async e=>{try{const t=e.get("user"),s=e.req.query("year")||new Date().getFullYear().toString(),a=e.req.query("month")||(new Date().getMonth()+1).toString(),r=await e.env.DB.prepare(`
+      `).bind(t.id,s,r).first();a.push({month:r,total_paid:(o==null?void 0:o.total_paid)||0,paying_students:(o==null?void 0:o.paying_students)||0})}return e.json({success:!0,year:parseInt(s),monthly_data:a,total_yearly:a.reduce((r,o)=>r+(o.total_paid||0),0)})}catch(t){return console.error("Error fetching yearly revenue:",t),e.json({error:"연간 매출 조회 실패",details:t.message},500)}});$e.get("/api/revenue/by-student",Je,async e=>{try{const t=e.get("user"),s=e.req.query("year")||new Date().getFullYear().toString(),a=e.req.query("month")||(new Date().getMonth()+1).toString(),r=await e.env.DB.prepare(`
       SELECT 
         s.id,
         s.name as student_name,
@@ -3220,7 +3220,7 @@ var Pt=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Ft=(e,t,s)=>t in
       WHERE s.user_id = ?
         AND s.status = 'active'
       ORDER BY paid_amount DESC, s.name ASC
-    `).bind(s,a,t.id).all();return e.json({success:!0,year:parseInt(s),month:parseInt(a),students:r.results||[]})}catch(t){return console.error("Error fetching revenue by student:",t),e.json({error:"학생별 매출 조회 실패",details:t.message},500)}});$e.get("/api/revenue/dashboard",Ve,async e=>{try{const t=e.get("user"),s=new Date,a=s.getFullYear(),r=s.getMonth()+1,o=await e.env.DB.prepare(`
+    `).bind(s,a,t.id).all();return e.json({success:!0,year:parseInt(s),month:parseInt(a),students:r.results||[]})}catch(t){return console.error("Error fetching revenue by student:",t),e.json({error:"학생별 매출 조회 실패",details:t.message},500)}});$e.get("/api/revenue/dashboard",Je,async e=>{try{const t=e.get("user"),s=new Date,a=s.getFullYear(),r=s.getMonth()+1,o=await e.env.DB.prepare(`
       SELECT 
         COALESCE(SUM(tp.paid_amount), 0) as total_paid
       FROM tuition_payments tp
@@ -3259,7 +3259,7 @@ var Pt=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Ft=(e,t,s)=>t in
       SELECT COUNT(*) as total_teachers
       FROM users
       WHERE parent_user_id = ? AND user_type = 'teacher'
-    `).bind(t.id).first(),m=(o==null?void 0:o.total_paid)||0,g=(l==null?void 0:l.total_paid)||0,x=g>0?((m-g)/g*100).toFixed(1):0;return e.json({success:!0,dashboard:{this_month_revenue:m,last_month_revenue:g,growth_rate:parseFloat(x),yearly_revenue:(d==null?void 0:d.total_paid)||0,total_students:(p==null?void 0:p.total_students)||0,total_teachers:(u==null?void 0:u.total_teachers)||0,avg_monthly_fee:Math.round((p==null?void 0:p.avg_fee)||0)}})}catch(t){return console.error("Error fetching revenue dashboard:",t),e.json({error:"매출 대시보드 조회 실패",details:t.message},500)}});const c=new Pe;c.use("/api/*",ws());c.use("/static/*",js({root:"./public"}));c.route("/",G);c.route("/",H);c.route("/",$e);c.post("/api/contact",async e=>{try{const{name:t,email:s,phone:a,academy_name:r,message:o}=await e.req.json();if(!t||!s||!a||!o)return e.json({success:!1,error:"필수 항목을 입력해주세요."},400);const n=await e.env.DB.prepare(`
+    `).bind(t.id).first(),m=(o==null?void 0:o.total_paid)||0,g=(l==null?void 0:l.total_paid)||0,x=g>0?((m-g)/g*100).toFixed(1):0;return e.json({success:!0,dashboard:{this_month_revenue:m,last_month_revenue:g,growth_rate:parseFloat(x),yearly_revenue:(d==null?void 0:d.total_paid)||0,total_students:(p==null?void 0:p.total_students)||0,total_teachers:(u==null?void 0:u.total_teachers)||0,avg_monthly_fee:Math.round((p==null?void 0:p.avg_fee)||0)}})}catch(t){return console.error("Error fetching revenue dashboard:",t),e.json({error:"매출 대시보드 조회 실패",details:t.message},500)}});const c=new Fe;c.use("/api/*",ws());c.use("/static/*",js({root:"./public"}));c.route("/",G);c.route("/",H);c.route("/",$e);c.post("/api/contact",async e=>{try{const{name:t,email:s,phone:a,academy_name:r,message:o}=await e.req.json();if(!t||!s||!a||!o)return e.json({success:!1,error:"필수 항목을 입력해주세요."},400);const n=await e.env.DB.prepare(`
       INSERT INTO contacts (name, email, phone, academy_name, message)
       VALUES (?, ?, ?, ?, ?)
     `).bind(t,s,a,r||"",o).run();return e.json({success:!0,message:"문의가 접수되었습니다. 빠른 시일 내에 연락드리겠습니다.",id:n.meta.last_row_id})}catch(t){return console.error("Contact submission error:",t),e.json({success:!1,error:"문의 접수 중 오류가 발생했습니다."},500)}});c.post("/api/signup",async e=>{try{const{email:t,password:s,name:a,phone:r,academy_name:o,academy_location:n,marketing_consent:i}=await e.req.json();if(!t||!s||!a||!r||!o)return e.json({success:!1,error:"필수 항목을 입력해주세요."},400);if(await e.env.DB.prepare(`
@@ -4045,7 +4045,7 @@ var Pt=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Ft=(e,t,s)=>t in
         AND subscription_end_date >= date('now')
       ORDER BY created_at DESC 
       LIMIT 1
-    `).bind(m).first();if(!g)return e.json({success:!1,error:"활성화된 구독이 없습니다. 플랜을 구매해주세요."},403);if(g.payment_method==="free"&&new Date(g.subscription_end_date)<=new Date){console.log("🔄 [Free Plan] Auto-renewing expired free subscription");const L=new Date,P=new Date;P.setMonth(P.getMonth()+1),P.setDate(1),P.setHours(0,0,0,0),await e.env.DB.prepare(`
+    `).bind(m).first();if(!g)return e.json({success:!1,error:"활성화된 구독이 없습니다. 플랜을 구매해주세요."},403);if(g.payment_method==="free"&&new Date(g.subscription_end_date)<=new Date){console.log("🔄 [Free Plan] Auto-renewing expired free subscription");const L=new Date,F=new Date;F.setMonth(F.getMonth()+1),F.setDate(1),F.setHours(0,0,0,0),await e.env.DB.prepare(`
           UPDATE subscriptions SET status = 'expired' WHERE id = ?
         `).bind(g.id).run();const W=(await e.env.DB.prepare(`
           INSERT INTO subscriptions (
@@ -4053,7 +4053,7 @@ var Pt=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Ft=(e,t,s)=>t in
             landing_page_limit, teacher_limit, subscription_start_date, 
             subscription_end_date, status, payment_method, created_at, updated_at
           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', 'free', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-        `).bind(m,"무료 플랜",0,50,0,1,0,L.toISOString().split("T")[0],P.toISOString().split("T")[0]).run()).meta.last_row_id;await e.env.DB.prepare(`
+        `).bind(m,"무료 플랜",0,50,0,1,0,L.toISOString().split("T")[0],F.toISOString().split("T")[0]).run()).meta.last_row_id;await e.env.DB.prepare(`
           INSERT INTO usage_tracking (
             academy_id, subscription_id, current_students, ai_reports_used_this_month,
             landing_pages_created, current_teachers, sms_sent_this_month,
@@ -4071,7 +4071,7 @@ var Pt=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Ft=(e,t,s)=>t in
 
 생성된 랜딩페이지: ${b}개 / 한도: ${h}개
 
-더 많은 랜딩페이지를 제작하시려면 상위 플랜으로 업그레이드해주세요.`},403);console.log(`✅ [Landing] Limit check passed: ${b}/${h}`);const v=Math.random().toString(36).substring(2,10),_=Fs(s,a),y=`${e.req.header("origin")||"https://example.com"}/landing/${v}`,w=`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(y)}`,k=await e.env.DB.prepare(`
+더 많은 랜딩페이지를 제작하시려면 상위 플랜으로 업그레이드해주세요.`},403);console.log(`✅ [Landing] Limit check passed: ${b}/${h}`);const v=Math.random().toString(36).substring(2,10),_=Ps(s,a),y=`${e.req.header("origin")||"https://example.com"}/landing/${v}`,w=`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(y)}`,k=await e.env.DB.prepare(`
       INSERT INTO landing_pages (user_id, slug, title, template_type, content_json, html_content, qr_code_url, thumbnail_url, og_title, og_description, folder_id, form_id, status)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active')
     `).bind(p.id,v,t,s,JSON.stringify(a),_,w,r||null,o||null,n||null,i||null,l||null).run();return await e.env.DB.prepare(`
@@ -4098,7 +4098,7 @@ var Pt=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Ft=(e,t,s)=>t in
               body_pixel = ?,
               conversion_pixel = ?
           WHERE slug = ?
-        `).bind(a||null,r||null,o||null,t).run()}catch(l){console.log("Migration already applied or failed:",l)}}return e.json({success:!0,message:"랜딩페이지가 수정되었습니다."})}catch(t){return console.error("Landing page update error:",t),e.json({success:!1,error:"랜딩페이지 수정 실패: "+t.message},500)}});c.get("/api/landing/my-pages",async e=>{try{const t=e.req.query("userId"),s=e.req.query("folderId");let a="SELECT id, slug, title, template_type, view_count, status, folder_id, form_id, created_at FROM landing_pages WHERE user_id = ?",r=[t];s?(a+=" AND folder_id = ?",r.push(s)):(s===null||s==="null")&&(a+=" AND folder_id IS NULL"),a+=" ORDER BY created_at DESC";const{results:o}=await e.env.DB.prepare(a).bind(...r).all();return e.json({success:!0,pages:o})}catch(t){return console.error("목록 조회 실패:",t),e.json({success:!1,error:"목록 조회 실패"},500)}});c.get("/api/landing/folders",async e=>{try{const t=e.req.query("userId"),s="SELECT id, name, created_at FROM landing_folders WHERE user_id = ? ORDER BY created_at DESC",{results:a}=await e.env.DB.prepare(s).bind(t).all(),r=await Promise.all(a.map(async i=>{const d=await e.env.DB.prepare("SELECT COUNT(*) as count FROM landing_pages WHERE folder_id = ?").bind(i.id).first();return{...i,page_count:d.count||0}})),n=await e.env.DB.prepare("SELECT COUNT(*) as count FROM landing_pages WHERE user_id = ?").bind(t).first();return e.json({success:!0,folders:r,totalPages:n.count||0})}catch(t){return console.error("폴더 목록 조회 실패:",t),e.json({success:!1,error:"폴더 목록 조회 실패"},500)}});c.post("/api/landing/folders",async e=>{try{const{userId:t,name:s,description:a}=await e.req.json();if(!s||!s.trim())return e.json({success:!1,error:"폴더 이름을 입력하세요."},400);const o=await e.env.DB.prepare("INSERT INTO landing_folders (user_id, name, description) VALUES (?, ?, ?)").bind(t,s.trim(),a||null).run();return e.json({success:!0,folderId:o.meta.last_row_id,message:"폴더가 생성되었습니다."})}catch(t){return console.error("폴더 생성 실패:",t),e.json({success:!1,error:"폴더 생성 실패"},500)}});c.put("/api/landing/folders/:id",async e=>{try{const t=e.req.param("id"),{name:s,description:a}=await e.req.json();return!s||!s.trim()?e.json({success:!1,error:"폴더 이름을 입력하세요."},400):(await e.env.DB.prepare("UPDATE landing_folders SET name = ?, description = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?").bind(s.trim(),a||null,t).run(),e.json({success:!0,message:"폴더가 수정되었습니다."}))}catch(t){return console.error("폴더 수정 실패:",t),e.json({success:!1,error:"폴더 수정 실패"},500)}});c.delete("/api/landing/folders/:id",async e=>{try{const t=e.req.param("id"),s=e.req.query("userId");return await e.env.DB.prepare("UPDATE landing_pages SET folder_id = NULL WHERE folder_id = ?").bind(t).run(),await e.env.DB.prepare("DELETE FROM landing_folders WHERE id = ? AND user_id = ?").bind(t,s).run(),e.json({success:!0,message:"폴더가 삭제되었습니다."})}catch(t){return console.error("폴더 삭제 실패:",t),e.json({success:!1,error:"폴더 삭제 실패"},500)}});c.put("/api/landing/move-to-folder",async e=>{try{const{pageId:t,folderId:s}=await e.req.json();return await e.env.DB.prepare("UPDATE landing_pages SET folder_id = ? WHERE id = ?").bind(s,t).run(),e.json({success:!0,message:"폴더로 이동되었습니다."})}catch(t){return console.error("폴더 이동 실패:",t),e.json({success:!1,error:"폴더 이동 실패"},500)}});c.get("/api/landing/:slug",async e=>{try{const t=e.req.param("slug"),a=await e.env.DB.prepare("SELECT * FROM landing_pages WHERE slug = ? AND status = ?").bind(t,"active").first();return a?(await e.env.DB.prepare("UPDATE landing_pages SET view_count = view_count + 1 WHERE slug = ?").bind(t).run(),await e.env.DB.prepare("INSERT INTO landing_page_views (landing_page_id, user_agent, referrer) VALUES (?, ?, ?)").bind(a.id,e.req.header("user-agent")||"",e.req.header("referer")||"").run(),e.json({success:!0,page:a})):e.json({success:!1,error:"페이지를 찾을 수 없습니다."},404)}catch{return e.json({success:!1,error:"페이지 조회 실패"},500)}});c.get("/api/landing/stats/summary",async e=>{try{const t=e.req.header("X-User-Data"),s=t?JSON.parse(t):{id:1},a=await e.env.DB.prepare("SELECT COUNT(*) as count FROM landing_pages WHERE user_id = ?").bind(s.id).first(),r=await e.env.DB.prepare("SELECT SUM(view_count) as total FROM landing_pages WHERE user_id = ?").bind(s.id).first(),o=await e.env.DB.prepare("SELECT id, title, slug, view_count FROM landing_pages WHERE user_id = ? ORDER BY view_count DESC LIMIT 5").bind(s.id).all();return e.json({success:!0,stats:{totalPages:(a==null?void 0:a.count)||0,totalViews:(r==null?void 0:r.total)||0,topPages:o.results||[]}})}catch{return e.json({success:!1,error:"통계 조회 실패"},500)}});c.delete("/api/landing/:id",async e=>{try{const t=e.req.param("id"),s=e.req.query("userId"),a=e.req.header("X-User-Data");let r;if(s)r={id:parseInt(s)};else if(a)r=JSON.parse(a);else return e.json({success:!1,error:"사용자 인증 정보가 없습니다."},401);console.log("Deleting landing page:",{id:t,userId:r.id});try{const n=await e.env.DB.prepare("DELETE FROM form_submissions WHERE landing_page_id = ?").bind(t).run();console.log("✅ Deleted form_submissions with landing_page_id:",n.meta.changes)}catch(n){console.log("⚠️ Could not delete form_submissions:",n)}const o=await e.env.DB.prepare("DELETE FROM landing_pages WHERE id = ? AND user_id = ?").bind(t,r.id).run();return console.log("Delete result:",o),o.meta.changes===0?e.json({success:!1,error:"삭제할 페이지를 찾을 수 없거나 권한이 없습니다."},404):(console.log("✅ Landing page deleted. Usage tracking count NOT decreased (cumulative count maintained)"),e.json({success:!0,message:"삭제되었습니다."}))}catch(t){return console.error("Landing page delete error:",t),e.json({success:!1,error:t.message||"삭제 실패"},500)}});function Fs(e,t){const s={"academy-intro":$s,"program-promo":qs,"event-promo":Hs,"parent-letter":Ws,"student-report":Gs,"admission-info":Ys,"academy-stats":zs,"teacher-intro":Xs,"vacation-course":Js};return(s[e]||s["academy-intro"])(t)}function $s(e){const{academyName:t,location:s,features:a,specialties:r,contact:o,placeUrl:n,directorName:i,directorPhoto:l,directorCareer:d,academyPhoto1:p,academyPhoto2:u,academyPhoto3:m,educationPhilosophy:g,educationPrograms:x,curriculum:b}=e,h=Array.isArray(r)?r:r?r.split(`
+        `).bind(a||null,r||null,o||null,t).run()}catch(l){console.log("Migration already applied or failed:",l)}}return e.json({success:!0,message:"랜딩페이지가 수정되었습니다."})}catch(t){return console.error("Landing page update error:",t),e.json({success:!1,error:"랜딩페이지 수정 실패: "+t.message},500)}});c.get("/api/landing/my-pages",async e=>{try{const t=e.req.query("userId"),s=e.req.query("folderId");let a="SELECT id, slug, title, template_type, view_count, status, folder_id, form_id, created_at FROM landing_pages WHERE user_id = ?",r=[t];s?(a+=" AND folder_id = ?",r.push(s)):(s===null||s==="null")&&(a+=" AND folder_id IS NULL"),a+=" ORDER BY created_at DESC";const{results:o}=await e.env.DB.prepare(a).bind(...r).all();return e.json({success:!0,pages:o})}catch(t){return console.error("목록 조회 실패:",t),e.json({success:!1,error:"목록 조회 실패"},500)}});c.get("/api/landing/folders",async e=>{try{const t=e.req.query("userId"),s="SELECT id, name, created_at FROM landing_folders WHERE user_id = ? ORDER BY created_at DESC",{results:a}=await e.env.DB.prepare(s).bind(t).all(),r=await Promise.all(a.map(async i=>{const d=await e.env.DB.prepare("SELECT COUNT(*) as count FROM landing_pages WHERE folder_id = ?").bind(i.id).first();return{...i,page_count:d.count||0}})),n=await e.env.DB.prepare("SELECT COUNT(*) as count FROM landing_pages WHERE user_id = ?").bind(t).first();return e.json({success:!0,folders:r,totalPages:n.count||0})}catch(t){return console.error("폴더 목록 조회 실패:",t),e.json({success:!1,error:"폴더 목록 조회 실패"},500)}});c.post("/api/landing/folders",async e=>{try{const{userId:t,name:s,description:a}=await e.req.json();if(!s||!s.trim())return e.json({success:!1,error:"폴더 이름을 입력하세요."},400);const o=await e.env.DB.prepare("INSERT INTO landing_folders (user_id, name, description) VALUES (?, ?, ?)").bind(t,s.trim(),a||null).run();return e.json({success:!0,folderId:o.meta.last_row_id,message:"폴더가 생성되었습니다."})}catch(t){return console.error("폴더 생성 실패:",t),e.json({success:!1,error:"폴더 생성 실패"},500)}});c.put("/api/landing/folders/:id",async e=>{try{const t=e.req.param("id"),{name:s,description:a}=await e.req.json();return!s||!s.trim()?e.json({success:!1,error:"폴더 이름을 입력하세요."},400):(await e.env.DB.prepare("UPDATE landing_folders SET name = ?, description = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?").bind(s.trim(),a||null,t).run(),e.json({success:!0,message:"폴더가 수정되었습니다."}))}catch(t){return console.error("폴더 수정 실패:",t),e.json({success:!1,error:"폴더 수정 실패"},500)}});c.delete("/api/landing/folders/:id",async e=>{try{const t=e.req.param("id"),s=e.req.query("userId");return await e.env.DB.prepare("UPDATE landing_pages SET folder_id = NULL WHERE folder_id = ?").bind(t).run(),await e.env.DB.prepare("DELETE FROM landing_folders WHERE id = ? AND user_id = ?").bind(t,s).run(),e.json({success:!0,message:"폴더가 삭제되었습니다."})}catch(t){return console.error("폴더 삭제 실패:",t),e.json({success:!1,error:"폴더 삭제 실패"},500)}});c.put("/api/landing/move-to-folder",async e=>{try{const{pageId:t,folderId:s}=await e.req.json();return await e.env.DB.prepare("UPDATE landing_pages SET folder_id = ? WHERE id = ?").bind(s,t).run(),e.json({success:!0,message:"폴더로 이동되었습니다."})}catch(t){return console.error("폴더 이동 실패:",t),e.json({success:!1,error:"폴더 이동 실패"},500)}});c.get("/api/landing/:slug",async e=>{try{const t=e.req.param("slug"),a=await e.env.DB.prepare("SELECT * FROM landing_pages WHERE slug = ? AND status = ?").bind(t,"active").first();return a?(await e.env.DB.prepare("UPDATE landing_pages SET view_count = view_count + 1 WHERE slug = ?").bind(t).run(),await e.env.DB.prepare("INSERT INTO landing_page_views (landing_page_id, user_agent, referrer) VALUES (?, ?, ?)").bind(a.id,e.req.header("user-agent")||"",e.req.header("referer")||"").run(),e.json({success:!0,page:a})):e.json({success:!1,error:"페이지를 찾을 수 없습니다."},404)}catch{return e.json({success:!1,error:"페이지 조회 실패"},500)}});c.get("/api/landing/stats/summary",async e=>{try{const t=e.req.header("X-User-Data"),s=t?JSON.parse(t):{id:1},a=await e.env.DB.prepare("SELECT COUNT(*) as count FROM landing_pages WHERE user_id = ?").bind(s.id).first(),r=await e.env.DB.prepare("SELECT SUM(view_count) as total FROM landing_pages WHERE user_id = ?").bind(s.id).first(),o=await e.env.DB.prepare("SELECT id, title, slug, view_count FROM landing_pages WHERE user_id = ? ORDER BY view_count DESC LIMIT 5").bind(s.id).all();return e.json({success:!0,stats:{totalPages:(a==null?void 0:a.count)||0,totalViews:(r==null?void 0:r.total)||0,topPages:o.results||[]}})}catch{return e.json({success:!1,error:"통계 조회 실패"},500)}});c.delete("/api/landing/:id",async e=>{try{const t=e.req.param("id"),s=e.req.query("userId"),a=e.req.header("X-User-Data");let r;if(s)r={id:parseInt(s)};else if(a)r=JSON.parse(a);else return e.json({success:!1,error:"사용자 인증 정보가 없습니다."},401);console.log("Deleting landing page:",{id:t,userId:r.id});try{const n=await e.env.DB.prepare("DELETE FROM form_submissions WHERE landing_page_id = ?").bind(t).run();console.log("✅ Deleted form_submissions with landing_page_id:",n.meta.changes)}catch(n){console.log("⚠️ Could not delete form_submissions:",n)}const o=await e.env.DB.prepare("DELETE FROM landing_pages WHERE id = ? AND user_id = ?").bind(t,r.id).run();return console.log("Delete result:",o),o.meta.changes===0?e.json({success:!1,error:"삭제할 페이지를 찾을 수 없거나 권한이 없습니다."},404):(console.log("✅ Landing page deleted. Usage tracking count NOT decreased (cumulative count maintained)"),e.json({success:!0,message:"삭제되었습니다."}))}catch(t){return console.error("Landing page delete error:",t),e.json({success:!1,error:t.message||"삭제 실패"},500)}});function Ps(e,t){const s={"academy-intro":$s,"program-promo":qs,"event-promo":Hs,"parent-letter":Ws,"student-report":Gs,"admission-info":Ys,"academy-stats":zs,"teacher-intro":Xs,"vacation-course":Vs};return(s[e]||s["academy-intro"])(t)}function $s(e){const{academyName:t,location:s,features:a,specialties:r,contact:o,placeUrl:n,directorName:i,directorPhoto:l,directorCareer:d,academyPhoto1:p,academyPhoto2:u,academyPhoto3:m,educationPhilosophy:g,educationPrograms:x,curriculum:b}=e,h=Array.isArray(r)?r:r?r.split(`
 `).filter(w=>w.trim()):[],v=Array.isArray(d)?d:d?d.split(`
 `).filter(w=>w.trim()):[],_=Array.isArray(x)?x:x?x.split(`
 `).filter(w=>w.trim()):[],y=Array.isArray(b)?b:b?b.split(`
@@ -5433,7 +5433,7 @@ var Pt=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Ft=(e,t,s)=>t in
     </div>
 </body>
 </html>
-  `}function Js(e){const{academyName:t,courseName:s,period:a,schedule:r,programs:o,curriculum:n,contact:i,targetGrade:l,features:d,tuition:p,earlyBirdDiscount:u,placeUrl:m}=e,g=Array.isArray(o)?o:o?o.split(`
+  `}function Vs(e){const{academyName:t,courseName:s,period:a,schedule:r,programs:o,curriculum:n,contact:i,targetGrade:l,features:d,tuition:p,earlyBirdDiscount:u,placeUrl:m}=e,g=Array.isArray(o)?o:o?o.split(`
 `).filter(h=>h.trim()):[],x=Array.isArray(n)?n:n?n.split(`
 `).filter(h=>h.trim()):[],b=Array.isArray(d)?d:d?d.split(`
 `).filter(h=>h.trim()):[];return`
@@ -6353,7 +6353,7 @@ document.getElementById('applicationForm').addEventListener('submit', async (e) 
       FROM form_submissions 
       WHERE landing_page_id = ? 
       ORDER BY created_at DESC
-    `).bind(o.id).all();return e.json({success:!0,landingPage:{id:o.id,title:o.title,slug:s},submissions:n.results||[],total:((t=n.results)==null?void 0:t.length)||0})}catch(s){return console.error("Submissions fetch error:",s),e.json({success:!1,error:"신청자 조회 실패"},500)}});c.post("/api/generate-parent-message",async e=>{var t,s;try{const{studentName:a,grade:r,subject:o,shortMessage:n}=await e.req.json();if(!a||!r||!o||!n)return e.json({success:!1,error:"필수 항목을 입력해주세요."},400);const i=tt(a,r,o,n);return e.json({success:!0,message:i,metadata:{studentName:a,grade:r,subject:o,originalMessage:n,mode:"template"}})}catch(a){return console.error("Generate message error:",a),e.json({success:!1,error:"메시지 생성 중 오류가 발생했습니다."},500)}});c.post("/api/generate-parent-message-from-records",async e=>{try{const{studentId:t,studentName:s,grade:a,subjects:r,parentName:o,records:n,additionalMessage:i}=await e.req.json();if(!t||!s)return e.json({success:!1,error:"학생 정보가 필요합니다."},400);const l=Vs(n),d=Ks(s,a,r,o,l,i),p=e.env.OPENAI_API_KEY,u=e.env.OPENAI_BASE_URL||"https://api.openai.com/v1";if(p)try{const g=await fetch(`${u}/chat/completions`,{method:"POST",headers:{"Content-Type":"application/json",Authorization:`Bearer ${p}`},body:JSON.stringify({model:"gpt-4o-mini",messages:[{role:"system",content:`당신은 학원 원장님입니다. 학부모님께 학생의 학습 현황을 따뜻하고 격려하는 말투로 전달하는 메시지를 작성합니다.
+    `).bind(o.id).all();return e.json({success:!0,landingPage:{id:o.id,title:o.title,slug:s},submissions:n.results||[],total:((t=n.results)==null?void 0:t.length)||0})}catch(s){return console.error("Submissions fetch error:",s),e.json({success:!1,error:"신청자 조회 실패"},500)}});c.post("/api/generate-parent-message",async e=>{var t,s;try{const{studentName:a,grade:r,subject:o,shortMessage:n}=await e.req.json();if(!a||!r||!o||!n)return e.json({success:!1,error:"필수 항목을 입력해주세요."},400);const i=tt(a,r,o,n);return e.json({success:!0,message:i,metadata:{studentName:a,grade:r,subject:o,originalMessage:n,mode:"template"}})}catch(a){return console.error("Generate message error:",a),e.json({success:!1,error:"메시지 생성 중 오류가 발생했습니다."},500)}});c.post("/api/generate-parent-message-from-records",async e=>{try{const{studentId:t,studentName:s,grade:a,subjects:r,parentName:o,records:n,additionalMessage:i}=await e.req.json();if(!t||!s)return e.json({success:!1,error:"학생 정보가 필요합니다."},400);const l=Js(n),d=Ks(s,a,r,o,l,i),p=e.env.OPENAI_API_KEY,u=e.env.OPENAI_BASE_URL||"https://api.openai.com/v1";if(p)try{const g=await fetch(`${u}/chat/completions`,{method:"POST",headers:{"Content-Type":"application/json",Authorization:`Bearer ${p}`},body:JSON.stringify({model:"gpt-4o-mini",messages:[{role:"system",content:`당신은 학원 원장님입니다. 학부모님께 학생의 학습 현황을 따뜻하고 격려하는 말투로 전달하는 메시지를 작성합니다.
 
 규칙:
 1. 존댓말 사용 (학부모님께)
@@ -6364,7 +6364,7 @@ document.getElementById('applicationForm').addEventListener('submit', async (e) 
 6. 250-350자 정도의 적절한 길이
 7. 이모지 2-3개 자연스럽게 사용
 8. 학부모님이 안심하고 신뢰할 수 있는 내용
-9. 최근 7일간의 구체적인 학습 기록을 바탕으로 작성`},{role:"user",content:d}],temperature:.8,max_tokens:600})}),x=await g.json();if(g.ok&&x.choices&&x.choices[0])return e.json({success:!0,message:x.choices[0].message.content,metadata:{studentName:s,grade:a,subjects:r,mode:"ai",recordsCount:n.length}})}catch(g){console.error("OpenAI API error:",g)}const m=Qs(s,a,r,o,l,i);return e.json({success:!0,message:m,metadata:{studentName:s,grade:a,subjects:r,mode:"template",recordsCount:n.length}})}catch(t){return console.error("Generate message from records error:",t),e.json({success:!1,error:"메시지 생성 실패: "+t.message},500)}});function Vs(e){if(!e||e.length===0)return{totalDays:0,attendanceRate:0,homeworkRate:0,avgUnderstanding:0,avgParticipation:0,achievements:[],memos:[],latestRecords:[]};const t=e.length,s=e.filter(p=>p.attendance==="출석").length,a=e.filter(p=>p.homework_status==="완료").length,r=e.filter(p=>p.understanding_level).map(p=>p.understanding_level),o=e.filter(p=>p.participation_level).map(p=>p.participation_level),n=r.length>0?(r.reduce((p,u)=>p+u,0)/r.length).toFixed(1):"0",i=o.length>0?(o.reduce((p,u)=>p+u,0)/o.length).toFixed(1):"0",l=e.filter(p=>p.achievement).map(p=>p.achievement),d=e.filter(p=>p.memo).map(p=>p.memo);return{totalDays:t,attendanceRate:(s/t*100).toFixed(0),homeworkRate:t>0?(a/t*100).toFixed(0):"0",avgUnderstanding:n,avgParticipation:i,achievements:l,memos:d,latestRecords:e.slice(0,3)}}function Ks(e,t,s,a,r,o){const n=r.achievements.length>0?`주요 성과:
+9. 최근 7일간의 구체적인 학습 기록을 바탕으로 작성`},{role:"user",content:d}],temperature:.8,max_tokens:600})}),x=await g.json();if(g.ok&&x.choices&&x.choices[0])return e.json({success:!0,message:x.choices[0].message.content,metadata:{studentName:s,grade:a,subjects:r,mode:"ai",recordsCount:n.length}})}catch(g){console.error("OpenAI API error:",g)}const m=Qs(s,a,r,o,l,i);return e.json({success:!0,message:m,metadata:{studentName:s,grade:a,subjects:r,mode:"template",recordsCount:n.length}})}catch(t){return console.error("Generate message from records error:",t),e.json({success:!1,error:"메시지 생성 실패: "+t.message},500)}});function Js(e){if(!e||e.length===0)return{totalDays:0,attendanceRate:0,homeworkRate:0,avgUnderstanding:0,avgParticipation:0,achievements:[],memos:[],latestRecords:[]};const t=e.length,s=e.filter(p=>p.attendance==="출석").length,a=e.filter(p=>p.homework_status==="완료").length,r=e.filter(p=>p.understanding_level).map(p=>p.understanding_level),o=e.filter(p=>p.participation_level).map(p=>p.participation_level),n=r.length>0?(r.reduce((p,u)=>p+u,0)/r.length).toFixed(1):"0",i=o.length>0?(o.reduce((p,u)=>p+u,0)/o.length).toFixed(1):"0",l=e.filter(p=>p.achievement).map(p=>p.achievement),d=e.filter(p=>p.memo).map(p=>p.memo);return{totalDays:t,attendanceRate:(s/t*100).toFixed(0),homeworkRate:t>0?(a/t*100).toFixed(0):"0",avgUnderstanding:n,avgParticipation:i,achievements:l,memos:d,latestRecords:e.slice(0,3)}}function Ks(e,t,s,a,r,o){const n=r.achievements.length>0?`주요 성과:
 ${r.achievements.slice(0,3).map(d=>`- ${d}`).join(`
 `)}`:"",i=r.memos.length>0?`선생님 메모:
 ${r.memos.slice(0,3).map(d=>`- ${d}`).join(`
@@ -19919,11 +19919,11 @@ ${m}`)),d&&(r.includes("<footer>")?r=r.replace(/<footer>/i,`${d}
     `).bind(_).first();if(!j)return e.json({success:!1,error:"활성 구독이 없습니다. 요금제를 구매해주세요."},403);const L=await e.env.DB.prepare(`
       SELECT * FROM usage_tracking 
       WHERE academy_id = ? AND subscription_id = ?
-    `).bind(_,j.id).first(),P=(L==null?void 0:L.current_students)||0;if(P>=j.student_limit)return e.json({success:!1,error:`⛔ 사용 한도가 모두 소진되었습니다.
+    `).bind(_,j.id).first(),F=(L==null?void 0:L.current_students)||0;if(F>=j.student_limit)return e.json({success:!1,error:`⛔ 사용 한도가 모두 소진되었습니다.
 
-현재 학생 수: ${P}명 / 한도: ${j.student_limit}명
+현재 학생 수: ${F}명 / 한도: ${j.student_limit}명
 
-더 많은 학생을 등록하시려면 상위 플랜으로 업그레이드해주세요.`},403);console.log(`✅ [AddStudent] Limit check passed: ${P}/${j.student_limit}`);let N;try{N=await e.env.DB.prepare(`
+더 많은 학생을 등록하시려면 상위 플랜으로 업그레이드해주세요.`},403);console.log(`✅ [AddStudent] Limit check passed: ${F}/${j.student_limit}`);let N;try{N=await e.env.DB.prepare(`
         INSERT INTO students (
           name, phone, grade, subjects, school, parent_name, parent_phone, 
           academy_id, class_id, notes, status, created_at
@@ -21183,7 +21183,7 @@ ${m}`)),d&&(r.includes("<footer>")?r=r.replace(/<footer>/i,`${d}
 
 출석 데이터를 먼저 입력한 후 리포트를 생성해주세요.`},400);console.log("📊 [GenerateReport] Attendance rate:",v+"%","(source:",w+")");let E=null,k="none";if(m.length>0)E=(m.reduce((D,B)=>D+B.score/B.max_score*100,0)/m.length).toFixed(1),k="grades";else if(b.length>0){const D=b.filter(Y=>Y.lesson_understanding).map(Y=>parseFloat(Y.lesson_understanding)),B=b.filter(Y=>Y.lesson_participation).map(Y=>parseFloat(Y.lesson_participation));if(D.length>0||B.length>0){const Y=[...D,...B];E=(Y.reduce((Ot,Ut)=>Ot+Ut,0)/Y.length*10).toFixed(1),k="daily_records"}}if(E===null)return console.error("❌ [GenerateReport] No score data available"),e.json({success:!1,error:`${i} 기간에 성적/학습 데이터가 없습니다.
 
-성적 데이터 또는 일일 성과 기록을 먼저 입력한 후 리포트를 생성해주세요.`},400);console.log("📊 [GenerateReport] Average score:",E,"(source:",k+")");let S="평가 불가";v>=95&&E>=85?S="매우 우수":v>=90&&E>=80?S="우수":v>=80&&E>=70?S="양호":S="개선 필요";let j="";const L=m.length>0?m.reduce((D,B)=>B.score/B.max_score>D.score/D.max_score?B:D):null;L?j=L.subject+" 과목에서 "+(L.score/L.max_score*100).toFixed(1)+"점으로 우수한 성적을 보였습니다. 꾸준한 노력이 돋보입니다.":b.length>0&&b.filter(D=>D.lesson_participation).length>0?j="수업 참여도가 평균 "+(b.filter(B=>B.lesson_participation).reduce((B,Y)=>B+parseFloat(Y.lesson_participation),0)/b.filter(B=>B.lesson_participation).length).toFixed(1)+"점으로 적극적인 학습 태도를 보이고 있습니다.":j="현재 기간의 성적 데이터가 부족하여 강점을 파악하기 어렵습니다. 지속적인 학습 활동 기록이 필요합니다.";let P="";const N=m.length>0?m.reduce((D,B)=>B.score/B.max_score<D.score/D.max_score?B:D):null;N&&N.score/N.max_score*100<75?P=N.subject+" 과목에서 "+(N.score/N.max_score*100).toFixed(1)+"점으로 보완이 필요합니다.":b.length>0&&b.filter(D=>D.homework_status==="미완료").length>0?P="과제 완성률이 낮습니다. 복습 시간을 늘려 과제를 완료하는 습관을 기르면 좋겠습니다.":P="전반적으로 균형잡힌 학습을 하고 있습니다.";const W=v<90?"출석률 개선이 필요합니다. 규칙적인 수업 참여가 성적 향상의 기본입니다.":E<80?"기본 개념 복습에 더 많은 시간을 투자하면 좋겠습니다.":"현재 학습 패턴을 유지하면서 심화 학습으로 나아가면 좋겠습니다.",O=E>=85?"상위권 유지를 위해 심화 문제 풀이를 추천합니다. 경시대회 준비도 고려해볼 만합니다.":E>=75?"기본기 강화와 함께 문제 풀이 속도를 높이는 연습이 필요합니다.":"개념 이해를 위한 1:1 보충 수업을 추천합니다. 기초부터 차근차근 다져가면 충분히 성적이 오를 수 있습니다.",ce=E>=85?"현재 평균 "+E+"점 수준을 유지하면서, "+((N==null?void 0:N.subject)||"취약 과목")+"에서 5점 이상 향상 목표":"평균 점수 "+E+"점에서 "+Math.min(100,parseFloat(E)+10).toFixed(0)+"점으로 향상, 출석률 "+v+"%에서 95% 이상 달성",Ke=l.name+" 학생은 이번 달 평균 "+E+"점의 성적을 기록했으며, 출석률은 "+v+"%입니다. "+(S==="매우 우수"||S==="우수"?"전반적으로 성실하게 학업에 임하고 있으며, 지속적인 성장이 기대됩니다.":"학습 태도와 출석 관리에 더 많은 관심이 필요합니다.")+(L?" 특히 "+L.subject+" 과목에서 강점을 보이고 있습니다.":"")+" 꾸준한 노력으로 더욱 발전할 수 있습니다.",Mt=`학부모님, 안녕하세요.
+성적 데이터 또는 일일 성과 기록을 먼저 입력한 후 리포트를 생성해주세요.`},400);console.log("📊 [GenerateReport] Average score:",E,"(source:",k+")");let S="평가 불가";v>=95&&E>=85?S="매우 우수":v>=90&&E>=80?S="우수":v>=80&&E>=70?S="양호":S="개선 필요";let j="";const L=m.length>0?m.reduce((D,B)=>B.score/B.max_score>D.score/D.max_score?B:D):null;L?j=L.subject+" 과목에서 "+(L.score/L.max_score*100).toFixed(1)+"점으로 우수한 성적을 보였습니다. 꾸준한 노력이 돋보입니다.":b.length>0&&b.filter(D=>D.lesson_participation).length>0?j="수업 참여도가 평균 "+(b.filter(B=>B.lesson_participation).reduce((B,Y)=>B+parseFloat(Y.lesson_participation),0)/b.filter(B=>B.lesson_participation).length).toFixed(1)+"점으로 적극적인 학습 태도를 보이고 있습니다.":j="현재 기간의 성적 데이터가 부족하여 강점을 파악하기 어렵습니다. 지속적인 학습 활동 기록이 필요합니다.";let F="";const N=m.length>0?m.reduce((D,B)=>B.score/B.max_score<D.score/D.max_score?B:D):null;N&&N.score/N.max_score*100<75?F=N.subject+" 과목에서 "+(N.score/N.max_score*100).toFixed(1)+"점으로 보완이 필요합니다.":b.length>0&&b.filter(D=>D.homework_status==="미완료").length>0?F="과제 완성률이 낮습니다. 복습 시간을 늘려 과제를 완료하는 습관을 기르면 좋겠습니다.":F="전반적으로 균형잡힌 학습을 하고 있습니다.";const W=v<90?"출석률 개선이 필요합니다. 규칙적인 수업 참여가 성적 향상의 기본입니다.":E<80?"기본 개념 복습에 더 많은 시간을 투자하면 좋겠습니다.":"현재 학습 패턴을 유지하면서 심화 학습으로 나아가면 좋겠습니다.",O=E>=85?"상위권 유지를 위해 심화 문제 풀이를 추천합니다. 경시대회 준비도 고려해볼 만합니다.":E>=75?"기본기 강화와 함께 문제 풀이 속도를 높이는 연습이 필요합니다.":"개념 이해를 위한 1:1 보충 수업을 추천합니다. 기초부터 차근차근 다져가면 충분히 성적이 오를 수 있습니다.",ce=E>=85?"현재 평균 "+E+"점 수준을 유지하면서, "+((N==null?void 0:N.subject)||"취약 과목")+"에서 5점 이상 향상 목표":"평균 점수 "+E+"점에서 "+Math.min(100,parseFloat(E)+10).toFixed(0)+"점으로 향상, 출석률 "+v+"%에서 95% 이상 달성",Ke=l.name+" 학생은 이번 달 평균 "+E+"점의 성적을 기록했으며, 출석률은 "+v+"%입니다. "+(S==="매우 우수"||S==="우수"?"전반적으로 성실하게 학업에 임하고 있으며, 지속적인 성장이 기대됩니다.":"학습 태도와 출석 관리에 더 많은 관심이 필요합니다.")+(L?" 특히 "+L.subject+" 과목에서 강점을 보이고 있습니다.":"")+" 꾸준한 노력으로 더욱 발전할 수 있습니다.",Mt=`학부모님, 안녕하세요.
 
 ${l.name} 학생의 ${i} 학습 분석 리포트를 전달드립니다.
 
@@ -21196,7 +21196,7 @@ ${l.name} 학생의 ${i} 학습 분석 리포트를 전달드립니다.
 ${j}
 
 🎯 개선 필요 사항
-${P}
+${F}
 
 📝 선생님의 추천
 ${O}
@@ -21210,7 +21210,7 @@ ${O}
       INSERT INTO learning_reports 
       (student_id, report_month, overall_score, study_attitude, strengths, weaknesses, improvements, recommendations, next_month_goals, ai_analysis, parent_message, folder_id)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).bind(a,i,E,S,j,P,W,O,ce,Ke,Mt,n||null).run();console.log("✅ [GenerateReport] Report saved successfully, ID:",ot.meta.last_row_id);try{await e.env.DB.prepare(`
+    `).bind(a,i,E,S,j,F,W,O,ce,Ke,Mt,n||null).run();console.log("✅ [GenerateReport] Report saved successfully, ID:",ot.meta.last_row_id);try{await e.env.DB.prepare(`
         UPDATE usage_tracking 
         SET ai_reports_used_this_month = ai_reports_used_this_month + 1, updated_at = CURRENT_TIMESTAMP
         WHERE academy_id = ? AND subscription_id = ?
@@ -36655,7 +36655,7 @@ setInterval(loadActiveSessionCount,30000);
         <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
     </body>
     </html>
-  `));c.get("/students/classes",e=>e.html(Fe.classesPage));c.get("/students/list",e=>e.html(Fe.studentsListPage));c.get("/students/daily-record",e=>e.html(Fe.dailyRecordPage));c.get("/students/courses",e=>e.html(Fe.coursesPage));c.get("/students/detail/:studentId",e=>e.html(Fe.studentDetailPage));c.get("/api/init-student-tables",async e=>{try{const{DB:t}=e.env;await t.prepare(`
+  `));c.get("/students/classes",e=>e.html(Pe.classesPage));c.get("/students/list",e=>e.html(Pe.studentsListPage));c.get("/students/daily-record",e=>e.html(Pe.dailyRecordPage));c.get("/students/courses",e=>e.html(Pe.coursesPage));c.get("/students/detail/:studentId",e=>e.html(Pe.studentDetailPage));c.get("/api/init-student-tables",async e=>{try{const{DB:t}=e.env;await t.prepare(`
       CREATE TABLE IF NOT EXISTS students (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         academy_id INTEGER DEFAULT 1,
@@ -37446,413 +37446,596 @@ setInterval(loadActiveSessionCount,30000);
 ${o}`;return await e.env.DB.prepare(`
       INSERT INTO contacts (name, email, phone, message, status, created_at)
       VALUES (?, ?, ?, ?, 'pending', CURRENT_TIMESTAMP)
-    `).bind(s,r,a,d).run(),e.json({success:!0,message:"문의가 성공적으로 제출되었습니다."})}catch(t){return console.error("Service inquiry error:",t),e.json({success:!1,error:"문의 제출 중 오류가 발생했습니다."},500)}});c.get("/tools/tuition-management",async e=>e.html(`
-    <!DOCTYPE html>
-    <html lang="ko">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>교육비 관리 - 슈퍼플레이스</title>
-        <script src="https://cdn.tailwindcss.com"><\/script>
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-        <style>
-          @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
-          * { font-family: 'Pretendard Variable', sans-serif; }
-          .student-card { transition: all 0.2s; }
-          .student-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-          .paid { background: #d1fae5; border-color: #10b981; }
-          .unpaid { background: #fee2e2; border-color: #ef4444; }
-          .partial { background: #fef3c7; border-color: #f59e0b; }
-        </style>
-    </head>
-    <body class="bg-gray-50">
-        <nav class="fixed w-full top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
-            <div class="max-w-7xl mx-auto px-6">
-                <div class="flex justify-between items-center h-16">
-                    <span class="text-xl font-bold text-purple-600">💰 교육비 관리</span>
+    `).bind(s,r,a,d).run(),e.json({success:!0,message:"문의가 성공적으로 제출되었습니다."})}catch(t){return console.error("Service inquiry error:",t),e.json({success:!1,error:"문의 제출 중 오류가 발생했습니다."},500)}});c.get("/tools/tuition-management",async e=>e.html(`<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>교육비 관리 - 슈퍼플레이스</title>
+    <script src="https://cdn.tailwindcss.com"><\/script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
+        * { font-family: 'Pretendard Variable', sans-serif; }
+        
+        .calendar-cell { 
+            min-height: 140px;
+            position: relative;
+            transition: all 0.2s;
+        }
+        .calendar-cell:hover { 
+            background-color: #f9fafb; 
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .student-item {
+            font-size: 11px;
+            padding: 4px 6px;
+            margin: 2px 0;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .student-item:hover {
+            transform: scale(1.05);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .date-number {
+            font-size: 18px;
+            font-weight: 700;
+        }
+        .day-name {
+            font-size: 10px;
+            opacity: 0.6;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="max-w-[1800px] mx-auto px-6 py-8">
+        <!-- 헤더 -->
+        <div class="mb-8 flex items-center justify-between">
+            <div>
+                <h1 class="text-4xl font-bold text-gray-900 mb-2">📅 교육비 관리 달력</h1>
+                <p class="text-gray-600">학생별 월별 교육비 납입 현황을 한눈에 확인하세요</p>
+            </div>
+            <div class="flex gap-3">
+                <a href="/tools/revenue-management" class="inline-flex items-center px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium shadow-lg">
+                    <i class="fas fa-chart-line mr-2"></i> 매출 관리
+                </a>
+                <a href="/dashboard" class="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium shadow-lg">
+                    <i class="fas fa-home mr-2"></i> 대시보드
+                </a>
+            </div>
+        </div>
+
+        <!-- 통계 카드 -->
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
+            <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-lg p-6 text-white">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm font-medium opacity-90">총 학생 수</span>
+                    <i class="fas fa-users text-2xl opacity-80"></i>
+                </div>
+                <div class="text-3xl font-bold" id="totalStudents">0</div>
+                <div class="text-xs opacity-75 mt-1">명</div>
+            </div>
+            
+            <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl shadow-lg p-6 text-white">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm font-medium opacity-90">완납</span>
+                    <i class="fas fa-check-circle text-2xl opacity-80"></i>
+                </div>
+                <div class="text-3xl font-bold" id="paidStudents">0</div>
+                <div class="text-xs opacity-75 mt-1">명</div>
+            </div>
+            
+            <div class="bg-gradient-to-br from-red-500 to-red-600 rounded-2xl shadow-lg p-6 text-white">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm font-medium opacity-90">미납</span>
+                    <i class="fas fa-exclamation-circle text-2xl opacity-80"></i>
+                </div>
+                <div class="text-3xl font-bold" id="unpaidStudents">0</div>
+                <div class="text-xs opacity-75 mt-1">명</div>
+            </div>
+            
+            <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl shadow-lg p-6 text-white">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm font-medium opacity-90">예상 매출</span>
+                    <i class="fas fa-won-sign text-2xl opacity-80"></i>
+                </div>
+                <div class="text-2xl font-bold" id="totalAmount">0원</div>
+            </div>
+            
+            <div class="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-2xl shadow-lg p-6 text-white">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm font-medium opacity-90">실납입액</span>
+                    <i class="fas fa-coins text-2xl opacity-80"></i>
+                </div>
+                <div class="text-2xl font-bold" id="totalPaid">0원</div>
+            </div>
+        </div>
+
+        <!-- 달력 네비게이션 -->
+        <div class="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 mb-8">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-6">
+                    <button onclick="prevMonth()" class="p-3 hover:bg-gray-100 rounded-xl transition">
+                        <i class="fas fa-chevron-left text-gray-700 text-lg"></i>
+                    </button>
                     <div class="flex gap-4">
-                        <a href="/dashboard" class="text-gray-600 hover:text-purple-600">대시보드</a>
-                        <button onclick="logout()" class="text-gray-600 hover:text-red-600">로그아웃</button>
+                        <select id="yearFilter" onchange="loadCalendar()" class="px-6 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 font-bold text-lg">
+                            <!-- 동적으로 생성 -->
+                        </select>
+                        <select id="monthFilter" onchange="loadCalendar()" class="px-6 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 font-bold text-lg">
+                            <option value="1">1월</option>
+                            <option value="2">2월</option>
+                            <option value="3">3월</option>
+                            <option value="4">4월</option>
+                            <option value="5">5월</option>
+                            <option value="6">6월</option>
+                            <option value="7">7월</option>
+                            <option value="8">8월</option>
+                            <option value="9">9월</option>
+                            <option value="10">10월</option>
+                            <option value="11">11월</option>
+                            <option value="12">12월</option>
+                        </select>
                     </div>
+                    <button onclick="nextMonth()" class="p-3 hover:bg-gray-100 rounded-xl transition">
+                        <i class="fas fa-chevron-right text-gray-700 text-lg"></i>
+                    </button>
                 </div>
-            </div>
-        </nav>
-
-        <div class="pt-20 pb-12 px-6">
-            <div class="max-w-7xl mx-auto">
-                <!-- 월 선택 및 통계 -->
-                <div class="mb-6 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="flex items-center gap-4">
-                            <select id="yearSelect" class="px-4 py-2 border border-gray-300 rounded-lg"></select>
-                            <select id="monthSelect" class="px-4 py-2 border border-gray-300 rounded-lg">
-                                <option value="1">1월</option><option value="2">2월</option><option value="3">3월</option>
-                                <option value="4">4월</option><option value="5">5월</option><option value="6">6월</option>
-                                <option value="7">7월</option><option value="8">8월</option><option value="9">9월</option>
-                                <option value="10">10월</option><option value="11">11월</option><option value="12">12월</option>
-                            </select>
-                            <button onclick="loadData()" class="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
-                                <i class="fas fa-sync mr-2"></i>조회
-                            </button>
-                        </div>
-                        <button onclick="showClassManagement()" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                            <i class="fas fa-cog mr-2"></i>반 관리
-                        </button>
-                    </div>
-                    
-                    <div class="grid grid-cols-4 gap-4">
-                        <div class="text-center">
-                            <div class="text-sm text-gray-600">총 학생</div>
-                            <div id="totalStudents" class="text-2xl font-bold text-gray-900">0</div>
-                        </div>
-                        <div class="text-center">
-                            <div class="text-sm text-gray-600">납입 완료</div>
-                            <div id="paidCount" class="text-2xl font-bold text-green-600">0</div>
-                        </div>
-                        <div class="text-center">
-                            <div class="text-sm text-gray-600">미납</div>
-                            <div id="unpaidCount" class="text-2xl font-bold text-red-600">0</div>
-                        </div>
-                        <div class="text-center">
-                            <div class="text-sm text-gray-600">납입 금액</div>
-                            <div id="totalPaid" class="text-2xl font-bold text-blue-600">0원</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 학생 달력식 카드 뷰 -->
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                    <h2 class="text-xl font-bold text-gray-900 mb-4">
-                        <i class="fas fa-calendar-alt mr-2"></i>학생별 납입 현황
-                    </h2>
-                    <div id="studentGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                        <p class="text-gray-500 col-span-full text-center py-8">로딩 중...</p>
-                    </div>
+                <div class="flex items-center gap-3">
+                    <button onclick="goToday()" class="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition font-bold shadow-lg">
+                        <i class="fas fa-calendar-day mr-2"></i>오늘
+                    </button>
                 </div>
             </div>
         </div>
 
-        <!-- 반 관리 모달 -->
-        <div id="classModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-            <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
-                <div class="p-6 border-b border-gray-200">
-                    <div class="flex justify-between items-center">
-                        <h3 class="text-xl font-bold text-gray-900">반 교육비 설정</h3>
-                        <button onclick="closeClassModal()" class="text-gray-500 hover:text-gray-700">
-                            <i class="fas fa-times text-xl"></i>
-                        </button>
-                    </div>
-                </div>
-                <div id="classList" class="p-6"></div>
+        <!-- 달력 -->
+        <div class="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
+            <!-- 요일 헤더 -->
+            <div class="grid grid-cols-7 border-b-2 border-gray-300">
+                <div class="p-4 text-center font-bold text-lg text-red-600 bg-red-50">일요일</div>
+                <div class="p-4 text-center font-bold text-lg text-gray-700 bg-gray-50">월요일</div>
+                <div class="p-4 text-center font-bold text-lg text-gray-700 bg-gray-50">화요일</div>
+                <div class="p-4 text-center font-bold text-lg text-gray-700 bg-gray-50">수요일</div>
+                <div class="p-4 text-center font-bold text-lg text-gray-700 bg-gray-50">목요일</div>
+                <div class="p-4 text-center font-bold text-lg text-gray-700 bg-gray-50">금요일</div>
+                <div class="p-4 text-center font-bold text-lg text-blue-600 bg-blue-50">토요일</div>
+            </div>
+            <!-- 날짜 셀 -->
+            <div id="calendarBody" class="grid grid-cols-7">
+                <!-- JavaScript로 동적 생성 -->
             </div>
         </div>
+    </div>
 
-        <!-- 납입 상세 모달 -->
-        <div id="paymentModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-            <div class="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4">
-                <div class="p-6 border-b border-gray-200">
-                    <div class="flex justify-between items-center">
-                        <h3 class="text-xl font-bold text-gray-900">납입 처리</h3>
-                        <button onclick="closePaymentModal()" class="text-gray-500 hover:text-gray-700">
-                            <i class="fas fa-times text-xl"></i>
-                        </button>
-                    </div>
+    <!-- 결제 처리 모달 -->
+    <div id="paymentModal" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="p-6 border-b border-gray-200 flex items-center justify-between bg-gradient-to-r from-blue-500 to-blue-600">
+                <h3 class="text-2xl font-bold text-white" id="modalTitle">
+                    <i class="fas fa-credit-card mr-2"></i>교육비 납입 처리
+                </h3>
+                <button onclick="closePaymentModal()" class="text-white hover:text-gray-200 transition">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+
+            <div class="p-8">
+                <!-- 학생 정보 -->
+                <div class="mb-6" id="studentInfo">
+                    <label class="block text-sm font-bold text-gray-700 mb-3">학생 선택</label>
+                    <select id="studentSelect" onchange="loadStudentPaymentInfo()" class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 text-lg font-medium">
+                        <option value="">학생을 선택하세요</option>
+                    </select>
                 </div>
-                <div id="paymentDetails" class="p-6"></div>
+
+                <!-- 납입 정보 표시 -->
+                <div id="paymentInfo" class="hidden">
+                    <div class="bg-gray-50 rounded-xl p-6 mb-6">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <div class="text-sm text-gray-600 mb-1">학생 이름</div>
+                                <div class="text-lg font-bold text-gray-900" id="infoStudentName">-</div>
+                            </div>
+                            <div>
+                                <div class="text-sm text-gray-600 mb-1">반</div>
+                                <div class="text-lg font-bold text-gray-900" id="infoClassName">-</div>
+                            </div>
+                            <div>
+                                <div class="text-sm text-gray-600 mb-1">월 교육비</div>
+                                <div class="text-lg font-bold text-blue-600" id="infoMonthlyFee">0원</div>
+                            </div>
+                            <div>
+                                <div class="text-sm text-gray-600 mb-1">납입 상태</div>
+                                <div class="text-lg font-bold" id="infoPaymentStatus">-</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 납입 폼 -->
+                    <form id="paymentForm" onsubmit="submitPayment(event)">
+                        <input type="hidden" id="selectedStudentId">
+                        <input type="hidden" id="selectedPaymentId">
+                        
+                        <div class="space-y-5">
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">
+                                    <i class="fas fa-won-sign mr-2 text-blue-600"></i>납입 금액
+                                </label>
+                                <input type="number" id="paidAmount" required 
+                                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 text-lg font-medium"
+                                    placeholder="납입 금액을 입력하세요">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">
+                                    <i class="fas fa-calendar-alt mr-2 text-blue-600"></i>납입일
+                                </label>
+                                <input type="date" id="paidDate" required 
+                                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 text-lg font-medium">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">
+                                    <i class="fas fa-credit-card mr-2 text-blue-600"></i>결제 방법
+                                </label>
+                                <select id="paymentMethod" required 
+                                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 text-lg font-medium">
+                                    <option value="">선택하세요</option>
+                                    <option value="card">카드</option>
+                                    <option value="cash">현금</option>
+                                    <option value="transfer">계좌이체</option>
+                                    <option value="other">기타</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">
+                                    <i class="fas fa-sticky-note mr-2 text-blue-600"></i>메모
+                                </label>
+                                <textarea id="paymentMemo" rows="3" 
+                                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500"
+                                    placeholder="메모를 입력하세요 (선택사항)"></textarea>
+                            </div>
+
+                            <div class="flex gap-3 pt-4">
+                                <button type="submit" class="flex-1 bg-blue-600 text-white py-4 rounded-xl hover:bg-blue-700 transition font-bold text-lg shadow-lg">
+                                    <i class="fas fa-check mr-2"></i>납입 처리
+                                </button>
+                                <button type="button" onclick="closePaymentModal()" class="px-8 bg-gray-200 text-gray-700 py-4 rounded-xl hover:bg-gray-300 transition font-bold text-lg">
+                                    취소
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
+    </div>
 
-        <script>
-        let user = null;
+    <script>
         let currentYear, currentMonth;
+        let allStudents = [];
+        let allPayments = {};
 
-        // 로그인 체크
-        const userData = localStorage.getItem('user');
-        if (!userData) {
-            alert('로그인이 필요합니다.');
-            window.location.href = '/login';
-        } else {
-            user = JSON.parse(userData);
-            if (user.user_type === 'teacher') {
-                alert('접근 권한이 없습니다.');
-                window.location.href = '/dashboard';
-            } else {
-                initPage();
+        // 초기화
+        document.addEventListener('DOMContentLoaded', () => {
+            const user = localStorage.getItem('user');
+            if (!user) {
+                alert('로그인이 필요합니다.');
+                window.location.href = '/login';
+                return;
             }
-        }
 
-        function logout() {
-            localStorage.removeItem('user');
-            window.location.href = '/';
-        }
+            initYearSelect();
+            const today = new Date();
+            document.getElementById('yearFilter').value = today.getFullYear();
+            document.getElementById('monthFilter').value = today.getMonth() + 1;
+            currentYear = today.getFullYear();
+            currentMonth = today.getMonth() + 1;
+            
+            loadCalendar();
+        });
 
-        function base64Encode(str) {
-            return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (match, p1) => {
-                return String.fromCharCode('0x' + p1);
-            }));
-        }
-
-        function initPage() {
-            const now = new Date();
-            const yearSelect = document.getElementById('yearSelect');
-            for (let i = now.getFullYear() - 2; i <= now.getFullYear() + 1; i++) {
+        function initYearSelect() {
+            const yearSelect = document.getElementById('yearFilter');
+            const currentYear = new Date().getFullYear();
+            for (let year = currentYear - 2; year <= currentYear + 2; year++) {
                 const option = document.createElement('option');
-                option.value = i;
-                option.textContent = i + '년';
-                if (i === now.getFullYear()) option.selected = true;
+                option.value = year;
+                option.textContent = year + '년';
                 yearSelect.appendChild(option);
             }
-            document.getElementById('monthSelect').value = now.getMonth() + 1;
-            loadData();
         }
 
-        async function loadData() {
-            currentYear = document.getElementById('yearSelect').value;
-            currentMonth = document.getElementById('monthSelect').value;
+        function getApiHeaders() {
+            const user = JSON.parse(localStorage.getItem('user'));
+            return {
+                'Content-Type': 'application/json',
+                'X-User-Data-Base64': btoa(unescape(encodeURIComponent(JSON.stringify(user))))
+            };
+        }
+
+        async function loadCalendar() {
+            currentYear = parseInt(document.getElementById('yearFilter').value);
+            currentMonth = parseInt(document.getElementById('monthFilter').value);
             
-            await Promise.all([
-                loadStats(currentYear, currentMonth),
-                loadStudents(currentYear, currentMonth)
-            ]);
+            await loadPayments();
+            renderCalendar();
+            updateStats();
         }
 
-        async function loadStats(year, month) {
+        async function loadPayments() {
             try {
-                const userDataBase64 = base64Encode(JSON.stringify(user));
-                const response = await fetch(\`/api/tuition/stats?year=\${year}&month=\${month}\`, {
-                    headers: { 'X-User-Data-Base64': userDataBase64 }
+                const response = await fetch(\`/api/tuition/payments?year=\${currentYear}&month=\${currentMonth}\`, {
+                    headers: getApiHeaders()
                 });
                 const data = await response.json();
-
-                if (data.success && data.stats) {
-                    document.getElementById('totalStudents').textContent = data.stats.total_students || 0;
-                    document.getElementById('paidCount').textContent = data.stats.paid_count || 0;
-                    document.getElementById('unpaidCount').textContent = 
-                        (data.stats.unpaid_count || 0) + (data.stats.partial_count || 0) + (data.stats.overdue_count || 0);
-                    document.getElementById('totalPaid').textContent = (data.stats.total_paid || 0).toLocaleString() + '원';
+                
+                if (data.success) {
+                    allStudents = data.payments || [];
+                    allPayments = {};
+                    allStudents.forEach(payment => {
+                        allPayments[payment.student_id] = payment;
+                    });
                 }
-            } catch (err) {
-                console.error('Stats error:', err);
+            } catch (error) {
+                console.error('납입 현황 로드 실패:', error);
             }
         }
 
-        async function loadStudents(year, month) {
-            try {
-                const userDataBase64 = base64Encode(JSON.stringify(user));
-                const response = await fetch(\`/api/tuition/payments?year=\${year}&month=\${month}\`, {
-                    headers: { 'X-User-Data-Base64': userDataBase64 }
-                });
-                const data = await response.json();
-
-                if (data.success) {
-                    const grid = document.getElementById('studentGrid');
-                    if (data.payments.length === 0) {
-                        grid.innerHTML = '<p class="text-gray-500 col-span-full text-center py-8">등록된 학생이 없습니다.</p>';
-                        return;
-                    }
-
-                    const html = data.payments.map(p => {
-                        const statusClass = p.status === 'paid' ? 'paid' : p.status === 'partial' ? 'partial' : 'unpaid';
-                        const statusText = p.status === 'paid' ? '완납' : p.status === 'partial' ? '부분납' : '미납';
-                        const statusIcon = p.status === 'paid' ? 'check-circle' : p.status === 'partial' ? 'exclamation-circle' : 'times-circle';
-                        
-                        return \`
-                            <div class="student-card \${statusClass} border-2 rounded-lg p-4 cursor-pointer"
-                                 onclick="showPaymentDetails(\${p.student_id})">
-                                <div class="flex justify-between items-start mb-2">
-                                    <div>
-                                        <div class="font-bold text-gray-900">\${p.student_name}</div>
-                                        <div class="text-sm text-gray-600">\${p.grade || '-'}</div>
-                                    </div>
-                                    <i class="fas fa-\${statusIcon} text-xl \${
-                                        p.status === 'paid' ? 'text-green-600' : 
-                                        p.status === 'partial' ? 'text-yellow-600' : 'text-red-600'
-                                    }"></i>
-                                </div>
-                                <div class="text-sm space-y-1">
-                                    <div>금액: <span class="font-semibold">\${(p.amount || 0).toLocaleString()}원</span></div>
-                                    <div>납입: <span class="font-semibold">\${(p.paid_amount || 0).toLocaleString()}원</span></div>
-                                </div>
-                                <div class="mt-3 pt-3 border-t border-gray-300">
-                                    <span class="inline-block px-2 py-1 text-xs font-medium rounded-full \${
-                                        p.status === 'paid' ? 'bg-green-100 text-green-800' : 
-                                        p.status === 'partial' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'
-                                    }">\${statusText}</span>
-                                </div>
-                            </div>
-                        \`;
-                    }).join('');
-
-                    grid.innerHTML = html;
-                }
-            } catch (err) {
-                console.error('Students error:', err);
-                document.getElementById('studentGrid').innerHTML = 
-                    '<p class="text-red-600 col-span-full text-center py-8">오류가 발생했습니다.</p>';
+        function renderCalendar() {
+            const firstDay = new Date(currentYear, currentMonth - 1, 1).getDay();
+            const lastDate = new Date(currentYear, currentMonth, 0).getDate();
+            const today = new Date();
+            const isCurrentMonth = today.getFullYear() === currentYear && today.getMonth() + 1 === currentMonth;
+            const todayDate = today.getDate();
+            
+            const calendarBody = document.getElementById('calendarBody');
+            calendarBody.innerHTML = '';
+            
+            // 이전 달의 빈 칸
+            for (let i = 0; i < firstDay; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'calendar-cell border border-gray-200 bg-gray-50';
+                calendarBody.appendChild(cell);
             }
-        }
-
-        async function showPaymentDetails(studentId) {
-            try {
-                const userDataBase64 = base64Encode(JSON.stringify(user));
-                const response = await fetch(\`/api/tuition/student-fees/\${studentId}?year=\${currentYear}&month=\${currentMonth}\`, {
-                    headers: { 'X-User-Data-Base64': userDataBase64 }
+            
+            // 날짜 셀
+            for (let day = 1; day <= lastDate; day++) {
+                const dayOfWeek = (firstDay + day - 1) % 7;
+                const cell = document.createElement('div');
+                cell.className = 'calendar-cell border border-gray-200 p-3 bg-white';
+                
+                // 오늘 날짜 강조
+                if (isCurrentMonth && day === todayDate) {
+                    cell.className += ' ring-4 ring-blue-400 bg-blue-50';
+                }
+                
+                // 주말 배경색
+                if (dayOfWeek === 0) cell.className += ' bg-red-50';
+                if (dayOfWeek === 6) cell.className += ' bg-blue-50';
+                
+                // 날짜 헤더
+                const dateHeader = document.createElement('div');
+                dateHeader.className = 'flex items-center justify-between mb-3 pb-2 border-b-2 border-gray-200';
+                const dateColor = dayOfWeek === 0 ? 'text-red-600' : dayOfWeek === 6 ? 'text-blue-600' : 'text-gray-800';
+                dateHeader.innerHTML = \`
+                    <div>
+                        <div class="date-number \${dateColor}">\${day}</div>
+                        <div class="day-name text-gray-500">\${['일', '월', '화', '수', '목', '금', '토'][dayOfWeek]}</div>
+                    </div>
+                \`;
+                cell.appendChild(dateHeader);
+                
+                // 학생 목록
+                const studentList = document.createElement('div');
+                studentList.className = 'space-y-1 overflow-y-auto max-h-24';
+                
+                // 해당 날짜가 결제일인 학생 필터링
+                const studentsOnThisDay = allStudents.filter(payment => {
+                    if (!payment.enrollment_date) return false;
+                    const enrollDate = new Date(payment.enrollment_date);
+                    return enrollDate.getDate() === day;
                 });
-                const data = await response.json();
-
-                if (data.success) {
-                    const details = document.getElementById('paymentDetails');
-                    details.innerHTML = \`
-                        <div class="space-y-4">
-                            <div>
-                                <div class="text-sm text-gray-600">학생</div>
-                                <div class="text-lg font-bold">\${data.student.name} (\${data.student.grade || '-'})</div>
-                            </div>
-                            <div>
-                                <div class="text-sm text-gray-600">반</div>
-                                <div class="font-medium">\${data.student.class_name || '미배정'}</div>
-                            </div>
-                            <div>
-                                <div class="text-sm text-gray-600">월 교육비</div>
-                                <div class="text-xl font-bold text-blue-600">\${data.amount_due.toLocaleString()}원</div>
-                            </div>
-                            <div>
-                                <div class="text-sm text-gray-600">납입액</div>
-                                <div class="text-xl font-bold text-green-600">\${data.amount_paid.toLocaleString()}원</div>
-                            </div>
-                            <div class="pt-4 border-t">
-                                \${data.status === 'paid' ? 
-                                    '<div class="text-center text-green-600 font-bold"><i class="fas fa-check-circle mr-2"></i>납입 완료</div>' :
-                                    \`<button onclick="markPaid(\${studentId})" class="w-full py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-bold">
-                                        <i class="fas fa-check mr-2"></i>납입 완료 처리
-                                    </button>\`
-                                }
-                            </div>
+                
+                studentsOnThisDay.forEach(payment => {
+                    const statusColors = {
+                        'paid': { bg: 'bg-green-500', text: '완납' },
+                        'partial': { bg: 'bg-yellow-500', text: '부분' },
+                        'unpaid': { bg: 'bg-red-500', text: '미납' }
+                    };
+                    const status = statusColors[payment.status] || statusColors['unpaid'];
+                    
+                    const studentItem = document.createElement('div');
+                    studentItem.className = \`student-item \${status.bg} text-white font-medium\`;
+                    studentItem.innerHTML = \`
+                        <div class="flex items-center justify-between">
+                            <span class="truncate">\${payment.student_name}</span>
+                            <span class="text-xs ml-2">\${status.text}</span>
                         </div>
                     \`;
-                    document.getElementById('paymentModal').classList.remove('hidden');
-                }
-            } catch (err) {
-                console.error('Payment details error:', err);
-                alert('학생 정보를 불러올 수 없습니다.');
+                    studentItem.onclick = () => openPaymentModal(payment.student_id);
+                    studentItem.title = \`\${payment.student_name} - \${(payment.amount || 0).toLocaleString()}원\`;
+                    studentList.appendChild(studentItem);
+                });
+                
+                cell.appendChild(studentList);
+                calendarBody.appendChild(cell);
             }
         }
 
-        async function markPaid(studentId) {
+        async function openPaymentModal(studentId = null) {
+            document.getElementById('paymentModal').classList.remove('hidden');
+            
+            // 학생 목록 로드
             try {
-                const userDataBase64 = base64Encode(JSON.stringify(user));
-                const response = await fetch('/api/tuition/mark-paid', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-User-Data-Base64': userDataBase64
-                    },
-                    body: JSON.stringify({
-                        student_id: studentId,
-                        year: currentYear,
-                        month: currentMonth
-                    })
+                const response = await fetch('/api/students', {
+                    headers: getApiHeaders()
                 });
                 const data = await response.json();
-
-                if (data.success) {
-                    alert('납입 완료 처리되었습니다.');
-                    closePaymentModal();
-                    loadData();
-                } else {
-                    alert('처리 실패: ' + (data.error || '알 수 없는 오류'));
+                
+                if (data.success && data.students) {
+                    const select = document.getElementById('studentSelect');
+                    select.innerHTML = '<option value="">학생을 선택하세요</option>';
+                    
+                    data.students.forEach(student => {
+                        const option = document.createElement('option');
+                        option.value = student.id;
+                        option.textContent = \`\${student.name} (\${student.grade || '-'}) - \${student.class_name || '반 미배정'}\`;
+                        option.dataset.classId = student.class_id;
+                        option.dataset.className = student.class_name || '-';
+                        option.dataset.classFee = student.class_fee || 0;
+                        option.dataset.enrollmentDate = student.enrollment_date || '';
+                        if (studentId && student.id == studentId) {
+                            option.selected = true;
+                        }
+                        select.appendChild(option);
+                    });
+                    
+                    if (studentId) {
+                        loadStudentPaymentInfo();
+                    }
                 }
-            } catch (err) {
-                console.error('Mark paid error:', err);
-                alert('납입 처리 중 오류가 발생했습니다.');
+            } catch (error) {
+                console.error('학생 목록 로드 실패:', error);
             }
+            
+            // 오늘 날짜 설정
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('paidDate').value = today;
         }
 
         function closePaymentModal() {
             document.getElementById('paymentModal').classList.add('hidden');
+            document.getElementById('paymentInfo').classList.add('hidden');
+            document.getElementById('paymentForm').reset();
         }
 
-        async function showClassManagement() {
-            try {
-                const userDataBase64 = base64Encode(JSON.stringify(user));
-                const response = await fetch('/api/tuition/classes', {
-                    headers: { 'X-User-Data-Base64': userDataBase64 }
-                });
-                const data = await response.json();
-
-                if (data.success) {
-                    const list = document.getElementById('classList');
-                    if (data.classes.length === 0) {
-                        list.innerHTML = '<p class="text-gray-500 text-center py-8">등록된 반이 없습니다.</p>';
-                    } else {
-                        const html = data.classes.map(c => \`
-                            <div class="border border-gray-200 rounded-lg p-4 mb-3">
-                                <div class="flex justify-between items-start mb-2">
-                                    <div>
-                                        <div class="font-bold text-lg">\${c.name}</div>
-                                        <div class="text-sm text-gray-600">학생: \${c.student_count}명</div>
-                                        <div class="text-sm text-gray-600">선생님: \${c.teacher_name || '미배정'}</div>
-                                    </div>
-                                    <div class="text-right">
-                                        <div class="text-sm text-gray-600">월 교육비</div>
-                                        <div class="text-xl font-bold text-blue-600">\${(c.monthly_fee || 0).toLocaleString()}원</div>
-                                    </div>
-                                </div>
-                                <div class="mt-3 flex gap-2">
-                                    <input type="number" id="fee_\${c.id}" value="\${c.monthly_fee || 0}" 
-                                           class="flex-1 px-3 py-2 border border-gray-300 rounded-lg" placeholder="교육비 입력">
-                                    <button onclick="updateClassFee(\${c.id})" 
-                                            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                                        저장
-                                    </button>
-                                </div>
-                            </div>
-                        \`).join('');
-                        list.innerHTML = html;
-                    }
-                    document.getElementById('classModal').classList.remove('hidden');
-                }
-            } catch (err) {
-                console.error('Classes error:', err);
-                alert('반 목록을 불러올 수 없습니다.');
+        async function loadStudentPaymentInfo() {
+            const select = document.getElementById('studentSelect');
+            const selectedOption = select.options[select.selectedIndex];
+            
+            if (!selectedOption.value) {
+                document.getElementById('paymentInfo').classList.add('hidden');
+                return;
             }
+            
+            const studentId = selectedOption.value;
+            const studentName = selectedOption.textContent.split(' (')[0];
+            const className = selectedOption.dataset.className;
+            const classFee = parseInt(selectedOption.dataset.classFee) || 0;
+            
+            document.getElementById('selectedStudentId').value = studentId;
+            document.getElementById('infoStudentName').textContent = studentName;
+            document.getElementById('infoClassName').textContent = className;
+            document.getElementById('infoMonthlyFee').textContent = classFee.toLocaleString() + '원';
+            document.getElementById('paidAmount').value = classFee;
+            
+            // 기존 납입 내역 확인
+            const payment = allPayments[studentId];
+            if (payment) {
+                document.getElementById('selectedPaymentId').value = payment.id || '';
+                const statusText = payment.status === 'paid' ? '완납' : payment.status === 'partial' ? '부분납입' : '미납';
+                const statusClass = payment.status === 'paid' ? 'text-green-600' : payment.status === 'partial' ? 'text-yellow-600' : 'text-red-600';
+                document.getElementById('infoPaymentStatus').innerHTML = \`<span class="\${statusClass}">\${statusText} (\${(payment.paid_amount || 0).toLocaleString()}원)</span>\`;
+            } else {
+                document.getElementById('infoPaymentStatus').innerHTML = '<span class="text-red-600">미납 (0원)</span>';
+            }
+            
+            document.getElementById('paymentInfo').classList.remove('hidden');
         }
 
-        async function updateClassFee(classId) {
-            const feeInput = document.getElementById(\`fee_\${classId}\`);
-            const fee = parseInt(feeInput.value) || 0;
-
+        async function submitPayment(event) {
+            event.preventDefault();
+            
+            const studentId = document.getElementById('selectedStudentId').value;
+            const paidAmount = parseInt(document.getElementById('paidAmount').value);
+            const paidDate = document.getElementById('paidDate').value;
+            const paymentMethod = document.getElementById('paymentMethod').value;
+            const memo = document.getElementById('paymentMemo').value;
+            
             try {
-                const userDataBase64 = base64Encode(JSON.stringify(user));
-                const response = await fetch(\`/api/tuition/classes/\${classId}/fee\`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-User-Data-Base64': userDataBase64
-                    },
-                    body: JSON.stringify({ monthly_fee: fee })
+                const response = await fetch('/api/tuition/payments', {
+                    method: 'POST',
+                    headers: getApiHeaders(),
+                    body: JSON.stringify({
+                        student_id: studentId,
+                        year: currentYear,
+                        month: currentMonth,
+                        paid_amount: paidAmount,
+                        paid_date: paidDate,
+                        payment_method: paymentMethod,
+                        memo: memo
+                    })
                 });
+                
                 const data = await response.json();
-
+                
                 if (data.success) {
-                    alert('반 교육비가 저장되었습니다.');
-                    showClassManagement(); // 새로고침
+                    alert('✅ 납입 처리가 완료되었습니다!');
+                    closePaymentModal();
+                    loadCalendar();
                 } else {
-                    alert('저장 실패: ' + (data.error || '알 수 없는 오류'));
+                    alert('❌ 납입 처리 실패: ' + (data.error || '알 수 없는 오류'));
                 }
-            } catch (err) {
-                console.error('Update fee error:', err);
-                alert('교육비 저장 중 오류가 발생했습니다.');
+            } catch (error) {
+                console.error('납입 처리 실패:', error);
+                alert('❌ 납입 처리 중 오류가 발생했습니다.');
             }
         }
 
-        function closeClassModal() {
-            document.getElementById('classModal').classList.add('hidden');
+        function updateStats() {
+            const total = allStudents.length;
+            const paid = allStudents.filter(p => p.status === 'paid').length;
+            const unpaid = allStudents.filter(p => p.status === 'unpaid').length;
+            const totalAmount = allStudents.reduce((sum, p) => sum + (p.amount || 0), 0);
+            const totalPaid = allStudents.reduce((sum, p) => sum + (p.paid_amount || 0), 0);
+            
+            document.getElementById('totalStudents').textContent = total;
+            document.getElementById('paidStudents').textContent = paid;
+            document.getElementById('unpaidStudents').textContent = unpaid;
+            document.getElementById('totalAmount').textContent = totalAmount.toLocaleString() + '원';
+            document.getElementById('totalPaid').textContent = totalPaid.toLocaleString() + '원';
         }
-        <\/script>
-    </body>
-    </html>
-  `));c.get("/tools/revenue-management",async e=>e.html(`
+
+        function prevMonth() {
+            currentMonth--;
+            if (currentMonth < 1) {
+                currentMonth = 12;
+                currentYear--;
+            }
+            document.getElementById('yearFilter').value = currentYear;
+            document.getElementById('monthFilter').value = currentMonth;
+            loadCalendar();
+        }
+
+        function nextMonth() {
+            currentMonth++;
+            if (currentMonth > 12) {
+                currentMonth = 1;
+                currentYear++;
+            }
+            document.getElementById('yearFilter').value = currentYear;
+            document.getElementById('monthFilter').value = currentMonth;
+            loadCalendar();
+        }
+
+        function goToday() {
+            const today = new Date();
+            currentYear = today.getFullYear();
+            currentMonth = today.getMonth() + 1;
+            document.getElementById('yearFilter').value = currentYear;
+            document.getElementById('monthFilter').value = currentMonth;
+            loadCalendar();
+        }
+    <\/script>
+</body>
+</html>
+`));c.get("/tools/revenue-management",async e=>e.html(`
     <!DOCTYPE html>
     <html lang="ko">
     <head>
@@ -38389,4 +38572,4 @@ ${o}`;return await e.env.DB.prepare(`
         <\/script>
     </body>
     </html>
-  `)});const ut=new Pe,ea=Object.assign({"/src/index.tsx":c});let At=!1;for(const[,e]of Object.entries(ea))e&&(ut.all("*",t=>{let s;try{s=t.executionCtx}catch{}return e.fetch(t.req.raw,t.env,s)}),ut.notFound(t=>{let s;try{s=t.executionCtx}catch{}return e.fetch(t.req.raw,t.env,s)}),At=!0);if(!At)throw new Error("Can't import modules from ['/src/index.ts','/src/index.tsx','/app/server.ts']");export{ut as default};
+  `)});const ut=new Fe,ea=Object.assign({"/src/index.tsx":c});let At=!1;for(const[,e]of Object.entries(ea))e&&(ut.all("*",t=>{let s;try{s=t.executionCtx}catch{}return e.fetch(t.req.raw,t.env,s)}),ut.notFound(t=>{let s;try{s=t.executionCtx}catch{}return e.fetch(t.req.raw,t.env,s)}),At=!0);if(!At)throw new Error("Can't import modules from ['/src/index.ts','/src/index.tsx','/app/server.ts']");export{ut as default};

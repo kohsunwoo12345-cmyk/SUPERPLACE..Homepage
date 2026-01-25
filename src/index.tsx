@@ -1081,6 +1081,100 @@ app.post('/api/admin/fix-academies-table', async (c) => {
   }
 })
 
+// 🔧 관리자: 사용량 데이터 동기화 API (랜딩페이지 개수 수정)
+app.post('/api/admin/sync-landing-pages-usage', async (c) => {
+  try {
+    // 관리자 권한 확인
+    const userHeaderBase64 = c.req.header('X-User-Data-Base64')
+    if (!userHeaderBase64) {
+      return c.json({ success: false, error: 'Unauthorized' }, 401)
+    }
+    
+    let user
+    try {
+      const userDataStr = atob(userHeaderBase64)
+      user = JSON.parse(userDataStr)
+    } catch (e) {
+      return c.json({ success: false, error: 'Invalid user data' }, 401)
+    }
+    
+    if (user.role !== 'admin') {
+      return c.json({ success: false, error: 'Admin only' }, 403)
+    }
+    
+    console.log('[Sync Usage] Starting landing pages usage sync...')
+    
+    // 모든 활성 구독 조회
+    const subscriptions = await c.env.DB.prepare(`
+      SELECT id, academy_id FROM subscriptions 
+      WHERE status = 'active'
+    `).all()
+    
+    const results = []
+    let synced = 0
+    
+    for (const sub of subscriptions.results || []) {
+      try {
+        // 해당 academy의 실제 랜딩페이지 개수 조회
+        const landingPagesCount = await c.env.DB.prepare(`
+          SELECT COUNT(*) as count FROM landing_pages 
+          WHERE user_id IN (
+            SELECT id FROM users WHERE academy_id = ?
+          )
+        `).bind(sub.academy_id).first()
+        
+        const actualCount = landingPagesCount?.count || 0
+        
+        // usage_tracking 업데이트
+        const updateResult = await c.env.DB.prepare(`
+          UPDATE usage_tracking 
+          SET landing_pages_created = ?, updated_at = CURRENT_TIMESTAMP
+          WHERE subscription_id = ? AND academy_id = ?
+        `).bind(actualCount, sub.id, sub.academy_id).run()
+        
+        if (updateResult.meta.changes > 0) {
+          synced++
+          results.push(`✅ Academy ${sub.academy_id}: Updated to ${actualCount} pages`)
+          console.log(`[Sync Usage] Academy ${sub.academy_id}: ${actualCount} pages`)
+        } else {
+          // usage_tracking 레코드가 없는 경우 생성
+          try {
+            await c.env.DB.prepare(`
+              INSERT INTO usage_tracking (
+                academy_id, subscription_id, current_students, 
+                ai_reports_used_this_month, landing_pages_created, 
+                current_teachers, created_at, updated_at
+              ) VALUES (?, ?, 0, 0, ?, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+            `).bind(sub.academy_id, sub.id, actualCount).run()
+            synced++
+            results.push(`✅ Academy ${sub.academy_id}: Created with ${actualCount} pages`)
+            console.log(`[Sync Usage] Academy ${sub.academy_id}: Created with ${actualCount} pages`)
+          } catch (insertErr) {
+            results.push(`⚠️ Academy ${sub.academy_id}: Failed to create - ${insertErr.message}`)
+          }
+        }
+      } catch (err) {
+        results.push(`❌ Academy ${sub.academy_id}: ${err.message}`)
+        console.error(`[Sync Usage] Error for academy ${sub.academy_id}:`, err)
+      }
+    }
+    
+    return c.json({
+      success: true,
+      message: `동기화 완료: ${synced}개 구독 업데이트됨`,
+      synced,
+      total: subscriptions.results?.length || 0,
+      results
+    })
+  } catch (error) {
+    console.error('[Sync Usage] Error:', error)
+    return c.json({ 
+      success: false, 
+      error: '사용량 동기화 실패: ' + error.message 
+    }, 500)
+  }
+})
+
 // SMS API Routes
 // ========================================
 
@@ -4646,15 +4740,38 @@ app.post('/api/landing/create', async (c) => {
       .bind(user.id, slug, title, template_type, JSON.stringify(input_data), htmlContent, qrCodeUrl, thumbnail_url || null, og_title || null, og_description || null, folder_id || null, form_id || null)
       .run()
     
-    // 🔥 사용량 증가
-    await c.env.DB.prepare(`
-      UPDATE usage_tracking 
-      SET landing_pages_created = landing_pages_created + 1, 
-          updated_at = CURRENT_TIMESTAMP
-      WHERE subscription_id = ?
-    `).bind(activeSubscription.id).run()
-    
-    console.log('✅ Landing page created and usage incremented:', currentPages + 1, '/', pageLimit)
+    // 🔥 사용량 증가 (레코드가 없으면 자동 생성)
+    try {
+      // 먼저 usage_tracking 레코드 존재 여부 확인
+      const usageExists = await c.env.DB.prepare(`
+        SELECT id FROM usage_tracking WHERE subscription_id = ?
+      `).bind(activeSubscription.id).first()
+      
+      if (!usageExists) {
+        // 레코드가 없으면 생성
+        console.log('⚠️ [Landing] usage_tracking record not found, creating...')
+        await c.env.DB.prepare(`
+          INSERT INTO usage_tracking (
+            academy_id, subscription_id, current_students, ai_reports_used_this_month,
+            landing_pages_created, current_teachers, sms_sent_this_month,
+            created_at, updated_at
+          ) VALUES (?, ?, 0, 0, 1, 0, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+        `).bind(academyIdToUse, activeSubscription.id).run()
+        console.log('✅ [Landing] Created usage_tracking with landing_pages_created = 1')
+      } else {
+        // 레코드가 있으면 업데이트
+        await c.env.DB.prepare(`
+          UPDATE usage_tracking 
+          SET landing_pages_created = landing_pages_created + 1, 
+              updated_at = CURRENT_TIMESTAMP
+          WHERE subscription_id = ?
+        `).bind(activeSubscription.id).run()
+        console.log('✅ [Landing] Updated landing_pages_created:', currentPages + 1, '/', pageLimit)
+      }
+    } catch (usageErr) {
+      console.error('❌ [Landing] Failed to update usage:', usageErr)
+      // 에러가 나도 랜딩페이지 생성 자체는 성공으로 처리
+    }
     
     return c.json({ 
       success: true, 
@@ -10185,15 +10302,41 @@ app.get('/api/usage/check', async (c) => {
     
     // 🔥 누적 랜딩페이지 개수 조회: usage_tracking에서 누적 생성 개수 사용 (삭제해도 누적 유지)
     let actualLandingPagesCount = 0
+    let usage = null
     try {
-      // usage가 아직 조회되지 않은 경우를 대비해 미리 조회
-      if (!usage) {
-        usage = await c.env.DB.prepare(`
-          SELECT * FROM usage_tracking 
-          WHERE academy_id = ? AND subscription_id = ?
-        `).bind(academyId, subscription.id).first()
+      // usage_tracking에서 먼저 조회
+      usage = await c.env.DB.prepare(`
+        SELECT * FROM usage_tracking 
+        WHERE academy_id = ? AND subscription_id = ?
+      `).bind(academyId, subscription.id).first()
+      
+      if (usage && usage.landing_pages_created !== null && usage.landing_pages_created !== undefined) {
+        actualLandingPagesCount = usage.landing_pages_created
+        console.log('[Usage Check] ✅ Landing pages from usage_tracking:', actualLandingPagesCount)
+      } else {
+        // 🔥 Fallback: usage_tracking에 레코드가 없으면 실제 landing_pages 테이블에서 COUNT
+        console.log('[Usage Check] ⚠️ No usage_tracking record, counting from landing_pages table...')
+        const countResult = await c.env.DB.prepare(`
+          SELECT COUNT(*) as count FROM landing_pages 
+          WHERE user_id = ?
+        `).bind(academyId).first()
+        actualLandingPagesCount = countResult?.count || 0
+        console.log('[Usage Check] ✅ Landing pages from actual table:', actualLandingPagesCount)
+        
+        // 자동으로 usage_tracking 레코드 생성
+        try {
+          await c.env.DB.prepare(`
+            INSERT INTO usage_tracking (
+              academy_id, subscription_id, current_students, ai_reports_used_this_month,
+              landing_pages_created, current_teachers, sms_sent_this_month,
+              created_at, updated_at
+            ) VALUES (?, ?, 0, 0, ?, 0, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+          `).bind(academyId, subscription.id, actualLandingPagesCount).run()
+          console.log('[Usage Check] ✅ Auto-created usage_tracking with', actualLandingPagesCount, 'landing pages')
+        } catch (insertErr) {
+          console.error('[Usage Check] ❌ Failed to auto-create usage_tracking:', insertErr.message)
+        }
       }
-      actualLandingPagesCount = usage?.landing_pages_created || 0
     } catch (err) {
       console.error('[Usage] landing_pages_created error:', err.message)
     }
@@ -10254,16 +10397,14 @@ app.get('/api/usage/check', async (c) => {
       console.error('[Usage] teachers count error:', err.message)
     }
 
-    // 사용량 조회 (AI 리포트는 usage_tracking에서 조회)
-    let usage = await c.env.DB.prepare(`
-      SELECT * FROM usage_tracking 
-      WHERE academy_id = ? AND subscription_id = ?
-    `).bind(academyId, subscription.id).first()
-
+    // 🔥 usage는 이미 위에서 조회되었음 (line 10308)
     // AI 리포트 사용량 (usage_tracking에서만 조회)
     let aiReportsCount = 0
     if (usage) {
       aiReportsCount = usage.ai_reports_used_this_month || 0
+      console.log('[Usage Check] ✅ AI reports:', aiReportsCount)
+    } else {
+      console.log('[Usage Check] ⚠️ No usage_tracking for AI reports')
     }
 
     // 📊 최종 응답: 실제 데이터 반환
@@ -27814,7 +27955,28 @@ app.post('/api/learning-reports/generate', async (c) => {
       WHERE academy_id = ? AND subscription_id = ?
     `).bind(student.academy_id, subscription.id).first()
 
-    const currentReports = usage?.ai_reports_used_this_month || 0
+    // 🔥 usage_tracking 레코드가 없으면 자동 생성
+    let currentReports = 0
+    if (!usage) {
+      console.log('⚠️ [GenerateReport] No usage_tracking record, creating...')
+      try {
+        await c.env.DB.prepare(`
+          INSERT INTO usage_tracking (
+            academy_id, subscription_id, current_students, ai_reports_used_this_month,
+            landing_pages_created, current_teachers, sms_sent_this_month,
+            created_at, updated_at
+          ) VALUES (?, ?, 0, 0, 0, 0, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+        `).bind(student.academy_id, subscription.id).run()
+        console.log('✅ [GenerateReport] Auto-created usage_tracking')
+        currentReports = 0
+      } catch (createErr) {
+        console.error('❌ [GenerateReport] Failed to create usage_tracking:', createErr.message)
+        currentReports = 0
+      }
+    } else {
+      currentReports = usage.ai_reports_used_this_month || 0
+    }
+    
     if (currentReports >= subscription.ai_report_limit) {
       return c.json({ 
         success: false, 
@@ -28074,12 +28236,26 @@ ${recommendations}
     
     // ✅ 사용량 증가
     try {
-      await c.env.DB.prepare(`
+      const updateResult = await c.env.DB.prepare(`
         UPDATE usage_tracking 
         SET ai_reports_used_this_month = ai_reports_used_this_month + 1, updated_at = CURRENT_TIMESTAMP
         WHERE academy_id = ? AND subscription_id = ?
       `).bind(student.academy_id, subscription.id).run()
-      console.log('📈 [GenerateReport] Usage incremented successfully')
+      
+      // 🔥 UPDATE가 실패하면 (레코드가 없으면) INSERT
+      if (updateResult.meta.changes === 0) {
+        console.log('⚠️ [GenerateReport] No usage_tracking to update, creating with count=1...')
+        await c.env.DB.prepare(`
+          INSERT INTO usage_tracking (
+            academy_id, subscription_id, current_students, ai_reports_used_this_month,
+            landing_pages_created, current_teachers, sms_sent_this_month,
+            created_at, updated_at
+          ) VALUES (?, ?, 0, 1, 0, 0, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+        `).bind(student.academy_id, subscription.id).run()
+        console.log('✅ [GenerateReport] Auto-created usage_tracking with ai_reports=1')
+      } else {
+        console.log('📈 [GenerateReport] Usage incremented successfully')
+      }
     } catch (usageErr) {
       console.error('⚠️ [GenerateReport] Failed to increment usage:', usageErr)
     }
@@ -38160,6 +38336,147 @@ setInterval(loadActiveSessionCount,30000);
   const s=`<div class="mb-8"><h2 class="text-xl font-bold mb-4">신청 대기</h2><div class="grid md:grid-cols-5 gap-6"><div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow p-6 text-white"><div class="flex items-center justify-between mb-2"><span>입금 대기</span><i class="fas fa-money-bill-wave text-2xl"></i></div><p class="text-3xl font-bold">${pd}</p></div><div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow p-6 text-white"><div class="flex items-center justify-between mb-2"><span>발신번호 대기</span><i class="fas fa-phone text-2xl"></i></div><p class="text-3xl font-bold">${ps}</p></div><a href="/admin/bank-transfers" class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow p-6 text-white hover:shadow-lg transition"><div class="flex items-center justify-between mb-2"><span>계좌이체 대기</span><i class="fas fa-university text-2xl"></i></div><p class="text-3xl font-bold">${pbt}</p><p class="text-sm text-blue-100 mt-2">클릭하여 관리</p></a><a href="/admin/free-plan-requests" class="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl shadow p-6 text-white hover:shadow-lg transition"><div class="flex items-center justify-between mb-2"><span>무료 플랜 대기</span><i class="fas fa-gift text-2xl"></i></div><p class="text-3xl font-bold">${pfp}</p><p class="text-sm text-emerald-100 mt-2">클릭하여 관리</p></a><a href="/admin/card-payments" class="bg-gradient-to-br from-pink-500 to-pink-600 rounded-xl shadow p-6 text-white hover:shadow-lg transition"><div class="flex items-center justify-between mb-2"><span>카드결제 신청</span><i class="fas fa-credit-card text-2xl"></i></div><p class="text-3xl font-bold">${pcp}</p><p class="text-sm text-pink-100 mt-2">클릭하여 관리</p></a></div></div>`
   const l=`<div class="grid md:grid-cols-3 gap-6"><a href="/admin/users" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"><i class="fas fa-user-cog text-blue-600 text-xl"></i></div><div><h3 class="text-lg font-bold">사용자 관리</h3><p class="text-gray-600 text-sm">권한 관리</p></div></div></a><a href="/admin/contacts" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center"><i class="fas fa-comments text-green-600 text-xl"></i></div><div><h3 class="text-lg font-bold">문의 관리</h3><p class="text-gray-600 text-sm">문의 처리</p></div></div></a><a href="/admin/revenue" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center"><i class="fas fa-chart-line text-yellow-600 text-xl"></i></div><div><h3 class="text-lg font-bold">매출 관리</h3><p class="text-gray-600 text-sm">매출 통계</p></div></div></a><a href="/admin/sms" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"><i class="fas fa-sms text-blue-600 text-xl"></i></div><div><h3 class="text-lg font-bold">문자 관리</h3><p class="text-gray-600 text-sm">SMS 발송</p></div></div></a><a href="/admin/sender/verification" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center"><i class="fas fa-phone text-purple-600 text-xl"></i></div><div><h3 class="text-lg font-bold">발신번호</h3><p class="text-gray-600 text-sm">인증 승인</p></div></div></a><a href="/admin/deposits" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center"><i class="fas fa-money-bill-wave text-green-600 text-xl"></i></div><div><h3 class="text-lg font-bold">입금 관리</h3><p class="text-gray-600 text-sm">포인트 승인</p></div></div></a><a href="/admin/bank-transfers" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"><i class="fas fa-university text-blue-600 text-xl"></i></div><div><h3 class="text-lg font-bold">계좌이체</h3><p class="text-gray-600 text-sm">승인 관리</p></div></div></a><a href="/admin/programs" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center"><i class="fas fa-graduation-cap text-purple-600 text-xl"></i></div><div><h3 class="text-lg font-bold">프로그램</h3><p class="text-gray-600 text-sm">교육 관리</p></div></div></a><a href="/admin/card-payments" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-pink-100 rounded-lg flex items-center justify-center"><i class="fas fa-credit-card text-pink-600 text-xl"></i></div><div><h3 class="text-lg font-bold">카드결제 신청</h3><p class="text-gray-600 text-sm">결제 승인 관리</p></div></div></a></div></div><script>(function(){try{let sessionId=localStorage.getItem('sessionId');if(!sessionId){sessionId='session_'+Date.now()+'_'+Math.random().toString(36).substr(2,9);localStorage.setItem('sessionId',sessionId);}const user=JSON.parse(localStorage.getItem('user')||'null');fetch('/api/session/track',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:sessionId,userId:user?.id||null})}).catch(err=>console.log('Session track error:',err));setInterval(()=>{fetch('/api/session/track',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:sessionId,userId:user?.id||null})}).catch(err=>console.log('Session track error:',err));},5*60*1000);}catch(e){console.log('Session tracking init error:',e);}})();</script></body></html>`
   return c.html(h+n+b+s+l)
+})
+
+// 관리자: 사용량 동기화 페이지
+app.get('/admin/sync-usage', (c) => {
+  return c.html(`<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>사용량 동기화 - 관리자</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body class="bg-gray-50">
+    <nav class="bg-white shadow-sm border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <a href="/admin/dashboard" class="text-2xl font-bold text-purple-600">슈퍼플레이스 관리자</a>
+                <div class="flex gap-4">
+                    <a href="/admin/dashboard" class="text-gray-700 hover:text-purple-600">대시보드</a>
+                    <a href="/admin/sync-usage" class="text-purple-600 font-semibold">사용량 동기화</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-4xl mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">🔄 사용량 동기화</h1>
+        <p class="text-gray-600 mb-8">랜딩페이지 사용량을 실제 데이터와 동기화합니다.</p>
+
+        <div class="bg-white rounded-xl shadow p-8 mb-6">
+            <h2 class="text-xl font-bold mb-4">랜딩페이지 사용량 동기화</h2>
+            <p class="text-gray-600 mb-6">
+                이 기능은 모든 활성 구독에 대해 <code class="bg-gray-100 px-2 py-1 rounded">landing_pages</code> 테이블의 실제 데이터를 세어
+                <code class="bg-gray-100 px-2 py-1 rounded">usage_tracking</code> 테이블을 업데이트합니다.
+            </p>
+            
+            <button onclick="syncLandingPages()" id="syncBtn" class="w-full px-6 py-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-bold text-lg hover:from-purple-700 hover:to-indigo-700 transition-all shadow-lg hover:shadow-xl">
+                <i class="fas fa-sync-alt mr-2"></i>랜딩페이지 사용량 동기화
+            </button>
+            
+            <div id="syncResult" class="mt-6 hidden"></div>
+        </div>
+
+        <div class="bg-blue-50 border border-blue-200 rounded-xl p-6">
+            <h3 class="font-bold text-blue-900 mb-2">💡 언제 사용하나요?</h3>
+            <ul class="text-blue-800 text-sm space-y-2">
+                <li>• 대시보드에 랜딩페이지 사용량이 표시되지 않을 때</li>
+                <li>• 랜딩페이지를 생성했는데 카운트가 증가하지 않을 때</li>
+                <li>• <code class="bg-blue-100 px-2 py-1 rounded">usage_tracking</code> 테이블이 초기화되지 않았을 때</li>
+                <li>• 데이터 무결성을 확인하고 싶을 때</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        async function syncLandingPages() {
+            const btn = document.getElementById('syncBtn');
+            const resultDiv = document.getElementById('syncResult');
+            
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>동기화 중...';
+            resultDiv.classList.add('hidden');
+            
+            try {
+                const user = JSON.parse(localStorage.getItem('user') || 'null');
+                if (!user || user.role !== 'admin') {
+                    alert('관리자만 사용할 수 있습니다.');
+                    window.location.href = '/login';
+                    return;
+                }
+                
+                const userDataBase64 = btoa(unescape(encodeURIComponent(JSON.stringify(user))));
+                
+                const response = await fetch('/api/admin/sync-landing-pages-usage', {
+                    method: 'POST',
+                    headers: {
+                        'X-User-Data-Base64': userDataBase64
+                    }
+                });
+                
+                const data = await response.json();
+                
+                resultDiv.classList.remove('hidden');
+                
+                if (data.success) {
+                    resultDiv.innerHTML = `
+                        <div class="bg-green-50 border-2 border-green-200 rounded-xl p-6">
+                            <div class="flex items-start gap-3">
+                                <i class="fas fa-check-circle text-green-600 text-2xl mt-1"></i>
+                                <div class="flex-1">
+                                    <h3 class="font-bold text-green-900 text-lg mb-2">✅ 동기화 성공!</h3>
+                                    <p class="text-green-800 mb-4">${data.message}</p>
+                                    <div class="bg-white rounded-lg p-4 mb-3">
+                                        <div class="text-sm text-gray-600 mb-2">세부 결과:</div>
+                                        <div class="space-y-1 text-sm">
+                                            ${data.results.map(r => `<div class="text-gray-700">${r}</div>`).join('')}
+                                        </div>
+                                    </div>
+                                    <p class="text-sm text-green-700">
+                                        <strong>업데이트됨:</strong> ${data.synced}개 / 전체: ${data.total}개
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="bg-red-50 border-2 border-red-200 rounded-xl p-6">
+                            <div class="flex items-start gap-3">
+                                <i class="fas fa-times-circle text-red-600 text-2xl mt-1"></i>
+                                <div>
+                                    <h3 class="font-bold text-red-900 text-lg mb-2">❌ 동기화 실패</h3>
+                                    <p class="text-red-800">${data.error}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('동기화 오류:', error);
+                resultDiv.classList.remove('hidden');
+                resultDiv.innerHTML = `
+                    <div class="bg-red-50 border-2 border-red-200 rounded-xl p-6">
+                        <div class="flex items-start gap-3">
+                            <i class="fas fa-exclamation-triangle text-red-600 text-2xl mt-1"></i>
+                            <div>
+                                <h3 class="font-bold text-red-900 text-lg mb-2">⚠️ 오류 발생</h3>
+                                <p class="text-red-800">${error.message}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-sync-alt mr-2"></i>랜딩페이지 사용량 동기화';
+            }
+        }
+    </script>
+</body>
+</html>`)
 })
 
 // 관리자: 실시간 대기 건수 조회 API
@@ -49175,414 +49492,598 @@ app.post('/api/service-inquiry', async (c) => {
 // 교육비 관리 페이지 (원장님 전용 - 선생님 100% 차단)
 // ========================================
 app.get('/tools/tuition-management', async (c) => {
-  return c.html(`
-    <!DOCTYPE html>
-    <html lang="ko">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>교육비 관리 - 슈퍼플레이스</title>
-        <script src="https://cdn.tailwindcss.com"></script>
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-        <style>
-          @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
-          * { font-family: 'Pretendard Variable', sans-serif; }
-          .student-card { transition: all 0.2s; }
-          .student-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-          .paid { background: #d1fae5; border-color: #10b981; }
-          .unpaid { background: #fee2e2; border-color: #ef4444; }
-          .partial { background: #fef3c7; border-color: #f59e0b; }
-        </style>
-    </head>
-    <body class="bg-gray-50">
-        <nav class="fixed w-full top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
-            <div class="max-w-7xl mx-auto px-6">
-                <div class="flex justify-between items-center h-16">
-                    <span class="text-xl font-bold text-purple-600">💰 교육비 관리</span>
+  return c.html(`<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>교육비 관리 - 슈퍼플레이스</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
+        * { font-family: 'Pretendard Variable', sans-serif; }
+        
+        .calendar-cell { 
+            min-height: 140px;
+            position: relative;
+            transition: all 0.2s;
+        }
+        .calendar-cell:hover { 
+            background-color: #f9fafb; 
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .student-item {
+            font-size: 11px;
+            padding: 4px 6px;
+            margin: 2px 0;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .student-item:hover {
+            transform: scale(1.05);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .date-number {
+            font-size: 18px;
+            font-weight: 700;
+        }
+        .day-name {
+            font-size: 10px;
+            opacity: 0.6;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="max-w-[1800px] mx-auto px-6 py-8">
+        <!-- 헤더 -->
+        <div class="mb-8 flex items-center justify-between">
+            <div>
+                <h1 class="text-4xl font-bold text-gray-900 mb-2">📅 교육비 관리 달력</h1>
+                <p class="text-gray-600">학생별 월별 교육비 납입 현황을 한눈에 확인하세요</p>
+            </div>
+            <div class="flex gap-3">
+                <a href="/tools/revenue-management" class="inline-flex items-center px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium shadow-lg">
+                    <i class="fas fa-chart-line mr-2"></i> 매출 관리
+                </a>
+                <a href="/dashboard" class="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium shadow-lg">
+                    <i class="fas fa-home mr-2"></i> 대시보드
+                </a>
+            </div>
+        </div>
+
+        <!-- 통계 카드 -->
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
+            <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-lg p-6 text-white">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm font-medium opacity-90">총 학생 수</span>
+                    <i class="fas fa-users text-2xl opacity-80"></i>
+                </div>
+                <div class="text-3xl font-bold" id="totalStudents">0</div>
+                <div class="text-xs opacity-75 mt-1">명</div>
+            </div>
+            
+            <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl shadow-lg p-6 text-white">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm font-medium opacity-90">완납</span>
+                    <i class="fas fa-check-circle text-2xl opacity-80"></i>
+                </div>
+                <div class="text-3xl font-bold" id="paidStudents">0</div>
+                <div class="text-xs opacity-75 mt-1">명</div>
+            </div>
+            
+            <div class="bg-gradient-to-br from-red-500 to-red-600 rounded-2xl shadow-lg p-6 text-white">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm font-medium opacity-90">미납</span>
+                    <i class="fas fa-exclamation-circle text-2xl opacity-80"></i>
+                </div>
+                <div class="text-3xl font-bold" id="unpaidStudents">0</div>
+                <div class="text-xs opacity-75 mt-1">명</div>
+            </div>
+            
+            <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl shadow-lg p-6 text-white">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm font-medium opacity-90">예상 매출</span>
+                    <i class="fas fa-won-sign text-2xl opacity-80"></i>
+                </div>
+                <div class="text-2xl font-bold" id="totalAmount">0원</div>
+            </div>
+            
+            <div class="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-2xl shadow-lg p-6 text-white">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm font-medium opacity-90">실납입액</span>
+                    <i class="fas fa-coins text-2xl opacity-80"></i>
+                </div>
+                <div class="text-2xl font-bold" id="totalPaid">0원</div>
+            </div>
+        </div>
+
+        <!-- 달력 네비게이션 -->
+        <div class="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 mb-8">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-6">
+                    <button onclick="prevMonth()" class="p-3 hover:bg-gray-100 rounded-xl transition">
+                        <i class="fas fa-chevron-left text-gray-700 text-lg"></i>
+                    </button>
                     <div class="flex gap-4">
-                        <a href="/dashboard" class="text-gray-600 hover:text-purple-600">대시보드</a>
-                        <button onclick="logout()" class="text-gray-600 hover:text-red-600">로그아웃</button>
+                        <select id="yearFilter" onchange="loadCalendar()" class="px-6 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 font-bold text-lg">
+                            <!-- 동적으로 생성 -->
+                        </select>
+                        <select id="monthFilter" onchange="loadCalendar()" class="px-6 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 font-bold text-lg">
+                            <option value="1">1월</option>
+                            <option value="2">2월</option>
+                            <option value="3">3월</option>
+                            <option value="4">4월</option>
+                            <option value="5">5월</option>
+                            <option value="6">6월</option>
+                            <option value="7">7월</option>
+                            <option value="8">8월</option>
+                            <option value="9">9월</option>
+                            <option value="10">10월</option>
+                            <option value="11">11월</option>
+                            <option value="12">12월</option>
+                        </select>
                     </div>
+                    <button onclick="nextMonth()" class="p-3 hover:bg-gray-100 rounded-xl transition">
+                        <i class="fas fa-chevron-right text-gray-700 text-lg"></i>
+                    </button>
                 </div>
-            </div>
-        </nav>
-
-        <div class="pt-20 pb-12 px-6">
-            <div class="max-w-7xl mx-auto">
-                <!-- 월 선택 및 통계 -->
-                <div class="mb-6 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="flex items-center gap-4">
-                            <select id="yearSelect" class="px-4 py-2 border border-gray-300 rounded-lg"></select>
-                            <select id="monthSelect" class="px-4 py-2 border border-gray-300 rounded-lg">
-                                <option value="1">1월</option><option value="2">2월</option><option value="3">3월</option>
-                                <option value="4">4월</option><option value="5">5월</option><option value="6">6월</option>
-                                <option value="7">7월</option><option value="8">8월</option><option value="9">9월</option>
-                                <option value="10">10월</option><option value="11">11월</option><option value="12">12월</option>
-                            </select>
-                            <button onclick="loadData()" class="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
-                                <i class="fas fa-sync mr-2"></i>조회
-                            </button>
-                        </div>
-                        <button onclick="showClassManagement()" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                            <i class="fas fa-cog mr-2"></i>반 관리
-                        </button>
-                    </div>
-                    
-                    <div class="grid grid-cols-4 gap-4">
-                        <div class="text-center">
-                            <div class="text-sm text-gray-600">총 학생</div>
-                            <div id="totalStudents" class="text-2xl font-bold text-gray-900">0</div>
-                        </div>
-                        <div class="text-center">
-                            <div class="text-sm text-gray-600">납입 완료</div>
-                            <div id="paidCount" class="text-2xl font-bold text-green-600">0</div>
-                        </div>
-                        <div class="text-center">
-                            <div class="text-sm text-gray-600">미납</div>
-                            <div id="unpaidCount" class="text-2xl font-bold text-red-600">0</div>
-                        </div>
-                        <div class="text-center">
-                            <div class="text-sm text-gray-600">납입 금액</div>
-                            <div id="totalPaid" class="text-2xl font-bold text-blue-600">0원</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 학생 달력식 카드 뷰 -->
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                    <h2 class="text-xl font-bold text-gray-900 mb-4">
-                        <i class="fas fa-calendar-alt mr-2"></i>학생별 납입 현황
-                    </h2>
-                    <div id="studentGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                        <p class="text-gray-500 col-span-full text-center py-8">로딩 중...</p>
-                    </div>
+                <div class="flex items-center gap-3">
+                    <button onclick="goToday()" class="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition font-bold shadow-lg">
+                        <i class="fas fa-calendar-day mr-2"></i>오늘
+                    </button>
                 </div>
             </div>
         </div>
 
-        <!-- 반 관리 모달 -->
-        <div id="classModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-            <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
-                <div class="p-6 border-b border-gray-200">
-                    <div class="flex justify-between items-center">
-                        <h3 class="text-xl font-bold text-gray-900">반 교육비 설정</h3>
-                        <button onclick="closeClassModal()" class="text-gray-500 hover:text-gray-700">
-                            <i class="fas fa-times text-xl"></i>
-                        </button>
-                    </div>
-                </div>
-                <div id="classList" class="p-6"></div>
+        <!-- 달력 -->
+        <div class="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
+            <!-- 요일 헤더 -->
+            <div class="grid grid-cols-7 border-b-2 border-gray-300">
+                <div class="p-4 text-center font-bold text-lg text-red-600 bg-red-50">일요일</div>
+                <div class="p-4 text-center font-bold text-lg text-gray-700 bg-gray-50">월요일</div>
+                <div class="p-4 text-center font-bold text-lg text-gray-700 bg-gray-50">화요일</div>
+                <div class="p-4 text-center font-bold text-lg text-gray-700 bg-gray-50">수요일</div>
+                <div class="p-4 text-center font-bold text-lg text-gray-700 bg-gray-50">목요일</div>
+                <div class="p-4 text-center font-bold text-lg text-gray-700 bg-gray-50">금요일</div>
+                <div class="p-4 text-center font-bold text-lg text-blue-600 bg-blue-50">토요일</div>
+            </div>
+            <!-- 날짜 셀 -->
+            <div id="calendarBody" class="grid grid-cols-7">
+                <!-- JavaScript로 동적 생성 -->
             </div>
         </div>
+    </div>
 
-        <!-- 납입 상세 모달 -->
-        <div id="paymentModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-            <div class="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4">
-                <div class="p-6 border-b border-gray-200">
-                    <div class="flex justify-between items-center">
-                        <h3 class="text-xl font-bold text-gray-900">납입 처리</h3>
-                        <button onclick="closePaymentModal()" class="text-gray-500 hover:text-gray-700">
-                            <i class="fas fa-times text-xl"></i>
-                        </button>
-                    </div>
+    <!-- 결제 처리 모달 -->
+    <div id="paymentModal" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="p-6 border-b border-gray-200 flex items-center justify-between bg-gradient-to-r from-blue-500 to-blue-600">
+                <h3 class="text-2xl font-bold text-white" id="modalTitle">
+                    <i class="fas fa-credit-card mr-2"></i>교육비 납입 처리
+                </h3>
+                <button onclick="closePaymentModal()" class="text-white hover:text-gray-200 transition">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+
+            <div class="p-8">
+                <!-- 학생 정보 -->
+                <div class="mb-6" id="studentInfo">
+                    <label class="block text-sm font-bold text-gray-700 mb-3">학생 선택</label>
+                    <select id="studentSelect" onchange="loadStudentPaymentInfo()" class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 text-lg font-medium">
+                        <option value="">학생을 선택하세요</option>
+                    </select>
                 </div>
-                <div id="paymentDetails" class="p-6"></div>
+
+                <!-- 납입 정보 표시 -->
+                <div id="paymentInfo" class="hidden">
+                    <div class="bg-gray-50 rounded-xl p-6 mb-6">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <div class="text-sm text-gray-600 mb-1">학생 이름</div>
+                                <div class="text-lg font-bold text-gray-900" id="infoStudentName">-</div>
+                            </div>
+                            <div>
+                                <div class="text-sm text-gray-600 mb-1">반</div>
+                                <div class="text-lg font-bold text-gray-900" id="infoClassName">-</div>
+                            </div>
+                            <div>
+                                <div class="text-sm text-gray-600 mb-1">월 교육비</div>
+                                <div class="text-lg font-bold text-blue-600" id="infoMonthlyFee">0원</div>
+                            </div>
+                            <div>
+                                <div class="text-sm text-gray-600 mb-1">납입 상태</div>
+                                <div class="text-lg font-bold" id="infoPaymentStatus">-</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 납입 폼 -->
+                    <form id="paymentForm" onsubmit="submitPayment(event)">
+                        <input type="hidden" id="selectedStudentId">
+                        <input type="hidden" id="selectedPaymentId">
+                        
+                        <div class="space-y-5">
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">
+                                    <i class="fas fa-won-sign mr-2 text-blue-600"></i>납입 금액
+                                </label>
+                                <input type="number" id="paidAmount" required 
+                                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 text-lg font-medium"
+                                    placeholder="납입 금액을 입력하세요">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">
+                                    <i class="fas fa-calendar-alt mr-2 text-blue-600"></i>납입일
+                                </label>
+                                <input type="date" id="paidDate" required 
+                                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 text-lg font-medium">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">
+                                    <i class="fas fa-credit-card mr-2 text-blue-600"></i>결제 방법
+                                </label>
+                                <select id="paymentMethod" required 
+                                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 text-lg font-medium">
+                                    <option value="">선택하세요</option>
+                                    <option value="card">카드</option>
+                                    <option value="cash">현금</option>
+                                    <option value="transfer">계좌이체</option>
+                                    <option value="other">기타</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">
+                                    <i class="fas fa-sticky-note mr-2 text-blue-600"></i>메모
+                                </label>
+                                <textarea id="paymentMemo" rows="3" 
+                                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500"
+                                    placeholder="메모를 입력하세요 (선택사항)"></textarea>
+                            </div>
+
+                            <div class="flex gap-3 pt-4">
+                                <button type="submit" class="flex-1 bg-blue-600 text-white py-4 rounded-xl hover:bg-blue-700 transition font-bold text-lg shadow-lg">
+                                    <i class="fas fa-check mr-2"></i>납입 처리
+                                </button>
+                                <button type="button" onclick="closePaymentModal()" class="px-8 bg-gray-200 text-gray-700 py-4 rounded-xl hover:bg-gray-300 transition font-bold text-lg">
+                                    취소
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
+    </div>
 
-        <script>
-        let user = null;
+    <script>
         let currentYear, currentMonth;
+        let allStudents = [];
+        let allPayments = {};
 
-        // 로그인 체크
-        const userData = localStorage.getItem('user');
-        if (!userData) {
-            alert('로그인이 필요합니다.');
-            window.location.href = '/login';
-        } else {
-            user = JSON.parse(userData);
-            if (user.user_type === 'teacher') {
-                alert('접근 권한이 없습니다.');
-                window.location.href = '/dashboard';
-            } else {
-                initPage();
+        // 초기화
+        document.addEventListener('DOMContentLoaded', () => {
+            const user = localStorage.getItem('user');
+            if (!user) {
+                alert('로그인이 필요합니다.');
+                window.location.href = '/login';
+                return;
             }
-        }
 
-        function logout() {
-            localStorage.removeItem('user');
-            window.location.href = '/';
-        }
+            initYearSelect();
+            const today = new Date();
+            document.getElementById('yearFilter').value = today.getFullYear();
+            document.getElementById('monthFilter').value = today.getMonth() + 1;
+            currentYear = today.getFullYear();
+            currentMonth = today.getMonth() + 1;
+            
+            loadCalendar();
+        });
 
-        function base64Encode(str) {
-            return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (match, p1) => {
-                return String.fromCharCode('0x' + p1);
-            }));
-        }
-
-        function initPage() {
-            const now = new Date();
-            const yearSelect = document.getElementById('yearSelect');
-            for (let i = now.getFullYear() - 2; i <= now.getFullYear() + 1; i++) {
+        function initYearSelect() {
+            const yearSelect = document.getElementById('yearFilter');
+            const currentYear = new Date().getFullYear();
+            for (let year = currentYear - 2; year <= currentYear + 2; year++) {
                 const option = document.createElement('option');
-                option.value = i;
-                option.textContent = i + '년';
-                if (i === now.getFullYear()) option.selected = true;
+                option.value = year;
+                option.textContent = year + '년';
                 yearSelect.appendChild(option);
             }
-            document.getElementById('monthSelect').value = now.getMonth() + 1;
-            loadData();
         }
 
-        async function loadData() {
-            currentYear = document.getElementById('yearSelect').value;
-            currentMonth = document.getElementById('monthSelect').value;
+        function getApiHeaders() {
+            const user = JSON.parse(localStorage.getItem('user'));
+            return {
+                'Content-Type': 'application/json',
+                'X-User-Data-Base64': btoa(unescape(encodeURIComponent(JSON.stringify(user))))
+            };
+        }
+
+        async function loadCalendar() {
+            currentYear = parseInt(document.getElementById('yearFilter').value);
+            currentMonth = parseInt(document.getElementById('monthFilter').value);
             
-            await Promise.all([
-                loadStats(currentYear, currentMonth),
-                loadStudents(currentYear, currentMonth)
-            ]);
+            await loadPayments();
+            renderCalendar();
+            updateStats();
         }
 
-        async function loadStats(year, month) {
+        async function loadPayments() {
             try {
-                const userDataBase64 = base64Encode(JSON.stringify(user));
-                const response = await fetch(\`/api/tuition/stats?year=\${year}&month=\${month}\`, {
-                    headers: { 'X-User-Data-Base64': userDataBase64 }
+                const response = await fetch(\`/api/tuition/payments?year=\${currentYear}&month=\${currentMonth}\`, {
+                    headers: getApiHeaders()
                 });
                 const data = await response.json();
-
-                if (data.success && data.stats) {
-                    document.getElementById('totalStudents').textContent = data.stats.total_students || 0;
-                    document.getElementById('paidCount').textContent = data.stats.paid_count || 0;
-                    document.getElementById('unpaidCount').textContent = 
-                        (data.stats.unpaid_count || 0) + (data.stats.partial_count || 0) + (data.stats.overdue_count || 0);
-                    document.getElementById('totalPaid').textContent = (data.stats.total_paid || 0).toLocaleString() + '원';
+                
+                if (data.success) {
+                    allStudents = data.payments || [];
+                    allPayments = {};
+                    allStudents.forEach(payment => {
+                        allPayments[payment.student_id] = payment;
+                    });
                 }
-            } catch (err) {
-                console.error('Stats error:', err);
+            } catch (error) {
+                console.error('납입 현황 로드 실패:', error);
             }
         }
 
-        async function loadStudents(year, month) {
-            try {
-                const userDataBase64 = base64Encode(JSON.stringify(user));
-                const response = await fetch(\`/api/tuition/payments?year=\${year}&month=\${month}\`, {
-                    headers: { 'X-User-Data-Base64': userDataBase64 }
-                });
-                const data = await response.json();
-
-                if (data.success) {
-                    const grid = document.getElementById('studentGrid');
-                    if (data.payments.length === 0) {
-                        grid.innerHTML = '<p class="text-gray-500 col-span-full text-center py-8">등록된 학생이 없습니다.</p>';
-                        return;
-                    }
-
-                    const html = data.payments.map(p => {
-                        const statusClass = p.status === 'paid' ? 'paid' : p.status === 'partial' ? 'partial' : 'unpaid';
-                        const statusText = p.status === 'paid' ? '완납' : p.status === 'partial' ? '부분납' : '미납';
-                        const statusIcon = p.status === 'paid' ? 'check-circle' : p.status === 'partial' ? 'exclamation-circle' : 'times-circle';
-                        
-                        return \`
-                            <div class="student-card \${statusClass} border-2 rounded-lg p-4 cursor-pointer"
-                                 onclick="showPaymentDetails(\${p.student_id})">
-                                <div class="flex justify-between items-start mb-2">
-                                    <div>
-                                        <div class="font-bold text-gray-900">\${p.student_name}</div>
-                                        <div class="text-sm text-gray-600">\${p.grade || '-'}</div>
-                                    </div>
-                                    <i class="fas fa-\${statusIcon} text-xl \${
-                                        p.status === 'paid' ? 'text-green-600' : 
-                                        p.status === 'partial' ? 'text-yellow-600' : 'text-red-600'
-                                    }"></i>
-                                </div>
-                                <div class="text-sm space-y-1">
-                                    <div>금액: <span class="font-semibold">\${(p.amount || 0).toLocaleString()}원</span></div>
-                                    <div>납입: <span class="font-semibold">\${(p.paid_amount || 0).toLocaleString()}원</span></div>
-                                </div>
-                                <div class="mt-3 pt-3 border-t border-gray-300">
-                                    <span class="inline-block px-2 py-1 text-xs font-medium rounded-full \${
-                                        p.status === 'paid' ? 'bg-green-100 text-green-800' : 
-                                        p.status === 'partial' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'
-                                    }">\${statusText}</span>
-                                </div>
-                            </div>
-                        \`;
-                    }).join('');
-
-                    grid.innerHTML = html;
-                }
-            } catch (err) {
-                console.error('Students error:', err);
-                document.getElementById('studentGrid').innerHTML = 
-                    '<p class="text-red-600 col-span-full text-center py-8">오류가 발생했습니다.</p>';
+        function renderCalendar() {
+            const firstDay = new Date(currentYear, currentMonth - 1, 1).getDay();
+            const lastDate = new Date(currentYear, currentMonth, 0).getDate();
+            const today = new Date();
+            const isCurrentMonth = today.getFullYear() === currentYear && today.getMonth() + 1 === currentMonth;
+            const todayDate = today.getDate();
+            
+            const calendarBody = document.getElementById('calendarBody');
+            calendarBody.innerHTML = '';
+            
+            // 이전 달의 빈 칸
+            for (let i = 0; i < firstDay; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'calendar-cell border border-gray-200 bg-gray-50';
+                calendarBody.appendChild(cell);
             }
-        }
-
-        async function showPaymentDetails(studentId) {
-            try {
-                const userDataBase64 = base64Encode(JSON.stringify(user));
-                const response = await fetch(\`/api/tuition/student-fees/\${studentId}?year=\${currentYear}&month=\${currentMonth}\`, {
-                    headers: { 'X-User-Data-Base64': userDataBase64 }
+            
+            // 날짜 셀
+            for (let day = 1; day <= lastDate; day++) {
+                const dayOfWeek = (firstDay + day - 1) % 7;
+                const cell = document.createElement('div');
+                cell.className = 'calendar-cell border border-gray-200 p-3 bg-white';
+                
+                // 오늘 날짜 강조
+                if (isCurrentMonth && day === todayDate) {
+                    cell.className += ' ring-4 ring-blue-400 bg-blue-50';
+                }
+                
+                // 주말 배경색
+                if (dayOfWeek === 0) cell.className += ' bg-red-50';
+                if (dayOfWeek === 6) cell.className += ' bg-blue-50';
+                
+                // 날짜 헤더
+                const dateHeader = document.createElement('div');
+                dateHeader.className = 'flex items-center justify-between mb-3 pb-2 border-b-2 border-gray-200';
+                const dateColor = dayOfWeek === 0 ? 'text-red-600' : dayOfWeek === 6 ? 'text-blue-600' : 'text-gray-800';
+                dateHeader.innerHTML = \`
+                    <div>
+                        <div class="date-number \${dateColor}">\${day}</div>
+                        <div class="day-name text-gray-500">\${['일', '월', '화', '수', '목', '금', '토'][dayOfWeek]}</div>
+                    </div>
+                \`;
+                cell.appendChild(dateHeader);
+                
+                // 학생 목록
+                const studentList = document.createElement('div');
+                studentList.className = 'space-y-1 overflow-y-auto max-h-24';
+                
+                // 해당 날짜가 결제일인 학생 필터링
+                const studentsOnThisDay = allStudents.filter(payment => {
+                    if (!payment.enrollment_date) return false;
+                    const enrollDate = new Date(payment.enrollment_date);
+                    return enrollDate.getDate() === day;
                 });
-                const data = await response.json();
-
-                if (data.success) {
-                    const details = document.getElementById('paymentDetails');
-                    details.innerHTML = \`
-                        <div class="space-y-4">
-                            <div>
-                                <div class="text-sm text-gray-600">학생</div>
-                                <div class="text-lg font-bold">\${data.student.name} (\${data.student.grade || '-'})</div>
-                            </div>
-                            <div>
-                                <div class="text-sm text-gray-600">반</div>
-                                <div class="font-medium">\${data.student.class_name || '미배정'}</div>
-                            </div>
-                            <div>
-                                <div class="text-sm text-gray-600">월 교육비</div>
-                                <div class="text-xl font-bold text-blue-600">\${data.amount_due.toLocaleString()}원</div>
-                            </div>
-                            <div>
-                                <div class="text-sm text-gray-600">납입액</div>
-                                <div class="text-xl font-bold text-green-600">\${data.amount_paid.toLocaleString()}원</div>
-                            </div>
-                            <div class="pt-4 border-t">
-                                \${data.status === 'paid' ? 
-                                    '<div class="text-center text-green-600 font-bold"><i class="fas fa-check-circle mr-2"></i>납입 완료</div>' :
-                                    \`<button onclick="markPaid(\${studentId})" class="w-full py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-bold">
-                                        <i class="fas fa-check mr-2"></i>납입 완료 처리
-                                    </button>\`
-                                }
-                            </div>
+                
+                studentsOnThisDay.forEach(payment => {
+                    const statusColors = {
+                        'paid': { bg: 'bg-green-500', text: '완납' },
+                        'partial': { bg: 'bg-yellow-500', text: '부분' },
+                        'unpaid': { bg: 'bg-red-500', text: '미납' }
+                    };
+                    const status = statusColors[payment.status] || statusColors['unpaid'];
+                    
+                    const studentItem = document.createElement('div');
+                    studentItem.className = \`student-item \${status.bg} text-white font-medium\`;
+                    studentItem.innerHTML = \`
+                        <div class="flex items-center justify-between">
+                            <span class="truncate">\${payment.student_name}</span>
+                            <span class="text-xs ml-2">\${status.text}</span>
                         </div>
                     \`;
-                    document.getElementById('paymentModal').classList.remove('hidden');
-                }
-            } catch (err) {
-                console.error('Payment details error:', err);
-                alert('학생 정보를 불러올 수 없습니다.');
+                    studentItem.onclick = () => openPaymentModal(payment.student_id);
+                    studentItem.title = \`\${payment.student_name} - \${(payment.amount || 0).toLocaleString()}원\`;
+                    studentList.appendChild(studentItem);
+                });
+                
+                cell.appendChild(studentList);
+                calendarBody.appendChild(cell);
             }
         }
 
-        async function markPaid(studentId) {
+        async function openPaymentModal(studentId = null) {
+            document.getElementById('paymentModal').classList.remove('hidden');
+            
+            // 학생 목록 로드
             try {
-                const userDataBase64 = base64Encode(JSON.stringify(user));
-                const response = await fetch('/api/tuition/mark-paid', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-User-Data-Base64': userDataBase64
-                    },
-                    body: JSON.stringify({
-                        student_id: studentId,
-                        year: currentYear,
-                        month: currentMonth
-                    })
+                const response = await fetch('/api/students', {
+                    headers: getApiHeaders()
                 });
                 const data = await response.json();
-
-                if (data.success) {
-                    alert('납입 완료 처리되었습니다.');
-                    closePaymentModal();
-                    loadData();
-                } else {
-                    alert('처리 실패: ' + (data.error || '알 수 없는 오류'));
+                
+                if (data.success && data.students) {
+                    const select = document.getElementById('studentSelect');
+                    select.innerHTML = '<option value="">학생을 선택하세요</option>';
+                    
+                    data.students.forEach(student => {
+                        const option = document.createElement('option');
+                        option.value = student.id;
+                        option.textContent = \`\${student.name} (\${student.grade || '-'}) - \${student.class_name || '반 미배정'}\`;
+                        option.dataset.classId = student.class_id;
+                        option.dataset.className = student.class_name || '-';
+                        option.dataset.classFee = student.class_fee || 0;
+                        option.dataset.enrollmentDate = student.enrollment_date || '';
+                        if (studentId && student.id == studentId) {
+                            option.selected = true;
+                        }
+                        select.appendChild(option);
+                    });
+                    
+                    if (studentId) {
+                        loadStudentPaymentInfo();
+                    }
                 }
-            } catch (err) {
-                console.error('Mark paid error:', err);
-                alert('납입 처리 중 오류가 발생했습니다.');
+            } catch (error) {
+                console.error('학생 목록 로드 실패:', error);
             }
+            
+            // 오늘 날짜 설정
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('paidDate').value = today;
         }
 
         function closePaymentModal() {
             document.getElementById('paymentModal').classList.add('hidden');
+            document.getElementById('paymentInfo').classList.add('hidden');
+            document.getElementById('paymentForm').reset();
         }
 
-        async function showClassManagement() {
-            try {
-                const userDataBase64 = base64Encode(JSON.stringify(user));
-                const response = await fetch('/api/tuition/classes', {
-                    headers: { 'X-User-Data-Base64': userDataBase64 }
-                });
-                const data = await response.json();
-
-                if (data.success) {
-                    const list = document.getElementById('classList');
-                    if (data.classes.length === 0) {
-                        list.innerHTML = '<p class="text-gray-500 text-center py-8">등록된 반이 없습니다.</p>';
-                    } else {
-                        const html = data.classes.map(c => \`
-                            <div class="border border-gray-200 rounded-lg p-4 mb-3">
-                                <div class="flex justify-between items-start mb-2">
-                                    <div>
-                                        <div class="font-bold text-lg">\${c.name}</div>
-                                        <div class="text-sm text-gray-600">학생: \${c.student_count}명</div>
-                                        <div class="text-sm text-gray-600">선생님: \${c.teacher_name || '미배정'}</div>
-                                    </div>
-                                    <div class="text-right">
-                                        <div class="text-sm text-gray-600">월 교육비</div>
-                                        <div class="text-xl font-bold text-blue-600">\${(c.monthly_fee || 0).toLocaleString()}원</div>
-                                    </div>
-                                </div>
-                                <div class="mt-3 flex gap-2">
-                                    <input type="number" id="fee_\${c.id}" value="\${c.monthly_fee || 0}" 
-                                           class="flex-1 px-3 py-2 border border-gray-300 rounded-lg" placeholder="교육비 입력">
-                                    <button onclick="updateClassFee(\${c.id})" 
-                                            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                                        저장
-                                    </button>
-                                </div>
-                            </div>
-                        \`).join('');
-                        list.innerHTML = html;
-                    }
-                    document.getElementById('classModal').classList.remove('hidden');
-                }
-            } catch (err) {
-                console.error('Classes error:', err);
-                alert('반 목록을 불러올 수 없습니다.');
+        async function loadStudentPaymentInfo() {
+            const select = document.getElementById('studentSelect');
+            const selectedOption = select.options[select.selectedIndex];
+            
+            if (!selectedOption.value) {
+                document.getElementById('paymentInfo').classList.add('hidden');
+                return;
             }
+            
+            const studentId = selectedOption.value;
+            const studentName = selectedOption.textContent.split(' (')[0];
+            const className = selectedOption.dataset.className;
+            const classFee = parseInt(selectedOption.dataset.classFee) || 0;
+            
+            document.getElementById('selectedStudentId').value = studentId;
+            document.getElementById('infoStudentName').textContent = studentName;
+            document.getElementById('infoClassName').textContent = className;
+            document.getElementById('infoMonthlyFee').textContent = classFee.toLocaleString() + '원';
+            document.getElementById('paidAmount').value = classFee;
+            
+            // 기존 납입 내역 확인
+            const payment = allPayments[studentId];
+            if (payment) {
+                document.getElementById('selectedPaymentId').value = payment.id || '';
+                const statusText = payment.status === 'paid' ? '완납' : payment.status === 'partial' ? '부분납입' : '미납';
+                const statusClass = payment.status === 'paid' ? 'text-green-600' : payment.status === 'partial' ? 'text-yellow-600' : 'text-red-600';
+                document.getElementById('infoPaymentStatus').innerHTML = \`<span class="\${statusClass}">\${statusText} (\${(payment.paid_amount || 0).toLocaleString()}원)</span>\`;
+            } else {
+                document.getElementById('infoPaymentStatus').innerHTML = '<span class="text-red-600">미납 (0원)</span>';
+            }
+            
+            document.getElementById('paymentInfo').classList.remove('hidden');
         }
 
-        async function updateClassFee(classId) {
-            const feeInput = document.getElementById(\`fee_\${classId}\`);
-            const fee = parseInt(feeInput.value) || 0;
-
+        async function submitPayment(event) {
+            event.preventDefault();
+            
+            const studentId = document.getElementById('selectedStudentId').value;
+            const paidAmount = parseInt(document.getElementById('paidAmount').value);
+            const paidDate = document.getElementById('paidDate').value;
+            const paymentMethod = document.getElementById('paymentMethod').value;
+            const memo = document.getElementById('paymentMemo').value;
+            
             try {
-                const userDataBase64 = base64Encode(JSON.stringify(user));
-                const response = await fetch(\`/api/tuition/classes/\${classId}/fee\`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-User-Data-Base64': userDataBase64
-                    },
-                    body: JSON.stringify({ monthly_fee: fee })
+                const response = await fetch('/api/tuition/payments', {
+                    method: 'POST',
+                    headers: getApiHeaders(),
+                    body: JSON.stringify({
+                        student_id: studentId,
+                        year: currentYear,
+                        month: currentMonth,
+                        paid_amount: paidAmount,
+                        paid_date: paidDate,
+                        payment_method: paymentMethod,
+                        memo: memo
+                    })
                 });
+                
                 const data = await response.json();
-
+                
                 if (data.success) {
-                    alert('반 교육비가 저장되었습니다.');
-                    showClassManagement(); // 새로고침
+                    alert('✅ 납입 처리가 완료되었습니다!');
+                    closePaymentModal();
+                    loadCalendar();
                 } else {
-                    alert('저장 실패: ' + (data.error || '알 수 없는 오류'));
+                    alert('❌ 납입 처리 실패: ' + (data.error || '알 수 없는 오류'));
                 }
-            } catch (err) {
-                console.error('Update fee error:', err);
-                alert('교육비 저장 중 오류가 발생했습니다.');
+            } catch (error) {
+                console.error('납입 처리 실패:', error);
+                alert('❌ 납입 처리 중 오류가 발생했습니다.');
             }
         }
 
-        function closeClassModal() {
-            document.getElementById('classModal').classList.add('hidden');
+        function updateStats() {
+            const total = allStudents.length;
+            const paid = allStudents.filter(p => p.status === 'paid').length;
+            const unpaid = allStudents.filter(p => p.status === 'unpaid').length;
+            const totalAmount = allStudents.reduce((sum, p) => sum + (p.amount || 0), 0);
+            const totalPaid = allStudents.reduce((sum, p) => sum + (p.paid_amount || 0), 0);
+            
+            document.getElementById('totalStudents').textContent = total;
+            document.getElementById('paidStudents').textContent = paid;
+            document.getElementById('unpaidStudents').textContent = unpaid;
+            document.getElementById('totalAmount').textContent = totalAmount.toLocaleString() + '원';
+            document.getElementById('totalPaid').textContent = totalPaid.toLocaleString() + '원';
         }
-        </script>
-    </body>
-    </html>
-  `)
+
+        function prevMonth() {
+            currentMonth--;
+            if (currentMonth < 1) {
+                currentMonth = 12;
+                currentYear--;
+            }
+            document.getElementById('yearFilter').value = currentYear;
+            document.getElementById('monthFilter').value = currentMonth;
+            loadCalendar();
+        }
+
+        function nextMonth() {
+            currentMonth++;
+            if (currentMonth > 12) {
+                currentMonth = 1;
+                currentYear++;
+            }
+            document.getElementById('yearFilter').value = currentYear;
+            document.getElementById('monthFilter').value = currentMonth;
+            loadCalendar();
+        }
+
+        function goToday() {
+            const today = new Date();
+            currentYear = today.getFullYear();
+            currentMonth = today.getMonth() + 1;
+            document.getElementById('yearFilter').value = currentYear;
+            document.getElementById('monthFilter').value = currentMonth;
+            loadCalendar();
+        }
+    </script>
+</body>
+</html>
+`)
 })
+
 app.get('/tools/revenue-management', async (c) => {
   return c.html(`
     <!DOCTYPE html>
