@@ -748,10 +748,6 @@ app.get('/api/tuition/classes', requireDirector, async (c) => {
       } catch (e) {}
       
       try {
-        await c.env.DB.prepare(`ALTER TABLE classes ADD COLUMN name TEXT`).run()
-      } catch (e) {}
-      
-      try {
         await c.env.DB.prepare(`ALTER TABLE students ADD COLUMN user_id INTEGER`).run()
       } catch (e) {}
       
