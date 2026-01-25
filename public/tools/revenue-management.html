@@ -19,10 +19,28 @@
             <div>
                 <h1 class="text-3xl font-bold text-gray-900 mb-2">📊 매출 관리</h1>
                 <p class="text-gray-600">학원 매출 현황을 확인하고 분석하세요</p>
+                <div class="mt-2 flex items-center space-x-4">
+                    <span class="text-sm text-gray-500">
+                        <i class="fas fa-clock mr-1"></i>
+                        마지막 업데이트: <span id="lastUpdateTime">-</span>
+                    </span>
+                    <span class="text-sm">
+                        <label class="inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="autoRefreshToggle" class="sr-only peer" checked>
+                            <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                            <span class="ms-3 text-sm font-medium text-gray-700">자동 새로고침 (30초)</span>
+                        </label>
+                    </span>
+                </div>
             </div>
-            <a href="/dashboard" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium">
-                <i class="fas fa-arrow-left mr-2"></i> 대시보드
-            </a>
+            <div class="flex items-center space-x-3">
+                <button onclick="refreshAllData()" class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium shadow-sm">
+                    <i class="fas fa-sync-alt mr-2" id="refreshIcon"></i> 새로고침
+                </button>
+                <a href="/dashboard" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium shadow-sm">
+                    <i class="fas fa-arrow-left mr-2"></i> 대시보드
+                </a>
+            </div>
         </div>
 
         <!-- 대시보드 통계 -->
@@ -162,6 +180,8 @@
     <script>
         let currentUser = null;
         let yearlyChart = null;
+        let autoRefreshInterval = null;
+        let isRefreshing = false;
 
         // 사용자 정보 확인 및 권한 체크
         function checkAuth() {
@@ -180,6 +200,57 @@
             }
             
             return user;
+        }
+
+        // 마지막 업데이트 시간 갱신
+        function updateLastRefreshTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('ko-KR', { 
+                hour: '2-digit', 
+                minute: '2-digit', 
+                second: '2-digit' 
+            });
+            document.getElementById('lastUpdateTime').textContent = timeString;
+        }
+
+        // 모든 데이터 새로고침
+        async function refreshAllData() {
+            if (isRefreshing) return;
+            
+            isRefreshing = true;
+            const refreshIcon = document.getElementById('refreshIcon');
+            refreshIcon.classList.add('fa-spin');
+            
+            try {
+                await Promise.all([
+                    loadDashboard(),
+                    loadMonthlyRevenue(),
+                    loadYearlyChart()
+                ]);
+                updateLastRefreshTime();
+            } catch (error) {
+                console.error('데이터 새로고침 실패:', error);
+            } finally {
+                isRefreshing = false;
+                refreshIcon.classList.remove('fa-spin');
+            }
+        }
+
+        // 자동 새로고침 토글
+        function toggleAutoRefresh() {
+            const toggle = document.getElementById('autoRefreshToggle');
+            
+            if (toggle.checked) {
+                // 30초마다 자동 새로고침
+                autoRefreshInterval = setInterval(refreshAllData, 30000);
+                console.log('자동 새로고침 활성화 (30초 간격)');
+            } else {
+                if (autoRefreshInterval) {
+                    clearInterval(autoRefreshInterval);
+                    autoRefreshInterval = null;
+                }
+                console.log('자동 새로고침 비활성화');
+            }
         }
 
         // 년도 필터 초기화
@@ -386,6 +457,22 @@
             loadDashboard();
             loadMonthlyRevenue();
             loadYearlyChart();
+            
+            // 초기 업데이트 시간 설정
+            updateLastRefreshTime();
+            
+            // 자동 새로고침 토글 이벤트 리스너
+            document.getElementById('autoRefreshToggle').addEventListener('change', toggleAutoRefresh);
+            
+            // 자동 새로고침 시작 (기본값: 활성화)
+            toggleAutoRefresh();
+        });
+
+        // 페이지를 떠날 때 자동 새로고침 정리
+        window.addEventListener('beforeunload', function() {
+            if (autoRefreshInterval) {
+                clearInterval(autoRefreshInterval);
+            }
         });
     </script>
 </body>
