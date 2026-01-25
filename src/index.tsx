@@ -1178,7 +1178,7 @@ app.post('/api/admin/sync-landing-pages-usage', async (c) => {
     
     // 모든 활성 구독 조회
     const subscriptions = await c.env.DB.prepare(`
-      SELECT id, academy_id FROM subscriptions 
+      SELECT id, academy_id, subscription_start_date FROM subscriptions 
       WHERE status = 'active'
     `).all()
     
@@ -1188,11 +1188,12 @@ app.post('/api/admin/sync-landing-pages-usage', async (c) => {
     
     for (const sub of subscriptions.results || []) {
       try {
-        // 해당 academy의 실제 랜딩페이지 개수 조회
+        // 🔥 현재 구독 기간 내에 생성된 랜딩페이지만 COUNT
         const landingPagesCount = await c.env.DB.prepare(`
           SELECT COUNT(*) as count FROM landing_pages 
           WHERE user_id = ?
-        `).bind(sub.academy_id).first()
+          AND created_at >= ?
+        `).bind(sub.academy_id, sub.subscription_start_date).first()
         
         const actualCount = landingPagesCount?.count || 0
         
@@ -10386,13 +10387,14 @@ app.get('/api/usage/check', async (c) => {
       console.log('[Usage Check] 🔍 Checking landing pages for academy_id:', academyId, 'subscription_id:', subscription.id)
       console.log('[Usage Check] 📊 usage_tracking record:', usage ? 'EXISTS' : 'NOT FOUND')
       
-      // 🔥 항상 실제 DB에서 COUNT (더블 체크)
+      // 🔥 현재 구독 기간 내에 생성된 랜딩페이지만 COUNT
       const countResult = await c.env.DB.prepare(`
         SELECT COUNT(*) as count FROM landing_pages 
-        WHERE user_id = ?
-      `).bind(academyId).first()
+        WHERE user_id = ? 
+        AND created_at >= ?
+      `).bind(academyId, subscription.subscription_start_date).first()
       const actualCount = countResult?.count || 0
-      console.log('[Usage Check] 📈 Actual landing_pages in DB:', actualCount, 'for user_id:', academyId)
+      console.log('[Usage Check] 📈 Landing pages created since', subscription.subscription_start_date, ':', actualCount, 'for user_id:', academyId)
       
       if (usage && usage.landing_pages_created !== null && usage.landing_pages_created !== undefined) {
         const trackedCount = usage.landing_pages_created
