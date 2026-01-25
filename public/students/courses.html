@@ -1,0 +1,151 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>과목 관리 - 꾸메땅학원</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .gradient-green {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="max-w-7xl mx-auto p-6">
+        <!-- 헤더 -->
+        <div class="flex justify-between items-center mb-8">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">📚 과목 관리</h1>
+                <p class="text-gray-600">학원에서 운영하는 과목을 관리하세요</p>
+            </div>
+            <div class="flex gap-3">
+                <a href="/students" class="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+                    <i class="fas fa-arrow-left mr-2"></i>돌아가기
+                </a>
+                <button onclick="showAddModal()" class="px-4 py-2 gradient-green text-white rounded-lg hover:shadow-lg transition">
+                    <i class="fas fa-plus mr-2"></i>과목 추가
+                </button>
+            </div>
+        </div>
+
+        <!-- 통계 카드 -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white rounded-xl shadow p-6">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-gray-600">전체 과목</span>
+                    <i class="fas fa-book text-green-500 text-2xl"></i>
+                </div>
+                <div id="totalCourses" class="text-3xl font-bold text-gray-900">0개</div>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow p-6">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-gray-600">수강 학생</span>
+                    <i class="fas fa-users text-blue-500 text-2xl"></i>
+                </div>
+                <div id="totalStudents" class="text-3xl font-bold text-gray-900">0명</div>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow p-6">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-gray-600">진행중인 수업</span>
+                    <i class="fas fa-chalkboard-teacher text-purple-500 text-2xl"></i>
+                </div>
+                <div id="activeClasses" class="text-3xl font-bold text-gray-900">0개</div>
+            </div>
+        </div>
+
+        <!-- 과목 목록 -->
+        <div class="bg-white rounded-xl shadow">
+            <div class="p-6 border-b border-gray-200">
+                <h2 class="text-xl font-bold text-gray-900">과목 목록</h2>
+            </div>
+            <div id="coursesList" class="p-6">
+                <div class="text-center py-12 text-gray-500">
+                    <i class="fas fa-book text-4xl mb-4 text-gray-300"></i>
+                    <p>등록된 과목이 없습니다. 과목을 추가해주세요.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 과목 추가/수정 모달 -->
+    <div id="courseModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="p-6 border-b border-gray-200">
+                <h2 id="modalTitle" class="text-2xl font-bold text-gray-900">과목 추가</h2>
+            </div>
+            <form id="courseForm" class="p-6 space-y-6">
+                <input type="hidden" id="courseId">
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        과목명 <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" id="courseName" required 
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        placeholder="예: 영어, 수학, 프로그램1">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        과목 설명
+                    </label>
+                    <textarea id="courseDescription" rows="4"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        placeholder="과목에 대한 설명을 입력하세요"></textarea>
+                </div>
+
+                <div class="flex gap-3 pt-4">
+                    <button type="submit" class="flex-1 px-6 py-3 gradient-green text-white rounded-lg font-bold hover:shadow-lg transition">
+                        <i class="fas fa-check mr-2"></i>저장
+                    </button>
+                    <button type="button" onclick="closeModal()" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-bold hover:bg-gray-300 transition">
+                        취소
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+        let allCourses = [];
+
+        // 로그인 체크
+        window.addEventListener('DOMContentLoaded', async () => {
+            const userData = localStorage.getItem('user');
+            if (!userData) {
+                alert('로그인이 필요합니다.');
+                window.location.href = '/login';
+                return;
+            }
+            currentUser = JSON.parse(userData);
+            await loadCourses();
+        });
+
+        // 과목 목록 로드
+        async function loadCourses() {
+            try {
+                const response = await fetch(`/api/courses?academyId=${currentUser.id}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    allCourses = data.courses || [];
+                    renderCourses();
+                    updateStats();
+                }
+            } catch (error) {
+                console.error('과목 로드 실패:', error);
+            }
+        }
+
+        // 과목 렌더링
+        function renderCourses() {
+            const container = document.getElementById('coursesList');
+            
+            if (allCourses.length === 0) {
+                container.innerHTML = \
