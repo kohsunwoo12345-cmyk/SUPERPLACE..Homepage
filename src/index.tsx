@@ -49013,7 +49013,7 @@ app.get('/tools/tuition-management', async (c) => {
         * { font-family: 'Pretendard Variable', sans-serif; }
         
         .calendar-cell { 
-            min-height: 140px;
+            min-height: 160px;
             position: relative;
             transition: all 0.2s;
         }
@@ -49024,15 +49024,15 @@ app.get('/tools/tuition-management', async (c) => {
         }
         .student-item {
             font-size: 11px;
-            padding: 4px 6px;
+            padding: 6px 8px;
             margin: 2px 0;
-            border-radius: 4px;
+            border-radius: 6px;
             cursor: pointer;
             transition: all 0.2s;
         }
         .student-item:hover {
-            transform: scale(1.05);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            transform: scale(1.02);
+            box-shadow: 0 3px 6px rgba(0,0,0,0.3);
         }
         .date-number {
             font-size: 18px;
@@ -49053,13 +49053,16 @@ app.get('/tools/tuition-management', async (c) => {
                 <p class="text-gray-600">학생별 월별 교육비 납입 현황을 한눈에 확인하세요</p>
             </div>
             <div class="flex gap-3">
+                <button onclick="openPaymentModal()" class="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium shadow-lg">
+                    <i class="fas fa-plus mr-2"></i> 납부 추가
+                </button>
                 <button onclick="openClassFeeModal()" class="inline-flex items-center px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition font-medium shadow-lg">
                     <i class="fas fa-cog mr-2"></i> 반 교육비 설정
                 </button>
                 <a href="/tools/revenue-management" class="inline-flex items-center px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium shadow-lg">
                     <i class="fas fa-chart-line mr-2"></i> 매출 관리
                 </a>
-                <a href="/dashboard" class="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium shadow-lg">
+                <a href="/dashboard" class="inline-flex items-center px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition font-medium shadow-lg">
                     <i class="fas fa-home mr-2"></i> 대시보드
                 </a>
             </div>
@@ -49273,6 +49276,31 @@ app.get('/tools/tuition-management', async (c) => {
         </div>
     </div>
 
+    <!-- 반 교육비 설정 모달 -->
+    <div id="classFeeModal" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="p-6 border-b border-gray-200 flex items-center justify-between bg-gradient-to-r from-purple-500 to-purple-600">
+                <h3 class="text-2xl font-bold text-white">
+                    <i class="fas fa-cog mr-2"></i>반 교육비 설정
+                </h3>
+                <button onclick="closeClassFeeModal()" class="text-white hover:text-gray-200 transition">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+
+            <div class="p-8">
+                <p class="text-gray-600 mb-6">각 반의 월 교육비를 설정하세요. 학생이 해당 반에 배정되면 자동으로 교육비가 적용됩니다.</p>
+                
+                <div id="classList" class="space-y-4">
+                    <div class="text-center text-gray-500 py-8">
+                        <i class="fas fa-spinner fa-spin text-3xl mb-3"></i>
+                        <p>반 목록을 불러오는 중...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         let currentYear, currentMonth;
         let allStudents = [];
@@ -49401,22 +49429,26 @@ app.get('/tools/tuition-management', async (c) => {
                 
                 studentsOnThisDay.forEach(payment => {
                     const statusColors = {
-                        'paid': { bg: 'bg-green-500', text: '완납' },
-                        'partial': { bg: 'bg-yellow-500', text: '부분' },
-                        'unpaid': { bg: 'bg-red-500', text: '미납' }
+                        'paid': { bg: 'bg-green-500', text: '완납', icon: 'fa-check-circle' },
+                        'partial': { bg: 'bg-yellow-500', text: '부분', icon: 'fa-exclamation-circle' },
+                        'unpaid': { bg: 'bg-red-500', text: '미납', icon: 'fa-times-circle' }
                     };
                     const status = statusColors[payment.status] || statusColors['unpaid'];
                     
                     const studentItem = document.createElement('div');
-                    studentItem.className = \`student-item \${status.bg} text-white font-medium\`;
+                    studentItem.className = \`student-item \${status.bg} text-white font-medium cursor-pointer\`;
                     studentItem.innerHTML = \`
-                        <div class="flex items-center justify-between">
-                            <span class="truncate">\${payment.student_name}</span>
-                            <span class="text-xs ml-2">\${status.text}</span>
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="font-bold">\${payment.student_name}</span>
+                            <i class="fas \${status.icon} text-xs"></i>
+                        </div>
+                        <div class="flex items-center justify-between text-xs opacity-90">
+                            <span>\${payment.class_name || '반 없음'}</span>
+                            <span>\${(payment.paid_amount || 0).toLocaleString()}원</span>
                         </div>
                     \`;
                     studentItem.onclick = () => openPaymentModal(payment.student_id);
-                    studentItem.title = \`\${payment.student_name} - \${(payment.amount || 0).toLocaleString()}원\`;
+                    studentItem.title = \`[\${status.text}] \${payment.student_name}\\n반: \${payment.class_name || '-'}\\n월 교육비: \${(payment.amount || 0).toLocaleString()}원\\n납입액: \${(payment.paid_amount || 0).toLocaleString()}원\`;
                     studentList.appendChild(studentItem);
                 });
                 
@@ -49592,8 +49624,109 @@ app.get('/tools/tuition-management', async (c) => {
 
         // ========== 반 교육비 설정 기능 ==========
         async function openClassFeeModal() {
-            alert('반 교육비 설정 기능은 /students/classes 페이지에서 이용하실 수 있습니다.');
-            window.location.href = '/students/classes';
+            document.getElementById('classFeeModal').classList.remove('hidden');
+            await loadClassList();
+        }
+
+        function closeClassFeeModal() {
+            document.getElementById('classFeeModal').classList.add('hidden');
+        }
+
+        async function loadClassList() {
+            const classList = document.getElementById('classList');
+            try {
+                const response = await fetch('/api/tuition/classes', {
+                    headers: getApiHeaders()
+                });
+                const data = await response.json();
+                
+                if (data.success && data.classes) {
+                    if (data.classes.length === 0) {
+                        classList.innerHTML = \`
+                            <div class="text-center text-gray-500 py-8">
+                                <i class="fas fa-exclamation-circle text-3xl mb-3"></i>
+                                <p>등록된 반이 없습니다.</p>
+                                <a href="/students/classes" class="mt-4 inline-block text-blue-600 hover:underline">
+                                    <i class="fas fa-plus-circle mr-1"></i>반 등록하러 가기
+                                </a>
+                            </div>
+                        \`;
+                        return;
+                    }
+
+                    classList.innerHTML = data.classes.map(cls => \`
+                        <div class="bg-gray-50 rounded-xl p-6 border-2 border-gray-200 hover:border-purple-400 transition">
+                            <div class="flex items-center justify-between mb-4">
+                                <div>
+                                    <h4 class="text-lg font-bold text-gray-900">\${cls.name}</h4>
+                                    <p class="text-sm text-gray-600">\${cls.description || '설명 없음'}</p>
+                                    <p class="text-sm text-gray-500 mt-1">
+                                        <i class="fas fa-users mr-1"></i>학생 수: \${cls.student_count || 0}명
+                                        \${cls.teacher_name ? \` | <i class="fas fa-chalkboard-teacher mr-1"></i>\${cls.teacher_name}\` : ''}
+                                    </p>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-2xl font-bold text-purple-600">\${(cls.monthly_fee || 0).toLocaleString()}원</div>
+                                    <div class="text-xs text-gray-500">월 교육비</div>
+                                </div>
+                            </div>
+                            <div class="flex gap-2">
+                                <input 
+                                    type="number" 
+                                    id="classFee_\${cls.id}" 
+                                    value="\${cls.monthly_fee || 0}" 
+                                    placeholder="월 교육비"
+                                    class="flex-1 px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 font-medium text-lg"
+                                />
+                                <button 
+                                    onclick="updateClassFee(\${cls.id})" 
+                                    class="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition font-medium">
+                                    <i class="fas fa-save mr-1"></i>저장
+                                </button>
+                            </div>
+                        </div>
+                    \`).join('');
+                }
+            } catch (error) {
+                console.error('반 목록 로드 실패:', error);
+                classList.innerHTML = \`
+                    <div class="text-center text-red-500 py-8">
+                        <i class="fas fa-exclamation-triangle text-3xl mb-3"></i>
+                        <p>반 목록을 불러오는데 실패했습니다.</p>
+                    </div>
+                \`;
+            }
+        }
+
+        async function updateClassFee(classId) {
+            const feeInput = document.getElementById(\`classFee_\${classId}\`);
+            const monthly_fee = parseInt(feeInput.value);
+
+            if (!monthly_fee || monthly_fee < 0) {
+                alert('❌ 유효한 교육비를 입력해주세요.');
+                return;
+            }
+
+            try {
+                const response = await fetch(\`/api/tuition/classes/\${classId}/fee\`, {
+                    method: 'PUT',
+                    headers: getApiHeaders(),
+                    body: JSON.stringify({ monthly_fee })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    alert(\`✅ 반 교육비가 \${monthly_fee.toLocaleString()}원으로 설정되었습니다!\`);
+                    await loadClassList();
+                    await loadCalendar();
+                } else {
+                    alert('❌ 교육비 설정 실패: ' + (data.error || '알 수 없는 오류'));
+                }
+            } catch (error) {
+                console.error('교육비 설정 실패:', error);
+                alert('❌ 교육비 설정 중 오류가 발생했습니다.');
+            }
         }
     </script>
 </body>
