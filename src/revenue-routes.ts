@@ -230,6 +230,13 @@ app.get('/api/revenue/dashboard', requireDirector, async (c) => {
         AND s.status = 'active'
     `).bind(user.id).first()
     
+    // 선생님 수 조회
+    const teachersResult = await c.env.DB.prepare(`
+      SELECT COUNT(*) as total_teachers
+      FROM users
+      WHERE parent_user_id = ? AND user_type = 'teacher'
+    `).bind(user.id).first()
+    
     const thisMonthPaid = thisMonthResult?.total_paid || 0
     const lastMonthPaid = lastMonthResult?.total_paid || 0
     const growthRate = lastMonthPaid > 0 
@@ -244,6 +251,7 @@ app.get('/api/revenue/dashboard', requireDirector, async (c) => {
         growth_rate: parseFloat(growthRate),
         yearly_revenue: yearlyResult?.total_paid || 0,
         total_students: studentsResult?.total_students || 0,
+        total_teachers: teachersResult?.total_teachers || 0,
         avg_monthly_fee: Math.round(studentsResult?.avg_fee || 0)
       }
     })

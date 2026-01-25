@@ -407,3 +407,188 @@ app.get('/api/tuition/stats', requireDirector, async (c) => {
 })
 
 export default app
+
+// ========================================
+// 반(클래스) 관리 API
+// ========================================
+
+// 반 목록 조회
+app.get('/api/tuition/classes', requireDirector, async (c) => {
+  try {
+    const user = c.get('user')
+    
+    const classes = await c.env.DB.prepare(`
+      SELECT 
+        c.*,
+        COUNT(DISTINCT s.id) as student_count,
+        u.name as teacher_name
+      FROM classes c
+      LEFT JOIN students s ON s.class_id = c.id AND s.status = 'active'
+      LEFT JOIN users u ON c.teacher_id = u.id
+      WHERE c.user_id = ?
+      GROUP BY c.id
+      ORDER BY c.name ASC
+    `).bind(user.id).all()
+    
+    return c.json({
+      success: true,
+      classes: classes.results || []
+    })
+  } catch (error) {
+    console.error('Error fetching classes:', error)
+    return c.json({ error: '반 목록 조회 실패', details: error.message }, 500)
+  }
+})
+
+// 반 교육비 설정
+app.put('/api/tuition/classes/:id/fee', requireDirector, async (c) => {
+  try {
+    const user = c.get('user')
+    const classId = c.req.param('id')
+    const { monthly_fee } = await c.req.json()
+    
+    if (monthly_fee === undefined || monthly_fee === null) {
+      return c.json({ error: '월 교육비를 입력해주세요' }, 400)
+    }
+    
+    // 반 소유권 확인
+    const classInfo = await c.env.DB.prepare(`
+      SELECT * FROM classes WHERE id = ? AND user_id = ?
+    `).bind(classId, user.id).first()
+    
+    if (!classInfo) {
+      return c.json({ error: '반을 찾을 수 없습니다' }, 404)
+    }
+    
+    // 교육비 업데이트
+    await c.env.DB.prepare(`
+      UPDATE classes SET monthly_fee = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?
+    `).bind(monthly_fee, classId).run()
+    
+    return c.json({
+      success: true,
+      message: '반 교육비가 설정되었습니다'
+    })
+  } catch (error) {
+    console.error('Error updating class fee:', error)
+    return c.json({ error: '반 교육비 설정 실패', details: error.message }, 500)
+  }
+})
+
+// 학생별 해당 월 납입액 계산 API
+app.get('/api/tuition/student-fees/:studentId', requireDirector, async (c) => {
+  try {
+    const user = c.get('user')
+    const studentId = c.req.param('studentId')
+    const year = c.req.query('year') || new Date().getFullYear().toString()
+    const month = c.req.query('month') || (new Date().getMonth() + 1).toString()
+    
+    // 학생 정보 및 반 교육비 조회
+    const student = await c.env.DB.prepare(`
+      SELECT 
+        s.*,
+        c.monthly_fee as class_fee,
+        c.name as class_name,
+        tr.monthly_fee as custom_fee
+      FROM students s
+      LEFT JOIN classes c ON s.class_id = c.id
+      LEFT JOIN tuition_rates tr ON s.id = tr.student_id
+        AND (tr.end_date IS NULL OR tr.end_date >= date('now'))
+      WHERE s.id = ? AND s.user_id = ?
+    `).bind(studentId, user.id).first()
+    
+    if (!student) {
+      return c.json({ error: '학생을 찾을 수 없습니다' }, 404)
+    }
+    
+    // 우선순위: custom_fee > class_fee > 0
+    const monthlyFee = student.custom_fee || student.class_fee || 0
+    
+    // 해당 월 납입 기록 조회
+    const payment = await c.env.DB.prepare(`
+      SELECT * FROM tuition_payments 
+      WHERE student_id = ? AND year = ? AND month = ?
+    `).bind(studentId, year, month).first()
+    
+    return c.json({
+      success: true,
+      student: {
+        id: student.id,
+        name: student.name,
+        grade: student.grade,
+        class_name: student.class_name,
+        monthly_fee: monthlyFee
+      },
+      payment: payment || null,
+      amount_due: monthlyFee,
+      amount_paid: payment?.paid_amount || 0,
+      status: payment?.status || 'unpaid'
+    })
+  } catch (error) {
+    console.error('Error fetching student fee:', error)
+    return c.json({ error: '학생 납입액 조회 실패', details: error.message }, 500)
+  }
+})
+
+// 납입 완료 처리 (간편)
+app.post('/api/tuition/mark-paid', requireDirector, async (c) => {
+  try {
+    const user = c.get('user')
+    const { student_id, year, month } = await c.req.json()
+    
+    if (!student_id || !year || !month) {
+      return c.json({ error: '필수 항목을 입력해주세요' }, 400)
+    }
+    
+    // 학생 정보 및 월 납입액 조회
+    const student = await c.env.DB.prepare(`
+      SELECT 
+        s.*,
+        c.monthly_fee as class_fee,
+        tr.monthly_fee as custom_fee
+      FROM students s
+      LEFT JOIN classes c ON s.class_id = c.id
+      LEFT JOIN tuition_rates tr ON s.id = tr.student_id
+        AND (tr.end_date IS NULL OR tr.end_date >= date('now'))
+      WHERE s.id = ? AND s.user_id = ?
+    `).bind(student_id, user.id).first()
+    
+    if (!student) {
+      return c.json({ error: '학생을 찾을 수 없습니다' }, 404)
+    }
+    
+    const amount = student.custom_fee || student.class_fee || 0
+    
+    // 기존 납입 기록 확인
+    const existing = await c.env.DB.prepare(`
+      SELECT * FROM tuition_payments 
+      WHERE student_id = ? AND year = ? AND month = ?
+    `).bind(student_id, year, month).first()
+    
+    if (existing) {
+      // 업데이트
+      await c.env.DB.prepare(`
+        UPDATE tuition_payments 
+        SET status = 'paid', paid_amount = ?, paid_date = date('now'), updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+      `).bind(amount, existing.id).run()
+    } else {
+      // 새로 생성
+      await c.env.DB.prepare(`
+        INSERT INTO tuition_payments (
+          student_id, academy_id, year, month, amount, paid_amount, 
+          status, paid_date, created_by, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, 'paid', date('now'), ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+      `).bind(student_id, user.id, year, month, amount, amount, user.id).run()
+    }
+    
+    return c.json({
+      success: true,
+      message: '납입 완료 처리되었습니다'
+    })
+  } catch (error) {
+    console.error('Error marking paid:', error)
+    return c.json({ error: '납입 완료 처리 실패', details: error.message }, 500)
+  }
+})
+
