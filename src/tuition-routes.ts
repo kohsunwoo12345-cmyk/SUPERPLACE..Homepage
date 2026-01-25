@@ -651,7 +651,7 @@ app.get('/api/students', requireDirector, async (c) => {
     console.log('=== Students API Debug ===')
     console.log('User ID:', user.id)
     
-    // Use name column (copied from class_name by auto-init)
+    // Use class_name column only - ignore name column
     const students = await c.env.DB.prepare(`
       SELECT 
         s.id,
@@ -663,7 +663,7 @@ app.get('/api/students', requireDirector, async (c) => {
         s.user_id,
         s.class_id,
         s.status,
-        c.name as class_name,
+        c.class_name as class_name,
         COALESCE(c.monthly_fee, 0) as class_fee
       FROM students s
       LEFT JOIN classes c ON s.class_id = c.id
@@ -747,30 +747,19 @@ app.get('/api/tuition/classes', requireDirector, async (c) => {
       } catch (e) {}
       
       try {
-        await c.env.DB.prepare(`ALTER TABLE classes ADD COLUMN name TEXT`).run()
-      } catch (e) {}
-      
-      try {
         await c.env.DB.prepare(`ALTER TABLE students ADD COLUMN user_id INTEGER`).run()
       } catch (e) {}
-      
-      // Copy class_name to name column (only once, if name is empty)
-      try {
-        await c.env.DB.prepare(`UPDATE classes SET name = class_name WHERE name IS NULL OR name = ''`).run()
-      } catch (e) {
-        console.log('UPDATE classes name failed (non-fatal):', e)
-      }
       
       console.log('Auto-init: Tuition tables ensured')
     } catch (initError) {
       console.error('Auto-init error (non-fatal):', initError)
     }
     
-    // Use name column (copied from class_name by auto-init)
+    // Use class_name column only - ignore name column
     const classes = await c.env.DB.prepare(`
       SELECT 
         c.id,
-        c.name as name,
+        c.class_name as name,
         c.description,
         c.user_id,
         c.teacher_id,
@@ -781,8 +770,8 @@ app.get('/api/tuition/classes', requireDirector, async (c) => {
       LEFT JOIN users u ON c.teacher_id = u.id
       LEFT JOIN students s ON (s.class_id = c.id AND s.status = 'active' AND s.user_id = ?)
       WHERE c.user_id = ?
-      GROUP BY c.id, c.name, c.description, c.user_id, c.teacher_id, c.monthly_fee, u.name
-      ORDER BY c.name ASC
+      GROUP BY c.id, c.class_name, c.description, c.user_id, c.teacher_id, c.monthly_fee, u.name
+      ORDER BY c.class_name ASC
     `).bind(user.id, user.id).all()
     
     console.log('Classes found:', classes.results?.length || 0)
