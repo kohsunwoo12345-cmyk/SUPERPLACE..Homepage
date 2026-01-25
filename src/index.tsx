@@ -34150,8 +34150,12 @@ app.post('/api/daily-records', async (c) => {
     const result = await c.env.DB.prepare(`
       INSERT INTO daily_records (
         student_id, course_id, record_date, attendance, homework_status,
-        understanding_level, participation_level, achievement, memo, created_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+        understanding_level, participation_level, achievement, memo,
+        class_id, lesson_concept, lesson_understanding, lesson_participation,
+        lesson_achievement, homework_content, homework_achievement,
+        next_homework_type, next_homework_start_page, next_homework_end_page, next_homework_details,
+        created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
     `).bind(
       data.studentId,
       data.courseId || null,
@@ -34161,7 +34165,18 @@ app.post('/api/daily-records', async (c) => {
       data.understandingLevel || null,
       data.participationLevel || null,
       data.achievement || null,
-      data.memo || null
+      data.memo || null,
+      data.classId || null,
+      data.lessonConcept || null,
+      data.lessonUnderstanding || null,
+      data.lessonParticipation || null,
+      data.lessonAchievement || null,
+      data.homeworkContent || null,
+      data.homeworkAchievement || null,
+      data.nextHomeworkType || null,
+      data.nextHomeworkStartPage || null,
+      data.nextHomeworkEndPage || null,
+      data.nextHomeworkDetails || null
     ).run()
     
     console.log('✅ [AddDailyRecord] Success, id:', result.meta.last_row_id)
@@ -34230,7 +34245,18 @@ app.put('/api/daily-records/:id', async (c) => {
         understanding_level = ?,
         participation_level = ?,
         achievement = ?,
-        memo = ?
+        memo = ?,
+        class_id = ?,
+        lesson_concept = ?,
+        lesson_understanding = ?,
+        lesson_participation = ?,
+        lesson_achievement = ?,
+        homework_content = ?,
+        homework_achievement = ?,
+        next_homework_type = ?,
+        next_homework_start_page = ?,
+        next_homework_end_page = ?,
+        next_homework_details = ?
       WHERE id = ?
     `).bind(
       data.courseId || null,
@@ -34241,6 +34267,17 @@ app.put('/api/daily-records/:id', async (c) => {
       data.participationLevel || null,
       data.achievement || null,
       data.memo || null,
+      data.classId || null,
+      data.lessonConcept || null,
+      data.lessonUnderstanding || null,
+      data.lessonParticipation || null,
+      data.lessonAchievement || null,
+      data.homeworkContent || null,
+      data.homeworkAchievement || null,
+      data.nextHomeworkType || null,
+      data.nextHomeworkStartPage || null,
+      data.nextHomeworkEndPage || null,
+      data.nextHomeworkDetails || null,
       recordId
     ).run()
     
@@ -46438,6 +46475,31 @@ app.get('/api/init-student-tables', async (c) => {
       await DB.prepare(`ALTER TABLE daily_records ADD COLUMN homework_achievement TEXT`).run()
     } catch (e) {
       console.log('homework_achievement column already exists')
+    }
+    
+    // 다음 숙제 필드
+    try {
+      await DB.prepare(`ALTER TABLE daily_records ADD COLUMN next_homework_type TEXT`).run()
+    } catch (e) {
+      console.log('next_homework_type column already exists')
+    }
+    
+    try {
+      await DB.prepare(`ALTER TABLE daily_records ADD COLUMN next_homework_start_page INTEGER`).run()
+    } catch (e) {
+      console.log('next_homework_start_page column already exists')
+    }
+    
+    try {
+      await DB.prepare(`ALTER TABLE daily_records ADD COLUMN next_homework_end_page INTEGER`).run()
+    } catch (e) {
+      console.log('next_homework_end_page column already exists')
+    }
+    
+    try {
+      await DB.prepare(`ALTER TABLE daily_records ADD COLUMN next_homework_details TEXT`).run()
+    } catch (e) {
+      console.log('next_homework_details column already exists')
     }
     
     // 인덱스 생성

@@ -222,20 +222,24 @@ export const classesPage = `
                     return day + ': ' + time.start + '~' + time.end;
                 }).join(', ');
                 
+                const escapedClassName = (cls.class_name || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                const escapedGrade = (cls.grade || '학년 미지정').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                const escapedDescription = (cls.description || '설명 없음').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                
                 return '<div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition border-l-4" style="border-left-color: ' + (cls.color || '#8B5CF6') + '">' +
                     '<div class="flex justify-between items-start mb-4">' +
                         '<div>' +
                             '<div class="flex items-center space-x-2">' +
                                 '<div class="w-4 h-4 rounded-full" style="background-color: ' + (cls.color || '#8B5CF6') + '"></div>' +
-                                '<h3 class="text-xl font-bold text-gray-900">' + cls.class_name + '</h3>' +
+                                '<h3 class="text-xl font-bold text-gray-900">' + escapedClassName + '</h3>' +
                             '</div>' +
-                            '<p class="text-sm text-gray-500 mt-1">' + (cls.grade || '학년 미지정') + '</p>' +
+                            '<p class="text-sm text-gray-500 mt-1">' + escapedGrade + '</p>' +
                         '</div>' +
                         '<div class="flex space-x-2">' +
                             '<button onclick="editClass(' + cls.id + ')" class="text-blue-600 hover:text-blue-800">' +
                                 '<i class="fas fa-edit"></i>' +
                             '</button>' +
-                            '<button onclick="deleteClass(' + cls.id + ', \'' + cls.class_name + '\')" class="text-red-600 hover:text-red-800">' +
+                            '<button onclick="deleteClass(' + cls.id + ', \'' + escapedClassName + '\')" class="text-red-600 hover:text-red-800">' +
                                 '<i class="fas fa-trash"></i>' +
                             '</button>' +
                         '</div>' +
@@ -246,7 +250,7 @@ export const classesPage = `
                             '<span class="text-xs font-medium text-gray-700">' + scheduleDisplay + '</span>' +
                         '</div>'
                      : '') +
-                    '<p class="text-gray-600 mb-4 text-sm">' + (cls.description || '설명 없음') + '</p>' +
+                    '<p class="text-gray-600 mb-4 text-sm">' + escapedDescription + '</p>' +
                     '<div class="flex justify-between items-center pt-4 border-t">' +
                         '<span class="text-sm text-gray-500">' +
                             '<i class="fas fa-users mr-2"></i>학생 ' + cls.student_count + '명' +
@@ -1388,6 +1392,32 @@ export const dailyRecordPage = `
                         </div>
                     </div>
 
+                    <!-- 다음 숙제 섹션 -->
+                    <div class="bg-orange-50 p-4 rounded-lg space-y-4">
+                        <h3 class="text-lg font-semibold text-orange-900">📝 다음 숙제 내용</h3>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">숙제 유형</label>
+                            <input type="text" id="nextHomeworkType" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500" placeholder="예: 수학 문제집, 영어 단어, 과학 실험 보고서 등">
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">시작 페이지</label>
+                                <input type="number" id="nextHomeworkStartPage" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500" placeholder="예: 45" min="1">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">끝 페이지</label>
+                                <input type="number" id="nextHomeworkEndPage" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500" placeholder="예: 50" min="1">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">세부 내용</label>
+                            <textarea id="nextHomeworkDetails" rows="2" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500" placeholder="숙제에 대한 추가 설명이나 주의사항을 입력하세요"></textarea>
+                        </div>
+                    </div>
+
                     <!-- 추가 메모 -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">추가 메모</label>
@@ -1948,6 +1978,10 @@ export const dailyRecordPage = `
                 homeworkStatus: homework ? homework.value : null,
                 homeworkContent: document.getElementById('homeworkContent').value || null,
                 homeworkAchievement: document.getElementById('homeworkAchievement').value || null,
+                nextHomeworkType: document.getElementById('nextHomeworkType').value || null,
+                nextHomeworkStartPage: parseInt(document.getElementById('nextHomeworkStartPage').value) || null,
+                nextHomeworkEndPage: parseInt(document.getElementById('nextHomeworkEndPage').value) || null,
+                nextHomeworkDetails: document.getElementById('nextHomeworkDetails').value || null,
                 memo: document.getElementById('recordMemo').value
             };
 
