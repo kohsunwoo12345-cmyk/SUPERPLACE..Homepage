@@ -10310,20 +10310,46 @@ app.get('/api/usage/check', async (c) => {
         WHERE academy_id = ? AND subscription_id = ?
       `).bind(academyId, subscription.id).first()
       
+      console.log('[Usage Check] 🔍 Checking landing pages for academy_id:', academyId, 'subscription_id:', subscription.id)
+      console.log('[Usage Check] 📊 usage_tracking record:', usage ? 'EXISTS' : 'NOT FOUND')
+      
+      // 🔥 항상 실제 DB에서 COUNT (더블 체크)
+      const countResult = await c.env.DB.prepare(`
+        SELECT COUNT(*) as count FROM landing_pages 
+        WHERE user_id = ?
+      `).bind(academyId).first()
+      const actualCount = countResult?.count || 0
+      console.log('[Usage Check] 📈 Actual landing_pages in DB:', actualCount, 'for user_id:', academyId)
+      
       if (usage && usage.landing_pages_created !== null && usage.landing_pages_created !== undefined) {
-        actualLandingPagesCount = usage.landing_pages_created
-        console.log('[Usage Check] ✅ Landing pages from usage_tracking:', actualLandingPagesCount)
-      } else {
-        // 🔥 Fallback: usage_tracking에 레코드가 없으면 실제 landing_pages 테이블에서 COUNT
-        console.log('[Usage Check] ⚠️ No usage_tracking record, counting from landing_pages table...')
-        const countResult = await c.env.DB.prepare(`
-          SELECT COUNT(*) as count FROM landing_pages 
-          WHERE user_id = ?
-        `).bind(academyId).first()
-        actualLandingPagesCount = countResult?.count || 0
-        console.log('[Usage Check] ✅ Landing pages from actual table:', actualLandingPagesCount)
+        const trackedCount = usage.landing_pages_created
+        console.log('[Usage Check] 📝 usage_tracking.landing_pages_created:', trackedCount)
         
-        // 자동으로 usage_tracking 레코드 생성
+        // 🔥 실제 개수와 다르면 동기화
+        if (trackedCount !== actualCount) {
+          console.log('[Usage Check] ⚠️ MISMATCH! Tracked:', trackedCount, 'vs Actual:', actualCount)
+          console.log('[Usage Check] 🔄 Auto-syncing to actual count...')
+          try {
+            await c.env.DB.prepare(`
+              UPDATE usage_tracking 
+              SET landing_pages_created = ?, updated_at = CURRENT_TIMESTAMP
+              WHERE academy_id = ? AND subscription_id = ?
+            `).bind(actualCount, academyId, subscription.id).run()
+            console.log('[Usage Check] ✅ Synced to', actualCount)
+            actualLandingPagesCount = actualCount
+          } catch (syncErr) {
+            console.error('[Usage Check] ❌ Sync failed:', syncErr.message)
+            actualLandingPagesCount = trackedCount // 실패 시 기존 값 유지
+          }
+        } else {
+          actualLandingPagesCount = trackedCount
+          console.log('[Usage Check] ✅ Counts match:', actualLandingPagesCount)
+        }
+      } else {
+        // 🔥 usage_tracking 레코드가 없으면 실제 개수로 생성
+        console.log('[Usage Check] ⚠️ No usage_tracking record, creating with count:', actualCount)
+        actualLandingPagesCount = actualCount
+        
         try {
           await c.env.DB.prepare(`
             INSERT INTO usage_tracking (
