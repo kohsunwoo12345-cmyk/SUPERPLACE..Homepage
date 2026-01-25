@@ -16,7 +16,6 @@
     "/store/*",
     "/test-parent-message.html",
     "/thumbnail-share.jpg",
-    "/thumbnail.jpg",
-    "/tools/*"
+    "/thumbnail.jpg"
   ]
 }
