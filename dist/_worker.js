@@ -3123,7 +3123,7 @@ var Pt=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Ft=(e,t,s)=>t in
     `).bind(s.id,s.id).all();return console.log("Classes found:",((t=a.results)==null?void 0:t.length)||0),a.results&&a.results.length>0&&console.log("First class:",JSON.stringify(a.results[0])),e.json({success:!0,classes:a.results||[]})}catch(s){return console.error("Error fetching classes:",s),e.json({error:"반 목록 조회 실패",details:s.message,stack:s.stack},500)}});H.put("/api/tuition/classes/:id/fee",X,async e=>{try{const t=e.get("user"),s=e.req.param("id"),{monthly_fee:a}=await e.req.json();return a==null?e.json({error:"월 교육비를 입력해주세요"},400):await e.env.DB.prepare(`
       SELECT * FROM classes WHERE id = ? AND academy_id = ?
     `).bind(s,t.id).first()?(await e.env.DB.prepare(`
-      UPDATE classes SET monthly_fee = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?
+      UPDATE classes SET monthly_fee = ? WHERE id = ?
     `).bind(a,s).run(),e.json({success:!0,message:"반 교육비가 설정되었습니다"})):e.json({error:"반을 찾을 수 없습니다"},404)}catch(t){return console.error("Error updating class fee:",t),e.json({error:"반 교육비 설정 실패",details:t.message},500)}});H.get("/api/tuition/student-fees/:studentId",X,async e=>{try{const t=e.get("user"),s=e.req.param("studentId"),a=e.req.query("year")||new Date().getFullYear().toString(),r=e.req.query("month")||(new Date().getMonth()+1).toString(),o=await e.env.DB.prepare(`
       SELECT 
         s.*,
