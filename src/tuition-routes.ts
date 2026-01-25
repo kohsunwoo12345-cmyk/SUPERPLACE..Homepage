@@ -747,13 +747,19 @@ app.get('/api/tuition/classes', requireDirector, async (c) => {
       } catch (e) {}
       
       try {
+        await c.env.DB.prepare(`ALTER TABLE classes ADD COLUMN name TEXT`).run()
+      } catch (e) {}
+      
+      try {
         await c.env.DB.prepare(`ALTER TABLE students ADD COLUMN user_id INTEGER`).run()
       } catch (e) {}
       
-      // If name column exists but is empty, copy from class_name
+      // Copy class_name to name column (only once, if name is empty)
       try {
         await c.env.DB.prepare(`UPDATE classes SET name = class_name WHERE name IS NULL OR name = ''`).run()
-      } catch (e) {}
+      } catch (e) {
+        console.log('UPDATE classes name failed (non-fatal):', e)
+      }
       
       console.log('Auto-init: Tuition tables ensured')
     } catch (initError) {
