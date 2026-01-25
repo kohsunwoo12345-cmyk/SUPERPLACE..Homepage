@@ -2848,14 +2848,14 @@ var Mt=Object.defineProperty;var st=e=>{throw TypeError(e)};var At=(e,t,s)=>t in
 `,o+=`}
 `,o+=`<\/script>
 `,o+=`<!-- 폼 끝 -->
-`,e.json({success:!0,html:o,template:{id:r.id,name:r.name}})}catch(t){return console.error("Error generating HTML:",t),e.json({error:"HTML 생성에 실패했습니다"},500)}});W.post("/api/form-submissions",async e=>{try{const t=await e.req.json();if(!t.form_template_id||!t.submission_data)return e.json({error:"필수 항목을 입력해주세요"},400);const s=await e.env.DB.prepare(`
+`,e.json({success:!0,html:o,template:{id:r.id,name:r.name}})}catch(t){return console.error("Error generating HTML:",t),e.json({error:"HTML 생성에 실패했습니다"},500)}});W.post("/api/form-submissions",async e=>{try{console.log("[Form Submission] Starting...");const t=await e.req.json();if(console.log("[Form Submission] Data:",JSON.stringify(t)),!t.form_template_id||!t.submission_data)return console.log("[Form Submission] Missing fields"),e.json({error:"필수 항목을 입력해주세요"},400);console.log("[Form Submission] Looking up template...");const s=await e.env.DB.prepare(`
       SELECT * FROM form_templates WHERE id = ?
-    `).bind(t.form_template_id).first();if(!s)return e.json({error:"폼을 찾을 수 없습니다"},404);const r=e.req.header("cf-connecting-ip")||e.req.header("x-forwarded-for")||"unknown",a=e.req.header("user-agent")||"unknown",o=await e.env.DB.prepare(`
+    `).bind(t.form_template_id).first();if(!s)return console.log("[Form Submission] Template not found"),e.json({error:"폼을 찾을 수 없습니다"},404);console.log("[Form Submission] Template found, inserting...");const r=e.req.header("cf-connecting-ip")||e.req.header("x-forwarded-for")||"unknown",a=e.req.header("user-agent")||"unknown",o=await e.env.DB.prepare(`
       INSERT INTO form_submissions (
         form_template_id, landing_page_id, submission_data,
         ip_address, user_agent, status
       ) VALUES (?, ?, ?, ?, ?, 'new')
-    `).bind(t.form_template_id,t.landing_page_id||null,t.submission_data,r,a).run();return e.json({success:!0,id:o.meta.last_row_id,message:s.success_message||"신청이 완료되었습니다!"})}catch(t){return console.error("Error submitting form:",t),e.json({error:"제출에 실패했습니다"},500)}});W.get("/api/form-submissions",J,async e=>{try{const t=e.get("userId"),s=e.req.query("template_id"),r=e.req.query("status");let a=`
+    `).bind(t.form_template_id,t.landing_page_id||null,t.submission_data,r,a).run();return console.log("[Form Submission] Success!"),e.json({success:!0,id:o.meta.last_row_id,message:s.success_message||"신청이 완료되었습니다!"})}catch(t){console.error("Error submitting form:",t);const s=t instanceof Error?t.message:"알 수 없는 오류";return e.json({error:"제출에 실패했습니다",details:s,stack:t instanceof Error?t.stack:void 0},500)}});W.get("/api/form-submissions",J,async e=>{try{const t=e.get("userId"),s=e.req.query("template_id"),r=e.req.query("status");let a=`
       SELECT 
         fs.*,
         ft.name as template_name,
