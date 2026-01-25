@@ -43,11 +43,11 @@ app.get('/api/revenue/monthly', requireDirector, async (c) => {
         COUNT(DISTINCT tp.student_id) as paying_students
       FROM tuition_payments tp
       JOIN students s ON tp.student_id = s.id
-      WHERE s.user_id = ? 
+      WHERE s.academy_id = ? 
         AND tp.year = ? 
         AND tp.month = ?
         AND tp.status IN ('paid', 'partial')
-    `).bind(user.id, year, month).first()
+    `).bind(user.academy_id || user.id, year, month).first()
     
     // 예상 매출 (활성 학생 * 교육비)
     const expectedResult = await c.env.DB.prepare(`
@@ -58,9 +58,9 @@ app.get('/api/revenue/monthly', requireDirector, async (c) => {
       FROM students s
       LEFT JOIN tuition_rates tr ON s.id = tr.student_id
         AND (tr.end_date IS NULL OR tr.end_date >= date('now'))
-      WHERE s.user_id = ?
+      WHERE s.academy_id = ?
         AND s.status = 'active'
-    `).bind(user.id).first()
+    `).bind(user.academy_id || user.id).first()
     
     // 미납 금액
     const unpaidResult = await c.env.DB.prepare(`
@@ -72,7 +72,7 @@ app.get('/api/revenue/monthly', requireDirector, async (c) => {
         AND tp.year = ? AND tp.month = ?
       LEFT JOIN tuition_rates tr ON s.id = tr.student_id
         AND (tr.end_date IS NULL OR tr.end_date >= date('now'))
-      WHERE s.user_id = ? 
+      WHERE s.academy_id = ? 
         AND s.status = 'active'
         AND COALESCE(tp.status, 'unpaid') IN ('unpaid', 'partial', 'overdue')
     `).bind(year, month, user.id).first()
@@ -114,11 +114,11 @@ app.get('/api/revenue/yearly', requireDirector, async (c) => {
           COUNT(DISTINCT tp.student_id) as paying_students
         FROM tuition_payments tp
         JOIN students s ON tp.student_id = s.id
-        WHERE s.user_id = ? 
+        WHERE s.academy_id = ? 
           AND tp.year = ? 
           AND tp.month = ?
           AND tp.status IN ('paid', 'partial')
-      `).bind(user.id, year, month).first()
+      `).bind(user.academy_id || user.id, year, month).first()
       
       monthlyData.push({
         month,
@@ -160,7 +160,7 @@ app.get('/api/revenue/by-student', requireDirector, async (c) => {
         AND tp.year = ? AND tp.month = ?
       LEFT JOIN tuition_rates tr ON s.id = tr.student_id
         AND (tr.end_date IS NULL OR tr.end_date >= date('now'))
-      WHERE s.user_id = ?
+      WHERE s.academy_id = ?
         AND s.status = 'active'
       ORDER BY paid_amount DESC, s.name ASC
     `).bind(year, month, user.id).all()
@@ -191,11 +191,11 @@ app.get('/api/revenue/dashboard', requireDirector, async (c) => {
         COALESCE(SUM(tp.paid_amount), 0) as total_paid
       FROM tuition_payments tp
       JOIN students s ON tp.student_id = s.id
-      WHERE s.user_id = ? 
+      WHERE s.academy_id = ? 
         AND tp.year = ? 
         AND tp.month = ?
         AND tp.status IN ('paid', 'partial')
-    `).bind(user.id, currentYear, currentMonth).first()
+    `).bind(user.academy_id || user.id, currentYear, currentMonth).first()
     
     // 지난 달 매출
     const lastMonth = currentMonth === 1 ? 12 : currentMonth - 1
@@ -206,11 +206,11 @@ app.get('/api/revenue/dashboard', requireDirector, async (c) => {
         COALESCE(SUM(tp.paid_amount), 0) as total_paid
       FROM tuition_payments tp
       JOIN students s ON tp.student_id = s.id
-      WHERE s.user_id = ? 
+      WHERE s.academy_id = ? 
         AND tp.year = ? 
         AND tp.month = ?
         AND tp.status IN ('paid', 'partial')
-    `).bind(user.id, lastMonthYear, lastMonth).first()
+    `).bind(user.academy_id || user.id, lastMonthYear, lastMonth).first()
     
     // 올해 누적 매출
     const yearlyResult = await c.env.DB.prepare(`
@@ -218,10 +218,10 @@ app.get('/api/revenue/dashboard', requireDirector, async (c) => {
         COALESCE(SUM(tp.paid_amount), 0) as total_paid
       FROM tuition_payments tp
       JOIN students s ON tp.student_id = s.id
-      WHERE s.user_id = ? 
+      WHERE s.academy_id = ? 
         AND tp.year = ?
         AND tp.status IN ('paid', 'partial')
-    `).bind(user.id, currentYear).first()
+    `).bind(user.academy_id || user.id, currentYear).first()
     
     // 총 학생 수 및 평균 교육비
     const studentsResult = await c.env.DB.prepare(`
@@ -231,16 +231,16 @@ app.get('/api/revenue/dashboard', requireDirector, async (c) => {
       FROM students s
       LEFT JOIN tuition_rates tr ON s.id = tr.student_id
         AND (tr.end_date IS NULL OR tr.end_date >= date('now'))
-      WHERE s.user_id = ?
+      WHERE s.academy_id = ?
         AND s.status = 'active'
-    `).bind(user.id).first()
+    `).bind(user.academy_id || user.id).first()
     
     // 선생님 수 조회
     const teachersResult = await c.env.DB.prepare(`
       SELECT COUNT(*) as total_teachers
       FROM users
       WHERE parent_user_id = ? AND user_type = 'teacher'
-    `).bind(user.id).first()
+    `).bind(user.academy_id || user.id).first()
     
     const thisMonthPaid = thisMonthResult?.total_paid || 0
     const lastMonthPaid = lastMonthResult?.total_paid || 0
