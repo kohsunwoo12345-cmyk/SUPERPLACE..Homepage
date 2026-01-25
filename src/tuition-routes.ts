@@ -23,9 +23,9 @@ const requireDirector = async (c: any, next: any) => {
       return c.json({ error: '접근 권한이 없습니다' }, 403)
     }
 
-    // 원장님만 허용
-    if (user.user_type !== 'director' && user.user_type !== 'admin') {
-      return c.json({ error: '원장님만 접근 가능합니다' }, 403)
+    // 원장님, 관리자, 또는 user_id가 있는 사용자 허용
+    if (!user.id) {
+      return c.json({ error: '유효하지 않은 사용자입니다' }, 403)
     }
 
     c.set('user', user)
@@ -89,6 +89,63 @@ app.get('/api/tuition/payments', requireDirector, async (c) => {
     const year = c.req.query('year') || new Date().getFullYear().toString()
     const month = c.req.query('month') || (new Date().getMonth() + 1).toString()
     const status = c.req.query('status') // unpaid, paid, partial, overdue
+    
+    // 현재 날짜
+    const now = new Date()
+    const currentYear = now.getFullYear()
+    const currentMonth = now.getMonth() + 1
+    const currentDay = now.getDate()
+    
+    // 조회하는 월이 이번 달이고, 오늘이 28일 이후라면 미납 자동 생성
+    const shouldAutoCreateUnpaid = (
+      parseInt(year) === currentYear && 
+      parseInt(month) === currentMonth && 
+      currentDay >= 28
+    )
+    
+    // 또는 조회하는 월이 지난 달이라면 미납 자동 생성
+    const isOverdueMonth = (
+      parseInt(year) < currentYear ||
+      (parseInt(year) === currentYear && parseInt(month) < currentMonth)
+    )
+    
+    if (shouldAutoCreateUnpaid || isOverdueMonth) {
+      // 납입 기록이 없는 학생들 찾기
+      const studentsWithoutPayment = await c.env.DB.prepare(`
+        SELECT 
+          s.id as student_id,
+          COALESCE(tr.monthly_fee, c.monthly_fee, 0) as monthly_fee
+        FROM students s
+        LEFT JOIN tuition_payments tp ON s.id = tp.student_id 
+          AND tp.year = ? AND tp.month = ?
+        LEFT JOIN tuition_rates tr ON s.id = tr.student_id
+          AND (tr.end_date IS NULL OR tr.end_date >= date('now'))
+        LEFT JOIN classes c ON s.class_id = c.id
+        WHERE s.user_id = ?
+          AND s.status = 'active'
+          AND tp.id IS NULL
+          AND (COALESCE(tr.monthly_fee, c.monthly_fee, 0) > 0)
+      `).bind(year, month, user.id).all()
+      
+      // 미납 기록 자동 생성
+      if (studentsWithoutPayment.results && studentsWithoutPayment.results.length > 0) {
+        for (const student of studentsWithoutPayment.results) {
+          await c.env.DB.prepare(`
+            INSERT INTO tuition_payments (
+              student_id, academy_id, year, month, amount, paid_amount, 
+              status, created_by, created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?, 0, 'unpaid', ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+          `).bind(
+            student.student_id,
+            user.id,
+            year,
+            month,
+            student.monthly_fee,
+            user.id
+          ).run()
+        }
+      }
+    }
     
     // 모든 활성 학생을 보여주되, 납입 기록이 있으면 조인
     let query = `
