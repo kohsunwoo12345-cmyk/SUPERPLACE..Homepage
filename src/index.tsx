@@ -38256,6 +38256,147 @@ setInterval(loadActiveSessionCount,30000);
   return c.html(h+n+b+s+l)
 })
 
+// 관리자: 사용량 동기화 페이지
+app.get('/admin/sync-usage', (c) => {
+  return c.html(`<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>사용량 동기화 - 관리자</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body class="bg-gray-50">
+    <nav class="bg-white shadow-sm border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <a href="/admin/dashboard" class="text-2xl font-bold text-purple-600">슈퍼플레이스 관리자</a>
+                <div class="flex gap-4">
+                    <a href="/admin/dashboard" class="text-gray-700 hover:text-purple-600">대시보드</a>
+                    <a href="/admin/sync-usage" class="text-purple-600 font-semibold">사용량 동기화</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-4xl mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">🔄 사용량 동기화</h1>
+        <p class="text-gray-600 mb-8">랜딩페이지 사용량을 실제 데이터와 동기화합니다.</p>
+
+        <div class="bg-white rounded-xl shadow p-8 mb-6">
+            <h2 class="text-xl font-bold mb-4">랜딩페이지 사용량 동기화</h2>
+            <p class="text-gray-600 mb-6">
+                이 기능은 모든 활성 구독에 대해 <code class="bg-gray-100 px-2 py-1 rounded">landing_pages</code> 테이블의 실제 데이터를 세어
+                <code class="bg-gray-100 px-2 py-1 rounded">usage_tracking</code> 테이블을 업데이트합니다.
+            </p>
+            
+            <button onclick="syncLandingPages()" id="syncBtn" class="w-full px-6 py-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-bold text-lg hover:from-purple-700 hover:to-indigo-700 transition-all shadow-lg hover:shadow-xl">
+                <i class="fas fa-sync-alt mr-2"></i>랜딩페이지 사용량 동기화
+            </button>
+            
+            <div id="syncResult" class="mt-6 hidden"></div>
+        </div>
+
+        <div class="bg-blue-50 border border-blue-200 rounded-xl p-6">
+            <h3 class="font-bold text-blue-900 mb-2">💡 언제 사용하나요?</h3>
+            <ul class="text-blue-800 text-sm space-y-2">
+                <li>• 대시보드에 랜딩페이지 사용량이 표시되지 않을 때</li>
+                <li>• 랜딩페이지를 생성했는데 카운트가 증가하지 않을 때</li>
+                <li>• <code class="bg-blue-100 px-2 py-1 rounded">usage_tracking</code> 테이블이 초기화되지 않았을 때</li>
+                <li>• 데이터 무결성을 확인하고 싶을 때</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        async function syncLandingPages() {
+            const btn = document.getElementById('syncBtn');
+            const resultDiv = document.getElementById('syncResult');
+            
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>동기화 중...';
+            resultDiv.classList.add('hidden');
+            
+            try {
+                const user = JSON.parse(localStorage.getItem('user') || 'null');
+                if (!user || user.role !== 'admin') {
+                    alert('관리자만 사용할 수 있습니다.');
+                    window.location.href = '/login';
+                    return;
+                }
+                
+                const userDataBase64 = btoa(unescape(encodeURIComponent(JSON.stringify(user))));
+                
+                const response = await fetch('/api/admin/sync-landing-pages-usage', {
+                    method: 'POST',
+                    headers: {
+                        'X-User-Data-Base64': userDataBase64
+                    }
+                });
+                
+                const data = await response.json();
+                
+                resultDiv.classList.remove('hidden');
+                
+                if (data.success) {
+                    resultDiv.innerHTML = `
+                        <div class="bg-green-50 border-2 border-green-200 rounded-xl p-6">
+                            <div class="flex items-start gap-3">
+                                <i class="fas fa-check-circle text-green-600 text-2xl mt-1"></i>
+                                <div class="flex-1">
+                                    <h3 class="font-bold text-green-900 text-lg mb-2">✅ 동기화 성공!</h3>
+                                    <p class="text-green-800 mb-4">${data.message}</p>
+                                    <div class="bg-white rounded-lg p-4 mb-3">
+                                        <div class="text-sm text-gray-600 mb-2">세부 결과:</div>
+                                        <div class="space-y-1 text-sm">
+                                            ${data.results.map(r => `<div class="text-gray-700">${r}</div>`).join('')}
+                                        </div>
+                                    </div>
+                                    <p class="text-sm text-green-700">
+                                        <strong>업데이트됨:</strong> ${data.synced}개 / 전체: ${data.total}개
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="bg-red-50 border-2 border-red-200 rounded-xl p-6">
+                            <div class="flex items-start gap-3">
+                                <i class="fas fa-times-circle text-red-600 text-2xl mt-1"></i>
+                                <div>
+                                    <h3 class="font-bold text-red-900 text-lg mb-2">❌ 동기화 실패</h3>
+                                    <p class="text-red-800">${data.error}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('동기화 오류:', error);
+                resultDiv.classList.remove('hidden');
+                resultDiv.innerHTML = `
+                    <div class="bg-red-50 border-2 border-red-200 rounded-xl p-6">
+                        <div class="flex items-start gap-3">
+                            <i class="fas fa-exclamation-triangle text-red-600 text-2xl mt-1"></i>
+                            <div>
+                                <h3 class="font-bold text-red-900 text-lg mb-2">⚠️ 오류 발생</h3>
+                                <p class="text-red-800">${error.message}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-sync-alt mr-2"></i>랜딩페이지 사용량 동기화';
+            }
+        }
+    </script>
+</body>
+</html>`)
+})
+
 // 관리자: 실시간 대기 건수 조회 API
 app.get('/api/admin/pending-counts', async (c) => {
   const {env} = c
