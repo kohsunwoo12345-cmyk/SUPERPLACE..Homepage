@@ -20383,6 +20383,9 @@ app.get('/tools/blog-writer', (c) => {
   `)
 })
 
+// 랜딩페이지 생성 도구 - trailing slash redirect
+app.get('/tools/landing-builder/', (c) => c.redirect('/tools/landing-builder', 301));
+
 // 랜딩페이지 생성 도구
 app.get('/tools/landing-builder', (c) => {
   return c.html(`
@@ -26235,6 +26238,9 @@ app.get('/tools/student-management', (c) => {
   return c.redirect('/students')
 })
 
+// AI 학습 분석 리포트 페이지 - trailing slash redirect
+app.get('/tools/ai-learning-report/', (c) => c.redirect('/tools/ai-learning-report', 301));
+
 // AI 학습 분석 리포트 페이지
 app.get('/tools/ai-learning-report', (c) => {
   return c.html(`
@@ -26996,6 +27002,9 @@ app.get('/tools/ai-learning-report', (c) => {
     </html>
   `)
 })
+
+// 검색량 조회 페이지 - trailing slash redirect
+app.get('/tools/search-volume/', (c) => c.redirect('/tools/search-volume', 301));
 
 // 검색량 조회 페이지
 app.get('/tools/search-volume', (c) => {
