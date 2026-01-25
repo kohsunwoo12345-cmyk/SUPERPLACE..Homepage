@@ -1308,6 +1308,101 @@ app.post('/api/emergency-sync-usage', async (c) => {
   }
 })
 
+// 🔧 디버그: 이메일로 랜딩페이지 정보 조회
+app.get('/api/debug/user-by-email', async (c) => {
+  try {
+    const email = c.req.query('email')
+    if (!email) {
+      return c.json({ success: false, error: 'Email parameter required' }, 400)
+    }
+    
+    console.log('[Debug] Checking landing pages for email:', email)
+    
+    // 사용자 정보
+    const user = await c.env.DB.prepare(`
+      SELECT id, email, name, academy_id, user_type FROM users WHERE email = ?
+    `).bind(email).first()
+    
+    if (!user) {
+      return c.json({ success: false, error: 'User not found' })
+    }
+    
+    const academyId = user.academy_id || user.id
+    
+    // 전체 랜딩페이지 개수
+    const totalCount = await c.env.DB.prepare(`
+      SELECT COUNT(*) as count FROM landing_pages WHERE user_id = ?
+    `).bind(user.id).first()
+    
+    // 활성 구독
+    const subscription = await c.env.DB.prepare(`
+      SELECT * FROM subscriptions 
+      WHERE academy_id = ? AND status = 'active'
+      ORDER BY created_at DESC LIMIT 1
+    `).bind(academyId).first()
+    
+    // 현재 플랜 기간 내 랜딩페이지 개수
+    let currentPlanCount = 0
+    if (subscription && subscription.subscription_start_date) {
+      const countResult = await c.env.DB.prepare(`
+        SELECT COUNT(*) as count FROM landing_pages 
+        WHERE user_id IN (
+          SELECT id FROM users WHERE id = ? OR academy_id = ?
+        )
+        AND created_at >= ?
+      `).bind(academyId, academyId, subscription.subscription_start_date).first()
+      currentPlanCount = countResult?.count || 0
+    }
+    
+    // 랜딩페이지 목록
+    const pages = await c.env.DB.prepare(`
+      SELECT id, slug, title, user_id, created_at, status 
+      FROM landing_pages 
+      WHERE user_id = ? 
+      ORDER BY created_at DESC 
+      LIMIT 10
+    `).bind(user.id).all()
+    
+    // usage_tracking
+    const usage = subscription ? await c.env.DB.prepare(`
+      SELECT * FROM usage_tracking 
+      WHERE academy_id = ? AND subscription_id = ?
+    `).bind(academyId, subscription.id).first() : null
+    
+    return c.json({
+      success: true,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        academy_id: user.academy_id,
+        user_type: user.user_type
+      },
+      landing_pages: {
+        total_count: totalCount?.count || 0,
+        current_plan_count: currentPlanCount,
+        pages: pages.results || []
+      },
+      subscription: subscription ? {
+        id: subscription.id,
+        plan_name: subscription.plan_name,
+        subscription_start_date: subscription.subscription_start_date,
+        subscription_end_date: subscription.subscription_end_date,
+        landing_page_limit: subscription.landing_page_limit,
+        status: subscription.status
+      } : null,
+      usage_tracking: usage ? {
+        landing_pages_created: usage.landing_pages_created,
+        ai_reports_used_this_month: usage.ai_reports_used_this_month,
+        current_students: usage.current_students
+      } : null
+    })
+  } catch (error) {
+    console.error('[Debug Email] Error:', error)
+    return c.json({ success: false, error: error.message }, 500)
+  }
+})
+
 // 🔧 디버그: 특정 사용자의 랜딩페이지 정보 조회
 app.get('/api/debug/landing-pages/:userId', async (c) => {
   try {
