@@ -38895,7 +38895,8 @@ setInterval(loadActiveSessionCount,30000);
   return c.html(h+n+b+s+l)
 })
 
-// 관리자: 사용량 동기화 페이지
+// 관리자: 사용량 동기화 페이지 (빌드 오류로 주석 처리 - 대신 /api/emergency/sync-my-landing-pages 사용)
+/*
 app.get('/admin/sync-usage', (c) => {
   return c.html(`<!DOCTYPE html>
 <html lang="ko">
@@ -39035,6 +39036,7 @@ app.get('/admin/sync-usage', (c) => {
 </body>
 </html>`)
 })
+*/
 
 // 관리자: 실시간 대기 건수 조회 API
 app.get('/api/admin/pending-counts', async (c) => {

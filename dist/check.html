@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>랜딩페이지 개수 확인</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen flex items-center justify-center p-8">
+    <div class="max-w-xl w-full bg-white rounded-xl shadow-lg p-8">
+        <h1 class="text-3xl font-bold text-center mb-8">🔍 랜딩페이지 확인</h1>
+        
+        <div class="space-y-4">
+            <a href="/landing-pages" class="block w-full bg-purple-600 text-white text-center py-4 rounded-lg hover:bg-purple-700 transition font-semibold text-lg">
+                📄 내 랜딩페이지 목록 보기
+            </a>
+            
+            <a href="/tools/landing-builder" class="block w-full bg-green-600 text-white text-center py-4 rounded-lg hover:bg-green-700 transition font-semibold text-lg">
+                ➕ 새 랜딩페이지 만들기
+            </a>
+            
+            <a href="/dashboard" class="block w-full bg-blue-600 text-white text-center py-4 rounded-lg hover:bg-blue-700 transition font-semibold text-lg">
+                📊 대시보드로 이동
+            </a>
+        </div>
+        
+        <div class="mt-8 p-4 bg-yellow-50 border-2 border-yellow-300 rounded-lg">
+            <p class="font-bold text-yellow-900 mb-2">💡 확인 순서:</p>
+            <ol class="list-decimal list-inside space-y-2 text-yellow-800">
+                <li>위의 "내 랜딩페이지 목록 보기" 클릭</li>
+                <li>실제로 몇 개 있는지 확인</li>
+                <li>0개라면 "새 랜딩페이지 만들기" 클릭</li>
+                <li>"대시보드로 이동" 후 F5로 새로고침</li>
+            </ol>
+        </div>
+        
+        <div class="mt-6 p-4 bg-red-50 border-2 border-red-300 rounded-lg">
+            <p class="font-bold text-red-900 mb-2">⚠️ 중요:</p>
+            <p class="text-red-800">2026-01-25 이전에 만든 랜딩페이지는 현재 플랜에서 카운트되지 않습니다!</p>
+        </div>
+    </div>
+</body>
+</html>

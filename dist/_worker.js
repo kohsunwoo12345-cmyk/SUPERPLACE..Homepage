@@ -1,4 +1,4 @@
-var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in e?Ft(e,t,{enumerable:!0,configurable:!0,writable:!0,value:s}):e[t]=s;var I=(e,t,s)=>Pt(e,typeof t!="symbol"?t+"":t,s),Qe=(e,t,s)=>t.has(e)||nt("Cannot "+s);var h=(e,t,s)=>(Qe(e,t,"read from private field"),s?s.call(e):t.get(e)),C=(e,t,s)=>t.has(e)?nt("Cannot add the same private member more than once"):t instanceof WeakSet?t.add(e):t.set(e,s),T=(e,t,s,a)=>(Qe(e,t,"write to private field"),a?a.call(e,s):t.set(e,s),s),R=(e,t,s)=>(Qe(e,t,"access private method"),s);var it=(e,t,s,a)=>({set _(r){T(e,t,r,s)},get _(){return h(e,t,a)}});var lt=(e,t,s)=>(a,r)=>{let o=-1;return n(0);async function n(i){if(i<=o)throw new Error("next() called multiple times");o=i;let l,d=!1,p;if(e[i]?(p=e[i][0][0],a.req.routeIndex=i):p=i===e.length&&r||void 0,p)try{l=await p(a,()=>n(i+1))}catch(u){if(u instanceof Error&&t)a.error=u,l=await t(u,a),d=!0;else throw u}else a.finalized===!1&&s&&(l=await s(a));return l&&(a.finalized===!1||d)&&(a.res=l),a}},$t=Symbol(),qt=async(e,t=Object.create(null))=>{const{all:s=!1,dot:a=!1}=t,o=(e instanceof _t?e.raw.headers:e.headers).get("Content-Type");return o!=null&&o.startsWith("multipart/form-data")||o!=null&&o.startsWith("application/x-www-form-urlencoded")?Ht(e,{all:s,dot:a}):{}};async function Ht(e,t){const s=await e.formData();return s?Wt(s,t):{}}function Wt(e,t){const s=Object.create(null);return e.forEach((a,r)=>{t.all||r.endsWith("[]")?Gt(s,r,a):s[r]=a}),t.dot&&Object.entries(s).forEach(([a,r])=>{a.includes(".")&&(Yt(s,a,r),delete s[a])}),s}var Gt=(e,t,s)=>{e[t]!==void 0?Array.isArray(e[t])?e[t].push(s):e[t]=[e[t],s]:t.endsWith("[]")?e[t]=[s]:e[t]=s},Yt=(e,t,s)=>{let a=e;const r=t.split(".");r.forEach((o,n)=>{n===r.length-1?a[o]=s:((!a[o]||typeof a[o]!="object"||Array.isArray(a[o])||a[o]instanceof File)&&(a[o]=Object.create(null)),a=a[o])})},vt=e=>{const t=e.split("/");return t[0]===""&&t.shift(),t},zt=e=>{const{groups:t,path:s}=Xt(e),a=vt(s);return Jt(a,t)},Xt=e=>{const t=[];return e=e.replace(/\{[^}]+\}/g,(s,a)=>{const r=`@${a}`;return t.push([r,s]),r}),{groups:t,path:e}},Jt=(e,t)=>{for(let s=t.length-1;s>=0;s--){const[a]=t[s];for(let r=e.length-1;r>=0;r--)if(e[r].includes(a)){e[r]=e[r].replace(a,t[s][1]);break}}return e},qe={},Vt=(e,t)=>{if(e==="*")return"*";const s=e.match(/^\:([^\{\}]+)(?:\{(.+)\})?$/);if(s){const a=`${e}#${t}`;return qe[a]||(s[2]?qe[a]=t&&t[0]!==":"&&t[0]!=="*"?[a,s[1],new RegExp(`^${s[2]}(?=/${t})`)]:[e,s[1],new RegExp(`^${s[2]}$`)]:qe[a]=[e,s[1],!0]),qe[a]}return null},Je=(e,t)=>{try{return t(e)}catch{return e.replace(/(?:%[0-9A-Fa-f]{2})+/g,s=>{try{return t(s)}catch{return s}})}},Kt=e=>Je(e,decodeURI),yt=e=>{const t=e.url,s=t.indexOf("/",t.indexOf(":")+4);let a=s;for(;a<t.length;a++){const r=t.charCodeAt(a);if(r===37){const o=t.indexOf("?",a),n=t.slice(s,o===-1?void 0:o);return Kt(n.includes("%25")?n.replace(/%25/g,"%2525"):n)}else if(r===63)break}return t.slice(s,a)},Qt=e=>{const t=yt(e);return t.length>1&&t.at(-1)==="/"?t.slice(0,-1):t},ye=(e,t,...s)=>(s.length&&(t=ye(t,...s)),`${(e==null?void 0:e[0])==="/"?"":"/"}${e}${t==="/"?"":`${(e==null?void 0:e.at(-1))==="/"?"":"/"}${(t==null?void 0:t[0])==="/"?t.slice(1):t}`}`),wt=e=>{if(e.charCodeAt(e.length-1)!==63||!e.includes(":"))return null;const t=e.split("/"),s=[];let a="";return t.forEach(r=>{if(r!==""&&!/\:/.test(r))a+="/"+r;else if(/\:/.test(r))if(/\?/.test(r)){s.length===0&&a===""?s.push("/"):s.push(a);const o=r.replace("?","");a+="/"+o,s.push(a)}else a+="/"+r}),s.filter((r,o,n)=>n.indexOf(r)===o)},Ze=e=>/[%+]/.test(e)?(e.indexOf("+")!==-1&&(e=e.replace(/\+/g," ")),e.indexOf("%")!==-1?Je(e,rt):e):e,Et=(e,t,s)=>{let a;if(!s&&t&&!/[%+]/.test(t)){let n=e.indexOf("?",8);if(n===-1)return;for(e.startsWith(t,n+1)||(n=e.indexOf(`&${t}`,n+1));n!==-1;){const i=e.charCodeAt(n+t.length+1);if(i===61){const l=n+t.length+2,d=e.indexOf("&",l);return Ze(e.slice(l,d===-1?void 0:d))}else if(i==38||isNaN(i))return"";n=e.indexOf(`&${t}`,n+1)}if(a=/[%+]/.test(e),!a)return}const r={};a??(a=/[%+]/.test(e));let o=e.indexOf("?",8);for(;o!==-1;){const n=e.indexOf("&",o+1);let i=e.indexOf("=",o);i>n&&n!==-1&&(i=-1);let l=e.slice(o+1,i===-1?n===-1?void 0:n:i);if(a&&(l=Ze(l)),o=n,l==="")continue;let d;i===-1?d="":(d=e.slice(i+1,n===-1?void 0:n),a&&(d=Ze(d))),s?(r[l]&&Array.isArray(r[l])||(r[l]=[]),r[l].push(d)):r[l]??(r[l]=d)}return t?r[t]:r},Zt=Et,es=(e,t)=>Et(e,t,!0),rt=decodeURIComponent,dt=e=>Je(e,rt),_e,z,ae,Tt,It,at,re,mt,_t=(mt=class{constructor(e,t="/",s=[[]]){C(this,ae);I(this,"raw");C(this,_e);C(this,z);I(this,"routeIndex",0);I(this,"path");I(this,"bodyCache",{});C(this,re,e=>{const{bodyCache:t,raw:s}=this,a=t[e];if(a)return a;const r=Object.keys(t)[0];return r?t[r].then(o=>(r==="json"&&(o=JSON.stringify(o)),new Response(o)[e]())):t[e]=s[e]()});this.raw=e,this.path=t,T(this,z,s),T(this,_e,{})}param(e){return e?R(this,ae,Tt).call(this,e):R(this,ae,It).call(this)}query(e){return Zt(this.url,e)}queries(e){return es(this.url,e)}header(e){if(e)return this.raw.headers.get(e)??void 0;const t={};return this.raw.headers.forEach((s,a)=>{t[a]=s}),t}async parseBody(e){var t;return(t=this.bodyCache).parsedBody??(t.parsedBody=await qt(this,e))}json(){return h(this,re).call(this,"text").then(e=>JSON.parse(e))}text(){return h(this,re).call(this,"text")}arrayBuffer(){return h(this,re).call(this,"arrayBuffer")}blob(){return h(this,re).call(this,"blob")}formData(){return h(this,re).call(this,"formData")}addValidatedData(e,t){h(this,_e)[e]=t}valid(e){return h(this,_e)[e]}get url(){return this.raw.url}get method(){return this.raw.method}get[$t](){return h(this,z)}get matchedRoutes(){return h(this,z)[0].map(([[,e]])=>e)}get routePath(){return h(this,z)[0].map(([[,e]])=>e)[this.routeIndex].path}},_e=new WeakMap,z=new WeakMap,ae=new WeakSet,Tt=function(e){const t=h(this,z)[0][this.routeIndex][1][e],s=R(this,ae,at).call(this,t);return s&&/\%/.test(s)?dt(s):s},It=function(){const e={},t=Object.keys(h(this,z)[0][this.routeIndex][1]);for(const s of t){const a=R(this,ae,at).call(this,h(this,z)[0][this.routeIndex][1][s]);a!==void 0&&(e[s]=/\%/.test(a)?dt(a):a)}return e},at=function(e){return h(this,z)[1]?h(this,z)[1][e]:e},re=new WeakMap,mt),ts={Stringify:1},St=async(e,t,s,a,r)=>{typeof e=="object"&&!(e instanceof String)&&(e instanceof Promise||(e=e.toString()),e instanceof Promise&&(e=await e));const o=e.callbacks;return o!=null&&o.length?(r?r[0]+=e:r=[e],Promise.all(o.map(i=>i({phase:t,buffer:r,context:a}))).then(i=>Promise.all(i.filter(Boolean).map(l=>St(l,t,!1,a,r))).then(()=>r[0]))):Promise.resolve(e)},ss="text/plain; charset=UTF-8",et=(e,t)=>({"Content-Type":e,...t}),Be,je,Z,Te,ee,q,Ae,Ie,Se,me,Me,Oe,oe,we,gt,as=(gt=class{constructor(e,t){C(this,oe);C(this,Be);C(this,je);I(this,"env",{});C(this,Z);I(this,"finalized",!1);I(this,"error");C(this,Te);C(this,ee);C(this,q);C(this,Ae);C(this,Ie);C(this,Se);C(this,me);C(this,Me);C(this,Oe);I(this,"render",(...e)=>(h(this,Ie)??T(this,Ie,t=>this.html(t)),h(this,Ie).call(this,...e)));I(this,"setLayout",e=>T(this,Ae,e));I(this,"getLayout",()=>h(this,Ae));I(this,"setRenderer",e=>{T(this,Ie,e)});I(this,"header",(e,t,s)=>{this.finalized&&T(this,q,new Response(h(this,q).body,h(this,q)));const a=h(this,q)?h(this,q).headers:h(this,me)??T(this,me,new Headers);t===void 0?a.delete(e):s!=null&&s.append?a.append(e,t):a.set(e,t)});I(this,"status",e=>{T(this,Te,e)});I(this,"set",(e,t)=>{h(this,Z)??T(this,Z,new Map),h(this,Z).set(e,t)});I(this,"get",e=>h(this,Z)?h(this,Z).get(e):void 0);I(this,"newResponse",(...e)=>R(this,oe,we).call(this,...e));I(this,"body",(e,t,s)=>R(this,oe,we).call(this,e,t,s));I(this,"text",(e,t,s)=>!h(this,me)&&!h(this,Te)&&!t&&!s&&!this.finalized?new Response(e):R(this,oe,we).call(this,e,t,et(ss,s)));I(this,"json",(e,t,s)=>R(this,oe,we).call(this,JSON.stringify(e),t,et("application/json",s)));I(this,"html",(e,t,s)=>{const a=r=>R(this,oe,we).call(this,r,t,et("text/html; charset=UTF-8",s));return typeof e=="object"?St(e,ts.Stringify,!1,{}).then(a):a(e)});I(this,"redirect",(e,t)=>{const s=String(e);return this.header("Location",/[^\x00-\xFF]/.test(s)?encodeURI(s):s),this.newResponse(null,t??302)});I(this,"notFound",()=>(h(this,Se)??T(this,Se,()=>new Response),h(this,Se).call(this,this)));T(this,Be,e),t&&(T(this,ee,t.executionCtx),this.env=t.env,T(this,Se,t.notFoundHandler),T(this,Oe,t.path),T(this,Me,t.matchResult))}get req(){return h(this,je)??T(this,je,new _t(h(this,Be),h(this,Oe),h(this,Me))),h(this,je)}get event(){if(h(this,ee)&&"respondWith"in h(this,ee))return h(this,ee);throw Error("This context has no FetchEvent")}get executionCtx(){if(h(this,ee))return h(this,ee);throw Error("This context has no ExecutionContext")}get res(){return h(this,q)||T(this,q,new Response(null,{headers:h(this,me)??T(this,me,new Headers)}))}set res(e){if(h(this,q)&&e){e=new Response(e.body,e);for(const[t,s]of h(this,q).headers.entries())if(t!=="content-type")if(t==="set-cookie"){const a=h(this,q).headers.getSetCookie();e.headers.delete("set-cookie");for(const r of a)e.headers.append("set-cookie",r)}else e.headers.set(t,s)}T(this,q,e),this.finalized=!0}get var(){return h(this,Z)?Object.fromEntries(h(this,Z)):{}}},Be=new WeakMap,je=new WeakMap,Z=new WeakMap,Te=new WeakMap,ee=new WeakMap,q=new WeakMap,Ae=new WeakMap,Ie=new WeakMap,Se=new WeakMap,me=new WeakMap,Me=new WeakMap,Oe=new WeakMap,oe=new WeakSet,we=function(e,t,s){const a=h(this,q)?new Headers(h(this,q).headers):h(this,me)??new Headers;if(typeof t=="object"&&"headers"in t){const o=t.headers instanceof Headers?t.headers:new Headers(t.headers);for(const[n,i]of o)n.toLowerCase()==="set-cookie"?a.append(n,i):a.set(n,i)}if(s)for(const[o,n]of Object.entries(s))if(typeof n=="string")a.set(o,n);else{a.delete(o);for(const i of n)a.append(o,i)}const r=typeof t=="number"?t:(t==null?void 0:t.status)??h(this,Te);return new Response(e,{status:r,headers:a})},gt),A="ALL",rs="all",os=["get","post","put","delete","options","patch"],kt="Can not add a route since the matcher is already built.",Dt=class extends Error{},ns="__COMPOSED_HANDLER",is=e=>e.text("404 Not Found",404),ct=(e,t)=>{if("getResponse"in e){const s=e.getResponse();return t.newResponse(s.body,s)}return console.error(e),t.text("Internal Server Error",500)},J,M,Ct,V,pe,He,We,ke,ls=(ke=class{constructor(t={}){C(this,M);I(this,"get");I(this,"post");I(this,"put");I(this,"delete");I(this,"options");I(this,"patch");I(this,"all");I(this,"on");I(this,"use");I(this,"router");I(this,"getPath");I(this,"_basePath","/");C(this,J,"/");I(this,"routes",[]);C(this,V,is);I(this,"errorHandler",ct);I(this,"onError",t=>(this.errorHandler=t,this));I(this,"notFound",t=>(T(this,V,t),this));I(this,"fetch",(t,...s)=>R(this,M,We).call(this,t,s[1],s[0],t.method));I(this,"request",(t,s,a,r)=>t instanceof Request?this.fetch(s?new Request(t,s):t,a,r):(t=t.toString(),this.fetch(new Request(/^https?:\/\//.test(t)?t:`http://localhost${ye("/",t)}`,s),a,r)));I(this,"fire",()=>{addEventListener("fetch",t=>{t.respondWith(R(this,M,We).call(this,t.request,t,void 0,t.request.method))})});[...os,rs].forEach(o=>{this[o]=(n,...i)=>(typeof n=="string"?T(this,J,n):R(this,M,pe).call(this,o,h(this,J),n),i.forEach(l=>{R(this,M,pe).call(this,o,h(this,J),l)}),this)}),this.on=(o,n,...i)=>{for(const l of[n].flat()){T(this,J,l);for(const d of[o].flat())i.map(p=>{R(this,M,pe).call(this,d.toUpperCase(),h(this,J),p)})}return this},this.use=(o,...n)=>(typeof o=="string"?T(this,J,o):(T(this,J,"*"),n.unshift(o)),n.forEach(i=>{R(this,M,pe).call(this,A,h(this,J),i)}),this);const{strict:a,...r}=t;Object.assign(this,r),this.getPath=a??!0?t.getPath??yt:Qt}route(t,s){const a=this.basePath(t);return s.routes.map(r=>{var n;let o;s.errorHandler===ct?o=r.handler:(o=async(i,l)=>(await lt([],s.errorHandler)(i,()=>r.handler(i,l))).res,o[ns]=r.handler),R(n=a,M,pe).call(n,r.method,r.path,o)}),this}basePath(t){const s=R(this,M,Ct).call(this);return s._basePath=ye(this._basePath,t),s}mount(t,s,a){let r,o;a&&(typeof a=="function"?o=a:(o=a.optionHandler,a.replaceRequest===!1?r=l=>l:r=a.replaceRequest));const n=o?l=>{const d=o(l);return Array.isArray(d)?d:[d]}:l=>{let d;try{d=l.executionCtx}catch{}return[l.env,d]};r||(r=(()=>{const l=ye(this._basePath,t),d=l==="/"?0:l.length;return p=>{const u=new URL(p.url);return u.pathname=u.pathname.slice(d)||"/",new Request(u,p)}})());const i=async(l,d)=>{const p=await s(r(l.req.raw),...n(l));if(p)return p;await d()};return R(this,M,pe).call(this,A,ye(t,"*"),i),this}},J=new WeakMap,M=new WeakSet,Ct=function(){const t=new ke({router:this.router,getPath:this.getPath});return t.errorHandler=this.errorHandler,T(t,V,h(this,V)),t.routes=this.routes,t},V=new WeakMap,pe=function(t,s,a){t=t.toUpperCase(),s=ye(this._basePath,s);const r={basePath:this._basePath,path:s,method:t,handler:a};this.router.add(t,s,[a,r]),this.routes.push(r)},He=function(t,s){if(t instanceof Error)return this.errorHandler(t,s);throw t},We=function(t,s,a,r){if(r==="HEAD")return(async()=>new Response(null,await R(this,M,We).call(this,t,s,a,"GET")))();const o=this.getPath(t,{env:a}),n=this.router.match(r,o),i=new as(t,{path:o,matchResult:n,env:a,executionCtx:s,notFoundHandler:h(this,V)});if(n[0].length===1){let d;try{d=n[0][0][0][0](i,async()=>{i.res=await h(this,V).call(this,i)})}catch(p){return R(this,M,He).call(this,p,i)}return d instanceof Promise?d.then(p=>p||(i.finalized?i.res:h(this,V).call(this,i))).catch(p=>R(this,M,He).call(this,p,i)):d??h(this,V).call(this,i)}const l=lt(n[0],this.errorHandler,h(this,V));return(async()=>{try{const d=await l(i);if(!d.finalized)throw new Error("Context is not finalized. Did you forget to return a Response object or `await next()`?");return d.res}catch(d){return R(this,M,He).call(this,d,i)}})()},ke),Rt=[];function ds(e,t){const s=this.buildAllMatchers(),a=((r,o)=>{const n=s[r]||s[A],i=n[2][o];if(i)return i;const l=o.match(n[0]);if(!l)return[[],Rt];const d=l.indexOf("",1);return[n[1][d],l]});return this.match=a,a(e,t)}var Ye="[^/]+",Le=".*",Ne="(?:|/.*)",Ee=Symbol(),cs=new Set(".\\+*[^]$()");function ps(e,t){return e.length===1?t.length===1?e<t?-1:1:-1:t.length===1||e===Le||e===Ne?1:t===Le||t===Ne?-1:e===Ye?1:t===Ye?-1:e.length===t.length?e<t?-1:1:t.length-e.length}var ge,xe,K,he,us=(he=class{constructor(){C(this,ge);C(this,xe);C(this,K,Object.create(null))}insert(t,s,a,r,o){if(t.length===0){if(h(this,ge)!==void 0)throw Ee;if(o)return;T(this,ge,s);return}const[n,...i]=t,l=n==="*"?i.length===0?["","",Le]:["","",Ye]:n==="/*"?["","",Ne]:n.match(/^\:([^\{\}]+)(?:\{(.+)\})?$/);let d;if(l){const p=l[1];let u=l[2]||Ye;if(p&&l[2]&&(u===".*"||(u=u.replace(/^\((?!\?:)(?=[^)]+\)$)/,"(?:"),/\((?!\?:)/.test(u))))throw Ee;if(d=h(this,K)[u],!d){if(Object.keys(h(this,K)).some(m=>m!==Le&&m!==Ne))throw Ee;if(o)return;d=h(this,K)[u]=new he,p!==""&&T(d,xe,r.varIndex++)}!o&&p!==""&&a.push([p,h(d,xe)])}else if(d=h(this,K)[n],!d){if(Object.keys(h(this,K)).some(p=>p.length>1&&p!==Le&&p!==Ne))throw Ee;if(o)return;d=h(this,K)[n]=new he}d.insert(i,s,a,r,o)}buildRegExpStr(){const s=Object.keys(h(this,K)).sort(ps).map(a=>{const r=h(this,K)[a];return(typeof h(r,xe)=="number"?`(${a})@${h(r,xe)}`:cs.has(a)?`\\${a}`:a)+r.buildRegExpStr()});return typeof h(this,ge)=="number"&&s.unshift(`#${h(this,ge)}`),s.length===0?"":s.length===1?s[0]:"(?:"+s.join("|")+")"}},ge=new WeakMap,xe=new WeakMap,K=new WeakMap,he),ze,Ue,xt,ms=(xt=class{constructor(){C(this,ze,{varIndex:0});C(this,Ue,new us)}insert(e,t,s){const a=[],r=[];for(let n=0;;){let i=!1;if(e=e.replace(/\{[^}]+\}/g,l=>{const d=`@\\${n}`;return r[n]=[d,l],n++,i=!0,d}),!i)break}const o=e.match(/(?::[^\/]+)|(?:\/\*$)|./g)||[];for(let n=r.length-1;n>=0;n--){const[i]=r[n];for(let l=o.length-1;l>=0;l--)if(o[l].indexOf(i)!==-1){o[l]=o[l].replace(i,r[n][1]);break}}return h(this,Ue).insert(o,t,a,h(this,ze),s),a}buildRegExp(){let e=h(this,Ue).buildRegExpStr();if(e==="")return[/^$/,[],[]];let t=0;const s=[],a=[];return e=e.replace(/#(\d+)|@(\d+)|\.\*\$/g,(r,o,n)=>o!==void 0?(s[++t]=Number(o),"$()"):(n!==void 0&&(a[Number(n)]=++t),"")),[new RegExp(`^${e}`),s,a]}},ze=new WeakMap,Ue=new WeakMap,xt),gs=[/^$/,[],Object.create(null)],Ge=Object.create(null);function Lt(e){return Ge[e]??(Ge[e]=new RegExp(e==="*"?"":`^${e.replace(/\/\*$|([.\\+*[^\]$()])/g,(t,s)=>s?`\\${s}`:"(?:|/.*)")}$`))}function xs(){Ge=Object.create(null)}function bs(e){var d;const t=new ms,s=[];if(e.length===0)return gs;const a=e.map(p=>[!/\*|\/:/.test(p[0]),...p]).sort(([p,u],[m,g])=>p?1:m?-1:u.length-g.length),r=Object.create(null);for(let p=0,u=-1,m=a.length;p<m;p++){const[g,x,b]=a[p];g?r[x]=[b.map(([v])=>[v,Object.create(null)]),Rt]:u++;let f;try{f=t.insert(x,u,g)}catch(v){throw v===Ee?new Dt(x):v}g||(s[u]=b.map(([v,_])=>{const y=Object.create(null);for(_-=1;_>=0;_--){const[w,E]=f[_];y[w]=E}return[v,y]}))}const[o,n,i]=t.buildRegExp();for(let p=0,u=s.length;p<u;p++)for(let m=0,g=s[p].length;m<g;m++){const x=(d=s[p][m])==null?void 0:d[1];if(!x)continue;const b=Object.keys(x);for(let f=0,v=b.length;f<v;f++)x[b[f]]=i[x[b[f]]]}const l=[];for(const p in n)l[p]=s[n[p]];return[o,l,r]}function ve(e,t){if(e){for(const s of Object.keys(e).sort((a,r)=>r.length-a.length))if(Lt(s).test(t))return[...e[s]]}}var ne,ie,Xe,Nt,bt,fs=(bt=class{constructor(){C(this,Xe);I(this,"name","RegExpRouter");C(this,ne);C(this,ie);I(this,"match",ds);T(this,ne,{[A]:Object.create(null)}),T(this,ie,{[A]:Object.create(null)})}add(e,t,s){var i;const a=h(this,ne),r=h(this,ie);if(!a||!r)throw new Error(kt);a[e]||[a,r].forEach(l=>{l[e]=Object.create(null),Object.keys(l[A]).forEach(d=>{l[e][d]=[...l[A][d]]})}),t==="/*"&&(t="*");const o=(t.match(/\/:/g)||[]).length;if(/\*$/.test(t)){const l=Lt(t);e===A?Object.keys(a).forEach(d=>{var p;(p=a[d])[t]||(p[t]=ve(a[d],t)||ve(a[A],t)||[])}):(i=a[e])[t]||(i[t]=ve(a[e],t)||ve(a[A],t)||[]),Object.keys(a).forEach(d=>{(e===A||e===d)&&Object.keys(a[d]).forEach(p=>{l.test(p)&&a[d][p].push([s,o])})}),Object.keys(r).forEach(d=>{(e===A||e===d)&&Object.keys(r[d]).forEach(p=>l.test(p)&&r[d][p].push([s,o]))});return}const n=wt(t)||[t];for(let l=0,d=n.length;l<d;l++){const p=n[l];Object.keys(r).forEach(u=>{var m;(e===A||e===u)&&((m=r[u])[p]||(m[p]=[...ve(a[u],p)||ve(a[A],p)||[]]),r[u][p].push([s,o-d+l+1]))})}}buildAllMatchers(){const e=Object.create(null);return Object.keys(h(this,ie)).concat(Object.keys(h(this,ne))).forEach(t=>{e[t]||(e[t]=R(this,Xe,Nt).call(this,t))}),T(this,ne,T(this,ie,void 0)),xs(),e}},ne=new WeakMap,ie=new WeakMap,Xe=new WeakSet,Nt=function(e){const t=[];let s=e===A;return[h(this,ne),h(this,ie)].forEach(a=>{const r=a[e]?Object.keys(a[e]).map(o=>[o,a[e][o]]):[];r.length!==0?(s||(s=!0),t.push(...r)):e!==A&&t.push(...Object.keys(a[A]).map(o=>[o,a[A][o]]))}),s?bs(t):null},bt),le,te,ft,hs=(ft=class{constructor(e){I(this,"name","SmartRouter");C(this,le,[]);C(this,te,[]);T(this,le,e.routers)}add(e,t,s){if(!h(this,te))throw new Error(kt);h(this,te).push([e,t,s])}match(e,t){if(!h(this,te))throw new Error("Fatal error");const s=h(this,le),a=h(this,te),r=s.length;let o=0,n;for(;o<r;o++){const i=s[o];try{for(let l=0,d=a.length;l<d;l++)i.add(...a[l]);n=i.match(e,t)}catch(l){if(l instanceof Dt)continue;throw l}this.match=i.match.bind(i),T(this,le,[i]),T(this,te,void 0);break}if(o===r)throw new Error("Fatal error");return this.name=`SmartRouter + ${this.activeRouter.name}`,n}get activeRouter(){if(h(this,te)||h(this,le).length!==1)throw new Error("No active router has been determined yet.");return h(this,le)[0]}},le=new WeakMap,te=new WeakMap,ft),Re=Object.create(null),de,$,be,De,P,se,ue,Ce,vs=(Ce=class{constructor(t,s,a){C(this,se);C(this,de);C(this,$);C(this,be);C(this,De,0);C(this,P,Re);if(T(this,$,a||Object.create(null)),T(this,de,[]),t&&s){const r=Object.create(null);r[t]={handler:s,possibleKeys:[],score:0},T(this,de,[r])}T(this,be,[])}insert(t,s,a){T(this,De,++it(this,De)._);let r=this;const o=zt(s),n=[];for(let i=0,l=o.length;i<l;i++){const d=o[i],p=o[i+1],u=Vt(d,p),m=Array.isArray(u)?u[0]:d;if(m in h(r,$)){r=h(r,$)[m],u&&n.push(u[1]);continue}h(r,$)[m]=new Ce,u&&(h(r,be).push(u),n.push(u[1])),r=h(r,$)[m]}return h(r,de).push({[t]:{handler:a,possibleKeys:n.filter((i,l,d)=>d.indexOf(i)===l),score:h(this,De)}}),r}search(t,s){var l;const a=[];T(this,P,Re);let o=[this];const n=vt(s),i=[];for(let d=0,p=n.length;d<p;d++){const u=n[d],m=d===p-1,g=[];for(let x=0,b=o.length;x<b;x++){const f=o[x],v=h(f,$)[u];v&&(T(v,P,h(f,P)),m?(h(v,$)["*"]&&a.push(...R(this,se,ue).call(this,h(v,$)["*"],t,h(f,P))),a.push(...R(this,se,ue).call(this,v,t,h(f,P)))):g.push(v));for(let _=0,y=h(f,be).length;_<y;_++){const w=h(f,be)[_],E=h(f,P)===Re?{}:{...h(f,P)};if(w==="*"){const N=h(f,$)["*"];N&&(a.push(...R(this,se,ue).call(this,N,t,h(f,P))),T(N,P,E),g.push(N));continue}const[k,S,j]=w;if(!u&&!(j instanceof RegExp))continue;const L=h(f,$)[k],F=n.slice(d).join("/");if(j instanceof RegExp){const N=j.exec(F);if(N){if(E[S]=N[0],a.push(...R(this,se,ue).call(this,L,t,h(f,P),E)),Object.keys(h(L,$)).length){T(L,P,E);const W=((l=N[0].match(/\//))==null?void 0:l.length)??0;(i[W]||(i[W]=[])).push(L)}continue}}(j===!0||j.test(u))&&(E[S]=u,m?(a.push(...R(this,se,ue).call(this,L,t,E,h(f,P))),h(L,$)["*"]&&a.push(...R(this,se,ue).call(this,h(L,$)["*"],t,E,h(f,P)))):(T(L,P,E),g.push(L)))}}o=g.concat(i.shift()??[])}return a.length>1&&a.sort((d,p)=>d.score-p.score),[a.map(({handler:d,params:p})=>[d,p])]}},de=new WeakMap,$=new WeakMap,be=new WeakMap,De=new WeakMap,P=new WeakMap,se=new WeakSet,ue=function(t,s,a,r){const o=[];for(let n=0,i=h(t,de).length;n<i;n++){const l=h(t,de)[n],d=l[s]||l[A],p={};if(d!==void 0&&(d.params=Object.create(null),o.push(d),a!==Re||r&&r!==Re))for(let u=0,m=d.possibleKeys.length;u<m;u++){const g=d.possibleKeys[u],x=p[d.score];d.params[g]=r!=null&&r[g]&&!x?r[g]:a[g]??(r==null?void 0:r[g]),p[d.score]=!0}}return o},Ce),fe,ht,ys=(ht=class{constructor(){I(this,"name","TrieRouter");C(this,fe);T(this,fe,new vs)}add(e,t,s){const a=wt(t);if(a){for(let r=0,o=a.length;r<o;r++)h(this,fe).insert(e,a[r],s);return}h(this,fe).insert(e,t,s)}match(e,t){return h(this,fe).search(e,t)}},fe=new WeakMap,ht),Fe=class extends ls{constructor(e={}){super(e),this.router=e.router??new hs({routers:[new fs,new ys]})}},ws=e=>{const s={...{origin:"*",allowMethods:["GET","HEAD","PUT","POST","DELETE","PATCH"],allowHeaders:[],exposeHeaders:[]},...e},a=(o=>typeof o=="string"?o==="*"?()=>o:n=>o===n?n:null:typeof o=="function"?o:n=>o.includes(n)?n:null)(s.origin),r=(o=>typeof o=="function"?o:Array.isArray(o)?()=>o:()=>[])(s.allowMethods);return async function(n,i){var p;function l(u,m){n.res.headers.set(u,m)}const d=await a(n.req.header("origin")||"",n);if(d&&l("Access-Control-Allow-Origin",d),s.credentials&&l("Access-Control-Allow-Credentials","true"),(p=s.exposeHeaders)!=null&&p.length&&l("Access-Control-Expose-Headers",s.exposeHeaders.join(",")),n.req.method==="OPTIONS"){s.origin!=="*"&&l("Vary","Origin"),s.maxAge!=null&&l("Access-Control-Max-Age",s.maxAge.toString());const u=await r(n.req.header("origin")||"",n);u.length&&l("Access-Control-Allow-Methods",u.join(","));let m=s.allowHeaders;if(!(m!=null&&m.length)){const g=n.req.header("Access-Control-Request-Headers");g&&(m=g.split(/\s*,\s*/))}return m!=null&&m.length&&(l("Access-Control-Allow-Headers",m.join(",")),n.res.headers.append("Vary","Access-Control-Request-Headers")),n.res.headers.delete("Content-Length"),n.res.headers.delete("Content-Type"),new Response(null,{headers:n.res.headers,status:204,statusText:"No Content"})}await i(),s.origin!=="*"&&n.header("Vary","Origin",{append:!0})}},Es=/^[\w!#$%&'*.^`|~+-]+$/,_s=/^[ !#-:<-[\]-~]*$/,Ts=(e,t)=>{if(e.indexOf(t)===-1)return{};const s=e.trim().split(";"),a={};for(let r of s){r=r.trim();const o=r.indexOf("=");if(o===-1)continue;const n=r.substring(0,o).trim();if(t!==n||!Es.test(n))continue;let i=r.substring(o+1).trim();if(i.startsWith('"')&&i.endsWith('"')&&(i=i.slice(1,-1)),_s.test(i)){a[n]=i.indexOf("%")!==-1?Je(i,rt):i;break}}return a},U=(e,t,s)=>{const a=e.req.raw.headers.get("Cookie");{if(!a)return;let r=t;return Ts(a,r)[r]}},Is=/^\s*(?:text\/(?!event-stream(?:[;\s]|$))[^;\s]+|application\/(?:javascript|json|xml|xml-dtd|ecmascript|dart|postscript|rtf|tar|toml|vnd\.dart|vnd\.ms-fontobject|vnd\.ms-opentype|wasm|x-httpd-php|x-javascript|x-ns-proxy-autoconfig|x-sh|x-tar|x-virtualbox-hdd|x-virtualbox-ova|x-virtualbox-ovf|x-virtualbox-vbox|x-virtualbox-vdi|x-virtualbox-vhd|x-virtualbox-vmdk|x-www-form-urlencoded)|font\/(?:otf|ttf)|image\/(?:bmp|vnd\.adobe\.photoshop|vnd\.microsoft\.icon|vnd\.ms-dds|x-icon|x-ms-bmp)|message\/rfc822|model\/gltf-binary|x-shader\/x-fragment|x-shader\/x-vertex|[^;\s]+?\+(?:json|text|xml|yaml))(?:[;\s]|$)/i,pt=(e,t=ks)=>{const s=/\.([a-zA-Z0-9]+?)$/,a=e.match(s);if(!a)return;let r=t[a[1]];return r&&r.startsWith("text")&&(r+="; charset=utf-8"),r},Ss={aac:"audio/aac",avi:"video/x-msvideo",avif:"image/avif",av1:"video/av1",bin:"application/octet-stream",bmp:"image/bmp",css:"text/css",csv:"text/csv",eot:"application/vnd.ms-fontobject",epub:"application/epub+zip",gif:"image/gif",gz:"application/gzip",htm:"text/html",html:"text/html",ico:"image/x-icon",ics:"text/calendar",jpeg:"image/jpeg",jpg:"image/jpeg",js:"text/javascript",json:"application/json",jsonld:"application/ld+json",map:"application/json",mid:"audio/x-midi",midi:"audio/x-midi",mjs:"text/javascript",mp3:"audio/mpeg",mp4:"video/mp4",mpeg:"video/mpeg",oga:"audio/ogg",ogv:"video/ogg",ogx:"application/ogg",opus:"audio/opus",otf:"font/otf",pdf:"application/pdf",png:"image/png",rtf:"application/rtf",svg:"image/svg+xml",tif:"image/tiff",tiff:"image/tiff",ts:"video/mp2t",ttf:"font/ttf",txt:"text/plain",wasm:"application/wasm",webm:"video/webm",weba:"audio/webm",webmanifest:"application/manifest+json",webp:"image/webp",woff:"font/woff",woff2:"font/woff2",xhtml:"application/xhtml+xml",xml:"application/xml",zip:"application/zip","3gp":"video/3gpp","3g2":"video/3gpp2",gltf:"model/gltf+json",glb:"model/gltf-binary"},ks=Ss,Ds=(...e)=>{let t=e.filter(r=>r!=="").join("/");t=t.replace(new RegExp("(?<=\\/)\\/+","g"),"");const s=t.split("/"),a=[];for(const r of s)r===".."&&a.length>0&&a.at(-1)!==".."?a.pop():r!=="."&&a.push(r);return a.join("/")||"."},Bt={br:".br",zstd:".zst",gzip:".gz"},Cs=Object.keys(Bt),Rs="index.html",Ls=e=>{const t=e.root??"./",s=e.path,a=e.join??Ds;return async(r,o)=>{var p,u,m,g;if(r.finalized)return o();let n;if(e.path)n=e.path;else try{if(n=decodeURIComponent(r.req.path),/(?:^|[\/\\])\.\.(?:$|[\/\\])/.test(n))throw new Error}catch{return await((p=e.onNotFound)==null?void 0:p.call(e,r.req.path,r)),o()}let i=a(t,!s&&e.rewriteRequestPath?e.rewriteRequestPath(n):n);e.isDir&&await e.isDir(i)&&(i=a(i,Rs));const l=e.getContent;let d=await l(i,r);if(d instanceof Response)return r.newResponse(d.body,d);if(d){const x=e.mimes&&pt(i,e.mimes)||pt(i);if(r.header("Content-Type",x||"application/octet-stream"),e.precompressed&&(!x||Is.test(x))){const b=new Set((u=r.req.header("Accept-Encoding"))==null?void 0:u.split(",").map(f=>f.trim()));for(const f of Cs){if(!b.has(f))continue;const v=await l(i+Bt[f],r);if(v){d=v,r.header("Content-Encoding",f),r.header("Vary","Accept-Encoding",{append:!0});break}}}return await((m=e.onFound)==null?void 0:m.call(e,i,r)),r.body(d)}await((g=e.onNotFound)==null?void 0:g.call(e,i,r)),await o()}},Ns=async(e,t)=>{let s;t&&t.manifest?typeof t.manifest=="string"?s=JSON.parse(t.manifest):s=t.manifest:typeof __STATIC_CONTENT_MANIFEST=="string"?s=JSON.parse(__STATIC_CONTENT_MANIFEST):s=__STATIC_CONTENT_MANIFEST;let a;t&&t.namespace?a=t.namespace:a=__STATIC_CONTENT;const r=s[e]||e;if(!r)return null;const o=await a.get(r,{type:"stream"});return o||null},Bs=e=>async function(s,a){return Ls({...e,getContent:async o=>Ns(o,{manifest:e.manifest,namespace:e.namespace?e.namespace:s.env?s.env.__STATIC_CONTENT:void 0})})(s,a)},js=e=>Bs(e);const As=`
+var Ft=Object.defineProperty;var ot=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in e?Ft(e,t,{enumerable:!0,configurable:!0,writable:!0,value:s}):e[t]=s;var S=(e,t,s)=>Pt(e,typeof t!="symbol"?t+"":t,s),Qe=(e,t,s)=>t.has(e)||ot("Cannot "+s);var f=(e,t,s)=>(Qe(e,t,"read from private field"),s?s.call(e):t.get(e)),C=(e,t,s)=>t.has(e)?ot("Cannot add the same private member more than once"):t instanceof WeakSet?t.add(e):t.set(e,s),I=(e,t,s,a)=>(Qe(e,t,"write to private field"),a?a.call(e,s):t.set(e,s),s),R=(e,t,s)=>(Qe(e,t,"access private method"),s);var it=(e,t,s,a)=>({set _(r){I(e,t,r,s)},get _(){return f(e,t,a)}});var lt=(e,t,s)=>(a,r)=>{let n=-1;return o(0);async function o(i){if(i<=n)throw new Error("next() called multiple times");n=i;let l,d=!1,p;if(e[i]?(p=e[i][0][0],a.req.routeIndex=i):p=i===e.length&&r||void 0,p)try{l=await p(a,()=>o(i+1))}catch(u){if(u instanceof Error&&t)a.error=u,l=await t(u,a),d=!0;else throw u}else a.finalized===!1&&s&&(l=await s(a));return l&&(a.finalized===!1||d)&&(a.res=l),a}},$t=Symbol(),qt=async(e,t=Object.create(null))=>{const{all:s=!1,dot:a=!1}=t,n=(e instanceof _t?e.raw.headers:e.headers).get("Content-Type");return n!=null&&n.startsWith("multipart/form-data")||n!=null&&n.startsWith("application/x-www-form-urlencoded")?Ht(e,{all:s,dot:a}):{}};async function Ht(e,t){const s=await e.formData();return s?Wt(s,t):{}}function Wt(e,t){const s=Object.create(null);return e.forEach((a,r)=>{t.all||r.endsWith("[]")?Gt(s,r,a):s[r]=a}),t.dot&&Object.entries(s).forEach(([a,r])=>{a.includes(".")&&(Yt(s,a,r),delete s[a])}),s}var Gt=(e,t,s)=>{e[t]!==void 0?Array.isArray(e[t])?e[t].push(s):e[t]=[e[t],s]:t.endsWith("[]")?e[t]=[s]:e[t]=s},Yt=(e,t,s)=>{let a=e;const r=t.split(".");r.forEach((n,o)=>{o===r.length-1?a[n]=s:((!a[n]||typeof a[n]!="object"||Array.isArray(a[n])||a[n]instanceof File)&&(a[n]=Object.create(null)),a=a[n])})},vt=e=>{const t=e.split("/");return t[0]===""&&t.shift(),t},zt=e=>{const{groups:t,path:s}=Xt(e),a=vt(s);return Vt(a,t)},Xt=e=>{const t=[];return e=e.replace(/\{[^}]+\}/g,(s,a)=>{const r=`@${a}`;return t.push([r,s]),r}),{groups:t,path:e}},Vt=(e,t)=>{for(let s=t.length-1;s>=0;s--){const[a]=t[s];for(let r=e.length-1;r>=0;r--)if(e[r].includes(a)){e[r]=e[r].replace(a,t[s][1]);break}}return e},qe={},Jt=(e,t)=>{if(e==="*")return"*";const s=e.match(/^\:([^\{\}]+)(?:\{(.+)\})?$/);if(s){const a=`${e}#${t}`;return qe[a]||(s[2]?qe[a]=t&&t[0]!==":"&&t[0]!=="*"?[a,s[1],new RegExp(`^${s[2]}(?=/${t})`)]:[e,s[1],new RegExp(`^${s[2]}$`)]:qe[a]=[e,s[1],!0]),qe[a]}return null},Ve=(e,t)=>{try{return t(e)}catch{return e.replace(/(?:%[0-9A-Fa-f]{2})+/g,s=>{try{return t(s)}catch{return s}})}},Kt=e=>Ve(e,decodeURI),yt=e=>{const t=e.url,s=t.indexOf("/",t.indexOf(":")+4);let a=s;for(;a<t.length;a++){const r=t.charCodeAt(a);if(r===37){const n=t.indexOf("?",a),o=t.slice(s,n===-1?void 0:n);return Kt(o.includes("%25")?o.replace(/%25/g,"%2525"):o)}else if(r===63)break}return t.slice(s,a)},Qt=e=>{const t=yt(e);return t.length>1&&t.at(-1)==="/"?t.slice(0,-1):t},ye=(e,t,...s)=>(s.length&&(t=ye(t,...s)),`${(e==null?void 0:e[0])==="/"?"":"/"}${e}${t==="/"?"":`${(e==null?void 0:e.at(-1))==="/"?"":"/"}${(t==null?void 0:t[0])==="/"?t.slice(1):t}`}`),wt=e=>{if(e.charCodeAt(e.length-1)!==63||!e.includes(":"))return null;const t=e.split("/"),s=[];let a="";return t.forEach(r=>{if(r!==""&&!/\:/.test(r))a+="/"+r;else if(/\:/.test(r))if(/\?/.test(r)){s.length===0&&a===""?s.push("/"):s.push(a);const n=r.replace("?","");a+="/"+n,s.push(a)}else a+="/"+r}),s.filter((r,n,o)=>o.indexOf(r)===n)},Ze=e=>/[%+]/.test(e)?(e.indexOf("+")!==-1&&(e=e.replace(/\+/g," ")),e.indexOf("%")!==-1?Ve(e,rt):e):e,Et=(e,t,s)=>{let a;if(!s&&t&&!/[%+]/.test(t)){let o=e.indexOf("?",8);if(o===-1)return;for(e.startsWith(t,o+1)||(o=e.indexOf(`&${t}`,o+1));o!==-1;){const i=e.charCodeAt(o+t.length+1);if(i===61){const l=o+t.length+2,d=e.indexOf("&",l);return Ze(e.slice(l,d===-1?void 0:d))}else if(i==38||isNaN(i))return"";o=e.indexOf(`&${t}`,o+1)}if(a=/[%+]/.test(e),!a)return}const r={};a??(a=/[%+]/.test(e));let n=e.indexOf("?",8);for(;n!==-1;){const o=e.indexOf("&",n+1);let i=e.indexOf("=",n);i>o&&o!==-1&&(i=-1);let l=e.slice(n+1,i===-1?o===-1?void 0:o:i);if(a&&(l=Ze(l)),n=o,l==="")continue;let d;i===-1?d="":(d=e.slice(i+1,o===-1?void 0:o),a&&(d=Ze(d))),s?(r[l]&&Array.isArray(r[l])||(r[l]=[]),r[l].push(d)):r[l]??(r[l]=d)}return t?r[t]:r},Zt=Et,es=(e,t)=>Et(e,t,!0),rt=decodeURIComponent,dt=e=>Ve(e,rt),_e,z,ae,Tt,It,at,re,mt,_t=(mt=class{constructor(e,t="/",s=[[]]){C(this,ae);S(this,"raw");C(this,_e);C(this,z);S(this,"routeIndex",0);S(this,"path");S(this,"bodyCache",{});C(this,re,e=>{const{bodyCache:t,raw:s}=this,a=t[e];if(a)return a;const r=Object.keys(t)[0];return r?t[r].then(n=>(r==="json"&&(n=JSON.stringify(n)),new Response(n)[e]())):t[e]=s[e]()});this.raw=e,this.path=t,I(this,z,s),I(this,_e,{})}param(e){return e?R(this,ae,Tt).call(this,e):R(this,ae,It).call(this)}query(e){return Zt(this.url,e)}queries(e){return es(this.url,e)}header(e){if(e)return this.raw.headers.get(e)??void 0;const t={};return this.raw.headers.forEach((s,a)=>{t[a]=s}),t}async parseBody(e){var t;return(t=this.bodyCache).parsedBody??(t.parsedBody=await qt(this,e))}json(){return f(this,re).call(this,"text").then(e=>JSON.parse(e))}text(){return f(this,re).call(this,"text")}arrayBuffer(){return f(this,re).call(this,"arrayBuffer")}blob(){return f(this,re).call(this,"blob")}formData(){return f(this,re).call(this,"formData")}addValidatedData(e,t){f(this,_e)[e]=t}valid(e){return f(this,_e)[e]}get url(){return this.raw.url}get method(){return this.raw.method}get[$t](){return f(this,z)}get matchedRoutes(){return f(this,z)[0].map(([[,e]])=>e)}get routePath(){return f(this,z)[0].map(([[,e]])=>e)[this.routeIndex].path}},_e=new WeakMap,z=new WeakMap,ae=new WeakSet,Tt=function(e){const t=f(this,z)[0][this.routeIndex][1][e],s=R(this,ae,at).call(this,t);return s&&/\%/.test(s)?dt(s):s},It=function(){const e={},t=Object.keys(f(this,z)[0][this.routeIndex][1]);for(const s of t){const a=R(this,ae,at).call(this,f(this,z)[0][this.routeIndex][1][s]);a!==void 0&&(e[s]=/\%/.test(a)?dt(a):a)}return e},at=function(e){return f(this,z)[1]?f(this,z)[1][e]:e},re=new WeakMap,mt),ts={Stringify:1},St=async(e,t,s,a,r)=>{typeof e=="object"&&!(e instanceof String)&&(e instanceof Promise||(e=e.toString()),e instanceof Promise&&(e=await e));const n=e.callbacks;return n!=null&&n.length?(r?r[0]+=e:r=[e],Promise.all(n.map(i=>i({phase:t,buffer:r,context:a}))).then(i=>Promise.all(i.filter(Boolean).map(l=>St(l,t,!1,a,r))).then(()=>r[0]))):Promise.resolve(e)},ss="text/plain; charset=UTF-8",et=(e,t)=>({"Content-Type":e,...t}),Be,je,Z,Te,ee,q,Ae,Ie,Se,me,Me,Oe,ne,we,gt,as=(gt=class{constructor(e,t){C(this,ne);C(this,Be);C(this,je);S(this,"env",{});C(this,Z);S(this,"finalized",!1);S(this,"error");C(this,Te);C(this,ee);C(this,q);C(this,Ae);C(this,Ie);C(this,Se);C(this,me);C(this,Me);C(this,Oe);S(this,"render",(...e)=>(f(this,Ie)??I(this,Ie,t=>this.html(t)),f(this,Ie).call(this,...e)));S(this,"setLayout",e=>I(this,Ae,e));S(this,"getLayout",()=>f(this,Ae));S(this,"setRenderer",e=>{I(this,Ie,e)});S(this,"header",(e,t,s)=>{this.finalized&&I(this,q,new Response(f(this,q).body,f(this,q)));const a=f(this,q)?f(this,q).headers:f(this,me)??I(this,me,new Headers);t===void 0?a.delete(e):s!=null&&s.append?a.append(e,t):a.set(e,t)});S(this,"status",e=>{I(this,Te,e)});S(this,"set",(e,t)=>{f(this,Z)??I(this,Z,new Map),f(this,Z).set(e,t)});S(this,"get",e=>f(this,Z)?f(this,Z).get(e):void 0);S(this,"newResponse",(...e)=>R(this,ne,we).call(this,...e));S(this,"body",(e,t,s)=>R(this,ne,we).call(this,e,t,s));S(this,"text",(e,t,s)=>!f(this,me)&&!f(this,Te)&&!t&&!s&&!this.finalized?new Response(e):R(this,ne,we).call(this,e,t,et(ss,s)));S(this,"json",(e,t,s)=>R(this,ne,we).call(this,JSON.stringify(e),t,et("application/json",s)));S(this,"html",(e,t,s)=>{const a=r=>R(this,ne,we).call(this,r,t,et("text/html; charset=UTF-8",s));return typeof e=="object"?St(e,ts.Stringify,!1,{}).then(a):a(e)});S(this,"redirect",(e,t)=>{const s=String(e);return this.header("Location",/[^\x00-\xFF]/.test(s)?encodeURI(s):s),this.newResponse(null,t??302)});S(this,"notFound",()=>(f(this,Se)??I(this,Se,()=>new Response),f(this,Se).call(this,this)));I(this,Be,e),t&&(I(this,ee,t.executionCtx),this.env=t.env,I(this,Se,t.notFoundHandler),I(this,Oe,t.path),I(this,Me,t.matchResult))}get req(){return f(this,je)??I(this,je,new _t(f(this,Be),f(this,Oe),f(this,Me))),f(this,je)}get event(){if(f(this,ee)&&"respondWith"in f(this,ee))return f(this,ee);throw Error("This context has no FetchEvent")}get executionCtx(){if(f(this,ee))return f(this,ee);throw Error("This context has no ExecutionContext")}get res(){return f(this,q)||I(this,q,new Response(null,{headers:f(this,me)??I(this,me,new Headers)}))}set res(e){if(f(this,q)&&e){e=new Response(e.body,e);for(const[t,s]of f(this,q).headers.entries())if(t!=="content-type")if(t==="set-cookie"){const a=f(this,q).headers.getSetCookie();e.headers.delete("set-cookie");for(const r of a)e.headers.append("set-cookie",r)}else e.headers.set(t,s)}I(this,q,e),this.finalized=!0}get var(){return f(this,Z)?Object.fromEntries(f(this,Z)):{}}},Be=new WeakMap,je=new WeakMap,Z=new WeakMap,Te=new WeakMap,ee=new WeakMap,q=new WeakMap,Ae=new WeakMap,Ie=new WeakMap,Se=new WeakMap,me=new WeakMap,Me=new WeakMap,Oe=new WeakMap,ne=new WeakSet,we=function(e,t,s){const a=f(this,q)?new Headers(f(this,q).headers):f(this,me)??new Headers;if(typeof t=="object"&&"headers"in t){const n=t.headers instanceof Headers?t.headers:new Headers(t.headers);for(const[o,i]of n)o.toLowerCase()==="set-cookie"?a.append(o,i):a.set(o,i)}if(s)for(const[n,o]of Object.entries(s))if(typeof o=="string")a.set(n,o);else{a.delete(n);for(const i of o)a.append(n,i)}const r=typeof t=="number"?t:(t==null?void 0:t.status)??f(this,Te);return new Response(e,{status:r,headers:a})},gt),M="ALL",rs="all",ns=["get","post","put","delete","options","patch"],kt="Can not add a route since the matcher is already built.",Dt=class extends Error{},os="__COMPOSED_HANDLER",is=e=>e.text("404 Not Found",404),ct=(e,t)=>{if("getResponse"in e){const s=e.getResponse();return t.newResponse(s.body,s)}return console.error(e),t.text("Internal Server Error",500)},V,O,Ct,J,pe,He,We,ke,ls=(ke=class{constructor(t={}){C(this,O);S(this,"get");S(this,"post");S(this,"put");S(this,"delete");S(this,"options");S(this,"patch");S(this,"all");S(this,"on");S(this,"use");S(this,"router");S(this,"getPath");S(this,"_basePath","/");C(this,V,"/");S(this,"routes",[]);C(this,J,is);S(this,"errorHandler",ct);S(this,"onError",t=>(this.errorHandler=t,this));S(this,"notFound",t=>(I(this,J,t),this));S(this,"fetch",(t,...s)=>R(this,O,We).call(this,t,s[1],s[0],t.method));S(this,"request",(t,s,a,r)=>t instanceof Request?this.fetch(s?new Request(t,s):t,a,r):(t=t.toString(),this.fetch(new Request(/^https?:\/\//.test(t)?t:`http://localhost${ye("/",t)}`,s),a,r)));S(this,"fire",()=>{addEventListener("fetch",t=>{t.respondWith(R(this,O,We).call(this,t.request,t,void 0,t.request.method))})});[...ns,rs].forEach(n=>{this[n]=(o,...i)=>(typeof o=="string"?I(this,V,o):R(this,O,pe).call(this,n,f(this,V),o),i.forEach(l=>{R(this,O,pe).call(this,n,f(this,V),l)}),this)}),this.on=(n,o,...i)=>{for(const l of[o].flat()){I(this,V,l);for(const d of[n].flat())i.map(p=>{R(this,O,pe).call(this,d.toUpperCase(),f(this,V),p)})}return this},this.use=(n,...o)=>(typeof n=="string"?I(this,V,n):(I(this,V,"*"),o.unshift(n)),o.forEach(i=>{R(this,O,pe).call(this,M,f(this,V),i)}),this);const{strict:a,...r}=t;Object.assign(this,r),this.getPath=a??!0?t.getPath??yt:Qt}route(t,s){const a=this.basePath(t);return s.routes.map(r=>{var o;let n;s.errorHandler===ct?n=r.handler:(n=async(i,l)=>(await lt([],s.errorHandler)(i,()=>r.handler(i,l))).res,n[os]=r.handler),R(o=a,O,pe).call(o,r.method,r.path,n)}),this}basePath(t){const s=R(this,O,Ct).call(this);return s._basePath=ye(this._basePath,t),s}mount(t,s,a){let r,n;a&&(typeof a=="function"?n=a:(n=a.optionHandler,a.replaceRequest===!1?r=l=>l:r=a.replaceRequest));const o=n?l=>{const d=n(l);return Array.isArray(d)?d:[d]}:l=>{let d;try{d=l.executionCtx}catch{}return[l.env,d]};r||(r=(()=>{const l=ye(this._basePath,t),d=l==="/"?0:l.length;return p=>{const u=new URL(p.url);return u.pathname=u.pathname.slice(d)||"/",new Request(u,p)}})());const i=async(l,d)=>{const p=await s(r(l.req.raw),...o(l));if(p)return p;await d()};return R(this,O,pe).call(this,M,ye(t,"*"),i),this}},V=new WeakMap,O=new WeakSet,Ct=function(){const t=new ke({router:this.router,getPath:this.getPath});return t.errorHandler=this.errorHandler,I(t,J,f(this,J)),t.routes=this.routes,t},J=new WeakMap,pe=function(t,s,a){t=t.toUpperCase(),s=ye(this._basePath,s);const r={basePath:this._basePath,path:s,method:t,handler:a};this.router.add(t,s,[a,r]),this.routes.push(r)},He=function(t,s){if(t instanceof Error)return this.errorHandler(t,s);throw t},We=function(t,s,a,r){if(r==="HEAD")return(async()=>new Response(null,await R(this,O,We).call(this,t,s,a,"GET")))();const n=this.getPath(t,{env:a}),o=this.router.match(r,n),i=new as(t,{path:n,matchResult:o,env:a,executionCtx:s,notFoundHandler:f(this,J)});if(o[0].length===1){let d;try{d=o[0][0][0][0](i,async()=>{i.res=await f(this,J).call(this,i)})}catch(p){return R(this,O,He).call(this,p,i)}return d instanceof Promise?d.then(p=>p||(i.finalized?i.res:f(this,J).call(this,i))).catch(p=>R(this,O,He).call(this,p,i)):d??f(this,J).call(this,i)}const l=lt(o[0],this.errorHandler,f(this,J));return(async()=>{try{const d=await l(i);if(!d.finalized)throw new Error("Context is not finalized. Did you forget to return a Response object or `await next()`?");return d.res}catch(d){return R(this,O,He).call(this,d,i)}})()},ke),Rt=[];function ds(e,t){const s=this.buildAllMatchers(),a=((r,n)=>{const o=s[r]||s[M],i=o[2][n];if(i)return i;const l=n.match(o[0]);if(!l)return[[],Rt];const d=l.indexOf("",1);return[o[1][d],l]});return this.match=a,a(e,t)}var Ye="[^/]+",Le=".*",Ne="(?:|/.*)",Ee=Symbol(),cs=new Set(".\\+*[^]$()");function ps(e,t){return e.length===1?t.length===1?e<t?-1:1:-1:t.length===1||e===Le||e===Ne?1:t===Le||t===Ne?-1:e===Ye?1:t===Ye?-1:e.length===t.length?e<t?-1:1:t.length-e.length}var ge,xe,K,fe,us=(fe=class{constructor(){C(this,ge);C(this,xe);C(this,K,Object.create(null))}insert(t,s,a,r,n){if(t.length===0){if(f(this,ge)!==void 0)throw Ee;if(n)return;I(this,ge,s);return}const[o,...i]=t,l=o==="*"?i.length===0?["","",Le]:["","",Ye]:o==="/*"?["","",Ne]:o.match(/^\:([^\{\}]+)(?:\{(.+)\})?$/);let d;if(l){const p=l[1];let u=l[2]||Ye;if(p&&l[2]&&(u===".*"||(u=u.replace(/^\((?!\?:)(?=[^)]+\)$)/,"(?:"),/\((?!\?:)/.test(u))))throw Ee;if(d=f(this,K)[u],!d){if(Object.keys(f(this,K)).some(m=>m!==Le&&m!==Ne))throw Ee;if(n)return;d=f(this,K)[u]=new fe,p!==""&&I(d,xe,r.varIndex++)}!n&&p!==""&&a.push([p,f(d,xe)])}else if(d=f(this,K)[o],!d){if(Object.keys(f(this,K)).some(p=>p.length>1&&p!==Le&&p!==Ne))throw Ee;if(n)return;d=f(this,K)[o]=new fe}d.insert(i,s,a,r,n)}buildRegExpStr(){const s=Object.keys(f(this,K)).sort(ps).map(a=>{const r=f(this,K)[a];return(typeof f(r,xe)=="number"?`(${a})@${f(r,xe)}`:cs.has(a)?`\\${a}`:a)+r.buildRegExpStr()});return typeof f(this,ge)=="number"&&s.unshift(`#${f(this,ge)}`),s.length===0?"":s.length===1?s[0]:"(?:"+s.join("|")+")"}},ge=new WeakMap,xe=new WeakMap,K=new WeakMap,fe),ze,Ue,xt,ms=(xt=class{constructor(){C(this,ze,{varIndex:0});C(this,Ue,new us)}insert(e,t,s){const a=[],r=[];for(let o=0;;){let i=!1;if(e=e.replace(/\{[^}]+\}/g,l=>{const d=`@\\${o}`;return r[o]=[d,l],o++,i=!0,d}),!i)break}const n=e.match(/(?::[^\/]+)|(?:\/\*$)|./g)||[];for(let o=r.length-1;o>=0;o--){const[i]=r[o];for(let l=n.length-1;l>=0;l--)if(n[l].indexOf(i)!==-1){n[l]=n[l].replace(i,r[o][1]);break}}return f(this,Ue).insert(n,t,a,f(this,ze),s),a}buildRegExp(){let e=f(this,Ue).buildRegExpStr();if(e==="")return[/^$/,[],[]];let t=0;const s=[],a=[];return e=e.replace(/#(\d+)|@(\d+)|\.\*\$/g,(r,n,o)=>n!==void 0?(s[++t]=Number(n),"$()"):(o!==void 0&&(a[Number(o)]=++t),"")),[new RegExp(`^${e}`),s,a]}},ze=new WeakMap,Ue=new WeakMap,xt),gs=[/^$/,[],Object.create(null)],Ge=Object.create(null);function Lt(e){return Ge[e]??(Ge[e]=new RegExp(e==="*"?"":`^${e.replace(/\/\*$|([.\\+*[^\]$()])/g,(t,s)=>s?`\\${s}`:"(?:|/.*)")}$`))}function xs(){Ge=Object.create(null)}function bs(e){var d;const t=new ms,s=[];if(e.length===0)return gs;const a=e.map(p=>[!/\*|\/:/.test(p[0]),...p]).sort(([p,u],[m,g])=>p?1:m?-1:u.length-g.length),r=Object.create(null);for(let p=0,u=-1,m=a.length;p<m;p++){const[g,x,b]=a[p];g?r[x]=[b.map(([v])=>[v,Object.create(null)]),Rt]:u++;let h;try{h=t.insert(x,u,g)}catch(v){throw v===Ee?new Dt(x):v}g||(s[u]=b.map(([v,E])=>{const y=Object.create(null);for(E-=1;E>=0;E--){const[w,_]=h[E];y[w]=_}return[v,y]}))}const[n,o,i]=t.buildRegExp();for(let p=0,u=s.length;p<u;p++)for(let m=0,g=s[p].length;m<g;m++){const x=(d=s[p][m])==null?void 0:d[1];if(!x)continue;const b=Object.keys(x);for(let h=0,v=b.length;h<v;h++)x[b[h]]=i[x[b[h]]]}const l=[];for(const p in o)l[p]=s[o[p]];return[n,l,r]}function ve(e,t){if(e){for(const s of Object.keys(e).sort((a,r)=>r.length-a.length))if(Lt(s).test(t))return[...e[s]]}}var oe,ie,Xe,Nt,bt,hs=(bt=class{constructor(){C(this,Xe);S(this,"name","RegExpRouter");C(this,oe);C(this,ie);S(this,"match",ds);I(this,oe,{[M]:Object.create(null)}),I(this,ie,{[M]:Object.create(null)})}add(e,t,s){var i;const a=f(this,oe),r=f(this,ie);if(!a||!r)throw new Error(kt);a[e]||[a,r].forEach(l=>{l[e]=Object.create(null),Object.keys(l[M]).forEach(d=>{l[e][d]=[...l[M][d]]})}),t==="/*"&&(t="*");const n=(t.match(/\/:/g)||[]).length;if(/\*$/.test(t)){const l=Lt(t);e===M?Object.keys(a).forEach(d=>{var p;(p=a[d])[t]||(p[t]=ve(a[d],t)||ve(a[M],t)||[])}):(i=a[e])[t]||(i[t]=ve(a[e],t)||ve(a[M],t)||[]),Object.keys(a).forEach(d=>{(e===M||e===d)&&Object.keys(a[d]).forEach(p=>{l.test(p)&&a[d][p].push([s,n])})}),Object.keys(r).forEach(d=>{(e===M||e===d)&&Object.keys(r[d]).forEach(p=>l.test(p)&&r[d][p].push([s,n]))});return}const o=wt(t)||[t];for(let l=0,d=o.length;l<d;l++){const p=o[l];Object.keys(r).forEach(u=>{var m;(e===M||e===u)&&((m=r[u])[p]||(m[p]=[...ve(a[u],p)||ve(a[M],p)||[]]),r[u][p].push([s,n-d+l+1]))})}}buildAllMatchers(){const e=Object.create(null);return Object.keys(f(this,ie)).concat(Object.keys(f(this,oe))).forEach(t=>{e[t]||(e[t]=R(this,Xe,Nt).call(this,t))}),I(this,oe,I(this,ie,void 0)),xs(),e}},oe=new WeakMap,ie=new WeakMap,Xe=new WeakSet,Nt=function(e){const t=[];let s=e===M;return[f(this,oe),f(this,ie)].forEach(a=>{const r=a[e]?Object.keys(a[e]).map(n=>[n,a[e][n]]):[];r.length!==0?(s||(s=!0),t.push(...r)):e!==M&&t.push(...Object.keys(a[M]).map(n=>[n,a[M][n]]))}),s?bs(t):null},bt),le,te,ht,fs=(ht=class{constructor(e){S(this,"name","SmartRouter");C(this,le,[]);C(this,te,[]);I(this,le,e.routers)}add(e,t,s){if(!f(this,te))throw new Error(kt);f(this,te).push([e,t,s])}match(e,t){if(!f(this,te))throw new Error("Fatal error");const s=f(this,le),a=f(this,te),r=s.length;let n=0,o;for(;n<r;n++){const i=s[n];try{for(let l=0,d=a.length;l<d;l++)i.add(...a[l]);o=i.match(e,t)}catch(l){if(l instanceof Dt)continue;throw l}this.match=i.match.bind(i),I(this,le,[i]),I(this,te,void 0);break}if(n===r)throw new Error("Fatal error");return this.name=`SmartRouter + ${this.activeRouter.name}`,o}get activeRouter(){if(f(this,te)||f(this,le).length!==1)throw new Error("No active router has been determined yet.");return f(this,le)[0]}},le=new WeakMap,te=new WeakMap,ht),Re=Object.create(null),de,$,be,De,P,se,ue,Ce,vs=(Ce=class{constructor(t,s,a){C(this,se);C(this,de);C(this,$);C(this,be);C(this,De,0);C(this,P,Re);if(I(this,$,a||Object.create(null)),I(this,de,[]),t&&s){const r=Object.create(null);r[t]={handler:s,possibleKeys:[],score:0},I(this,de,[r])}I(this,be,[])}insert(t,s,a){I(this,De,++it(this,De)._);let r=this;const n=zt(s),o=[];for(let i=0,l=n.length;i<l;i++){const d=n[i],p=n[i+1],u=Jt(d,p),m=Array.isArray(u)?u[0]:d;if(m in f(r,$)){r=f(r,$)[m],u&&o.push(u[1]);continue}f(r,$)[m]=new Ce,u&&(f(r,be).push(u),o.push(u[1])),r=f(r,$)[m]}return f(r,de).push({[t]:{handler:a,possibleKeys:o.filter((i,l,d)=>d.indexOf(i)===l),score:f(this,De)}}),r}search(t,s){var l;const a=[];I(this,P,Re);let n=[this];const o=vt(s),i=[];for(let d=0,p=o.length;d<p;d++){const u=o[d],m=d===p-1,g=[];for(let x=0,b=n.length;x<b;x++){const h=n[x],v=f(h,$)[u];v&&(I(v,P,f(h,P)),m?(f(v,$)["*"]&&a.push(...R(this,se,ue).call(this,f(v,$)["*"],t,f(h,P))),a.push(...R(this,se,ue).call(this,v,t,f(h,P)))):g.push(v));for(let E=0,y=f(h,be).length;E<y;E++){const w=f(h,be)[E],_=f(h,P)===Re?{}:{...f(h,P)};if(w==="*"){const N=f(h,$)["*"];N&&(a.push(...R(this,se,ue).call(this,N,t,f(h,P))),I(N,P,_),g.push(N));continue}const[k,T,j]=w;if(!u&&!(j instanceof RegExp))continue;const L=f(h,$)[k],F=o.slice(d).join("/");if(j instanceof RegExp){const N=j.exec(F);if(N){if(_[T]=N[0],a.push(...R(this,se,ue).call(this,L,t,f(h,P),_)),Object.keys(f(L,$)).length){I(L,P,_);const W=((l=N[0].match(/\//))==null?void 0:l.length)??0;(i[W]||(i[W]=[])).push(L)}continue}}(j===!0||j.test(u))&&(_[T]=u,m?(a.push(...R(this,se,ue).call(this,L,t,_,f(h,P))),f(L,$)["*"]&&a.push(...R(this,se,ue).call(this,f(L,$)["*"],t,_,f(h,P)))):(I(L,P,_),g.push(L)))}}n=g.concat(i.shift()??[])}return a.length>1&&a.sort((d,p)=>d.score-p.score),[a.map(({handler:d,params:p})=>[d,p])]}},de=new WeakMap,$=new WeakMap,be=new WeakMap,De=new WeakMap,P=new WeakMap,se=new WeakSet,ue=function(t,s,a,r){const n=[];for(let o=0,i=f(t,de).length;o<i;o++){const l=f(t,de)[o],d=l[s]||l[M],p={};if(d!==void 0&&(d.params=Object.create(null),n.push(d),a!==Re||r&&r!==Re))for(let u=0,m=d.possibleKeys.length;u<m;u++){const g=d.possibleKeys[u],x=p[d.score];d.params[g]=r!=null&&r[g]&&!x?r[g]:a[g]??(r==null?void 0:r[g]),p[d.score]=!0}}return n},Ce),he,ft,ys=(ft=class{constructor(){S(this,"name","TrieRouter");C(this,he);I(this,he,new vs)}add(e,t,s){const a=wt(t);if(a){for(let r=0,n=a.length;r<n;r++)f(this,he).insert(e,a[r],s);return}f(this,he).insert(e,t,s)}match(e,t){return f(this,he).search(e,t)}},he=new WeakMap,ft),Fe=class extends ls{constructor(e={}){super(e),this.router=e.router??new fs({routers:[new hs,new ys]})}},ws=e=>{const s={...{origin:"*",allowMethods:["GET","HEAD","PUT","POST","DELETE","PATCH"],allowHeaders:[],exposeHeaders:[]},...e},a=(n=>typeof n=="string"?n==="*"?()=>n:o=>n===o?o:null:typeof n=="function"?n:o=>n.includes(o)?o:null)(s.origin),r=(n=>typeof n=="function"?n:Array.isArray(n)?()=>n:()=>[])(s.allowMethods);return async function(o,i){var p;function l(u,m){o.res.headers.set(u,m)}const d=await a(o.req.header("origin")||"",o);if(d&&l("Access-Control-Allow-Origin",d),s.credentials&&l("Access-Control-Allow-Credentials","true"),(p=s.exposeHeaders)!=null&&p.length&&l("Access-Control-Expose-Headers",s.exposeHeaders.join(",")),o.req.method==="OPTIONS"){s.origin!=="*"&&l("Vary","Origin"),s.maxAge!=null&&l("Access-Control-Max-Age",s.maxAge.toString());const u=await r(o.req.header("origin")||"",o);u.length&&l("Access-Control-Allow-Methods",u.join(","));let m=s.allowHeaders;if(!(m!=null&&m.length)){const g=o.req.header("Access-Control-Request-Headers");g&&(m=g.split(/\s*,\s*/))}return m!=null&&m.length&&(l("Access-Control-Allow-Headers",m.join(",")),o.res.headers.append("Vary","Access-Control-Request-Headers")),o.res.headers.delete("Content-Length"),o.res.headers.delete("Content-Type"),new Response(null,{headers:o.res.headers,status:204,statusText:"No Content"})}await i(),s.origin!=="*"&&o.header("Vary","Origin",{append:!0})}},Es=/^[\w!#$%&'*.^`|~+-]+$/,_s=/^[ !#-:<-[\]-~]*$/,Ts=(e,t)=>{if(e.indexOf(t)===-1)return{};const s=e.trim().split(";"),a={};for(let r of s){r=r.trim();const n=r.indexOf("=");if(n===-1)continue;const o=r.substring(0,n).trim();if(t!==o||!Es.test(o))continue;let i=r.substring(n+1).trim();if(i.startsWith('"')&&i.endsWith('"')&&(i=i.slice(1,-1)),_s.test(i)){a[o]=i.indexOf("%")!==-1?Ve(i,rt):i;break}}return a},A=(e,t,s)=>{const a=e.req.raw.headers.get("Cookie");{if(!a)return;let r=t;return Ts(a,r)[r]}},Is=/^\s*(?:text\/(?!event-stream(?:[;\s]|$))[^;\s]+|application\/(?:javascript|json|xml|xml-dtd|ecmascript|dart|postscript|rtf|tar|toml|vnd\.dart|vnd\.ms-fontobject|vnd\.ms-opentype|wasm|x-httpd-php|x-javascript|x-ns-proxy-autoconfig|x-sh|x-tar|x-virtualbox-hdd|x-virtualbox-ova|x-virtualbox-ovf|x-virtualbox-vbox|x-virtualbox-vdi|x-virtualbox-vhd|x-virtualbox-vmdk|x-www-form-urlencoded)|font\/(?:otf|ttf)|image\/(?:bmp|vnd\.adobe\.photoshop|vnd\.microsoft\.icon|vnd\.ms-dds|x-icon|x-ms-bmp)|message\/rfc822|model\/gltf-binary|x-shader\/x-fragment|x-shader\/x-vertex|[^;\s]+?\+(?:json|text|xml|yaml))(?:[;\s]|$)/i,pt=(e,t=ks)=>{const s=/\.([a-zA-Z0-9]+?)$/,a=e.match(s);if(!a)return;let r=t[a[1]];return r&&r.startsWith("text")&&(r+="; charset=utf-8"),r},Ss={aac:"audio/aac",avi:"video/x-msvideo",avif:"image/avif",av1:"video/av1",bin:"application/octet-stream",bmp:"image/bmp",css:"text/css",csv:"text/csv",eot:"application/vnd.ms-fontobject",epub:"application/epub+zip",gif:"image/gif",gz:"application/gzip",htm:"text/html",html:"text/html",ico:"image/x-icon",ics:"text/calendar",jpeg:"image/jpeg",jpg:"image/jpeg",js:"text/javascript",json:"application/json",jsonld:"application/ld+json",map:"application/json",mid:"audio/x-midi",midi:"audio/x-midi",mjs:"text/javascript",mp3:"audio/mpeg",mp4:"video/mp4",mpeg:"video/mpeg",oga:"audio/ogg",ogv:"video/ogg",ogx:"application/ogg",opus:"audio/opus",otf:"font/otf",pdf:"application/pdf",png:"image/png",rtf:"application/rtf",svg:"image/svg+xml",tif:"image/tiff",tiff:"image/tiff",ts:"video/mp2t",ttf:"font/ttf",txt:"text/plain",wasm:"application/wasm",webm:"video/webm",weba:"audio/webm",webmanifest:"application/manifest+json",webp:"image/webp",woff:"font/woff",woff2:"font/woff2",xhtml:"application/xhtml+xml",xml:"application/xml",zip:"application/zip","3gp":"video/3gpp","3g2":"video/3gpp2",gltf:"model/gltf+json",glb:"model/gltf-binary"},ks=Ss,Ds=(...e)=>{let t=e.filter(r=>r!=="").join("/");t=t.replace(new RegExp("(?<=\\/)\\/+","g"),"");const s=t.split("/"),a=[];for(const r of s)r===".."&&a.length>0&&a.at(-1)!==".."?a.pop():r!=="."&&a.push(r);return a.join("/")||"."},Bt={br:".br",zstd:".zst",gzip:".gz"},Cs=Object.keys(Bt),Rs="index.html",Ls=e=>{const t=e.root??"./",s=e.path,a=e.join??Ds;return async(r,n)=>{var p,u,m,g;if(r.finalized)return n();let o;if(e.path)o=e.path;else try{if(o=decodeURIComponent(r.req.path),/(?:^|[\/\\])\.\.(?:$|[\/\\])/.test(o))throw new Error}catch{return await((p=e.onNotFound)==null?void 0:p.call(e,r.req.path,r)),n()}let i=a(t,!s&&e.rewriteRequestPath?e.rewriteRequestPath(o):o);e.isDir&&await e.isDir(i)&&(i=a(i,Rs));const l=e.getContent;let d=await l(i,r);if(d instanceof Response)return r.newResponse(d.body,d);if(d){const x=e.mimes&&pt(i,e.mimes)||pt(i);if(r.header("Content-Type",x||"application/octet-stream"),e.precompressed&&(!x||Is.test(x))){const b=new Set((u=r.req.header("Accept-Encoding"))==null?void 0:u.split(",").map(h=>h.trim()));for(const h of Cs){if(!b.has(h))continue;const v=await l(i+Bt[h],r);if(v){d=v,r.header("Content-Encoding",h),r.header("Vary","Accept-Encoding",{append:!0});break}}}return await((m=e.onFound)==null?void 0:m.call(e,i,r)),r.body(d)}await((g=e.onNotFound)==null?void 0:g.call(e,i,r)),await n()}},Ns=async(e,t)=>{let s;t&&t.manifest?typeof t.manifest=="string"?s=JSON.parse(t.manifest):s=t.manifest:typeof __STATIC_CONTENT_MANIFEST=="string"?s=JSON.parse(__STATIC_CONTENT_MANIFEST):s=__STATIC_CONTENT_MANIFEST;let a;t&&t.namespace?a=t.namespace:a=__STATIC_CONTENT;const r=s[e]||e;if(!r)return null;const n=await a.get(r,{type:"stream"});return n||null},Bs=e=>async function(s,a){return Ls({...e,getContent:async n=>Ns(n,{manifest:e.manifest,namespace:e.namespace?e.namespace:s.env?s.env.__STATIC_CONTENT:void 0})})(s,a)},js=e=>Bs(e);const As=`
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -2747,7 +2747,7 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
     <\/script>
 </body>
 </html>
-`,Pe={classesPage:As,studentsListPage:Ms,dailyRecordPage:Os,studentDetailPage:Us,coursesPage:Fs},G=new Fe,Q=async(e,t)=>{try{const s=e.req.header("cookie");let a=null;if(s){const n=s.split(";").map(i=>i.trim()).find(i=>i.startsWith("session_id="));n&&(a=n.split("=")[1])}if(!a)return e.json({error:"로그인이 필요합니다"},401);const r=await e.env.DB.prepare(`
+`,Pe={classesPage:As,studentsListPage:Ms,dailyRecordPage:Os,studentDetailPage:Us,coursesPage:Fs},G=new Fe,Q=async(e,t)=>{try{const s=e.req.header("cookie");let a=null;if(s){const o=s.split(";").map(i=>i.trim()).find(i=>i.startsWith("session_id="));o&&(a=o.split("=")[1])}if(!a)return e.json({error:"로그인이 필요합니다"},401);const r=await e.env.DB.prepare(`
       SELECT user_id FROM sessions WHERE session_id = ? AND expires_at > datetime('now')
     `).bind(a).first();if(!r)return e.json({error:"세션이 만료되었습니다"},401);e.set("userId",r.user_id),await t()}catch(s){return console.error("Auth middleware error:",s),e.json({error:"인증 처리 중 오류가 발생했습니다: "+s.message},500)}};G.get("/api/form-templates",Q,async e=>{try{const t=e.get("userId"),s=await e.env.DB.prepare(`
       SELECT * FROM form_templates 
@@ -2783,79 +2783,79 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
     `).bind(s,t).run(),e.json({success:!0,message:"템플릿이 삭제되었습니다"})):e.json({error:"템플릿을 찾을 수 없거나 권한이 없습니다"},404)}catch(t){return console.error("Error deleting template:",t),e.json({error:"템플릿 삭제에 실패했습니다"},500)}});G.get("/api/form-templates/:id/html",Q,async e=>{try{const t=e.get("userId"),s=e.req.param("id"),a=await e.env.DB.prepare(`
       SELECT * FROM form_templates 
       WHERE id = ? AND user_id = ?
-    `).bind(s,t).first();if(!a)return e.json({error:"템플릿을 찾을 수 없습니다"},404);const r=JSON.parse(a.fields);let o=`
+    `).bind(s,t).first();if(!a)return e.json({error:"템플릿을 찾을 수 없습니다"},404);const r=JSON.parse(a.fields);let n=`
 <!-- 폼 시작: ${a.name} -->
 <form id="customForm_${a.id}" class="space-y-4" onsubmit="submitCustomForm(event, ${a.id})">
-`;return r.forEach(n=>{o+=`  <div>
-`,o+=`    <label class="block text-sm font-medium text-gray-700 mb-1">
-`,o+=`      ${n.label}`,n.required&&(o+=' <span class="text-red-500">*</span>'),o+=`
+`;return r.forEach(o=>{n+=`  <div>
+`,n+=`    <label class="block text-sm font-medium text-gray-700 mb-1">
+`,n+=`      ${o.label}`,o.required&&(n+=' <span class="text-red-500">*</span>'),n+=`
     </label>
-`,n.type==="textarea"?(o+=`    <textarea name="${n.name}" ${n.required?"required":""}
-`,o+=`              placeholder="${n.placeholder||""}"
-`,o+=`              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-`,o+=`              rows="4"></textarea>
-`):n.type==="select"?(o+=`    <select name="${n.name}" ${n.required?"required":""}
-`,o+=`            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-`,o+=`      <option value="">선택하세요</option>
-`,n.options&&n.options.forEach(i=>{o+=`      <option value="${i}">${i}</option>
-`}),o+=`    </select>
-`):n.type==="radio"?n.options&&n.options.forEach(i=>{o+=`    <div class="flex items-center">
-`,o+=`      <input type="radio" name="${n.name}" value="${i}" ${n.required?"required":""}
-`,o+=`             class="text-blue-600 focus:ring-blue-500">
-`,o+=`      <label class="ml-2 text-sm text-gray-700">${i}</label>
-`,o+=`    </div>
-`}):n.type==="checkbox"?(o+=`    <div class="flex items-center">
-`,o+=`      <input type="checkbox" name="${n.name}" ${n.required?"required":""}
-`,o+=`             class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-`,o+=`      <label class="ml-2 text-sm text-gray-700">${n.label}</label>
-`,o+=`    </div>
-`):(o+=`    <input type="${n.type}" name="${n.name}" ${n.required?"required":""}
-`,o+=`           placeholder="${n.placeholder||""}"
-`,o+=`           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-`),o+=`  </div>
-`}),o+=`  <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 font-medium">
-`,o+=`    ${a.submit_button_text}
-`,o+=`  </button>
-`,o+=`</form>
-`,o+=`
-`,o+=`<script>
-`,o+=`async function submitCustomForm(event, templateId) {
-`,o+=`  event.preventDefault();
-`,o+=`  const form = event.target;
-`,o+=`  const formData = new FormData(form);
-`,o+=`  const data = Object.fromEntries(formData.entries());
-`,o+=`  
-`,o+=`  try {
-`,o+=`    const response = await fetch('/api/form-submissions', {
-`,o+=`      method: 'POST',
-`,o+=`      headers: { 'Content-Type': 'application/json' },
-`,o+=`      body: JSON.stringify({
-`,o+=`        form_template_id: templateId,
-`,o+=`        submission_data: JSON.stringify(data)
-`,o+=`      })
-`,o+=`    });
-`,o+=`    
-`,o+=`    if (response.ok) {
-`,o+=`      alert('${a.success_message}');
-`,o+=`      form.reset();
-`,o+=`    } else {
-`,o+=`      alert('제출에 실패했습니다. 다시 시도해주세요.');
-`,o+=`    }
-`,o+=`  } catch (error) {
-`,o+=`    console.error('Form submission error:', error);
-`,o+=`    alert('제출 중 오류가 발생했습니다.');
-`,o+=`  }
-`,o+=`}
-`,o+=`<\/script>
-`,o+=`<!-- 폼 끝 -->
-`,e.json({success:!0,html:o,template:{id:a.id,name:a.name}})}catch(t){return console.error("Error generating HTML:",t),e.json({error:"HTML 생성에 실패했습니다"},500)}});G.post("/api/form-submissions",async e=>{try{console.log("[Form Submission] Starting...");const t=await e.req.json();if(console.log("[Form Submission] Data:",JSON.stringify(t)),!t.form_template_id||!t.submission_data)return console.log("[Form Submission] Missing fields"),e.json({error:"필수 항목을 입력해주세요"},400);console.log("[Form Submission] Looking up template...");const s=await e.env.DB.prepare(`
+`,o.type==="textarea"?(n+=`    <textarea name="${o.name}" ${o.required?"required":""}
+`,n+=`              placeholder="${o.placeholder||""}"
+`,n+=`              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+`,n+=`              rows="4"></textarea>
+`):o.type==="select"?(n+=`    <select name="${o.name}" ${o.required?"required":""}
+`,n+=`            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+`,n+=`      <option value="">선택하세요</option>
+`,o.options&&o.options.forEach(i=>{n+=`      <option value="${i}">${i}</option>
+`}),n+=`    </select>
+`):o.type==="radio"?o.options&&o.options.forEach(i=>{n+=`    <div class="flex items-center">
+`,n+=`      <input type="radio" name="${o.name}" value="${i}" ${o.required?"required":""}
+`,n+=`             class="text-blue-600 focus:ring-blue-500">
+`,n+=`      <label class="ml-2 text-sm text-gray-700">${i}</label>
+`,n+=`    </div>
+`}):o.type==="checkbox"?(n+=`    <div class="flex items-center">
+`,n+=`      <input type="checkbox" name="${o.name}" ${o.required?"required":""}
+`,n+=`             class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+`,n+=`      <label class="ml-2 text-sm text-gray-700">${o.label}</label>
+`,n+=`    </div>
+`):(n+=`    <input type="${o.type}" name="${o.name}" ${o.required?"required":""}
+`,n+=`           placeholder="${o.placeholder||""}"
+`,n+=`           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+`),n+=`  </div>
+`}),n+=`  <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 font-medium">
+`,n+=`    ${a.submit_button_text}
+`,n+=`  </button>
+`,n+=`</form>
+`,n+=`
+`,n+=`<script>
+`,n+=`async function submitCustomForm(event, templateId) {
+`,n+=`  event.preventDefault();
+`,n+=`  const form = event.target;
+`,n+=`  const formData = new FormData(form);
+`,n+=`  const data = Object.fromEntries(formData.entries());
+`,n+=`  
+`,n+=`  try {
+`,n+=`    const response = await fetch('/api/form-submissions', {
+`,n+=`      method: 'POST',
+`,n+=`      headers: { 'Content-Type': 'application/json' },
+`,n+=`      body: JSON.stringify({
+`,n+=`        form_template_id: templateId,
+`,n+=`        submission_data: JSON.stringify(data)
+`,n+=`      })
+`,n+=`    });
+`,n+=`    
+`,n+=`    if (response.ok) {
+`,n+=`      alert('${a.success_message}');
+`,n+=`      form.reset();
+`,n+=`    } else {
+`,n+=`      alert('제출에 실패했습니다. 다시 시도해주세요.');
+`,n+=`    }
+`,n+=`  } catch (error) {
+`,n+=`    console.error('Form submission error:', error);
+`,n+=`    alert('제출 중 오류가 발생했습니다.');
+`,n+=`  }
+`,n+=`}
+`,n+=`<\/script>
+`,n+=`<!-- 폼 끝 -->
+`,e.json({success:!0,html:n,template:{id:a.id,name:a.name}})}catch(t){return console.error("Error generating HTML:",t),e.json({error:"HTML 생성에 실패했습니다"},500)}});G.post("/api/form-submissions",async e=>{try{console.log("[Form Submission] Starting...");const t=await e.req.json();if(console.log("[Form Submission] Data:",JSON.stringify(t)),!t.form_template_id||!t.submission_data)return console.log("[Form Submission] Missing fields"),e.json({error:"필수 항목을 입력해주세요"},400);console.log("[Form Submission] Looking up template...");const s=await e.env.DB.prepare(`
       SELECT * FROM form_templates WHERE id = ?
-    `).bind(t.form_template_id).first();if(!s)return console.log("[Form Submission] Template not found"),e.json({error:"폼을 찾을 수 없습니다"},404);console.log("[Form Submission] Template found, inserting...");const a=e.req.header("cf-connecting-ip")||e.req.header("x-forwarded-for")||"unknown",r=e.req.header("user-agent")||"unknown";let o={};try{o=typeof t.submission_data=="string"?JSON.parse(t.submission_data):t.submission_data}catch(u){console.error("[Form Submission] Failed to parse submission_data:",u)}const n=o.name||o.이름||"이름 없음",i=o.phone||o.연락처||o.전화번호||"",l=o.email||o.이메일||"",d=o.agreedToTerms||o.agreed_to_terms||0,p=await e.env.DB.prepare(`
+    `).bind(t.form_template_id).first();if(!s)return console.log("[Form Submission] Template not found"),e.json({error:"폼을 찾을 수 없습니다"},404);console.log("[Form Submission] Template found, inserting...");const a=e.req.header("cf-connecting-ip")||e.req.header("x-forwarded-for")||"unknown",r=e.req.header("user-agent")||"unknown";let n={};try{n=typeof t.submission_data=="string"?JSON.parse(t.submission_data):t.submission_data}catch(u){console.error("[Form Submission] Failed to parse submission_data:",u)}const o=n.name||n.이름||"이름 없음",i=n.phone||n.연락처||n.전화번호||"",l=n.email||n.이메일||"",d=n.agreedToTerms||n.agreed_to_terms||0,p=await e.env.DB.prepare(`
       INSERT INTO form_submissions (
         form_id, landing_page_id, name, phone, email, data,
         agreed_to_terms, ip_address, user_agent
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).bind(t.form_template_id,t.landing_page_id||null,n,i,l,t.submission_data,d,a,r).run();return console.log("[Form Submission] Success!"),e.json({success:!0,id:p.meta.last_row_id,message:s.success_message||"신청이 완료되었습니다!"})}catch(t){console.error("Error submitting form:",t);const s=t instanceof Error?t.message:"알 수 없는 오류";return e.json({error:"제출에 실패했습니다",details:s,stack:t instanceof Error?t.stack:void 0},500)}});G.get("/api/form-submissions",Q,async e=>{try{const t=e.get("userId"),s=e.req.query("template_id"),a=e.req.query("status");let r=`
+    `).bind(t.form_template_id,t.landing_page_id||null,o,i,l,t.submission_data,d,a,r).run();return console.log("[Form Submission] Success!"),e.json({success:!0,id:p.meta.last_row_id,message:s.success_message||"신청이 완료되었습니다!"})}catch(t){console.error("Error submitting form:",t);const s=t instanceof Error?t.message:"알 수 없는 오류";return e.json({error:"제출에 실패했습니다",details:s,stack:t instanceof Error?t.stack:void 0},500)}});G.get("/api/form-submissions",Q,async e=>{try{const t=e.get("userId"),s=e.req.query("template_id"),a=e.req.query("status");let r=`
       SELECT 
         fs.*,
         ft.name as template_name,
@@ -2864,7 +2864,7 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
       JOIN form_templates ft ON fs.form_id = ft.id
       LEFT JOIN landing_pages lp ON fs.landing_page_id = lp.id
       WHERE ft.user_id = ?
-    `;const o=[t];s&&(r+=" AND fs.form_id = ?",o.push(s)),a&&(r+=" AND fs.status = ?",o.push(a)),r+=" ORDER BY fs.submitted_at DESC";const n=await e.env.DB.prepare(r).bind(...o).all();return e.json(n.results||[])}catch(t){return console.error("Error fetching submissions:",t),e.json({error:"제출 내역을 불러올 수 없습니다"},500)}});G.get("/api/form-submissions/:id",Q,async e=>{try{const t=e.get("userId"),s=e.req.param("id"),a=await e.env.DB.prepare(`
+    `;const n=[t];s&&(r+=" AND fs.form_id = ?",n.push(s)),a&&(r+=" AND fs.status = ?",n.push(a)),r+=" ORDER BY fs.submitted_at DESC";const o=await e.env.DB.prepare(r).bind(...n).all();return e.json(o.results||[])}catch(t){return console.error("Error fetching submissions:",t),e.json({error:"제출 내역을 불러올 수 없습니다"},500)}});G.get("/api/form-submissions/:id",Q,async e=>{try{const t=e.get("userId"),s=e.req.param("id"),a=await e.env.DB.prepare(`
       SELECT 
         fs.*,
         ft.name as template_name,
@@ -2900,7 +2900,7 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
       FROM form_submissions fs
       JOIN form_templates ft ON fs.form_id = ft.id
       WHERE ft.user_id = ?
-    `;const r=[t];s&&(a+=" AND fs.form_id = ?",r.push(s));const o=await e.env.DB.prepare(a).bind(...r).first();return e.json(o||{total:0,new_count:0,contacted_count:0,completed_count:0,rejected_count:0})}catch(t){return console.error("Error fetching stats:",t),e.json({error:"통계를 불러올 수 없습니다"},500)}});const H=new Fe,X=async(e,t)=>{try{const s=e.req.header("X-User-Data-Base64");if(!s)return e.json({error:"인증이 필요합니다"},401);const a=Buffer.from(s,"base64").toString("utf-8"),r=JSON.parse(a);if(r.user_type==="teacher")return e.json({error:"접근 권한이 없습니다"},403);if(!r.id)return e.json({error:"유효하지 않은 사용자입니다"},403);e.set("user",r),await t()}catch(s){return console.error("Auth error:",s),e.json({error:"인증 처리 중 오류가 발생했습니다"},500)}};H.get("/api/tuition/debug/schema",async e=>{try{const t=await e.env.DB.prepare(`
+    `;const r=[t];s&&(a+=" AND fs.form_id = ?",r.push(s));const n=await e.env.DB.prepare(a).bind(...r).first();return e.json(n||{total:0,new_count:0,contacted_count:0,completed_count:0,rejected_count:0})}catch(t){return console.error("Error fetching stats:",t),e.json({error:"통계를 불러올 수 없습니다"},500)}});const H=new Fe,X=async(e,t)=>{try{const s=e.req.header("X-User-Data-Base64");if(!s)return e.json({error:"인증이 필요합니다"},401);const a=Buffer.from(s,"base64").toString("utf-8"),r=JSON.parse(a);if(r.user_type==="teacher")return e.json({error:"접근 권한이 없습니다"},403);if(!r.id)return e.json({error:"유효하지 않은 사용자입니다"},403);e.set("user",r),await t()}catch(s){return console.error("Auth error:",s),e.json({error:"인증 처리 중 오류가 발생했습니다"},500)}};H.get("/api/tuition/debug/schema",async e=>{try{const t=await e.env.DB.prepare(`
       PRAGMA table_info(classes)
     `).all(),s=await e.env.DB.prepare(`
       PRAGMA table_info(students)
@@ -2937,18 +2937,18 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
           FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
           FOREIGN KEY (academy_id) REFERENCES users(id) ON DELETE CASCADE
         )
-      `).run(),t.push({table:"tuition_rates",status:"success"})}catch(r){t.push({table:"tuition_rates",status:"error",error:r.message})}const s=["CREATE INDEX IF NOT EXISTS idx_tuition_payments_student ON tuition_payments(student_id)","CREATE INDEX IF NOT EXISTS idx_tuition_payments_academy ON tuition_payments(academy_id)","CREATE INDEX IF NOT EXISTS idx_tuition_payments_year_month ON tuition_payments(year, month)","CREATE INDEX IF NOT EXISTS idx_tuition_payments_status ON tuition_payments(status)","CREATE INDEX IF NOT EXISTS idx_tuition_rates_student ON tuition_rates(student_id)","CREATE INDEX IF NOT EXISTS idx_tuition_rates_academy ON tuition_rates(academy_id)"];for(const r of s)try{await e.env.DB.prepare(r).run()}catch{}const a=[{table:"classes",column:"monthly_fee",sql:"ALTER TABLE classes ADD COLUMN monthly_fee INTEGER DEFAULT 0"},{table:"classes",column:"user_id",sql:"ALTER TABLE classes ADD COLUMN user_id INTEGER"},{table:"classes",column:"teacher_id",sql:"ALTER TABLE classes ADD COLUMN teacher_id INTEGER"},{table:"classes",column:"name",sql:"ALTER TABLE classes ADD COLUMN name TEXT"},{table:"students",column:"user_id",sql:"ALTER TABLE students ADD COLUMN user_id INTEGER"},{table:"users",column:"user_type",sql:"ALTER TABLE users ADD COLUMN user_type TEXT DEFAULT 'director'"},{table:"users",column:"parent_user_id",sql:"ALTER TABLE users ADD COLUMN parent_user_id INTEGER"}];for(const{table:r,column:o,sql:n}of a)try{await e.env.DB.prepare(n).run(),t.push({action:`add_column_${r}.${o}`,status:"success"})}catch(i){t.push({action:`add_column_${r}.${o}`,status:"exists",error:i.message})}return e.json({success:!0,message:"교육비 테이블 초기화 완료",results:t})}catch(t){return console.error("Error initializing tables:",t),e.json({error:"테이블 초기화 실패",details:t.message},500)}});H.get("/api/tuition/students/:studentId/payments",X,async e=>{try{const t=e.get("user"),s=e.req.param("studentId"),a=await e.env.DB.prepare(`
+      `).run(),t.push({table:"tuition_rates",status:"success"})}catch(r){t.push({table:"tuition_rates",status:"error",error:r.message})}const s=["CREATE INDEX IF NOT EXISTS idx_tuition_payments_student ON tuition_payments(student_id)","CREATE INDEX IF NOT EXISTS idx_tuition_payments_academy ON tuition_payments(academy_id)","CREATE INDEX IF NOT EXISTS idx_tuition_payments_year_month ON tuition_payments(year, month)","CREATE INDEX IF NOT EXISTS idx_tuition_payments_status ON tuition_payments(status)","CREATE INDEX IF NOT EXISTS idx_tuition_rates_student ON tuition_rates(student_id)","CREATE INDEX IF NOT EXISTS idx_tuition_rates_academy ON tuition_rates(academy_id)"];for(const r of s)try{await e.env.DB.prepare(r).run()}catch{}const a=[{table:"classes",column:"monthly_fee",sql:"ALTER TABLE classes ADD COLUMN monthly_fee INTEGER DEFAULT 0"},{table:"classes",column:"user_id",sql:"ALTER TABLE classes ADD COLUMN user_id INTEGER"},{table:"classes",column:"teacher_id",sql:"ALTER TABLE classes ADD COLUMN teacher_id INTEGER"},{table:"classes",column:"name",sql:"ALTER TABLE classes ADD COLUMN name TEXT"},{table:"students",column:"user_id",sql:"ALTER TABLE students ADD COLUMN user_id INTEGER"},{table:"users",column:"user_type",sql:"ALTER TABLE users ADD COLUMN user_type TEXT DEFAULT 'director'"},{table:"users",column:"parent_user_id",sql:"ALTER TABLE users ADD COLUMN parent_user_id INTEGER"}];for(const{table:r,column:n,sql:o}of a)try{await e.env.DB.prepare(o).run(),t.push({action:`add_column_${r}.${n}`,status:"success"})}catch(i){t.push({action:`add_column_${r}.${n}`,status:"exists",error:i.message})}return e.json({success:!0,message:"교육비 테이블 초기화 완료",results:t})}catch(t){return console.error("Error initializing tables:",t),e.json({error:"테이블 초기화 실패",details:t.message},500)}});H.get("/api/tuition/students/:studentId/payments",X,async e=>{try{const t=e.get("user"),s=e.req.param("studentId"),a=await e.env.DB.prepare(`
       SELECT * FROM students WHERE id = ? AND academy_id = ?
     `).bind(s,t.id).first();if(!a)return e.json({error:"학생을 찾을 수 없습니다"},404);const r=await e.env.DB.prepare(`
       SELECT * FROM tuition_payments 
       WHERE student_id = ? 
       ORDER BY year DESC, month DESC
-    `).bind(s).all(),o=await e.env.DB.prepare(`
+    `).bind(s).all(),n=await e.env.DB.prepare(`
       SELECT * FROM tuition_rates 
       WHERE student_id = ? AND (end_date IS NULL OR end_date >= date('now'))
       ORDER BY start_date DESC
       LIMIT 1
-    `).bind(s).first();return e.json({success:!0,student:a,payments:r.results||[],currentRate:o||null})}catch(t){return console.error("Error fetching student payments:",t),e.json({error:"납입 내역 조회 실패"},500)}});H.get("/api/tuition/payments",X,async e=>{try{const t=e.get("user"),s=e.req.query("year")||new Date().getFullYear().toString(),a=e.req.query("month")||(new Date().getMonth()+1).toString(),r=e.req.query("status"),o=new Date,n=new Date(o.getFullYear(),o.getMonth(),o.getDate()),i=await e.env.DB.prepare(`
+    `).bind(s).first();return e.json({success:!0,student:a,payments:r.results||[],currentRate:n||null})}catch(t){return console.error("Error fetching student payments:",t),e.json({error:"납입 내역 조회 실패"},500)}});H.get("/api/tuition/payments",X,async e=>{try{const t=e.get("user"),s=e.req.query("year")||new Date().getFullYear().toString(),a=e.req.query("month")||(new Date().getMonth()+1).toString(),r=e.req.query("status"),n=new Date,o=new Date(n.getFullYear(),n.getMonth(),n.getDate()),i=await e.env.DB.prepare(`
       SELECT 
         s.id as student_id,
         s.name as student_name,
@@ -2968,12 +2968,12 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
     `).bind(t.id).all();if(i.results)for(const u of i.results)if(!u.last_paid_date)!await e.env.DB.prepare(`
             SELECT id FROM tuition_payments 
             WHERE student_id = ? AND year = ? AND month = ?
-          `).bind(u.student_id,o.getFullYear(),o.getMonth()+1).first()&&u.monthly_fee>0&&await e.env.DB.prepare(`
+          `).bind(u.student_id,n.getFullYear(),n.getMonth()+1).first()&&u.monthly_fee>0&&await e.env.DB.prepare(`
               INSERT INTO tuition_payments (
                 student_id, academy_id, year, month, amount, paid_amount, 
                 status, created_by, created_at, updated_at
               ) VALUES (?, ?, ?, ?, ?, 0, 'unpaid', ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-            `).bind(u.student_id,t.id,o.getFullYear(),o.getMonth()+1,u.monthly_fee,t.id).run();else{const m=new Date(u.last_paid_date);let g=u.last_year,x=u.last_month;for(;x++,x>12&&(x=1,g++),!(g>o.getFullYear()||g===o.getFullYear()&&x>o.getMonth()+1);){const b=new Date(m);b.setMonth(b.getMonth()+(x-u.last_month)+(g-u.last_year)*12),b<=n&&!await e.env.DB.prepare(`
+            `).bind(u.student_id,t.id,n.getFullYear(),n.getMonth()+1,u.monthly_fee,t.id).run();else{const m=new Date(u.last_paid_date);let g=u.last_year,x=u.last_month;for(;x++,x>12&&(x=1,g++),!(g>n.getFullYear()||g===n.getFullYear()&&x>n.getMonth()+1);){const b=new Date(m);b.setMonth(b.getMonth()+(x-u.last_month)+(g-u.last_year)*12),b<=o&&!await e.env.DB.prepare(`
                 SELECT id FROM tuition_payments 
                 WHERE student_id = ? AND year = ? AND month = ?
               `).bind(u.student_id,g,x).first()&&u.monthly_fee>0&&await e.env.DB.prepare(`
@@ -3006,12 +3006,12 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
       LEFT JOIN classes c ON s.class_id = c.id
       WHERE s.academy_id = ?
         AND s.status = 'active'
-    `;const d=[s,a,s,a,t.id];r&&(l+=" AND COALESCE(tp.status, 'unpaid') = ?",d.push(r)),l+=" ORDER BY COALESCE(tp.status, 'unpaid') DESC, s.name ASC";const p=await e.env.DB.prepare(l).bind(...d).all();return e.json({success:!0,year:parseInt(s),month:parseInt(a),payments:p.results||[]})}catch(t){return console.error("Error fetching payments:",t),e.json({error:"납입 현황 조회 실패",details:t.message},500)}});H.post("/api/tuition/payments",X,async e=>{try{const t=e.get("user"),s=await e.req.json();console.log("📥 [Payment] 납입 요청 데이터:",JSON.stringify(s)),console.log("👤 [Payment] 사용자:",{id:t.id,academy_id:t.academy_id});const{student_id:a,year:r,month:o,amount:n,status:i,paid_amount:l,paid_date:d,memo:p,payment_method:u}=s;if(!a||!r||!o||!n)return console.error("❌ [Payment] 필수 항목 누락:",{student_id:a,year:r,month:o,amount:n}),e.json({error:"필수 항목을 입력해주세요",details:{student_id:!!a,year:!!r,month:!!o,amount:!!n}},400);const m=t.academy_id||t.id,g=await e.env.DB.prepare(`
+    `;const d=[s,a,s,a,t.id];r&&(l+=" AND COALESCE(tp.status, 'unpaid') = ?",d.push(r)),l+=" ORDER BY COALESCE(tp.status, 'unpaid') DESC, s.name ASC";const p=await e.env.DB.prepare(l).bind(...d).all();return e.json({success:!0,year:parseInt(s),month:parseInt(a),payments:p.results||[]})}catch(t){return console.error("Error fetching payments:",t),e.json({error:"납입 현황 조회 실패",details:t.message},500)}});H.post("/api/tuition/payments",X,async e=>{try{const t=e.get("user"),s=await e.req.json();console.log("📥 [Payment] 납입 요청 데이터:",JSON.stringify(s)),console.log("👤 [Payment] 사용자:",{id:t.id,academy_id:t.academy_id});const{student_id:a,year:r,month:n,amount:o,status:i,paid_amount:l,paid_date:d,memo:p,payment_method:u}=s;if(!a||!r||!n||!o)return console.error("❌ [Payment] 필수 항목 누락:",{student_id:a,year:r,month:n,amount:o}),e.json({error:"필수 항목을 입력해주세요",details:{student_id:!!a,year:!!r,month:!!n,amount:!!o}},400);const m=t.academy_id||t.id,g=await e.env.DB.prepare(`
       SELECT * FROM students WHERE id = ? AND academy_id = ?
     `).bind(a,m).first();if(console.log("🔍 [Payment] 학생 조회:",g?"찾음":"없음"),!g)return e.json({error:"학생을 찾을 수 없습니다"},404);const x=await e.env.DB.prepare(`
       SELECT id FROM tuition_payments 
       WHERE student_id = ? AND academy_id = ? AND year = ? AND month = ?
-    `).bind(a,m,r,o).first();if(x)return console.log("🔄 [Payment] 기존 기록 업데이트:",x.id),await e.env.DB.prepare(`
+    `).bind(a,m,r,n).first();if(x)return console.log("🔄 [Payment] 기존 기록 업데이트:",x.id),await e.env.DB.prepare(`
         UPDATE tuition_payments 
         SET amount = ?,
             status = ?,
@@ -3020,21 +3020,21 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
             memo = ?,
             payment_method = ?
         WHERE id = ?
-      `).bind(n,i||"unpaid",l||0,d||null,p||null,u||null,x.id).run(),console.log("✅ [Payment] 납입 기록 업데이트 성공"),e.json({success:!0,id:x.id,message:"납입 기록이 업데이트되었습니다"});const b=await e.env.DB.prepare(`
+      `).bind(o,i||"unpaid",l||0,d||null,p||null,u||null,x.id).run(),console.log("✅ [Payment] 납입 기록 업데이트 성공"),e.json({success:!0,id:x.id,message:"납입 기록이 업데이트되었습니다"});const b=await e.env.DB.prepare(`
       INSERT INTO tuition_payments (
         student_id, academy_id, year, month, amount,
         status, paid_amount, paid_date, memo, payment_method, created_by
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).bind(a,m,r,o,n,i||"unpaid",l||0,d||null,p||null,u||null,t.id).run();return console.log("✅ [Payment] 납입 기록 생성 성공:",b.meta.last_row_id),e.json({success:!0,id:b.meta.last_row_id,message:"납입 기록이 등록되었습니다"})}catch(t){return console.error("❌ [Payment] Error creating payment:",t),e.json({error:"납입 기록 등록 실패",details:t.message},500)}});H.put("/api/tuition/payments/:id",X,async e=>{try{const t=e.get("user"),s=e.req.param("id"),a=await e.req.json(),r=await e.env.DB.prepare(`
+    `).bind(a,m,r,n,o,i||"unpaid",l||0,d||null,p||null,u||null,t.id).run();return console.log("✅ [Payment] 납입 기록 생성 성공:",b.meta.last_row_id),e.json({success:!0,id:b.meta.last_row_id,message:"납입 기록이 등록되었습니다"})}catch(t){return console.error("❌ [Payment] Error creating payment:",t),e.json({error:"납입 기록 등록 실패",details:t.message},500)}});H.put("/api/tuition/payments/:id",X,async e=>{try{const t=e.get("user"),s=e.req.param("id"),a=await e.req.json(),r=await e.env.DB.prepare(`
       SELECT * FROM tuition_payments WHERE id = ? AND academy_id = ?
-    `).bind(s,t.id).first();if(!r)return e.json({error:"납입 기록을 찾을 수 없습니다"},404);const{status:o,paid_amount:n,paid_date:i,memo:l,payment_method:d}=a;return await e.env.DB.prepare(`
+    `).bind(s,t.id).first();if(!r)return e.json({error:"납입 기록을 찾을 수 없습니다"},404);const{status:n,paid_amount:o,paid_date:i,memo:l,payment_method:d}=a;return await e.env.DB.prepare(`
       UPDATE tuition_payments 
       SET status = ?, paid_amount = ?, paid_date = ?, memo = ?, payment_method = ?,
           updated_at = CURRENT_TIMESTAMP
       WHERE id = ?
-    `).bind(o||r.status,n!==void 0?n:r.paid_amount,i||r.paid_date,l!==void 0?l:r.memo,d||r.payment_method,s).run(),e.json({success:!0,message:"납입 기록이 수정되었습니다"})}catch(t){return console.error("Error updating payment:",t),e.json({error:"납입 기록 수정 실패"},500)}});H.delete("/api/tuition/payments/:id",X,async e=>{try{const t=e.get("user"),s=e.req.param("id");return await e.env.DB.prepare(`
+    `).bind(n||r.status,o!==void 0?o:r.paid_amount,i||r.paid_date,l!==void 0?l:r.memo,d||r.payment_method,s).run(),e.json({success:!0,message:"납입 기록이 수정되었습니다"})}catch(t){return console.error("Error updating payment:",t),e.json({error:"납입 기록 수정 실패"},500)}});H.delete("/api/tuition/payments/:id",X,async e=>{try{const t=e.get("user"),s=e.req.param("id");return await e.env.DB.prepare(`
       DELETE FROM tuition_payments WHERE id = ? AND academy_id = ?
-    `).bind(s,t.id).run(),e.json({success:!0,message:"납입 기록이 삭제되었습니다"})}catch(t){return console.error("Error deleting payment:",t),e.json({error:"납입 기록 삭제 실패"},500)}});H.post("/api/tuition/rates",X,async e=>{try{const t=e.get("user"),s=await e.req.json(),{student_id:a,monthly_fee:r,start_date:o,end_date:n}=s;if(!a||!r||!o)return e.json({error:"필수 항목을 입력해주세요"},400);if(!await e.env.DB.prepare(`
+    `).bind(s,t.id).run(),e.json({success:!0,message:"납입 기록이 삭제되었습니다"})}catch(t){return console.error("Error deleting payment:",t),e.json({error:"납입 기록 삭제 실패"},500)}});H.post("/api/tuition/rates",X,async e=>{try{const t=e.get("user"),s=await e.req.json(),{student_id:a,monthly_fee:r,start_date:n,end_date:o}=s;if(!a||!r||!n)return e.json({error:"필수 항목을 입력해주세요"},400);if(!await e.env.DB.prepare(`
       SELECT * FROM students WHERE id = ? AND academy_id = ?
     `).bind(a,t.id).first())return e.json({error:"학생을 찾을 수 없습니다"},404);await e.env.DB.prepare(`
       UPDATE tuition_rates 
@@ -3043,7 +3043,7 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
     `).bind(a).run();const l=await e.env.DB.prepare(`
       INSERT INTO tuition_rates (student_id, academy_id, monthly_fee, start_date, end_date)
       VALUES (?, ?, ?, ?, ?)
-    `).bind(a,t.id,r,o,n||null).run();return e.json({success:!0,id:l.meta.last_row_id,message:"교육비가 설정되었습니다"})}catch(t){return console.error("Error setting tuition rate:",t),e.json({error:"교육비 설정 실패"},500)}});H.get("/api/tuition/unpaid-students",X,async e=>{try{const t=e.get("user"),s=e.req.query("year")||new Date().getFullYear().toString(),a=e.req.query("month")||(new Date().getMonth()+1).toString(),r=await e.env.DB.prepare(`
+    `).bind(a,t.id,r,n,o||null).run();return e.json({success:!0,id:l.meta.last_row_id,message:"교육비가 설정되었습니다"})}catch(t){return console.error("Error setting tuition rate:",t),e.json({error:"교육비 설정 실패"},500)}});H.get("/api/tuition/unpaid-students",X,async e=>{try{const t=e.get("user"),s=e.req.query("year")||new Date().getFullYear().toString(),a=e.req.query("month")||(new Date().getMonth()+1).toString(),r=await e.env.DB.prepare(`
       SELECT 
         s.id,
         s.name as student_name,
@@ -3133,7 +3133,7 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
       SELECT * FROM classes WHERE id = ? AND academy_id = ?
     `).bind(s,t.id).first()?(await e.env.DB.prepare(`
       UPDATE classes SET monthly_fee = ? WHERE id = ?
-    `).bind(a,s).run(),e.json({success:!0,message:"반 교육비가 설정되었습니다"})):e.json({error:"반을 찾을 수 없습니다"},404)}catch(t){return console.error("Error updating class fee:",t),e.json({error:"반 교육비 설정 실패",details:t.message},500)}});H.get("/api/tuition/student-fees/:studentId",X,async e=>{try{const t=e.get("user"),s=e.req.param("studentId"),a=e.req.query("year")||new Date().getFullYear().toString(),r=e.req.query("month")||(new Date().getMonth()+1).toString(),o=await e.env.DB.prepare(`
+    `).bind(a,s).run(),e.json({success:!0,message:"반 교육비가 설정되었습니다"})):e.json({error:"반을 찾을 수 없습니다"},404)}catch(t){return console.error("Error updating class fee:",t),e.json({error:"반 교육비 설정 실패",details:t.message},500)}});H.get("/api/tuition/student-fees/:studentId",X,async e=>{try{const t=e.get("user"),s=e.req.param("studentId"),a=e.req.query("year")||new Date().getFullYear().toString(),r=e.req.query("month")||(new Date().getMonth()+1).toString(),n=await e.env.DB.prepare(`
       SELECT 
         s.*,
         c.monthly_fee as class_fee,
@@ -3144,10 +3144,10 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
       LEFT JOIN tuition_rates tr ON s.id = tr.student_id
         AND (tr.end_date IS NULL OR tr.end_date >= date('now'))
       WHERE s.id = ? AND s.academy_id = ?
-    `).bind(s,t.id).first();if(!o)return e.json({error:"학생을 찾을 수 없습니다"},404);const n=o.custom_fee||o.class_fee||0,i=await e.env.DB.prepare(`
+    `).bind(s,t.id).first();if(!n)return e.json({error:"학생을 찾을 수 없습니다"},404);const o=n.custom_fee||n.class_fee||0,i=await e.env.DB.prepare(`
       SELECT * FROM tuition_payments 
       WHERE student_id = ? AND year = ? AND month = ?
-    `).bind(s,a,r).first();return e.json({success:!0,student:{id:o.id,name:o.name,grade:o.grade,class_name:o.class_name,monthly_fee:n},payment:i||null,amount_due:n,amount_paid:(i==null?void 0:i.paid_amount)||0,status:(i==null?void 0:i.status)||"unpaid"})}catch(t){return console.error("Error fetching student fee:",t),e.json({error:"학생 납입액 조회 실패",details:t.message},500)}});H.post("/api/tuition/mark-paid",X,async e=>{try{const t=e.get("user"),{student_id:s,year:a,month:r,paid_amount:o,payment_method:n,memo:i}=await e.req.json();if(!s||!a||!r)return e.json({error:"필수 항목을 입력해주세요"},400);const l=await e.env.DB.prepare(`
+    `).bind(s,a,r).first();return e.json({success:!0,student:{id:n.id,name:n.name,grade:n.grade,class_name:n.class_name,monthly_fee:o},payment:i||null,amount_due:o,amount_paid:(i==null?void 0:i.paid_amount)||0,status:(i==null?void 0:i.status)||"unpaid"})}catch(t){return console.error("Error fetching student fee:",t),e.json({error:"학생 납입액 조회 실패",details:t.message},500)}});H.post("/api/tuition/mark-paid",X,async e=>{try{const t=e.get("user"),{student_id:s,year:a,month:r,paid_amount:n,payment_method:o,memo:i}=await e.req.json();if(!s||!a||!r)return e.json({error:"필수 항목을 입력해주세요"},400);const l=await e.env.DB.prepare(`
       SELECT 
         s.*,
         c.monthly_fee as class_fee,
@@ -3157,7 +3157,7 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
       LEFT JOIN tuition_rates tr ON s.id = tr.student_id
         AND (tr.end_date IS NULL OR tr.end_date >= date('now'))
       WHERE s.id = ? AND s.academy_id = ?
-    `).bind(s,t.id).first();if(!l)return e.json({error:"학생을 찾을 수 없습니다"},404);const d=o||l.custom_fee||l.class_fee||0,p=l.custom_fee||l.class_fee||0;let u="unpaid";d>=p&&p>0?u="paid":d>0&&d<p&&(u="partial");const m=await e.env.DB.prepare(`
+    `).bind(s,t.id).first();if(!l)return e.json({error:"학생을 찾을 수 없습니다"},404);const d=n||l.custom_fee||l.class_fee||0,p=l.custom_fee||l.class_fee||0;let u="unpaid";d>=p&&p>0?u="paid":d>0&&d<p&&(u="partial");const m=await e.env.DB.prepare(`
       SELECT * FROM tuition_payments 
       WHERE student_id = ? AND year = ? AND month = ?
     `).bind(s,a,r).first();return m?await e.env.DB.prepare(`
@@ -3165,12 +3165,12 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
         SET status = ?, paid_amount = ?, paid_date = date('now'), 
             payment_method = ?, memo = ?, updated_at = CURRENT_TIMESTAMP
         WHERE id = ?
-      `).bind(u,d,n||null,i||null,m.id).run():await e.env.DB.prepare(`
+      `).bind(u,d,o||null,i||null,m.id).run():await e.env.DB.prepare(`
         INSERT INTO tuition_payments (
           student_id, academy_id, year, month, amount, paid_amount, 
           status, paid_date, payment_method, memo, created_by, created_at, updated_at
         ) VALUES (?, ?, ?, ?, ?, ?, ?, date('now'), ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-      `).bind(s,t.id,a,r,p,d,u,n||null,i||null,t.id).run(),e.json({success:!0,message:"납입 완료 처리되었습니다"})}catch(t){return console.error("Error marking paid:",t),e.json({error:"납입 완료 처리 실패",details:t.message},500)}});const $e=new Fe,Ve=async(e,t)=>{try{const s=e.req.header("X-User-Data-Base64");if(!s)return e.json({error:"인증 정보가 필요합니다"},401);const a=atob(s),r=JSON.parse(decodeURIComponent(a));if(r.user_type==="teacher")return e.json({error:"접근 권한이 없습니다"},403);e.set("user",r),await t()}catch{return e.json({error:"인증 실패"},401)}};$e.get("/api/revenue/monthly",Ve,async e=>{try{const t=e.get("user"),s=e.req.query("year")||new Date().getFullYear().toString(),a=e.req.query("month")||(new Date().getMonth()+1).toString(),r=await e.env.DB.prepare(`
+      `).bind(s,t.id,a,r,p,d,u,o||null,i||null,t.id).run(),e.json({success:!0,message:"납입 완료 처리되었습니다"})}catch(t){return console.error("Error marking paid:",t),e.json({error:"납입 완료 처리 실패",details:t.message},500)}});const $e=new Fe,Je=async(e,t)=>{try{const s=e.req.header("X-User-Data-Base64");if(!s)return e.json({error:"인증 정보가 필요합니다"},401);const a=atob(s),r=JSON.parse(decodeURIComponent(a));if(r.user_type==="teacher")return e.json({error:"접근 권한이 없습니다"},403);e.set("user",r),await t()}catch{return e.json({error:"인증 실패"},401)}};$e.get("/api/revenue/monthly",Je,async e=>{try{const t=e.get("user"),s=e.req.query("year")||new Date().getFullYear().toString(),a=e.req.query("month")||(new Date().getMonth()+1).toString(),r=await e.env.DB.prepare(`
       SELECT 
         COALESCE(SUM(tp.paid_amount), 0) as total_paid,
         COUNT(DISTINCT tp.student_id) as paying_students
@@ -3180,7 +3180,7 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
         AND tp.year = ? 
         AND tp.month = ?
         AND tp.status IN ('paid', 'partial')
-    `).bind(t.academy_id||t.id,s,a).first(),o=await e.env.DB.prepare(`
+    `).bind(t.academy_id||t.id,s,a).first(),n=await e.env.DB.prepare(`
       SELECT 
         COUNT(DISTINCT s.id) as total_students,
         COALESCE(SUM(tr.monthly_fee), 0) as expected_revenue,
@@ -3190,7 +3190,7 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
         AND (tr.end_date IS NULL OR tr.end_date >= date('now'))
       WHERE s.academy_id = ?
         AND s.status = 'active'
-    `).bind(t.academy_id||t.id).first(),n=await e.env.DB.prepare(`
+    `).bind(t.academy_id||t.id).first(),o=await e.env.DB.prepare(`
       SELECT 
         COALESCE(SUM(COALESCE(tp.amount, tr.monthly_fee, 0) - COALESCE(tp.paid_amount, 0)), 0) as total_unpaid,
         COUNT(DISTINCT s.id) as unpaid_students
@@ -3202,7 +3202,7 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
       WHERE s.academy_id = ? 
         AND s.status = 'active'
         AND COALESCE(tp.status, 'unpaid') IN ('unpaid', 'partial', 'overdue')
-    `).bind(s,a,t.academy_id||t.id).first();return e.json({success:!0,year:parseInt(s),month:parseInt(a),revenue:{total_paid:(r==null?void 0:r.total_paid)||0,expected_revenue:(o==null?void 0:o.expected_revenue)||0,total_unpaid:(n==null?void 0:n.total_unpaid)||0,collection_rate:(o==null?void 0:o.expected_revenue)>0?(((r==null?void 0:r.total_paid)||0)/o.expected_revenue*100).toFixed(1):0,total_students:(o==null?void 0:o.total_students)||0,paying_students:(r==null?void 0:r.paying_students)||0,unpaid_students:(n==null?void 0:n.unpaid_students)||0}})}catch(t){return console.error("Error fetching monthly revenue:",t),e.json({error:"매출 조회 실패",details:t.message},500)}});$e.get("/api/revenue/yearly",Ve,async e=>{try{const t=e.get("user"),s=e.req.query("year")||new Date().getFullYear().toString(),a=[];for(let r=1;r<=12;r++){const o=await e.env.DB.prepare(`
+    `).bind(s,a,t.academy_id||t.id).first();return e.json({success:!0,year:parseInt(s),month:parseInt(a),revenue:{total_paid:(r==null?void 0:r.total_paid)||0,expected_revenue:(n==null?void 0:n.expected_revenue)||0,total_unpaid:(o==null?void 0:o.total_unpaid)||0,collection_rate:(n==null?void 0:n.expected_revenue)>0?(((r==null?void 0:r.total_paid)||0)/n.expected_revenue*100).toFixed(1):0,total_students:(n==null?void 0:n.total_students)||0,paying_students:(r==null?void 0:r.paying_students)||0,unpaid_students:(o==null?void 0:o.unpaid_students)||0}})}catch(t){return console.error("Error fetching monthly revenue:",t),e.json({error:"매출 조회 실패",details:t.message},500)}});$e.get("/api/revenue/yearly",Je,async e=>{try{const t=e.get("user"),s=e.req.query("year")||new Date().getFullYear().toString(),a=[];for(let r=1;r<=12;r++){const n=await e.env.DB.prepare(`
         SELECT 
           COALESCE(SUM(tp.paid_amount), 0) as total_paid,
           COUNT(DISTINCT tp.student_id) as paying_students
@@ -3212,7 +3212,7 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
           AND tp.year = ? 
           AND tp.month = ?
           AND tp.status IN ('paid', 'partial')
-      `).bind(t.academy_id||t.id,s,r).first();a.push({month:r,total_paid:(o==null?void 0:o.total_paid)||0,paying_students:(o==null?void 0:o.paying_students)||0})}return e.json({success:!0,year:parseInt(s),monthly_data:a,total_yearly:a.reduce((r,o)=>r+(o.total_paid||0),0)})}catch(t){return console.error("Error fetching yearly revenue:",t),e.json({error:"연간 매출 조회 실패",details:t.message},500)}});$e.get("/api/revenue/by-student",Ve,async e=>{try{const t=e.get("user"),s=e.req.query("year")||new Date().getFullYear().toString(),a=e.req.query("month")||(new Date().getMonth()+1).toString(),r=await e.env.DB.prepare(`
+      `).bind(t.academy_id||t.id,s,r).first();a.push({month:r,total_paid:(n==null?void 0:n.total_paid)||0,paying_students:(n==null?void 0:n.paying_students)||0})}return e.json({success:!0,year:parseInt(s),monthly_data:a,total_yearly:a.reduce((r,n)=>r+(n.total_paid||0),0)})}catch(t){return console.error("Error fetching yearly revenue:",t),e.json({error:"연간 매출 조회 실패",details:t.message},500)}});$e.get("/api/revenue/by-student",Je,async e=>{try{const t=e.get("user"),s=e.req.query("year")||new Date().getFullYear().toString(),a=e.req.query("month")||(new Date().getMonth()+1).toString(),r=await e.env.DB.prepare(`
       SELECT 
         s.id,
         s.name as student_name,
@@ -3229,7 +3229,7 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
       WHERE s.academy_id = ?
         AND s.status = 'active'
       ORDER BY paid_amount DESC, s.name ASC
-    `).bind(s,a,t.id).all();return e.json({success:!0,year:parseInt(s),month:parseInt(a),students:r.results||[]})}catch(t){return console.error("Error fetching revenue by student:",t),e.json({error:"학생별 매출 조회 실패",details:t.message},500)}});$e.get("/api/revenue/dashboard",Ve,async e=>{try{const t=e.get("user"),s=new Date,a=s.getFullYear(),r=s.getMonth()+1,o=await e.env.DB.prepare(`
+    `).bind(s,a,t.id).all();return e.json({success:!0,year:parseInt(s),month:parseInt(a),students:r.results||[]})}catch(t){return console.error("Error fetching revenue by student:",t),e.json({error:"학생별 매출 조회 실패",details:t.message},500)}});$e.get("/api/revenue/dashboard",Je,async e=>{try{const t=e.get("user"),s=new Date,a=s.getFullYear(),r=s.getMonth()+1,n=await e.env.DB.prepare(`
       SELECT 
         COALESCE(SUM(tp.paid_amount), 0) as total_paid
       FROM tuition_payments tp
@@ -3238,7 +3238,7 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
         AND tp.year = ? 
         AND tp.month = ?
         AND tp.status IN ('paid', 'partial')
-    `).bind(t.academy_id||t.id,a,r).first(),n=r===1?12:r-1,i=r===1?a-1:a,l=await e.env.DB.prepare(`
+    `).bind(t.academy_id||t.id,a,r).first(),o=r===1?12:r-1,i=r===1?a-1:a,l=await e.env.DB.prepare(`
       SELECT 
         COALESCE(SUM(tp.paid_amount), 0) as total_paid
       FROM tuition_payments tp
@@ -3247,7 +3247,7 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
         AND tp.year = ? 
         AND tp.month = ?
         AND tp.status IN ('paid', 'partial')
-    `).bind(t.academy_id||t.id,i,n).first(),d=await e.env.DB.prepare(`
+    `).bind(t.academy_id||t.id,i,o).first(),d=await e.env.DB.prepare(`
       SELECT 
         COALESCE(SUM(tp.paid_amount), 0) as total_paid
       FROM tuition_payments tp
@@ -3268,10 +3268,10 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
       SELECT COUNT(*) as total_teachers
       FROM users
       WHERE parent_user_id = ? AND user_type = 'teacher'
-    `).bind(t.academy_id||t.id).first(),m=(o==null?void 0:o.total_paid)||0,g=(l==null?void 0:l.total_paid)||0,x=g>0?((m-g)/g*100).toFixed(1):0;return e.json({success:!0,dashboard:{this_month_revenue:m,last_month_revenue:g,growth_rate:parseFloat(x),yearly_revenue:(d==null?void 0:d.total_paid)||0,total_students:(p==null?void 0:p.total_students)||0,total_teachers:(u==null?void 0:u.total_teachers)||0,avg_monthly_fee:Math.round((p==null?void 0:p.avg_fee)||0)}})}catch(t){return console.error("Error fetching revenue dashboard:",t),e.json({error:"매출 대시보드 조회 실패",details:t.message},500)}});const c=new Fe;c.use("/api/*",ws());c.use("/static/*",js({root:"./public"}));c.route("/",G);c.route("/",H);c.route("/",$e);c.post("/api/contact",async e=>{try{const{name:t,email:s,phone:a,academy_name:r,message:o}=await e.req.json();if(!t||!s||!a||!o)return e.json({success:!1,error:"필수 항목을 입력해주세요."},400);const n=await e.env.DB.prepare(`
+    `).bind(t.academy_id||t.id).first(),m=(n==null?void 0:n.total_paid)||0,g=(l==null?void 0:l.total_paid)||0,x=g>0?((m-g)/g*100).toFixed(1):0;return e.json({success:!0,dashboard:{this_month_revenue:m,last_month_revenue:g,growth_rate:parseFloat(x),yearly_revenue:(d==null?void 0:d.total_paid)||0,total_students:(p==null?void 0:p.total_students)||0,total_teachers:(u==null?void 0:u.total_teachers)||0,avg_monthly_fee:Math.round((p==null?void 0:p.avg_fee)||0)}})}catch(t){return console.error("Error fetching revenue dashboard:",t),e.json({error:"매출 대시보드 조회 실패",details:t.message},500)}});const c=new Fe;c.use("/api/*",ws());c.use("/static/*",js({root:"./public"}));c.route("/",G);c.route("/",H);c.route("/",$e);c.post("/api/contact",async e=>{try{const{name:t,email:s,phone:a,academy_name:r,message:n}=await e.req.json();if(!t||!s||!a||!n)return e.json({success:!1,error:"필수 항목을 입력해주세요."},400);const o=await e.env.DB.prepare(`
       INSERT INTO contacts (name, email, phone, academy_name, message)
       VALUES (?, ?, ?, ?, ?)
-    `).bind(t,s,a,r||"",o).run();return e.json({success:!0,message:"문의가 접수되었습니다. 빠른 시일 내에 연락드리겠습니다.",id:n.meta.last_row_id})}catch(t){return console.error("Contact submission error:",t),e.json({success:!1,error:"문의 접수 중 오류가 발생했습니다."},500)}});c.post("/api/signup",async e=>{try{const{email:t,password:s,name:a,phone:r,academy_name:o,academy_location:n,marketing_consent:i}=await e.req.json();if(!t||!s||!a||!r||!o)return e.json({success:!1,error:"필수 항목을 입력해주세요."},400);if(await e.env.DB.prepare(`
+    `).bind(t,s,a,r||"",n).run();return e.json({success:!0,message:"문의가 접수되었습니다. 빠른 시일 내에 연락드리겠습니다.",id:o.meta.last_row_id})}catch(t){return console.error("Contact submission error:",t),e.json({success:!1,error:"문의 접수 중 오류가 발생했습니다."},500)}});c.post("/api/signup",async e=>{try{const{email:t,password:s,name:a,phone:r,academy_name:n,academy_location:o,marketing_consent:i}=await e.req.json();if(!t||!s||!a||!r||!n)return e.json({success:!1,error:"필수 항목을 입력해주세요."},400);if(await e.env.DB.prepare(`
       SELECT id FROM users WHERE email = ?
     `).bind(t).first())return e.json({success:!1,error:"이미 가입된 이메일입니다."},400);const d=s,p=i?1:0,u=p?new Date().toISOString():null,g=(await e.env.DB.prepare(`
       INSERT INTO users (
@@ -3279,15 +3279,15 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
         marketing_sms_consent, marketing_email_consent, marketing_kakao_consent, marketing_consent_date
       )
       VALUES (?, ?, ?, ?, ?, 'director', 'director', ?, ?, ?, ?)
-    `).bind(t,d,a,r,o||"",p,p,p,u).run()).meta.last_row_id;return await e.env.DB.prepare(`
+    `).bind(t,d,a,r,n||"",p,p,p,u).run()).meta.last_row_id;return await e.env.DB.prepare(`
       UPDATE users 
       SET academy_id = ?
       WHERE id = ?
-    `).bind(g,g).run(),console.log(`[Signup] Director created with id=${g}, academy_id=${g}`),e.json({success:!0,message:"회원가입이 완료되었습니다.",id:g})}catch(t){return console.error("Signup error:",t),e.json({success:!1,error:"회원가입 중 오류가 발생했습니다."},500)}});c.get("/api/health",async e=>{try{if(!e.env.DB)return e.json({success:!1,error:"DB binding not found",env_keys:Object.keys(e.env)},500);const t=await e.env.DB.prepare("SELECT 1 as test").first(),s=await e.env.DB.prepare("PRAGMA table_info(users)").all();return e.json({success:!0,message:"DB connection is healthy",test_result:t,users_table_columns:s.results.map(a=>a.name)})}catch(t){return e.json({success:!1,error:t.message,stack:t.stack},500)}});c.get("/api/consulting/programs",async e=>{try{if(!e.env.DB)return e.json({success:!1,error:"DB not configured"},500);const t=await e.env.DB.prepare("SELECT * FROM consulting_programs ORDER BY created_at DESC").all();return e.json({success:!0,programs:t.results})}catch(t){return console.error("컨설팅 프로그램 조회 오류:",t),e.json({success:!1,error:t.message},500)}});c.get("/api/consulting/programs/:programId",async e=>{try{if(!e.env.DB)return e.json({success:!1,error:"DB not configured"},500);const t=e.req.param("programId"),s=await e.env.DB.prepare("SELECT * FROM consulting_programs WHERE program_id = ?").bind(t).first();return s?e.json({success:!0,program:s}):e.json({success:!1,error:"Program not found"},404)}catch(t){return console.error("컨설팅 프로그램 상세 조회 오류:",t),e.json({success:!1,error:t.message},500)}});c.post("/api/consulting/apply",async e=>{try{if(!e.env.DB)return e.json({success:!1,error:"DB not configured"},500);const t=await e.req.json(),{program_id:s,user_id:a,academy_id:r,applicant_name:o,applicant_email:n,applicant_phone:i,academy_name:l,message:d}=t;if(!s||!a||!o||!n||!i)return e.json({success:!1,error:"필수 정보를 모두 입력해주세요."},400);if(!await e.env.DB.prepare("SELECT * FROM consulting_programs WHERE program_id = ?").bind(s).first())return e.json({success:!1,error:"존재하지 않는 프로그램입니다."},404);if(await e.env.DB.prepare('SELECT * FROM consulting_applications WHERE program_id = ? AND user_id = ? AND status = "pending"').bind(s,a).first())return e.json({success:!1,error:"이미 신청한 프로그램입니다."},400);const m=await e.env.DB.prepare(`
+    `).bind(g,g).run(),console.log(`[Signup] Director created with id=${g}, academy_id=${g}`),e.json({success:!0,message:"회원가입이 완료되었습니다.",id:g})}catch(t){return console.error("Signup error:",t),e.json({success:!1,error:"회원가입 중 오류가 발생했습니다."},500)}});c.get("/api/health",async e=>{try{if(!e.env.DB)return e.json({success:!1,error:"DB binding not found",env_keys:Object.keys(e.env)},500);const t=await e.env.DB.prepare("SELECT 1 as test").first(),s=await e.env.DB.prepare("PRAGMA table_info(users)").all();return e.json({success:!0,message:"DB connection is healthy",test_result:t,users_table_columns:s.results.map(a=>a.name)})}catch(t){return e.json({success:!1,error:t.message,stack:t.stack},500)}});c.get("/api/consulting/programs",async e=>{try{if(!e.env.DB)return e.json({success:!1,error:"DB not configured"},500);const t=await e.env.DB.prepare("SELECT * FROM consulting_programs ORDER BY created_at DESC").all();return e.json({success:!0,programs:t.results})}catch(t){return console.error("컨설팅 프로그램 조회 오류:",t),e.json({success:!1,error:t.message},500)}});c.get("/api/consulting/programs/:programId",async e=>{try{if(!e.env.DB)return e.json({success:!1,error:"DB not configured"},500);const t=e.req.param("programId"),s=await e.env.DB.prepare("SELECT * FROM consulting_programs WHERE program_id = ?").bind(t).first();return s?e.json({success:!0,program:s}):e.json({success:!1,error:"Program not found"},404)}catch(t){return console.error("컨설팅 프로그램 상세 조회 오류:",t),e.json({success:!1,error:t.message},500)}});c.post("/api/consulting/apply",async e=>{try{if(!e.env.DB)return e.json({success:!1,error:"DB not configured"},500);const t=await e.req.json(),{program_id:s,user_id:a,academy_id:r,applicant_name:n,applicant_email:o,applicant_phone:i,academy_name:l,message:d}=t;if(!s||!a||!n||!o||!i)return e.json({success:!1,error:"필수 정보를 모두 입력해주세요."},400);if(!await e.env.DB.prepare("SELECT * FROM consulting_programs WHERE program_id = ?").bind(s).first())return e.json({success:!1,error:"존재하지 않는 프로그램입니다."},404);if(await e.env.DB.prepare('SELECT * FROM consulting_applications WHERE program_id = ? AND user_id = ? AND status = "pending"').bind(s,a).first())return e.json({success:!1,error:"이미 신청한 프로그램입니다."},400);const m=await e.env.DB.prepare(`
       INSERT INTO consulting_applications 
       (program_id, user_id, academy_id, applicant_name, applicant_email, applicant_phone, academy_name, message)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `).bind(s,a,r,o,n,i,l,d).run();return e.json({success:!0,message:"수강 신청이 완료되었습니다. 관리자 승인 후 연락드리겠습니다.",applicationId:m.meta.last_row_id})}catch(t){return console.error("컨설팅 신청 오류:",t),e.json({success:!1,error:t.message},500)}});c.get("/api/admin/consulting/applications",async e=>{var t;try{if(!e.env.DB)return e.json({success:!1,error:"DB not configured"},500);if(!((t=e.req.header("Cookie"))==null?void 0:t.split(";").find(r=>r.trim().startsWith("session="))))return e.json({success:!1,error:"Unauthorized"},401);const a=await e.env.DB.prepare(`
+    `).bind(s,a,r,n,o,i,l,d).run();return e.json({success:!0,message:"수강 신청이 완료되었습니다. 관리자 승인 후 연락드리겠습니다.",applicationId:m.meta.last_row_id})}catch(t){return console.error("컨설팅 신청 오류:",t),e.json({success:!1,error:t.message},500)}});c.get("/api/admin/consulting/applications",async e=>{var t;try{if(!e.env.DB)return e.json({success:!1,error:"DB not configured"},500);if(!((t=e.req.header("Cookie"))==null?void 0:t.split(";").find(r=>r.trim().startsWith("session="))))return e.json({success:!1,error:"Unauthorized"},401);const a=await e.env.DB.prepare(`
       SELECT 
         ca.*,
         cp.name as program_name,
@@ -3308,22 +3308,22 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
     `).bind(a,r,t).run(),e.json({success:!0,message:"신청이 거부되었습니다."})}catch(t){return console.error("컨설팅 신청 거부 오류:",t),e.json({success:!1,error:t.message},500)}});c.post("/api/login",async e=>{try{if(!e.env.DB)return e.json({success:!1,error:"DB binding not configured. Please check Cloudflare Pages settings.",debug:{env_keys:Object.keys(e.env),has_db:!!e.env.DB}},500);const{email:t,password:s}=await e.req.json();if(!t||!s)return e.json({success:!1,error:"이메일과 비밀번호를 입력해주세요."},400);const a=await e.env.DB.prepare(`
       SELECT id, email, name, role, points, academy_name, user_type, academy_id, parent_user_id 
       FROM users WHERE email = ? AND password = ?
-    `).bind(t,s).first();if(!a)return e.json({success:!1,error:"이메일 또는 비밀번호가 일치하지 않습니다."},401);const r=crypto.randomUUID(),o=new Date(Date.now()+10080*60*1e3);return await e.env.DB.prepare(`
+    `).bind(t,s).first();if(!a)return e.json({success:!1,error:"이메일 또는 비밀번호가 일치하지 않습니다."},401);const r=crypto.randomUUID(),n=new Date(Date.now()+10080*60*1e3);return await e.env.DB.prepare(`
       INSERT INTO sessions (session_id, user_id, expires_at)
       VALUES (?, ?, ?)
-    `).bind(r,a.id,o.toISOString()).run(),e.header("Set-Cookie",`session_id=${r}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${10080*60}`),e.json({success:!0,message:"로그인 성공",user:{id:a.id,email:a.email,name:a.name,role:a.role,points:a.points||0,academy_name:a.academy_name||"",user_type:a.user_type||"director",academy_id:a.academy_id,parent_user_id:a.parent_user_id}})}catch(t){return console.error("Login error:",t),console.error("Login error details:",{message:t.message,stack:t.stack,name:t.name}),e.json({success:!1,error:"로그인 중 오류가 발생했습니다.",debug:{error_message:t.message,error_name:t.name,has_db:!!e.env.DB}},500)}});c.post("/api/auth/google",async e=>{try{const{idToken:t,email:s,name:a,picture:r}=await e.req.json();if(!t||!s)return e.json({success:!1,error:"구글 인증 정보가 누락되었습니다."},400);let o=await e.env.DB.prepare(`
+    `).bind(r,a.id,n.toISOString()).run(),e.header("Set-Cookie",`session_id=${r}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${10080*60}`),e.json({success:!0,message:"로그인 성공",user:{id:a.id,email:a.email,name:a.name,role:a.role,points:a.points||0,academy_name:a.academy_name||"",user_type:a.user_type||"director",academy_id:a.academy_id,parent_user_id:a.parent_user_id}})}catch(t){return console.error("Login error:",t),console.error("Login error details:",{message:t.message,stack:t.stack,name:t.name}),e.json({success:!1,error:"로그인 중 오류가 발생했습니다.",debug:{error_message:t.message,error_name:t.name,has_db:!!e.env.DB}},500)}});c.post("/api/auth/google",async e=>{try{const{idToken:t,email:s,name:a,picture:r}=await e.req.json();if(!t||!s)return e.json({success:!1,error:"구글 인증 정보가 누락되었습니다."},400);let n=await e.env.DB.prepare(`
       SELECT id, email, name, role, points, google_id FROM users WHERE google_id = ?
-    `).bind(t).first();return o||(o=await e.env.DB.prepare(`
+    `).bind(t).first();return n||(n=await e.env.DB.prepare(`
         SELECT id, email, name, role, points, google_id FROM users WHERE email = ?
-      `).bind(s).first(),o&&!o.google_id&&(await e.env.DB.prepare(`
+      `).bind(s).first(),n&&!n.google_id&&(await e.env.DB.prepare(`
           UPDATE users SET google_id = ?, profile_image = ?, social_provider = 'google', updated_at = CURRENT_TIMESTAMP WHERE id = ?
-        `).bind(t,r||null,o.id).run(),o.google_id=t)),o?e.json({success:!0,message:"구글 로그인 성공",user:{id:o.id,email:o.email,name:o.name,role:o.role,points:o.points||0,profile_image:o.profile_image}}):e.json({success:!1,needsRegistration:!0,socialData:{provider:"google",email:s,name:a,picture:r,google_id:t},message:"회원가입이 필요합니다."},200)}catch(t){return console.error("Google login error:",t),e.json({success:!1,error:"구글 로그인 중 오류가 발생했습니다."},500)}});c.post("/api/auth/kakao",async e=>{try{const{accessToken:t,id:s,email:a,nickname:r,profile_image:o}=await e.req.json();if(!t||!s)return e.json({success:!1,error:"카카오 인증 정보가 누락되었습니다."},400);const n=String(s);let i=await e.env.DB.prepare(`
+        `).bind(t,r||null,n.id).run(),n.google_id=t)),n?e.json({success:!0,message:"구글 로그인 성공",user:{id:n.id,email:n.email,name:n.name,role:n.role,points:n.points||0,profile_image:n.profile_image}}):e.json({success:!1,needsRegistration:!0,socialData:{provider:"google",email:s,name:a,picture:r,google_id:t},message:"회원가입이 필요합니다."},200)}catch(t){return console.error("Google login error:",t),e.json({success:!1,error:"구글 로그인 중 오류가 발생했습니다."},500)}});c.post("/api/auth/kakao",async e=>{try{const{accessToken:t,id:s,email:a,nickname:r,profile_image:n}=await e.req.json();if(!t||!s)return e.json({success:!1,error:"카카오 인증 정보가 누락되었습니다."},400);const o=String(s);let i=await e.env.DB.prepare(`
       SELECT id, email, name, role, points, kakao_id FROM users WHERE kakao_id = ?
-    `).bind(n).first();return!i&&a&&(i=await e.env.DB.prepare(`
+    `).bind(o).first();return!i&&a&&(i=await e.env.DB.prepare(`
         SELECT id, email, name, role, points, kakao_id FROM users WHERE email = ?
       `).bind(a).first(),i&&!i.kakao_id&&(await e.env.DB.prepare(`
           UPDATE users SET kakao_id = ?, profile_image = ?, social_provider = 'kakao', updated_at = CURRENT_TIMESTAMP WHERE id = ?
-        `).bind(n,o||null,i.id).run(),i.kakao_id=n)),i?e.json({success:!0,message:"카카오 로그인 성공",user:{id:i.id,email:i.email,name:i.name,role:i.role,points:i.points||0,profile_image:i.profile_image}}):e.json({success:!1,needsRegistration:!0,socialData:{provider:"kakao",email:a||"",name:r||"",picture:o||"",kakao_id:n},message:"회원가입이 필요합니다."},200)}catch(t){return console.error("Kakao login error:",t),e.json({success:!1,error:"카카오 로그인 중 오류가 발생했습니다."},500)}});c.get("/api/users/:id/points",async e=>{try{const t=e.req.param("id"),s=await e.env.DB.prepare(`
+        `).bind(o,n||null,i.id).run(),i.kakao_id=o)),i?e.json({success:!0,message:"카카오 로그인 성공",user:{id:i.id,email:i.email,name:i.name,role:i.role,points:i.points||0,profile_image:i.profile_image}}):e.json({success:!1,needsRegistration:!0,socialData:{provider:"kakao",email:a||"",name:r||"",picture:n||"",kakao_id:o},message:"회원가입이 필요합니다."},200)}catch(t){return console.error("Kakao login error:",t),e.json({success:!1,error:"카카오 로그인 중 오류가 발생했습니다."},500)}});c.get("/api/users/:id/points",async e=>{try{const t=e.req.param("id"),s=await e.env.DB.prepare(`
       SELECT id, email, name, points FROM users WHERE id = ?
     `).bind(t).first();return s?e.json({success:!0,points:s.points||0,user:{id:s.id,email:s.email,name:s.name,points:s.points||0}}):e.json({success:!1,error:"사용자를 찾을 수 없습니다."},404)}catch(t){return console.error("Get points error:",t),e.json({success:!1,error:"포인트 조회 중 오류가 발생했습니다."},500)}});c.post("/api/admin/users/:id/password",async e=>{try{const t=e.req.param("id"),{newPassword:s}=await e.req.json();return!s||s.length<6?e.json({success:!1,error:"비밀번호는 최소 6자 이상이어야 합니다."},400):(await e.env.DB.prepare(`
       UPDATE users SET password = ? WHERE id = ?
@@ -3333,23 +3333,23 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
       UPDATE users SET balance = ?, points = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?
     `).bind(r,r,t).run(),e.json({success:!0,message:"포인트가 지급되었습니다.",newPoints:r})}catch(t){return console.error("Points update error:",t),e.json({success:!1,error:"포인트 지급 중 오류가 발생했습니다."},500)}});c.put("/api/admin/users/:id/points/deduct",async e=>{try{const t=e.req.param("id"),{points:s}=await e.req.json();if(!s||s<=0)return e.json({success:!1,error:"올바른 포인트를 입력하세요."},400);const a=await e.env.DB.prepare(`
       SELECT id, email, name, balance FROM users WHERE id = ?
-    `).bind(t).first();if(!a)return e.json({success:!1,error:"사용자를 찾을 수 없습니다."},404);const r=(a==null?void 0:a.balance)||0,o=r-s;return console.log("Deduct points:",{userId:t,userName:a.name,currentBalance:r,deductPoints:s,newBalance:o}),await e.env.DB.prepare(`
+    `).bind(t).first();if(!a)return e.json({success:!1,error:"사용자를 찾을 수 없습니다."},404);const r=(a==null?void 0:a.balance)||0,n=r-s;return console.log("Deduct points:",{userId:t,userName:a.name,currentBalance:r,deductPoints:s,newBalance:n}),await e.env.DB.prepare(`
       UPDATE users SET balance = ?, points = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?
-    `).bind(o,o,t).run(),e.json({success:!0,message:s+"P가 차감되었습니다.",deductedPoints:s,newPoints:o})}catch(t){return console.error("Points deduct error:",t),e.json({success:!1,error:"포인트 차감 중 오류가 발생했습니다."},500)}});c.post("/api/admin/login-as/:id",async e=>{try{const t=e.req.param("id"),s=await e.env.DB.prepare(`
+    `).bind(n,n,t).run(),e.json({success:!0,message:s+"P가 차감되었습니다.",deductedPoints:s,newPoints:n})}catch(t){return console.error("Points deduct error:",t),e.json({success:!1,error:"포인트 차감 중 오류가 발생했습니다."},500)}});c.post("/api/admin/login-as/:id",async e=>{try{const t=e.req.param("id"),s=await e.env.DB.prepare(`
       SELECT id, email, name, role FROM users WHERE id = ?
-    `).bind(t).first();return s?e.json({success:!0,message:"로그인 성공",user:{id:s.id,email:s.email,name:s.name,role:s.role}}):e.json({success:!1,error:"사용자를 찾을 수 없습니다."},404)}catch(t){return console.error("Login as error:",t),e.json({success:!1,error:"로그인 중 오류가 발생했습니다."},500)}});c.post("/api/register",async e=>{try{const{email:t,password:s,name:a,phone:r,academy_name:o,academy_location:n,google_id:i,kakao_id:l,profile_image:d,social_provider:p}=await e.req.json();if(!t||!a)return e.json({success:!1,error:"필수 정보를 모두 입력해주세요."},400);if(!p&&!s)return e.json({success:!1,error:"비밀번호를 입력해주세요."},400);if(await e.env.DB.prepare(`
+    `).bind(t).first();return s?e.json({success:!0,message:"로그인 성공",user:{id:s.id,email:s.email,name:s.name,role:s.role}}):e.json({success:!1,error:"사용자를 찾을 수 없습니다."},404)}catch(t){return console.error("Login as error:",t),e.json({success:!1,error:"로그인 중 오류가 발생했습니다."},500)}});c.post("/api/register",async e=>{try{const{email:t,password:s,name:a,phone:r,academy_name:n,academy_location:o,google_id:i,kakao_id:l,profile_image:d,social_provider:p}=await e.req.json();if(!t||!a)return e.json({success:!1,error:"필수 정보를 모두 입력해주세요."},400);if(!p&&!s)return e.json({success:!1,error:"비밀번호를 입력해주세요."},400);if(await e.env.DB.prepare(`
       SELECT id FROM users WHERE email = ?
     `).bind(t).first())return e.json({success:!1,error:"이미 등록된 이메일입니다."},400);const m=await e.env.DB.prepare(`
       INSERT INTO users (email, password, name, phone, academy_name, role, google_id, kakao_id, profile_image, social_provider)
       VALUES (?, ?, ?, ?, ?, 'director', ?, ?, ?, ?)
-    `).bind(t,s||"social_login_"+Date.now(),a,r||null,o||null,i||null,l||null,d||null,p||null).run();return e.json({success:!0,message:"회원가입이 완료되었습니다.",user:{id:m.meta.last_row_id,email:t,name:a}})}catch(t){return console.error("Register error:",t),e.json({success:!1,error:"회원가입 중 오류가 발생했습니다."},500)}});c.get("/api/user/permissions",async e=>{try{const t=e.req.query("userId");if(!t)return e.json({success:!1,error:"사용자 ID가 필요합니다."},400);const s=await e.env.DB.prepare("SELECT role FROM users WHERE id = ?").bind(t).first();if(s&&s.role==="admin")return e.json({success:!0,permissions:{search_volume:!0,sms:!0,sms_sender:!0,landing_builder:!0,analytics:!0,parent_message:!0,blog_writer:!0,student_management:!0,dashboard_analytics:!0,ai_learning_report:!0,keyword_analyzer:!0,review_template:!0,ad_copy_generator:!0,photo_optimizer:!0,competitor_analysis:!0,blog_checklist:!0,content_calendar:!0,consultation_script:!0,place_optimization:!0,roi_calculator:!0,all:!0}});const{results:a}=await e.env.DB.prepare(`
+    `).bind(t,s||"social_login_"+Date.now(),a,r||null,n||null,i||null,l||null,d||null,p||null).run();return e.json({success:!0,message:"회원가입이 완료되었습니다.",user:{id:m.meta.last_row_id,email:t,name:a}})}catch(t){return console.error("Register error:",t),e.json({success:!1,error:"회원가입 중 오류가 발생했습니다."},500)}});c.get("/api/user/permissions",async e=>{try{const t=e.req.query("userId");if(!t)return e.json({success:!1,error:"사용자 ID가 필요합니다."},400);const s=await e.env.DB.prepare("SELECT role FROM users WHERE id = ?").bind(t).first();if(s&&s.role==="admin")return e.json({success:!0,permissions:{search_volume:!0,sms:!0,sms_sender:!0,landing_builder:!0,analytics:!0,parent_message:!0,blog_writer:!0,student_management:!0,dashboard_analytics:!0,ai_learning_report:!0,keyword_analyzer:!0,review_template:!0,ad_copy_generator:!0,photo_optimizer:!0,competitor_analysis:!0,blog_checklist:!0,content_calendar:!0,consultation_script:!0,place_optimization:!0,roi_calculator:!0,all:!0}});const{results:a}=await e.env.DB.prepare(`
       SELECT program_route, program_name, enabled
       FROM user_programs
       WHERE user_id = ? AND enabled = 1
-    `).bind(t).all();console.log("[User Permissions] Programs for user",t,":",a);const r={search_volume:!1,sms:!1,sms_sender:!1,landing_builder:!1,analytics:!1,parent_message:!1,blog_writer:!1,student_management:!1,dashboard_analytics:!1,ai_learning_report:!1,keyword_analyzer:!1,review_template:!1,ad_copy_generator:!1,photo_optimizer:!1,competitor_analysis:!1,blog_checklist:!1,content_calendar:!1,consultation_script:!1,place_optimization:!1,roi_calculator:!1,all:!1},o={"/students":"student_management","/tools/ai-learning-report":"ai_learning_report","/tools/dashboard-analytics":"analytics","/tools/search-volume":"search_volume"};return a.forEach(n=>{const i=o[n.program_route];i&&(r[i]=!0,console.log("[User Permissions] Enabled:",i,"from program:",n.program_name))}),r.sms_sender&&(r.sms=!0),e.json({success:!0,permissions:r})}catch(t){return console.error("Get user permissions error:",t),e.json({success:!1,error:"권한 조회 중 오류가 발생했습니다."},500)}});c.post("/api/admin/grant-permission",async e=>{try{const t=await e.req.json(),{userId:s,programKey:a,expiresAt:r}=t,o=t.adminId||t.grantedBy;if(!s||!a||!o)return e.json({success:!1,error:"필수 정보를 입력해주세요."},400);const n=await e.env.DB.prepare("SELECT role FROM users WHERE id = ?").bind(o).first();return!n||n.role!=="admin"?e.json({success:!1,error:"관리자 권한이 필요합니다."},403):(await e.env.DB.prepare(`
+    `).bind(t).all();console.log("[User Permissions] Programs for user",t,":",a);const r={search_volume:!1,sms:!1,sms_sender:!1,landing_builder:!1,analytics:!1,parent_message:!1,blog_writer:!1,student_management:!1,dashboard_analytics:!1,ai_learning_report:!1,keyword_analyzer:!1,review_template:!1,ad_copy_generator:!1,photo_optimizer:!1,competitor_analysis:!1,blog_checklist:!1,content_calendar:!1,consultation_script:!1,place_optimization:!1,roi_calculator:!1,all:!1},n={"/students":"student_management","/tools/ai-learning-report":"ai_learning_report","/tools/dashboard-analytics":"analytics","/tools/search-volume":"search_volume"};return a.forEach(o=>{const i=n[o.program_route];i&&(r[i]=!0,console.log("[User Permissions] Enabled:",i,"from program:",o.program_name))}),r.sms_sender&&(r.sms=!0),e.json({success:!0,permissions:r})}catch(t){return console.error("Get user permissions error:",t),e.json({success:!1,error:"권한 조회 중 오류가 발생했습니다."},500)}});c.post("/api/admin/grant-permission",async e=>{try{const t=await e.req.json(),{userId:s,programKey:a,expiresAt:r}=t,n=t.adminId||t.grantedBy;if(!s||!a||!n)return e.json({success:!1,error:"필수 정보를 입력해주세요."},400);const o=await e.env.DB.prepare("SELECT role FROM users WHERE id = ?").bind(n).first();return!o||o.role!=="admin"?e.json({success:!1,error:"관리자 권한이 필요합니다."},403):(await e.env.DB.prepare(`
       INSERT OR REPLACE INTO user_permissions (user_id, program_key, granted_by, is_active, expires_at)
       VALUES (?, ?, ?, 1, ?)
-    `).bind(s,a,o,r||null).run(),e.json({success:!0,message:"권한이 부여되었습니다."}))}catch(t){return console.error("Grant permission error:",t),e.json({success:!1,error:"권한 부여 중 오류가 발생했습니다."},500)}});c.post("/api/admin/revoke-permission",async e=>{try{const{userId:t,programKey:s,adminId:a}=await e.req.json();if(!t||!s||!a)return e.json({success:!1,error:"필수 정보를 입력해주세요."},400);const r=await e.env.DB.prepare("SELECT role FROM users WHERE id = ?").bind(a).first();return!r||r.role!=="admin"?e.json({success:!1,error:"관리자 권한이 필요합니다."},403):(await e.env.DB.prepare(`
+    `).bind(s,a,n,r||null).run(),e.json({success:!0,message:"권한이 부여되었습니다."}))}catch(t){return console.error("Grant permission error:",t),e.json({success:!1,error:"권한 부여 중 오류가 발생했습니다."},500)}});c.post("/api/admin/revoke-permission",async e=>{try{const{userId:t,programKey:s,adminId:a}=await e.req.json();if(!t||!s||!a)return e.json({success:!1,error:"필수 정보를 입력해주세요."},400);const r=await e.env.DB.prepare("SELECT role FROM users WHERE id = ?").bind(a).first();return!r||r.role!=="admin"?e.json({success:!1,error:"관리자 권한이 필요합니다."},403):(await e.env.DB.prepare(`
       UPDATE user_permissions 
       SET is_active = 0 
       WHERE user_id = ? AND program_key = ?
@@ -3357,10 +3357,10 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
       UPDATE user_permissions 
       SET is_active = 0 
       WHERE user_id = ?
-    `).bind(t).run();let o=0;for(const n of s)try{await e.env.DB.prepare(`
+    `).bind(t).run();let n=0;for(const o of s)try{await e.env.DB.prepare(`
           INSERT OR REPLACE INTO user_permissions (user_id, program_key, granted_by, is_active)
           VALUES (?, ?, ?, 1)
-        `).bind(t,n,a).run(),o++}catch(i){console.error("권한 추가 오류:",n,i)}return e.json({success:!0,message:`${o}개의 권한이 업데이트되었습니다.`,count:o})}catch(t){return console.error("Update permissions error:",t),e.json({success:!1,error:"권한 업데이트 중 오류가 발생했습니다: "+t.message},500)}});c.post("/api/admin/run-migration",async e=>{try{const{adminId:t}=await e.req.json(),s=await e.env.DB.prepare("SELECT role FROM users WHERE id = ?").bind(t).first();if(!s||s.role!=="admin")return e.json({success:!1,error:"관리자 권한이 필요합니다."},403);await e.env.DB.prepare("DROP TABLE IF EXISTS user_permissions_backup").run();try{await e.env.DB.prepare("ALTER TABLE user_permissions RENAME TO user_permissions_backup").run()}catch{console.log("No existing user_permissions table to backup")}return await e.env.DB.prepare(`
+        `).bind(t,o,a).run(),n++}catch(i){console.error("권한 추가 오류:",o,i)}return e.json({success:!0,message:`${n}개의 권한이 업데이트되었습니다.`,count:n})}catch(t){return console.error("Update permissions error:",t),e.json({success:!1,error:"권한 업데이트 중 오류가 발생했습니다: "+t.message},500)}});c.post("/api/admin/run-migration",async e=>{try{const{adminId:t}=await e.req.json(),s=await e.env.DB.prepare("SELECT role FROM users WHERE id = ?").bind(t).first();if(!s||s.role!=="admin")return e.json({success:!1,error:"관리자 권한이 필요합니다."},403);await e.env.DB.prepare("DROP TABLE IF EXISTS user_permissions_backup").run();try{await e.env.DB.prepare("ALTER TABLE user_permissions RENAME TO user_permissions_backup").run()}catch{console.log("No existing user_permissions table to backup")}return await e.env.DB.prepare(`
       CREATE TABLE IF NOT EXISTS user_permissions (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER NOT NULL,
@@ -3387,7 +3387,253 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
           VALUES (?, ?, ?, ?)
         `).bind(a.id,a.academy_name,a.owner_id,a.created_at).run()}catch(r){console.error("[Admin Fix] Failed to restore academy:",a.id,r.message)}return t.push(`✅ Restored ${s.results.length} academies`),console.log("[Admin Fix] Restored academies data"),await e.env.DB.prepare(`
       CREATE INDEX IF NOT EXISTS idx_academies_owner_id ON academies(owner_id)
-    `).run(),t.push("✅ Created index on owner_id"),e.json({success:!0,message:"academies 테이블이 성공적으로 재생성되었습니다 (FOREIGN KEY 제약 제거됨)",results:t})}catch(t){return console.error("[Admin Fix] Error:",t),e.json({success:!1,error:"academies 테이블 수정 중 오류가 발생했습니다: "+t.message},500)}});c.get("/api/sms/pricing",async e=>{try{const t=await e.env.DB.prepare(`
+    `).run(),t.push("✅ Created index on owner_id"),e.json({success:!0,message:"academies 테이블이 성공적으로 재생성되었습니다 (FOREIGN KEY 제약 제거됨)",results:t})}catch(t){return console.error("[Admin Fix] Error:",t),e.json({success:!1,error:"academies 테이블 수정 중 오류가 발생했습니다: "+t.message},500)}});c.get("/emergency-sync",e=>e.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>긴급 동기화 - 슈퍼플레이스</title>
+        <script src="https://cdn.tailwindcss.com"><\/script>
+    </head>
+    <body class="bg-gradient-to-br from-purple-50 to-blue-50 min-h-screen flex items-center justify-center p-6">
+        <div class="max-w-2xl w-full bg-white rounded-3xl shadow-2xl p-8">
+            <div class="text-center mb-8">
+                <h1 class="text-4xl font-bold text-gray-900 mb-3">🔧 긴급 동기화</h1>
+                <p class="text-lg text-gray-600">랜딩페이지 개수가 대시보드에 표시되지 않을 때 사용하세요</p>
+            </div>
+            
+            <div class="bg-yellow-50 border-2 border-yellow-200 rounded-xl p-6 mb-6">
+                <div class="flex items-start gap-3">
+                    <span class="text-3xl">⚠️</span>
+                    <div>
+                        <h3 class="font-bold text-yellow-900 text-lg mb-2">언제 사용하나요?</h3>
+                        <ul class="text-yellow-800 space-y-1 text-sm">
+                            <li>✓ 랜딩페이지를 만들었는데 대시보드에 0으로 표시될 때</li>
+                            <li>✓ 플랜 사용량이 정확하지 않을 때</li>
+                            <li>✓ 개수가 실제와 다를 때</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center mb-6">
+                <button id="syncBtn" onclick="syncNow()" 
+                        class="bg-gradient-to-r from-purple-600 to-blue-600 text-white text-xl font-bold px-12 py-5 rounded-2xl hover:from-purple-700 hover:to-blue-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-105">
+                    🚀 지금 동기화 실행
+                </button>
+            </div>
+            
+            <div id="result" class="hidden"></div>
+            
+            <div class="text-center mt-8">
+                <a href="/dashboard" class="text-purple-600 hover:text-purple-800 font-medium">
+                    ← 대시보드로 돌아가기
+                </a>
+            </div>
+        </div>
+        
+        <script>
+            async function syncNow() {
+                const btn = document.getElementById('syncBtn');
+                const result = document.getElementById('result');
+                
+                btn.disabled = true;
+                btn.textContent = '🔄 동기화 중...';
+                btn.classList.add('opacity-50', 'cursor-not-allowed');
+                
+                result.classList.remove('hidden');
+                result.innerHTML = '<div class="text-center text-blue-600 font-medium">동기화 진행 중...</div>';
+                
+                try {
+                    const response = await fetch('/api/emergency-sync-usage', {
+                        method: 'POST',
+                        credentials: 'include'
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        result.innerHTML = \`
+                            <div class="bg-green-50 border-2 border-green-500 rounded-xl p-6">
+                                <div class="flex items-start gap-3 mb-4">
+                                    <span class="text-4xl">✅</span>
+                                    <div class="flex-1">
+                                        <h3 class="font-bold text-green-900 text-2xl mb-2">동기화 성공!</h3>
+                                        <p class="text-green-800 text-lg mb-4">\${data.message}</p>
+                                        
+                                        <div class="bg-white rounded-lg p-4 mb-4">
+                                            <div class="text-sm font-bold text-gray-900 mb-2">📊 동기화 결과:</div>
+                                            <div class="space-y-2 text-sm text-gray-700">
+                                                <div>• 사용자 ID: \${data.data.user_id}</div>
+                                                <div>• 학원 ID: \${data.data.academy_id}</div>
+                                                <div>• 구독 시작일: \${data.data.subscription_start_date}</div>
+                                                <div class="font-bold text-purple-600">• 랜딩페이지 개수: \${data.data.landing_pages_count}개</div>
+                                                <div>• 작업: \${data.data.action === 'UPDATED' ? '업데이트 완료' : '새로 생성'}</div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="text-center">
+                                            <a href="/dashboard" class="inline-block bg-green-600 text-white font-bold px-8 py-3 rounded-xl hover:bg-green-700 transition">
+                                                대시보드에서 확인하기 →
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        \`;
+                        
+                        // 3초 후 자동 리다이렉트
+                        setTimeout(() => {
+                            window.location.href = '/dashboard';
+                        }, 3000);
+                    } else {
+                        result.innerHTML = \`
+                            <div class="bg-red-50 border-2 border-red-500 rounded-xl p-6">
+                                <div class="flex items-start gap-3">
+                                    <span class="text-3xl">❌</span>
+                                    <div>
+                                        <h3 class="font-bold text-red-900 text-lg mb-2">동기화 실패</h3>
+                                        <p class="text-red-800">\${data.error}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        \`;
+                        btn.disabled = false;
+                        btn.textContent = '🚀 다시 시도';
+                        btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    }
+                } catch (error) {
+                    result.innerHTML = \`
+                        <div class="bg-red-50 border-2 border-red-500 rounded-xl p-6">
+                            <div class="flex items-start gap-3">
+                                <span class="text-3xl">❌</span>
+                                <div>
+                                    <h3 class="font-bold text-red-900 text-lg mb-2">오류 발생</h3>
+                                    <p class="text-red-800">\${error.message}</p>
+                                </div>
+                            </div>
+                        </div>
+                    \`;
+                    btn.disabled = false;
+                    btn.textContent = '🚀 다시 시도';
+                    btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                }
+            }
+        <\/script>
+    </body>
+    </html>
+  `));c.post("/api/emergency-sync-usage",async e=>{try{const t=A(e,"session_id");if(!t)return e.json({success:!1,error:"Not authenticated"},401);const s=await e.env.DB.prepare(`
+      SELECT user_id FROM sessions WHERE session_id = ? AND expires_at > datetime('now')
+    `).bind(t).first();if(!s)return e.json({success:!1,error:"Session expired"},401);const a=s.user_id,n=(await e.env.DB.prepare(`
+      SELECT id, academy_id FROM users WHERE id = ?
+    `).bind(a).first()).academy_id||a,o=await e.env.DB.prepare(`
+      SELECT * FROM subscriptions 
+      WHERE academy_id = ? AND status = 'active'
+      ORDER BY created_at DESC LIMIT 1
+    `).bind(n).first();if(!o)return e.json({success:!1,error:"활성 구독 없음"},403);const i=await e.env.DB.prepare(`
+      SELECT COUNT(*) as count FROM landing_pages 
+      WHERE user_id = ?
+      AND created_at >= ?
+    `).bind(n,o.subscription_start_date).first(),l=(i==null?void 0:i.count)||0,d=await e.env.DB.prepare(`
+      SELECT id FROM usage_tracking 
+      WHERE academy_id = ? AND subscription_id = ?
+    `).bind(n,o.id).first();return d?await e.env.DB.prepare(`
+        UPDATE usage_tracking 
+        SET landing_pages_created = ?, updated_at = CURRENT_TIMESTAMP
+        WHERE academy_id = ? AND subscription_id = ?
+      `).bind(l,n,o.id).run():await e.env.DB.prepare(`
+        INSERT INTO usage_tracking (
+          academy_id, subscription_id, current_students, ai_reports_used_this_month,
+          landing_pages_created, current_teachers, sms_sent_this_month,
+          created_at, updated_at
+        ) VALUES (?, ?, 0, 0, ?, 0, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+      `).bind(n,o.id,l).run(),e.json({success:!0,message:"동기화 완료!",data:{user_id:a,academy_id:n,subscription_id:o.id,subscription_start_date:o.subscription_start_date,landing_pages_count:l,action:d?"UPDATED":"CREATED"}})}catch(t){return console.error("[Emergency Sync] Error:",t),e.json({success:!1,error:t.message},500)}});c.post("/api/emergency/sync-my-landing-pages",async e=>{try{const t=A(e,"session_id");if(!t)return e.json({success:!1,error:"Not authenticated"},401);const s=await e.env.DB.prepare(`
+      SELECT user_id FROM sessions WHERE session_id = ? AND expires_at > datetime('now')
+    `).bind(t).first();if(!s)return e.json({success:!1,error:"Session expired"},401);const a=s.user_id,r=await e.env.DB.prepare(`
+      SELECT id, email, academy_id, user_type FROM users WHERE id = ?
+    `).bind(a).first();if(!r)return e.json({success:!1,error:"User not found"},404);const n=r.academy_id||r.id,o=await e.env.DB.prepare(`
+      SELECT * FROM subscriptions 
+      WHERE academy_id = ? AND status = 'active'
+      ORDER BY created_at DESC LIMIT 1
+    `).bind(n).first();if(!o)return e.json({success:!1,error:"No active subscription"},403);const i=await e.env.DB.prepare(`
+      SELECT COUNT(*) as count FROM landing_pages 
+      WHERE user_id IN (
+        SELECT id FROM users WHERE id = ? OR academy_id = ?
+      )
+      AND created_at >= ?
+    `).bind(n,n,o.subscription_start_date).first(),l=(i==null?void 0:i.count)||0;console.log("[Emergency Sync] User:",r.email,"Academy:",n,"Actual count:",l);const d=await e.env.DB.prepare(`
+      SELECT * FROM usage_tracking 
+      WHERE academy_id = ? AND subscription_id = ?
+    `).bind(n,o.id).first();return d?(await e.env.DB.prepare(`
+        UPDATE usage_tracking 
+        SET landing_pages_created = ?, updated_at = CURRENT_TIMESTAMP
+        WHERE academy_id = ? AND subscription_id = ?
+      `).bind(l,n,o.id).run(),console.log("[Emergency Sync] UPDATED usage_tracking to:",l)):(await e.env.DB.prepare(`
+        INSERT INTO usage_tracking (
+          academy_id, subscription_id, current_students, 
+          ai_reports_used_this_month, landing_pages_created, 
+          current_teachers, sms_sent_this_month, created_at, updated_at
+        ) VALUES (?, ?, 0, 0, ?, 0, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+      `).bind(n,o.id,l).run(),console.log("[Emergency Sync] CREATED usage_tracking with:",l)),e.json({success:!0,message:"동기화 완료! 페이지를 새로고침하세요.",data:{user_email:r.email,academy_id:n,subscription_id:o.id,landing_pages_count:l,action:d?"UPDATED":"CREATED"}})}catch(t){return console.error("[Emergency Sync] Error:",t),e.json({success:!1,error:t.message},500)}});c.get("/api/debug/user-by-email",async e=>{try{const t=e.req.query("email");if(!t)return e.json({success:!1,error:"Email parameter required"},400);console.log("[Debug] Checking landing pages for email:",t);const s=await e.env.DB.prepare(`
+      SELECT id, email, name, academy_id, user_type FROM users WHERE email = ?
+    `).bind(t).first();if(!s)return e.json({success:!1,error:"User not found"});const a=s.academy_id||s.id,r=await e.env.DB.prepare(`
+      SELECT COUNT(*) as count FROM landing_pages WHERE user_id = ?
+    `).bind(s.id).first(),n=await e.env.DB.prepare(`
+      SELECT * FROM subscriptions 
+      WHERE academy_id = ? AND status = 'active'
+      ORDER BY created_at DESC LIMIT 1
+    `).bind(a).first();let o=0;if(n&&n.subscription_start_date){const d=await e.env.DB.prepare(`
+        SELECT COUNT(*) as count FROM landing_pages 
+        WHERE user_id IN (
+          SELECT id FROM users WHERE id = ? OR academy_id = ?
+        )
+        AND created_at >= ?
+      `).bind(a,a,n.subscription_start_date).first();o=(d==null?void 0:d.count)||0}const i=await e.env.DB.prepare(`
+      SELECT id, slug, title, user_id, created_at, status 
+      FROM landing_pages 
+      WHERE user_id = ? 
+      ORDER BY created_at DESC 
+      LIMIT 10
+    `).bind(s.id).all(),l=n?await e.env.DB.prepare(`
+      SELECT * FROM usage_tracking 
+      WHERE academy_id = ? AND subscription_id = ?
+    `).bind(a,n.id).first():null;return e.json({success:!0,user:{id:s.id,email:s.email,name:s.name,academy_id:s.academy_id,user_type:s.user_type},landing_pages:{total_count:(r==null?void 0:r.count)||0,current_plan_count:o,pages:i.results||[]},subscription:n?{id:n.id,plan_name:n.plan_name,subscription_start_date:n.subscription_start_date,subscription_end_date:n.subscription_end_date,landing_page_limit:n.landing_page_limit,status:n.status}:null,usage_tracking:l?{landing_pages_created:l.landing_pages_created,ai_reports_used_this_month:l.ai_reports_used_this_month,current_students:l.current_students}:null})}catch(t){return console.error("[Debug Email] Error:",t),e.json({success:!1,error:t.message},500)}});c.get("/api/debug/landing-pages/:userId",async e=>{try{const t=parseInt(e.req.param("userId"));console.log("[Debug] Checking landing pages for user:",t);const s=await e.env.DB.prepare(`
+      SELECT id, email, name, academy_id, user_type FROM users WHERE id = ?
+    `).bind(t).first();if(!s)return e.json({success:!1,error:"User not found"});const a=await e.env.DB.prepare(`
+      SELECT COUNT(*) as count FROM landing_pages WHERE user_id = ?
+    `).bind(t).first(),r=await e.env.DB.prepare(`
+      SELECT id, slug, title, user_id, created_at FROM landing_pages 
+      WHERE user_id = ? 
+      ORDER BY created_at DESC 
+      LIMIT 10
+    `).bind(t).all(),n=await e.env.DB.prepare(`
+      SELECT * FROM subscriptions 
+      WHERE academy_id = ? AND status = 'active'
+      ORDER BY created_at DESC LIMIT 1
+    `).bind(s.academy_id||t).first(),o=n?await e.env.DB.prepare(`
+      SELECT * FROM usage_tracking 
+      WHERE academy_id = ? AND subscription_id = ?
+    `).bind(s.academy_id||t,n.id).first():null;return e.json({success:!0,user:{id:s.id,email:s.email,name:s.name,academy_id:s.academy_id,user_type:s.user_type},landing_pages:{count:(a==null?void 0:a.count)||0,pages:r.results||[]},subscription:n?{id:n.id,plan_name:n.plan_name,landing_page_limit:n.landing_page_limit,status:n.status}:null,usage_tracking:o?{landing_pages_created:o.landing_pages_created,ai_reports_used_this_month:o.ai_reports_used_this_month,current_students:o.current_students}:null})}catch(t){return e.json({success:!1,error:t.message},500)}});c.post("/api/admin/sync-landing-pages-usage",async e=>{var t;try{const s=e.req.header("X-User-Data-Base64");if(!s)return e.json({success:!1,error:"Unauthorized"},401);let a;try{const l=atob(s);a=JSON.parse(l)}catch{return e.json({success:!1,error:"Invalid user data"},401)}if(a.role!=="admin")return e.json({success:!1,error:"Admin only"},403);console.log("[Sync Usage] Starting landing pages usage sync...");const r=await e.env.DB.prepare(`
+      SELECT id, academy_id, subscription_start_date FROM subscriptions 
+      WHERE status = 'active'
+    `).all(),n=[];let o=0,i=0;for(const l of r.results||[])try{const d=await e.env.DB.prepare(`
+          SELECT COUNT(*) as count FROM landing_pages 
+          WHERE user_id IN (
+            SELECT id FROM users WHERE id = ? OR academy_id = ?
+          )
+          AND created_at >= ?
+        `).bind(l.academy_id,l.academy_id,l.subscription_start_date).first(),p=(d==null?void 0:d.count)||0;if((await e.env.DB.prepare(`
+          UPDATE usage_tracking 
+          SET landing_pages_created = ?, updated_at = CURRENT_TIMESTAMP
+          WHERE subscription_id = ? AND academy_id = ?
+        `).bind(p,l.id,l.academy_id).run()).meta.changes>0)o++,n.push(`✅ Academy ${l.academy_id}: Updated to ${p} pages`),console.log(`[Sync Usage] Academy ${l.academy_id}: ${p} pages`);else try{await e.env.DB.prepare(`
+              INSERT INTO usage_tracking (
+                academy_id, subscription_id, current_students, 
+                ai_reports_used_this_month, landing_pages_created, 
+                current_teachers, sms_sent_this_month, created_at, updated_at
+              ) VALUES (?, ?, 0, 0, ?, 0, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+            `).bind(l.academy_id,l.id,p).run(),o++,i++,n.push(`✅ Academy ${l.academy_id}: Created with ${p} pages`),console.log(`[Sync Usage] Academy ${l.academy_id}: Created with ${p} pages`)}catch(m){n.push(`⚠️ Academy ${l.academy_id}: Failed to create - ${m.message}`)}}catch(d){n.push(`❌ Academy ${l.academy_id}: ${d.message}`),console.error(`[Sync Usage] Error for academy ${l.academy_id}:`,d)}return e.json({success:!0,message:`동기화 완료: ${o}개 구독 업데이트됨`,synced:o,created:i,total:((t=r.results)==null?void 0:t.length)||0,results:n})}catch(s){return console.error("[Sync Usage] Error:",s),e.json({success:!1,error:"사용량 동기화 실패: "+s.message},500)}});c.get("/api/sms/pricing",async e=>{try{const t=await e.env.DB.prepare(`
       SELECT * FROM sms_pricing ORDER BY wholesale_price ASC
     `).all();return e.json({success:!0,pricing:t.results})}catch(t){return console.error("Get SMS pricing error:",t),e.json({success:!1,error:"SMS 요금표 조회 중 오류가 발생했습니다."},500)}});c.get("/api/sms/senders",async e=>{try{const t=e.req.header("X-User-Id")||e.req.query("userId");if(!t)return e.json({success:!1,error:"사용자 ID가 필요합니다."},400);const s=await e.env.DB.prepare(`
       SELECT id, phone_number, verification_method, verification_date, status
@@ -3396,10 +3642,10 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
       ORDER BY created_at DESC
     `).bind(t).all();return e.json({success:!0,senders:s.results})}catch(t){return console.error("Get senders error:",t),e.json({success:!1,error:"발신번호 목록 조회 중 오류가 발생했습니다."},500)}});c.post("/api/sms/sender/register",async e=>{try{const{userId:t,phoneNumber:s,verificationMethod:a}=await e.req.json();if(!t||!s)return e.json({success:!1,error:"필수 정보를 입력해주세요."},400);const r=s.replace(/-/g,"");if(!/^01[0-9]{8,9}$/.test(r))return e.json({success:!1,error:"올바른 휴대폰 번호를 입력해주세요."},400);if(await e.env.DB.prepare(`
       SELECT id FROM sender_ids WHERE user_id = ? AND phone_number = ?
-    `).bind(t,r).first())return e.json({success:!1,error:"이미 등록된 발신번호입니다."},400);const n=await e.env.DB.prepare(`
+    `).bind(t,r).first())return e.json({success:!1,error:"이미 등록된 발신번호입니다."},400);const o=await e.env.DB.prepare(`
       INSERT INTO sender_ids (user_id, phone_number, verification_method, status, verification_date)
       VALUES (?, ?, ?, 'verified', CURRENT_TIMESTAMP)
-    `).bind(t,r,a||"manual").run();return e.json({success:!0,message:"발신번호가 등록되었습니다.",senderId:n.meta.last_row_id})}catch(t){return console.error("Sender registration error:",t),e.json({success:!1,error:"발신번호 등록 중 오류가 발생했습니다."},500)}});c.delete("/api/sms/sender/:senderId",async e=>{try{const t=e.req.param("senderId"),s=e.req.query("userId");return!s||!t?e.json({success:!1,error:"필수 정보를 입력해주세요."},400):await e.env.DB.prepare(`
+    `).bind(t,r,a||"manual").run();return e.json({success:!0,message:"발신번호가 등록되었습니다.",senderId:o.meta.last_row_id})}catch(t){return console.error("Sender registration error:",t),e.json({success:!1,error:"발신번호 등록 중 오류가 발생했습니다."},500)}});c.delete("/api/sms/sender/:senderId",async e=>{try{const t=e.req.param("senderId"),s=e.req.query("userId");return!s||!t?e.json({success:!1,error:"필수 정보를 입력해주세요."},400):await e.env.DB.prepare(`
       SELECT id FROM sender_ids WHERE id = ? AND user_id = ?
     `).bind(t,s).first()?(await e.env.DB.prepare(`
       DELETE FROM sender_ids WHERE id = ? AND user_id = ?
@@ -3413,16 +3659,16 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
       UPDATE sms_templates SET folder_id = NULL WHERE folder_id = ?
     `).bind(t).run(),await e.env.DB.prepare(`
       DELETE FROM sms_folders WHERE id = ?
-    `).bind(t).run(),e.json({success:!0})):e.json({success:!1,error:"폴더를 찾을 수 없습니다."},404):e.json({success:!1,error:"사용자 ID가 필요합니다."},400)}catch(t){return console.error("Delete folder error:",t),e.json({success:!1,error:"폴더 삭제 실패"},500)}});c.get("/api/sms/templates",async e=>{try{const t=e.req.query("userId"),s=e.req.query("folderId");if(!t)return e.json({success:!1,error:"사용자 ID가 필요합니다."},400);let a="SELECT * FROM sms_templates WHERE user_id = ?",r=[t];s?(a+=" AND folder_id = ?",r.push(s)):a+=" AND folder_id IS NULL",a+=" ORDER BY updated_at DESC";const o=await e.env.DB.prepare(a).bind(...r).all();return e.json({success:!0,templates:o.results})}catch(t){return console.error("Get templates error:",t),e.json({success:!1,error:"템플릿 목록 조회 실패"},500)}});c.post("/api/sms/templates",async e=>{try{const{userId:t,folderId:s,title:a,message:r,receivers:o}=await e.req.json();if(!t||!a||!r)return e.json({success:!1,error:"필수 정보가 누락되었습니다."},400);const n=await e.env.DB.prepare(`
+    `).bind(t).run(),e.json({success:!0})):e.json({success:!1,error:"폴더를 찾을 수 없습니다."},404):e.json({success:!1,error:"사용자 ID가 필요합니다."},400)}catch(t){return console.error("Delete folder error:",t),e.json({success:!1,error:"폴더 삭제 실패"},500)}});c.get("/api/sms/templates",async e=>{try{const t=e.req.query("userId"),s=e.req.query("folderId");if(!t)return e.json({success:!1,error:"사용자 ID가 필요합니다."},400);let a="SELECT * FROM sms_templates WHERE user_id = ?",r=[t];s?(a+=" AND folder_id = ?",r.push(s)):a+=" AND folder_id IS NULL",a+=" ORDER BY updated_at DESC";const n=await e.env.DB.prepare(a).bind(...r).all();return e.json({success:!0,templates:n.results})}catch(t){return console.error("Get templates error:",t),e.json({success:!1,error:"템플릿 목록 조회 실패"},500)}});c.post("/api/sms/templates",async e=>{try{const{userId:t,folderId:s,title:a,message:r,receivers:n}=await e.req.json();if(!t||!a||!r)return e.json({success:!1,error:"필수 정보가 누락되었습니다."},400);const o=await e.env.DB.prepare(`
       INSERT INTO sms_templates (user_id, folder_id, title, message, receivers)
       VALUES (?, ?, ?, ?, ?)
-    `).bind(t,s||null,a,r,o||null).run();return e.json({success:!0,templateId:n.meta.last_row_id})}catch(t){return console.error("Create template error:",t),e.json({success:!1,error:"템플릿 저장 실패"},500)}});c.put("/api/sms/templates/:templateId",async e=>{try{const t=e.req.param("templateId"),{userId:s,title:a,message:r,folderId:o}=await e.req.json();return s?await e.env.DB.prepare(`
+    `).bind(t,s||null,a,r,n||null).run();return e.json({success:!0,templateId:o.meta.last_row_id})}catch(t){return console.error("Create template error:",t),e.json({success:!1,error:"템플릿 저장 실패"},500)}});c.put("/api/sms/templates/:templateId",async e=>{try{const t=e.req.param("templateId"),{userId:s,title:a,message:r,folderId:n}=await e.req.json();return s?await e.env.DB.prepare(`
       SELECT * FROM sms_templates WHERE id = ? AND user_id = ?
     `).bind(t,s).first()?(await e.env.DB.prepare(`
       UPDATE sms_templates 
       SET title = ?, message = ?, folder_id = ?, updated_at = CURRENT_TIMESTAMP
       WHERE id = ?
-    `).bind(a,r,o||null,t).run(),e.json({success:!0})):e.json({success:!1,error:"템플릿을 찾을 수 없습니다."},404):e.json({success:!1,error:"사용자 ID가 필요합니다."},400)}catch(t){return console.error("Update template error:",t),e.json({success:!1,error:"템플릿 수정 실패"},500)}});c.delete("/api/sms/templates/:templateId",async e=>{try{const t=e.req.param("templateId"),s=e.req.query("userId");return s?await e.env.DB.prepare(`
+    `).bind(a,r,n||null,t).run(),e.json({success:!0})):e.json({success:!1,error:"템플릿을 찾을 수 없습니다."},404):e.json({success:!1,error:"사용자 ID가 필요합니다."},400)}catch(t){return console.error("Update template error:",t),e.json({success:!1,error:"템플릿 수정 실패"},500)}});c.delete("/api/sms/templates/:templateId",async e=>{try{const t=e.req.param("templateId"),s=e.req.query("userId");return s?await e.env.DB.prepare(`
       SELECT * FROM sms_templates WHERE id = ? AND user_id = ?
     `).bind(t,s).first()?(await e.env.DB.prepare(`
       DELETE FROM sms_templates WHERE id = ?
@@ -3476,7 +3722,7 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
         INSERT INTO sms_pricing (message_type, price, description)
         VALUES ('SMS', 20, '단문 SMS (90바이트 이하)'),
                ('LMS', 50, '장문 SMS (90바이트 초과)')
-      `).run(),e.json({success:!0,message:"DB 초기화 완료",tables:["users","point_transactions","sender_ids","sms_pricing"]})}catch(t){return console.error("DB Init error:",t),e.json({success:!1,error:"DB 초기화 실패: "+t.message},500)}});c.get("/api/db/migrate",async e=>{try{console.log("🔧 [Migration] Starting database migrations...");const t=[];try{await e.env.DB.prepare("ALTER TABLE users ADD COLUMN academy_id INTEGER DEFAULT 1").run(),console.log("✅ [Migration] Added academy_id column to users table"),t.push("✅ Added academy_id to users")}catch(r){console.log("ℹ️ [Migration] academy_id column in users:",r.message),t.push("ℹ️ users.academy_id: "+r.message.substring(0,50))}try{const r=await e.env.DB.prepare("UPDATE users SET academy_id = id WHERE academy_id IS NULL OR academy_id = 0").run();console.log("✅ [Migration] Set default academy_id for users (NULL/0):",r.meta.changes),t.push("✅ Updated "+r.meta.changes+" users with academy_id from NULL/0");const o=await e.env.DB.prepare("UPDATE users SET academy_id = id WHERE academy_id IS NULL").run();console.log("✅ [Migration] Double-check academy_id for users:",o.meta.changes);const n=await e.env.DB.prepare("SELECT COUNT(*) as count FROM users WHERE academy_id IS NOT NULL AND academy_id > 0").first();t.push("✅ Total users with academy_id: "+((n==null?void 0:n.count)||0))}catch(r){console.log("ℹ️ [Migration] Failed to set default academy_id:",r.message),t.push("ℹ️ Update users: "+r.message.substring(0,50))}try{await e.env.DB.prepare(`
+      `).run(),e.json({success:!0,message:"DB 초기화 완료",tables:["users","point_transactions","sender_ids","sms_pricing"]})}catch(t){return console.error("DB Init error:",t),e.json({success:!1,error:"DB 초기화 실패: "+t.message},500)}});c.get("/api/db/migrate",async e=>{try{console.log("🔧 [Migration] Starting database migrations...");const t=[];try{await e.env.DB.prepare("ALTER TABLE users ADD COLUMN academy_id INTEGER DEFAULT 1").run(),console.log("✅ [Migration] Added academy_id column to users table"),t.push("✅ Added academy_id to users")}catch(r){console.log("ℹ️ [Migration] academy_id column in users:",r.message),t.push("ℹ️ users.academy_id: "+r.message.substring(0,50))}try{const r=await e.env.DB.prepare("UPDATE users SET academy_id = id WHERE academy_id IS NULL OR academy_id = 0").run();console.log("✅ [Migration] Set default academy_id for users (NULL/0):",r.meta.changes),t.push("✅ Updated "+r.meta.changes+" users with academy_id from NULL/0");const n=await e.env.DB.prepare("UPDATE users SET academy_id = id WHERE academy_id IS NULL").run();console.log("✅ [Migration] Double-check academy_id for users:",n.meta.changes);const o=await e.env.DB.prepare("SELECT COUNT(*) as count FROM users WHERE academy_id IS NOT NULL AND academy_id > 0").first();t.push("✅ Total users with academy_id: "+((o==null?void 0:o.count)||0))}catch(r){console.log("ℹ️ [Migration] Failed to set default academy_id:",r.message),t.push("ℹ️ Update users: "+r.message.substring(0,50))}try{await e.env.DB.prepare(`
         CREATE TABLE IF NOT EXISTS academies (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           academy_name TEXT NOT NULL,
@@ -3488,7 +3734,7 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
           UPDATE subscriptions 
           SET academy_id = (SELECT academy_id FROM users WHERE users.id = subscriptions.user_id)
           WHERE academy_id IS NULL
-        `).run();console.log("✅ [Migration] Populated academy_id in subscriptions:",r.meta.changes),t.push("✅ Populated "+r.meta.changes+" subscriptions with academy_id from users")}catch(r){console.log("⚠️ [Migration] Failed to populate academy_id:",r.message),t.push("⚠️ Populate academy_id: "+r.message.substring(0,50))}const a=[{name:"plan_name",type:"TEXT",default:"'스타터 플랜'"},{name:"plan_price",type:"INTEGER",default:"0"},{name:"student_limit",type:"INTEGER",default:"30"},{name:"ai_report_limit",type:"INTEGER",default:"30"},{name:"landing_page_limit",type:"INTEGER",default:"40"},{name:"teacher_limit",type:"INTEGER",default:"2"},{name:"subscription_start_date",type:"TEXT",default:null},{name:"subscription_end_date",type:"TEXT",default:null},{name:"payment_method",type:"TEXT",default:null},{name:"merchant_uid",type:"TEXT",default:null}];for(const r of a)try{const o=r.default?` DEFAULT ${r.default}`:"";await e.env.DB.prepare(`ALTER TABLE subscriptions ADD COLUMN ${r.name} ${r.type}${o}`).run(),console.log(`✅ [Migration] Added ${r.name} to subscriptions`),t.push(`✅ Added subscriptions.${r.name}`)}catch{}if(s)try{await e.env.DB.prepare(`
+        `).run();console.log("✅ [Migration] Populated academy_id in subscriptions:",r.meta.changes),t.push("✅ Populated "+r.meta.changes+" subscriptions with academy_id from users")}catch(r){console.log("⚠️ [Migration] Failed to populate academy_id:",r.message),t.push("⚠️ Populate academy_id: "+r.message.substring(0,50))}const a=[{name:"plan_name",type:"TEXT",default:"'스타터 플랜'"},{name:"plan_price",type:"INTEGER",default:"0"},{name:"student_limit",type:"INTEGER",default:"30"},{name:"ai_report_limit",type:"INTEGER",default:"30"},{name:"landing_page_limit",type:"INTEGER",default:"40"},{name:"teacher_limit",type:"INTEGER",default:"2"},{name:"subscription_start_date",type:"TEXT",default:null},{name:"subscription_end_date",type:"TEXT",default:null},{name:"payment_method",type:"TEXT",default:null},{name:"merchant_uid",type:"TEXT",default:null}];for(const r of a)try{const n=r.default?` DEFAULT ${r.default}`:"";await e.env.DB.prepare(`ALTER TABLE subscriptions ADD COLUMN ${r.name} ${r.type}${n}`).run(),console.log(`✅ [Migration] Added ${r.name} to subscriptions`),t.push(`✅ Added subscriptions.${r.name}`)}catch{}if(s)try{await e.env.DB.prepare(`
           UPDATE subscriptions 
           SET subscription_start_date = start_date,
               subscription_end_date = end_date
@@ -3511,14 +3757,14 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
         WHERE s.id NOT IN (SELECT COALESCE(subscription_id, 0) FROM usage_tracking)
         AND s.status = 'active'
         AND s.academy_id IS NOT NULL
-      `).all();if(r.results&&r.results.length>0){let o=0;for(const n of r.results)try{await e.env.DB.prepare(`
+      `).all();if(r.results&&r.results.length>0){let n=0;for(const o of r.results)try{await e.env.DB.prepare(`
               INSERT INTO usage_tracking (
                 academy_id, subscription_id, 
                 current_students, ai_reports_used_this_month, 
                 landing_pages_created, current_teachers,
                 created_at, updated_at
               ) VALUES (?, ?, 0, 0, 0, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-            `).bind(n.academy_id,n.subscription_id).run(),o++}catch(i){console.log("⚠️ Failed to create usage_tracking for subscription",n.subscription_id,":",i.message)}console.log("✅ [Migration] Created usage_tracking for",o,"subscriptions"),t.push("✅ Created "+o+" usage_tracking records")}else t.push("ℹ️ All subscriptions have usage_tracking")}catch(r){console.log("⚠️ [Migration] Failed to create usage_tracking:",r.message),t.push("⚠️ usage_tracking creation: "+r.message.substring(0,50))}try{await e.env.DB.prepare(`
+            `).bind(o.academy_id,o.subscription_id).run(),n++}catch(i){console.log("⚠️ Failed to create usage_tracking for subscription",o.subscription_id,":",i.message)}console.log("✅ [Migration] Created usage_tracking for",n,"subscriptions"),t.push("✅ Created "+n+" usage_tracking records")}else t.push("ℹ️ All subscriptions have usage_tracking")}catch(r){console.log("⚠️ [Migration] Failed to create usage_tracking:",r.message),t.push("⚠️ usage_tracking creation: "+r.message.substring(0,50))}try{await e.env.DB.prepare(`
         CREATE TABLE IF NOT EXISTS forms (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           academy_id INTEGER NOT NULL,
@@ -3575,12 +3821,12 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
           user_agent TEXT,
           created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )
-      `).run(),r.results.length>0)for(const o of r.results)await e.env.DB.prepare(`
+      `).run(),r.results.length>0)for(const n of r.results)await e.env.DB.prepare(`
             INSERT INTO form_submissions (
               id, form_id, landing_page_id, name, phone, email, data, 
               agreed_to_terms, ip_address, user_agent, created_at
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-          `).bind(o.id,o.form_id,o.landing_page_id,o.name,o.phone,o.email,o.data,o.agreed_to_terms,o.ip_address,o.user_agent,o.created_at).run();await e.env.DB.prepare("DROP TABLE IF EXISTS form_submissions_old").run(),console.log("✅ [Migration] Recreated form_submissions without FOREIGN KEY"),t.push("✅ Recreated form_submissions without FOREIGN KEY constraints")}catch(r){console.log("ℹ️ [Migration] form_submissions recreation:",r.message),t.push("ℹ️ form_submissions: "+r.message.substring(0,100))}return e.json({success:!0,message:"데이터베이스 마이그레이션이 완료되었습니다",results:t,note:s?"⚠️ Old schema detected - migrated to new schema":"✅ Using new schema"})}catch(t){return console.error("❌ [Migration] Error:",t),e.json({success:!1,error:"마이그레이션 실패: "+t.message},500)}});c.post("/api/session/track",async e=>{try{const{sessionId:t,userId:s,path:a}=await e.req.json(),r=e.req.header("cf-connecting-ip")||e.req.header("x-forwarded-for")||"unknown",o=e.req.header("user-agent")||"unknown";return t?(await e.env.DB.prepare(`
+          `).bind(n.id,n.form_id,n.landing_page_id,n.name,n.phone,n.email,n.data,n.agreed_to_terms,n.ip_address,n.user_agent,n.created_at).run();await e.env.DB.prepare("DROP TABLE IF EXISTS form_submissions_old").run(),console.log("✅ [Migration] Recreated form_submissions without FOREIGN KEY"),t.push("✅ Recreated form_submissions without FOREIGN KEY constraints")}catch(r){console.log("ℹ️ [Migration] form_submissions recreation:",r.message),t.push("ℹ️ form_submissions: "+r.message.substring(0,100))}return e.json({success:!0,message:"데이터베이스 마이그레이션이 완료되었습니다",results:t,note:s?"⚠️ Old schema detected - migrated to new schema":"✅ Using new schema"})}catch(t){return console.error("❌ [Migration] Error:",t),e.json({success:!1,error:"마이그레이션 실패: "+t.message},500)}});c.post("/api/session/track",async e=>{try{const{sessionId:t,userId:s,path:a}=await e.req.json(),r=e.req.header("cf-connecting-ip")||e.req.header("x-forwarded-for")||"unknown",n=e.req.header("user-agent")||"unknown";return t?(await e.env.DB.prepare(`
       SELECT * FROM user_sessions WHERE session_id = ?
     `).bind(t).first()?await e.env.DB.prepare(`
         UPDATE user_sessions 
@@ -3591,7 +3837,7 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
       `).bind(s||null,s?1:0,t).run():await e.env.DB.prepare(`
         INSERT INTO user_sessions (session_id, user_id, ip_address, user_agent, is_logged_in, login_time)
         VALUES (?, ?, ?, ?, ?, ?)
-      `).bind(t,s||null,r,o,s?1:0,s?new Date().toISOString():null).run(),e.json({success:!0})):e.json({success:!1,error:"Session ID is required"},400)}catch(t){return console.error("Session track error:",t),e.json({success:!1,error:"Session tracking failed"},500)}});c.post("/api/session/login",async e=>{try{const{sessionId:t,userId:s}=await e.req.json();return!t||!s?e.json({success:!1,error:"Session ID and User ID are required"},400):(await e.env.DB.prepare(`
+      `).bind(t,s||null,r,n,s?1:0,s?new Date().toISOString():null).run(),e.json({success:!0})):e.json({success:!1,error:"Session ID is required"},400)}catch(t){return console.error("Session track error:",t),e.json({success:!1,error:"Session tracking failed"},500)}});c.post("/api/session/login",async e=>{try{const{sessionId:t,userId:s}=await e.req.json();return!t||!s?e.json({success:!1,error:"Session ID and User ID are required"},400):(await e.env.DB.prepare(`
       UPDATE user_sessions 
       SET user_id = ?,
           is_logged_in = 1,
@@ -3603,7 +3849,7 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
       SET logout_time = CURRENT_TIMESTAMP,
           last_activity = CURRENT_TIMESTAMP
       WHERE session_id = ?
-    `).bind(t).run(),e.json({success:!0})):e.json({success:!1,error:"Session ID is required"},400)}catch(t){return console.error("Session logout error:",t),e.json({success:!1,error:"Session logout update failed"},500)}});c.get("/api/admin/active-sessions",async e=>{var t,s;try{if(!((t=e.env)!=null&&t.DB))return console.error("[Active Sessions] DB not available"),e.json({success:!1,error:"Database not available"},500);const a=e.req.header("X-User-Data-Base64");if(!a)return e.json({success:!1,error:"Unauthorized"},401);let r;try{const d=atob(a);r=JSON.parse(d)}catch(d){return console.error("[Active Sessions] User data decode error:",d),e.json({success:!1,error:"Invalid user data"},401)}if(r.role!=="admin")return e.json({success:!1,error:"Admin only"},403);console.log("[Active Sessions] Fetching active sessions...");const o=await e.env.DB.prepare(`
+    `).bind(t).run(),e.json({success:!0})):e.json({success:!1,error:"Session ID is required"},400)}catch(t){return console.error("Session logout error:",t),e.json({success:!1,error:"Session logout update failed"},500)}});c.get("/api/admin/active-sessions",async e=>{var t,s;try{if(!((t=e.env)!=null&&t.DB))return console.error("[Active Sessions] DB not available"),e.json({success:!1,error:"Database not available"},500);const a=e.req.header("X-User-Data-Base64");if(!a)return e.json({success:!1,error:"Unauthorized"},401);let r;try{const d=atob(a);r=JSON.parse(d)}catch(d){return console.error("[Active Sessions] User data decode error:",d),e.json({success:!1,error:"Invalid user data"},401)}if(r.role!=="admin")return e.json({success:!1,error:"Admin only"},403);console.log("[Active Sessions] Fetching active sessions...");const n=await e.env.DB.prepare(`
       SELECT 
         s.*,
         u.name as user_name,
@@ -3614,18 +3860,18 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
       WHERE s.last_activity >= datetime('now', '-10 minutes')
         AND s.logout_time IS NULL
       ORDER BY s.last_activity DESC
-    `).all();console.log("[Active Sessions] Found sessions:",((s=o.results)==null?void 0:s.length)||0);const n=(o.results||[]).filter(d=>d.is_logged_in===1),i=(o.results||[]).filter(d=>d.is_logged_in===0),l=await e.env.DB.prepare(`
+    `).all();console.log("[Active Sessions] Found sessions:",((s=n.results)==null?void 0:s.length)||0);const o=(n.results||[]).filter(d=>d.is_logged_in===1),i=(n.results||[]).filter(d=>d.is_logged_in===0),l=await e.env.DB.prepare(`
       SELECT 
         COUNT(*) as total_sessions,
         COUNT(CASE WHEN is_logged_in = 1 THEN 1 END) as total_logged_in,
         COUNT(CASE WHEN is_logged_in = 0 THEN 1 END) as total_guests
       FROM user_sessions
-    `).first();return e.json({success:!0,activeSessions:{loggedIn:n,guests:i,total:(o.results||[]).length,loggedInCount:n.length,guestsCount:i.length},totalStats:l||{total_sessions:0,total_logged_in:0,total_guests:0}})}catch(a){return console.error("[Active Sessions] Error:",a),e.json({success:!1,error:"Failed to fetch active sessions",details:a.message||String(a)},500)}});c.get("/api/admin/sessions/history",async e=>{try{const t=e.req.header("X-User-Data-Base64");if(!t)return e.json({success:!1,error:"Unauthorized"},401);let s;try{const u=atob(t);s=JSON.parse(u)}catch{return e.json({success:!1,error:"Invalid user data"},401)}if(s.role!=="admin")return e.json({success:!1,error:"Admin only"},403);const a=e.req.query("startDate"),r=e.req.query("endDate"),o=e.req.query("search");let n=[],i=[];if(a&&(n.push("date(s.created_at) >= ?"),i.push(a)),r&&(n.push("date(s.created_at) <= ?"),i.push(r)),o){n.push(`(
+    `).first();return e.json({success:!0,activeSessions:{loggedIn:o,guests:i,total:(n.results||[]).length,loggedInCount:o.length,guestsCount:i.length},totalStats:l||{total_sessions:0,total_logged_in:0,total_guests:0}})}catch(a){return console.error("[Active Sessions] Error:",a),e.json({success:!1,error:"Failed to fetch active sessions",details:a.message||String(a)},500)}});c.get("/api/admin/sessions/history",async e=>{try{const t=e.req.header("X-User-Data-Base64");if(!t)return e.json({success:!1,error:"Unauthorized"},401);let s;try{const u=atob(t);s=JSON.parse(u)}catch{return e.json({success:!1,error:"Invalid user data"},401)}if(s.role!=="admin")return e.json({success:!1,error:"Admin only"},403);const a=e.req.query("startDate"),r=e.req.query("endDate"),n=e.req.query("search");let o=[],i=[];if(a&&(o.push("date(s.created_at) >= ?"),i.push(a)),r&&(o.push("date(s.created_at) <= ?"),i.push(r)),n){o.push(`(
         u.name LIKE ? OR 
         u.email LIKE ? OR 
         u.academy_name LIKE ? OR 
         s.ip_address LIKE ?
-      )`);const u=`%${o}%`;i.push(u,u,u,u)}const l=n.length>0?"WHERE "+n.join(" AND "):"",d=await e.env.DB.prepare(`
+      )`);const u=`%${n}%`;i.push(u,u,u,u)}const l=o.length>0?"WHERE "+o.join(" AND "):"",d=await e.env.DB.prepare(`
       SELECT 
         date(created_at) as date,
         COUNT(*) as total_sessions,
@@ -3657,12 +3903,12 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
       ${l}
       ORDER BY s.created_at DESC
       LIMIT 1000
-    `).bind(...i).all();return e.json({success:!0,dailyStats:d.results||[],sessions:p.results||[],filters:{startDate:a||null,endDate:r||null,search:o||null}})}catch(t){return console.error("[Sessions History] Error:",t),e.json({success:!1,error:"Failed to fetch sessions history",details:t.message||String(t)},500)}});c.post("/api/points/charge",async e=>{try{const{userId:t,amount:s}=await e.req.json();if(!t||!s)return e.json({success:!1,error:"사용자 ID와 충전 금액이 필요합니다."},400);const a=await e.env.DB.prepare("SELECT * FROM users WHERE id = ?").bind(t).first();if(!a)return e.json({success:!1,error:"사용자를 찾을 수 없습니다."},404);const r=a.balance||0;await e.env.DB.prepare("UPDATE users SET balance = balance + ? WHERE id = ?").bind(s,t).run(),await e.env.DB.prepare(`
+    `).bind(...i).all();return e.json({success:!0,dailyStats:d.results||[],sessions:p.results||[],filters:{startDate:a||null,endDate:r||null,search:n||null}})}catch(t){return console.error("[Sessions History] Error:",t),e.json({success:!1,error:"Failed to fetch sessions history",details:t.message||String(t)},500)}});c.post("/api/points/charge",async e=>{try{const{userId:t,amount:s}=await e.req.json();if(!t||!s)return e.json({success:!1,error:"사용자 ID와 충전 금액이 필요합니다."},400);const a=await e.env.DB.prepare("SELECT * FROM users WHERE id = ?").bind(t).first();if(!a)return e.json({success:!1,error:"사용자를 찾을 수 없습니다."},404);const r=a.balance||0;await e.env.DB.prepare("UPDATE users SET balance = balance + ? WHERE id = ?").bind(s,t).run(),await e.env.DB.prepare(`
       INSERT INTO point_transactions (user_id, amount, balance_before, balance_after, transaction_type, description, created_at)
       VALUES (?, ?, ?, ?, 'charge', '테스트 충전', CURRENT_TIMESTAMP)
-    `).bind(t,s,r,r+s).run();const o=await e.env.DB.prepare("SELECT balance FROM users WHERE id = ?").bind(t).first();return e.json({success:!0,message:"포인트가 충전되었습니다.",balance:o.balance})}catch(t){return console.error("Charge points error:",t),e.json({success:!1,error:"포인트 충전 실패: "+t.message},500)}});c.post("/api/sms/send",async e=>{var t;try{const{userId:s,senderId:a,receivers:r,message:o,reserveTime:n}=await e.req.json();if(!s||!a||!r||!o)return e.json({success:!1,error:"필수 정보를 입력해주세요."},400);const i=await e.env.DB.prepare(`
+    `).bind(t,s,r,r+s).run();const n=await e.env.DB.prepare("SELECT balance FROM users WHERE id = ?").bind(t).first();return e.json({success:!0,message:"포인트가 충전되었습니다.",balance:n.balance})}catch(t){return console.error("Charge points error:",t),e.json({success:!1,error:"포인트 충전 실패: "+t.message},500)}});c.post("/api/sms/send",async e=>{var t;try{const{userId:s,senderId:a,receivers:r,message:n,reserveTime:o}=await e.req.json();if(!s||!a||!r||!n)return e.json({success:!1,error:"필수 정보를 입력해주세요."},400);const i=await e.env.DB.prepare(`
       SELECT balance FROM users WHERE id = ?
-    `).bind(s).first();if(!i)return e.json({success:!1,error:"사용자를 찾을 수 없습니다."},404);const l=new Blob([o]).size;let d="SMS";l>90&&(d="LMS");const p=await e.env.DB.prepare(`
+    `).bind(s).first();if(!i)return e.json({success:!1,error:"사용자를 찾을 수 없습니다."},404);const l=new Blob([n]).size;let d="SMS";l>90&&(d="LMS");const p=await e.env.DB.prepare(`
       SELECT retail_price FROM sms_pricing WHERE message_type = ?
     `).bind(d).first();if(!p)return e.json({success:!1,error:"SMS 요금 정보를 찾을 수 없습니다."},500);const m=p.retail_price*r.length;if(i.balance<m)return e.json({success:!1,error:`포인트가 부족합니다. (필요: ${m}P, 보유: ${i.balance}P)`},400);const g=i.balance,x=i.balance-m;await e.env.DB.prepare(`
       UPDATE users SET balance = ? WHERE id = ?
@@ -3673,13 +3919,13 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
       SELECT phone_number FROM sender_ids WHERE id = ? AND user_id = ? AND status = 'verified'
     `).bind(a,s).first();if(!b)return await e.env.DB.prepare(`
         UPDATE users SET balance = ? WHERE id = ?
-      `).bind(g,s).run(),e.json({success:!1,error:"인증된 발신번호를 찾을 수 없습니다."},404);const f=e.env.ALIGO_API_KEY||"4bbi3l27pb5qh11tkujl578bttz6vb5j",v=e.env.ALIGO_USER_ID||"wangholy";console.log("Aligo ENV Check:",{hasApiKey:!!e.env.ALIGO_API_KEY,hasUserId:!!e.env.ALIGO_USER_ID,apiKeyLength:(t=e.env.ALIGO_API_KEY)==null?void 0:t.length,userId:e.env.ALIGO_USER_ID});const _=new URLSearchParams;_.append("key",f),_.append("user_id",v),_.append("sender",b.phone_number),_.append("receiver",r.map(E=>E.phone).join(",")),_.append("msg",o),_.append("msg_type",d),n&&(_.append("rdate",n.split("T")[0].replace(/-/g,"")),_.append("rtime",n.split("T")[1].substring(0,5).replace(":","")));const w=await(await fetch("https://apis.aligo.in/send/",{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:_})).json();if(w.result_code==="1"){const E=await e.env.DB.prepare(`
+      `).bind(g,s).run(),e.json({success:!1,error:"인증된 발신번호를 찾을 수 없습니다."},404);const h=e.env.ALIGO_API_KEY||"4bbi3l27pb5qh11tkujl578bttz6vb5j",v=e.env.ALIGO_USER_ID||"wangholy";console.log("Aligo ENV Check:",{hasApiKey:!!e.env.ALIGO_API_KEY,hasUserId:!!e.env.ALIGO_USER_ID,apiKeyLength:(t=e.env.ALIGO_API_KEY)==null?void 0:t.length,userId:e.env.ALIGO_USER_ID});const E=new URLSearchParams;E.append("key",h),E.append("user_id",v),E.append("sender",b.phone_number),E.append("receiver",r.map(_=>_.phone).join(",")),E.append("msg",n),E.append("msg_type",d),o&&(E.append("rdate",o.split("T")[0].replace(/-/g,"")),E.append("rtime",o.split("T")[1].substring(0,5).replace(":","")));const w=await(await fetch("https://apis.aligo.in/send/",{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:E})).json();if(w.result_code==="1"){const _=await e.env.DB.prepare(`
         INSERT INTO sms_logs (user_id, sender_id, sender_number, receiver_number, message_type, message_content, byte_size, point_cost, status, alligo_response, alligo_msg_id, reserve_time, sent_at)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'success', ?, ?, ?, CURRENT_TIMESTAMP)
-      `).bind(s,a,b.phone_number,r.map(k=>k.phone).join(","),d,o,l,m,JSON.stringify(w),w.msg_id||null,n||null).run();for(const k of r){const S=o.replace(/#{이름}/g,k.name||"");await e.env.DB.prepare(`
+      `).bind(s,a,b.phone_number,r.map(k=>k.phone).join(","),d,n,l,m,JSON.stringify(w),w.msg_id||null,o||null).run();for(const k of r){const T=n.replace(/#{이름}/g,k.name||"");await e.env.DB.prepare(`
           INSERT INTO sms_recipients (sms_log_id, receiver_number, receiver_name, message_content, status, sent_at)
           VALUES (?, ?, ?, ?, 'success', CURRENT_TIMESTAMP)
-        `).bind(E.meta.last_row_id,k.phone,k.name||null,S).run()}return e.json({success:!0,message:"문자 발송이 완료되었습니다.",sentCount:r.length,totalCost:m,remainingBalance:x})}else return await e.env.DB.prepare(`
+        `).bind(_.meta.last_row_id,k.phone,k.name||null,T).run()}return e.json({success:!0,message:"문자 발송이 완료되었습니다.",sentCount:r.length,totalCost:m,remainingBalance:x})}else return await e.env.DB.prepare(`
         UPDATE users SET balance = ? WHERE id = ?
       `).bind(g,s).run(),await e.env.DB.prepare(`
         INSERT INTO point_transactions (user_id, transaction_type, amount, balance_before, balance_after, description)
@@ -3687,7 +3933,7 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
       `).bind(s,m,x,g,"SMS 발송 실패로 인한 환불").run(),await e.env.DB.prepare(`
         INSERT INTO sms_logs (user_id, sender_id, sender_number, receiver_number, message_type, message_content, byte_size, point_cost, status, alligo_response)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'failed', ?)
-      `).bind(s,a,b.phone_number,r.map(E=>E.phone).join(","),d,o,l,m,JSON.stringify(w)).run(),e.json({success:!1,error:w.message||"문자 발송에 실패했습니다.",aligoError:w},400)}catch(s){return console.error("SMS send error:",s),e.json({success:!1,error:"문자 발송 중 오류가 발생했습니다."},500)}});c.get("/api/sms/logs",async e=>{try{const t=e.req.query("userId"),s=parseInt(e.req.query("page")||"1"),a=parseInt(e.req.query("limit")||"20"),r=(s-1)*a;if(!t)return e.json({success:!1,error:"사용자 ID가 필요합니다."},400);const o=await e.env.DB.prepare(`
+      `).bind(s,a,b.phone_number,r.map(_=>_.phone).join(","),d,n,l,m,JSON.stringify(w)).run(),e.json({success:!1,error:w.message||"문자 발송에 실패했습니다.",aligoError:w},400)}catch(s){return console.error("SMS send error:",s),e.json({success:!1,error:"문자 발송 중 오류가 발생했습니다."},500)}});c.get("/api/sms/logs",async e=>{try{const t=e.req.query("userId"),s=parseInt(e.req.query("page")||"1"),a=parseInt(e.req.query("limit")||"20"),r=(s-1)*a;if(!t)return e.json({success:!1,error:"사용자 ID가 필요합니다."},400);const n=await e.env.DB.prepare(`
       SELECT 
         sms_logs.*,
         sender_ids.phone_number as sender_phone
@@ -3696,13 +3942,13 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
       WHERE sms_logs.user_id = ?
       ORDER BY sms_logs.created_at DESC
       LIMIT ? OFFSET ?
-    `).bind(t,a,r).all(),n=await e.env.DB.prepare(`
+    `).bind(t,a,r).all(),o=await e.env.DB.prepare(`
       SELECT COUNT(*) as count FROM sms_logs WHERE user_id = ?
-    `).bind(t).first();return e.json({success:!0,logs:o.results,pagination:{page:s,limit:a,total:(n==null?void 0:n.count)||0,totalPages:Math.ceil(((n==null?void 0:n.count)||0)/a)}})}catch(t){return console.error("Get SMS logs error:",t),e.json({success:!1,error:"SMS 발송 내역 조회 중 오류가 발생했습니다."},500)}});c.post("/api/sms/charge",async e=>{try{const{userId:t,amount:s,adminId:a,description:r}=await e.req.json();if(!t||!s||!a)return e.json({success:!1,error:"필수 정보를 입력해주세요."},400);const o=await e.env.DB.prepare(`
+    `).bind(t).first();return e.json({success:!0,logs:n.results,pagination:{page:s,limit:a,total:(o==null?void 0:o.count)||0,totalPages:Math.ceil(((o==null?void 0:o.count)||0)/a)}})}catch(t){return console.error("Get SMS logs error:",t),e.json({success:!1,error:"SMS 발송 내역 조회 중 오류가 발생했습니다."},500)}});c.post("/api/sms/charge",async e=>{try{const{userId:t,amount:s,adminId:a,description:r}=await e.req.json();if(!t||!s||!a)return e.json({success:!1,error:"필수 정보를 입력해주세요."},400);const n=await e.env.DB.prepare(`
       SELECT role FROM users WHERE id = ?
-    `).bind(a).first();if(!o||o.role!=="admin")return e.json({success:!1,error:"관리자 권한이 필요합니다."},403);const n=await e.env.DB.prepare(`
+    `).bind(a).first();if(!n||n.role!=="admin")return e.json({success:!1,error:"관리자 권한이 필요합니다."},403);const o=await e.env.DB.prepare(`
       SELECT balance FROM users WHERE id = ?
-    `).bind(t).first();if(!n)return e.json({success:!1,error:"사용자를 찾을 수 없습니다."},404);const i=n.balance,l=n.balance+s;return await e.env.DB.prepare(`
+    `).bind(t).first();if(!o)return e.json({success:!1,error:"사용자를 찾을 수 없습니다."},404);const i=o.balance,l=o.balance+s;return await e.env.DB.prepare(`
       UPDATE users SET balance = ? WHERE id = ?
     `).bind(l,t).run(),await e.env.DB.prepare(`
       INSERT INTO point_transactions (user_id, transaction_type, amount, balance_before, balance_after, description, admin_id)
@@ -3716,19 +3962,19 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
       ORDER BY created_at DESC
     `).bind(t).all();return e.json({success:!0,profiles:s||[]})}catch(t){return console.error("Failed to load kakao profiles:",t),e.json({success:!1,error:"발신 프로필 조회 실패"},500)}});c.post("/api/kakao/profile/register",async e=>{try{const{userId:t,senderKey:s,profileName:a,categoryCode:r}=await e.req.json();if(!t||!s||!a)return e.json({success:!1,error:"필수 정보를 입력해주세요."},400);if(await e.env.DB.prepare(`
       SELECT id FROM kakao_sender_profiles WHERE sender_key = ? AND user_id = ?
-    `).bind(s,t).first())return e.json({success:!1,error:"이미 등록된 발신 프로필입니다."},400);const n=await e.env.DB.prepare(`
+    `).bind(s,t).first())return e.json({success:!1,error:"이미 등록된 발신 프로필입니다."},400);const o=await e.env.DB.prepare(`
       INSERT INTO kakao_sender_profiles (user_id, sender_key, profile_name, category_code, status)
       VALUES (?, ?, ?, ?, 'active')
-    `).bind(t,s,a,r||null).run();return e.json({success:!0,message:"발신 프로필이 등록되었습니다.",profileId:n.meta.last_row_id})}catch(t){return console.error("Failed to register kakao profile:",t),e.json({success:!1,error:"발신 프로필 등록 실패"},500)}});c.get("/api/kakao/templates",async e=>{try{const t=e.req.query("userId");if(!t)return e.json({success:!1,error:"사용자 ID가 필요합니다."},400);const{results:s}=await e.env.DB.prepare(`
+    `).bind(t,s,a,r||null).run();return e.json({success:!0,message:"발신 프로필이 등록되었습니다.",profileId:o.meta.last_row_id})}catch(t){return console.error("Failed to register kakao profile:",t),e.json({success:!1,error:"발신 프로필 등록 실패"},500)}});c.get("/api/kakao/templates",async e=>{try{const t=e.req.query("userId");if(!t)return e.json({success:!1,error:"사용자 ID가 필요합니다."},400);const{results:s}=await e.env.DB.prepare(`
       SELECT * FROM kakao_templates
       WHERE user_id = ?
       ORDER BY created_at DESC
-    `).bind(t).all();return e.json({success:!0,templates:s||[]})}catch(t){return console.error("Failed to load kakao templates:",t),e.json({success:!1,error:"템플릿 조회 실패"},500)}});c.post("/api/kakao/template/register",async e=>{try{const{userId:t,templateCode:s,templateName:a,templateContent:r,buttonsJson:o}=await e.req.json();if(!t||!s||!a||!r)return e.json({success:!1,error:"필수 정보를 입력해주세요."},400);const n=await e.env.DB.prepare(`
+    `).bind(t).all();return e.json({success:!0,templates:s||[]})}catch(t){return console.error("Failed to load kakao templates:",t),e.json({success:!1,error:"템플릿 조회 실패"},500)}});c.post("/api/kakao/template/register",async e=>{try{const{userId:t,templateCode:s,templateName:a,templateContent:r,buttonsJson:n}=await e.req.json();if(!t||!s||!a||!r)return e.json({success:!1,error:"필수 정보를 입력해주세요."},400);const o=await e.env.DB.prepare(`
       INSERT INTO kakao_templates (
         user_id, template_code, template_name, template_content, 
         buttons_json, status
       ) VALUES (?, ?, ?, ?, ?, 'approved')
-    `).bind(t,s,a,r,o||null).run();return e.json({success:!0,message:"템플릿이 등록되었습니다.",templateId:n.meta.last_row_id})}catch(t){return console.error("Failed to register kakao template:",t),e.json({success:!1,error:"템플릿 등록 실패"},500)}});c.post("/api/kakao/send",async e=>{try{const{userId:t,senderKey:s,templateCode:a,receivers:r,failover:o,failoverSms:n,reserveTime:i}=await e.req.json();if(console.log("Kakao send request:",{userId:t,senderKey:s,templateCode:a,receiversCount:r==null?void 0:r.length}),!t||!s||!a||!r||r.length===0)return e.json({success:!1,error:"필수 정보를 입력해주세요."},400);const l=await e.env.DB.prepare(`
+    `).bind(t,s,a,r,n||null).run();return e.json({success:!0,message:"템플릿이 등록되었습니다.",templateId:o.meta.last_row_id})}catch(t){return console.error("Failed to register kakao template:",t),e.json({success:!1,error:"템플릿 등록 실패"},500)}});c.post("/api/kakao/send",async e=>{try{const{userId:t,senderKey:s,templateCode:a,receivers:r,failover:n,failoverSms:o,reserveTime:i}=await e.req.json();if(console.log("Kakao send request:",{userId:t,senderKey:s,templateCode:a,receiversCount:r==null?void 0:r.length}),!t||!s||!a||!r||r.length===0)return e.json({success:!1,error:"필수 정보를 입력해주세요."},400);const l=await e.env.DB.prepare(`
       SELECT * FROM kakao_templates WHERE template_code = ? AND user_id = ?
     `).bind(a,t).first();if(!l)return e.json({success:!1,error:"템플릿을 찾을 수 없습니다."},404);const d=await e.env.DB.prepare(`
       SELECT retail_price FROM kakao_pricing WHERE message_type = 'ALIMTALK'
@@ -3739,17 +3985,17 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
     `).bind(x,t).run(),await e.env.DB.prepare(`
       INSERT INTO point_transactions (user_id, transaction_type, amount, balance_before, balance_after, description)
       VALUES (?, 'kakao_cost', ?, ?, ?, ?)
-    `).bind(t,-u,g,x,`카카오 알림톡 ${r.length}건 발송`).run(),console.log("Points deducted:",g,"->",x);try{const b=e.env.ALIGO_API_KEY,f=e.env.ALIGO_USER_ID;if(!b||!f)throw new Error("알리고 API 키가 설정되지 않았습니다.");const v=r.map(S=>{var j;return{rcv:S.phone.replace(/-/g,""),rcv_name:S.name||"",emtitle_1:((j=S.variables)==null?void 0:j.title)||"",message:l.template_content}}),_={apikey:b,userid:f,senderkey:s,tpl_code:a,sender:s,receiver_1:v[0].rcv,recvname_1:v[0].rcv_name,subject_1:v[0].emtitle_1,message_1:v[0].message,failover:o||"Y",fsubject_1:n||"카카오톡 알림",fmessage_1:n||l.template_content};if(i){const S=new Date(i);_.rdate=S.toISOString().split("T")[0].replace(/-/g,""),_.rtime=S.toTimeString().split(" ")[0].replace(/:/g,"").substring(0,4)}const w=await(await fetch("https://kakaoapi.aligo.in/akv10/alimtalk/send/",{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams(_)})).json();console.log("Aligo kakao response:",w);const k=(await e.env.DB.prepare(`
+    `).bind(t,-u,g,x,`카카오 알림톡 ${r.length}건 발송`).run(),console.log("Points deducted:",g,"->",x);try{const b=e.env.ALIGO_API_KEY,h=e.env.ALIGO_USER_ID;if(!b||!h)throw new Error("알리고 API 키가 설정되지 않았습니다.");const v=r.map(T=>{var j;return{rcv:T.phone.replace(/-/g,""),rcv_name:T.name||"",emtitle_1:((j=T.variables)==null?void 0:j.title)||"",message:l.template_content}}),E={apikey:b,userid:h,senderkey:s,tpl_code:a,sender:s,receiver_1:v[0].rcv,recvname_1:v[0].rcv_name,subject_1:v[0].emtitle_1,message_1:v[0].message,failover:n||"Y",fsubject_1:o||"카카오톡 알림",fmessage_1:o||l.template_content};if(i){const T=new Date(i);E.rdate=T.toISOString().split("T")[0].replace(/-/g,""),E.rtime=T.toTimeString().split(" ")[0].replace(/:/g,"").substring(0,4)}const w=await(await fetch("https://kakaoapi.aligo.in/akv10/alimtalk/send/",{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams(E)})).json();console.log("Aligo kakao response:",w);const k=(await e.env.DB.prepare(`
         INSERT INTO kakao_logs (
           user_id, sender_key, template_code, receiver_phone, receiver_name, 
           message, buttons_json, fail_over, fail_over_sms, 
           status, result_code, result_message, msg_id, cost, reserved_date, sent_at
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
-      `).bind(t,s,a,r[0].phone,r[0].name,l.template_content,l.buttons_json,o||"Y",n,w.result_code===1?"success":"failed",w.result_code||0,w.message||"",w.msg_id||"",u,i||null).run()).meta.last_row_id;for(const S of r)await e.env.DB.prepare(`
+      `).bind(t,s,a,r[0].phone,r[0].name,l.template_content,l.buttons_json,n||"Y",o,w.result_code===1?"success":"failed",w.result_code||0,w.message||"",w.msg_id||"",u,i||null).run()).meta.last_row_id;for(const T of r)await e.env.DB.prepare(`
           INSERT INTO kakao_recipients (
             kakao_log_id, receiver_phone, receiver_name, status, sent_at
           ) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
-        `).bind(k,S.phone,S.name,w.result_code===1?"success":"pending").run();return w.result_code===1?e.json({success:!0,message:`카카오 알림톡 ${r.length}건이 발송되었습니다.`,balance:x,cost:u,msgId:w.msg_id}):(await e.env.DB.prepare(`
+        `).bind(k,T.phone,T.name,w.result_code===1?"success":"pending").run();return w.result_code===1?e.json({success:!0,message:`카카오 알림톡 ${r.length}건이 발송되었습니다.`,balance:x,cost:u,msgId:w.msg_id}):(await e.env.DB.prepare(`
           UPDATE users SET balance = ? WHERE id = ?
         `).bind(g,t).run(),await e.env.DB.prepare(`
           INSERT INTO point_transactions (user_id, transaction_type, amount, balance_before, balance_after, description)
@@ -3759,12 +4005,12 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
       `).bind(g,t).run(),await e.env.DB.prepare(`
         INSERT INTO point_transactions (user_id, transaction_type, amount, balance_before, balance_after, description)
         VALUES (?, 'refund', ?, ?, ?, ?)
-      `).bind(t,u,x,g,"카카오 알림톡 API 오류로 인한 환불").run(),e.json({success:!1,error:"알리고 API 호출 실패",details:b.message},500)}}catch(t){return console.error("Kakao send error:",t),e.json({success:!1,error:"알림톡 발송 중 오류가 발생했습니다."},500)}});c.get("/api/kakao/logs",async e=>{try{const t=e.req.query("userId"),s=parseInt(e.req.query("page")||"1"),a=parseInt(e.req.query("limit")||"20"),r=(s-1)*a;if(!t)return e.json({success:!1,error:"사용자 ID가 필요합니다."},400);const{results:o}=await e.env.DB.prepare(`
+      `).bind(t,u,x,g,"카카오 알림톡 API 오류로 인한 환불").run(),e.json({success:!1,error:"알리고 API 호출 실패",details:b.message},500)}}catch(t){return console.error("Kakao send error:",t),e.json({success:!1,error:"알림톡 발송 중 오류가 발생했습니다."},500)}});c.get("/api/kakao/logs",async e=>{try{const t=e.req.query("userId"),s=parseInt(e.req.query("page")||"1"),a=parseInt(e.req.query("limit")||"20"),r=(s-1)*a;if(!t)return e.json({success:!1,error:"사용자 ID가 필요합니다."},400);const{results:n}=await e.env.DB.prepare(`
       SELECT * FROM kakao_logs
       WHERE user_id = ?
       ORDER BY created_at DESC
       LIMIT ? OFFSET ?
-    `).bind(t,a,r).all(),n=await e.env.DB.prepare(`
+    `).bind(t,a,r).all(),o=await e.env.DB.prepare(`
       SELECT COUNT(*) as count FROM kakao_logs WHERE user_id = ?
     `).bind(t).first(),i=await e.env.DB.prepare(`
       SELECT 
@@ -3774,10 +4020,10 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
         SUM(cost) as total_cost
       FROM kakao_logs
       WHERE user_id = ?
-    `).bind(t).first();return e.json({success:!0,logs:o||[],pagination:{page:s,limit:a,total:(n==null?void 0:n.count)||0,totalPages:Math.ceil(((n==null?void 0:n.count)||0)/a)},stats:{totalSent:(i==null?void 0:i.total_sent)||0,successCount:(i==null?void 0:i.success_count)||0,failedCount:(i==null?void 0:i.failed_count)||0,totalCost:(i==null?void 0:i.total_cost)||0}})}catch(t){return console.error("Failed to load kakao logs:",t),e.json({success:!1,error:"발송 내역 조회 실패"},500)}});c.post("/api/deposit/request",async e=>{try{const{userId:t,userName:s,userEmail:a,amount:r,bankName:o,accountNumber:n,depositorName:i,message:l}=await e.req.json();if(!t||!r||r<=0)return e.json({success:!1,error:"필수 정보를 입력해주세요."},400);const d=await e.env.DB.prepare(`
+    `).bind(t).first();return e.json({success:!0,logs:n||[],pagination:{page:s,limit:a,total:(o==null?void 0:o.count)||0,totalPages:Math.ceil(((o==null?void 0:o.count)||0)/a)},stats:{totalSent:(i==null?void 0:i.total_sent)||0,successCount:(i==null?void 0:i.success_count)||0,failedCount:(i==null?void 0:i.failed_count)||0,totalCost:(i==null?void 0:i.total_cost)||0}})}catch(t){return console.error("Failed to load kakao logs:",t),e.json({success:!1,error:"발송 내역 조회 실패"},500)}});c.post("/api/deposit/request",async e=>{try{const{userId:t,userName:s,userEmail:a,amount:r,bankName:n,accountNumber:o,depositorName:i,message:l}=await e.req.json();if(!t||!r||r<=0)return e.json({success:!1,error:"필수 정보를 입력해주세요."},400);const d=await e.env.DB.prepare(`
       INSERT INTO deposit_requests (user_id, user_name, user_email, amount, bank_name, account_number, depositor_name, message, status)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending')
-    `).bind(t,s,a,r,o||null,n||null,i||null,l||null).run();return e.json({success:!0,message:"입금 신청이 완료되었습니다.",requestId:d.meta.last_row_id})}catch(t){return console.error("Deposit request error:",t),e.json({success:!1,error:"입금 신청 중 오류가 발생했습니다."},500)}});c.get("/api/deposit/my-requests/:userId",async e=>{try{const t=e.req.param("userId");if(!t)return e.json({success:!1,error:"사용자 ID가 필요합니다."},400);const{results:s}=await e.env.DB.prepare(`
+    `).bind(t,s,a,r,n||null,o||null,i||null,l||null).run();return e.json({success:!0,message:"입금 신청이 완료되었습니다.",requestId:d.meta.last_row_id})}catch(t){return console.error("Deposit request error:",t),e.json({success:!1,error:"입금 신청 중 오류가 발생했습니다."},500)}});c.get("/api/deposit/my-requests/:userId",async e=>{try{const t=e.req.param("userId");if(!t)return e.json({success:!1,error:"사용자 ID가 필요합니다."},400);const{results:s}=await e.env.DB.prepare(`
       SELECT 
         id,
         amount,
@@ -3804,14 +4050,14 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
       WHERE user_id = ?
       ORDER BY created_at DESC
       LIMIT ? OFFSET ?
-    `).bind(t,s,a).all(),o=await e.env.DB.prepare(`
+    `).bind(t,s,a).all(),n=await e.env.DB.prepare(`
       SELECT 
         SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END) as total_charged,
         SUM(CASE WHEN amount < 0 THEN ABS(amount) ELSE 0 END) as total_used,
         COUNT(*) as total_transactions
       FROM point_transactions
       WHERE user_id = ?
-    `).bind(t).first();return e.json({success:!0,transactions:r||[],stats:{totalCharged:(o==null?void 0:o.total_charged)||0,totalUsed:(o==null?void 0:o.total_used)||0,totalTransactions:(o==null?void 0:o.total_transactions)||0}})}catch(t){return console.error("Failed to load point transactions:",t),e.json({success:!1,error:"거래 내역을 불러오는 중 오류가 발생했습니다."},500)}});c.post("/api/upload/document",async e=>{try{const{userId:t,fileName:s,fileData:a,fileType:r}=await e.req.json();if(!t||!s||!a||!r)return e.json({success:!1,error:"필수 정보가 누락되었습니다."},400);const o=a.split(",")[1],n=atob(o),i=new Uint8Array(n.length);for(let u=0;u<n.length;u++)i[u]=n.charCodeAt(u);if(i.length>5*1024*1024)return e.json({success:!1,error:"파일 크기는 5MB 이하여야 합니다."},400);const l=Date.now(),d=`documents/${t}/${l}-${s}`;await e.env.R2.put(d,i,{httpMetadata:{contentType:r}});const p=`https://superplace-academy.pages.dev/api/document/${d}`;return e.json({success:!0,url:p,key:d})}catch(t){return console.error("R2 upload error:",t),e.json({success:!1,error:"이미지 업로드 중 오류가 발생했습니다."},500)}});c.post("/api/upload/landing-image",async e=>{try{const t=await e.req.formData(),s=t.get("image"),a=t.get("userId");if(!s||!a)return e.json({success:!1,error:"필수 정보가 누락되었습니다."},400);if(!s.type.startsWith("image/"))return e.json({success:!1,error:"이미지 파일만 업로드 가능합니다."},400);if(s.size>5*1024*1024)return e.json({success:!1,error:"파일 크기는 5MB 이하여야 합니다."},400);const r=await s.arrayBuffer(),o=new Uint8Array(r),n=Date.now(),i=s.name.replace(/[^a-zA-Z0-9.-]/g,"_"),l=`landing-images/${a}/${n}-${i}`;await e.env.R2.put(l,o,{httpMetadata:{contentType:s.type}});const d=`https://superplace-academy.pages.dev/api/image/${l}`;return e.json({success:!0,url:d,message:"이미지가 업로드되었습니다."})}catch(t){return console.error("이미지 업로드 오류:",t),e.json({success:!1,error:"이미지 업로드 중 오류가 발생했습니다."},500)}});c.get("/api/image/:path{.+}",async e=>{var t;try{const s=e.req.param("path");if(!s)return e.text("File not found",404);const a=await e.env.R2.get(s);return a?new Response(a.body,{headers:{"Content-Type":((t=a.httpMetadata)==null?void 0:t.contentType)||"image/jpeg","Cache-Control":"public, max-age=31536000","Access-Control-Allow-Origin":"*"}}):e.text("File not found",404)}catch(s){return console.error("R2 get error:",s),e.text("Error retrieving file",500)}});c.get("/api/document/:path{.+}",async e=>{var t;try{const s=e.req.param("path");if(!s)return e.text("File not found",404);const a=await e.env.R2.get(s);return a?new Response(a.body,{headers:{"Content-Type":((t=a.httpMetadata)==null?void 0:t.contentType)||"application/octet-stream","Cache-Control":"public, max-age=31536000"}}):e.text("File not found",404)}catch(s){return console.error("R2 get error:",s),e.text("Error retrieving file",500)}});c.post("/api/sms/sender/verification-request",async e=>{try{const{userId:t,phoneNumber:s,businessName:a,businessRegistrationNumber:r,businessRegistrationImage:o,certificateImage:n,employmentCertImage:i,contractImage:l}=await e.req.json();if(console.log("Verification request received:",{userId:t,phoneNumber:s,businessName:a}),!t||!s||!a||!r||!o||!n||!i||!l)return e.json({success:!1,error:"모든 필수 서류를 업로드해주세요."},400);const d=s.replace(/-/g,"");if(!/^01[0-9]{8,9}$/.test(d))return e.json({success:!1,error:"올바른 휴대폰 번호를 입력해주세요."},400);console.log("Checking existing request...");const p=await e.env.DB.prepare(`
+    `).bind(t).first();return e.json({success:!0,transactions:r||[],stats:{totalCharged:(n==null?void 0:n.total_charged)||0,totalUsed:(n==null?void 0:n.total_used)||0,totalTransactions:(n==null?void 0:n.total_transactions)||0}})}catch(t){return console.error("Failed to load point transactions:",t),e.json({success:!1,error:"거래 내역을 불러오는 중 오류가 발생했습니다."},500)}});c.post("/api/upload/document",async e=>{try{const{userId:t,fileName:s,fileData:a,fileType:r}=await e.req.json();if(!t||!s||!a||!r)return e.json({success:!1,error:"필수 정보가 누락되었습니다."},400);const n=a.split(",")[1],o=atob(n),i=new Uint8Array(o.length);for(let u=0;u<o.length;u++)i[u]=o.charCodeAt(u);if(i.length>5*1024*1024)return e.json({success:!1,error:"파일 크기는 5MB 이하여야 합니다."},400);const l=Date.now(),d=`documents/${t}/${l}-${s}`;await e.env.R2.put(d,i,{httpMetadata:{contentType:r}});const p=`https://superplace-academy.pages.dev/api/document/${d}`;return e.json({success:!0,url:p,key:d})}catch(t){return console.error("R2 upload error:",t),e.json({success:!1,error:"이미지 업로드 중 오류가 발생했습니다."},500)}});c.post("/api/upload/landing-image",async e=>{try{const t=await e.req.formData(),s=t.get("image"),a=t.get("userId");if(!s||!a)return e.json({success:!1,error:"필수 정보가 누락되었습니다."},400);if(!s.type.startsWith("image/"))return e.json({success:!1,error:"이미지 파일만 업로드 가능합니다."},400);if(s.size>5*1024*1024)return e.json({success:!1,error:"파일 크기는 5MB 이하여야 합니다."},400);const r=await s.arrayBuffer(),n=new Uint8Array(r),o=Date.now(),i=s.name.replace(/[^a-zA-Z0-9.-]/g,"_"),l=`landing-images/${a}/${o}-${i}`;await e.env.R2.put(l,n,{httpMetadata:{contentType:s.type}});const d=`https://superplace-academy.pages.dev/api/image/${l}`;return e.json({success:!0,url:d,message:"이미지가 업로드되었습니다."})}catch(t){return console.error("이미지 업로드 오류:",t),e.json({success:!1,error:"이미지 업로드 중 오류가 발생했습니다."},500)}});c.get("/api/image/:path{.+}",async e=>{var t;try{const s=e.req.param("path");if(!s)return e.text("File not found",404);const a=await e.env.R2.get(s);return a?new Response(a.body,{headers:{"Content-Type":((t=a.httpMetadata)==null?void 0:t.contentType)||"image/jpeg","Cache-Control":"public, max-age=31536000","Access-Control-Allow-Origin":"*"}}):e.text("File not found",404)}catch(s){return console.error("R2 get error:",s),e.text("Error retrieving file",500)}});c.get("/api/document/:path{.+}",async e=>{var t;try{const s=e.req.param("path");if(!s)return e.text("File not found",404);const a=await e.env.R2.get(s);return a?new Response(a.body,{headers:{"Content-Type":((t=a.httpMetadata)==null?void 0:t.contentType)||"application/octet-stream","Cache-Control":"public, max-age=31536000"}}):e.text("File not found",404)}catch(s){return console.error("R2 get error:",s),e.text("Error retrieving file",500)}});c.post("/api/sms/sender/verification-request",async e=>{try{const{userId:t,phoneNumber:s,businessName:a,businessRegistrationNumber:r,businessRegistrationImage:n,certificateImage:o,employmentCertImage:i,contractImage:l}=await e.req.json();if(console.log("Verification request received:",{userId:t,phoneNumber:s,businessName:a}),!t||!s||!a||!r||!n||!o||!i||!l)return e.json({success:!1,error:"모든 필수 서류를 업로드해주세요."},400);const d=s.replace(/-/g,"");if(!/^01[0-9]{8,9}$/.test(d))return e.json({success:!1,error:"올바른 휴대폰 번호를 입력해주세요."},400);console.log("Checking existing request...");const p=await e.env.DB.prepare(`
       SELECT id, status FROM sender_verification_requests
       WHERE phone_number = ? AND user_id = ? AND status IN ('pending', 'approved')
       ORDER BY request_date DESC
@@ -3821,7 +4067,7 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
       (user_id, phone_number, business_name, business_registration_number, 
        business_registration_image, certificate_image, employment_cert_image, contract_image, status)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending')
-    `).bind(t,d,a,r,o,n,i,l).run();return console.log("Insert successful, ID:",u.meta.last_row_id),e.json({success:!0,message:"발신번호 인증 신청이 완료되었습니다. 관리자 승인을 기다려주세요. (평일 기준 2~3일 소요)",requestId:u.meta.last_row_id})}catch(t){return console.error("Sender verification request error:",t),console.error("Error stack:",t.stack),console.error("Error message:",t.message),e.json({success:!1,error:"발신번호 인증 신청 중 오류가 발생했습니다.",details:t.message},500)}});c.get("/api/sms/sender/verification-requests",async e=>{try{const t=e.req.query("userId");if(!t)return e.json({success:!1,error:"사용자 ID가 필요합니다."},400);const s=await e.env.DB.prepare(`
+    `).bind(t,d,a,r,n,o,i,l).run();return console.log("Insert successful, ID:",u.meta.last_row_id),e.json({success:!0,message:"발신번호 인증 신청이 완료되었습니다. 관리자 승인을 기다려주세요. (평일 기준 2~3일 소요)",requestId:u.meta.last_row_id})}catch(t){return console.error("Sender verification request error:",t),console.error("Error stack:",t.stack),console.error("Error message:",t.message),e.json({success:!1,error:"발신번호 인증 신청 중 오류가 발생했습니다.",details:t.message},500)}});c.get("/api/sms/sender/verification-requests",async e=>{try{const t=e.req.query("userId");if(!t)return e.json({success:!1,error:"사용자 ID가 필요합니다."},400);const s=await e.env.DB.prepare(`
       SELECT 
         id, phone_number, business_name, business_registration_number, 
         business_registration_image, certificate_image, employment_cert_image, contract_image,
@@ -3829,11 +4075,11 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
       FROM sender_verification_requests
       WHERE user_id = ?
       ORDER BY request_date DESC
-    `).bind(t).all();return e.json({success:!0,requests:s.results})}catch(t){return console.error("Get verification requests error:",t),e.json({success:!1,error:"신청 목록 조회 중 오류가 발생했습니다."},500)}});c.post("/api/sms/sender/verification-process",async e=>{try{const{requestId:t,action:s,adminNote:a,adminId:r}=await e.req.json();if(!t||!s||!r)return e.json({success:!1,error:"필수 정보를 입력해주세요."},400);if(!["approve","reject"].includes(s))return e.json({success:!1,error:"올바른 액션을 선택해주세요."},400);const o=await e.env.DB.prepare(`
+    `).bind(t).all();return e.json({success:!0,requests:s.results})}catch(t){return console.error("Get verification requests error:",t),e.json({success:!1,error:"신청 목록 조회 중 오류가 발생했습니다."},500)}});c.post("/api/sms/sender/verification-process",async e=>{try{const{requestId:t,action:s,adminNote:a,adminId:r}=await e.req.json();if(!t||!s||!r)return e.json({success:!1,error:"필수 정보를 입력해주세요."},400);if(!["approve","reject"].includes(s))return e.json({success:!1,error:"올바른 액션을 선택해주세요."},400);const n=await e.env.DB.prepare(`
       SELECT role FROM users WHERE id = ?
-    `).bind(r).first();if(!o||o.role!=="admin")return e.json({success:!1,error:"관리자 권한이 필요합니다."},403);const n=await e.env.DB.prepare(`
+    `).bind(r).first();if(!n||n.role!=="admin")return e.json({success:!1,error:"관리자 권한이 필요합니다."},403);const o=await e.env.DB.prepare(`
       SELECT * FROM sender_verification_requests WHERE id = ?
-    `).bind(t).first();if(!n)return e.json({success:!1,error:"신청 정보를 찾을 수 없습니다."},404);if(n.status!=="pending")return e.json({success:!1,error:"이미 처리된 신청입니다."},400);const i=s==="approve"?"approved":"rejected",l=new Date().toISOString();if(await e.env.DB.prepare(`
+    `).bind(t).first();if(!o)return e.json({success:!1,error:"신청 정보를 찾을 수 없습니다."},404);if(o.status!=="pending")return e.json({success:!1,error:"이미 처리된 신청입니다."},400);const i=s==="approve"?"approved":"rejected",l=new Date().toISOString();if(await e.env.DB.prepare(`
       UPDATE sender_verification_requests
       SET status = ?, admin_note = ?, processed_by = ?, processed_date = ?
       WHERE id = ?
@@ -3841,7 +4087,7 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
         INSERT INTO sender_ids 
         (user_id, phone_number, verification_method, status, verification_request_id, business_name, business_registration_number)
         VALUES (?, ?, 'business_registration', 'verified', ?, ?, ?)
-      `).bind(n.user_id,n.phone_number,t,n.business_name,n.business_registration_number).run();try{const d=e.env.ALIGO_USER_ID||"",p=e.env.ALIGO_API_KEY||"";if(!d||!p)console.warn("Aligo API credentials not configured");else{const m=await(await fetch("https://apis.aligo.in/sender/",{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({user_id:d,key:p,sender:n.phone_number.replace(/-/g,""),comment:`${n.business_name} - 승인일: ${new Date().toLocaleDateString("ko-KR")}`})})).json();console.log("Aligo API response:",m),m.result_code!=="1"&&console.error("Aligo sender registration failed:",m)}}catch(d){console.error("Aligo API error:",d)}}return e.json({success:!0,message:s==="approve"?"발신번호가 승인되었습니다.":"발신번호 신청이 거절되었습니다."})}catch(t){return console.error("Process verification error:",t),e.json({success:!1,error:"처리 중 오류가 발생했습니다."},500)}});c.get("/api/admin/sender/verification-requests",async e=>{try{const t=e.req.query("adminId");if(!t)return e.json({success:!1,error:"관리자 ID가 필요합니다."},400);const s=await e.env.DB.prepare(`
+      `).bind(o.user_id,o.phone_number,t,o.business_name,o.business_registration_number).run();try{const d=e.env.ALIGO_USER_ID||"",p=e.env.ALIGO_API_KEY||"";if(!d||!p)console.warn("Aligo API credentials not configured");else{const m=await(await fetch("https://apis.aligo.in/sender/",{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({user_id:d,key:p,sender:o.phone_number.replace(/-/g,""),comment:`${o.business_name} - 승인일: ${new Date().toLocaleDateString("ko-KR")}`})})).json();console.log("Aligo API response:",m),m.result_code!=="1"&&console.error("Aligo sender registration failed:",m)}}catch(d){console.error("Aligo API error:",d)}}return e.json({success:!0,message:s==="approve"?"발신번호가 승인되었습니다.":"발신번호 신청이 거절되었습니다."})}catch(t){return console.error("Process verification error:",t),e.json({success:!1,error:"처리 중 오류가 발생했습니다."},500)}});c.get("/api/admin/sender/verification-requests",async e=>{try{const t=e.req.query("adminId");if(!t)return e.json({success:!1,error:"관리자 ID가 필요합니다."},400);const s=await e.env.DB.prepare(`
       SELECT role FROM users WHERE id = ?
     `).bind(t).first();if(!s||s.role!=="admin")return e.json({success:!1,error:"관리자 권한이 필요합니다."},403);const a=await e.env.DB.prepare(`
       SELECT 
@@ -3929,18 +4175,18 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
       SELECT * FROM deposit_requests WHERE user_id = ? ORDER BY created_at DESC
     `).bind(t).all();return e.json({success:!0,requests:s.results})}catch(t){return console.error("Get deposit requests error:",t),e.json({success:!1,error:"입금 신청 내역 조회 중 오류가 발생했습니다."},500)}});c.get("/api/admin/deposit/requests",async e=>{try{const t=await e.env.DB.prepare(`
       SELECT * FROM deposit_requests ORDER BY created_at DESC
-    `).all();return e.json({success:!0,requests:t.results})}catch(t){return console.error("Get all deposit requests error:",t),e.json({success:!1,error:"입금 신청 목록 조회 중 오류가 발생했습니다."},500)}});c.put("/api/admin/deposit/requests/:id/process",async e=>{try{const t=e.req.param("id"),{status:s,adminId:a}=await e.req.json();if(console.log("Processing deposit:",{requestId:t,status:s,adminId:a}),a){const n=await e.env.DB.prepare(`
+    `).all();return e.json({success:!0,requests:t.results})}catch(t){return console.error("Get all deposit requests error:",t),e.json({success:!1,error:"입금 신청 목록 조회 중 오류가 발생했습니다."},500)}});c.put("/api/admin/deposit/requests/:id/process",async e=>{try{const t=e.req.param("id"),{status:s,adminId:a}=await e.req.json();if(console.log("Processing deposit:",{requestId:t,status:s,adminId:a}),a){const o=await e.env.DB.prepare(`
         SELECT role FROM users WHERE id = ?
-      `).bind(a).first();if(!n||n.role!=="admin")return e.json({success:!1,error:"관리자 권한이 필요합니다."},403)}const r=await e.env.DB.prepare(`
+      `).bind(a).first();if(!o||o.role!=="admin")return e.json({success:!1,error:"관리자 권한이 필요합니다."},403)}const r=await e.env.DB.prepare(`
       SELECT * FROM deposit_requests WHERE id = ?
-    `).bind(t).first();if(console.log("Found request:",r),!r)return e.json({success:!1,error:"입금 신청을 찾을 수 없습니다."},404);if(r.status!=="pending")return e.json({success:!1,error:"이미 처리된 신청입니다."},400);let o=0;if(s==="approved"){const n=r.amount;console.log("Approving deposit for user:",r.user_id,"adding:",n);const i=await e.env.DB.prepare(`
+    `).bind(t).first();if(console.log("Found request:",r),!r)return e.json({success:!1,error:"입금 신청을 찾을 수 없습니다."},404);if(r.status!=="pending")return e.json({success:!1,error:"이미 처리된 신청입니다."},400);let n=0;if(s==="approved"){const o=r.amount;console.log("Approving deposit for user:",r.user_id,"adding:",o);const i=await e.env.DB.prepare(`
         SELECT balance FROM users WHERE id = ?
-      `).bind(r.user_id).first(),l=(i==null?void 0:i.balance)||0;if(o=l+n,await e.env.DB.prepare(`
+      `).bind(r.user_id).first(),l=(i==null?void 0:i.balance)||0;if(n=l+o,await e.env.DB.prepare(`
         UPDATE users SET balance = ?, points = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?
-      `).bind(o,o,r.user_id).run(),console.log("Points/Balance updated:",l,"->",o),await e.env.DB.prepare(`
+      `).bind(n,n,r.user_id).run(),console.log("Points/Balance updated:",l,"->",n),await e.env.DB.prepare(`
         INSERT INTO point_transactions (user_id, transaction_type, amount, balance_before, balance_after, description, admin_id)
         VALUES (?, 'deposit_approval', ?, ?, ?, ?, ?)
-      `).bind(r.user_id,n,l,o,`입금 신청 승인 (신청 ID: ${t})`,a||null).run(),r.user_email)try{const d=e.env.RESEND_API_KEY;if(d){const p=await fetch("https://api.resend.com/emails",{method:"POST",headers:{"Content-Type":"application/json",Authorization:`Bearer ${d}`},body:JSON.stringify({from:"슈퍼플레이스 <noreply@superplace.co.kr>",to:r.user_email,subject:"✅ 포인트 충전이 완료되었습니다",html:`
+      `).bind(r.user_id,o,l,n,`입금 신청 승인 (신청 ID: ${t})`,a||null).run(),r.user_email)try{const d=e.env.RESEND_API_KEY;if(d){const p=await fetch("https://api.resend.com/emails",{method:"POST",headers:{"Content-Type":"application/json",Authorization:`Bearer ${d}`},body:JSON.stringify({from:"슈퍼플레이스 <noreply@superplace.co.kr>",to:r.user_email,subject:"✅ 포인트 충전이 완료되었습니다",html:`
                   <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
                     <div style="background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
                       <h1 style="color: white; margin: 0; font-size: 24px;">💰 포인트 충전 완료</h1>
@@ -3958,20 +4204,20 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
                       <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
                         <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
                           <span style="color: #6b7280;">충전 금액</span>
-                          <strong style="color: #9333ea; font-size: 20px;">${n.toLocaleString()}P</strong>
+                          <strong style="color: #9333ea; font-size: 20px;">${o.toLocaleString()}P</strong>
                         </div>
                         <div style="display: flex; justify-content: space-between; padding-top: 10px; border-top: 1px solid #e5e7eb;">
                           <span style="color: #6b7280;">현재 잔액</span>
-                          <strong style="color: #1f2937; font-size: 18px;">${o.toLocaleString()}P</strong>
+                          <strong style="color: #1f2937; font-size: 18px;">${n.toLocaleString()}P</strong>
                         </div>
                       </div>
                       
                       <div style="background: #eff6ff; padding: 15px; border-radius: 8px; border-left: 4px solid #3b82f6; margin-bottom: 30px;">
                         <p style="margin: 0; color: #1e40af; font-size: 14px;">
                           💡 <strong>SMS 발송 가능 건수</strong><br>
-                          • SMS (90자): 약 ${Math.floor(o/20).toLocaleString()}건<br>
-                          • LMS (2000자): 약 ${Math.floor(o/50).toLocaleString()}건<br>
-                          • MMS (사진 포함): 약 ${Math.floor(o/150).toLocaleString()}건
+                          • SMS (90자): 약 ${Math.floor(n/20).toLocaleString()}건<br>
+                          • LMS (2000자): 약 ${Math.floor(n/50).toLocaleString()}건<br>
+                          • MMS (사진 포함): 약 ${Math.floor(n/150).toLocaleString()}건
                         </p>
                       </div>
                       
@@ -3994,15 +4240,15 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
       UPDATE users SET password = ? WHERE id = ?
     `).bind(s,t).run(),e.json({success:!0,message:"비밀번호가 변경되었습니다."}))}catch(t){return console.error("Change password error:",t),e.json({success:!1,error:"비밀번호 변경 중 오류가 발생했습니다."},500)}});c.put("/api/admin/users/:id/points",async e=>{try{const t=e.req.param("id"),{points:s,action:a}=await e.req.json();if(!s||s<=0)return e.json({success:!1,error:"유효한 포인트를 입력해주세요."},400);const r=await e.env.DB.prepare(`
       SELECT points FROM users WHERE id = ?
-    `).bind(t).first();if(!r)return e.json({success:!1,error:"사용자를 찾을 수 없습니다."},404);let o=r.points||0;return a==="add"?o+=s:a==="subtract"&&(o=Math.max(0,o-s)),await e.env.DB.prepare(`
+    `).bind(t).first();if(!r)return e.json({success:!1,error:"사용자를 찾을 수 없습니다."},404);let n=r.points||0;return a==="add"?n+=s:a==="subtract"&&(n=Math.max(0,n-s)),await e.env.DB.prepare(`
       UPDATE users SET points = ? WHERE id = ?
-    `).bind(o,t).run(),e.json({success:!0,message:"포인트가 업데이트되었습니다.",newPoints:o})}catch(t){return console.error("Update points error:",t),e.json({success:!1,error:"포인트 업데이트 중 오류가 발생했습니다."},500)}});c.post("/api/admin/login-as/:id",async e=>{try{const t=e.req.param("id"),s=await e.env.DB.prepare(`
+    `).bind(n,t).run(),e.json({success:!0,message:"포인트가 업데이트되었습니다.",newPoints:n})}catch(t){return console.error("Update points error:",t),e.json({success:!1,error:"포인트 업데이트 중 오류가 발생했습니다."},500)}});c.post("/api/admin/login-as/:id",async e=>{try{const t=e.req.param("id"),s=await e.env.DB.prepare(`
       SELECT id, email, name, role, points FROM users WHERE id = ?
     `).bind(t).first();return s?e.json({success:!0,message:"로그인 성공",user:{id:s.id,email:s.email,name:s.name,role:s.role,points:s.points}}):e.json({success:!1,error:"사용자를 찾을 수 없습니다."},404)}catch(t){return console.error("Login as user error:",t),e.json({success:!1,error:"로그인 중 오류가 발생했습니다."},500)}});c.get("/api/contacts",async e=>{try{const{results:t}=await e.env.DB.prepare(`
       SELECT * FROM contacts ORDER BY created_at DESC LIMIT 50
-    `).all();return e.json({success:!0,contacts:t})}catch(t){return console.error("Fetch contacts error:",t),e.json({success:!1,error:"문의 목록 조회 중 오류가 발생했습니다."},500)}});c.put("/api/admin/contacts/:id",async e=>{try{const t=e.req.param("id"),{status:s,reply_memo:a,handled_by:r}=await e.req.json();let o="UPDATE contacts SET ";const n=[],i=[];return s&&(n.push("status = ?"),i.push(s)),a!==void 0&&(n.push("reply_memo = ?"),i.push(a)),r&&(n.push("handled_by = ?, handled_at = CURRENT_TIMESTAMP"),i.push(r)),o+=n.join(", ")+" WHERE id = ?",i.push(t),await e.env.DB.prepare(o).bind(...i).run(),e.json({success:!0,message:"문의가 업데이트되었습니다."})}catch(t){return console.error("Update contact error:",t),e.json({success:!1,error:"문의 업데이트 실패"},500)}});c.post("/api/admin/fix-class-ownership",async e=>{var t;try{const{email:s,targetUserId:a}=await e.req.json();if(!s&&!a)return e.json({success:!1,error:"이메일 또는 대상 사용자 ID가 필요합니다."},400);console.log("🔧 [FixClassOwnership] Request:",{email:s,targetUserId:a});let r=a;if(s&&!r){const i=await e.env.DB.prepare("SELECT id FROM users WHERE email = ?").bind(s).first();if(!i)return e.json({success:!1,error:"사용자를 찾을 수 없습니다."},404);r=i.id}console.log("👤 [FixClassOwnership] Target user_id:",r);const o=await e.env.DB.prepare("SELECT id, name, user_id, teacher_id FROM classes WHERE teacher_id = ?").bind(r).all();if(console.log("📚 [FixClassOwnership] Found",((t=o.results)==null?void 0:t.length)||0,"classes as teacher"),!o.results||o.results.length===0)return e.json({success:!0,message:"수정할 반이 없습니다.",updated:0});let n=0;for(const i of o.results)i.user_id!==i.teacher_id&&(await e.env.DB.prepare("UPDATE classes SET user_id = ? WHERE id = ?").bind(i.teacher_id,i.id).run(),n++,console.log(`✅ [FixClassOwnership] Updated class ${i.id} (${i.name}): user_id ${i.user_id} → ${i.teacher_id}`));return e.json({success:!0,message:`${n}개의 반 소유권이 수정되었습니다.`,updated:n,details:o.results.map(i=>({id:i.id,name:i.name,old_user_id:i.user_id,new_user_id:i.teacher_id}))})}catch(s){return console.error("❌ [FixClassOwnership] Error:",s),e.json({success:!1,error:"반 소유권 수정 중 오류가 발생했습니다."},500)}});c.get("/api/admin/classes/all",async e=>{var t,s,a,r,o;try{console.log("🔍 [AdminClasses] Fetching ALL classes from database");let n;try{n=await e.env.DB.prepare(`
+    `).all();return e.json({success:!0,contacts:t})}catch(t){return console.error("Fetch contacts error:",t),e.json({success:!1,error:"문의 목록 조회 중 오류가 발생했습니다."},500)}});c.put("/api/admin/contacts/:id",async e=>{try{const t=e.req.param("id"),{status:s,reply_memo:a,handled_by:r}=await e.req.json();let n="UPDATE contacts SET ";const o=[],i=[];return s&&(o.push("status = ?"),i.push(s)),a!==void 0&&(o.push("reply_memo = ?"),i.push(a)),r&&(o.push("handled_by = ?, handled_at = CURRENT_TIMESTAMP"),i.push(r)),n+=o.join(", ")+" WHERE id = ?",i.push(t),await e.env.DB.prepare(n).bind(...i).run(),e.json({success:!0,message:"문의가 업데이트되었습니다."})}catch(t){return console.error("Update contact error:",t),e.json({success:!1,error:"문의 업데이트 실패"},500)}});c.post("/api/admin/fix-class-ownership",async e=>{var t;try{const{email:s,targetUserId:a}=await e.req.json();if(!s&&!a)return e.json({success:!1,error:"이메일 또는 대상 사용자 ID가 필요합니다."},400);console.log("🔧 [FixClassOwnership] Request:",{email:s,targetUserId:a});let r=a;if(s&&!r){const i=await e.env.DB.prepare("SELECT id FROM users WHERE email = ?").bind(s).first();if(!i)return e.json({success:!1,error:"사용자를 찾을 수 없습니다."},404);r=i.id}console.log("👤 [FixClassOwnership] Target user_id:",r);const n=await e.env.DB.prepare("SELECT id, name, user_id, teacher_id FROM classes WHERE teacher_id = ?").bind(r).all();if(console.log("📚 [FixClassOwnership] Found",((t=n.results)==null?void 0:t.length)||0,"classes as teacher"),!n.results||n.results.length===0)return e.json({success:!0,message:"수정할 반이 없습니다.",updated:0});let o=0;for(const i of n.results)i.user_id!==i.teacher_id&&(await e.env.DB.prepare("UPDATE classes SET user_id = ? WHERE id = ?").bind(i.teacher_id,i.id).run(),o++,console.log(`✅ [FixClassOwnership] Updated class ${i.id} (${i.name}): user_id ${i.user_id} → ${i.teacher_id}`));return e.json({success:!0,message:`${o}개의 반 소유권이 수정되었습니다.`,updated:o,details:n.results.map(i=>({id:i.id,name:i.name,old_user_id:i.user_id,new_user_id:i.teacher_id}))})}catch(s){return console.error("❌ [FixClassOwnership] Error:",s),e.json({success:!1,error:"반 소유권 수정 중 오류가 발생했습니다."},500)}});c.get("/api/admin/classes/all",async e=>{var t,s,a,r,n;try{console.log("🔍 [AdminClasses] Fetching ALL classes from database");let o;try{o=await e.env.DB.prepare(`
         PRAGMA table_info(classes)
-      `).all(),console.log("📋 [AdminClasses] Table schema:",JSON.stringify(n.results))}catch(u){console.error("⚠️ [AdminClasses] Schema check failed:",u.message)}const i=(t=n==null?void 0:n.results)==null?void 0:t.some(u=>u.name==="user_id"),l=(s=n==null?void 0:n.results)==null?void 0:s.some(u=>u.name==="academy_id"),d=i?"user_id":l?"academy_id":null;if(console.log("🔍 [AdminClasses] Owner column:",d),!d){const u=await e.env.DB.prepare("SELECT * FROM classes ORDER BY created_at DESC").all();return e.json({success:!0,classes:u.results||[],total:((a=u.results)==null?void 0:a.length)||0,note:"소유자 정보를 찾을 수 없습니다. classes 테이블에 user_id 또는 academy_id 컬럼이 필요합니다."})}const p=await e.env.DB.prepare(`
+      `).all(),console.log("📋 [AdminClasses] Table schema:",JSON.stringify(o.results))}catch(u){console.error("⚠️ [AdminClasses] Schema check failed:",u.message)}const i=(t=o==null?void 0:o.results)==null?void 0:t.some(u=>u.name==="user_id"),l=(s=o==null?void 0:o.results)==null?void 0:s.some(u=>u.name==="academy_id"),d=i?"user_id":l?"academy_id":null;if(console.log("🔍 [AdminClasses] Owner column:",d),!d){const u=await e.env.DB.prepare("SELECT * FROM classes ORDER BY created_at DESC").all();return e.json({success:!0,classes:u.results||[],total:((a=u.results)==null?void 0:a.length)||0,note:"소유자 정보를 찾을 수 없습니다. classes 테이블에 user_id 또는 academy_id 컬럼이 필요합니다."})}const p=await e.env.DB.prepare(`
       SELECT c.*, 
              u.email as owner_email, 
              u.name as owner_name,
@@ -4012,17 +4258,17 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
       LEFT JOIN users u ON c.${d} = u.id
       LEFT JOIN users t ON c.teacher_id = t.id
       ORDER BY c.created_at DESC
-    `).all();return console.log("📚 [AdminClasses] Found",((r=p.results)==null?void 0:r.length)||0,"total classes"),e.json({success:!0,classes:p.results||[],total:((o=p.results)==null?void 0:o.length)||0,ownerColumn:d})}catch(n){return console.error("❌ [AdminClasses] Error:",n),e.json({success:!1,error:"반 조회 중 오류가 발생했습니다.",details:n.message},500)}});c.post("/api/admin/classes/create-for-user",async e=>{var t,s;try{const{targetEmail:a,className:r,gradeLevel:o,subject:n,description:i}=await e.req.json();if(!a||!r)return e.json({success:!1,error:"targetEmail과 className이 필요합니다."},400);console.log("🏫 [AdminCreateClass] Creating class for user:",a);const l=await e.env.DB.prepare("SELECT id, email, name FROM users WHERE email = ?").bind(a).first();if(!l)return e.json({success:!1,error:"대상 사용자를 찾을 수 없습니다."},404);console.log("👤 [AdminCreateClass] Target user:",l);const d=await e.env.DB.prepare("PRAGMA table_info(classes)").all(),p=(t=d.results)==null?void 0:t.some(b=>b.name==="user_id"),u=(s=d.results)==null?void 0:s.some(b=>b.name==="academy_id"),m=p?"user_id":u?"academy_id":"user_id";console.log("🔍 [AdminCreateClass] Using owner column:",m);const x=(await e.env.DB.prepare(`
+    `).all();return console.log("📚 [AdminClasses] Found",((r=p.results)==null?void 0:r.length)||0,"total classes"),e.json({success:!0,classes:p.results||[],total:((n=p.results)==null?void 0:n.length)||0,ownerColumn:d})}catch(o){return console.error("❌ [AdminClasses] Error:",o),e.json({success:!1,error:"반 조회 중 오류가 발생했습니다.",details:o.message},500)}});c.post("/api/admin/classes/create-for-user",async e=>{var t,s;try{const{targetEmail:a,className:r,gradeLevel:n,subject:o,description:i}=await e.req.json();if(!a||!r)return e.json({success:!1,error:"targetEmail과 className이 필요합니다."},400);console.log("🏫 [AdminCreateClass] Creating class for user:",a);const l=await e.env.DB.prepare("SELECT id, email, name FROM users WHERE email = ?").bind(a).first();if(!l)return e.json({success:!1,error:"대상 사용자를 찾을 수 없습니다."},404);console.log("👤 [AdminCreateClass] Target user:",l);const d=await e.env.DB.prepare("PRAGMA table_info(classes)").all(),p=(t=d.results)==null?void 0:t.some(b=>b.name==="user_id"),u=(s=d.results)==null?void 0:s.some(b=>b.name==="academy_id"),m=p?"user_id":u?"academy_id":"user_id";console.log("🔍 [AdminCreateClass] Using owner column:",m);const x=(await e.env.DB.prepare(`
       INSERT INTO classes (name, description, ${m}, grade_level, subject, max_students, status, created_at)
       VALUES (?, ?, ?, ?, ?, 20, 'active', datetime('now'))
-    `).bind(r,i||null,l.id,o||null,n||null).run()).meta.last_row_id;return console.log("✅ [AdminCreateClass] Class created:",{classId:x,name:r,owner:l.email}),e.json({success:!0,message:`${l.email}에게 반이 생성되었습니다.`,classId:x,class:{id:x,name:r,owner_id:l.id,owner_email:l.email,owner_name:l.name}})}catch(a){return console.error("❌ [AdminCreateClass] Error:",a),e.json({success:!1,error:"반 생성 중 오류가 발생했습니다.",details:a.message},500)}});c.post("/api/admin/transfer-classes",async e=>{var t,s,a;try{const{fromUserId:r,toEmail:o}=await e.req.json();if(!r||!o)return e.json({success:!1,error:"fromUserId와 toEmail이 필요합니다."},400);console.log("🔄 [TransferClasses] Transfer request:",{fromUserId:r,toEmail:o});const n=await e.env.DB.prepare("SELECT id, email, name FROM users WHERE email = ?").bind(o).first();if(!n)return e.json({success:!1,error:"대상 사용자를 찾을 수 없습니다."},404);console.log("👤 [TransferClasses] Target user:",n);const i=await e.env.DB.prepare("PRAGMA table_info(classes)").all(),l=(t=i.results)==null?void 0:t.some(x=>x.name==="user_id"),d=(s=i.results)==null?void 0:s.some(x=>x.name==="academy_id"),p=l?"user_id":d?"academy_id":"user_id";console.log("🔍 [TransferClasses] Using owner column:",p);const u=await e.env.DB.prepare(`SELECT id, name, ${p} as owner_id, teacher_id FROM classes WHERE ${p} = ?`).bind(r).all();if(console.log("📚 [TransferClasses] Found",((a=u.results)==null?void 0:a.length)||0,"classes to transfer"),!u.results||u.results.length===0)return e.json({success:!0,message:"이전할 반이 없습니다.",transferred:0});let m=0;const g=[];for(const x of u.results)await e.env.DB.prepare(`UPDATE classes SET ${p} = ? WHERE id = ?`).bind(n.id,x.id).run(),m++,g.push({id:x.id,name:x.name,from_user_id:x.owner_id,to_user_id:n.id,to_email:n.email}),console.log(`✅ [TransferClasses] Transferred class ${x.id} (${x.name}): ${p} ${x.owner_id} → ${n.id}`);return e.json({success:!0,message:`${m}개의 반이 ${n.email}로 이전되었습니다.`,transferred:m,target_user:{id:n.id,email:n.email,name:n.name},details:g})}catch(r){return console.error("❌ [TransferClasses] Error:",r),e.json({success:!1,error:"반 이전 중 오류가 발생했습니다.",details:r.message},500)}});c.post("/api/admin/transfer-all-classes-to-user",async e=>{var t;try{const{toEmail:s}=await e.req.json();if(!s)return e.json({success:!1,error:"toEmail이 필요합니다."},400);console.log("🚨 [EmergencyTransfer] Transferring ALL classes to:",s);const a=await e.env.DB.prepare("SELECT id, email, name FROM users WHERE email = ?").bind(s).first();if(!a)return e.json({success:!1,error:"대상 사용자를 찾을 수 없습니다."},404);console.log("👤 [EmergencyTransfer] Target user:",a);let r;try{r=await e.env.DB.prepare("SELECT * FROM classes ORDER BY id").all()}catch(u){return e.json({success:!1,error:"classes 테이블을 찾을 수 없습니다: "+u.message},500)}if(console.log("📚 [EmergencyTransfer] Found",((t=r.results)==null?void 0:t.length)||0,"total classes"),!r.results||r.results.length===0)return e.json({success:!0,message:"이전할 반이 없습니다.",transferred:0});const o=r.results[0],n="academy_id"in o,l="user_id"in o?"user_id":n?"academy_id":null;if(console.log("🔍 [EmergencyTransfer] Owner column:",l),!l)return e.json({success:!1,error:"소유자 컬럼(academy_id 또는 user_id)을 찾을 수 없습니다."},500);let d=0;const p=[];for(const u of r.results)try{await e.env.DB.prepare(`UPDATE classes SET ${l} = ? WHERE id = ?`).bind(a.id,u.id).run(),d++,p.push({id:u.id,name:u.class_name||u.name,from_owner_id:u[l],to_owner_id:a.id}),console.log(`✅ [EmergencyTransfer] Transferred class ${u.id} (${u.class_name||u.name}): ${l} ${u[l]} → ${a.id}`)}catch(m){console.error(`❌ [EmergencyTransfer] Failed to transfer class ${u.id}:`,m.message)}return e.json({success:!0,message:`${d}개의 반이 ${a.email}로 이전되었습니다.`,transferred:d,total:r.results.length,target_user:{id:a.id,email:a.email,name:a.name},details:p.slice(0,10)})}catch(s){return console.error("❌ [EmergencyTransfer] Error:",s),e.json({success:!1,error:"반 이전 중 오류가 발생했습니다: "+s.message},500)}});c.get("/api/admin/users",async e=>{try{const{results:t}=await e.env.DB.prepare("SELECT id, email, name, phone, academy_name, role, created_at FROM users ORDER BY created_at DESC").all();return e.json({success:!0,users:t})}catch{return e.json({success:!1,error:"사용자 목록 조회 실패"},500)}});c.delete("/api/admin/users/:id",async e=>{try{const t=e.req.param("id");console.log("🗑️ Delete user request:",t);const s=await e.env.DB.prepare("SELECT role FROM users WHERE id = ?").bind(t).first();if(!s)return console.error("❌ User not found:",t),e.json({success:!1,error:"사용자를 찾을 수 없습니다."},404);if(s.role==="admin")return console.error("❌ Cannot delete admin:",t),e.json({success:!1,error:"관리자 계정은 삭제할 수 없습니다."},403);console.log("✅ User found, starting deletion:",t);try{await e.env.DB.prepare("DELETE FROM user_permissions WHERE user_id = ?").bind(t).run()}catch(r){console.log("Skip user_permissions:",r.message)}try{await e.env.DB.prepare("DELETE FROM user_programs WHERE user_id = ?").bind(t).run()}catch(r){console.log("Skip user_programs:",r.message)}try{await e.env.DB.prepare("DELETE FROM sender_ids WHERE user_id = ?").bind(t).run()}catch(r){console.log("Skip sender_ids:",r.message)}try{await e.env.DB.prepare("DELETE FROM sender_verification_requests WHERE user_id = ?").bind(t).run()}catch(r){console.log("Skip sender_verification_requests:",r.message)}try{await e.env.DB.prepare("DELETE FROM sms_logs WHERE user_id = ?").bind(t).run()}catch(r){console.log("Skip sms_logs:",r.message)}try{await e.env.DB.prepare("DELETE FROM landing_pages WHERE user_id = ?").bind(t).run()}catch(r){console.log("Skip landing_pages:",r.message)}try{await e.env.DB.prepare("DELETE FROM students WHERE user_id = ?").bind(t).run()}catch(r){console.log("Skip students:",r.message)}try{await e.env.DB.prepare("DELETE FROM deposit_requests WHERE user_id = ?").bind(t).run()}catch(r){console.log("Skip deposit_requests:",r.message)}console.log("✅ Related data deleted, deleting user:",t);const a=await e.env.DB.prepare("DELETE FROM users WHERE id = ?").bind(t).run();return console.log("✅ User deleted successfully:",t,a),e.json({success:!0,message:"사용자가 삭제되었습니다."})}catch(t){return console.error("❌ Delete user error:",t),console.error("Error details:",t.message,t.stack),e.json({success:!1,error:"사용자 삭제 실패: "+t.message},500)}});c.get("/api/admin/programs",async e=>{try{const{results:t}=await e.env.DB.prepare("SELECT * FROM programs ORDER BY created_at DESC").all();return e.json({success:!0,programs:t})}catch(t){return console.error("Programs error:",t),e.json({success:!1,error:"프로그램 목록 조회 실패"},500)}});c.post("/api/admin/programs",async e=>{try{const{name:t,description:s,price:a,duration_days:r,max_students:o}=await e.req.json(),n=await e.env.DB.prepare(`
+    `).bind(r,i||null,l.id,n||null,o||null).run()).meta.last_row_id;return console.log("✅ [AdminCreateClass] Class created:",{classId:x,name:r,owner:l.email}),e.json({success:!0,message:`${l.email}에게 반이 생성되었습니다.`,classId:x,class:{id:x,name:r,owner_id:l.id,owner_email:l.email,owner_name:l.name}})}catch(a){return console.error("❌ [AdminCreateClass] Error:",a),e.json({success:!1,error:"반 생성 중 오류가 발생했습니다.",details:a.message},500)}});c.post("/api/admin/transfer-classes",async e=>{var t,s,a;try{const{fromUserId:r,toEmail:n}=await e.req.json();if(!r||!n)return e.json({success:!1,error:"fromUserId와 toEmail이 필요합니다."},400);console.log("🔄 [TransferClasses] Transfer request:",{fromUserId:r,toEmail:n});const o=await e.env.DB.prepare("SELECT id, email, name FROM users WHERE email = ?").bind(n).first();if(!o)return e.json({success:!1,error:"대상 사용자를 찾을 수 없습니다."},404);console.log("👤 [TransferClasses] Target user:",o);const i=await e.env.DB.prepare("PRAGMA table_info(classes)").all(),l=(t=i.results)==null?void 0:t.some(x=>x.name==="user_id"),d=(s=i.results)==null?void 0:s.some(x=>x.name==="academy_id"),p=l?"user_id":d?"academy_id":"user_id";console.log("🔍 [TransferClasses] Using owner column:",p);const u=await e.env.DB.prepare(`SELECT id, name, ${p} as owner_id, teacher_id FROM classes WHERE ${p} = ?`).bind(r).all();if(console.log("📚 [TransferClasses] Found",((a=u.results)==null?void 0:a.length)||0,"classes to transfer"),!u.results||u.results.length===0)return e.json({success:!0,message:"이전할 반이 없습니다.",transferred:0});let m=0;const g=[];for(const x of u.results)await e.env.DB.prepare(`UPDATE classes SET ${p} = ? WHERE id = ?`).bind(o.id,x.id).run(),m++,g.push({id:x.id,name:x.name,from_user_id:x.owner_id,to_user_id:o.id,to_email:o.email}),console.log(`✅ [TransferClasses] Transferred class ${x.id} (${x.name}): ${p} ${x.owner_id} → ${o.id}`);return e.json({success:!0,message:`${m}개의 반이 ${o.email}로 이전되었습니다.`,transferred:m,target_user:{id:o.id,email:o.email,name:o.name},details:g})}catch(r){return console.error("❌ [TransferClasses] Error:",r),e.json({success:!1,error:"반 이전 중 오류가 발생했습니다.",details:r.message},500)}});c.post("/api/admin/transfer-all-classes-to-user",async e=>{var t;try{const{toEmail:s}=await e.req.json();if(!s)return e.json({success:!1,error:"toEmail이 필요합니다."},400);console.log("🚨 [EmergencyTransfer] Transferring ALL classes to:",s);const a=await e.env.DB.prepare("SELECT id, email, name FROM users WHERE email = ?").bind(s).first();if(!a)return e.json({success:!1,error:"대상 사용자를 찾을 수 없습니다."},404);console.log("👤 [EmergencyTransfer] Target user:",a);let r;try{r=await e.env.DB.prepare("SELECT * FROM classes ORDER BY id").all()}catch(u){return e.json({success:!1,error:"classes 테이블을 찾을 수 없습니다: "+u.message},500)}if(console.log("📚 [EmergencyTransfer] Found",((t=r.results)==null?void 0:t.length)||0,"total classes"),!r.results||r.results.length===0)return e.json({success:!0,message:"이전할 반이 없습니다.",transferred:0});const n=r.results[0],o="academy_id"in n,l="user_id"in n?"user_id":o?"academy_id":null;if(console.log("🔍 [EmergencyTransfer] Owner column:",l),!l)return e.json({success:!1,error:"소유자 컬럼(academy_id 또는 user_id)을 찾을 수 없습니다."},500);let d=0;const p=[];for(const u of r.results)try{await e.env.DB.prepare(`UPDATE classes SET ${l} = ? WHERE id = ?`).bind(a.id,u.id).run(),d++,p.push({id:u.id,name:u.class_name||u.name,from_owner_id:u[l],to_owner_id:a.id}),console.log(`✅ [EmergencyTransfer] Transferred class ${u.id} (${u.class_name||u.name}): ${l} ${u[l]} → ${a.id}`)}catch(m){console.error(`❌ [EmergencyTransfer] Failed to transfer class ${u.id}:`,m.message)}return e.json({success:!0,message:`${d}개의 반이 ${a.email}로 이전되었습니다.`,transferred:d,total:r.results.length,target_user:{id:a.id,email:a.email,name:a.name},details:p.slice(0,10)})}catch(s){return console.error("❌ [EmergencyTransfer] Error:",s),e.json({success:!1,error:"반 이전 중 오류가 발생했습니다: "+s.message},500)}});c.get("/api/admin/users",async e=>{try{const{results:t}=await e.env.DB.prepare("SELECT id, email, name, phone, academy_name, role, created_at FROM users ORDER BY created_at DESC").all();return e.json({success:!0,users:t})}catch{return e.json({success:!1,error:"사용자 목록 조회 실패"},500)}});c.delete("/api/admin/users/:id",async e=>{try{const t=e.req.param("id");console.log("🗑️ Delete user request:",t);const s=await e.env.DB.prepare("SELECT role FROM users WHERE id = ?").bind(t).first();if(!s)return console.error("❌ User not found:",t),e.json({success:!1,error:"사용자를 찾을 수 없습니다."},404);if(s.role==="admin")return console.error("❌ Cannot delete admin:",t),e.json({success:!1,error:"관리자 계정은 삭제할 수 없습니다."},403);console.log("✅ User found, starting deletion:",t);try{await e.env.DB.prepare("DELETE FROM user_permissions WHERE user_id = ?").bind(t).run()}catch(r){console.log("Skip user_permissions:",r.message)}try{await e.env.DB.prepare("DELETE FROM user_programs WHERE user_id = ?").bind(t).run()}catch(r){console.log("Skip user_programs:",r.message)}try{await e.env.DB.prepare("DELETE FROM sender_ids WHERE user_id = ?").bind(t).run()}catch(r){console.log("Skip sender_ids:",r.message)}try{await e.env.DB.prepare("DELETE FROM sender_verification_requests WHERE user_id = ?").bind(t).run()}catch(r){console.log("Skip sender_verification_requests:",r.message)}try{await e.env.DB.prepare("DELETE FROM sms_logs WHERE user_id = ?").bind(t).run()}catch(r){console.log("Skip sms_logs:",r.message)}try{await e.env.DB.prepare("DELETE FROM landing_pages WHERE user_id = ?").bind(t).run()}catch(r){console.log("Skip landing_pages:",r.message)}try{await e.env.DB.prepare("DELETE FROM students WHERE user_id = ?").bind(t).run()}catch(r){console.log("Skip students:",r.message)}try{await e.env.DB.prepare("DELETE FROM deposit_requests WHERE user_id = ?").bind(t).run()}catch(r){console.log("Skip deposit_requests:",r.message)}console.log("✅ Related data deleted, deleting user:",t);const a=await e.env.DB.prepare("DELETE FROM users WHERE id = ?").bind(t).run();return console.log("✅ User deleted successfully:",t,a),e.json({success:!0,message:"사용자가 삭제되었습니다."})}catch(t){return console.error("❌ Delete user error:",t),console.error("Error details:",t.message,t.stack),e.json({success:!1,error:"사용자 삭제 실패: "+t.message},500)}});c.get("/api/admin/programs",async e=>{try{const{results:t}=await e.env.DB.prepare("SELECT * FROM programs ORDER BY created_at DESC").all();return e.json({success:!0,programs:t})}catch(t){return console.error("Programs error:",t),e.json({success:!1,error:"프로그램 목록 조회 실패"},500)}});c.post("/api/admin/programs",async e=>{try{const{name:t,description:s,price:a,duration_days:r,max_students:n}=await e.req.json(),o=await e.env.DB.prepare(`
       INSERT INTO programs (name, description, price, duration_days, max_students, status, is_active)
       VALUES (?, ?, ?, ?, ?, 'active', 1)
-    `).bind(t,s||"",a||0,r||30,o||null).run();return e.json({success:!0,message:"프로그램이 추가되었습니다.",id:n.meta.last_row_id})}catch(t){return console.error("Add program error:",t),e.json({success:!1,error:"프로그램 추가 실패"},500)}});c.put("/api/admin/programs/:id",async e=>{try{const t=e.req.param("id"),{name:s,description:a,price:r,duration_days:o,max_students:n,status:i}=await e.req.json();return await e.env.DB.prepare(`
+    `).bind(t,s||"",a||0,r||30,n||null).run();return e.json({success:!0,message:"프로그램이 추가되었습니다.",id:o.meta.last_row_id})}catch(t){return console.error("Add program error:",t),e.json({success:!1,error:"프로그램 추가 실패"},500)}});c.put("/api/admin/programs/:id",async e=>{try{const t=e.req.param("id"),{name:s,description:a,price:r,duration_days:n,max_students:o,status:i}=await e.req.json();return await e.env.DB.prepare(`
       UPDATE programs 
       SET name = ?, description = ?, price = ?, duration_days = ?, max_students = ?, status = ?
       WHERE id = ?
-    `).bind(s,a,r,o,n,i,t).run(),e.json({success:!0,message:"프로그램이 수정되었습니다."})}catch(t){return console.error("Update program error:",t),e.json({success:!1,error:"프로그램 수정 실패"},500)}});c.delete("/api/admin/programs/:id",async e=>{try{const t=e.req.param("id");return await e.env.DB.prepare("UPDATE programs SET status = ?, is_active = 0 WHERE id = ?").bind("inactive",t).run(),e.json({success:!0,message:"프로그램이 삭제되었습니다."})}catch(t){return console.error("Delete program error:",t),e.json({success:!1,error:"프로그램 삭제 실패"},500)}});c.get("/api/admin/enrollments",async e=>{try{const t="SELECT up.*, u.name as user_name, p.name as program_name FROM user_programs up JOIN users u ON up.user_id = u.id JOIN programs p ON up.program_id = p.id WHERE up.status = ? ORDER BY up.created_at DESC",{results:s}=await e.env.DB.prepare(t).bind("active").all();return e.json({success:!0,enrollments:s})}catch{return e.json({success:!1,error:"수강 현황 조회 실패"},500)}});c.get("/api/admin/stats/monthly-users",async e=>{try{const t=`
+    `).bind(s,a,r,n,o,i,t).run(),e.json({success:!0,message:"프로그램이 수정되었습니다."})}catch(t){return console.error("Update program error:",t),e.json({success:!1,error:"프로그램 수정 실패"},500)}});c.delete("/api/admin/programs/:id",async e=>{try{const t=e.req.param("id");return await e.env.DB.prepare("UPDATE programs SET status = ?, is_active = 0 WHERE id = ?").bind("inactive",t).run(),e.json({success:!0,message:"프로그램이 삭제되었습니다."})}catch(t){return console.error("Delete program error:",t),e.json({success:!1,error:"프로그램 삭제 실패"},500)}});c.get("/api/admin/enrollments",async e=>{try{const t="SELECT up.*, u.name as user_name, p.name as program_name FROM user_programs up JOIN users u ON up.user_id = u.id JOIN programs p ON up.program_id = p.id WHERE up.status = ? ORDER BY up.created_at DESC",{results:s}=await e.env.DB.prepare(t).bind("active").all();return e.json({success:!0,enrollments:s})}catch{return e.json({success:!1,error:"수강 현황 조회 실패"},500)}});c.get("/api/admin/stats/monthly-users",async e=>{try{const t=`
       SELECT 
         strftime('%Y-%m', created_at) as month,
         COUNT(*) as count
@@ -4041,12 +4287,12 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
       WHERE p.status = 'active'
       GROUP BY p.id, p.name, p.price
       ORDER BY enrollment_count DESC
-    `,{results:s}=await e.env.DB.prepare(t).all();return e.json({success:!0,data:s})}catch(t){return console.error("Program enrollments stats error:",t),e.json({success:!1,error:"통계 조회 실패"},500)}});c.get("/api/admin/stats/dashboard-summary",async e=>{try{const t=await e.env.DB.prepare("SELECT COUNT(*) as count FROM users").first(),s=await e.env.DB.prepare('SELECT COUNT(*) as count FROM users WHERE updated_at >= date("now", "-30 days")').first(),a=await e.env.DB.prepare("SELECT COUNT(*) as count FROM contacts WHERE status = ?").bind("pending").first(),r=await e.env.DB.prepare("SELECT COUNT(*) as count FROM contacts").first(),o=await e.env.DB.prepare("SELECT COUNT(*) as count FROM programs WHERE status = ?").bind("active").first(),n=await e.env.DB.prepare("SELECT COUNT(*) as count FROM user_programs WHERE status = ?").bind("active").first(),i=await e.env.DB.prepare(`
+    `,{results:s}=await e.env.DB.prepare(t).all();return e.json({success:!0,data:s})}catch(t){return console.error("Program enrollments stats error:",t),e.json({success:!1,error:"통계 조회 실패"},500)}});c.get("/api/admin/stats/dashboard-summary",async e=>{try{const t=await e.env.DB.prepare("SELECT COUNT(*) as count FROM users").first(),s=await e.env.DB.prepare('SELECT COUNT(*) as count FROM users WHERE updated_at >= date("now", "-30 days")').first(),a=await e.env.DB.prepare("SELECT COUNT(*) as count FROM contacts WHERE status = ?").bind("pending").first(),r=await e.env.DB.prepare("SELECT COUNT(*) as count FROM contacts").first(),n=await e.env.DB.prepare("SELECT COUNT(*) as count FROM programs WHERE status = ?").bind("active").first(),o=await e.env.DB.prepare("SELECT COUNT(*) as count FROM user_programs WHERE status = ?").bind("active").first(),i=await e.env.DB.prepare(`
       SELECT SUM(p.price) as total
       FROM user_programs up
       JOIN programs p ON up.program_id = p.id
       WHERE up.status = 'active'
-    `).first();return e.json({success:!0,data:{totalUsers:(t==null?void 0:t.count)||0,activeUsers:(s==null?void 0:s.count)||0,pendingContacts:(a==null?void 0:a.count)||0,totalContacts:(r==null?void 0:r.count)||0,activePrograms:(o==null?void 0:o.count)||0,totalEnrollments:(n==null?void 0:n.count)||0,totalRevenue:(i==null?void 0:i.total)||0}})}catch(t){return console.error("Dashboard summary error:",t),e.json({success:!1,error:"통계 조회 실패"},500)}});c.get("/api/admin/users/:id/programs",async e=>{try{const t=e.req.param("id"),s="SELECT up.*, p.name as program_name, p.duration_days FROM user_programs up JOIN programs p ON up.program_id = p.id WHERE up.user_id = ? AND up.status = ? ORDER BY up.created_at DESC",{results:a}=await e.env.DB.prepare(s).bind(t,"active").all();return e.json({success:!0,programs:a})}catch{return e.json({success:!1,error:"프로그램 조회 실패"},500)}});c.post("/api/admin/assign-program",async e=>{try{const{user_id:t,program_id:s,end_date:a}=await e.req.json();return await e.env.DB.prepare("INSERT INTO user_programs (user_id, program_id, end_date, status) VALUES (?, ?, ?, ?)").bind(t,s,a||null,"active").run(),e.json({success:!0,message:"프로그램이 부여되었습니다."})}catch{return e.json({success:!1,error:"프로그램 부여 실패"},500)}});c.delete("/api/admin/remove-program/:id",async e=>{try{const t=e.req.param("id");return await e.env.DB.prepare("DELETE FROM user_programs WHERE id = ?").bind(t).run(),e.json({success:!0,message:"프로그램이 삭제되었습니다."})}catch{return e.json({success:!1,error:"프로그램 삭제 실패"},500)}});c.post("/api/admin/reset-password",async e=>{try{const{user_id:t}=await e.req.json(),s="academy1234";return await e.env.DB.prepare("UPDATE users SET password = ? WHERE id = ?").bind(s,t).run(),e.json({success:!0,message:`비밀번호가 초기화되었습니다. (초기 비밀번호: ${s})`})}catch{return e.json({success:!1,error:"비밀번호 초기화 실패"},500)}});c.post("/api/admin/toggle-user-status",async e=>{try{const{user_id:t,is_active:s}=await e.req.json(),a=s?"active":"inactive";return await e.env.DB.prepare("UPDATE users SET status = ? WHERE id = ?").bind(a,t).run(),e.json({success:!0,message:`사용자가 ${s?"활성화":"비활성화"}되었습니다.`})}catch{return e.json({success:!1,error:"상태 변경 실패"},500)}});c.put("/api/admin/contacts/:id/status",async e=>{try{const t=e.req.param("id"),{status:s}=await e.req.json();return await e.env.DB.prepare("UPDATE contacts SET status = ? WHERE id = ?").bind(s,t).run(),e.json({success:!0,message:"상태가 변경되었습니다."})}catch{return e.json({success:!1,error:"상태 변경 실패"},500)}});c.post("/api/landing/create",async e=>{try{const{title:t,template_type:s,input_data:a,thumbnail_url:r,og_title:o,og_description:n,folder_id:i,form_id:l}=await e.req.json();console.log("🔍 API에서 받은 데이터:",{title:t,template_type:s,thumbnail_url:r?r.length>100?r.substring(0,100)+"...":r:null,og_title:o,og_description:n,folder_id:i,form_id:l});const d=e.req.header("X-User-Data-Base64");let p={id:1};if(d)try{const S=atob(d);p=JSON.parse(S)}catch(S){console.warn("Failed to decode user data:",S)}const u=await e.env.DB.prepare("SELECT id, academy_id FROM users WHERE id = ?").bind(p.id).first();let m=u==null?void 0:u.academy_id;if(!m){m=p.id;try{await e.env.DB.prepare("UPDATE users SET academy_id = ? WHERE id = ?").bind(m,p.id).run(),console.log("🔧 [Landing] Auto-set academy_id for user:",p.id)}catch(S){console.error("Failed to set academy_id:",S)}}const g=await e.env.DB.prepare(`
+    `).first();return e.json({success:!0,data:{totalUsers:(t==null?void 0:t.count)||0,activeUsers:(s==null?void 0:s.count)||0,pendingContacts:(a==null?void 0:a.count)||0,totalContacts:(r==null?void 0:r.count)||0,activePrograms:(n==null?void 0:n.count)||0,totalEnrollments:(o==null?void 0:o.count)||0,totalRevenue:(i==null?void 0:i.total)||0}})}catch(t){return console.error("Dashboard summary error:",t),e.json({success:!1,error:"통계 조회 실패"},500)}});c.get("/api/admin/users/:id/programs",async e=>{try{const t=e.req.param("id"),s="SELECT up.*, p.name as program_name, p.duration_days FROM user_programs up JOIN programs p ON up.program_id = p.id WHERE up.user_id = ? AND up.status = ? ORDER BY up.created_at DESC",{results:a}=await e.env.DB.prepare(s).bind(t,"active").all();return e.json({success:!0,programs:a})}catch{return e.json({success:!1,error:"프로그램 조회 실패"},500)}});c.post("/api/admin/assign-program",async e=>{try{const{user_id:t,program_id:s,end_date:a}=await e.req.json();return await e.env.DB.prepare("INSERT INTO user_programs (user_id, program_id, end_date, status) VALUES (?, ?, ?, ?)").bind(t,s,a||null,"active").run(),e.json({success:!0,message:"프로그램이 부여되었습니다."})}catch{return e.json({success:!1,error:"프로그램 부여 실패"},500)}});c.delete("/api/admin/remove-program/:id",async e=>{try{const t=e.req.param("id");return await e.env.DB.prepare("DELETE FROM user_programs WHERE id = ?").bind(t).run(),e.json({success:!0,message:"프로그램이 삭제되었습니다."})}catch{return e.json({success:!1,error:"프로그램 삭제 실패"},500)}});c.post("/api/admin/reset-password",async e=>{try{const{user_id:t}=await e.req.json(),s="academy1234";return await e.env.DB.prepare("UPDATE users SET password = ? WHERE id = ?").bind(s,t).run(),e.json({success:!0,message:`비밀번호가 초기화되었습니다. (초기 비밀번호: ${s})`})}catch{return e.json({success:!1,error:"비밀번호 초기화 실패"},500)}});c.post("/api/admin/toggle-user-status",async e=>{try{const{user_id:t,is_active:s}=await e.req.json(),a=s?"active":"inactive";return await e.env.DB.prepare("UPDATE users SET status = ? WHERE id = ?").bind(a,t).run(),e.json({success:!0,message:`사용자가 ${s?"활성화":"비활성화"}되었습니다.`})}catch{return e.json({success:!1,error:"상태 변경 실패"},500)}});c.put("/api/admin/contacts/:id/status",async e=>{try{const t=e.req.param("id"),{status:s}=await e.req.json();return await e.env.DB.prepare("UPDATE contacts SET status = ? WHERE id = ?").bind(s,t).run(),e.json({success:!0,message:"상태가 변경되었습니다."})}catch{return e.json({success:!1,error:"상태 변경 실패"},500)}});c.post("/api/landing/create",async e=>{try{const{title:t,template_type:s,input_data:a,thumbnail_url:r,og_title:n,og_description:o,folder_id:i,form_id:l}=await e.req.json();console.log("🔍 API에서 받은 데이터:",{title:t,template_type:s,thumbnail_url:r?r.length>100?r.substring(0,100)+"...":r:null,og_title:n,og_description:o,folder_id:i,form_id:l});const d=e.req.header("X-User-Data-Base64");let p={id:1};if(d)try{const T=atob(d);p=JSON.parse(T)}catch(T){console.warn("Failed to decode user data:",T)}const u=await e.env.DB.prepare("SELECT id, academy_id FROM users WHERE id = ?").bind(p.id).first();let m=u==null?void 0:u.academy_id;if(!m){m=p.id;try{await e.env.DB.prepare("UPDATE users SET academy_id = ? WHERE id = ?").bind(m,p.id).run(),console.log("🔧 [Landing] Auto-set academy_id for user:",p.id)}catch(T){console.error("Failed to set academy_id:",T)}}const g=await e.env.DB.prepare(`
       SELECT id, landing_page_limit, plan_name, subscription_end_date, payment_method
       FROM subscriptions 
       WHERE academy_id = ?
@@ -4068,27 +4314,35 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
             landing_pages_created, current_teachers, sms_sent_this_month,
             last_ai_report_reset_date, last_sms_reset_date, created_at, updated_at
           ) VALUES (?, ?, 0, 0, 0, 0, 0, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-        `).bind(m,W,L.toISOString().split("T")[0],L.toISOString().split("T")[0]).run(),console.log("✅ [Free Plan] Created new monthly subscription:",W);const O=await e.env.DB.prepare(`
+        `).bind(m,W,L.toISOString().split("T")[0],L.toISOString().split("T")[0]).run(),console.log("✅ [Free Plan] Created new monthly subscription:",W);const U=await e.env.DB.prepare(`
           SELECT id, landing_page_limit 
           FROM subscriptions 
           WHERE id = ?
-        `).bind(W).first();Object.assign(g,O)}const x=await e.env.DB.prepare(`
+        `).bind(W).first();Object.assign(g,U)}const x=await e.env.DB.prepare(`
       SELECT landing_pages_created 
       FROM usage_tracking 
       WHERE subscription_id = ?
-    `).bind(g.id).first(),b=(x==null?void 0:x.landing_pages_created)||0,f=g.landing_page_limit;if(b>=f)return e.json({success:!1,error:`⛔ 사용 한도가 모두 소진되었습니다.
+    `).bind(g.id).first(),b=(x==null?void 0:x.landing_pages_created)||0,h=g.landing_page_limit;if(b>=h)return e.json({success:!1,error:`⛔ 사용 한도가 모두 소진되었습니다.
 
-생성된 랜딩페이지: ${b}개 / 한도: ${f}개
+생성된 랜딩페이지: ${b}개 / 한도: ${h}개
 
-더 많은 랜딩페이지를 제작하시려면 상위 플랜으로 업그레이드해주세요.`},403);console.log(`✅ [Landing] Limit check passed: ${b}/${f}`);const v=Math.random().toString(36).substring(2,10),_=Ps(s,a),y=`${e.req.header("origin")||"https://example.com"}/landing/${v}`,w=`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(y)}`,k=await e.env.DB.prepare(`
+더 많은 랜딩페이지를 제작하시려면 상위 플랜으로 업그레이드해주세요.`},403);console.log(`✅ [Landing] Limit check passed: ${b}/${h}`);const v=Math.random().toString(36).substring(2,10),E=Ps(s,a),y=`${e.req.header("origin")||"https://example.com"}/landing/${v}`,w=`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(y)}`,k=await e.env.DB.prepare(`
       INSERT INTO landing_pages (user_id, slug, title, template_type, content_json, html_content, qr_code_url, thumbnail_url, og_title, og_description, folder_id, form_id, status)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active')
-    `).bind(p.id,v,t,s,JSON.stringify(a),_,w,r||null,o||null,n||null,i||null,l||null).run();return await e.env.DB.prepare(`
-      UPDATE usage_tracking 
-      SET landing_pages_created = landing_pages_created + 1, 
-          updated_at = CURRENT_TIMESTAMP
-      WHERE subscription_id = ?
-    `).bind(g.id).run(),console.log("✅ Landing page created and usage incremented:",b+1,"/",f),e.json({success:!0,message:"랜딩페이지가 생성되었습니다.",slug:v,url:`/landing/${v}`,usage:{current:b+1,limit:f},qrCodeUrl:w,id:k.meta.last_row_id})}catch(t){return console.error("Landing page creation error:",t),e.json({success:!1,error:"랜딩페이지 생성 실패: "+t.message},500)}});c.put("/api/landing/:slug/edit",async e=>{try{const t=e.req.param("slug"),{html_content:s,header_pixel:a,body_pixel:r,conversion_pixel:o}=await e.req.json(),n=await e.env.DB.prepare("SELECT * FROM landing_pages WHERE slug = ?").bind(t).first();if(!n)return e.json({success:!1,error:"랜딩페이지를 찾을 수 없습니다."},404);try{await e.env.DB.prepare(`
+    `).bind(p.id,v,t,s,JSON.stringify(a),E,w,r||null,n||null,o||null,i||null,l||null).run();try{await e.env.DB.prepare(`
+        SELECT id FROM usage_tracking WHERE subscription_id = ?
+      `).bind(g.id).first()?(await e.env.DB.prepare(`
+          UPDATE usage_tracking 
+          SET landing_pages_created = landing_pages_created + 1, 
+              updated_at = CURRENT_TIMESTAMP
+          WHERE subscription_id = ?
+        `).bind(g.id).run(),console.log("✅ [Landing] Updated landing_pages_created:",b+1,"/",h)):(console.log("⚠️ [Landing] usage_tracking record not found, creating..."),await e.env.DB.prepare(`
+          INSERT INTO usage_tracking (
+            academy_id, subscription_id, current_students, ai_reports_used_this_month,
+            landing_pages_created, current_teachers, sms_sent_this_month,
+            created_at, updated_at
+          ) VALUES (?, ?, 0, 0, 1, 0, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+        `).bind(m,g.id).run(),console.log("✅ [Landing] Created usage_tracking with landing_pages_created = 1"))}catch(T){console.error("❌ [Landing] Failed to update usage:",T)}return e.json({success:!0,message:"랜딩페이지가 생성되었습니다.",slug:v,url:`/landing/${v}`,usage:{current:b+1,limit:h},qrCodeUrl:w,id:k.meta.last_row_id})}catch(t){return console.error("Landing page creation error:",t),e.json({success:!1,error:"랜딩페이지 생성 실패: "+t.message},500)}});c.put("/api/landing/:slug/edit",async e=>{try{const t=e.req.param("slug"),{html_content:s,header_pixel:a,body_pixel:r,conversion_pixel:n}=await e.req.json(),o=await e.env.DB.prepare("SELECT * FROM landing_pages WHERE slug = ?").bind(t).first();if(!o)return e.json({success:!1,error:"랜딩페이지를 찾을 수 없습니다."},404);try{await e.env.DB.prepare(`
         UPDATE landing_pages 
         SET html_content = ?, 
             header_pixel = ?,
@@ -4096,20 +4350,20 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
             conversion_pixel = ?,
             updated_at = CURRENT_TIMESTAMP
         WHERE slug = ?
-      `).bind(s||n.html_content,a||null,r||null,o||null,t).run()}catch{console.log("Pixel columns not found, updating html_content only"),await e.env.DB.prepare(`
+      `).bind(s||o.html_content,a||null,r||null,n||null,t).run()}catch{console.log("Pixel columns not found, updating html_content only"),await e.env.DB.prepare(`
         UPDATE landing_pages 
         SET html_content = ?, 
             updated_at = CURRENT_TIMESTAMP
         WHERE slug = ?
-      `).bind(s||n.html_content,t).run();try{await e.env.DB.prepare("ALTER TABLE landing_pages ADD COLUMN header_pixel TEXT").run(),await e.env.DB.prepare("ALTER TABLE landing_pages ADD COLUMN body_pixel TEXT").run(),await e.env.DB.prepare("ALTER TABLE landing_pages ADD COLUMN conversion_pixel TEXT").run(),console.log("✅ Added pixel columns to landing_pages"),await e.env.DB.prepare(`
+      `).bind(s||o.html_content,t).run();try{await e.env.DB.prepare("ALTER TABLE landing_pages ADD COLUMN header_pixel TEXT").run(),await e.env.DB.prepare("ALTER TABLE landing_pages ADD COLUMN body_pixel TEXT").run(),await e.env.DB.prepare("ALTER TABLE landing_pages ADD COLUMN conversion_pixel TEXT").run(),console.log("✅ Added pixel columns to landing_pages"),await e.env.DB.prepare(`
           UPDATE landing_pages 
           SET header_pixel = ?,
               body_pixel = ?,
               conversion_pixel = ?
           WHERE slug = ?
-        `).bind(a||null,r||null,o||null,t).run()}catch(l){console.log("Migration already applied or failed:",l)}}return e.json({success:!0,message:"랜딩페이지가 수정되었습니다."})}catch(t){return console.error("Landing page update error:",t),e.json({success:!1,error:"랜딩페이지 수정 실패: "+t.message},500)}});c.get("/api/landing/my-pages",async e=>{try{const t=e.req.query("userId"),s=e.req.query("folderId");let a="SELECT id, slug, title, template_type, view_count, status, folder_id, form_id, created_at FROM landing_pages WHERE user_id = ?",r=[t];s?(a+=" AND folder_id = ?",r.push(s)):(s===null||s==="null")&&(a+=" AND folder_id IS NULL"),a+=" ORDER BY created_at DESC";const{results:o}=await e.env.DB.prepare(a).bind(...r).all();return e.json({success:!0,pages:o})}catch(t){return console.error("목록 조회 실패:",t),e.json({success:!1,error:"목록 조회 실패"},500)}});c.get("/api/landing/folders",async e=>{try{const t=e.req.query("userId"),s="SELECT id, name, created_at FROM landing_folders WHERE user_id = ? ORDER BY created_at DESC",{results:a}=await e.env.DB.prepare(s).bind(t).all(),r=await Promise.all(a.map(async i=>{const d=await e.env.DB.prepare("SELECT COUNT(*) as count FROM landing_pages WHERE folder_id = ?").bind(i.id).first();return{...i,page_count:d.count||0}})),n=await e.env.DB.prepare("SELECT COUNT(*) as count FROM landing_pages WHERE user_id = ?").bind(t).first();return e.json({success:!0,folders:r,totalPages:n.count||0})}catch(t){return console.error("폴더 목록 조회 실패:",t),e.json({success:!1,error:"폴더 목록 조회 실패"},500)}});c.post("/api/landing/folders",async e=>{try{const{userId:t,name:s,description:a}=await e.req.json();if(!s||!s.trim())return e.json({success:!1,error:"폴더 이름을 입력하세요."},400);const o=await e.env.DB.prepare("INSERT INTO landing_folders (user_id, name, description) VALUES (?, ?, ?)").bind(t,s.trim(),a||null).run();return e.json({success:!0,folderId:o.meta.last_row_id,message:"폴더가 생성되었습니다."})}catch(t){return console.error("폴더 생성 실패:",t),e.json({success:!1,error:"폴더 생성 실패"},500)}});c.put("/api/landing/folders/:id",async e=>{try{const t=e.req.param("id"),{name:s,description:a}=await e.req.json();return!s||!s.trim()?e.json({success:!1,error:"폴더 이름을 입력하세요."},400):(await e.env.DB.prepare("UPDATE landing_folders SET name = ?, description = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?").bind(s.trim(),a||null,t).run(),e.json({success:!0,message:"폴더가 수정되었습니다."}))}catch(t){return console.error("폴더 수정 실패:",t),e.json({success:!1,error:"폴더 수정 실패"},500)}});c.delete("/api/landing/folders/:id",async e=>{try{const t=e.req.param("id"),s=e.req.query("userId");return await e.env.DB.prepare("UPDATE landing_pages SET folder_id = NULL WHERE folder_id = ?").bind(t).run(),await e.env.DB.prepare("DELETE FROM landing_folders WHERE id = ? AND user_id = ?").bind(t,s).run(),e.json({success:!0,message:"폴더가 삭제되었습니다."})}catch(t){return console.error("폴더 삭제 실패:",t),e.json({success:!1,error:"폴더 삭제 실패"},500)}});c.put("/api/landing/move-to-folder",async e=>{try{const{pageId:t,folderId:s}=await e.req.json();return await e.env.DB.prepare("UPDATE landing_pages SET folder_id = ? WHERE id = ?").bind(s,t).run(),e.json({success:!0,message:"폴더로 이동되었습니다."})}catch(t){return console.error("폴더 이동 실패:",t),e.json({success:!1,error:"폴더 이동 실패"},500)}});c.get("/api/landing/:slug",async e=>{try{const t=e.req.param("slug"),a=await e.env.DB.prepare("SELECT * FROM landing_pages WHERE slug = ? AND status = ?").bind(t,"active").first();return a?(await e.env.DB.prepare("UPDATE landing_pages SET view_count = view_count + 1 WHERE slug = ?").bind(t).run(),await e.env.DB.prepare("INSERT INTO landing_page_views (landing_page_id, user_agent, referrer) VALUES (?, ?, ?)").bind(a.id,e.req.header("user-agent")||"",e.req.header("referer")||"").run(),e.json({success:!0,page:a})):e.json({success:!1,error:"페이지를 찾을 수 없습니다."},404)}catch{return e.json({success:!1,error:"페이지 조회 실패"},500)}});c.get("/api/landing/stats/summary",async e=>{try{const t=e.req.header("X-User-Data"),s=t?JSON.parse(t):{id:1},a=await e.env.DB.prepare("SELECT COUNT(*) as count FROM landing_pages WHERE user_id = ?").bind(s.id).first(),r=await e.env.DB.prepare("SELECT SUM(view_count) as total FROM landing_pages WHERE user_id = ?").bind(s.id).first(),o=await e.env.DB.prepare("SELECT id, title, slug, view_count FROM landing_pages WHERE user_id = ? ORDER BY view_count DESC LIMIT 5").bind(s.id).all();return e.json({success:!0,stats:{totalPages:(a==null?void 0:a.count)||0,totalViews:(r==null?void 0:r.total)||0,topPages:o.results||[]}})}catch{return e.json({success:!1,error:"통계 조회 실패"},500)}});c.delete("/api/landing/:id",async e=>{try{const t=e.req.param("id"),s=e.req.query("userId"),a=e.req.header("X-User-Data");let r;if(s)r={id:parseInt(s)};else if(a)r=JSON.parse(a);else return e.json({success:!1,error:"사용자 인증 정보가 없습니다."},401);console.log("Deleting landing page:",{id:t,userId:r.id});try{const n=await e.env.DB.prepare("DELETE FROM form_submissions WHERE landing_page_id = ?").bind(t).run();console.log("✅ Deleted form_submissions with landing_page_id:",n.meta.changes)}catch(n){console.log("⚠️ Could not delete form_submissions:",n)}const o=await e.env.DB.prepare("DELETE FROM landing_pages WHERE id = ? AND user_id = ?").bind(t,r.id).run();return console.log("Delete result:",o),o.meta.changes===0?e.json({success:!1,error:"삭제할 페이지를 찾을 수 없거나 권한이 없습니다."},404):(console.log("✅ Landing page deleted. Usage tracking count NOT decreased (cumulative count maintained)"),e.json({success:!0,message:"삭제되었습니다."}))}catch(t){return console.error("Landing page delete error:",t),e.json({success:!1,error:t.message||"삭제 실패"},500)}});function Ps(e,t){const s={"academy-intro":$s,"program-promo":qs,"event-promo":Hs,"parent-letter":Ws,"student-report":Gs,"admission-info":Ys,"academy-stats":zs,"teacher-intro":Xs,"vacation-course":Js};return(s[e]||s["academy-intro"])(t)}function $s(e){const{academyName:t,location:s,features:a,specialties:r,contact:o,placeUrl:n,directorName:i,directorPhoto:l,directorCareer:d,academyPhoto1:p,academyPhoto2:u,academyPhoto3:m,educationPhilosophy:g,educationPrograms:x,curriculum:b}=e,f=Array.isArray(r)?r:r?r.split(`
+        `).bind(a||null,r||null,n||null,t).run()}catch(l){console.log("Migration already applied or failed:",l)}}return e.json({success:!0,message:"랜딩페이지가 수정되었습니다."})}catch(t){return console.error("Landing page update error:",t),e.json({success:!1,error:"랜딩페이지 수정 실패: "+t.message},500)}});c.get("/api/landing/my-pages",async e=>{try{const t=e.req.query("userId"),s=e.req.query("folderId");let a="SELECT id, slug, title, template_type, view_count, status, folder_id, form_id, created_at FROM landing_pages WHERE user_id = ?",r=[t];s?(a+=" AND folder_id = ?",r.push(s)):(s===null||s==="null")&&(a+=" AND folder_id IS NULL"),a+=" ORDER BY created_at DESC";const{results:n}=await e.env.DB.prepare(a).bind(...r).all();return e.json({success:!0,pages:n})}catch(t){return console.error("목록 조회 실패:",t),e.json({success:!1,error:"목록 조회 실패"},500)}});c.get("/api/landing/folders",async e=>{try{const t=e.req.query("userId"),s="SELECT id, name, created_at FROM landing_folders WHERE user_id = ? ORDER BY created_at DESC",{results:a}=await e.env.DB.prepare(s).bind(t).all(),r=await Promise.all(a.map(async i=>{const d=await e.env.DB.prepare("SELECT COUNT(*) as count FROM landing_pages WHERE folder_id = ?").bind(i.id).first();return{...i,page_count:d.count||0}})),o=await e.env.DB.prepare("SELECT COUNT(*) as count FROM landing_pages WHERE user_id = ?").bind(t).first();return e.json({success:!0,folders:r,totalPages:o.count||0})}catch(t){return console.error("폴더 목록 조회 실패:",t),e.json({success:!1,error:"폴더 목록 조회 실패"},500)}});c.post("/api/landing/folders",async e=>{try{const{userId:t,name:s,description:a}=await e.req.json();if(!s||!s.trim())return e.json({success:!1,error:"폴더 이름을 입력하세요."},400);const n=await e.env.DB.prepare("INSERT INTO landing_folders (user_id, name, description) VALUES (?, ?, ?)").bind(t,s.trim(),a||null).run();return e.json({success:!0,folderId:n.meta.last_row_id,message:"폴더가 생성되었습니다."})}catch(t){return console.error("폴더 생성 실패:",t),e.json({success:!1,error:"폴더 생성 실패"},500)}});c.put("/api/landing/folders/:id",async e=>{try{const t=e.req.param("id"),{name:s,description:a}=await e.req.json();return!s||!s.trim()?e.json({success:!1,error:"폴더 이름을 입력하세요."},400):(await e.env.DB.prepare("UPDATE landing_folders SET name = ?, description = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?").bind(s.trim(),a||null,t).run(),e.json({success:!0,message:"폴더가 수정되었습니다."}))}catch(t){return console.error("폴더 수정 실패:",t),e.json({success:!1,error:"폴더 수정 실패"},500)}});c.delete("/api/landing/folders/:id",async e=>{try{const t=e.req.param("id"),s=e.req.query("userId");return await e.env.DB.prepare("UPDATE landing_pages SET folder_id = NULL WHERE folder_id = ?").bind(t).run(),await e.env.DB.prepare("DELETE FROM landing_folders WHERE id = ? AND user_id = ?").bind(t,s).run(),e.json({success:!0,message:"폴더가 삭제되었습니다."})}catch(t){return console.error("폴더 삭제 실패:",t),e.json({success:!1,error:"폴더 삭제 실패"},500)}});c.put("/api/landing/move-to-folder",async e=>{try{const{pageId:t,folderId:s}=await e.req.json();return await e.env.DB.prepare("UPDATE landing_pages SET folder_id = ? WHERE id = ?").bind(s,t).run(),e.json({success:!0,message:"폴더로 이동되었습니다."})}catch(t){return console.error("폴더 이동 실패:",t),e.json({success:!1,error:"폴더 이동 실패"},500)}});c.get("/api/landing/:slug",async e=>{try{const t=e.req.param("slug"),a=await e.env.DB.prepare("SELECT * FROM landing_pages WHERE slug = ? AND status = ?").bind(t,"active").first();return a?(await e.env.DB.prepare("UPDATE landing_pages SET view_count = view_count + 1 WHERE slug = ?").bind(t).run(),await e.env.DB.prepare("INSERT INTO landing_page_views (landing_page_id, user_agent, referrer) VALUES (?, ?, ?)").bind(a.id,e.req.header("user-agent")||"",e.req.header("referer")||"").run(),e.json({success:!0,page:a})):e.json({success:!1,error:"페이지를 찾을 수 없습니다."},404)}catch{return e.json({success:!1,error:"페이지 조회 실패"},500)}});c.get("/api/landing/stats/summary",async e=>{try{const t=e.req.header("X-User-Data"),s=t?JSON.parse(t):{id:1},a=await e.env.DB.prepare("SELECT COUNT(*) as count FROM landing_pages WHERE user_id = ?").bind(s.id).first(),r=await e.env.DB.prepare("SELECT SUM(view_count) as total FROM landing_pages WHERE user_id = ?").bind(s.id).first(),n=await e.env.DB.prepare("SELECT id, title, slug, view_count FROM landing_pages WHERE user_id = ? ORDER BY view_count DESC LIMIT 5").bind(s.id).all();return e.json({success:!0,stats:{totalPages:(a==null?void 0:a.count)||0,totalViews:(r==null?void 0:r.total)||0,topPages:n.results||[]}})}catch{return e.json({success:!1,error:"통계 조회 실패"},500)}});c.delete("/api/landing/:id",async e=>{try{const t=e.req.param("id"),s=e.req.query("userId"),a=e.req.header("X-User-Data");let r;if(s)r={id:parseInt(s)};else if(a)r=JSON.parse(a);else return e.json({success:!1,error:"사용자 인증 정보가 없습니다."},401);console.log("Deleting landing page:",{id:t,userId:r.id});try{const o=await e.env.DB.prepare("DELETE FROM form_submissions WHERE landing_page_id = ?").bind(t).run();console.log("✅ Deleted form_submissions with landing_page_id:",o.meta.changes)}catch(o){console.log("⚠️ Could not delete form_submissions:",o)}const n=await e.env.DB.prepare("DELETE FROM landing_pages WHERE id = ? AND user_id = ?").bind(t,r.id).run();return console.log("Delete result:",n),n.meta.changes===0?e.json({success:!1,error:"삭제할 페이지를 찾을 수 없거나 권한이 없습니다."},404):(console.log("✅ Landing page deleted. Usage tracking count NOT decreased (cumulative count maintained)"),e.json({success:!0,message:"삭제되었습니다."}))}catch(t){return console.error("Landing page delete error:",t),e.json({success:!1,error:t.message||"삭제 실패"},500)}});function Ps(e,t){const s={"academy-intro":$s,"program-promo":qs,"event-promo":Hs,"parent-letter":Ws,"student-report":Gs,"admission-info":Ys,"academy-stats":zs,"teacher-intro":Xs,"vacation-course":Vs};return(s[e]||s["academy-intro"])(t)}function $s(e){const{academyName:t,location:s,features:a,specialties:r,contact:n,placeUrl:o,directorName:i,directorPhoto:l,directorCareer:d,academyPhoto1:p,academyPhoto2:u,academyPhoto3:m,educationPhilosophy:g,educationPrograms:x,curriculum:b}=e,h=Array.isArray(r)?r:r?r.split(`
 `).filter(w=>w.trim()):[],v=Array.isArray(d)?d:d?d.split(`
-`).filter(w=>w.trim()):[],_=Array.isArray(x)?x:x?x.split(`
+`).filter(w=>w.trim()):[],E=Array.isArray(x)?x:x?x.split(`
 `).filter(w=>w.trim()):[],y=Array.isArray(b)?b:b?b.split(`
 `).filter(w=>w.trim()):[];return`
 <!DOCTYPE html>
@@ -4472,8 +4726,8 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
             <h1>${t}</h1>
             <p>${a||"최고의 교육을 제공합니다"}</p>
             <p class="location"><i class="fas fa-map-marker-alt"></i> ${s}</p>
-            ${n?`
-            <a href="${n}" target="_blank" rel="noopener noreferrer" style="display: inline-block; margin-top: 2rem; background: white; color: #667eea; padding: 1rem 2.5rem; border-radius: 50px; font-size: 1.2rem; font-weight: 700; text-decoration: none; box-shadow: 0 10px 30px rgba(0,0,0,0.2); transition: all 0.3s ease;">
+            ${o?`
+            <a href="${o}" target="_blank" rel="noopener noreferrer" style="display: inline-block; margin-top: 2rem; background: white; color: #667eea; padding: 1rem 2.5rem; border-radius: 50px; font-size: 1.2rem; font-weight: 700; text-decoration: none; box-shadow: 0 10px 30px rgba(0,0,0,0.2); transition: all 0.3s ease;">
                 <i class="fas fa-map-marked-alt" style="margin-right: 0.5rem;"></i>${t} 바로 보기
             </a>
             `:""}
@@ -4528,7 +4782,7 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
     </section>
     `:""}
 
-    ${g||_.length>0||y.length>0?`
+    ${g||E.length>0||y.length>0?`
     <!-- 교육 정보 -->
     <section id="programs" class="section" style="background: #f7fafc;">
         <div class="container">
@@ -4541,13 +4795,13 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
             </div>
             `:""}
             
-            ${_.length>0?`
+            ${E.length>0?`
             <div class="info-card">
                 <h3><i class="fas fa-book-open" style="color: #667eea;"></i> 교육 프로그램</h3>
                 <div class="feature-grid">
-                    ${_.map((w,E)=>`
+                    ${E.map((w,_)=>`
                         <div class="feature-item">
-                            <div class="feature-number">${E+1}</div>
+                            <div class="feature-number">${_+1}</div>
                             <div class="feature-text">${w}</div>
                         </div>
                     `).join("")}
@@ -4559,9 +4813,9 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
             <div class="info-card">
                 <h3><i class="fas fa-graduation-cap" style="color: #667eea;"></i> 커리큘럼</h3>
                 <div class="feature-grid">
-                    ${y.map((w,E)=>`
+                    ${y.map((w,_)=>`
                         <div class="feature-item">
-                            <div class="feature-number">${E+1}</div>
+                            <div class="feature-number">${_+1}</div>
                             <div class="feature-text">${w}</div>
                         </div>
                     `).join("")}
@@ -4572,15 +4826,15 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
     </section>
     `:""}
 
-    ${f.length>0?`
+    ${h.length>0?`
     <!-- 학원 강점 -->
     <section class="section">
         <div class="container">
             <h2 class="section-title">${t}의 강점</h2>
             <div class="feature-grid">
-                ${f.map((w,E)=>`
+                ${h.map((w,_)=>`
                     <div class="feature-item">
-                        <div class="feature-number">${E+1}</div>
+                        <div class="feature-number">${_+1}</div>
                         <div class="feature-text">${w}</div>
                     </div>
                 `).join("")}
@@ -4595,9 +4849,9 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
             <h2>지금 바로 상담 받으세요</h2>
             <p>무료 학습 진단 및 맞춤 상담 제공</p>
             <p style="font-size: 2rem; font-weight: 900; margin-bottom: 2rem;">
-                <i class="fas fa-phone-alt"></i> ${o}
+                <i class="fas fa-phone-alt"></i> ${n}
             </p>
-            <a href="tel:${o}" class="cta-button">
+            <a href="tel:${n}" class="cta-button">
                 <i class="fas fa-phone-alt"></i> 전화 상담하기
             </a>
         </div>
@@ -4608,13 +4862,13 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
         <div class="container">
             <h3 style="color: white; font-size: 1.5rem; font-weight: 900; margin-bottom: 1rem;">${t}</h3>
             <p style="margin-bottom: 0.5rem;"><i class="fas fa-map-marker-alt"></i> ${s}</p>
-            <p style="margin-bottom: 1.5rem;"><i class="fas fa-phone"></i> ${o}</p>
+            <p style="margin-bottom: 1.5rem;"><i class="fas fa-phone"></i> ${n}</p>
             <p style="font-size: 0.9rem; opacity: 0.7;">© 2026 ${t}. All rights reserved.</p>
         </div>
     </footer>
 </body>
 </html>
-  `}function qs(e){const{programName:t,target:s,features:a,price:r,duration:o,cta:n,programImage:i}=e,l=Array.isArray(a)?a:a?a.split(`
+  `}function qs(e){const{programName:t,target:s,features:a,price:r,duration:n,cta:o,programImage:i}=e,l=Array.isArray(a)?a:a?a.split(`
 `).filter(d=>d.trim()):[];return`
 <!DOCTYPE html>
 <html lang="ko">
@@ -4637,7 +4891,7 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
                     ${s||"모집 중"}
                 </div>
                 <h1 class="text-3xl md:text-4xl font-bold mb-2">${t}</h1>
-                <p class="text-lg opacity-90">${o||""}</p>
+                <p class="text-lg opacity-90">${n||""}</p>
             </div>
             
             ${i?`
@@ -4663,12 +4917,12 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
                 <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 mb-8 text-center border-2 border-blue-200">
                     <p class="text-gray-600 text-sm mb-1">수강료</p>
                     <p class="text-4xl font-bold text-gray-900 mb-1">${r?r.toLocaleString():"문의"}원</p>
-                    <p class="text-gray-500 text-sm">${o||""}</p>
+                    <p class="text-gray-500 text-sm">${n||""}</p>
                 </div>
                 
                 <!-- CTA Button -->
-                ${n?`
-                <a href="${n.startsWith("http")?n:"tel:"+n}" class="block w-full bg-blue-600 text-white text-center py-4 rounded-xl text-lg font-bold hover:bg-blue-700 transition">
+                ${o?`
+                <a href="${o.startsWith("http")?o:"tel:"+o}" class="block w-full bg-blue-600 text-white text-center py-4 rounded-xl text-lg font-bold hover:bg-blue-700 transition">
                     📞 상담 신청하기
                 </a>
                 `:""}
@@ -4677,7 +4931,7 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
     </div>
 </body>
 </html>
-  `}function Hs(e){const{eventName:t,period:s,benefits:a,urgency:r,cta:o}=e;return`
+  `}function Hs(e){const{eventName:t,period:s,benefits:a,urgency:r,cta:n}=e;return`
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -4710,16 +4964,16 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
                     <div class="bg-gradient-to-br from-yellow-500/10 to-red-500/10 rounded-2xl p-8 mb-10 border border-yellow-500/30">
                         <h2 class="text-2xl font-bold mb-6 text-yellow-300">🎁 특별 혜택</h2>
                         <div class="space-y-4">
-                            ${(a||[]).map(n=>`
+                            ${(a||[]).map(o=>`
                                 <div class="flex items-center gap-3">
                                     <span class="text-3xl">⭐</span>
-                                    <span class="text-lg">${n}</span>
+                                    <span class="text-lg">${o}</span>
                                 </div>
                             `).join("")}
                         </div>
                     </div>
                     
-                    <a href="${o||"#"}" class="block w-full bg-gradient-to-r from-yellow-400 to-red-500 text-black text-center py-6 rounded-xl text-2xl font-bold hover:shadow-2xl transition transform hover:scale-105">
+                    <a href="${n||"#"}" class="block w-full bg-gradient-to-r from-yellow-400 to-red-500 text-black text-center py-6 rounded-xl text-2xl font-bold hover:shadow-2xl transition transform hover:scale-105">
                         🔥 지금 바로 신청하기
                     </a>
                     
@@ -4730,7 +4984,7 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
     </div>
 </body>
 </html>
-  `}function Ws(e){const{academyName:t,noticeTitle:s,noticeDate:a,noticeContent:r,keyPoints:o,contactInfo:n,staffName:i}=e,l=o?o.split(`
+  `}function Ws(e){const{academyName:t,noticeTitle:s,noticeDate:a,noticeContent:r,keyPoints:n,contactInfo:o,staffName:i}=e,l=n?n.split(`
 `).filter(d=>d.trim()):[];return`
 <!DOCTYPE html>
 <html lang="ko">
@@ -4793,10 +5047,10 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
                 <div class="flex items-center justify-between flex-wrap gap-4">
                     <div>
                         <p class="font-bold text-lg mb-2">📞 문의하기</p>
-                        <p class="text-2xl font-bold">${n}</p>
+                        <p class="text-2xl font-bold">${o}</p>
                         ${i?`<p class="text-sm opacity-90 mt-1">${i}</p>`:""}
                     </div>
-                    <a href="tel:${n.replace(/[^0-9]/g,"")}" class="bg-white text-green-600 px-6 py-3 rounded-xl font-bold hover:shadow-lg transition transform hover:scale-105">
+                    <a href="tel:${o.replace(/[^0-9]/g,"")}" class="bg-white text-green-600 px-6 py-3 rounded-xl font-bold hover:shadow-lg transition transform hover:scale-105">
                         전화하기
                     </a>
                 </div>
@@ -4811,7 +5065,7 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
     </div>
 </body>
 </html>
-  `}function Gs(e){const{studentName:t,month:s,achievements:a,improvements:r,nextGoals:o,teacherName:n,textbooks:i,attendanceRate:l,attendanceDays:d,totalDays:p,understandingLevel:u,participationLevel:m,homeworkRate:g}=e,x={attendance:l||95,understanding:u||4,participation:m||4,homework:g||90};return`
+  `}function Gs(e){const{studentName:t,month:s,achievements:a,improvements:r,nextGoals:n,teacherName:o,textbooks:i,attendanceRate:l,attendanceDays:d,totalDays:p,understandingLevel:u,participationLevel:m,homeworkRate:g}=e,x={attendance:l||95,understanding:u||4,participation:m||4,homework:g||90};return`
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -4860,7 +5114,7 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
                     <div class="text-xs sm:text-sm text-gray-600">출석률</div>
                 </div>
                 <div class="p-3 sm:p-6 text-center">
-                    <div class="text-2xl sm:text-3xl font-bold text-purple-600 mb-0.5 sm:mb-1">${(o||[]).length}</div>
+                    <div class="text-2xl sm:text-3xl font-bold text-purple-600 mb-0.5 sm:mb-1">${(n||[]).length}</div>
                     <div class="text-xs sm:text-sm text-gray-600">다음 목표</div>
                 </div>
             </div>
@@ -4996,11 +5250,11 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
                     <span class="hidden sm:inline text-base sm:text-lg text-gray-500 font-normal">Outstanding Achievements</span>
                 </h2>
                 <div class="space-y-3 sm:space-y-4">
-                    ${(a||[]).map((b,f)=>`
+                    ${(a||[]).map((b,h)=>`
                         <div class="bg-gradient-to-r from-green-50 to-emerald-50 border-l-4 border-green-500 p-4 sm:p-6 rounded-r-xl sm:rounded-r-2xl shadow-sm hover:shadow-md transition-shadow">
                             <div class="flex items-start gap-3 sm:gap-4">
                                 <div class="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 bg-green-600 rounded-full flex items-center justify-center text-white font-bold text-sm sm:text-base">
-                                    ${f+1}
+                                    ${h+1}
                                 </div>
                                 <div class="flex-1 min-w-0">
                                     <p class="text-gray-800 text-base sm:text-lg md:text-xl leading-relaxed font-medium break-words">${b}</p>
@@ -5027,11 +5281,11 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
                     <span class="hidden sm:inline text-base sm:text-lg text-gray-500 font-normal">Areas for Improvement</span>
                 </h2>
                 <div class="space-y-3 sm:space-y-4">
-                    ${(r||[]).map((b,f)=>`
+                    ${(r||[]).map((b,h)=>`
                         <div class="bg-gradient-to-r from-blue-50 to-cyan-50 border-l-4 border-blue-500 p-4 sm:p-6 rounded-r-xl sm:rounded-r-2xl shadow-sm hover:shadow-md transition-shadow">
                             <div class="flex items-start gap-3 sm:gap-4">
                                 <div class="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-sm sm:text-base">
-                                    ${f+1}
+                                    ${h+1}
                                 </div>
                                 <div class="flex-1 min-w-0">
                                     <p class="text-gray-800 text-base sm:text-lg md:text-xl leading-relaxed font-medium break-words">${b}</p>
@@ -5058,11 +5312,11 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
                     <span class="hidden sm:inline text-base sm:text-lg text-gray-500 font-normal">Next Month Goals</span>
                 </h2>
                 <div class="space-y-3 sm:space-y-4">
-                    ${(o||[]).map((b,f)=>`
+                    ${(n||[]).map((b,h)=>`
                         <div class="bg-gradient-to-r from-purple-50 to-pink-50 border-l-4 border-purple-500 p-4 sm:p-6 rounded-r-xl sm:rounded-r-2xl shadow-sm hover:shadow-md transition-shadow">
                             <div class="flex items-start gap-3 sm:gap-4">
                                 <div class="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold text-sm sm:text-base">
-                                    ${f+1}
+                                    ${h+1}
                                 </div>
                                 <div class="flex-1 min-w-0">
                                     <p class="text-gray-800 text-base sm:text-lg md:text-xl leading-relaxed font-medium break-words">${b}</p>
@@ -5081,7 +5335,7 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
         
         <!-- Footer -->
         <div class="bg-white rounded-2xl sm:rounded-3xl shadow-lg p-4 sm:p-6 md:p-8 text-center">
-            <p class="text-base sm:text-lg text-gray-700 mb-2 sm:mb-3">담당 선생님: <span class="font-bold text-purple-600">${n||"담당 교사"}</span></p>
+            <p class="text-base sm:text-lg text-gray-700 mb-2 sm:mb-3">담당 선생님: <span class="font-bold text-purple-600">${o||"담당 교사"}</span></p>
             <p class="text-xs sm:text-sm text-gray-500">이 리포트는 학생의 학습 성장을 위한 기록입니다</p>
         </div>
     </div>
@@ -5192,7 +5446,7 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
     <\/script>
 </body>
 </html>
-  `}function Ys(e){const{eventTitle:t,eventDate:s,eventTime:a,location:r,agenda:o,benefits:n,targetGrade:i,contact:l}=e;return`
+  `}function Ys(e){const{eventTitle:t,eventDate:s,eventTime:a,location:r,agenda:n,benefits:o,targetGrade:i,contact:l}=e;return`
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -5230,7 +5484,7 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
                 <div class="mb-10">
                     <h2 class="text-3xl font-bold text-gray-900 mb-6 text-center">📋 설명회 안내</h2>
                     <div class="space-y-4">
-                        ${(o||[]).map((d,p)=>`
+                        ${(n||[]).map((d,p)=>`
                             <div class="flex items-start gap-4 p-5 bg-indigo-50 rounded-xl">
                                 <div class="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0">
                                     ${p+1}
@@ -5246,7 +5500,7 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
                 <div class="mb-10">
                     <h2 class="text-3xl font-bold text-gray-900 mb-6 text-center">🎁 참석 혜택</h2>
                     <div class="grid md:grid-cols-2 gap-4">
-                        ${(n||[]).map(d=>`
+                        ${(o||[]).map(d=>`
                             <div class="flex items-center gap-3 p-5 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl border-2 border-purple-200">
                                 <span class="text-3xl">⭐</span>
                                 <span class="text-gray-800 font-medium">${d}</span>
@@ -5267,8 +5521,8 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
     </div>
 </body>
 </html>
-  `}function zs(e){const{academyName:t,period:s,totalStudents:a,achievements:r,testimonials:o,gradeImprovement:n,reEnrollmentRate:i,collegeAdmissions:l,topGradeStudents:d}=e,p=Array.isArray(r)?r:r?r.split(`
-`).filter(m=>m.trim()):[],u=Array.isArray(o)?o:o?o.split(`
+  `}function zs(e){const{academyName:t,period:s,totalStudents:a,achievements:r,testimonials:n,gradeImprovement:o,reEnrollmentRate:i,collegeAdmissions:l,topGradeStudents:d}=e,p=Array.isArray(r)?r:r?r.split(`
+`).filter(m=>m.trim()):[],u=Array.isArray(n)?n:n?n.split(`
 `).filter(m=>m.trim()):[];return`
 <!DOCTYPE html>
 <html lang="ko">
@@ -5297,7 +5551,7 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
                 <div class="text-sm text-gray-600">총 재학생</div>
             </div>
             <div class="bg-white rounded-xl shadow p-6 text-center border-t-4 border-green-500">
-                <div class="text-3xl font-bold text-gray-900 mb-1">${n||"2"}등급↑</div>
+                <div class="text-3xl font-bold text-gray-900 mb-1">${o||"2"}등급↑</div>
                 <div class="text-sm text-gray-600">평균 향상</div>
             </div>
             <div class="bg-white rounded-xl shadow p-6 text-center border-t-4 border-purple-500">
@@ -5355,7 +5609,7 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
     </div>
 </body>
 </html>
-  `}function Xs(e){const{teacherName:t,subject:s,experience:a,education:r,specialty:o,achievements:n,teachingStyle:i,contact:l,teacherPhoto:d}=e,p=Array.isArray(n)?n:n?n.split(`
+  `}function Xs(e){const{teacherName:t,subject:s,experience:a,education:r,specialty:n,achievements:o,teachingStyle:i,contact:l,teacherPhoto:d}=e,p=Array.isArray(o)?o:o?o.split(`
 `).filter(u=>u.trim()):[];return`
 <!DOCTYPE html>
 <html lang="ko">
@@ -5403,7 +5657,7 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
                 <div class="mb-8">
                     <h2 class="text-xl font-bold text-gray-900 mb-3 pb-2 border-b-2 border-teal-600">💡 전문 분야</h2>
                     <div class="bg-blue-50 rounded-lg p-5 border border-blue-100">
-                        <p class="text-gray-700 leading-relaxed">${o}</p>
+                        <p class="text-gray-700 leading-relaxed">${n}</p>
                     </div>
                 </div>
                 
@@ -5442,10 +5696,10 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
     </div>
 </body>
 </html>
-  `}function Js(e){const{academyName:t,courseName:s,period:a,schedule:r,programs:o,curriculum:n,contact:i,targetGrade:l,features:d,tuition:p,earlyBirdDiscount:u,placeUrl:m}=e,g=Array.isArray(o)?o:o?o.split(`
-`).filter(f=>f.trim()):[],x=Array.isArray(n)?n:n?n.split(`
-`).filter(f=>f.trim()):[],b=Array.isArray(d)?d:d?d.split(`
-`).filter(f=>f.trim()):[];return`
+  `}function Vs(e){const{academyName:t,courseName:s,period:a,schedule:r,programs:n,curriculum:o,contact:i,targetGrade:l,features:d,tuition:p,earlyBirdDiscount:u,placeUrl:m}=e,g=Array.isArray(n)?n:n?n.split(`
+`).filter(h=>h.trim()):[],x=Array.isArray(o)?o:o?o.split(`
+`).filter(h=>h.trim()):[],b=Array.isArray(d)?d:d?d.split(`
+`).filter(h=>h.trim()):[];return`
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -5896,10 +6150,10 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
         <div class="section">
             <h2 class="section-title"><i class="fas fa-book-open"></i> 특강 프로그램</h2>
             <div class="program-list">
-                ${g.map((f,v)=>`
+                ${g.map((h,v)=>`
                 <div class="program-item">
                     <div class="program-number">${v+1}</div>
-                    <div class="program-text">${f}</div>
+                    <div class="program-text">${h}</div>
                 </div>
                 `).join("")}
             </div>
@@ -5911,10 +6165,10 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
         <div class="section">
             <h2 class="section-title"><i class="fas fa-list-ol"></i> 주차별 커리큘럼</h2>
             <div class="curriculum-timeline">
-                ${x.map((f,v)=>`
+                ${x.map((h,v)=>`
                 <div class="curriculum-item">
                     <div class="week">${v+1}주차</div>
-                    <div class="content">${f}</div>
+                    <div class="content">${h}</div>
                 </div>
                 `).join("")}
             </div>
@@ -5926,10 +6180,10 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
         <div class="section">
             <h2 class="section-title"><i class="fas fa-star"></i> 특강 특징</h2>
             <div class="feature-grid">
-                ${b.map(f=>`
+                ${b.map(h=>`
                 <div class="feature-card">
                     <div class="icon"><i class="fas fa-check-circle"></i></div>
-                    <div class="text">${f}</div>
+                    <div class="text">${h}</div>
                 </div>
                 `).join("")}
             </div>
@@ -5974,14 +6228,14 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
     </div>
 </body>
 </html>
-  `}c.post("/api/forms/create",async e=>{try{const{userId:t,name:s,description:a,fields:r,termsText:o,successMessage:n,customHtml:i,headerScript:l,pixelScript:d}=await e.req.json();if(!t||!s)return e.json({success:!1,error:"필수 정보가 누락되었습니다."},400);const p=await e.env.DB.prepare("SELECT academy_id FROM users WHERE id = ?").bind(t).first(),u=(p==null?void 0:p.academy_id)||t,m=await e.env.DB.prepare(`
+  `}c.post("/api/forms/create",async e=>{try{const{userId:t,name:s,description:a,fields:r,termsText:n,successMessage:o,customHtml:i,headerScript:l,pixelScript:d}=await e.req.json();if(!t||!s)return e.json({success:!1,error:"필수 정보가 누락되었습니다."},400);const p=await e.env.DB.prepare("SELECT academy_id FROM users WHERE id = ?").bind(t).first(),u=(p==null?void 0:p.academy_id)||t,m=await e.env.DB.prepare(`
       INSERT INTO forms (academy_id, name, description, fields, custom_html, header_script, pixel_script, terms_text, success_message)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).bind(u,s,a||"",JSON.stringify(r||[]),i||"",l||"",d||"",o||"개인정보 수집 및 이용에 동의합니다.",n||"신청이 완료되었습니다. 감사합니다!").run();return e.json({success:!0,message:"폼이 생성되었습니다.",formId:m.meta.last_row_id})}catch(t){return console.error("Form creation error:",t),e.json({success:!1,error:"폼 생성 실패: "+t.message},500)}});c.get("/api/forms/list",async e=>{try{const t=e.req.header("X-User-Data-Base64");let s=null;if(t)try{const n=atob(t);s=JSON.parse(n).id}catch(n){console.error("Failed to decode user data:",n)}if(s||(s=e.req.query("userId")),!s)return e.json({success:!1,error:"userId가 필요합니다."},400);const a=await e.env.DB.prepare("SELECT academy_id FROM users WHERE id = ?").bind(s).first(),r=(a==null?void 0:a.academy_id)||s,o=await e.env.DB.prepare(`
+    `).bind(u,s,a||"",JSON.stringify(r||[]),i||"",l||"",d||"",n||"개인정보 수집 및 이용에 동의합니다.",o||"신청이 완료되었습니다. 감사합니다!").run();return e.json({success:!0,message:"폼이 생성되었습니다.",formId:m.meta.last_row_id})}catch(t){return console.error("Form creation error:",t),e.json({success:!1,error:"폼 생성 실패: "+t.message},500)}});c.get("/api/forms/list",async e=>{try{const t=e.req.header("X-User-Data-Base64");let s=null;if(t)try{const o=atob(t);s=JSON.parse(o).id}catch(o){console.error("Failed to decode user data:",o)}if(s||(s=e.req.query("userId")),!s)return e.json({success:!1,error:"userId가 필요합니다."},400);const a=await e.env.DB.prepare("SELECT academy_id FROM users WHERE id = ?").bind(s).first(),r=(a==null?void 0:a.academy_id)||s,n=await e.env.DB.prepare(`
       SELECT * FROM forms WHERE academy_id = ? ORDER BY created_at DESC
-    `).bind(r).all();return e.json({success:!0,forms:o.results||[]})}catch(t){return console.error("Forms list error:",t),e.json({success:!1,error:"폼 목록 조회 실패"},500)}});c.get("/api/forms/:id",async e=>{try{const t=e.req.param("id"),s=await e.env.DB.prepare(`
+    `).bind(r).all();return e.json({success:!0,forms:n.results||[]})}catch(t){return console.error("Forms list error:",t),e.json({success:!1,error:"폼 목록 조회 실패"},500)}});c.get("/api/forms/:id",async e=>{try{const t=e.req.param("id"),s=await e.env.DB.prepare(`
       SELECT * FROM forms WHERE id = ?
-    `).bind(t).first();return s?e.json({success:!0,form:s}):e.json({success:!1,error:"폼을 찾을 수 없습니다."},404)}catch(t){return console.error("Form detail error:",t),e.json({success:!1,error:"폼 조회 실패"},500)}});c.put("/api/forms/:id",async e=>{try{const t=e.req.param("id"),{name:s,description:a,fields:r,termsText:o,successMessage:n,customHtml:i,headerScript:l,pixelScript:d}=await e.req.json();return await e.env.DB.prepare(`
+    `).bind(t).first();return s?e.json({success:!0,form:s}):e.json({success:!1,error:"폼을 찾을 수 없습니다."},404)}catch(t){return console.error("Form detail error:",t),e.json({success:!1,error:"폼 조회 실패"},500)}});c.put("/api/forms/:id",async e=>{try{const t=e.req.param("id"),{name:s,description:a,fields:r,termsText:n,successMessage:o,customHtml:i,headerScript:l,pixelScript:d}=await e.req.json();return await e.env.DB.prepare(`
       UPDATE forms 
       SET name = ?, 
           description = ?, 
@@ -5993,23 +6247,23 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
           pixel_script = ?,
           updated_at = CURRENT_TIMESTAMP
       WHERE id = ?
-    `).bind(s,a||"",JSON.stringify(r||[]),o||"개인정보 수집 및 이용에 동의합니다.",n||"신청이 완료되었습니다. 감사합니다!",i||"",l||"",d||"",t).run(),e.json({success:!0,message:"폼이 수정되었습니다."})}catch(t){return console.error("Form update error:",t),e.json({success:!1,error:"폼 수정 실패"},500)}});c.delete("/api/forms/:id",async e=>{try{const t=e.req.param("id");return await e.env.DB.prepare("DELETE FROM forms WHERE id = ?").bind(t).run(),e.json({success:!0,message:"폼이 삭제되었습니다."})}catch(t){return console.error("Form delete error:",t),e.json({success:!1,error:"폼 삭제 실패"},500)}});c.get("/api/forms/:id/html",async e=>{try{const t=e.req.param("id"),s=await e.env.DB.prepare(`
+    `).bind(s,a||"",JSON.stringify(r||[]),n||"개인정보 수집 및 이용에 동의합니다.",o||"신청이 완료되었습니다. 감사합니다!",i||"",l||"",d||"",t).run(),e.json({success:!0,message:"폼이 수정되었습니다."})}catch(t){return console.error("Form update error:",t),e.json({success:!1,error:"폼 수정 실패"},500)}});c.delete("/api/forms/:id",async e=>{try{const t=e.req.param("id");return await e.env.DB.prepare("DELETE FROM forms WHERE id = ?").bind(t).run(),e.json({success:!0,message:"폼이 삭제되었습니다."})}catch(t){return console.error("Form delete error:",t),e.json({success:!1,error:"폼 삭제 실패"},500)}});c.get("/api/forms/:id/html",async e=>{try{const t=e.req.param("id"),s=await e.env.DB.prepare(`
       SELECT * FROM forms WHERE id = ?
-    `).bind(t).first();if(!s)return e.json({success:!1,error:"폼을 찾을 수 없습니다."},404);let a=[];try{a=s.fields?JSON.parse(s.fields):[]}catch(n){console.error("Failed to parse form fields:",n)}let r="";for(const n of a){const i=n.required?"required":"",l=n.required?" *":"";if(n.type==="textarea")r+=`
+    `).bind(t).first();if(!s)return e.json({success:!1,error:"폼을 찾을 수 없습니다."},404);let a=[];try{a=s.fields?JSON.parse(s.fields):[]}catch(o){console.error("Failed to parse form fields:",o)}let r="";for(const o of a){const i=o.required?"required":"",l=o.required?" *":"";if(o.type==="textarea")r+=`
     <div>
-        <label class="block text-sm font-bold text-gray-700 mb-2">${n.label}${l}</label>
-        <textarea name="custom_${n.label}" ${i} class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="${n.placeholder||""}" rows="4"></textarea>
-    </div>`;else if(n.type==="select"){let d='<option value="">선택하세요</option>';for(const p of n.options||[])d+=`<option value="${p}">${p}</option>`;r+=`
+        <label class="block text-sm font-bold text-gray-700 mb-2">${o.label}${l}</label>
+        <textarea name="custom_${o.label}" ${i} class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="${o.placeholder||""}" rows="4"></textarea>
+    </div>`;else if(o.type==="select"){let d='<option value="">선택하세요</option>';for(const p of o.options||[])d+=`<option value="${p}">${p}</option>`;r+=`
     <div>
-        <label class="block text-sm font-bold text-gray-700 mb-2">${n.label}${l}</label>
-        <select name="custom_${n.label}" ${i} class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+        <label class="block text-sm font-bold text-gray-700 mb-2">${o.label}${l}</label>
+        <select name="custom_${o.label}" ${i} class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent">
             ${d}
         </select>
-    </div>`}else{const d=n.type||"text";r+=`
+    </div>`}else{const d=o.type||"text";r+=`
     <div>
-        <label class="block text-sm font-bold text-gray-700 mb-2">${n.label}${l}</label>
-        <input type="${d}" name="custom_${n.label}" ${i} class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="${n.placeholder||""}">
-    </div>`}}const o=`<!-- 신청 폼 섹션 -->
+        <label class="block text-sm font-bold text-gray-700 mb-2">${o.label}${l}</label>
+        <input type="${d}" name="custom_${o.label}" ${i} class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="${o.placeholder||""}">
+    </div>`}}const n=`<!-- 신청 폼 섹션 -->
 <div class="container mx-auto px-4 py-12" id="apply-form-section">
     <div class="max-w-2xl mx-auto bg-white rounded-2xl shadow-2xl p-8">
         <h2 class="text-3xl font-bold text-center mb-2 bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-pink-600">
@@ -6098,10 +6352,10 @@ document.getElementById('applicationForm').addEventListener('submit', async (e) 
         resultDiv.innerHTML = '<p class="font-bold text-center">❌ 오류가 발생했습니다.</p>';
     }
 });
-<\/script>`;return e.json({success:!0,html:o})}catch(t){return console.error("Form HTML error:",t),e.json({success:!1,error:"HTML 생성 실패"},500)}});c.post("/api/forms/submit",async e=>{try{const{formId:t,landingPageSlug:s,name:a,phone:r,email:o,data:n,agreedToTerms:i}=await e.req.json();if(!t||!a||!i)return e.json({success:!1,error:"필수 정보가 누락되었습니다."},400);let l=null;if(s){const m=await e.env.DB.prepare("SELECT id FROM landing_pages WHERE slug = ?").bind(s).first();l=(m==null?void 0:m.id)||null}const d=e.req.header("cf-connecting-ip")||e.req.header("x-forwarded-for")||"unknown",p=e.req.header("user-agent")||"unknown",u=await e.env.DB.prepare(`
+<\/script>`;return e.json({success:!0,html:n})}catch(t){return console.error("Form HTML error:",t),e.json({success:!1,error:"HTML 생성 실패"},500)}});c.post("/api/forms/submit",async e=>{try{const{formId:t,landingPageSlug:s,name:a,phone:r,email:n,data:o,agreedToTerms:i}=await e.req.json();if(!t||!a||!i)return e.json({success:!1,error:"필수 정보가 누락되었습니다."},400);let l=null;if(s){const m=await e.env.DB.prepare("SELECT id FROM landing_pages WHERE slug = ?").bind(s).first();l=(m==null?void 0:m.id)||null}const d=e.req.header("cf-connecting-ip")||e.req.header("x-forwarded-for")||"unknown",p=e.req.header("user-agent")||"unknown",u=await e.env.DB.prepare(`
       INSERT INTO form_submissions (form_id, landing_page_id, name, phone, email, additional_data, agreed_to_terms, ip_address, user_agent)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).bind(t,l,a,r||"",o||"",JSON.stringify(n||{}),i?1:0,d,p).run();return e.json({success:!0,message:"신청이 완료되었습니다.",submissionId:u.meta.last_row_id})}catch(t){return console.error("Form submission error:",t),e.json({success:!1,error:"신청 실패: "+t.message},500)}});c.get("/api/forms/:id/submissions",async e=>{try{const t=e.req.param("id"),s=await e.env.DB.prepare(`
+    `).bind(t,l,a,r||"",n||"",JSON.stringify(o||{}),i?1:0,d,p).run();return e.json({success:!0,message:"신청이 완료되었습니다.",submissionId:u.meta.last_row_id})}catch(t){return console.error("Form submission error:",t),e.json({success:!1,error:"신청 실패: "+t.message},500)}});c.get("/api/forms/:id/submissions",async e=>{try{const t=e.req.param("id"),s=await e.env.DB.prepare(`
       SELECT * FROM form_submissions WHERE form_id = ? ORDER BY created_at DESC
     `).bind(t).all();return e.json({success:!0,submissions:s.results||[]})}catch(t){return console.error("Form submissions error:",t),e.json({success:!1,error:"제출 내역 조회 실패"},500)}});c.get("/forms/:id/submissions",async e=>{const t=e.req.param("id");return e.html(`<!DOCTYPE html>
 <html lang="ko">
@@ -6353,16 +6607,16 @@ document.getElementById('applicationForm').addEventListener('submit', async (e) 
         loadSubmissions();
     <\/script>
 </body>
-</html>`)});c.get("/api/landing/:slug/qr",async e=>{try{const t=e.req.param("slug"),s=e.req.query("size")||"300",a=await e.env.DB.prepare("SELECT id, slug, title FROM landing_pages WHERE slug = ?").bind(t).first();if(!a)return e.json({success:!1,error:"Landing page not found"},404);const r=`${new URL(e.req.url).origin}/landing/${t}`,o=`https://chart.googleapis.com/chart?cht=qr&chs=${s}x${s}&chl=${encodeURIComponent(r)}&choe=UTF-8`;return e.json({success:!0,qrCodeUrl:o,landingUrl:r,title:a.title})}catch(t){return console.error("QR generation error:",t),e.json({success:!1,error:"QR 생성 실패"},500)}});c.get("/api/landing/:slug/submissions",async e=>{var t;try{const s=e.req.param("slug"),a=e.req.header("X-User-Data-Base64");let r={id:1};if(a)try{const i=atob(a);r=JSON.parse(i)}catch(i){console.warn("Failed to decode user data:",i)}const o=await e.env.DB.prepare(`
+</html>`)});c.get("/api/landing/:slug/qr",async e=>{try{const t=e.req.param("slug"),s=e.req.query("size")||"300",a=await e.env.DB.prepare("SELECT id, slug, title FROM landing_pages WHERE slug = ?").bind(t).first();if(!a)return e.json({success:!1,error:"Landing page not found"},404);const r=`${new URL(e.req.url).origin}/landing/${t}`,n=`https://chart.googleapis.com/chart?cht=qr&chs=${s}x${s}&chl=${encodeURIComponent(r)}&choe=UTF-8`;return e.json({success:!0,qrCodeUrl:n,landingUrl:r,title:a.title})}catch(t){return console.error("QR generation error:",t),e.json({success:!1,error:"QR 생성 실패"},500)}});c.get("/api/landing/:slug/submissions",async e=>{var t;try{const s=e.req.param("slug"),a=e.req.header("X-User-Data-Base64");let r={id:1};if(a)try{const i=atob(a);r=JSON.parse(i)}catch(i){console.warn("Failed to decode user data:",i)}const n=await e.env.DB.prepare(`
       SELECT id, title, user_id, form_id FROM landing_pages WHERE slug = ?
-    `).bind(s).first();if(!o)return e.json({success:!1,error:"Landing page not found"},404);if(o.user_id!==r.id)return e.json({success:!1,error:"Unauthorized"},403);const n=await e.env.DB.prepare(`
+    `).bind(s).first();if(!n)return e.json({success:!1,error:"Landing page not found"},404);if(n.user_id!==r.id)return e.json({success:!1,error:"Unauthorized"},403);const o=await e.env.DB.prepare(`
       SELECT 
         id, name, phone, email, additional_data, 
         created_at, ip_address, user_agent
       FROM form_submissions 
       WHERE landing_page_id = ? 
       ORDER BY created_at DESC
-    `).bind(o.id).all();return e.json({success:!0,landingPage:{id:o.id,title:o.title,slug:s},submissions:n.results||[],total:((t=n.results)==null?void 0:t.length)||0})}catch(s){return console.error("Submissions fetch error:",s),e.json({success:!1,error:"신청자 조회 실패"},500)}});c.post("/api/generate-parent-message",async e=>{var t,s;try{const{studentName:a,grade:r,subject:o,shortMessage:n}=await e.req.json();if(!a||!r||!o||!n)return e.json({success:!1,error:"필수 항목을 입력해주세요."},400);const i=tt(a,r,o,n);return e.json({success:!0,message:i,metadata:{studentName:a,grade:r,subject:o,originalMessage:n,mode:"template"}})}catch(a){return console.error("Generate message error:",a),e.json({success:!1,error:"메시지 생성 중 오류가 발생했습니다."},500)}});c.post("/api/generate-parent-message-from-records",async e=>{try{const{studentId:t,studentName:s,grade:a,subjects:r,parentName:o,records:n,additionalMessage:i}=await e.req.json();if(!t||!s)return e.json({success:!1,error:"학생 정보가 필요합니다."},400);const l=Vs(n),d=Ks(s,a,r,o,l,i),p=e.env.OPENAI_API_KEY,u=e.env.OPENAI_BASE_URL||"https://api.openai.com/v1";if(p)try{const g=await fetch(`${u}/chat/completions`,{method:"POST",headers:{"Content-Type":"application/json",Authorization:`Bearer ${p}`},body:JSON.stringify({model:"gpt-4o-mini",messages:[{role:"system",content:`당신은 학원 원장님입니다. 학부모님께 학생의 학습 현황을 따뜻하고 격려하는 말투로 전달하는 메시지를 작성합니다.
+    `).bind(n.id).all();return e.json({success:!0,landingPage:{id:n.id,title:n.title,slug:s},submissions:o.results||[],total:((t=o.results)==null?void 0:t.length)||0})}catch(s){return console.error("Submissions fetch error:",s),e.json({success:!1,error:"신청자 조회 실패"},500)}});c.post("/api/generate-parent-message",async e=>{var t,s;try{const{studentName:a,grade:r,subject:n,shortMessage:o}=await e.req.json();if(!a||!r||!n||!o)return e.json({success:!1,error:"필수 항목을 입력해주세요."},400);const i=tt(a,r,n,o);return e.json({success:!0,message:i,metadata:{studentName:a,grade:r,subject:n,originalMessage:o,mode:"template"}})}catch(a){return console.error("Generate message error:",a),e.json({success:!1,error:"메시지 생성 중 오류가 발생했습니다."},500)}});c.post("/api/generate-parent-message-from-records",async e=>{try{const{studentId:t,studentName:s,grade:a,subjects:r,parentName:n,records:o,additionalMessage:i}=await e.req.json();if(!t||!s)return e.json({success:!1,error:"학생 정보가 필요합니다."},400);const l=Js(o),d=Ks(s,a,r,n,l,i),p=e.env.OPENAI_API_KEY,u=e.env.OPENAI_BASE_URL||"https://api.openai.com/v1";if(p)try{const g=await fetch(`${u}/chat/completions`,{method:"POST",headers:{"Content-Type":"application/json",Authorization:`Bearer ${p}`},body:JSON.stringify({model:"gpt-4o-mini",messages:[{role:"system",content:`당신은 학원 원장님입니다. 학부모님께 학생의 학습 현황을 따뜻하고 격려하는 말투로 전달하는 메시지를 작성합니다.
 
 규칙:
 1. 존댓말 사용 (학부모님께)
@@ -6373,11 +6627,11 @@ document.getElementById('applicationForm').addEventListener('submit', async (e) 
 6. 250-350자 정도의 적절한 길이
 7. 이모지 2-3개 자연스럽게 사용
 8. 학부모님이 안심하고 신뢰할 수 있는 내용
-9. 최근 7일간의 구체적인 학습 기록을 바탕으로 작성`},{role:"user",content:d}],temperature:.8,max_tokens:600})}),x=await g.json();if(g.ok&&x.choices&&x.choices[0])return e.json({success:!0,message:x.choices[0].message.content,metadata:{studentName:s,grade:a,subjects:r,mode:"ai",recordsCount:n.length}})}catch(g){console.error("OpenAI API error:",g)}const m=Qs(s,a,r,o,l,i);return e.json({success:!0,message:m,metadata:{studentName:s,grade:a,subjects:r,mode:"template",recordsCount:n.length}})}catch(t){return console.error("Generate message from records error:",t),e.json({success:!1,error:"메시지 생성 실패: "+t.message},500)}});function Vs(e){if(!e||e.length===0)return{totalDays:0,attendanceRate:0,homeworkRate:0,avgUnderstanding:0,avgParticipation:0,achievements:[],memos:[],latestRecords:[]};const t=e.length,s=e.filter(p=>p.attendance==="출석").length,a=e.filter(p=>p.homework_status==="완료").length,r=e.filter(p=>p.understanding_level).map(p=>p.understanding_level),o=e.filter(p=>p.participation_level).map(p=>p.participation_level),n=r.length>0?(r.reduce((p,u)=>p+u,0)/r.length).toFixed(1):"0",i=o.length>0?(o.reduce((p,u)=>p+u,0)/o.length).toFixed(1):"0",l=e.filter(p=>p.achievement).map(p=>p.achievement),d=e.filter(p=>p.memo).map(p=>p.memo);return{totalDays:t,attendanceRate:(s/t*100).toFixed(0),homeworkRate:t>0?(a/t*100).toFixed(0):"0",avgUnderstanding:n,avgParticipation:i,achievements:l,memos:d,latestRecords:e.slice(0,3)}}function Ks(e,t,s,a,r,o){const n=r.achievements.length>0?`주요 성과:
+9. 최근 7일간의 구체적인 학습 기록을 바탕으로 작성`},{role:"user",content:d}],temperature:.8,max_tokens:600})}),x=await g.json();if(g.ok&&x.choices&&x.choices[0])return e.json({success:!0,message:x.choices[0].message.content,metadata:{studentName:s,grade:a,subjects:r,mode:"ai",recordsCount:o.length}})}catch(g){console.error("OpenAI API error:",g)}const m=Qs(s,a,r,n,l,i);return e.json({success:!0,message:m,metadata:{studentName:s,grade:a,subjects:r,mode:"template",recordsCount:o.length}})}catch(t){return console.error("Generate message from records error:",t),e.json({success:!1,error:"메시지 생성 실패: "+t.message},500)}});function Js(e){if(!e||e.length===0)return{totalDays:0,attendanceRate:0,homeworkRate:0,avgUnderstanding:0,avgParticipation:0,achievements:[],memos:[],latestRecords:[]};const t=e.length,s=e.filter(p=>p.attendance==="출석").length,a=e.filter(p=>p.homework_status==="완료").length,r=e.filter(p=>p.understanding_level).map(p=>p.understanding_level),n=e.filter(p=>p.participation_level).map(p=>p.participation_level),o=r.length>0?(r.reduce((p,u)=>p+u,0)/r.length).toFixed(1):"0",i=n.length>0?(n.reduce((p,u)=>p+u,0)/n.length).toFixed(1):"0",l=e.filter(p=>p.achievement).map(p=>p.achievement),d=e.filter(p=>p.memo).map(p=>p.memo);return{totalDays:t,attendanceRate:(s/t*100).toFixed(0),homeworkRate:t>0?(a/t*100).toFixed(0):"0",avgUnderstanding:o,avgParticipation:i,achievements:l,memos:d,latestRecords:e.slice(0,3)}}function Ks(e,t,s,a,r,n){const o=r.achievements.length>0?`주요 성과:
 ${r.achievements.slice(0,3).map(d=>`- ${d}`).join(`
 `)}`:"",i=r.memos.length>0?`선생님 메모:
 ${r.memos.slice(0,3).map(d=>`- ${d}`).join(`
-`)}`:"",l=o?`추가 전달 사항: ${o}`:"";return`학생 이름: ${e}
+`)}`:"",l=n?`추가 전달 사항: ${n}`:"";return`학생 이름: ${e}
 학년: ${t}
 과목: ${s}
 학부모: ${a||"학부모"} 님
@@ -6389,14 +6643,14 @@ ${r.memos.slice(0,3).map(d=>`- ${d}`).join(`
 - 평균 이해도: ${r.avgUnderstanding}/5점
 - 평균 참여도: ${r.avgParticipation}/5점
 
-${n}
+${o}
 
 ${i}
 
 ${l}
 
 위 정보를 바탕으로 ${a||"학부모"} 님께 보낼 따뜻하고 구체적인 메시지를 작성해주세요. 
-학생의 강점을 구체적인 수치와 함께 칭찬하고, 개선이 필요한 부분은 격려와 함께 제시해주세요.`}function Qs(e,t,s,a,r,o){let i=`안녕하세요, ${a?`${a} 학부모님`:"학부모님"}! 😊
+학생의 강점을 구체적인 수치와 함께 칭찬하고, 개선이 필요한 부분은 격려와 함께 제시해주세요.`}function Qs(e,t,s,a,r,n){let i=`안녕하세요, ${a?`${a} 학부모님`:"학부모님"}! 😊
 
 `;return i+=`${e} 학생의 최근 일주일 학습 현황을 전달드립니다.
 
@@ -6409,8 +6663,8 @@ ${l}
 🎯 최근 성과:
 ${r.achievements.slice(0,2).map(l=>`- ${l}`).join(`
 `)}
-`),o&&(i+=`
-${o}
+`),n&&(i+=`
+${n}
 `),i+=`
 앞으로도 ${e} 학생이 더욱 성장할 수 있도록 최선을 다해 지도하겠습니다. 💪`,i}function tt(e,t,s,a){const r=[`안녕하세요, ${e} 학부모님! 😊
 
@@ -6436,7 +6690,7 @@ ${a}
 
 ${e}가 보여준 이런 모습들이 정말 인상 깊었습니다. 이대로만 꾸준히 노력한다면 ${s} 과목에서 더 큰 발전을 기대할 수 있겠습니다! ✨
 
-앞으로도 ${e}의 성장을 함께 응원하겠습니다!`],o=Math.floor(Math.random()*r.length);return r[o]}c.post("/api/generate-blog-post",async e=>{var t,s;try{const{topic:a,keywords:r,tone:o}=await e.req.json();if(!a)return e.json({success:!1,error:"주제를 입력해주세요."},400);const n=st(a,r,o);return e.json({success:!0,content:n,metadata:{topic:a,keywords:r,tone:o,wordCount:n.length,mode:"template"}})}catch(a){return console.error("Generate blog post error:",a),e.json({success:!1,error:"블로그 글 생성 중 오류가 발생했습니다."},500)}});function st(e,t,s){const r=(t?t.split(",").map(o=>o.trim()):[e])[0];return`📌 ${e} - 학원장이 알려드리는 실전 가이드
+앞으로도 ${e}의 성장을 함께 응원하겠습니다!`],n=Math.floor(Math.random()*r.length);return r[n]}c.post("/api/generate-blog-post",async e=>{var t,s;try{const{topic:a,keywords:r,tone:n}=await e.req.json();if(!a)return e.json({success:!1,error:"주제를 입력해주세요."},400);const o=st(a,r,n);return e.json({success:!0,content:o,metadata:{topic:a,keywords:r,tone:n,wordCount:o.length,mode:"template"}})}catch(a){return console.error("Generate blog post error:",a),e.json({success:!1,error:"블로그 글 생성 중 오류가 발생했습니다."},500)}});function st(e,t,s){const r=(t?t.split(",").map(n=>n.trim()):[e])[0];return`📌 ${e} - 학원장이 알려드리는 실전 가이드
 
 안녕하세요! 오늘은 많은 학부모님들이 궁금해하시는 "${e}"에 대해 상세히 알려드리려고 합니다. 😊
 
@@ -6470,7 +6724,7 @@ ${r}을(를) 시작할 때 가장 중요한 것은 기초를 탄탄히 하는 �
 
 전문가의 도움을 받는 것도 좋은 방법입니다. 혼자서 하다 보면 방향을 잃기 쉽고, 잘못된 습관이 생길 수 있습니다.
 
-${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커리큘럼을 갖춘 곳에서 학습하면 시간과 노력을 아낄 수 있습니다.
+${t?t.split(",").map(n=>n.trim()).join(", "):e}과 관련해서 체계적인 커리큘럼을 갖춘 곳에서 학습하면 시간과 노력을 아낄 수 있습니다.
 
 
 📚 실전 활용 팁
@@ -6492,7 +6746,7 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
 
 궁금하신 점이 있으시면 언제든 댓글로 남겨주세요. 성심성의껏 답변드리겠습니다!
 
-#${r} ${t?t.split(",").map(o=>"#"+o.trim()).join(" "):""} #학원 #학습법 #공부법 #교육정보`}c.get("/favicon.ico",e=>e.body(null,204));c.get("/",e=>e.html(`
+#${r} ${t?t.split(",").map(n=>"#"+n.trim()).join(" "):""} #학원 #학습법 #공부법 #교육정보`}c.get("/favicon.ico",e=>e.body(null,204));c.get("/",e=>e.html(`
     <!DOCTYPE html>
     <html lang="ko">
     <head>
@@ -7565,14 +7819,14 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
         <\/script>
     </body>
     </html>
-  `));const jt={starter:{name:"스타터 플랜",price:55e3,studentLimit:50,aiReportLimit:50,landingPageLimit:50,teacherLimit:2},basic:{name:"베이직 플랜",price:143e3,studentLimit:150,aiReportLimit:150,landingPageLimit:160,teacherLimit:6},pro:{name:"프로 플랜",price:187e3,studentLimit:500,aiReportLimit:500,landingPageLimit:530,teacherLimit:20},premium:{name:"프리미엄 플랜",price:33e4,studentLimit:1e3,aiReportLimit:1e3,landingPageLimit:1100,teacherLimit:40},enterprise:{name:"엔터프라이즈 플랜",price:75e4,studentLimit:3e3,aiReportLimit:3e3,landingPageLimit:5e3,teacherLimit:999}};c.post("/api/payments/webhook",async e=>{try{const{imp_uid:t,merchant_uid:s,status:a}=await e.req.json();if(console.log("[Payment Webhook] Received:",{imp_uid:t,merchant_uid:s,status:a}),a==="paid"){const r=s.split("_"),o=parseInt(r[1]),n=r[2],i=jt[n];if(!i)return console.error("[Payment Webhook] Invalid plan ID:",n),e.json({success:!1,error:"Invalid plan"},400);const l=o;console.log("[Payment Webhook] Using academy_id = user.id:",l);try{if(!await e.env.DB.prepare(`
+  `));const jt={starter:{name:"스타터 플랜",price:55e3,studentLimit:50,aiReportLimit:50,landingPageLimit:50,teacherLimit:2},basic:{name:"베이직 플랜",price:143e3,studentLimit:150,aiReportLimit:150,landingPageLimit:160,teacherLimit:6},pro:{name:"프로 플랜",price:187e3,studentLimit:500,aiReportLimit:500,landingPageLimit:530,teacherLimit:20},premium:{name:"프리미엄 플랜",price:33e4,studentLimit:1e3,aiReportLimit:1e3,landingPageLimit:1100,teacherLimit:40},enterprise:{name:"엔터프라이즈 플랜",price:75e4,studentLimit:3e3,aiReportLimit:3e3,landingPageLimit:5e3,teacherLimit:999}};c.post("/api/payments/webhook",async e=>{try{const{imp_uid:t,merchant_uid:s,status:a}=await e.req.json();if(console.log("[Payment Webhook] Received:",{imp_uid:t,merchant_uid:s,status:a}),a==="paid"){const r=s.split("_"),n=parseInt(r[1]),o=r[2],i=jt[o];if(!i)return console.error("[Payment Webhook] Invalid plan ID:",o),e.json({success:!1,error:"Invalid plan"},400);const l=n;console.log("[Payment Webhook] Using academy_id = user.id:",l);try{if(!await e.env.DB.prepare(`
           SELECT id FROM academies WHERE id = ?
-        `).bind(l).first()){console.log("[Payment Webhook] Creating academy with explicit id:",l),await e.env.DB.prepare("PRAGMA foreign_keys = OFF").run();const b=await e.env.DB.prepare("SELECT name FROM users WHERE id = ?").bind(l).first(),f=b!=null&&b.name?b.name+" 학원":"학원";await e.env.DB.prepare(`
+        `).bind(l).first()){console.log("[Payment Webhook] Creating academy with explicit id:",l),await e.env.DB.prepare("PRAGMA foreign_keys = OFF").run();const b=await e.env.DB.prepare("SELECT name FROM users WHERE id = ?").bind(l).first(),h=b!=null&&b.name?b.name+" 학원":"학원";await e.env.DB.prepare(`
             INSERT OR REPLACE INTO academies (id, academy_name, owner_id, created_at)
             VALUES (?, ?, ?, CURRENT_TIMESTAMP)
-          `).bind(l,f,l).run(),await e.env.DB.prepare("PRAGMA foreign_keys = ON").run(),console.log("[Payment Webhook] Academy created with id:",l)}}catch(x){console.error("[Payment Webhook] Academy creation error:",x)}await e.env.DB.prepare(`
+          `).bind(l,h,l).run(),await e.env.DB.prepare("PRAGMA foreign_keys = ON").run(),console.log("[Payment Webhook] Academy created with id:",l)}}catch(x){console.error("[Payment Webhook] Academy creation error:",x)}await e.env.DB.prepare(`
         UPDATE users SET academy_id = ? WHERE id = ?
-      `).bind(l,o).run();const d=new Date,p=d.toISOString().split("T")[0],u=new Date(d.setMonth(d.getMonth()+1)).toISOString().split("T")[0];await e.env.DB.prepare(`
+      `).bind(l,n).run();const d=new Date,p=d.toISOString().split("T")[0],u=new Date(d.setMonth(d.getMonth()+1)).toISOString().split("T")[0];await e.env.DB.prepare(`
         UPDATE subscriptions 
         SET status = 'expired', updated_at = CURRENT_TIMESTAMP
         WHERE academy_id = ? AND status = 'active'
@@ -7585,12 +7839,12 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
       `).bind(l,i.name,i.price,i.studentLimit,i.aiReportLimit,i.landingPageLimit,i.teacherLimit,p,u,s,t).run();console.log("[Payment Webhook] Subscription created:",{subscriptionId:m.meta.last_row_id,academyId:l,plan:i.name,startDate:p,endDate:u});const g=[{route:"/students",name:"학생 관리"},{route:"/tools/ai-learning-report",name:"AI학습 분석 리포트"},{route:"/tools/dashboard-analytics",name:"통합 분석 대시보드"},{route:"/tools/search-volume",name:"네이버 검색량 조회"}];for(const x of g)try{await e.env.DB.prepare(`
             INSERT OR IGNORE INTO user_programs (user_id, program_route, program_name, enabled, created_at)
             VALUES (?, ?, ?, 1, CURRENT_TIMESTAMP)
-          `).bind(o,x.route,x.name).run()}catch(b){console.error("[Payment Webhook] Failed to add program:",x.name,b)}return console.log("[Payment Webhook] Added 4 basic programs for user:",o),e.json({success:!0,subscriptionId:m.meta.last_row_id})}return e.json({success:!0,message:"Status not paid"})}catch(t){return console.error("[Payment Webhook] Error:",t),e.json({success:!1,error:t.message},500)}});c.post("/api/payments/complete",async e=>{try{const{imp_uid:t,merchant_uid:s}=await e.req.json();console.log("[Payment Complete] Client callback:",{imp_uid:t,merchant_uid:s});const a=s.split("_"),r=parseInt(a[1]),o=a[2],n=jt[o];if(!n)return e.json({success:!1,error:"Invalid plan"},400);const i=r;console.log("[Payment Complete] Using academy_id = user.id:",i);try{if(!await e.env.DB.prepare(`
+          `).bind(n,x.route,x.name).run()}catch(b){console.error("[Payment Webhook] Failed to add program:",x.name,b)}return console.log("[Payment Webhook] Added 4 basic programs for user:",n),e.json({success:!0,subscriptionId:m.meta.last_row_id})}return e.json({success:!0,message:"Status not paid"})}catch(t){return console.error("[Payment Webhook] Error:",t),e.json({success:!1,error:t.message},500)}});c.post("/api/payments/complete",async e=>{try{const{imp_uid:t,merchant_uid:s}=await e.req.json();console.log("[Payment Complete] Client callback:",{imp_uid:t,merchant_uid:s});const a=s.split("_"),r=parseInt(a[1]),n=a[2],o=jt[n];if(!o)return e.json({success:!1,error:"Invalid plan"},400);const i=r;console.log("[Payment Complete] Using academy_id = user.id:",i);try{if(!await e.env.DB.prepare(`
         SELECT id FROM academies WHERE id = ?
-      `).bind(i).first()){console.log("[Payment Complete] Creating academy with explicit id:",i),await e.env.DB.prepare("PRAGMA foreign_keys = OFF").run();const b=await e.env.DB.prepare("SELECT name FROM users WHERE id = ?").bind(i).first(),f=b!=null&&b.name?b.name+" 학원":"학원";await e.env.DB.prepare(`
+      `).bind(i).first()){console.log("[Payment Complete] Creating academy with explicit id:",i),await e.env.DB.prepare("PRAGMA foreign_keys = OFF").run();const b=await e.env.DB.prepare("SELECT name FROM users WHERE id = ?").bind(i).first(),h=b!=null&&b.name?b.name+" 학원":"학원";await e.env.DB.prepare(`
           INSERT OR REPLACE INTO academies (id, academy_name, owner_id, created_at)
           VALUES (?, ?, ?, CURRENT_TIMESTAMP)
-        `).bind(i,f,i).run(),await e.env.DB.prepare("PRAGMA foreign_keys = ON").run(),console.log("[Payment Complete] Academy created with id:",i)}}catch(x){console.error("[Payment Complete] Academy creation error:",x)}await e.env.DB.prepare(`
+        `).bind(i,h,i).run(),await e.env.DB.prepare("PRAGMA foreign_keys = ON").run(),console.log("[Payment Complete] Academy created with id:",i)}}catch(x){console.error("[Payment Complete] Academy creation error:",x)}await e.env.DB.prepare(`
       UPDATE users SET academy_id = ? WHERE id = ?
     `).bind(i,r).run();const l=new Date,d=l.toISOString().split("T")[0],p=new Date(l.setMonth(l.getMonth()+1)).toISOString().split("T")[0];await e.env.DB.prepare(`
       UPDATE subscriptions 
@@ -7602,7 +7856,7 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
         landing_page_limit, teacher_limit, subscription_start_date, 
         subscription_end_date, status, payment_method, merchant_uid, imp_uid
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', 'card', ?, ?)
-    `).bind(i,n.name,n.price,n.studentLimit,n.aiReportLimit,n.landingPageLimit,n.teacherLimit,d,p,s,t).run();console.log("[Payment Complete] Subscription created:",{subscriptionId:u.meta.last_row_id,academyId:i,plan:n.name,startDate:d,endDate:p}),await e.env.DB.prepare(`
+    `).bind(i,o.name,o.price,o.studentLimit,o.aiReportLimit,o.landingPageLimit,o.teacherLimit,d,p,s,t).run();console.log("[Payment Complete] Subscription created:",{subscriptionId:u.meta.last_row_id,academyId:i,plan:o.name,startDate:d,endDate:p}),await e.env.DB.prepare(`
       CREATE TABLE IF NOT EXISTS usage_tracking (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         academy_id INTEGER NOT NULL,
@@ -7627,38 +7881,38 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
     `).bind(i,u.meta.last_row_id,d,d).run();console.log("[Payment Complete] Usage tracking initialized:",{usageId:m.meta.last_row_id});const g=[{route:"/students",name:"학생 관리"},{route:"/tools/ai-learning-report",name:"AI학습 분석 리포트"},{route:"/tools/dashboard-analytics",name:"통합 분석 대시보드"},{route:"/tools/search-volume",name:"네이버 검색량 조회"}];for(const x of g)try{await e.env.DB.prepare(`
           INSERT OR IGNORE INTO user_programs (user_id, program_route, program_name, enabled, created_at)
           VALUES (?, ?, ?, 1, CURRENT_TIMESTAMP)
-        `).bind(r,x.route,x.name).run()}catch(b){console.error("[Payment Complete] Failed to add program:",x.name,b)}return console.log("[Payment Complete] Added 4 basic programs for user:",r),e.json({success:!0,subscription:{id:u.meta.last_row_id,planName:n.name,startDate:d,endDate:p}})}catch(t){return console.error("[Payment Complete] Error:",t),e.json({success:!1,error:t.message},500)}});c.get("/api/subscriptions/status",async e=>{try{const t=U(e,"session_id");if(!t)return console.log("[Subscription Status] No session_id cookie found"),e.json({success:!1,error:"Not authenticated"},401);const s=await e.env.DB.prepare(`
+        `).bind(r,x.route,x.name).run()}catch(b){console.error("[Payment Complete] Failed to add program:",x.name,b)}return console.log("[Payment Complete] Added 4 basic programs for user:",r),e.json({success:!0,subscription:{id:u.meta.last_row_id,planName:o.name,startDate:d,endDate:p}})}catch(t){return console.error("[Payment Complete] Error:",t),e.json({success:!1,error:t.message},500)}});c.get("/api/subscriptions/status",async e=>{try{const t=A(e,"session_id");if(!t)return console.log("[Subscription Status] No session_id cookie found"),e.json({success:!1,error:"Not authenticated"},401);const s=await e.env.DB.prepare(`
       SELECT user_id FROM sessions WHERE session_id = ? AND expires_at > datetime('now')
     `).bind(t).first();if(!s)return console.log("[Subscription Status] Session not found or expired"),e.json({success:!1,error:"Session expired"},401);const a=s.user_id;console.log("[Subscription Status] userId:",a);const r=await e.env.DB.prepare(`
       SELECT id, academy_id, user_type FROM users WHERE id = ?
-    `).bind(a).first();console.log("[Subscription Status] user:",r);let o;if(r.user_type==="teacher"){if(o=r.academy_id,console.log("🎓 [Subscription Status] TEACHER detected!"),console.log("  └─ Teacher userId:",a),console.log("  └─ Owner academy_id:",o),!o){console.log("  └─ ⚠️ academy_id is null, trying parent_user_id...");const m=await e.env.DB.prepare(`
+    `).bind(a).first();console.log("[Subscription Status] user:",r);let n;if(r.user_type==="teacher"){if(n=r.academy_id,console.log("🎓 [Subscription Status] TEACHER detected!"),console.log("  └─ Teacher userId:",a),console.log("  └─ Owner academy_id:",n),!n){console.log("  └─ ⚠️ academy_id is null, trying parent_user_id...");const m=await e.env.DB.prepare(`
           SELECT parent_user_id FROM users WHERE id = ?
-        `).bind(a).first();if(m!=null&&m.parent_user_id){o=m.parent_user_id,console.log("  └─ ✅ Found parent_user_id:",o);try{await e.env.DB.prepare("UPDATE users SET academy_id = ? WHERE id = ?").bind(o,a).run(),console.log("  └─ ✅ Auto-fixed academy_id to:",o)}catch(g){console.error("  └─ ❌ Failed to update academy_id:",g)}}else return console.error("  └─ ❌ No parent_user_id found either!"),e.json({success:!0,hasSubscription:!1,message:"선생님 계정이 학원에 연결되어 있지 않습니다. 학원장에게 문의하세요."})}console.log("  └─ Will inherit owner's plan from academy_id:",o)}else if(o=r.id,console.log("👨‍💼 [Subscription Status] OWNER detected!"),console.log("  └─ Owner userId:",a),console.log("  └─ Using own academy_id:",o),(r==null?void 0:r.academy_id)!==r.id){console.log(`  └─ Fixing academy_id from ${r==null?void 0:r.academy_id} to ${r.id}`);try{await e.env.DB.prepare("UPDATE users SET academy_id = ? WHERE id = ?").bind(o,a).run(),console.log("  └─ ✅ Fixed!")}catch(m){console.error("  └─ ❌ Failed to update academy_id:",m)}}console.log("🔍 [Subscription Status] Querying subscription WHERE academy_id =",o,"AND status = active");const n=await e.env.DB.prepare(`
+        `).bind(a).first();if(m!=null&&m.parent_user_id){n=m.parent_user_id,console.log("  └─ ✅ Found parent_user_id:",n);try{await e.env.DB.prepare("UPDATE users SET academy_id = ? WHERE id = ?").bind(n,a).run(),console.log("  └─ ✅ Auto-fixed academy_id to:",n)}catch(g){console.error("  └─ ❌ Failed to update academy_id:",g)}}else return console.error("  └─ ❌ No parent_user_id found either!"),e.json({success:!0,hasSubscription:!1,message:"선생님 계정이 학원에 연결되어 있지 않습니다. 학원장에게 문의하세요."})}console.log("  └─ Will inherit owner's plan from academy_id:",n)}else if(n=r.id,console.log("👨‍💼 [Subscription Status] OWNER detected!"),console.log("  └─ Owner userId:",a),console.log("  └─ Using own academy_id:",n),(r==null?void 0:r.academy_id)!==r.id){console.log(`  └─ Fixing academy_id from ${r==null?void 0:r.academy_id} to ${r.id}`);try{await e.env.DB.prepare("UPDATE users SET academy_id = ? WHERE id = ?").bind(n,a).run(),console.log("  └─ ✅ Fixed!")}catch(m){console.error("  └─ ❌ Failed to update academy_id:",m)}}console.log("🔍 [Subscription Status] Querying subscription WHERE academy_id =",n,"AND status = active");const o=await e.env.DB.prepare(`
       SELECT * FROM subscriptions 
       WHERE academy_id = ? AND status = 'active'
       ORDER BY created_at DESC
       LIMIT 1
-    `).bind(o).first();if(console.log("📋 [Subscription Status] Active subscription:",n?"FOUND ✅":"NOT FOUND ❌"),n&&(console.log("  └─ Subscription ID:",n.id),console.log("  └─ Plan:",n.plan_name),console.log("  └─ Academy ID:",n.academy_id),console.log("  └─ Start:",n.subscription_start_date),console.log("  └─ End:",n.subscription_end_date),console.log("  └─ Limits:",{students:n.student_limit,aiReports:n.ai_report_limit,landingPages:n.landing_page_limit,teachers:n.teacher_limit})),!n){console.log("⚠️ [Subscription Status] No active subscription, checking for admin plan...");const m=await e.env.DB.prepare(`
+    `).bind(n).first();if(console.log("📋 [Subscription Status] Active subscription:",o?"FOUND ✅":"NOT FOUND ❌"),o&&(console.log("  └─ Subscription ID:",o.id),console.log("  └─ Plan:",o.plan_name),console.log("  └─ Academy ID:",o.academy_id),console.log("  └─ Start:",o.subscription_start_date),console.log("  └─ End:",o.subscription_end_date),console.log("  └─ Limits:",{students:o.student_limit,aiReports:o.ai_report_limit,landingPages:o.landing_page_limit,teachers:o.teacher_limit})),!o){console.log("⚠️ [Subscription Status] No active subscription, checking for admin plan...");const m=await e.env.DB.prepare(`
         SELECT * FROM subscriptions 
         WHERE academy_id = ? AND plan_name = '관리자 설정 플랜'
         ORDER BY created_at DESC
         LIMIT 1
-      `).bind(o).first();return console.log("📋 [Subscription Status] Admin plan:",m?"FOUND ✅":"NOT FOUND ❌"),m?(console.log("✅ [Subscription Status] Returning admin subscription"),e.json({success:!0,hasSubscription:!0,subscription:{id:m.id,planName:m.plan_name,startDate:m.subscription_start_date,endDate:m.subscription_end_date,studentLimit:m.student_limit||0,aiReportLimit:m.ai_report_limit||0,landingPageLimit:m.landing_page_limit||0,teacherLimit:m.teacher_limit||0}})):(console.error("💥 [Subscription Status] CRITICAL: No subscription found!"),console.error("  └─ User type:",r.user_type),console.error("  └─ User ID:",a),console.error("  └─ Academy ID used:",o),console.error("  └─ User academy_id:",r.academy_id),e.json({success:!0,hasSubscription:!1,message:"활성 구독이 없습니다"}))}console.log("[Subscription Status] Found active subscription, checking expiration");const i=new Date,l=new Date(i.getTime()+540*60*1e3),d=l.toISOString().split("T")[0],p=new Date(n.subscription_end_date+"T23:59:59+09:00");return l>p?(await e.env.DB.prepare(`
+      `).bind(n).first();return console.log("📋 [Subscription Status] Admin plan:",m?"FOUND ✅":"NOT FOUND ❌"),m?(console.log("✅ [Subscription Status] Returning admin subscription"),e.json({success:!0,hasSubscription:!0,subscription:{id:m.id,planName:m.plan_name,startDate:m.subscription_start_date,endDate:m.subscription_end_date,studentLimit:m.student_limit||0,aiReportLimit:m.ai_report_limit||0,landingPageLimit:m.landing_page_limit||0,teacherLimit:m.teacher_limit||0}})):(console.error("💥 [Subscription Status] CRITICAL: No subscription found!"),console.error("  └─ User type:",r.user_type),console.error("  └─ User ID:",a),console.error("  └─ Academy ID used:",n),console.error("  └─ User academy_id:",r.academy_id),e.json({success:!0,hasSubscription:!1,message:"활성 구독이 없습니다"}))}console.log("[Subscription Status] Found active subscription, checking expiration");const i=new Date,l=new Date(i.getTime()+540*60*1e3),d=l.toISOString().split("T")[0],p=new Date(o.subscription_end_date+"T23:59:59+09:00");return l>p?(await e.env.DB.prepare(`
         UPDATE subscriptions 
         SET status = 'expired', updated_at = CURRENT_TIMESTAMP
         WHERE id = ?
-      `).bind(n.id).run(),e.json({success:!0,hasSubscription:!1,message:"구독이 만료되었습니다"})):e.json({success:!0,hasSubscription:!0,subscription:{id:n.id,planName:n.plan_name,startDate:n.subscription_start_date,endDate:n.subscription_end_date,studentLimit:n.student_limit,aiReportLimit:n.ai_report_limit,landingPageLimit:n.landing_page_limit,teacherLimit:n.teacher_limit}})}catch(t){return console.error("[Subscription Status] Error:",t),e.json({success:!1,error:t.message},500)}});c.get("/api/subscriptions/check-expired",async e=>{try{console.log("[Subscription Cron] Starting expired subscription check...");const t=new Date,a=new Date(t.getTime()+540*60*1e3).toISOString().split("T")[0];console.log("[Subscription Cron] Today (Korea Time):",a);const r=await e.env.DB.prepare(`
+      `).bind(o.id).run(),e.json({success:!0,hasSubscription:!1,message:"구독이 만료되었습니다"})):e.json({success:!0,hasSubscription:!0,subscription:{id:o.id,planName:o.plan_name,startDate:o.subscription_start_date,endDate:o.subscription_end_date,studentLimit:o.student_limit,aiReportLimit:o.ai_report_limit,landingPageLimit:o.landing_page_limit,teacherLimit:o.teacher_limit}})}catch(t){return console.error("[Subscription Status] Error:",t),e.json({success:!1,error:t.message},500)}});c.get("/api/subscriptions/check-expired",async e=>{try{console.log("[Subscription Cron] Starting expired subscription check...");const t=new Date,a=new Date(t.getTime()+540*60*1e3).toISOString().split("T")[0];console.log("[Subscription Cron] Today (Korea Time):",a);const r=await e.env.DB.prepare(`
       SELECT id, academy_id, plan_name, subscription_end_date 
       FROM subscriptions 
       WHERE status = 'active' 
         AND subscription_end_date < ?
-    `).bind(a).all();if(console.log("[Subscription Cron] Found",r.results.length,"expired subscriptions"),r.results.length===0)return e.json({success:!0,message:"No expired subscriptions found",expiredCount:0});let o=0;for(const n of r.results)try{await e.env.DB.prepare(`
+    `).bind(a).all();if(console.log("[Subscription Cron] Found",r.results.length,"expired subscriptions"),r.results.length===0)return e.json({success:!0,message:"No expired subscriptions found",expiredCount:0});let n=0;for(const o of r.results)try{await e.env.DB.prepare(`
           UPDATE subscriptions 
           SET status = 'expired', updated_at = CURRENT_TIMESTAMP
           WHERE id = ?
-        `).bind(n.id).run(),console.log("[Subscription Cron] Expired subscription:",{id:n.id,academy_id:n.academy_id,plan_name:n.plan_name,end_date:n.subscription_end_date});try{const i=await e.env.DB.prepare(`
+        `).bind(o.id).run(),console.log("[Subscription Cron] Expired subscription:",{id:o.id,academy_id:o.academy_id,plan_name:o.plan_name,end_date:o.subscription_end_date});try{const i=await e.env.DB.prepare(`
             SELECT id FROM users WHERE academy_id = ?
-          `).bind(n.academy_id).all();for(const l of i.results)await e.env.DB.prepare(`
+          `).bind(o.academy_id).all();for(const l of i.results)await e.env.DB.prepare(`
               DELETE FROM user_permissions WHERE user_id = ?
             `).bind(l.id).run(),await e.env.DB.prepare(`
               DELETE FROM user_programs WHERE user_id = ?
@@ -7671,94 +7925,107 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
                 sms_sent_this_month = 0,
                 updated_at = CURRENT_TIMESTAMP
             WHERE academy_id = ?
-          `).bind(n.academy_id).run(),console.log("[Subscription Cron] ✅ Auto-revoked plan for academy:",n.academy_id)}catch(i){console.error("[Subscription Cron] Failed to auto-revoke for academy",n.academy_id,":",i.message)}o++}catch(i){console.error("[Subscription Cron] Failed to expire subscription",n.id,":",i.message)}return e.json({success:!0,message:`Successfully expired ${o} subscriptions`,expiredCount:o,expiredSubscriptions:r.results.map(n=>({id:n.id,academy_id:n.academy_id,plan_name:n.plan_name,end_date:n.subscription_end_date}))})}catch(t){return console.error("[Subscription Cron] Error:",t),e.json({success:!1,error:t.message},500)}});c.get("/api/usage/check",async e=>{try{const t=U(e,"session_id");if(!t)return e.json({success:!1,error:"Not authenticated"},401);const s=await e.env.DB.prepare(`
+          `).bind(o.academy_id).run(),console.log("[Subscription Cron] ✅ Auto-revoked plan for academy:",o.academy_id)}catch(i){console.error("[Subscription Cron] Failed to auto-revoke for academy",o.academy_id,":",i.message)}n++}catch(i){console.error("[Subscription Cron] Failed to expire subscription",o.id,":",i.message)}return e.json({success:!0,message:`Successfully expired ${n} subscriptions`,expiredCount:n,expiredSubscriptions:r.results.map(o=>({id:o.id,academy_id:o.academy_id,plan_name:o.plan_name,end_date:o.subscription_end_date}))})}catch(t){return console.error("[Subscription Cron] Error:",t),e.json({success:!1,error:t.message},500)}});c.get("/api/usage/check",async e=>{try{const t=A(e,"session_id");if(!t)return e.json({success:!1,error:"Not authenticated"},401);const s=await e.env.DB.prepare(`
       SELECT user_id FROM sessions WHERE session_id = ? AND expires_at > datetime('now')
     `).bind(t).first();if(!s)return e.json({success:!1,error:"Session expired or invalid"},401);const a=s.user_id,r=await e.env.DB.prepare(`
       SELECT id, academy_id, user_type FROM users WHERE id = ?
-    `).bind(a).first();if(!r)return e.json({success:!1,error:"User not found"},404);let o;if(r.user_type==="teacher"){if(o=r.academy_id,console.log("🎓 [Usage Check] TEACHER detected!"),console.log("  └─ Teacher userId:",a),console.log("  └─ Owner academy_id:",o),!o){console.log("  └─ ⚠️ academy_id is null, trying parent_user_id...");const f=await e.env.DB.prepare(`
+    `).bind(a).first();if(!r)return e.json({success:!1,error:"User not found"},404);let n;if(r.user_type==="teacher"){if(n=r.academy_id,console.log("🎓 [Usage Check] TEACHER detected!"),console.log("  └─ Teacher userId:",a),console.log("  └─ Owner academy_id:",n),!n){console.log("  └─ ⚠️ academy_id is null, trying parent_user_id...");const h=await e.env.DB.prepare(`
           SELECT parent_user_id FROM users WHERE id = ?
-        `).bind(a).first();if(f!=null&&f.parent_user_id){o=f.parent_user_id,console.log("  └─ ✅ Found parent_user_id:",o);try{await e.env.DB.prepare("UPDATE users SET academy_id = ? WHERE id = ?").bind(o,a).run(),console.log("  └─ ✅ Auto-fixed academy_id to:",o)}catch(v){console.error("  └─ ❌ Failed to update academy_id:",v)}}else return console.error("  └─ ❌ No parent_user_id found either!"),e.json({success:!1,error:"선생님 계정이 학원에 연결되어 있지 않습니다. 학원장에게 문의하세요."},403)}console.log("  └─ Will lookup subscription for owner academy_id:",o)}else if(o=r.id,console.log("👨‍💼 [Usage Check] OWNER detected!"),console.log("  └─ Owner userId:",a),console.log("  └─ Using own academy_id:",o),(r==null?void 0:r.academy_id)!==r.id)try{await e.env.DB.prepare("UPDATE users SET academy_id = ? WHERE id = ?").bind(o,a).run(),console.log("  └─ Fixed academy_id from",r.academy_id,"to",a)}catch(f){console.error("  └─ Failed to update academy_id:",f)}console.log("🔍 [Usage Check] Querying subscription WHERE academy_id =",o);let n=await e.env.DB.prepare(`
+        `).bind(a).first();if(h!=null&&h.parent_user_id){n=h.parent_user_id,console.log("  └─ ✅ Found parent_user_id:",n);try{await e.env.DB.prepare("UPDATE users SET academy_id = ? WHERE id = ?").bind(n,a).run(),console.log("  └─ ✅ Auto-fixed academy_id to:",n)}catch(v){console.error("  └─ ❌ Failed to update academy_id:",v)}}else return console.error("  └─ ❌ No parent_user_id found either!"),e.json({success:!1,error:"선생님 계정이 학원에 연결되어 있지 않습니다. 학원장에게 문의하세요."},403)}console.log("  └─ Will lookup subscription for owner academy_id:",n)}else if(n=r.id,console.log("👨‍💼 [Usage Check] OWNER detected!"),console.log("  └─ Owner userId:",a),console.log("  └─ Using own academy_id:",n),(r==null?void 0:r.academy_id)!==r.id)try{await e.env.DB.prepare("UPDATE users SET academy_id = ? WHERE id = ?").bind(n,a).run(),console.log("  └─ Fixed academy_id from",r.academy_id,"to",a)}catch(h){console.error("  └─ Failed to update academy_id:",h)}console.log("🔍 [Usage Check] Querying subscription WHERE academy_id =",n);let o=await e.env.DB.prepare(`
       SELECT * FROM subscriptions 
       WHERE academy_id = ? AND status = 'active'
       ORDER BY created_at DESC LIMIT 1
-    `).bind(o).first();if(console.log("📋 [Usage Check] Active subscription found:",n?"YES ✅":"NO ❌"),n&&(console.log("  └─ Subscription ID:",n.id),console.log("  └─ Plan:",n.plan_name),console.log("  └─ Academy ID:",n.academy_id),console.log("  └─ Status:",n.status),console.log("  └─ End Date:",n.subscription_end_date)),n||(console.log("⚠️ [Usage Check] No active subscription, checking admin plan..."),n=await e.env.DB.prepare(`
+    `).bind(n).first();if(console.log("📋 [Usage Check] Active subscription found:",o?"YES ✅":"NO ❌"),o&&(console.log("  └─ Subscription ID:",o.id),console.log("  └─ Plan:",o.plan_name),console.log("  └─ Academy ID:",o.academy_id),console.log("  └─ Status:",o.status),console.log("  └─ End Date:",o.subscription_end_date)),o||(console.log("⚠️ [Usage Check] No active subscription, checking admin plan..."),o=await e.env.DB.prepare(`
         SELECT * FROM subscriptions 
         WHERE academy_id = ? AND plan_name = '관리자 설정 플랜'
         ORDER BY created_at DESC LIMIT 1
-      `).bind(o).first(),console.log(n?"✅ [Usage Check] Found admin plan!":"❌ [Usage Check] No admin plan either!")),!n)return console.error("💥 [Usage Check] CRITICAL: No subscription found for academy_id:",o),console.error("  └─ User type:",r.user_type),console.error("  └─ User ID:",a),console.error("  └─ User academy_id:",r.academy_id),e.json({success:!1,error:"활성 구독이 없습니다"},403);const i=new Date,l=new Date(i.getTime()+540*60*1e3),d=new Date(n.subscription_end_date+"T23:59:59+09:00");if(l>d)return console.log("[Usage Check] Subscription expired, updating status:",{subscriptionId:n.id,endDate:n.subscription_end_date}),await e.env.DB.prepare(`
+      `).bind(n).first(),console.log(o?"✅ [Usage Check] Found admin plan!":"❌ [Usage Check] No admin plan either!")),!o)return console.error("💥 [Usage Check] CRITICAL: No subscription found for academy_id:",n),console.error("  └─ User type:",r.user_type),console.error("  └─ User ID:",a),console.error("  └─ User academy_id:",r.academy_id),e.json({success:!1,error:"활성 구독이 없습니다"},403);const i=new Date,l=new Date(i.getTime()+540*60*1e3),d=new Date(o.subscription_end_date+"T23:59:59+09:00");if(l>d)return console.log("[Usage Check] Subscription expired, updating status:",{subscriptionId:o.id,endDate:o.subscription_end_date}),await e.env.DB.prepare(`
         UPDATE subscriptions 
         SET status = 'expired', updated_at = CURRENT_TIMESTAMP
         WHERE id = ?
-      `).bind(n.id).run(),e.json({success:!1,error:"구독이 만료되었습니다",expired:!0,endDate:n.subscription_end_date},403);let u=0;try{console.log("[Usage Check] userId:",a,"academyId:",o),console.log("[Usage Check] user.academy_id:",r.academy_id,"user.id:",r.id);const f=await e.env.DB.prepare(`
+      `).bind(o.id).run(),e.json({success:!1,error:"구독이 만료되었습니다",expired:!0,endDate:o.subscription_end_date},403);let u=0;try{console.log("[Usage Check] userId:",a,"academyId:",n),console.log("[Usage Check] user.academy_id:",r.academy_id,"user.id:",r.id);const h=await e.env.DB.prepare(`
         SELECT COUNT(*) as count FROM students 
         WHERE academy_id = ? AND status = 'active'
-      `).bind(o).first();u=(f==null?void 0:f.count)||0,console.log("[Usage Check] Actual students count:",u,"for academy_id:",o);const v=await e.env.DB.prepare(`
+      `).bind(n).first();u=(h==null?void 0:h.count)||0,console.log("[Usage Check] Actual students count:",u,"for academy_id:",n);const v=await e.env.DB.prepare(`
         SELECT id, name, academy_id, status FROM students LIMIT 10
-      `).all();console.log("[Usage Check] Sample students:",JSON.stringify(v.results))}catch(f){console.error("[Usage] students table error:",f.message)}let m=0;try{x||(x=await e.env.DB.prepare(`
-          SELECT * FROM usage_tracking 
-          WHERE academy_id = ? AND subscription_id = ?
-        `).bind(o,n.id).first()),m=(x==null?void 0:x.landing_pages_created)||0}catch(f){console.error("[Usage] landing_pages_created error:",f.message)}let g=0;try{const f=await e.env.DB.prepare(`
+      `).all();console.log("[Usage Check] Sample students:",JSON.stringify(v.results))}catch(h){console.error("[Usage] students table error:",h.message)}let m=0,g=null;try{g=await e.env.DB.prepare(`
+        SELECT * FROM usage_tracking 
+        WHERE academy_id = ? AND subscription_id = ?
+      `).bind(n,o.id).first(),console.log("[Usage Check] 🔍 Checking landing pages for academy_id:",n,"subscription_id:",o.id),console.log("[Usage Check] 📊 usage_tracking record:",g?"EXISTS":"NOT FOUND");const h=await e.env.DB.prepare(`
+        SELECT COUNT(*) as count FROM landing_pages 
+        WHERE user_id IN (
+          SELECT id FROM users WHERE id = ? OR academy_id = ?
+        )
+        AND created_at >= ?
+      `).bind(n,n,o.subscription_start_date).first(),v=(h==null?void 0:h.count)||0;if(console.log("[Usage Check] 📈 Landing pages created since",o.subscription_start_date,":",v,"for academy_id:",n,"(including teachers)"),g&&g.landing_pages_created!==null&&g.landing_pages_created!==void 0){const E=g.landing_pages_created;if(console.log("[Usage Check] 📝 usage_tracking.landing_pages_created:",E),E!==v){console.log("[Usage Check] ⚠️ MISMATCH! Tracked:",E,"vs Actual:",v),console.log("[Usage Check] 🔄 Auto-syncing to actual count...");try{await e.env.DB.prepare(`
+              UPDATE usage_tracking 
+              SET landing_pages_created = ?, updated_at = CURRENT_TIMESTAMP
+              WHERE academy_id = ? AND subscription_id = ?
+            `).bind(v,n,o.id).run(),console.log("[Usage Check] ✅ Synced to",v),m=v}catch(y){console.error("[Usage Check] ❌ Sync failed:",y.message),m=E}}else m=E,console.log("[Usage Check] ✅ Counts match:",m)}else{console.log("[Usage Check] ⚠️ No usage_tracking record, creating with count:",v),m=v;try{await e.env.DB.prepare(`
+            INSERT INTO usage_tracking (
+              academy_id, subscription_id, current_students, ai_reports_used_this_month,
+              landing_pages_created, current_teachers, sms_sent_this_month,
+              created_at, updated_at
+            ) VALUES (?, ?, 0, 0, ?, 0, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+          `).bind(n,o.id,m).run(),console.log("[Usage Check] ✅ Auto-created usage_tracking with",m,"landing pages")}catch(E){console.error("[Usage Check] ❌ Failed to auto-create usage_tracking:",E.message)}}}catch(h){console.error("[Usage] landing_pages_created error:",h.message)}let x=0;try{const h=await e.env.DB.prepare(`
         SELECT COUNT(*) as count FROM users 
         WHERE academy_id = ? AND user_type = 'teacher'
-      `).bind(o).first(),v=await e.env.DB.prepare(`
+      `).bind(n).first(),v=await e.env.DB.prepare(`
         SELECT COUNT(*) as count FROM users 
         WHERE parent_user_id = ? AND user_type = 'teacher'
-      `).bind(o).first(),_=(f==null?void 0:f.count)||0,y=(v==null?void 0:v.count)||0;if(g=Math.max(_,y),console.log("[Usage Check] Teachers count by academy_id:",_),console.log("[Usage Check] Teachers count by parent_user_id:",y),console.log("[Usage Check] Using max count:",g,"for academy:",o),y>_){console.log("[Usage Check] ⚠️ Found teachers without academy_id, auto-fixing...");try{const E=await e.env.DB.prepare(`
+      `).bind(n).first(),E=(h==null?void 0:h.count)||0,y=(v==null?void 0:v.count)||0;if(x=Math.max(E,y),console.log("[Usage Check] Teachers count by academy_id:",E),console.log("[Usage Check] Teachers count by parent_user_id:",y),console.log("[Usage Check] Using max count:",x,"for academy:",n),y>E){console.log("[Usage Check] ⚠️ Found teachers without academy_id, auto-fixing...");try{const _=await e.env.DB.prepare(`
             UPDATE users 
             SET academy_id = parent_user_id 
             WHERE parent_user_id = ? 
               AND user_type = 'teacher' 
               AND (academy_id IS NULL OR academy_id != parent_user_id)
-          `).bind(o).run();console.log("[Usage Check] ✅ Auto-fixed",E.meta.changes,"teachers")}catch(E){console.error("[Usage Check] ❌ Failed to auto-fix:",E.message)}}const w=await e.env.DB.prepare(`
+          `).bind(n).run();console.log("[Usage Check] ✅ Auto-fixed",_.meta.changes,"teachers")}catch(_){console.error("[Usage Check] ❌ Failed to auto-fix:",_.message)}}const w=await e.env.DB.prepare(`
         SELECT id, name, email, user_type, academy_id, parent_user_id FROM users 
         WHERE (academy_id = ? OR parent_user_id = ?) AND user_type = 'teacher'
         LIMIT 10
-      `).bind(o,o).all();console.log("[Usage Check] Teachers list:",JSON.stringify(w.results))}catch(f){console.error("[Usage] teachers count error:",f.message)}let x=await e.env.DB.prepare(`
-      SELECT * FROM usage_tracking 
-      WHERE academy_id = ? AND subscription_id = ?
-    `).bind(o,n.id).first(),b=0;return x&&(b=x.ai_reports_used_this_month||0),e.json({success:!0,limits:{students:n.student_limit,aiReports:n.ai_report_limit,landingPages:n.landing_page_limit,teachers:n.teacher_limit},usage:{students:u,aiReports:b,landingPages:m,teachers:g,sms:(x==null?void 0:x.sms_sent_this_month)||0}})}catch(t){return console.error("[Usage Check] Error:",t),e.json({success:!1,error:t.message,stack:t.stack},500)}});c.post("/api/usage/check-student-limit",async e=>{try{const t=U(e,"session_id");if(!t)return e.json({success:!1,error:"Not authenticated"},401);const a=JSON.parse(t).id,r=await e.env.DB.prepare(`
+      `).bind(n,n).all();console.log("[Usage Check] Teachers list:",JSON.stringify(w.results))}catch(h){console.error("[Usage] teachers count error:",h.message)}let b=0;return g?(b=g.ai_reports_used_this_month||0,console.log("[Usage Check] ✅ AI reports:",b)):console.log("[Usage Check] ⚠️ No usage_tracking for AI reports"),e.json({success:!0,limits:{students:o.student_limit,aiReports:o.ai_report_limit,landingPages:o.landing_page_limit,teachers:o.teacher_limit},usage:{students:u,aiReports:b,landingPages:m,teachers:x,sms:(g==null?void 0:g.sms_sent_this_month)||0}})}catch(t){return console.error("[Usage Check] Error:",t),e.json({success:!1,error:t.message,stack:t.stack},500)}});c.post("/api/usage/check-student-limit",async e=>{try{const t=A(e,"session_id");if(!t)return e.json({success:!1,error:"Not authenticated"},401);const a=JSON.parse(t).id,r=await e.env.DB.prepare(`
       SELECT * FROM subscriptions 
       WHERE academy_id = ? AND status = 'active'
       ORDER BY created_at DESC LIMIT 1
-    `).bind(a).first();if(!r)return e.json({success:!1,error:"활성 구독이 없습니다"},403);const o=await e.env.DB.prepare(`
+    `).bind(a).first();if(!r)return e.json({success:!1,error:"활성 구독이 없습니다"},403);const n=await e.env.DB.prepare(`
       SELECT * FROM usage_tracking 
       WHERE academy_id = ? AND subscription_id = ?
-    `).bind(a,r.id).first(),n=(o==null?void 0:o.current_students)||0,i=n<r.student_limit;return e.json({success:!0,canAdd:i,current:n,limit:r.student_limit,message:i?"학생을 추가할 수 있습니다":"학생 수 한도에 도달했습니다"})}catch(t){return e.json({success:!1,error:t.message},500)}});c.post("/api/usage/check-ai-report-limit",async e=>{try{const t=U(e,"session_id");if(!t)return e.json({success:!1,error:"Not authenticated"},401);const a=JSON.parse(t).id,r=await e.env.DB.prepare(`
+    `).bind(a,r.id).first(),o=(n==null?void 0:n.current_students)||0,i=o<r.student_limit;return e.json({success:!0,canAdd:i,current:o,limit:r.student_limit,message:i?"학생을 추가할 수 있습니다":"학생 수 한도에 도달했습니다"})}catch(t){return e.json({success:!1,error:t.message},500)}});c.post("/api/usage/check-ai-report-limit",async e=>{try{const t=A(e,"session_id");if(!t)return e.json({success:!1,error:"Not authenticated"},401);const a=JSON.parse(t).id,r=await e.env.DB.prepare(`
       SELECT * FROM subscriptions 
       WHERE academy_id = ? AND status = 'active'
       ORDER BY created_at DESC LIMIT 1
-    `).bind(a).first();if(!r)return e.json({success:!1,error:"활성 구독이 없습니다"},403);const o=await e.env.DB.prepare(`
+    `).bind(a).first();if(!r)return e.json({success:!1,error:"활성 구독이 없습니다"},403);const n=await e.env.DB.prepare(`
       SELECT * FROM usage_tracking 
       WHERE academy_id = ? AND subscription_id = ?
-    `).bind(a,r.id).first(),n=(o==null?void 0:o.ai_reports_used_this_month)||0,i=n<r.ai_report_limit;return e.json({success:!0,canCreate:i,current:n,limit:r.ai_report_limit,message:i?"AI 리포트를 생성할 수 있습니다":"AI 리포트 월간 한도에 도달했습니다"})}catch(t){return e.json({success:!1,error:t.message},500)}});c.post("/api/usage/check-landing-page-limit",async e=>{try{const t=U(e,"session_id");if(!t)return e.json({success:!1,error:"Not authenticated"},401);const a=JSON.parse(t).id,r=await e.env.DB.prepare(`
+    `).bind(a,r.id).first(),o=(n==null?void 0:n.ai_reports_used_this_month)||0,i=o<r.ai_report_limit;return e.json({success:!0,canCreate:i,current:o,limit:r.ai_report_limit,message:i?"AI 리포트를 생성할 수 있습니다":"AI 리포트 월간 한도에 도달했습니다"})}catch(t){return e.json({success:!1,error:t.message},500)}});c.post("/api/usage/check-landing-page-limit",async e=>{try{const t=A(e,"session_id");if(!t)return e.json({success:!1,error:"Not authenticated"},401);const a=JSON.parse(t).id,r=await e.env.DB.prepare(`
       SELECT id, points FROM users WHERE id = ?
-    `).bind(a).first(),o=(r==null?void 0:r.points)||0,n=await e.env.DB.prepare(`
+    `).bind(a).first(),n=(r==null?void 0:r.points)||0,o=await e.env.DB.prepare(`
       SELECT * FROM subscriptions 
       WHERE academy_id = ? AND status = 'active'
       ORDER BY created_at DESC LIMIT 1
-    `).bind(a).first();if(!n)return e.json({success:!1,error:"활성 구독이 없습니다"},403);const i=await e.env.DB.prepare(`
+    `).bind(a).first();if(!o)return e.json({success:!1,error:"활성 구독이 없습니다"},403);const i=await e.env.DB.prepare(`
       SELECT * FROM usage_tracking 
       WHERE academy_id = ? AND subscription_id = ?
-    `).bind(a,n.id).first(),l=(i==null?void 0:i.landing_pages_created)||0,d=n.landing_page_limit,p=l<d,u=7700,m=o>=u;return e.json({success:!0,canCreate:p||m,withinLimit:p,canUsePoints:m,current:l,limit:d,userPoints:o,pointCost:u,message:p?"랜딩페이지를 생성할 수 있습니다":m?`한도 초과: 포인트로 생성 가능 (${u}P 차감)`:"랜딩페이지 한도 초과 및 포인트 부족"})}catch(t){return e.json({success:!1,error:t.message},500)}});c.post("/api/usage/check-teacher-limit",async e=>{try{const t=U(e,"session_id");if(!t)return e.json({success:!1,error:"Not authenticated"},401);const s=await e.env.DB.prepare(`
+    `).bind(a,o.id).first(),l=(i==null?void 0:i.landing_pages_created)||0,d=o.landing_page_limit,p=l<d,u=7700,m=n>=u;return e.json({success:!0,canCreate:p||m,withinLimit:p,canUsePoints:m,current:l,limit:d,userPoints:n,pointCost:u,message:p?"랜딩페이지를 생성할 수 있습니다":m?`한도 초과: 포인트로 생성 가능 (${u}P 차감)`:"랜딩페이지 한도 초과 및 포인트 부족"})}catch(t){return e.json({success:!1,error:t.message},500)}});c.post("/api/usage/check-teacher-limit",async e=>{try{const t=A(e,"session_id");if(!t)return e.json({success:!1,error:"Not authenticated"},401);const s=await e.env.DB.prepare(`
       SELECT user_id FROM sessions WHERE session_id = ? AND expires_at > datetime('now')
     `).bind(t).first();if(!s)return e.json({success:!1,error:"Session expired"},401);const a=s.user_id,r=await e.env.DB.prepare(`
       SELECT id, academy_id, user_type FROM users WHERE id = ?
-    `).bind(a).first();if(!r)return e.json({success:!1,error:"User not found"},404);let o;r.user_type==="teacher"?o=r.academy_id:o=r.id;const n=await e.env.DB.prepare(`
+    `).bind(a).first();if(!r)return e.json({success:!1,error:"User not found"},404);let n;r.user_type==="teacher"?n=r.academy_id:n=r.id;const o=await e.env.DB.prepare(`
       SELECT * FROM subscriptions 
       WHERE academy_id = ? AND status = 'active'
       ORDER BY created_at DESC LIMIT 1
-    `).bind(o).first();if(!n)return e.json({success:!1,error:"활성 구독이 없습니다"},403);const i=await e.env.DB.prepare(`
+    `).bind(n).first();if(!o)return e.json({success:!1,error:"활성 구독이 없습니다"},403);const i=await e.env.DB.prepare(`
       SELECT COUNT(*) as count FROM users 
       WHERE academy_id = ? AND user_type = 'teacher'
-    `).bind(o).first(),l=await e.env.DB.prepare(`
+    `).bind(n).first(),l=await e.env.DB.prepare(`
       SELECT COUNT(*) as count FROM users 
       WHERE parent_user_id = ? AND user_type = 'teacher'
-    `).bind(o).first(),d=(i==null?void 0:i.count)||0,p=(l==null?void 0:l.count)||0,u=Math.max(d,p);if(console.log("[Teacher Limit Check] By academy_id:",d,"By parent_user_id:",p),console.log("[Teacher Limit Check] Using max:",u,"Limit:",n.teacher_limit),p>d)try{await e.env.DB.prepare(`
+    `).bind(n).first(),d=(i==null?void 0:i.count)||0,p=(l==null?void 0:l.count)||0,u=Math.max(d,p);if(console.log("[Teacher Limit Check] By academy_id:",d,"By parent_user_id:",p),console.log("[Teacher Limit Check] Using max:",u,"Limit:",o.teacher_limit),p>d)try{await e.env.DB.prepare(`
           UPDATE users 
           SET academy_id = parent_user_id 
           WHERE parent_user_id = ? AND user_type = 'teacher' 
             AND (academy_id IS NULL OR academy_id != parent_user_id)
-        `).bind(o).run(),console.log("[Teacher Limit Check] ✅ Auto-fixed teachers")}catch(g){console.error("[Teacher Limit Check] Auto-fix failed:",g)}const m=u<n.teacher_limit;return console.log("[Teacher Limit Check] Academy:",o,"Current:",u,"Limit:",n.teacher_limit,"Can add:",m),e.json({success:!0,canAdd:m,current:u,limit:n.teacher_limit,message:m?"선생님을 추가할 수 있습니다":"선생님 계정 한도에 도달했습니다"})}catch(t){return console.error("[Teacher Limit Check] Error:",t),e.json({success:!1,error:t.message},500)}});c.post("/api/usage/increment-students",async e=>{try{const t=U(e,"session_id");if(!t)return e.json({success:!1,error:"Not authenticated"},401);const a=JSON.parse(t).id,r=await e.env.DB.prepare(`
+        `).bind(n).run(),console.log("[Teacher Limit Check] ✅ Auto-fixed teachers")}catch(g){console.error("[Teacher Limit Check] Auto-fix failed:",g)}const m=u<o.teacher_limit;return console.log("[Teacher Limit Check] Academy:",n,"Current:",u,"Limit:",o.teacher_limit,"Can add:",m),e.json({success:!0,canAdd:m,current:u,limit:o.teacher_limit,message:m?"선생님을 추가할 수 있습니다":"선생님 계정 한도에 도달했습니다"})}catch(t){return console.error("[Teacher Limit Check] Error:",t),e.json({success:!1,error:t.message},500)}});c.post("/api/usage/increment-students",async e=>{try{const t=A(e,"session_id");if(!t)return e.json({success:!1,error:"Not authenticated"},401);const a=JSON.parse(t).id,r=await e.env.DB.prepare(`
       SELECT * FROM subscriptions 
       WHERE academy_id = ? AND status = 'active'
       ORDER BY created_at DESC LIMIT 1
@@ -7766,7 +8033,7 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
       UPDATE usage_tracking 
       SET current_students = current_students + 1, updated_at = CURRENT_TIMESTAMP
       WHERE academy_id = ? AND subscription_id = ?
-    `).bind(a,r.id).run(),e.json({success:!0,message:"학생 수가 증가했습니다"})):e.json({success:!1,error:"활성 구독이 없습니다"},403)}catch(t){return e.json({success:!1,error:t.message},500)}});c.post("/api/usage/increment-ai-reports",async e=>{try{const t=U(e,"session_id");if(!t)return e.json({success:!1,error:"Not authenticated"},401);const a=JSON.parse(t).id,r=await e.env.DB.prepare(`
+    `).bind(a,r.id).run(),e.json({success:!0,message:"학생 수가 증가했습니다"})):e.json({success:!1,error:"활성 구독이 없습니다"},403)}catch(t){return e.json({success:!1,error:t.message},500)}});c.post("/api/usage/increment-ai-reports",async e=>{try{const t=A(e,"session_id");if(!t)return e.json({success:!1,error:"Not authenticated"},401);const a=JSON.parse(t).id,r=await e.env.DB.prepare(`
       SELECT * FROM subscriptions 
       WHERE academy_id = ? AND status = 'active'
       ORDER BY created_at DESC LIMIT 1
@@ -7774,7 +8041,7 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
       UPDATE usage_tracking 
       SET ai_reports_used_this_month = ai_reports_used_this_month + 1, updated_at = CURRENT_TIMESTAMP
       WHERE academy_id = ? AND subscription_id = ?
-    `).bind(a,r.id).run(),e.json({success:!0,message:"AI 리포트 사용량이 증가했습니다"})):e.json({success:!1,error:"활성 구독이 없습니다"},403)}catch(t){return e.json({success:!1,error:t.message},500)}});c.post("/api/usage/increment-landing-pages",async e=>{try{const t=U(e,"session_id");if(!t)return e.json({success:!1,error:"Not authenticated"},401);const a=JSON.parse(t).id,r=await e.env.DB.prepare(`
+    `).bind(a,r.id).run(),e.json({success:!0,message:"AI 리포트 사용량이 증가했습니다"})):e.json({success:!1,error:"활성 구독이 없습니다"},403)}catch(t){return e.json({success:!1,error:t.message},500)}});c.post("/api/usage/increment-landing-pages",async e=>{try{const t=A(e,"session_id");if(!t)return e.json({success:!1,error:"Not authenticated"},401);const a=JSON.parse(t).id,r=await e.env.DB.prepare(`
       SELECT * FROM subscriptions 
       WHERE academy_id = ? AND status = 'active'
       ORDER BY created_at DESC LIMIT 1
@@ -7782,7 +8049,7 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
       UPDATE usage_tracking 
       SET landing_pages_created = landing_pages_created + 1, updated_at = CURRENT_TIMESTAMP
       WHERE academy_id = ? AND subscription_id = ?
-    `).bind(a,r.id).run(),e.json({success:!0,message:"랜딩페이지 사용량이 증가했습니다"})):e.json({success:!1,error:"활성 구독이 없습니다"},403)}catch(t){return e.json({success:!1,error:t.message},500)}});c.post("/api/free-plan/apply",async e=>{try{const{userId:t,academyName:s,ownerName:a,email:r,phone:o,reason:n,isKoreaAcademy:i}=await e.req.json();if(!t||!s||!a||!r||!o)return e.json({success:!1,error:"필수 정보를 모두 입력해주세요."},400);if(await e.env.DB.prepare(`
+    `).bind(a,r.id).run(),e.json({success:!0,message:"랜딩페이지 사용량이 증가했습니다"})):e.json({success:!1,error:"활성 구독이 없습니다"},403)}catch(t){return e.json({success:!1,error:t.message},500)}});c.post("/api/free-plan/apply",async e=>{try{const{userId:t,academyName:s,ownerName:a,email:r,phone:n,reason:o,isKoreaAcademy:i}=await e.req.json();if(!t||!s||!a||!r||!n)return e.json({success:!1,error:"필수 정보를 모두 입력해주세요."},400);if(await e.env.DB.prepare(`
       SELECT id, status FROM free_plan_requests 
       WHERE user_id = ? AND status = 'pending'
     `).bind(t).first())return e.json({success:!1,error:"이미 승인 대기 중인 신청이 있습니다."},400);if(await e.env.DB.prepare(`
@@ -7792,7 +8059,7 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
       INSERT INTO free_plan_requests 
       (user_id, academy_name, owner_name, email, phone, reason, is_korea_academy, status, created_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', CURRENT_TIMESTAMP)
-    `).bind(t,s,a,r,o,n||null,i||0).run();return e.json({success:!0,message:"무료 플랜 신청이 완료되었습니다.",requestId:p.meta.last_row_id})}catch(t){return console.error("무료 플랜 신청 실패:",t),e.json({success:!1,error:"신청 처리 중 오류가 발생했습니다."},500)}});c.get("/api/free-plan/requests",async e=>{try{if(e.req.query("adminEmail")!=="admin@superplace.co.kr")return e.json({success:!1,error:"관리자 권한이 필요합니다."},403);const s=await e.env.DB.prepare(`
+    `).bind(t,s,a,r,n,o||null,i||0).run();return e.json({success:!0,message:"무료 플랜 신청이 완료되었습니다.",requestId:p.meta.last_row_id})}catch(t){return console.error("무료 플랜 신청 실패:",t),e.json({success:!1,error:"신청 처리 중 오류가 발생했습니다."},500)}});c.get("/api/free-plan/requests",async e=>{try{if(e.req.query("adminEmail")!=="admin@superplace.co.kr")return e.json({success:!1,error:"관리자 권한이 필요합니다."},403);const s=await e.env.DB.prepare(`
       SELECT * FROM free_plan_requests
       ORDER BY 
         CASE status
@@ -7803,45 +8070,45 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
         created_at DESC
     `).all();return e.json({success:!0,requests:s.results})}catch(t){return console.error("신청 목록 조회 실패:",t),e.json({success:!1,error:"조회 중 오류가 발생했습니다."},500)}});c.post("/api/free-plan/approve",async e=>{try{const{requestId:t,adminEmail:s}=await e.req.json();if(s!=="admin@superplace.co.kr")return e.json({success:!1,error:"관리자 권한이 필요합니다."},403);const a=await e.env.DB.prepare(`
       SELECT * FROM free_plan_requests WHERE id = ?
-    `).bind(t).first();if(!a)return e.json({success:!1,error:"신청을 찾을 수 없습니다."},404);if(a.status!=="pending")return e.json({success:!1,error:"이미 처리된 신청입니다."},400);const r=a.user_id;console.log("[Free Plan Approve] Starting approval for user:",r);let o=null,n;if(isNaN(Number(r))){let y=0;for(let w=0;w<r.length;w++)y=(y<<5)-y+r.charCodeAt(w),y=y&y;n=Math.abs(y)}else{const y=Number(r);o=await e.env.DB.prepare(`
+    `).bind(t).first();if(!a)return e.json({success:!1,error:"신청을 찾을 수 없습니다."},404);if(a.status!=="pending")return e.json({success:!1,error:"이미 처리된 신청입니다."},400);const r=a.user_id;console.log("[Free Plan Approve] Starting approval for user:",r);let n=null,o;if(isNaN(Number(r))){let y=0;for(let w=0;w<r.length;w++)y=(y<<5)-y+r.charCodeAt(w),y=y&y;o=Math.abs(y)}else{const y=Number(r);n=await e.env.DB.prepare(`
         SELECT id, academy_id, name FROM users WHERE id = ?
-      `).bind(y).first(),o?(n=o.academy_id||o.id,o.academy_id||await e.env.DB.prepare(`
+      `).bind(y).first(),n?(o=n.academy_id||n.id,n.academy_id||await e.env.DB.prepare(`
             UPDATE users SET academy_id = ? WHERE id = ?
-          `).bind(n,y).run()):n=y}if(console.log("[Free Plan Approve] Academy ID:",n),!await e.env.DB.prepare(`
+          `).bind(o,y).run()):o=y}if(console.log("[Free Plan Approve] Academy ID:",o),!await e.env.DB.prepare(`
       SELECT id FROM academies WHERE id = ?
-    `).bind(n).first())try{await e.env.DB.prepare(`
+    `).bind(o).first())try{await e.env.DB.prepare(`
           INSERT INTO academies (id, academy_name, owner_id, created_at)
           VALUES (?, ?, 1, CURRENT_TIMESTAMP)
-        `).bind(n,a.academy_name).run(),console.log("[Free Plan Approve] Created academy:",n)}catch(y){console.log("[Free Plan Approve] Academy creation error:",y)}const l=new Date,d=new Date;d.setFullYear(d.getFullYear()+10);const p=l.toISOString().split("T")[0],u=d.toISOString().split("T")[0];console.log("[Free Plan Approve] Date range:",p,"to",u);const m=new Date,g=new Date;g.setMonth(g.getMonth()+1),g.setDate(1),g.setHours(0,0,0,0);const x=m.toISOString().split("T")[0],b=g.toISOString().split("T")[0],v=(await e.env.DB.prepare(`
+        `).bind(o,a.academy_name).run(),console.log("[Free Plan Approve] Created academy:",o)}catch(y){console.log("[Free Plan Approve] Academy creation error:",y)}const l=new Date,d=new Date;d.setFullYear(d.getFullYear()+10);const p=l.toISOString().split("T")[0],u=d.toISOString().split("T")[0];console.log("[Free Plan Approve] Date range:",p,"to",u);const m=new Date,g=new Date;g.setMonth(g.getMonth()+1),g.setDate(1),g.setHours(0,0,0,0);const x=m.toISOString().split("T")[0],b=g.toISOString().split("T")[0],v=(await e.env.DB.prepare(`
       INSERT INTO subscriptions (
         academy_id, plan_name, plan_price, student_limit, ai_report_limit, 
         landing_page_limit, teacher_limit, subscription_start_date, 
         subscription_end_date, status, payment_method, created_at, updated_at
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', 'free', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-    `).bind(n,"무료 플랜",0,50,0,1,0,x,b).run()).meta.last_row_id;console.log("[Free Plan Approve] Created subscription:",v),await e.env.DB.prepare(`
+    `).bind(o,"무료 플랜",0,50,0,1,0,x,b).run()).meta.last_row_id;console.log("[Free Plan Approve] Created subscription:",v),await e.env.DB.prepare(`
       DELETE FROM usage_tracking WHERE academy_id = ?
-    `).bind(n).run(),await e.env.DB.prepare(`
+    `).bind(o).run(),await e.env.DB.prepare(`
       INSERT INTO usage_tracking (
         academy_id, subscription_id, current_students, ai_reports_used_this_month,
         landing_pages_created, current_teachers, sms_sent_this_month,
         last_ai_report_reset_date, last_sms_reset_date, created_at, updated_at
       ) VALUES (?, ?, 0, 0, 0, 0, 0, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-    `).bind(n,v,p,p).run(),console.log("[Free Plan Approve] Created usage_tracking");const _={route:"/students",name:"학생 관리"};try{await e.env.DB.prepare(`
+    `).bind(o,v,p,p).run(),console.log("[Free Plan Approve] Created usage_tracking");const E={route:"/students",name:"학생 관리"};try{await e.env.DB.prepare(`
         INSERT OR IGNORE INTO user_programs (user_id, program_route, program_name, enabled, created_at)
         VALUES (?, ?, ?, 1, CURRENT_TIMESTAMP)
-      `).bind(r,_.route,_.name).run(),console.log("[Free Plan Approve] Added student management program for user:",r)}catch(y){console.error("[Free Plan Approve] Failed to add program:",y)}return await e.env.DB.prepare(`
+      `).bind(r,E.route,E.name).run(),console.log("[Free Plan Approve] Added student management program for user:",r)}catch(y){console.error("[Free Plan Approve] Failed to add program:",y)}return await e.env.DB.prepare(`
       UPDATE free_plan_requests
       SET status = 'approved', approved_at = CURRENT_TIMESTAMP, approved_by = ?
       WHERE id = ?
-    `).bind(s,t).run(),e.json({success:!0,message:"무료 플랜이 승인되고 활성화되었습니다.",subscription_id:v,academy_id:n})}catch(t){return console.error("[Free Plan Approve] Error:",t),e.json({success:!1,error:"승인 처리 중 오류가 발생했습니다: "+t.message},500)}});c.post("/api/free-plan/reject",async e=>{try{const{requestId:t,adminEmail:s,reason:a}=await e.req.json();return s!=="admin@superplace.co.kr"?e.json({success:!1,error:"관리자 권한이 필요합니다."},403):(await e.env.DB.prepare(`
+    `).bind(s,t).run(),e.json({success:!0,message:"무료 플랜이 승인되고 활성화되었습니다.",subscription_id:v,academy_id:o})}catch(t){return console.error("[Free Plan Approve] Error:",t),e.json({success:!1,error:"승인 처리 중 오류가 발생했습니다: "+t.message},500)}});c.post("/api/free-plan/reject",async e=>{try{const{requestId:t,adminEmail:s,reason:a}=await e.req.json();return s!=="admin@superplace.co.kr"?e.json({success:!1,error:"관리자 권한이 필요합니다."},403):(await e.env.DB.prepare(`
       UPDATE free_plan_requests
       SET status = 'rejected', rejected_at = CURRENT_TIMESTAMP, rejected_by = ?, rejection_reason = ?
       WHERE id = ?
-    `).bind(s,a||null,t).run(),e.json({success:!0,message:"무료 플랜 신청이 거절되었습니다."}))}catch(t){return console.error("거절 처리 실패:",t),e.json({success:!1,error:"거절 처리 중 오류가 발생했습니다."},500)}});c.post("/api/bank-transfer/request",async e=>{try{const{userId:t,userName:s,userEmail:a,userPhone:r,planName:o,amount:n,note:i}=await e.req.json();if(!t||!s||!a||!r||!o||!n)return e.json({success:!1,error:"필수 정보를 모두 입력해주세요."},400);const l=await e.env.DB.prepare(`
+    `).bind(s,a||null,t).run(),e.json({success:!0,message:"무료 플랜 신청이 거절되었습니다."}))}catch(t){return console.error("거절 처리 실패:",t),e.json({success:!1,error:"거절 처리 중 오류가 발생했습니다."},500)}});c.post("/api/bank-transfer/request",async e=>{try{const{userId:t,userName:s,userEmail:a,userPhone:r,planName:n,amount:o,note:i}=await e.req.json();if(!t||!s||!a||!r||!n||!o)return e.json({success:!1,error:"필수 정보를 모두 입력해주세요."},400);const l=await e.env.DB.prepare(`
       INSERT INTO bank_transfer_requests 
       (user_id, user_name, user_email, user_phone, plan_name, amount, note, status, created_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', CURRENT_TIMESTAMP)
-    `).bind(t,s,a,r,o,n,i||null).run();return e.json({success:!0,message:"계좌이체 신청이 완료되었습니다.",requestId:l.meta.last_row_id})}catch(t){return console.error("계좌이체 신청 실패:",t),e.json({success:!1,error:"신청 처리 중 오류가 발생했습니다."},500)}});c.get("/api/bank-transfer/requests",async e=>{try{if(e.req.query("adminEmail")!=="admin@superplace.co.kr")return e.json({success:!1,error:"관리자 권한이 필요합니다."},403);const s=await e.env.DB.prepare(`
+    `).bind(t,s,a,r,n,o,i||null).run();return e.json({success:!0,message:"계좌이체 신청이 완료되었습니다.",requestId:l.meta.last_row_id})}catch(t){return console.error("계좌이체 신청 실패:",t),e.json({success:!1,error:"신청 처리 중 오류가 발생했습니다."},500)}});c.get("/api/bank-transfer/requests",async e=>{try{if(e.req.query("adminEmail")!=="admin@superplace.co.kr")return e.json({success:!1,error:"관리자 권한이 필요합니다."},403);const s=await e.env.DB.prepare(`
       SELECT * FROM bank_transfer_requests
       ORDER BY 
         CASE status
@@ -7850,7 +8117,7 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
           WHEN 'rejected' THEN 3
         END,
         created_at DESC
-    `).all();return e.json({success:!0,requests:s.results||[]})}catch(t){return console.error("신청 목록 조회 실패:",t),e.json({success:!1,error:"목록 조회 중 오류가 발생했습니다."},500)}});c.post("/api/card-payment/request",async e=>{try{const{userId:t,userName:s,userEmail:a,userPhone:r,planName:o,amount:n,note:i}=await e.req.json();if(!t||!s||!a||!r||!o||!n)return e.json({success:!1,error:"필수 정보를 모두 입력해주세요."},400);try{await e.env.DB.prepare(`
+    `).all();return e.json({success:!0,requests:s.results||[]})}catch(t){return console.error("신청 목록 조회 실패:",t),e.json({success:!1,error:"목록 조회 중 오류가 발생했습니다."},500)}});c.post("/api/card-payment/request",async e=>{try{const{userId:t,userName:s,userEmail:a,userPhone:r,planName:n,amount:o,note:i}=await e.req.json();if(!t||!s||!a||!r||!n||!o)return e.json({success:!1,error:"필수 정보를 모두 입력해주세요."},400);try{await e.env.DB.prepare(`
         CREATE TABLE IF NOT EXISTS card_payment_requests (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           user_id INTEGER NOT NULL,
@@ -7870,7 +8137,7 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
       INSERT INTO card_payment_requests 
       (user_id, user_name, user_email, user_phone, plan_name, amount, note, status, created_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', CURRENT_TIMESTAMP)
-    `).bind(t,s,a,r,o,n,i||null).run();return e.json({success:!0,message:"카드결제 신청이 완료되었습니다. 관리자 승인 후 결제 링크가 발송됩니다.",requestId:l.meta.last_row_id})}catch(t){return console.error("카드결제 신청 실패:",t),e.json({success:!1,error:"신청 처리 중 오류가 발생했습니다."},500)}});c.get("/api/card-payment/requests",async e=>{try{if(e.req.query("adminEmail")!=="admin@superplace.co.kr")return e.json({success:!1,error:"관리자 권한이 필요합니다."},403);const s=await e.env.DB.prepare(`
+    `).bind(t,s,a,r,n,o,i||null).run();return e.json({success:!0,message:"카드결제 신청이 완료되었습니다. 관리자 승인 후 결제 링크가 발송됩니다.",requestId:l.meta.last_row_id})}catch(t){return console.error("카드결제 신청 실패:",t),e.json({success:!1,error:"신청 처리 중 오류가 발생했습니다."},500)}});c.get("/api/card-payment/requests",async e=>{try{if(e.req.query("adminEmail")!=="admin@superplace.co.kr")return e.json({success:!1,error:"관리자 권한이 필요합니다."},403);const s=await e.env.DB.prepare(`
       SELECT * FROM card_payment_requests
       ORDER BY 
         CASE status
@@ -7881,7 +8148,7 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
         created_at DESC
     `).all();return e.json({success:!0,requests:s.results||[]})}catch(t){return console.error("카드결제 신청 목록 조회 실패:",t),e.json({success:!1,error:"목록 조회 중 오류가 발생했습니다."},500)}});c.post("/api/card-payment/approve",async e=>{try{const{requestId:t,adminEmail:s}=await e.req.json();if(s!=="admin@superplace.co.kr")return e.json({success:!1,error:"관리자 권한이 필요합니다."},403);const a=await e.env.DB.prepare(`
       SELECT * FROM card_payment_requests WHERE id = ?
-    `).bind(t).first();if(!a)return e.json({success:!1,error:"신청 정보를 찾을 수 없습니다."},404);if(a.status==="approved")return e.json({success:!1,error:"이미 승인된 신청입니다."},400);const r={"스타터 플랜":{student:50,ai_report:50,landing_page:50,teacher:2,price:55e3},"베이직 플랜":{student:150,ai_report:150,landing_page:160,teacher:6,price:143e3},"프로 플랜":{student:500,ai_report:500,landing_page:530,teacher:20,price:187e3},"프리미엄 플랜":{student:1e3,ai_report:1e3,landing_page:1100,teacher:40,price:33e4},"엔터프라이즈 플랜":{student:3e3,ai_report:3e3,landing_page:5e3,teacher:999,price:75e4}},o=r[a.plan_name]||r["스타터 플랜"],n=a.user_id;console.log("[Card Payment Approve] Using academyId:",n,"for user:",a.user_id);const i=n;console.log("[Card Payment Approve] Using academy_id = user.id:",i);try{await e.env.DB.prepare(`
+    `).bind(t).first();if(!a)return e.json({success:!1,error:"신청 정보를 찾을 수 없습니다."},404);if(a.status==="approved")return e.json({success:!1,error:"이미 승인된 신청입니다."},400);const r={"스타터 플랜":{student:50,ai_report:50,landing_page:50,teacher:2,price:55e3},"베이직 플랜":{student:150,ai_report:150,landing_page:160,teacher:6,price:143e3},"프로 플랜":{student:500,ai_report:500,landing_page:530,teacher:20,price:187e3},"프리미엄 플랜":{student:1e3,ai_report:1e3,landing_page:1100,teacher:40,price:33e4},"엔터프라이즈 플랜":{student:3e3,ai_report:3e3,landing_page:5e3,teacher:999,price:75e4}},n=r[a.plan_name]||r["스타터 플랜"],o=a.user_id;console.log("[Card Payment Approve] Using academyId:",o,"for user:",a.user_id);const i=o;console.log("[Card Payment Approve] Using academy_id = user.id:",i);try{await e.env.DB.prepare(`
         SELECT id FROM academies WHERE id = ?
       `).bind(i).first()||(console.log("[Card Payment Approve] Creating academy with explicit id:",i),await e.env.DB.prepare("PRAGMA foreign_keys = OFF").run(),await e.env.DB.prepare(`
           INSERT OR REPLACE INTO academies (id, academy_name, owner_id, created_at)
@@ -7898,7 +8165,7 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
         landing_page_limit, teacher_limit, subscription_start_date, 
         subscription_end_date, status, payment_method, created_at, updated_at
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', 'card_payment', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-    `).bind(i,a.plan_name,o.price,o.student,o.ai_report,o.landing_page,o.teacher,p,u).run()).meta.last_row_id;return console.log("[Card Payment Approve] Created subscription:",g),await e.env.DB.prepare(`
+    `).bind(i,a.plan_name,n.price,n.student,n.ai_report,n.landing_page,n.teacher,p,u).run()).meta.last_row_id;return console.log("[Card Payment Approve] Created subscription:",g),await e.env.DB.prepare(`
       DELETE FROM usage_tracking WHERE academy_id = ?
     `).bind(i).run(),console.log("[Card Payment Approve] Deleted old usage_tracking"),await e.env.DB.prepare(`
       INSERT INTO usage_tracking (
@@ -7916,7 +8183,7 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
       WHERE id = ?
     `).bind(s,a||"관리자에 의해 거부됨",t).run(),e.json({success:!0,message:"카드결제 신청이 거부되었습니다."}))}catch(t){return console.error("카드결제 신청 거부 실패:",t),e.json({success:!1,error:"거부 처리 중 오류가 발생했습니다."},500)}});c.post("/api/bank-transfer/approve",async e=>{try{const{requestId:t,adminEmail:s}=await e.req.json();if(s!=="admin@superplace.co.kr")return e.json({success:!1,error:"관리자 권한이 필요합니다."},403);const a=await e.env.DB.prepare(`
       SELECT * FROM bank_transfer_requests WHERE id = ?
-    `).bind(t).first();if(!a)return e.json({success:!1,error:"신청 정보를 찾을 수 없습니다."},404);if(a.status==="approved")return e.json({success:!1,error:"이미 승인된 신청입니다."},400);const r={"스타터 플랜":{student:50,ai_report:50,landing_page:50,teacher:2,price:55e3},"베이직 플랜":{student:150,ai_report:150,landing_page:160,teacher:6,price:143e3},"프로 플랜":{student:500,ai_report:500,landing_page:530,teacher:20,price:187e3},"프리미엄 플랜":{student:1e3,ai_report:1e3,landing_page:1100,teacher:40,price:33e4},"엔터프라이즈 플랜":{student:3e3,ai_report:3e3,landing_page:5e3,teacher:999,price:75e4}},o=r[a.plan_name]||r["스타터 플랜"],n=a.user_id;console.log("[Bank Transfer Approve] Using academyId:",n,"for user:",a.user_id);const i=n;console.log("[Bank Transfer Approve] Using academy_id = user.id:",i);try{await e.env.DB.prepare(`
+    `).bind(t).first();if(!a)return e.json({success:!1,error:"신청 정보를 찾을 수 없습니다."},404);if(a.status==="approved")return e.json({success:!1,error:"이미 승인된 신청입니다."},400);const r={"스타터 플랜":{student:50,ai_report:50,landing_page:50,teacher:2,price:55e3},"베이직 플랜":{student:150,ai_report:150,landing_page:160,teacher:6,price:143e3},"프로 플랜":{student:500,ai_report:500,landing_page:530,teacher:20,price:187e3},"프리미엄 플랜":{student:1e3,ai_report:1e3,landing_page:1100,teacher:40,price:33e4},"엔터프라이즈 플랜":{student:3e3,ai_report:3e3,landing_page:5e3,teacher:999,price:75e4}},n=r[a.plan_name]||r["스타터 플랜"],o=a.user_id;console.log("[Bank Transfer Approve] Using academyId:",o,"for user:",a.user_id);const i=o;console.log("[Bank Transfer Approve] Using academy_id = user.id:",i);try{await e.env.DB.prepare(`
         SELECT id FROM academies WHERE id = ?
       `).bind(i).first()||(console.log("[Bank Transfer Approve] Creating academy with explicit id:",i),await e.env.DB.prepare("PRAGMA foreign_keys = OFF").run(),await e.env.DB.prepare(`
           INSERT OR REPLACE INTO academies (id, academy_name, owner_id, created_at)
@@ -7933,7 +8200,7 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
         landing_page_limit, teacher_limit, subscription_start_date, 
         subscription_end_date, status, payment_method, created_at, updated_at
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', 'bank_transfer', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-    `).bind(i,a.plan_name,o.price,o.student,o.ai_report,o.landing_page,o.teacher,p,u).run()).meta.last_row_id;console.log("[Bank Transfer Approve] Created subscription:",g),await e.env.DB.prepare(`
+    `).bind(i,a.plan_name,n.price,n.student,n.ai_report,n.landing_page,n.teacher,p,u).run()).meta.last_row_id;console.log("[Bank Transfer Approve] Created subscription:",g),await e.env.DB.prepare(`
       DELETE FROM usage_tracking WHERE academy_id = ?
     `).bind(i).run(),console.log("[Bank Transfer Approve] Deleted old usage_tracking"),await e.env.DB.prepare(`
       INSERT INTO usage_tracking (
@@ -7944,7 +8211,7 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
     `).bind(i,g,p,p).run(),console.log("[Bank Transfer Approve] Created usage_tracking");const x=[{route:"/students",name:"학생 관리"},{route:"/tools/ai-learning-report",name:"AI학습 분석 리포트"},{route:"/tools/dashboard-analytics",name:"통합 분석 대시보드"},{route:"/tools/search-volume",name:"네이버 검색량 조회"}];for(const b of x)try{await e.env.DB.prepare(`
           INSERT OR IGNORE INTO user_programs (user_id, program_route, program_name, enabled, created_at)
           VALUES (?, ?, ?, 1, CURRENT_TIMESTAMP)
-        `).bind(a.user_id,b.route,b.name).run()}catch(f){console.error("[Bank Transfer Approve] Failed to add program:",b.name,f)}return console.log("[Bank Transfer Approve] Added 4 basic programs for user:",a.user_id),await e.env.DB.prepare(`
+        `).bind(a.user_id,b.route,b.name).run()}catch(h){console.error("[Bank Transfer Approve] Failed to add program:",b.name,h)}return console.log("[Bank Transfer Approve] Added 4 basic programs for user:",a.user_id),await e.env.DB.prepare(`
       UPDATE bank_transfer_requests
       SET status = 'approved', approved_at = CURRENT_TIMESTAMP, approved_by = ?
       WHERE id = ?
@@ -7952,7 +8219,7 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
       UPDATE bank_transfer_requests
       SET status = 'rejected', rejected_at = CURRENT_TIMESTAMP, rejected_by = ?, rejection_reason = ?
       WHERE id = ?
-    `).bind(s,a||null,t).run(),e.json({success:!0,message:"계좌이체 신청이 거절되었습니다."}))}catch(t){return console.error("거절 처리 실패:",t),e.json({success:!1,error:"거절 처리 중 오류가 발생했습니다."},500)}});c.post("/api/usage/increment-teachers",async e=>{try{const t=U(e,"session_id");if(!t)return e.json({success:!1,error:"Not authenticated"},401);const a=JSON.parse(t).id,r=await e.env.DB.prepare(`
+    `).bind(s,a||null,t).run(),e.json({success:!0,message:"계좌이체 신청이 거절되었습니다."}))}catch(t){return console.error("거절 처리 실패:",t),e.json({success:!1,error:"거절 처리 중 오류가 발생했습니다."},500)}});c.post("/api/usage/increment-teachers",async e=>{try{const t=A(e,"session_id");if(!t)return e.json({success:!1,error:"Not authenticated"},401);const a=JSON.parse(t).id,r=await e.env.DB.prepare(`
       SELECT * FROM subscriptions 
       WHERE academy_id = ? AND status = 'active'
       ORDER BY created_at DESC LIMIT 1
@@ -7960,27 +8227,27 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
       UPDATE usage_tracking 
       SET current_teachers = current_teachers + 1, updated_at = CURRENT_TIMESTAMP
       WHERE academy_id = ? AND subscription_id = ?
-    `).bind(a,r.id).run(),e.json({success:!0,message:"선생님 수가 증가했습니다"})):e.json({success:!1,error:"활성 구독이 없습니다"},403)}catch(t){return e.json({success:!1,error:t.message},500)}});c.post("/api/admin/usage/:userId/update-limits",async e=>{try{const t=e.req.param("userId"),{studentLimit:s,aiReportLimit:a,landingPageLimit:r,teacherLimit:o,subscriptionDays:n,subscriptionMonths:i,durationType:l}=await e.req.json();let d=0,p=0,u="";l==="days"?(p=n||1,u=`${p}일`,console.log("[Admin] Duration type: days, days:",p)):(d=i||1,u=`${d}개월`,console.log("[Admin] Duration type: months, months:",d)),console.log("[Admin] Updating usage limits for user:",t,"period:",u);const m=await e.env.DB.prepare("SELECT id, email, name, academy_id, academy_name FROM users WHERE id = ?").bind(t).first();if(!m)return e.json({success:!1,error:"사용자를 찾을 수 없습니다"},404);let g=null;const x=await e.env.DB.prepare(`
+    `).bind(a,r.id).run(),e.json({success:!0,message:"선생님 수가 증가했습니다"})):e.json({success:!1,error:"활성 구독이 없습니다"},403)}catch(t){return e.json({success:!1,error:t.message},500)}});c.post("/api/admin/usage/:userId/update-limits",async e=>{try{const t=e.req.param("userId"),{studentLimit:s,aiReportLimit:a,landingPageLimit:r,teacherLimit:n,subscriptionDays:o,subscriptionMonths:i,durationType:l}=await e.req.json();let d=0,p=0,u="";l==="days"?(p=o||1,u=`${p}일`,console.log("[Admin] Duration type: days, days:",p)):(d=i||1,u=`${d}개월`,console.log("[Admin] Duration type: months, months:",d)),console.log("[Admin] Updating usage limits for user:",t,"period:",u);const m=await e.env.DB.prepare("SELECT id, email, name, academy_id, academy_name FROM users WHERE id = ?").bind(t).first();if(!m)return e.json({success:!1,error:"사용자를 찾을 수 없습니다"},404);let g=null;const x=await e.env.DB.prepare(`
       SELECT id FROM subscriptions 
       WHERE academy_id = ? AND plan_name = '관리자 설정 플랜'
       ORDER BY created_at DESC LIMIT 1
-    `).bind(g).first(),b=new Date,f=new Date(b.getTime()+540*60*1e3),v=f.toISOString().split("T")[0],_=new Date(f);l==="days"?_.setDate(_.getDate()+p-1):(_.setMonth(_.getMonth()+d),_.setDate(_.getDate()-1));const y=_.toISOString().split("T")[0];console.log(`[Admin] Subscription period: ${v} to ${y} (${u})`),console.log("[Admin] Ensuring academy record exists for user:",t),console.log("[Admin] User info:",{id:m.id,name:m.name,academy_id:m.academy_id});try{const w=m.academy_name||m.name+"학원";let E=m.academy_id;if(!E||E==null){console.log("[Admin] Creating new academy record"),console.log("[Admin] Academy name:",w);try{console.log("[Admin] Using owner_id=1 (admin) to bypass FOREIGN KEY constraint"),E=(await e.env.DB.prepare(`
+    `).bind(g).first(),b=new Date,h=new Date(b.getTime()+540*60*1e3),v=h.toISOString().split("T")[0],E=new Date(h);l==="days"?E.setDate(E.getDate()+p-1):(E.setMonth(E.getMonth()+d),E.setDate(E.getDate()-1));const y=E.toISOString().split("T")[0];console.log(`[Admin] Subscription period: ${v} to ${y} (${u})`),console.log("[Admin] Ensuring academy record exists for user:",t),console.log("[Admin] User info:",{id:m.id,name:m.name,academy_id:m.academy_id});try{const w=m.academy_name||m.name+"학원";let _=m.academy_id;if(!_||_==null){console.log("[Admin] Creating new academy record"),console.log("[Admin] Academy name:",w);try{console.log("[Admin] Using owner_id=1 (admin) to bypass FOREIGN KEY constraint"),_=(await e.env.DB.prepare(`
             INSERT INTO academies (academy_name, owner_id, created_at)
             VALUES (?, 1, datetime('now'))
-          `).bind(w).run()).meta.last_row_id,console.log("[Admin] ✅ New academy created with ID:",E,"(owner_id=1)"),await e.env.DB.prepare(`
+          `).bind(w).run()).meta.last_row_id,console.log("[Admin] ✅ New academy created with ID:",_,"(owner_id=1)"),await e.env.DB.prepare(`
             UPDATE users SET academy_id = ? WHERE id = ?
-          `).bind(E,m.id).run(),console.log("[Admin] ✅ User academy_id updated to:",E)}catch(S){console.error("[Admin] ❌ Academy INSERT failed even with owner_id=1:",S.message),console.warn("[Admin] 🔧 Final fallback: using user.id as academy_id without academy record"),E=m.id,await e.env.DB.prepare(`
+          `).bind(_,m.id).run(),console.log("[Admin] ✅ User academy_id updated to:",_)}catch(T){console.error("[Admin] ❌ Academy INSERT failed even with owner_id=1:",T.message),console.warn("[Admin] 🔧 Final fallback: using user.id as academy_id without academy record"),_=m.id,await e.env.DB.prepare(`
             UPDATE users SET academy_id = ? WHERE id = ?
-          `).bind(E,m.id).run(),console.log("[Admin] ✅ Using user.id as academy_id:",E)}}else if(await e.env.DB.prepare(`
+          `).bind(_,m.id).run(),console.log("[Admin] ✅ Using user.id as academy_id:",_)}}else if(await e.env.DB.prepare(`
           SELECT id FROM academies WHERE id = ?
-        `).bind(E).first())console.log("[Admin] ✅ Academy record already exists with ID:",E);else{console.log("[Admin] academy_id exists but record missing, creating new academy");const L=(await e.env.DB.prepare(`
+        `).bind(_).first())console.log("[Admin] ✅ Academy record already exists with ID:",_);else{console.log("[Admin] academy_id exists but record missing, creating new academy");const L=(await e.env.DB.prepare(`
             INSERT INTO academies (academy_name, owner_id, created_at)
             VALUES (?, ?, datetime('now'))
-          `).bind(w,m.id).run()).meta.last_row_id;console.log("[Admin] Created academy with ID:",L),L!==E&&(E=L,await e.env.DB.prepare(`
+          `).bind(w,m.id).run()).meta.last_row_id;console.log("[Admin] Created academy with ID:",L),L!==_&&(_=L,await e.env.DB.prepare(`
               UPDATE users SET academy_id = ? WHERE id = ?
-            `).bind(E,m.id).run(),console.log("[Admin] Updated user academy_id to match:",E))}const k=await e.env.DB.prepare(`
+            `).bind(_,m.id).run(),console.log("[Admin] Updated user academy_id to match:",_))}const k=await e.env.DB.prepare(`
         SELECT id, academy_name, owner_id FROM academies WHERE id = ?
-      `).bind(E).first();k?console.log(`✅ [Admin] Academy verified: ID=${k.id}, Name=${k.academy_name}`):(console.warn(`⚠️ [Admin] Academy record not found for ID=${E}, but continuing with subscription creation`),console.warn("[Admin] This is acceptable - subscriptions can work without academy records in some cases")),g=E}catch(w){return console.error("[Admin] Academy handling failed:",w.message),console.error("[Admin] Stack:",w.stack),e.json({success:!1,error:`Academy 처리 실패: ${w.message}`},500)}if(x){console.log("[Admin] Updating existing admin subscription:",x.id),await e.env.DB.prepare(`
+      `).bind(_).first();k?console.log(`✅ [Admin] Academy verified: ID=${k.id}, Name=${k.academy_name}`):(console.warn(`⚠️ [Admin] Academy record not found for ID=${_}, but continuing with subscription creation`),console.warn("[Admin] This is acceptable - subscriptions can work without academy records in some cases")),g=_}catch(w){return console.error("[Admin] Academy handling failed:",w.message),console.error("[Admin] Stack:",w.stack),e.json({success:!1,error:`Academy 처리 실패: ${w.message}`},500)}if(x){console.log("[Admin] Updating existing admin subscription:",x.id),await e.env.DB.prepare(`
         UPDATE subscriptions 
         SET student_limit = ?, 
             ai_report_limit = ?, 
@@ -7991,7 +8258,7 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
             status = 'active',
             updated_at = CURRENT_TIMESTAMP
         WHERE id = ?
-      `).bind(s,a,r,o,v,y,x.id).run();try{await e.env.DB.prepare(`
+      `).bind(s,a,r,n,v,y,x.id).run();try{await e.env.DB.prepare(`
           SELECT id FROM usage_tracking WHERE academy_id = ? AND subscription_id = ?
         `).bind(g,x.id).first()||(console.log("[Admin] Creating missing usage_tracking for existing subscription"),await e.env.DB.prepare(`
             INSERT INTO usage_tracking (
@@ -8001,7 +8268,7 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
               created_at, updated_at
             )
             VALUES (?, ?, 0, 0, 0, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-          `).bind(g,x.id).run())}catch(w){console.warn("[Admin] Failed to create usage_tracking (may already exist):",w.message)}console.log("✅ [Admin] Existing admin subscription updated")}else{console.log("[Admin] Creating new admin subscription for academy_id:",g);try{const E=(await e.env.DB.prepare(`
+          `).bind(g,x.id).run())}catch(w){console.warn("[Admin] Failed to create usage_tracking (may already exist):",w.message)}console.log("✅ [Admin] Existing admin subscription updated")}else{console.log("[Admin] Creating new admin subscription for academy_id:",g);try{const _=(await e.env.DB.prepare(`
           INSERT INTO subscriptions (
             academy_id, plan_name, plan_price, 
             student_limit, ai_report_limit, landing_page_limit, teacher_limit,
@@ -8009,7 +8276,7 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
             merchant_uid, created_at
           )
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
-        `).bind(g,"관리자 설정 플랜",0,s,a,r,o,v,y,"active","admin","admin_"+t+"_"+Date.now()).run()).meta.last_row_id;console.log("[Admin] ✅ Subscription created with ID:",E);try{await e.env.DB.prepare(`
+        `).bind(g,"관리자 설정 플랜",0,s,a,r,n,v,y,"active","admin","admin_"+t+"_"+Date.now()).run()).meta.last_row_id;console.log("[Admin] ✅ Subscription created with ID:",_);try{await e.env.DB.prepare(`
             INSERT INTO usage_tracking (
               academy_id, subscription_id,
               current_students, ai_reports_used_this_month, 
@@ -8017,7 +8284,7 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
               created_at, updated_at
             )
             VALUES (?, ?, 0, 0, 0, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-          `).bind(g,E).run(),console.log("✅ [Admin] New admin subscription created with usage_tracking")}catch(k){console.warn("[Admin] Failed to create usage_tracking:",k.message),console.log("✅ [Admin] New admin subscription created (usage_tracking will be auto-created on first use)")}}catch(w){if(console.error("[Admin] ❌ Subscription INSERT failed:",w.message),w.message&&w.message.includes("FOREIGN KEY")){if(console.error("[Admin] 🔧 Subscription FOREIGN KEY error!"),console.error("[Admin] academy_id used:",g),await e.env.DB.prepare(`
+          `).bind(g,_).run(),console.log("✅ [Admin] New admin subscription created with usage_tracking")}catch(k){console.warn("[Admin] Failed to create usage_tracking:",k.message),console.log("✅ [Admin] New admin subscription created (usage_tracking will be auto-created on first use)")}}catch(w){if(console.error("[Admin] ❌ Subscription INSERT failed:",w.message),w.message&&w.message.includes("FOREIGN KEY")){if(console.error("[Admin] 🔧 Subscription FOREIGN KEY error!"),console.error("[Admin] academy_id used:",g),await e.env.DB.prepare(`
             SELECT id, academy_name FROM academies WHERE id = ?
           `).bind(g).first())throw console.error("[Admin] Academy exists but FK still failed - unknown issue"),w;console.error("[Admin] ❌ Academy record missing for ID:",g),console.error("[Admin] 🔧 Creating academy record now...");try{await e.env.DB.prepare(`
                 INSERT INTO academies (academy_name, owner_id, created_at)
@@ -8030,7 +8297,7 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
                   merchant_uid, created_at
                 )
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
-              `).bind(g,"관리자 설정 플랜",0,s,a,r,o,v,y,"active","admin","admin_"+t+"_"+Date.now()).run();console.log("[Admin] ✅ Subscription created on retry:",k.meta.last_row_id)}catch(k){throw console.error("[Admin] ❌ Retry also failed:",k.message),k}}else throw w}}return e.json({success:!0,message:"사용 한도가 업데이트되었습니다",limits:{studentLimit:s,aiReportLimit:a,landingPageLimit:r,teacherLimit:o}})}catch(t){return console.error("[Admin] ❌ Update limits error:",t),console.error("[Admin] Error message:",t.message),console.error("[Admin] Error stack:",t.stack),t.message&&t.message.includes("FOREIGN KEY")?e.json({success:!1,error:`데이터베이스 제약 조건 오류: ${t.message}. 관리자에게 문의하세요.`},500):e.json({success:!1,error:t.message||"알 수 없는 오류가 발생했습니다"},500)}});c.post("/api/admin/revoke-plan/:userId",async e=>{try{const t=e.req.param("userId");console.log("[Admin Revoke] Revoking plan for user:",t);const s=await e.env.DB.prepare("SELECT id, academy_id, name FROM users WHERE id = ?").bind(t).first();if(!s)return e.json({success:!1,error:"사용자를 찾을 수 없습니다"},404);const a=s.academy_id||s.id;return await e.env.DB.prepare(`
+              `).bind(g,"관리자 설정 플랜",0,s,a,r,n,v,y,"active","admin","admin_"+t+"_"+Date.now()).run();console.log("[Admin] ✅ Subscription created on retry:",k.meta.last_row_id)}catch(k){throw console.error("[Admin] ❌ Retry also failed:",k.message),k}}else throw w}}return e.json({success:!0,message:"사용 한도가 업데이트되었습니다",limits:{studentLimit:s,aiReportLimit:a,landingPageLimit:r,teacherLimit:n}})}catch(t){return console.error("[Admin] ❌ Update limits error:",t),console.error("[Admin] Error message:",t.message),console.error("[Admin] Error stack:",t.stack),t.message&&t.message.includes("FOREIGN KEY")?e.json({success:!1,error:`데이터베이스 제약 조건 오류: ${t.message}. 관리자에게 문의하세요.`},500):e.json({success:!1,error:t.message||"알 수 없는 오류가 발생했습니다"},500)}});c.post("/api/admin/revoke-plan/:userId",async e=>{try{const t=e.req.param("userId");console.log("[Admin Revoke] Revoking plan for user:",t);const s=await e.env.DB.prepare("SELECT id, academy_id, name FROM users WHERE id = ?").bind(t).first();if(!s)return e.json({success:!1,error:"사용자를 찾을 수 없습니다"},404);const a=s.academy_id||s.id;return await e.env.DB.prepare(`
       DELETE FROM subscriptions 
       WHERE academy_id = ?
     `).bind(a).run(),console.log("[Admin Revoke] Deleted all subscriptions for academy:",a),await e.env.DB.prepare(`
@@ -8043,10 +8310,10 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
           landing_pages_created = 0, current_teachers = 0,
           updated_at = CURRENT_TIMESTAMP
       WHERE academy_id = ?
-    `).bind(a).run(),console.log("[Admin Revoke] Reset usage_tracking for academy:",a),e.json({success:!0,message:"플랜이 성공적으로 회수되었습니다"})}catch(t){return console.error("[Admin Revoke] Error:",t),e.json({success:!1,error:t.message},500)}});c.post("/api/admin/seed-test-data",async e=>{try{const t=e.env.DB;console.log("[Admin Seed] Starting simplified test data creation");const s=[{id:"pay_001",sub_id:1,user_id:1,amount:55e3,method:"card",plan:"starter",days_ago:30},{id:"pay_002",sub_id:2,user_id:2,amount:77e3,method:"bank_transfer",plan:"basic",days_ago:28},{id:"pay_003",sub_id:3,user_id:3,amount:147e3,method:"card",plan:"pro",days_ago:25},{id:"pay_004",sub_id:1,user_id:1,amount:55e3,method:"card",plan:"starter",days_ago:22},{id:"pay_005",sub_id:4,user_id:4,amount:297e3,method:"bank_transfer",plan:"business",days_ago:20},{id:"pay_006",sub_id:2,user_id:2,amount:77e3,method:"card",plan:"basic",days_ago:18},{id:"pay_007",sub_id:5,user_id:5,amount:44e4,method:"card",plan:"premium",days_ago:15},{id:"pay_008",sub_id:3,user_id:3,amount:147e3,method:"bank_transfer",plan:"pro",days_ago:12},{id:"pay_009",sub_id:6,user_id:6,amount:75e4,method:"card",plan:"enterprise",days_ago:10},{id:"pay_010",sub_id:1,user_id:1,amount:55e3,method:"card",plan:"starter",days_ago:8},{id:"pay_011",sub_id:4,user_id:4,amount:297e3,method:"card",plan:"business",days_ago:7},{id:"pay_012",sub_id:2,user_id:2,amount:77e3,method:"bank_transfer",plan:"basic",days_ago:5},{id:"pay_013",sub_id:3,user_id:3,amount:147e3,method:"card",plan:"pro",days_ago:3},{id:"pay_014",sub_id:5,user_id:5,amount:44e4,method:"bank_transfer",plan:"premium",days_ago:2},{id:"pay_015",sub_id:1,user_id:1,amount:55e3,method:"card",plan:"starter",days_ago:1},{id:"pay_016",sub_id:2,user_id:2,amount:77e3,method:"card",plan:"basic",days_ago:35},{id:"pay_017",sub_id:3,user_id:3,amount:147e3,method:"bank_transfer",plan:"pro",days_ago:40},{id:"pay_018",sub_id:4,user_id:4,amount:297e3,method:"card",plan:"business",days_ago:45},{id:"pay_019",sub_id:5,user_id:5,amount:44e4,method:"card",plan:"premium",days_ago:50},{id:"pay_020",sub_id:6,user_id:6,amount:75e4,method:"bank_transfer",plan:"enterprise",days_ago:55}];let a=0,r=0;for(const o of s)try{await t.prepare(`
+    `).bind(a).run(),console.log("[Admin Revoke] Reset usage_tracking for academy:",a),e.json({success:!0,message:"플랜이 성공적으로 회수되었습니다"})}catch(t){return console.error("[Admin Revoke] Error:",t),e.json({success:!1,error:t.message},500)}});c.post("/api/admin/seed-test-data",async e=>{try{const t=e.env.DB;console.log("[Admin Seed] Starting simplified test data creation");const s=[{id:"pay_001",sub_id:1,user_id:1,amount:55e3,method:"card",plan:"starter",days_ago:30},{id:"pay_002",sub_id:2,user_id:2,amount:77e3,method:"bank_transfer",plan:"basic",days_ago:28},{id:"pay_003",sub_id:3,user_id:3,amount:147e3,method:"card",plan:"pro",days_ago:25},{id:"pay_004",sub_id:1,user_id:1,amount:55e3,method:"card",plan:"starter",days_ago:22},{id:"pay_005",sub_id:4,user_id:4,amount:297e3,method:"bank_transfer",plan:"business",days_ago:20},{id:"pay_006",sub_id:2,user_id:2,amount:77e3,method:"card",plan:"basic",days_ago:18},{id:"pay_007",sub_id:5,user_id:5,amount:44e4,method:"card",plan:"premium",days_ago:15},{id:"pay_008",sub_id:3,user_id:3,amount:147e3,method:"bank_transfer",plan:"pro",days_ago:12},{id:"pay_009",sub_id:6,user_id:6,amount:75e4,method:"card",plan:"enterprise",days_ago:10},{id:"pay_010",sub_id:1,user_id:1,amount:55e3,method:"card",plan:"starter",days_ago:8},{id:"pay_011",sub_id:4,user_id:4,amount:297e3,method:"card",plan:"business",days_ago:7},{id:"pay_012",sub_id:2,user_id:2,amount:77e3,method:"bank_transfer",plan:"basic",days_ago:5},{id:"pay_013",sub_id:3,user_id:3,amount:147e3,method:"card",plan:"pro",days_ago:3},{id:"pay_014",sub_id:5,user_id:5,amount:44e4,method:"bank_transfer",plan:"premium",days_ago:2},{id:"pay_015",sub_id:1,user_id:1,amount:55e3,method:"card",plan:"starter",days_ago:1},{id:"pay_016",sub_id:2,user_id:2,amount:77e3,method:"card",plan:"basic",days_ago:35},{id:"pay_017",sub_id:3,user_id:3,amount:147e3,method:"bank_transfer",plan:"pro",days_ago:40},{id:"pay_018",sub_id:4,user_id:4,amount:297e3,method:"card",plan:"business",days_ago:45},{id:"pay_019",sub_id:5,user_id:5,amount:44e4,method:"card",plan:"premium",days_ago:50},{id:"pay_020",sub_id:6,user_id:6,amount:75e4,method:"bank_transfer",plan:"enterprise",days_ago:55}];let a=0,r=0;for(const n of s)try{await t.prepare(`
           INSERT OR REPLACE INTO payments (id, subscription_id, user_id, amount, payment_method, merchant_uid, imp_uid, status, created_at)
-          VALUES (?, ?, ?, ?, ?, ?, ?, 'completed', datetime('now', '-${o.days_ago} days'))
-        `).bind(o.id,o.sub_id,o.user_id,o.amount,o.method,`merchant_${o.id}`,o.method==="card"?`imp_${o.id}`:null).run(),a++}catch(n){console.error(`[Admin Seed] Error creating payment ${o.id}:`,n.message),r++}return console.log(`[Admin Seed] Test data created: ${a} success, ${r} errors`),e.json({success:!0,message:"테스트 결제 데이터가 생성되었습니다.",data:{created:a,errors:r,total:s.length}})}catch(t){return console.error("[Admin Seed] Error:",t),e.json({success:!1,error:t.message},500)}});c.get("/api/admin/debug/payments",async e=>{try{const t=e.env.DB,s=await t.prepare(`
+          VALUES (?, ?, ?, ?, ?, ?, ?, 'completed', datetime('now', '-${n.days_ago} days'))
+        `).bind(n.id,n.sub_id,n.user_id,n.amount,n.method,`merchant_${n.id}`,n.method==="card"?`imp_${n.id}`:null).run(),a++}catch(o){console.error(`[Admin Seed] Error creating payment ${n.id}:`,o.message),r++}return console.log(`[Admin Seed] Test data created: ${a} success, ${r} errors`),e.json({success:!0,message:"테스트 결제 데이터가 생성되었습니다.",data:{created:a,errors:r,total:s.length}})}catch(t){return console.error("[Admin Seed] Error:",t),e.json({success:!1,error:t.message},500)}});c.get("/api/admin/debug/payments",async e=>{try{const t=e.env.DB,s=await t.prepare(`
       SELECT * FROM payments ORDER BY created_at DESC LIMIT 10
     `).all(),a=await t.prepare(`
       PRAGMA table_info(payments)
@@ -8069,7 +8336,7 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
         SUM(amount) as revenue
       FROM bank_transfer_requests
       WHERE status = 'approved'
-    `).first(),r=((s==null?void 0:s.count)||0)+((a==null?void 0:a.count)||0),o=((s==null?void 0:s.revenue)||0)+((a==null?void 0:a.revenue)||0);console.log("[Admin Revenue] Card:",s,"Bank:",a);const n={card:{count:(s==null?void 0:s.count)||0,revenue:(s==null?void 0:s.revenue)||0},bank_transfer:{count:(a==null?void 0:a.count)||0,revenue:(a==null?void 0:a.revenue)||0}},i=await t.prepare(`
+    `).first(),r=((s==null?void 0:s.count)||0)+((a==null?void 0:a.count)||0),n=((s==null?void 0:s.revenue)||0)+((a==null?void 0:a.revenue)||0);console.log("[Admin Revenue] Card:",s,"Bank:",a);const o={card:{count:(s==null?void 0:s.count)||0,revenue:(s==null?void 0:s.revenue)||0},bank_transfer:{count:(a==null?void 0:a.count)||0,revenue:(a==null?void 0:a.revenue)||0}},i=await t.prepare(`
       SELECT 
         s.plan_name,
         COUNT(p.id) as count,
@@ -8113,7 +8380,7 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
       WHERE status = 'completed'
         AND DATE(created_at) >= DATE('now', '-12 months')
       GROUP BY strftime('%Y-%m', created_at)
-    `).all(),f=await t.prepare(`
+    `).all(),h=await t.prepare(`
       SELECT 
         strftime('%Y-%m', approved_at) as month,
         COUNT(*) as count,
@@ -8122,7 +8389,7 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
       WHERE status = 'approved'
         AND DATE(approved_at) >= DATE('now', '-12 months')
       GROUP BY strftime('%Y-%m', approved_at)
-    `).all(),v=new Map;b.results.forEach(y=>{v.set(y.month,{month:y.month,count:y.count||0,revenue:y.revenue||0})}),f.results.forEach(y=>{const w=v.get(y.month)||{month:y.month,count:0,revenue:0};v.set(y.month,{month:y.month,count:w.count+(y.count||0),revenue:w.revenue+(y.revenue||0)})});const _=Array.from(v.values()).sort((y,w)=>w.month.localeCompare(y.month));return e.json({success:!0,data:{total:{count:r,revenue:o},byMethod:n,byPlan:p,daily:x,monthly:_}})}catch(t){return console.error("[Admin Revenue] Error:",t),e.json({success:!1,error:t.message},500)}});c.get("/api/admin/revenue/transactions",async e=>{var t;try{const s=e.env.DB,a=new URL(e.req.url),r=parseInt(a.searchParams.get("limit")||"50"),o=parseInt(a.searchParams.get("offset")||"0"),n=a.searchParams.get("method"),i=a.searchParams.get("plan"),l=a.searchParams.get("startDate"),d=a.searchParams.get("endDate");console.log("[Admin Transactions] Fetching with filters:",{method:n,plan:i,startDate:l,endDate:d,limit:r,offset:o});let p=["p.status = 'completed'"],u=[];n==="card"||n==="bank_transfer"&&p.push("1 = 0"),i&&(p.push("s.plan_name = ?"),u.push(i)),l&&(p.push("DATE(p.created_at) >= DATE(?)"),u.push(l)),d&&(p.push("DATE(p.created_at) <= DATE(?)"),u.push(d));const g=`
+    `).all(),v=new Map;b.results.forEach(y=>{v.set(y.month,{month:y.month,count:y.count||0,revenue:y.revenue||0})}),h.results.forEach(y=>{const w=v.get(y.month)||{month:y.month,count:0,revenue:0};v.set(y.month,{month:y.month,count:w.count+(y.count||0),revenue:w.revenue+(y.revenue||0)})});const E=Array.from(v.values()).sort((y,w)=>w.month.localeCompare(y.month));return e.json({success:!0,data:{total:{count:r,revenue:n},byMethod:o,byPlan:p,daily:x,monthly:E}})}catch(t){return console.error("[Admin Revenue] Error:",t),e.json({success:!1,error:t.message},500)}});c.get("/api/admin/revenue/transactions",async e=>{var t;try{const s=e.env.DB,a=new URL(e.req.url),r=parseInt(a.searchParams.get("limit")||"50"),n=parseInt(a.searchParams.get("offset")||"0"),o=a.searchParams.get("method"),i=a.searchParams.get("plan"),l=a.searchParams.get("startDate"),d=a.searchParams.get("endDate");console.log("[Admin Transactions] Fetching with filters:",{method:o,plan:i,startDate:l,endDate:d,limit:r,offset:n});let p=["p.status = 'completed'"],u=[];o==="card"||o==="bank_transfer"&&p.push("1 = 0"),i&&(p.push("s.plan_name = ?"),u.push(i)),l&&(p.push("DATE(p.created_at) >= DATE(?)"),u.push(l)),d&&(p.push("DATE(p.created_at) <= DATE(?)"),u.push(d));const g=`
       SELECT 
         'card' as payment_method,
         p.id,
@@ -8138,7 +8405,7 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
       JOIN subscriptions s ON p.subscription_id = s.id
       JOIN users u ON p.user_id = u.id
       ${p.length>0?"WHERE "+p.join(" AND "):""}
-    `;let x=["b.status = 'approved'"],b=[];n==="bank_transfer"||n==="card"&&x.push("1 = 0"),i&&(x.push("b.plan_name = ?"),b.push(i)),l&&(x.push("DATE(b.approved_at) >= DATE(?)"),b.push(l)),d&&(x.push("DATE(b.approved_at) <= DATE(?)"),b.push(d));const v=`
+    `;let x=["b.status = 'approved'"],b=[];o==="bank_transfer"||o==="card"&&x.push("1 = 0"),i&&(x.push("b.plan_name = ?"),b.push(i)),l&&(x.push("DATE(b.approved_at) >= DATE(?)"),b.push(l)),d&&(x.push("DATE(b.approved_at) <= DATE(?)"),b.push(d));const v=`
       SELECT 
         'bank_transfer' as payment_method,
         b.id,
@@ -8153,25 +8420,25 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
       FROM bank_transfer_requests b
       JOIN users u ON b.user_id = u.id
       ${x.length>0?"WHERE "+x.join(" AND "):""}
-    `,_=`
+    `,E=`
       ${g}
       UNION ALL
       ${v}
       ORDER BY transaction_date DESC
-    `;console.log("[Admin Transactions] Union query:",_),console.log("[Admin Transactions] Card params:",u,"Bank params:",b);const y=[...u,...b],w=await s.prepare(_).bind(...y).all(),E=((t=w.results)==null?void 0:t.length)||0,k=(w.results||[]).slice(o,o+r);return console.log("[Admin Transactions] Total:",E,"Paginated:",k.length),e.json({success:!0,data:{transactions:k,pagination:{total:E,limit:r,offset:o,hasMore:o+r<E}}})}catch(s){return console.error("[Admin Transactions] Error:",s),e.json({success:!1,error:s.message},500)}});c.get("/api/admin/usage/:userId",async e=>{try{const t=e.req.param("userId"),s=await e.env.DB.prepare("SELECT id, academy_id, name, academy_name FROM users WHERE id = ?").bind(t).first();if(!s)return e.json({success:!1,hasSubscription:!1,message:"사용자를 찾을 수 없습니다"});let a=s.academy_id;if(!a){a=s.id;try{await e.env.DB.prepare(`
+    `;console.log("[Admin Transactions] Union query:",E),console.log("[Admin Transactions] Card params:",u,"Bank params:",b);const y=[...u,...b],w=await s.prepare(E).bind(...y).all(),_=((t=w.results)==null?void 0:t.length)||0,k=(w.results||[]).slice(n,n+r);return console.log("[Admin Transactions] Total:",_,"Paginated:",k.length),e.json({success:!0,data:{transactions:k,pagination:{total:_,limit:r,offset:n,hasMore:n+r<_}}})}catch(s){return console.error("[Admin Transactions] Error:",s),e.json({success:!1,error:s.message},500)}});c.get("/api/admin/usage/:userId",async e=>{try{const t=e.req.param("userId"),s=await e.env.DB.prepare("SELECT id, academy_id, name, academy_name FROM users WHERE id = ?").bind(t).first();if(!s)return e.json({success:!1,hasSubscription:!1,message:"사용자를 찾을 수 없습니다"});let a=s.academy_id;if(!a){a=s.id;try{await e.env.DB.prepare(`
           UPDATE users SET academy_id = ? WHERE id = ?
-        `).bind(a,s.id).run(),console.log("[Admin] Auto-created academy_id:",a)}catch(n){console.error("[Admin] Failed to set academy_id:",n)}}let r=null;try{r=await e.env.DB.prepare(`
+        `).bind(a,s.id).run(),console.log("[Admin] Auto-created academy_id:",a)}catch(o){console.error("[Admin] Failed to set academy_id:",o)}}let r=null;try{r=await e.env.DB.prepare(`
         SELECT * FROM subscriptions 
         WHERE academy_id = ? AND status = 'active'
         ORDER BY created_at DESC LIMIT 1
-      `).bind(a).first()}catch(n){console.log("[Admin] academy_id column not found in GET, trying user_id (old schema):",n.message);try{r=await e.env.DB.prepare(`
+      `).bind(a).first()}catch(o){console.log("[Admin] academy_id column not found in GET, trying user_id (old schema):",o.message);try{r=await e.env.DB.prepare(`
           SELECT * FROM subscriptions 
           WHERE user_id = ? AND status = 'active'
           ORDER BY created_at DESC LIMIT 1
-        `).bind(s.id).first(),r&&console.log("[Admin] Found subscription using old schema (user_id) in GET")}catch(i){return console.log("[Admin] Both schema attempts failed in GET:",i.message),e.json({success:!1,error:"DB 스키마 오류: /api/db/migrate를 실행해주세요. Error: "+i.message},500)}}if(!r)return e.json({success:!0,hasSubscription:!1,message:"활성 구독이 없습니다"});const o=await e.env.DB.prepare(`
+        `).bind(s.id).first(),r&&console.log("[Admin] Found subscription using old schema (user_id) in GET")}catch(i){return console.log("[Admin] Both schema attempts failed in GET:",i.message),e.json({success:!1,error:"DB 스키마 오류: /api/db/migrate를 실행해주세요. Error: "+i.message},500)}}if(!r)return e.json({success:!0,hasSubscription:!1,message:"활성 구독이 없습니다"});const n=await e.env.DB.prepare(`
       SELECT * FROM usage_tracking 
       WHERE subscription_id = ?
-    `).bind(r.id).first();return e.json({success:!0,hasSubscription:!0,subscription:{id:r.id,planName:r.plan_name,startDate:r.subscription_start_date,endDate:r.subscription_end_date,studentLimit:r.student_limit,aiReportLimit:r.ai_report_limit,landingPageLimit:r.landing_page_limit,teacherLimit:r.teacher_limit},usage:{currentStudents:(o==null?void 0:o.current_students)||0,aiReportsUsed:(o==null?void 0:o.ai_reports_used_this_month)||0,landingPagesCreated:(o==null?void 0:o.landing_pages_created)||0,currentTeachers:(o==null?void 0:o.current_teachers)||0}})}catch(t){return console.error("[Admin] Get usage error:",t),e.json({success:!1,error:t.message},500)}});c.get("/pricing/starter",e=>e.html(`
+    `).bind(r.id).first();return e.json({success:!0,hasSubscription:!0,subscription:{id:r.id,planName:r.plan_name,startDate:r.subscription_start_date,endDate:r.subscription_end_date,studentLimit:r.student_limit,aiReportLimit:r.ai_report_limit,landingPageLimit:r.landing_page_limit,teacherLimit:r.teacher_limit},usage:{currentStudents:(n==null?void 0:n.current_students)||0,aiReportsUsed:(n==null?void 0:n.ai_reports_used_this_month)||0,landingPagesCreated:(n==null?void 0:n.landing_pages_created)||0,currentTeachers:(n==null?void 0:n.current_teachers)||0}})}catch(t){return console.error("[Admin] Get usage error:",t),e.json({success:!1,error:t.message},500)}});c.get("/pricing/starter",e=>e.html(`
     <!DOCTYPE html>
     <html lang="ko">
     <head>
@@ -13084,6 +13351,43 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
                     <p class="text-xl text-gray-600">학원 마케팅 현황을 확인하세요</p>
                 </div>
 
+                <!-- 플랜 사용량 빠른 보기 (새로 추가) -->
+                <div id="quickUsageStats" class="hidden mb-8">
+                    <div class="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl p-6 text-white">
+                        <h2 class="text-2xl font-bold mb-4">📊 이번 달 사용량</h2>
+                        <div class="grid md:grid-cols-4 gap-4">
+                            <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4">
+                                <div class="text-sm text-purple-100 mb-1">랜딩페이지</div>
+                                <div class="text-3xl font-bold mb-1"><span id="quickLandingUsage">0</span> / <span id="quickLandingLimit">0</span></div>
+                                <div class="w-full bg-white/20 rounded-full h-2 mt-2">
+                                    <div id="quickLandingBar" class="bg-white h-2 rounded-full transition-all" style="width: 0%"></div>
+                                </div>
+                            </div>
+                            <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4">
+                                <div class="text-sm text-purple-100 mb-1">AI 리포트</div>
+                                <div class="text-3xl font-bold mb-1"><span id="quickReportUsage">0</span> / <span id="quickReportLimit">0</span></div>
+                                <div class="w-full bg-white/20 rounded-full h-2 mt-2">
+                                    <div id="quickReportBar" class="bg-white h-2 rounded-full transition-all" style="width: 0%"></div>
+                                </div>
+                            </div>
+                            <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4">
+                                <div class="text-sm text-purple-100 mb-1">학생 수</div>
+                                <div class="text-3xl font-bold mb-1"><span id="quickStudentUsage">0</span> / <span id="quickStudentLimit">0</span></div>
+                                <div class="w-full bg-white/20 rounded-full h-2 mt-2">
+                                    <div id="quickStudentBar" class="bg-white h-2 rounded-full transition-all" style="width: 0%"></div>
+                                </div>
+                            </div>
+                            <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4">
+                                <div class="text-sm text-purple-100 mb-1">선생님 수</div>
+                                <div class="text-3xl font-bold mb-1"><span id="quickTeacherUsage">0</span> / <span id="quickTeacherLimit">0</span></div>
+                                <div class="w-full bg-white/20 rounded-full h-2 mt-2">
+                                    <div id="quickTeacherBar" class="bg-white h-2 rounded-full transition-all" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Stats Grid -->
                 <div class="grid md:grid-cols-3 gap-6 mb-12">
                     <div class="bg-gradient-to-br from-blue-300 to-blue-400 rounded-2xl p-6 text-white shadow-lg">
@@ -13733,6 +14037,24 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
                                 const reportUsage = calcUsage(usage.aiReports || 0, limits.aiReports || 0)
                                 const landingUsage = calcUsage(usage.landingPages || 0, limits.landingPages || 0)
                                 const teacherUsage = calcUsage(usage.teachers || 0, limits.teachers || 0)
+                                
+                                // 빠른 사용량 통계 업데이트
+                                const quickUsageStats = document.getElementById('quickUsageStats')
+                                if (quickUsageStats) {
+                                    quickUsageStats.classList.remove('hidden')
+                                    document.getElementById('quickLandingUsage').textContent = landingUsage.current
+                                    document.getElementById('quickLandingLimit').textContent = landingUsage.limit
+                                    document.getElementById('quickLandingBar').style.width = landingUsage.percent + '%'
+                                    document.getElementById('quickReportUsage').textContent = reportUsage.current
+                                    document.getElementById('quickReportLimit').textContent = reportUsage.limit
+                                    document.getElementById('quickReportBar').style.width = reportUsage.percent + '%'
+                                    document.getElementById('quickStudentUsage').textContent = studentUsage.current
+                                    document.getElementById('quickStudentLimit').textContent = studentUsage.limit
+                                    document.getElementById('quickStudentBar').style.width = studentUsage.percent + '%'
+                                    document.getElementById('quickTeacherUsage').textContent = teacherUsage.current
+                                    document.getElementById('quickTeacherLimit').textContent = teacherUsage.limit
+                                    document.getElementById('quickTeacherBar').style.width = teacherUsage.percent + '%'
+                                }
                                 
                                 const renderUsageCard = (icon, title, usage) => {
                                     return '<div class="bg-white rounded-2xl p-6 shadow-lg border-2 ' + 
@@ -15662,6 +15984,30 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
                     </div>
                 </div>
 
+                <!-- 사용량 표시 배너 (새로 추가) -->
+                <div id="usageBanner" class="bg-gradient-to-r from-purple-500 to-indigo-500 rounded-xl p-6 mb-8 text-white hidden">
+                    <div class="flex items-center justify-between flex-wrap gap-4">
+                        <div class="flex items-center gap-4">
+                            <div class="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center flex-shrink-0">
+                                <span class="text-3xl">🎯</span>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold mb-1">이번 달 랜딩페이지 사용량</h3>
+                                <p class="text-white/90 text-sm">아래 사용량을 확인하고 페이지를 생성하세요</p>
+                            </div>
+                        </div>
+                        <div class="bg-white/20 backdrop-blur-sm rounded-xl px-6 py-4">
+                            <div class="text-sm text-white/80 mb-1">사용 현황</div>
+                            <div class="text-3xl font-bold">
+                                <span id="currentUsage">-</span> / <span id="maxLimit">-</span>
+                            </div>
+                            <div class="w-48 bg-white/20 rounded-full h-2 mt-3">
+                                <div id="usageBar" class="bg-white h-2 rounded-full transition-all" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- 템플릿 선택 -->
                 <div class="bg-white rounded-xl p-8 border border-gray-200 mb-6">
                     <h2 class="text-2xl font-bold text-gray-900 mb-6">1️⃣ 템플릿 선택</h2>
@@ -16011,9 +16357,45 @@ ${t?t.split(",").map(o=>o.trim()).join(", "):e}과 관련해서 체계적인 커
                 }
             }, 100);
             
+            loadUsage();
             loadUserFolders();
             loadUserForms();
             loadStats();
+        }
+
+        // 사용량 로드 함수
+        async function loadUsage() {
+            try {
+                const response = await fetch('/api/usage/check', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                const data = await response.json();
+                
+                if (data.success && data.limits && data.usage) {
+                    const currentUsage = data.usage.landingPages || 0;
+                    const maxLimit = data.limits.landingPages || 0;
+                    const percentage = maxLimit > 0 ? Math.min((currentUsage / maxLimit) * 100, 100) : 0;
+                    
+                    // 배너 표시
+                    const usageBanner = document.getElementById('usageBanner');
+                    if (usageBanner) {
+                        usageBanner.classList.remove('hidden');
+                        document.getElementById('currentUsage').textContent = currentUsage;
+                        document.getElementById('maxLimit').textContent = maxLimit;
+                        document.getElementById('usageBar').style.width = percentage + '%';
+                        
+                        // 한도 초과 시 경고 색상
+                        if (currentUsage >= maxLimit) {
+                            usageBanner.className = 'bg-gradient-to-r from-red-500 to-orange-500 rounded-xl p-6 mb-8 text-white';
+                        } else if (percentage >= 80) {
+                            usageBanner.className = 'bg-gradient-to-r from-orange-500 to-yellow-500 rounded-xl p-6 mb-8 text-white';
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error('사용량 조회 실패:', err);
+            }
         }
 
         // 통계 로드
@@ -19720,32 +20102,32 @@ ttq.track('SubmitForm');" class="w-full px-4 py-3 border rounded-xl font-mono te
         </footer>
     </body>
     </html>
-  `));c.get("/landing/:slug",async e=>{try{const t=e.req.param("slug"),a=await e.env.DB.prepare("SELECT * FROM landing_pages WHERE slug = ? AND status = ?").bind(t,"active").first();if(!a)return e.html("<h1>페이지를 찾을 수 없습니다.</h1>",404);await e.env.DB.prepare("UPDATE landing_pages SET view_count = view_count + 1 WHERE slug = ?").bind(t).run();let r=a.html_content;const o=`${e.req.header("origin")||"https://superplace-academy.pages.dev"}/landing/${t}`,n=a.thumbnail_url||"https://via.placeholder.com/1200x630.png?text=Super+Place+Academy",i=a.og_title||a.title||"우리는 슈퍼플레이스다",l=a.og_description||"꾸메땅학원의 전문적인 교육 서비스를 만나보세요";console.log("[Landing Page Debug] form_id:",a.form_id,"Type:",typeof a.form_id);let d="",p="";if(a.form_id){console.log("[Landing Page Debug] Fetching form with ID:",a.form_id);const x=await e.env.DB.prepare("SELECT * FROM form_templates WHERE id = ?").bind(a.form_id).first();if(console.log("[Landing Page Debug] Form found:",!!x),x){x.header_script&&(p=x.header_script);let b=[];try{b=x.fields?JSON.parse(x.fields):[]}catch(v){console.error("Failed to parse form fields:",v)}let f="";for(const v of b){const _=v.required?"required":"",y=v.required?" *":"",w=v.name||v.label.replace(/\s+/g,"_");if(v.type==="textarea")f+=`
+  `));c.get("/landing/:slug",async e=>{try{const t=e.req.param("slug"),a=await e.env.DB.prepare("SELECT * FROM landing_pages WHERE slug = ? AND status = ?").bind(t,"active").first();if(!a)return e.html("<h1>페이지를 찾을 수 없습니다.</h1>",404);await e.env.DB.prepare("UPDATE landing_pages SET view_count = view_count + 1 WHERE slug = ?").bind(t).run();let r=a.html_content;const n=`${e.req.header("origin")||"https://superplace-academy.pages.dev"}/landing/${t}`,o=a.thumbnail_url||"https://via.placeholder.com/1200x630.png?text=Super+Place+Academy",i=a.og_title||a.title||"우리는 슈퍼플레이스다",l=a.og_description||"꾸메땅학원의 전문적인 교육 서비스를 만나보세요";console.log("[Landing Page Debug] form_id:",a.form_id,"Type:",typeof a.form_id);let d="",p="";if(a.form_id){console.log("[Landing Page Debug] Fetching form with ID:",a.form_id);const x=await e.env.DB.prepare("SELECT * FROM form_templates WHERE id = ?").bind(a.form_id).first();if(console.log("[Landing Page Debug] Form found:",!!x),x){x.header_script&&(p=x.header_script);let b=[];try{b=x.fields?JSON.parse(x.fields):[]}catch(v){console.error("Failed to parse form fields:",v)}let h="";for(const v of b){const E=v.required?"required":"",y=v.required?" *":"",w=v.name||v.label.replace(/\s+/g,"_");if(v.type==="textarea")h+=`
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-2">${v.label}${y}</label>
-                        <textarea name="${w}" ${_} class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="${v.placeholder||""}" rows="4"></textarea>
-                    </div>`;else if(v.type==="select"){let E='<option value="">선택하세요</option>';for(const k of v.options||[])E+=`<option value="${k}">${k}</option>`;f+=`
+                        <textarea name="${w}" ${E} class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="${v.placeholder||""}" rows="4"></textarea>
+                    </div>`;else if(v.type==="select"){let _='<option value="">선택하세요</option>';for(const k of v.options||[])_+=`<option value="${k}">${k}</option>`;h+=`
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-2">${v.label}${y}</label>
-                        <select name="${w}" ${_} class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                            ${E}
+                        <select name="${w}" ${E} class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                            ${_}
                         </select>
-                    </div>`}else if(v.type==="radio"){let E="";for(const k of v.options||[])E+=`
+                    </div>`}else if(v.type==="radio"){let _="";for(const k of v.options||[])_+=`
                         <div class="flex items-center mb-2">
-                            <input type="radio" name="${w}" value="${k}" ${_} class="mr-2 h-4 w-4 text-purple-600 focus:ring-purple-500">
+                            <input type="radio" name="${w}" value="${k}" ${E} class="mr-2 h-4 w-4 text-purple-600 focus:ring-purple-500">
                             <label class="text-sm text-gray-700">${k}</label>
-                        </div>`;f+=`
+                        </div>`;h+=`
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-2">${v.label}${y}</label>
-                        ${E}
-                    </div>`}else if(v.type==="checkbox")f+=`
+                        ${_}
+                    </div>`}else if(v.type==="checkbox")h+=`
                     <div class="flex items-start">
-                        <input type="checkbox" name="${w}" ${_} class="mt-1 mr-3 h-5 w-5 text-purple-600 focus:ring-purple-500 border-gray-300 rounded">
+                        <input type="checkbox" name="${w}" ${E} class="mt-1 mr-3 h-5 w-5 text-purple-600 focus:ring-purple-500 border-gray-300 rounded">
                         <label class="text-sm text-gray-700">${v.label}</label>
-                    </div>`;else{const E=v.type||"text";f+=`
+                    </div>`;else{const _=v.type||"text";h+=`
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-2">${v.label}${y}</label>
-                        <input type="${E}" name="${w}" ${_} class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="${v.placeholder||""}">
+                        <input type="${_}" name="${w}" ${E} class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="${v.placeholder||""}">
                     </div>`}}d=`
         <!-- 신청 폼 섹션 -->
         <div class="container mx-auto px-4 py-12" id="apply-form-section">
@@ -19758,7 +20140,7 @@ ttq.track('SubmitForm');" class="w-full px-4 py-3 border rounded-xl font-mono te
                 ${x.custom_html||""}
                 
                 <form id="applicationForm" class="space-y-6">
-                    ${f}
+                    ${h}
                     
                     <div class="flex items-start">
                         <input type="checkbox" name="agreedToTerms" required class="mt-1 mr-3 h-5 w-5 text-purple-600 focus:ring-purple-500 border-gray-300 rounded">
@@ -19841,17 +20223,17 @@ ttq.track('SubmitForm');" class="w-full px-4 py-3 border rounded-xl font-mono te
         `}}const u=a.header_pixel||"",m=a.body_pixel||"",g=`
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
-    <meta property="og:url" content="${o}">
+    <meta property="og:url" content="${n}">
     <meta property="og:title" content="${i}">
     <meta property="og:description" content="${l}">
-    <meta property="og:image" content="${n}">
+    <meta property="og:image" content="${o}">
     
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="${o}">
+    <meta property="twitter:url" content="${n}">
     <meta property="twitter:title" content="${i}">
     <meta property="twitter:description" content="${l}">
-    <meta property="twitter:image" content="${n}">
+    <meta property="twitter:image" content="${o}">
     
     ${p}
     ${u}
@@ -19859,18 +20241,18 @@ ttq.track('SubmitForm');" class="w-full px-4 py-3 border rounded-xl font-mono te
 ${m}`)),d&&(r.includes("<footer>")?r=r.replace(/<footer>/i,`${d}
         <footer>`):r.includes("<!-- Footer -->")?r=r.replace(/<!-- Footer -->/i,`${d}
         <!-- Footer -->`):r=r.replace("</body>",`${d}
-    </body>`)),e.html(r)}catch(t){return console.error("Landing page error:",t),e.html("<h1>오류가 발생했습니다.</h1>",500)}});async function Zs(e,t,s,a,r,o){const n=new FormData;n.append("key",s),n.append("user_id",a),n.append("sender",r),n.append("receiver",e),n.append("msg",t),n.append("testmode_yn",o==="Y"?"N":"Y");try{return await(await fetch("https://apis.aligo.in/send/",{method:"POST",body:n})).json()}catch(i){return console.error("Aligo SMS error:",i),{result_code:-1,message:"SMS 발송 실패"}}}c.get("/api/sms/templates",async e=>{try{const{results:t}=await e.env.DB.prepare(`
+    </body>`)),e.html(r)}catch(t){return console.error("Landing page error:",t),e.html("<h1>오류가 발생했습니다.</h1>",500)}});async function Zs(e,t,s,a,r,n){const o=new FormData;o.append("key",s),o.append("user_id",a),o.append("sender",r),o.append("receiver",e),o.append("msg",t),o.append("testmode_yn",n==="Y"?"N":"Y");try{return await(await fetch("https://apis.aligo.in/send/",{method:"POST",body:o})).json()}catch(i){return console.error("Aligo SMS error:",i),{result_code:-1,message:"SMS 발송 실패"}}}c.get("/api/sms/templates",async e=>{try{const{results:t}=await e.env.DB.prepare(`
       SELECT * FROM sms_templates WHERE is_active = 1 ORDER BY category, name
-    `).all();return e.json({success:!0,templates:t})}catch(t){return console.error("Get templates error:",t),e.json({success:!1,error:"템플릿 조회 실패"},500)}});c.post("/api/sms/templates",async e=>{try{const{name:t,category:s,content:a,variables:r}=await e.req.json(),o=JSON.parse(e.req.header("X-User-Data-Base64")?decodeURIComponent(escape(atob(e.req.header("X-User-Data-Base64")||""))):'{"id":1}'),n=await e.env.DB.prepare(`
+    `).all();return e.json({success:!0,templates:t})}catch(t){return console.error("Get templates error:",t),e.json({success:!1,error:"템플릿 조회 실패"},500)}});c.post("/api/sms/templates",async e=>{try{const{name:t,category:s,content:a,variables:r}=await e.req.json(),n=JSON.parse(e.req.header("X-User-Data-Base64")?decodeURIComponent(escape(atob(e.req.header("X-User-Data-Base64")||""))):'{"id":1}'),o=await e.env.DB.prepare(`
       INSERT INTO sms_templates (name, category, content, variables, created_by)
       VALUES (?, ?, ?, ?, ?)
-    `).bind(t,s,a,JSON.stringify(r||[]),o.id).run();return e.json({success:!0,message:"템플릿이 추가되었습니다.",id:n.meta.last_row_id})}catch(t){return console.error("Add template error:",t),e.json({success:!1,error:"템플릿 추가 실패"},500)}});c.post("/api/sms/send",async e=>{var t;try{const{recipient_phone:s,recipient_name:a,message_content:r,template_id:o}=await e.req.json(),n=JSON.parse(e.req.header("X-User-Data-Base64")?decodeURIComponent(escape(atob(e.req.header("X-User-Data-Base64")||""))):'{"id":1}'),i=e.env.ALIGO_API_KEY||"",l=e.env.ALIGO_USER_ID||"",d=e.env.ALIGO_SENDER||"01012345678",p=e.env.SMS_REAL_MODE||"N";let u=null,m="sent",g=null,x=null;i&&l&&(u=await Zs(s,r,i,l,d,p),g=((t=u.result_code)==null?void 0:t.toString())||null,x=u.message||null,u.result_code!==1&&(m="failed"));const b=await e.env.DB.prepare(`
+    `).bind(t,s,a,JSON.stringify(r||[]),n.id).run();return e.json({success:!0,message:"템플릿이 추가되었습니다.",id:o.meta.last_row_id})}catch(t){return console.error("Add template error:",t),e.json({success:!1,error:"템플릿 추가 실패"},500)}});c.post("/api/sms/send",async e=>{var t;try{const{recipient_phone:s,recipient_name:a,message_content:r,template_id:n}=await e.req.json(),o=JSON.parse(e.req.header("X-User-Data-Base64")?decodeURIComponent(escape(atob(e.req.header("X-User-Data-Base64")||""))):'{"id":1}'),i=e.env.ALIGO_API_KEY||"",l=e.env.ALIGO_USER_ID||"",d=e.env.ALIGO_SENDER||"01012345678",p=e.env.SMS_REAL_MODE||"N";let u=null,m="sent",g=null,x=null;i&&l&&(u=await Zs(s,r,i,l,d,p),g=((t=u.result_code)==null?void 0:t.toString())||null,x=u.message||null,u.result_code!==1&&(m="failed"));const b=await e.env.DB.prepare(`
       INSERT INTO sms_history (template_id, recipient_name, recipient_phone, message_content, status, sent_at, result_code, result_message, created_by)
       VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?, ?)
-    `).bind(o||null,a,s,r,m,g,x,n.id).run();return e.json({success:m!=="failed",message:m==="failed"?"SMS 발송 실패: "+x:"SMS가 발송되었습니다.",id:b.meta.last_row_id,note:i?p==="Y"?"실제 발송 완료":"테스트 모드 (실제 발송 안됨)":"API 키를 설정하면 실제 발송됩니다.",smsResult:u})}catch(s){return console.error("Send SMS error:",s),e.json({success:!1,error:"SMS 발송 실패"},500)}});c.post("/api/sms/schedule",async e=>{try{const{recipient_phone:t,recipient_name:s,message_content:a,template_id:r,scheduled_at:o}=await e.req.json(),n=JSON.parse(e.req.header("X-User-Data-Base64")?decodeURIComponent(escape(atob(e.req.header("X-User-Data-Base64")||""))):'{"id":1}'),i=await e.env.DB.prepare(`
+    `).bind(n||null,a,s,r,m,g,x,o.id).run();return e.json({success:m!=="failed",message:m==="failed"?"SMS 발송 실패: "+x:"SMS가 발송되었습니다.",id:b.meta.last_row_id,note:i?p==="Y"?"실제 발송 완료":"테스트 모드 (실제 발송 안됨)":"API 키를 설정하면 실제 발송됩니다.",smsResult:u})}catch(s){return console.error("Send SMS error:",s),e.json({success:!1,error:"SMS 발송 실패"},500)}});c.post("/api/sms/schedule",async e=>{try{const{recipient_phone:t,recipient_name:s,message_content:a,template_id:r,scheduled_at:n}=await e.req.json(),o=JSON.parse(e.req.header("X-User-Data-Base64")?decodeURIComponent(escape(atob(e.req.header("X-User-Data-Base64")||""))):'{"id":1}'),i=await e.env.DB.prepare(`
       INSERT INTO sms_history (template_id, recipient_name, recipient_phone, message_content, status, scheduled_at, created_by)
       VALUES (?, ?, ?, ?, 'scheduled', ?, ?)
-    `).bind(r||null,s,t,a,o,n.id).run();return e.json({success:!0,message:"SMS가 예약되었습니다.",id:i.meta.last_row_id})}catch(t){return console.error("Schedule SMS error:",t),e.json({success:!1,error:"SMS 예약 실패"},500)}});c.get("/api/sms/history",async e=>{try{const{results:t}=await e.env.DB.prepare(`
+    `).bind(r||null,s,t,a,n,o.id).run();return e.json({success:!0,message:"SMS가 예약되었습니다.",id:i.meta.last_row_id})}catch(t){return console.error("Schedule SMS error:",t),e.json({success:!1,error:"SMS 예약 실패"},500)}});c.get("/api/sms/history",async e=>{try{const{results:t}=await e.env.DB.prepare(`
       SELECT 
         sh.*,
         st.name as template_name
@@ -19888,7 +20270,7 @@ ${m}`)),d&&(r.includes("<footer>")?r=r.replace(/<footer>/i,`${d}
       SELECT status, COUNT(*) as count FROM sms_history 
       GROUP BY status
     `).all();return e.json({success:!0,stats:{today:(t==null?void 0:t.count)||0,thisMonth:(s==null?void 0:s.count)||0,byStatus:a.results||[]}})}catch(t){return console.error("Get SMS stats error:",t),e.json({success:!1,error:"통계 조회 실패"},500)}});c.get("/api/students/:id/stats",async e=>{try{const t=e.req.param("id"),s=e.req.query("startDate"),a=e.req.query("endDate");if(!t)return e.json({success:!1,error:"학생 ID가 필요합니다."},400);try{const r=await e.env.DB.prepare("SELECT COUNT(*) as total_records, AVG(CASE WHEN attendance = '출석' THEN 1 ELSE 0 END) * 100 as attendance_rate, AVG(understanding_level) as avg_understanding, AVG(homework_completion) as avg_homework FROM daily_records WHERE student_id = ? AND date BETWEEN ? AND ?").bind(t,s||"2020-01-01",a||"2099-12-31").first();return e.json({success:!0,stats:r||{total_records:0,attendance_rate:0,avg_understanding:0,avg_homework:0}})}catch(r){return console.error("[GetStudentStats] DB Error:",r),e.json({success:!0,stats:{total_records:0,attendance_rate:0,avg_understanding:0,avg_homework:0}})}}catch(t){return console.error("[GetStudentStats] Error:",t),e.json({success:!0,stats:{total_records:0,attendance_rate:0,avg_understanding:0,avg_homework:0}})}});c.get("/api/students/:id",async e=>{try{const t=e.req.param("id");if(!t)return e.json({success:!1,error:"학생 ID가 필요합니다."},400);const s=await e.env.DB.prepare("SELECT s.*, c.class_name FROM students s LEFT JOIN classes c ON s.class_id = c.id WHERE s.id = ? AND s.status = 'active'").bind(t).first();return s?e.json({success:!0,student:s}):e.json({success:!1,error:"학생을 찾을 수 없습니다."},404)}catch(t){return console.error("[GetStudentDetail] Error:",t),e.json({success:!1,error:"학생 정보를 가져오는 중 오류가 발생했습니다."},500)}});c.get("/api/students",async e=>{var t,s;console.log(`
-👥 [GetStudents] ==========================================`),console.log("👥 [GetStudents] Request started");try{if(!e.env.DB)return console.error("❌ [GetStudents] FATAL: DB not available"),e.json({success:!1,error:"DB 연결 실패"},500);console.log("✅ [GetStudents] DB connection OK");let a,r,o,n;try{const l=e.req.header("X-User-Data-Base64");if(l){const d=JSON.parse(decodeURIComponent(escape(atob(l))));a=d.id,r=d.academy_id||d.id,o=d.user_type,n=d.permissions,console.log("👥 [GetStudents] Got user from header:",{userId:a,academyId:r,userType:o})}}catch{console.log("⚠️  [GetStudents] Header parse failed, trying session")}if(!a){const l=(s=(t=e.req.header("cookie"))==null?void 0:t.match(/session_id=([^;]+)/))==null?void 0:s[1];if(l){const d=await e.env.DB.prepare("SELECT user_id FROM sessions WHERE session_id = ? AND expires_at > datetime('now')").bind(l).first();if(a=d==null?void 0:d.user_id,console.log("👥 [GetStudents] Got userId from session:",a),a){const p=await e.env.DB.prepare("SELECT academy_id, user_type FROM users WHERE id = ?").bind(a).first();r=(p==null?void 0:p.academy_id)||a,o=p==null?void 0:p.user_type,console.log("👥 [GetStudents] Got academyId from DB:",r)}}}if(!a||!r)return console.error("❌ [GetStudents] No userId or academyId"),e.json({success:!1,error:"로그인이 필요합니다."},401);console.log("👥 [GetStudents] Final userId:",a,"academyId:",r),console.log("👥 [GetStudents] userType:",o),console.log("👥 [GetStudents] Query will use academyId:",r);let i=[];if(console.log("👥 [GetStudents] User type:",o),console.log("👥 [GetStudents] User permissions:",n),o==="teacher"&&n&&!n.canViewAllStudents&&n.assignedClasses&&n.assignedClasses.length>0){console.log("👥 [GetStudents] Teacher with assigned classes only:",n.assignedClasses);const d=`SELECT * FROM students WHERE class_id IN (${n.assignedClasses.map(()=>"?").join(",")}) AND (status IS NULL OR status != 'deleted') ORDER BY id DESC`;try{i=(await e.env.DB.prepare(d).bind(...n.assignedClasses).all()).results||[],console.log("✅ [GetStudents] Found",i.length,"students in assigned classes")}catch(p){console.error("❌ [GetStudents] Assigned classes query failed:",p.message),i=[]}}else{console.log("👥 [GetStudents] Full access - loading all students"),console.log("👥 [GetStudents] Using academyId:",r);try{if(console.log("👥 [GetStudents] Query: WHERE academy_id =",r),i=(await e.env.DB.prepare(`
+👥 [GetStudents] ==========================================`),console.log("👥 [GetStudents] Request started");try{if(!e.env.DB)return console.error("❌ [GetStudents] FATAL: DB not available"),e.json({success:!1,error:"DB 연결 실패"},500);console.log("✅ [GetStudents] DB connection OK");let a,r,n,o;try{const l=e.req.header("X-User-Data-Base64");if(l){const d=JSON.parse(decodeURIComponent(escape(atob(l))));a=d.id,r=d.academy_id||d.id,n=d.user_type,o=d.permissions,console.log("👥 [GetStudents] Got user from header:",{userId:a,academyId:r,userType:n})}}catch{console.log("⚠️  [GetStudents] Header parse failed, trying session")}if(!a){const l=(s=(t=e.req.header("cookie"))==null?void 0:t.match(/session_id=([^;]+)/))==null?void 0:s[1];if(l){const d=await e.env.DB.prepare("SELECT user_id FROM sessions WHERE session_id = ? AND expires_at > datetime('now')").bind(l).first();if(a=d==null?void 0:d.user_id,console.log("👥 [GetStudents] Got userId from session:",a),a){const p=await e.env.DB.prepare("SELECT academy_id, user_type FROM users WHERE id = ?").bind(a).first();r=(p==null?void 0:p.academy_id)||a,n=p==null?void 0:p.user_type,console.log("👥 [GetStudents] Got academyId from DB:",r)}}}if(!a||!r)return console.error("❌ [GetStudents] No userId or academyId"),e.json({success:!1,error:"로그인이 필요합니다."},401);console.log("👥 [GetStudents] Final userId:",a,"academyId:",r),console.log("👥 [GetStudents] userType:",n),console.log("👥 [GetStudents] Query will use academyId:",r);let i=[];if(console.log("👥 [GetStudents] User type:",n),console.log("👥 [GetStudents] User permissions:",o),n==="teacher"&&o&&!o.canViewAllStudents&&o.assignedClasses&&o.assignedClasses.length>0){console.log("👥 [GetStudents] Teacher with assigned classes only:",o.assignedClasses);const d=`SELECT * FROM students WHERE class_id IN (${o.assignedClasses.map(()=>"?").join(",")}) AND (status IS NULL OR status != 'deleted') ORDER BY id DESC`;try{i=(await e.env.DB.prepare(d).bind(...o.assignedClasses).all()).results||[],console.log("✅ [GetStudents] Found",i.length,"students in assigned classes")}catch(p){console.error("❌ [GetStudents] Assigned classes query failed:",p.message),i=[]}}else{console.log("👥 [GetStudents] Full access - loading all students"),console.log("👥 [GetStudents] Using academyId:",r);try{if(console.log("👥 [GetStudents] Query: WHERE academy_id =",r),i=(await e.env.DB.prepare(`
           SELECT 
             s.*,
             c.class_name,
@@ -19909,7 +20291,7 @@ ${m}`)),d&&(r.includes("<footer>")?r=r.replace(/<footer>/i,`${d}
           ORDER BY s.id DESC
         `).bind(r).all()).results||[],i=i.map(d=>{if(d.all_classes){const p=d.all_classes.split(",").map(u=>{const[m,g,x]=u.split(":");return{id:parseInt(m),name:g,fee:parseInt(x)}});return{...d,classes:p}}return d}),console.log("✅ [GetStudents] SUCCESS! Found",i.length,"students"),i.length===0){console.log("⚠️ [GetStudents] No students for academy_id:",r);const d=await e.env.DB.prepare("SELECT COUNT(*) as count FROM students").first();console.log("📊 [GetStudents] Total students in DB:",(d==null?void 0:d.count)||0);const p=await e.env.DB.prepare("SELECT academy_id, COUNT(*) as count FROM students GROUP BY academy_id").all();console.log("📊 [GetStudents] Students by academy_id:",p.results)}}catch(l){console.log("⚠️  [GetStudents] Try 1 failed:",l.message);try{console.log("👥 [GetStudents] Try 2: All active students"),i=(await e.env.DB.prepare("SELECT * FROM students WHERE (status IS NULL OR status != 'deleted') ORDER BY id DESC LIMIT 1000").all()).results||[],console.log("✅ [GetStudents] Found",i.length,"active students")}catch(d){console.log("⚠️  [GetStudents] Try 2 failed:",d.message);try{console.log("👥 [GetStudents] Try 3: All students (no filter)"),i=(await e.env.DB.prepare("SELECT * FROM students ORDER BY id DESC LIMIT 1000").all()).results||[],console.log("✅ [GetStudents] Found",i.length,"total students")}catch(p){throw console.error("❌ [GetStudents] ALL queries failed!"),p}}}}return console.log("✅ [GetStudents] Returning",i.length,"students"),console.log(`👥 [GetStudents] ==========================================
 `),e.json({success:!0,students:i})}catch(a){return console.error("❌ [GetStudents] FATAL ERROR:",a),console.error("❌ [GetStudents] Message:",a.message),console.error("❌ [GetStudents] Stack:",a.stack),console.log(`👥 [GetStudents] ==========================================
-`),e.json({success:!1,error:"학생 목록 조회 실패: "+a.message},500)}});c.get("/api/students/:studentId/attendance",async e=>{try{const t=e.req.param("studentId"),s=e.req.query("startDate"),a=e.req.query("endDate");if(!e.env.DB)return e.json({success:!1,error:"DB 연결 실패"},500);if(!t||!s||!a)return e.json({success:!1,error:"학생 ID, 시작일, 종료일이 필요합니다."},400);console.log("📅 [GetAttendance] Student:",t,"Period:",s,"-",a);const n=(await e.env.DB.prepare(`
+`),e.json({success:!1,error:"학생 목록 조회 실패: "+a.message},500)}});c.get("/api/students/:studentId/attendance",async e=>{try{const t=e.req.param("studentId"),s=e.req.query("startDate"),a=e.req.query("endDate");if(!e.env.DB)return e.json({success:!1,error:"DB 연결 실패"},500);if(!t||!s||!a)return e.json({success:!1,error:"학생 ID, 시작일, 종료일이 필요합니다."},400);console.log("📅 [GetAttendance] Student:",t,"Period:",s,"-",a);const o=(await e.env.DB.prepare(`
       SELECT 
         attendance_date,
         status
@@ -19918,7 +20300,7 @@ ${m}`)),d&&(r.includes("<footer>")?r=r.replace(/<footer>/i,`${d}
         AND attendance_date >= ?
         AND attendance_date <= ?
       ORDER BY attendance_date ASC
-    `).bind(t,s,a).all()).results||[];let i=0,l=0,d=0,p=0;n.forEach(g=>{g.status==="출석"?i++:g.status==="결석"?l++:g.status==="지각"?d++:g.status==="조퇴"&&p++});const u=n.length,m=u>0?Math.round(i/u*100):0;return console.log("✅ [GetAttendance] Found",u,"records"),console.log("   출석:",i,"결석:",l,"지각:",d),e.json({success:!0,data:{records:n,summary:{totalDays:u,attendedDays:i,absentDays:l,lateDays:d,earlyLeaveDays:p,attendanceRate:m}}})}catch(t){return console.error("❌ [GetAttendance] Error:",t),e.json({success:!1,error:"출석 데이터 조회 실패: "+t.message},500)}});c.get("/api/students/:studentId/performance",async e=>{try{const t=e.req.param("studentId"),s=e.req.query("startDate"),a=e.req.query("endDate");if(!e.env.DB)return e.json({success:!1,error:"DB 연결 실패"},500);if(!t||!s||!a)return e.json({success:!1,error:"학생 ID, 시작일, 종료일이 필요합니다."},400);console.log("📊 [GetPerformance] Student:",t,"Period:",s,"-",a);const n=(await e.env.DB.prepare(`
+    `).bind(t,s,a).all()).results||[];let i=0,l=0,d=0,p=0;o.forEach(g=>{g.status==="출석"?i++:g.status==="결석"?l++:g.status==="지각"?d++:g.status==="조퇴"&&p++});const u=o.length,m=u>0?Math.round(i/u*100):0;return console.log("✅ [GetAttendance] Found",u,"records"),console.log("   출석:",i,"결석:",l,"지각:",d),e.json({success:!0,data:{records:o,summary:{totalDays:u,attendedDays:i,absentDays:l,lateDays:d,earlyLeaveDays:p,attendanceRate:m}}})}catch(t){return console.error("❌ [GetAttendance] Error:",t),e.json({success:!1,error:"출석 데이터 조회 실패: "+t.message},500)}});c.get("/api/students/:studentId/performance",async e=>{try{const t=e.req.param("studentId"),s=e.req.query("startDate"),a=e.req.query("endDate");if(!e.env.DB)return e.json({success:!1,error:"DB 연결 실패"},500);if(!t||!s||!a)return e.json({success:!1,error:"학생 ID, 시작일, 종료일이 필요합니다."},400);console.log("📊 [GetPerformance] Student:",t,"Period:",s,"-",a);const o=(await e.env.DB.prepare(`
       SELECT 
         record_date,
         attendance,
@@ -19932,22 +20314,22 @@ ${m}`)),d&&(r.includes("<footer>")?r=r.replace(/<footer>/i,`${d}
         AND record_date >= ?
         AND record_date <= ?
       ORDER BY record_date ASC
-    `).bind(t,s,a).all()).results||[];let i=0,l=0,d=0,p=0,u=0,m=0;n.forEach(f=>{f.understanding_level&&(i+=f.understanding_level,d++),f.participation_level&&(l+=f.participation_level,p++),f.homework_status&&(m++,f.homework_status==="완료"&&u++)});const g=d>0?(i/d).toFixed(1):0,x=p>0?(l/p).toFixed(1):0,b=m>0?Math.round(u/m*100):0;return console.log("✅ [GetPerformance] Found",n.length,"records"),console.log("   평균 이해도:",g,"평균 참여도:",x),e.json({success:!0,data:{records:n,summary:{avgUnderstanding:parseFloat(g),avgParticipation:parseFloat(x),homeworkRate:b,totalRecords:n.length}}})}catch(t){return console.error("❌ [GetPerformance] Error:",t),e.json({success:!1,error:"성과 데이터 조회 실패: "+t.message},500)}});c.get("/api/debug/db-status",async e=>{var t,s,a;try{console.log("🔍 [DebugDB] Checking database status...");const r=await e.env.DB.prepare("SELECT id, email, name, user_type, academy_id, parent_user_id FROM users").all(),o=await e.env.DB.prepare("SELECT id, academy_id, name, class_id FROM students LIMIT 100").all(),n=await e.env.DB.prepare("SELECT id, academy_id, class_name FROM classes").all(),i=await e.env.DB.prepare("SELECT academy_id, COUNT(*) as count FROM students GROUP BY academy_id").all(),l=await e.env.DB.prepare("SELECT academy_id, COUNT(*) as count FROM classes GROUP BY academy_id").all();return console.log("📊 [DebugDB] Users:",((t=r.results)==null?void 0:t.length)||0),console.log("📊 [DebugDB] Students:",((s=o.results)==null?void 0:s.length)||0),console.log("📊 [DebugDB] Classes:",((a=n.results)==null?void 0:a.length)||0),e.json({success:!0,users:r.results||[],students:o.results||[],classes:n.results||[],studentsByAcademy:i.results||[],classesByAcademy:l.results||[]})}catch(r){return console.error("❌ [DebugDB] Error:",r),e.json({success:!1,error:r.message},500)}});c.get("/api/debug/user-by-email",async e=>{try{const t=e.req.query("email");if(!t)return e.json({success:!1,error:"Email parameter required"},400);console.log("🔍 [DebugUser] Looking up user:",t);const s=await e.env.DB.prepare("SELECT id, email, name, user_type, academy_id, parent_user_id, role FROM users WHERE email = ?").bind(t).first();if(!s)return e.json({success:!1,error:"User not found"},404);console.log("👤 [DebugUser] Found user:",s);const a=await e.env.DB.prepare("SELECT COUNT(*) as count FROM students WHERE academy_id = ? AND status = 'active'").bind(s.academy_id||s.id).first(),r=await e.env.DB.prepare("SELECT COUNT(*) as count FROM classes WHERE academy_id = ?").bind(s.academy_id||s.id).first(),o=await e.env.DB.prepare("SELECT id, name, academy_id, class_id FROM students WHERE academy_id = ? LIMIT 5").bind(s.academy_id||s.id).all(),n=await e.env.DB.prepare("SELECT id, class_name, academy_id FROM classes WHERE academy_id = ? LIMIT 5").bind(s.academy_id||s.id).all();return e.json({success:!0,user:s,stats:{studentCount:(a==null?void 0:a.count)||0,classCount:(r==null?void 0:r.count)||0},sampleStudents:o.results||[],sampleClasses:n.results||[]})}catch(t){return console.error("❌ [DebugUser] Error:",t),e.json({success:!1,error:t.message},500)}});c.post("/api/debug/fix-user-type",async e=>{try{const{email:t,userType:s}=await e.req.json();if(!t||!s)return e.json({success:!1,error:"Email and userType required"},400);if(console.log("🔧 [FixUserType] Updating user:",t,"to:",s),(await e.env.DB.prepare("UPDATE users SET user_type = ? WHERE email = ?").bind(s,t).run()).meta.changes===0)return e.json({success:!1,error:"User not found or not updated"},404);const r=await e.env.DB.prepare("SELECT id, email, name, user_type, academy_id FROM users WHERE email = ?").bind(t).first();return console.log("✅ [FixUserType] Updated user:",r),e.json({success:!0,message:"User type updated successfully",user:r})}catch(t){return console.error("❌ [FixUserType] Error:",t),e.json({success:!1,error:t.message},500)}});c.post("/api/debug/fix-academy-id",async e=>{try{const{email:t,academyId:s}=await e.req.json();if(!t||!s)return e.json({success:!1,error:"Email and academyId required"},400);if(console.log("🔧 [FixAcademyId] Updating user:",t,"academy_id to:",s),(await e.env.DB.prepare("UPDATE users SET academy_id = ? WHERE email = ?").bind(s,t).run()).meta.changes===0)return e.json({success:!1,error:"User not found or not updated"},404);const r=await e.env.DB.prepare("SELECT id, email, name, user_type, academy_id, parent_user_id FROM users WHERE email = ?").bind(t).first();return console.log("✅ [FixAcademyId] Updated user:",r),e.json({success:!0,message:"Academy ID updated successfully",user:r})}catch(t){return console.error("❌ [FixAcademyId] Error:",t),e.json({success:!1,error:t.message},500)}});c.post("/api/debug/delete-students-by-name",async e=>{try{const{academyId:t,names:s}=await e.req.json();if(!t||!s||!Array.isArray(s))return e.json({success:!1,error:"academyId and names array required"},400);console.log("🗑️ [DeleteStudentsByName] Deleting students:",{academyId:t,names:s});const a=[];for(const r of s){const o=await e.env.DB.prepare("UPDATE students SET status = 'deleted', updated_at = CURRENT_TIMESTAMP WHERE academy_id = ? AND name = ?").bind(t,r).run();a.push({name:r,changes:o.meta.changes,success:o.meta.changes>0})}return console.log("✅ [DeleteStudentsByName] Results:",a),e.json({success:!0,message:"Students deleted",results:a})}catch(t){return console.error("❌ [DeleteStudentsByName] Error:",t),e.json({success:!1,error:t.message},500)}});c.post("/api/init-test-data",async e=>{try{console.log("🚀 [InitTestData] Starting test data initialization...");const t=await e.req.json(),{academyId:s}=t;if(!s)return e.json({success:!1,error:"academyId is required"},400);console.log("🚀 [InitTestData] Creating test data for academy_id:",s);const a=["중1 수학","중2 영어","중3 과학","고1 국어","고2 수학"],r=[];for(const i of a){const l=await e.env.DB.prepare("SELECT id FROM classes WHERE academy_id = ? AND class_name = ?").bind(s,i).first();if(l)r.push(l.id),console.log("✅ [InitTestData] Class already exists:",i,"ID:",l.id);else{const d=await e.env.DB.prepare(`
+    `).bind(t,s,a).all()).results||[];let i=0,l=0,d=0,p=0,u=0,m=0;o.forEach(h=>{h.understanding_level&&(i+=h.understanding_level,d++),h.participation_level&&(l+=h.participation_level,p++),h.homework_status&&(m++,h.homework_status==="완료"&&u++)});const g=d>0?(i/d).toFixed(1):0,x=p>0?(l/p).toFixed(1):0,b=m>0?Math.round(u/m*100):0;return console.log("✅ [GetPerformance] Found",o.length,"records"),console.log("   평균 이해도:",g,"평균 참여도:",x),e.json({success:!0,data:{records:o,summary:{avgUnderstanding:parseFloat(g),avgParticipation:parseFloat(x),homeworkRate:b,totalRecords:o.length}}})}catch(t){return console.error("❌ [GetPerformance] Error:",t),e.json({success:!1,error:"성과 데이터 조회 실패: "+t.message},500)}});c.get("/api/debug/db-status",async e=>{var t,s,a;try{console.log("🔍 [DebugDB] Checking database status...");const r=await e.env.DB.prepare("SELECT id, email, name, user_type, academy_id, parent_user_id FROM users").all(),n=await e.env.DB.prepare("SELECT id, academy_id, name, class_id FROM students LIMIT 100").all(),o=await e.env.DB.prepare("SELECT id, academy_id, class_name FROM classes").all(),i=await e.env.DB.prepare("SELECT academy_id, COUNT(*) as count FROM students GROUP BY academy_id").all(),l=await e.env.DB.prepare("SELECT academy_id, COUNT(*) as count FROM classes GROUP BY academy_id").all();return console.log("📊 [DebugDB] Users:",((t=r.results)==null?void 0:t.length)||0),console.log("📊 [DebugDB] Students:",((s=n.results)==null?void 0:s.length)||0),console.log("📊 [DebugDB] Classes:",((a=o.results)==null?void 0:a.length)||0),e.json({success:!0,users:r.results||[],students:n.results||[],classes:o.results||[],studentsByAcademy:i.results||[],classesByAcademy:l.results||[]})}catch(r){return console.error("❌ [DebugDB] Error:",r),e.json({success:!1,error:r.message},500)}});c.get("/api/debug/user-by-email",async e=>{try{const t=e.req.query("email");if(!t)return e.json({success:!1,error:"Email parameter required"},400);console.log("🔍 [DebugUser] Looking up user:",t);const s=await e.env.DB.prepare("SELECT id, email, name, user_type, academy_id, parent_user_id, role FROM users WHERE email = ?").bind(t).first();if(!s)return e.json({success:!1,error:"User not found"},404);console.log("👤 [DebugUser] Found user:",s);const a=await e.env.DB.prepare("SELECT COUNT(*) as count FROM students WHERE academy_id = ? AND status = 'active'").bind(s.academy_id||s.id).first(),r=await e.env.DB.prepare("SELECT COUNT(*) as count FROM classes WHERE academy_id = ?").bind(s.academy_id||s.id).first(),n=await e.env.DB.prepare("SELECT id, name, academy_id, class_id FROM students WHERE academy_id = ? LIMIT 5").bind(s.academy_id||s.id).all(),o=await e.env.DB.prepare("SELECT id, class_name, academy_id FROM classes WHERE academy_id = ? LIMIT 5").bind(s.academy_id||s.id).all();return e.json({success:!0,user:s,stats:{studentCount:(a==null?void 0:a.count)||0,classCount:(r==null?void 0:r.count)||0},sampleStudents:n.results||[],sampleClasses:o.results||[]})}catch(t){return console.error("❌ [DebugUser] Error:",t),e.json({success:!1,error:t.message},500)}});c.post("/api/debug/fix-user-type",async e=>{try{const{email:t,userType:s}=await e.req.json();if(!t||!s)return e.json({success:!1,error:"Email and userType required"},400);if(console.log("🔧 [FixUserType] Updating user:",t,"to:",s),(await e.env.DB.prepare("UPDATE users SET user_type = ? WHERE email = ?").bind(s,t).run()).meta.changes===0)return e.json({success:!1,error:"User not found or not updated"},404);const r=await e.env.DB.prepare("SELECT id, email, name, user_type, academy_id FROM users WHERE email = ?").bind(t).first();return console.log("✅ [FixUserType] Updated user:",r),e.json({success:!0,message:"User type updated successfully",user:r})}catch(t){return console.error("❌ [FixUserType] Error:",t),e.json({success:!1,error:t.message},500)}});c.post("/api/debug/fix-academy-id",async e=>{try{const{email:t,academyId:s}=await e.req.json();if(!t||!s)return e.json({success:!1,error:"Email and academyId required"},400);if(console.log("🔧 [FixAcademyId] Updating user:",t,"academy_id to:",s),(await e.env.DB.prepare("UPDATE users SET academy_id = ? WHERE email = ?").bind(s,t).run()).meta.changes===0)return e.json({success:!1,error:"User not found or not updated"},404);const r=await e.env.DB.prepare("SELECT id, email, name, user_type, academy_id, parent_user_id FROM users WHERE email = ?").bind(t).first();return console.log("✅ [FixAcademyId] Updated user:",r),e.json({success:!0,message:"Academy ID updated successfully",user:r})}catch(t){return console.error("❌ [FixAcademyId] Error:",t),e.json({success:!1,error:t.message},500)}});c.post("/api/debug/delete-students-by-name",async e=>{try{const{academyId:t,names:s}=await e.req.json();if(!t||!s||!Array.isArray(s))return e.json({success:!1,error:"academyId and names array required"},400);console.log("🗑️ [DeleteStudentsByName] Deleting students:",{academyId:t,names:s});const a=[];for(const r of s){const n=await e.env.DB.prepare("UPDATE students SET status = 'deleted', updated_at = CURRENT_TIMESTAMP WHERE academy_id = ? AND name = ?").bind(t,r).run();a.push({name:r,changes:n.meta.changes,success:n.meta.changes>0})}return console.log("✅ [DeleteStudentsByName] Results:",a),e.json({success:!0,message:"Students deleted",results:a})}catch(t){return console.error("❌ [DeleteStudentsByName] Error:",t),e.json({success:!1,error:t.message},500)}});c.post("/api/init-test-data",async e=>{try{console.log("🚀 [InitTestData] Starting test data initialization...");const t=await e.req.json(),{academyId:s}=t;if(!s)return e.json({success:!1,error:"academyId is required"},400);console.log("🚀 [InitTestData] Creating test data for academy_id:",s);const a=["중1 수학","중2 영어","중3 과학","고1 국어","고2 수학"],r=[];for(const i of a){const l=await e.env.DB.prepare("SELECT id FROM classes WHERE academy_id = ? AND class_name = ?").bind(s,i).first();if(l)r.push(l.id),console.log("✅ [InitTestData] Class already exists:",i,"ID:",l.id);else{const d=await e.env.DB.prepare(`
           INSERT INTO classes (academy_id, class_name, grade, description, created_at) 
           VALUES (?, ?, ?, ?, datetime('now'))
-        `).bind(s,i,(i.includes("중"),i.substring(0,2)),`${i} 수업`).run();r.push(d.meta.last_row_id),console.log("✅ [InitTestData] Created class:",i,"ID:",d.meta.last_row_id)}}let o=0;const n=["김민준","이서연","박지우","최수아","정예준","강하은","조민서","윤시우","장서준","임유나"];for(let i=0;i<r.length;i++){const l=r[i];for(let d=0;d<10;d++){const p=`${n[d]} (${a[i]})`;await e.env.DB.prepare("SELECT id FROM students WHERE academy_id = ? AND name = ?").bind(s,p).first()||(await e.env.DB.prepare(`
+        `).bind(s,i,(i.includes("중"),i.substring(0,2)),`${i} 수업`).run();r.push(d.meta.last_row_id),console.log("✅ [InitTestData] Created class:",i,"ID:",d.meta.last_row_id)}}let n=0;const o=["김민준","이서연","박지우","최수아","정예준","강하은","조민서","윤시우","장서준","임유나"];for(let i=0;i<r.length;i++){const l=r[i];for(let d=0;d<10;d++){const p=`${o[d]} (${a[i]})`;await e.env.DB.prepare("SELECT id FROM students WHERE academy_id = ? AND name = ?").bind(s,p).first()||(await e.env.DB.prepare(`
             INSERT INTO students (
               academy_id, name, phone, parent_name, parent_phone, 
               grade, class_id, enrollment_date, status, created_at
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'active', datetime('now'))
-          `).bind(s,p,`010-1234-${String(i*10+d).padStart(4,"0")}`,`${n[d]} 학부모`,`010-5678-${String(i*10+d).padStart(4,"0")}`,(a[i].includes("중"),a[i].substring(0,2)),l,new Date().toISOString().split("T")[0]).run(),o++)}}return console.log("🎉 [InitTestData] Test data created successfully!"),console.log("📊 [InitTestData] Total classes:",r.length),console.log("📊 [InitTestData] Total new students:",o),e.json({success:!0,message:`테스트 데이터 생성 완료! (반: ${r.length}개, 학생: ${o}명)`,classes:r.length,students:o})}catch(t){return console.error("❌ [InitTestData] Error:",t),e.json({success:!1,error:"테스트 데이터 생성 실패: "+t.message},500)}});c.post("/api/students",async e=>{try{if(console.log("➕ [AddStudent] ==================== START ===================="),!e.env.DB)return console.error("❌ [AddStudent] DB not available"),e.json({success:!1,error:"데이터베이스 연결 실패"},500);console.log("✅ [AddStudent] DB connected");const t=await e.req.json();console.log("➕ [AddStudent] Received data:",JSON.stringify(t,null,2));const{name:s,phone:a,grade:r,subjects:o,school:n,parent_name:i,parentName:l,parent_phone:d,parentPhone:p,notes:u,memo:m,classId:g,class_id:x,enrollmentDate:b,enrollment_date:f,academyId:v}=t;let _=v||t.academyId;try{const O=e.req.header("X-User-Data-Base64");if(O&&!_){const ce=JSON.parse(decodeURIComponent(escape(atob(O))));_=ce.id||ce.academy_id,console.log("➕ [AddStudent] Academy ID from header:",_)}}catch(O){console.error("➕ [AddStudent] Header parse error:",O)}const y=l||i,w=p||d,E=m||u,k=g||x,S=b||f||new Date().toISOString().split("T")[0];if(console.log("➕ [AddStudent] Final values:",{name:s,grade:r,finalParentName:y,finalParentPhone:w,finalAcademyId:_,finalClassId:k}),!s||!r||!y||!w)return e.json({success:!1,error:"필수 항목을 입력해주세요. (이름, 학년, 학부모 이름, 학부모 연락처)"},400);if(!_)return e.json({success:!1,error:"학원 ID가 필요합니다."},400);console.log("🔍 [AddStudent] Checking student limit...");const j=await e.env.DB.prepare(`
+          `).bind(s,p,`010-1234-${String(i*10+d).padStart(4,"0")}`,`${o[d]} 학부모`,`010-5678-${String(i*10+d).padStart(4,"0")}`,(a[i].includes("중"),a[i].substring(0,2)),l,new Date().toISOString().split("T")[0]).run(),n++)}}return console.log("🎉 [InitTestData] Test data created successfully!"),console.log("📊 [InitTestData] Total classes:",r.length),console.log("📊 [InitTestData] Total new students:",n),e.json({success:!0,message:`테스트 데이터 생성 완료! (반: ${r.length}개, 학생: ${n}명)`,classes:r.length,students:n})}catch(t){return console.error("❌ [InitTestData] Error:",t),e.json({success:!1,error:"테스트 데이터 생성 실패: "+t.message},500)}});c.post("/api/students",async e=>{try{if(console.log("➕ [AddStudent] ==================== START ===================="),!e.env.DB)return console.error("❌ [AddStudent] DB not available"),e.json({success:!1,error:"데이터베이스 연결 실패"},500);console.log("✅ [AddStudent] DB connected");const t=await e.req.json();console.log("➕ [AddStudent] Received data:",JSON.stringify(t,null,2));const{name:s,phone:a,grade:r,subjects:n,school:o,parent_name:i,parentName:l,parent_phone:d,parentPhone:p,notes:u,memo:m,classId:g,class_id:x,enrollmentDate:b,enrollment_date:h,academyId:v}=t;let E=v||t.academyId;try{const U=e.req.header("X-User-Data-Base64");if(U&&!E){const ce=JSON.parse(decodeURIComponent(escape(atob(U))));E=ce.id||ce.academy_id,console.log("➕ [AddStudent] Academy ID from header:",E)}}catch(U){console.error("➕ [AddStudent] Header parse error:",U)}const y=l||i,w=p||d,_=m||u,k=g||x,T=b||h||new Date().toISOString().split("T")[0];if(console.log("➕ [AddStudent] Final values:",{name:s,grade:r,finalParentName:y,finalParentPhone:w,finalAcademyId:E,finalClassId:k}),!s||!r||!y||!w)return e.json({success:!1,error:"필수 항목을 입력해주세요. (이름, 학년, 학부모 이름, 학부모 연락처)"},400);if(!E)return e.json({success:!1,error:"학원 ID가 필요합니다."},400);console.log("🔍 [AddStudent] Checking student limit...");const j=await e.env.DB.prepare(`
       SELECT * FROM subscriptions 
       WHERE academy_id = ? AND status = 'active'
       ORDER BY created_at DESC LIMIT 1
-    `).bind(_).first();if(!j)return e.json({success:!1,error:"활성 구독이 없습니다. 요금제를 구매해주세요."},403);const L=await e.env.DB.prepare(`
+    `).bind(E).first();if(!j)return e.json({success:!1,error:"활성 구독이 없습니다. 요금제를 구매해주세요."},403);const L=await e.env.DB.prepare(`
       SELECT * FROM usage_tracking 
       WHERE academy_id = ? AND subscription_id = ?
-    `).bind(_,j.id).first(),F=(L==null?void 0:L.current_students)||0;if(F>=j.student_limit)return e.json({success:!1,error:`⛔ 사용 한도가 모두 소진되었습니다.
+    `).bind(E,j.id).first(),F=(L==null?void 0:L.current_students)||0;if(F>=j.student_limit)return e.json({success:!1,error:`⛔ 사용 한도가 모두 소진되었습니다.
 
 현재 학생 수: ${F}명 / 한도: ${j.student_limit}명
 
@@ -19957,34 +20339,34 @@ ${m}`)),d&&(r.includes("<footer>")?r=r.replace(/<footer>/i,`${d}
           academy_id, class_id, notes, status, created_at
         )
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', datetime('now'))
-      `).bind(s,a||null,r,o||"",n||null,y,w,_,k||null,E||null).run()}catch(O){console.error("➕ [AddStudent] First attempt failed:",O.message);try{N=await e.env.DB.prepare(`
+      `).bind(s,a||null,r,n||"",o||null,y,w,E,k||null,_||null).run()}catch(U){console.error("➕ [AddStudent] First attempt failed:",U.message);try{N=await e.env.DB.prepare(`
           INSERT INTO students (
             name, phone, grade, subjects, school, parent_name, parent_phone, 
             academy_id, enrollment_date, notes, status, class_id
           )
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', ?)
-        `).bind(s,a||null,r,o||"",n||null,y,w,_,S,E||null,k||null).run()}catch(ce){if(console.error("➕ [AddStudent] Second attempt failed:",ce.message),N=await e.env.DB.prepare(`
+        `).bind(s,a||null,r,n||"",o||null,y,w,E,T,_||null,k||null).run()}catch(ce){if(console.error("➕ [AddStudent] Second attempt failed:",ce.message),N=await e.env.DB.prepare(`
           INSERT INTO students (
             name, grade, parent_name, parent_phone, academy_id, status
           )
           VALUES (?, ?, ?, ?, ?, 'active')
-        `).bind(s,r,y,w,_).run(),k&&N.meta.last_row_id)try{await e.env.DB.prepare("UPDATE students SET class_id = ? WHERE id = ?").bind(k,N.meta.last_row_id).run()}catch(Ke){console.error("➕ [AddStudent] Class ID update failed:",Ke.message)}}}const W=N.meta.last_row_id;console.log("✅ [AddStudent] Success! Student ID:",W),console.log("✅ [AddStudent] Changes:",N.meta.changes);try{const O=await e.env.DB.prepare("SELECT id, name, grade, academy_id FROM students WHERE id = ?").bind(W).first();console.log("✅ [AddStudent] Verified student:",O)}catch(O){console.error("⚠️ [AddStudent] Verification failed:",O.message)}console.log("➕ [AddStudent] ==================== END ====================");try{await e.env.DB.prepare(`
+        `).bind(s,r,y,w,E).run(),k&&N.meta.last_row_id)try{await e.env.DB.prepare("UPDATE students SET class_id = ? WHERE id = ?").bind(k,N.meta.last_row_id).run()}catch(Ke){console.error("➕ [AddStudent] Class ID update failed:",Ke.message)}}}const W=N.meta.last_row_id;console.log("✅ [AddStudent] Success! Student ID:",W),console.log("✅ [AddStudent] Changes:",N.meta.changes);try{const U=await e.env.DB.prepare("SELECT id, name, grade, academy_id FROM students WHERE id = ?").bind(W).first();console.log("✅ [AddStudent] Verified student:",U)}catch(U){console.error("⚠️ [AddStudent] Verification failed:",U.message)}console.log("➕ [AddStudent] ==================== END ====================");try{await e.env.DB.prepare(`
         UPDATE usage_tracking 
         SET current_students = current_students + 1, updated_at = CURRENT_TIMESTAMP
         WHERE academy_id = ? AND subscription_id = ?
-      `).bind(_,j.id).run(),console.log("📈 [AddStudent] Usage incremented successfully")}catch(O){console.error("⚠️ [AddStudent] Failed to increment usage:",O)}return e.json({success:!0,message:"학생이 추가되었습니다.",id:W})}catch(t){return console.error("➕ [AddStudent] Error:",t),console.error("➕ [AddStudent] Stack:",t.stack),e.json({success:!1,error:`학생 추가 실패: ${t.message||t}`},500)}});c.delete("/api/students/:id",async e=>{try{const t=e.req.param("id");if(console.log("[DeleteStudent] 🗑️ Starting deletion for student:",t),!t)return e.json({success:!1,error:"학생 ID가 필요합니다."},400);let s,a;try{const n=e.req.header("X-User-Data-Base64");if(console.log("[DeleteStudent] 📡 User header exists:",!!n),console.log("[DeleteStudent] 📡 User header length:",n==null?void 0:n.length),!n)return console.error("[DeleteStudent] ❌ No X-User-Data-Base64 header found"),e.json({success:!1,error:"인증 정보가 필요합니다. 다시 로그인해주세요."},401);const i=atob(n);console.log("[DeleteStudent] 🔓 Decoded length:",i.length),a=JSON.parse(i),console.log("[DeleteStudent] 👤 Parsed user data:",{id:a.id,academy_id:a.academy_id,user_type:a.user_type,email:a.email}),s=a.academy_id||a.id,console.log("[DeleteStudent] 🏫 Extracted academy ID:",s)}catch(n){return console.error("[DeleteStudent] ❌ Failed to parse user header:",n),console.error("[DeleteStudent] ❌ Error stack:",n.stack),e.json({success:!1,error:"인증 정보 파싱 실패. 다시 로그인해주세요.",details:n.message},400)}if(!s)return console.error("[DeleteStudent] ❌ No academy ID in user data:",a),e.json({success:!1,error:"학원 ID가 필요합니다. 사용자 정보를 확인해주세요."},400);console.log("[DeleteStudent] Soft deleting student:",t,"academy:",s);const r=await e.env.DB.prepare(`
+      `).bind(E,j.id).run(),console.log("📈 [AddStudent] Usage incremented successfully")}catch(U){console.error("⚠️ [AddStudent] Failed to increment usage:",U)}return e.json({success:!0,message:"학생이 추가되었습니다.",id:W})}catch(t){return console.error("➕ [AddStudent] Error:",t),console.error("➕ [AddStudent] Stack:",t.stack),e.json({success:!1,error:`학생 추가 실패: ${t.message||t}`},500)}});c.delete("/api/students/:id",async e=>{try{const t=e.req.param("id");if(console.log("[DeleteStudent] 🗑️ Starting deletion for student:",t),!t)return e.json({success:!1,error:"학생 ID가 필요합니다."},400);let s,a;try{const o=e.req.header("X-User-Data-Base64");if(console.log("[DeleteStudent] 📡 User header exists:",!!o),console.log("[DeleteStudent] 📡 User header length:",o==null?void 0:o.length),!o)return console.error("[DeleteStudent] ❌ No X-User-Data-Base64 header found"),e.json({success:!1,error:"인증 정보가 필요합니다. 다시 로그인해주세요."},401);const i=atob(o);console.log("[DeleteStudent] 🔓 Decoded length:",i.length),a=JSON.parse(i),console.log("[DeleteStudent] 👤 Parsed user data:",{id:a.id,academy_id:a.academy_id,user_type:a.user_type,email:a.email}),s=a.academy_id||a.id,console.log("[DeleteStudent] 🏫 Extracted academy ID:",s)}catch(o){return console.error("[DeleteStudent] ❌ Failed to parse user header:",o),console.error("[DeleteStudent] ❌ Error stack:",o.stack),e.json({success:!1,error:"인증 정보 파싱 실패. 다시 로그인해주세요.",details:o.message},400)}if(!s)return console.error("[DeleteStudent] ❌ No academy ID in user data:",a),e.json({success:!1,error:"학원 ID가 필요합니다. 사용자 정보를 확인해주세요."},400);console.log("[DeleteStudent] Soft deleting student:",t,"academy:",s);const r=await e.env.DB.prepare(`
       SELECT id, academy_id FROM students WHERE id = ?
     `).bind(t).first();return r?r.academy_id!==s?(console.error("[DeleteStudent] Security breach attempt:",{studentId:t,studentAcademyId:r.academy_id,userAcademyId:s}),e.json({success:!1,error:"권한이 없습니다."},403)):(await e.env.DB.prepare(`
       UPDATE students 
       SET status = 'deleted', updated_at = CURRENT_TIMESTAMP
       WHERE id = ? AND academy_id = ?
-    `).bind(t,s).run()).meta.changes===0?e.json({success:!1,error:"학생 삭제에 실패했습니다."},400):(console.log("[DeleteStudent] Successfully soft deleted student"),e.json({success:!0,message:"학생이 삭제되었습니다."})):e.json({success:!1,error:"해당 학생을 찾을 수 없습니다."},404)}catch(t){return console.error("[DeleteStudent] Error:",t),e.json({success:!1,error:"학생 삭제 중 오류가 발생했습니다."},500)}});c.put("/api/students/:id",async e=>{try{const t=e.req.param("id"),s=await e.req.json();console.log("✏️ [UpdateStudent] Updating student:",t),console.log("✏️ [UpdateStudent] Data:",s);const{name:a,phone:r,grade:o,subjects:n,school:i,parentName:l,parentPhone:d,classId:p,enrollmentDate:u,memo:m}=s;if(!a||!o||!l||!d)return e.json({success:!1,error:"필수 항목을 입력해주세요. (이름, 학년, 학부모 이름, 학부모 연락처)"},400);try{const g=await e.env.DB.prepare(`
+    `).bind(t,s).run()).meta.changes===0?e.json({success:!1,error:"학생 삭제에 실패했습니다."},400):(console.log("[DeleteStudent] Successfully soft deleted student"),e.json({success:!0,message:"학생이 삭제되었습니다."})):e.json({success:!1,error:"해당 학생을 찾을 수 없습니다."},404)}catch(t){return console.error("[DeleteStudent] Error:",t),e.json({success:!1,error:"학생 삭제 중 오류가 발생했습니다."},500)}});c.put("/api/students/:id",async e=>{try{const t=e.req.param("id"),s=await e.req.json();console.log("✏️ [UpdateStudent] Updating student:",t),console.log("✏️ [UpdateStudent] Data:",s);const{name:a,phone:r,grade:n,subjects:o,school:i,parentName:l,parentPhone:d,classId:p,enrollmentDate:u,memo:m}=s;if(!a||!n||!l||!d)return e.json({success:!1,error:"필수 항목을 입력해주세요. (이름, 학년, 학부모 이름, 학부모 연락처)"},400);try{const g=await e.env.DB.prepare(`
         UPDATE students 
         SET name = ?, phone = ?, grade = ?, subjects = ?, school = ?,
             parent_name = ?, parent_phone = ?, class_id = ?, 
             enrollment_date = ?, notes = ?
         WHERE id = ?
-      `).bind(a,r||null,o,n||"",i||null,l,d,p||null,u||null,m||null,t).run();return console.log("✅ [UpdateStudent] Updated rows:",g.meta.changes),g.meta.changes===0?e.json({success:!1,error:"학생을 찾을 수 없습니다."},404):e.json({success:!0,message:"학생 정보가 수정되었습니다.",id:t})}catch(g){return console.error("❌ [UpdateStudent] Error:",g),e.json({success:!1,error:"학생 정보 수정 중 오류가 발생했습니다.",details:g.message},500)}}catch(t){return console.error("❌ [UpdateStudent] Fatal error:",t),e.json({success:!1,error:"학생 정보 수정 중 오류가 발생했습니다."},500)}});c.get("/tools/student-management",e=>e.redirect("/students"));c.get("/tools/ai-learning-report/",e=>e.redirect("/tools/ai-learning-report",301));c.get("/tools/ai-learning-report",e=>e.html(`
+      `).bind(a,r||null,n,o||"",i||null,l,d,p||null,u||null,m||null,t).run();return console.log("✅ [UpdateStudent] Updated rows:",g.meta.changes),g.meta.changes===0?e.json({success:!1,error:"학생을 찾을 수 없습니다."},404):e.json({success:!0,message:"학생 정보가 수정되었습니다.",id:t})}catch(g){return console.error("❌ [UpdateStudent] Error:",g),e.json({success:!1,error:"학생 정보 수정 중 오류가 발생했습니다.",details:g.message},500)}}catch(t){return console.error("❌ [UpdateStudent] Fatal error:",t),e.json({success:!1,error:"학생 정보 수정 중 오류가 발생했습니다."},500)}});c.get("/tools/student-management",e=>e.redirect("/students"));c.get("/tools/ai-learning-report/",e=>e.redirect("/tools/ai-learning-report",301));c.get("/tools/ai-learning-report",e=>e.html(`
     <!DOCTYPE html>
     <html lang="ko">
     <head>
@@ -20020,6 +20402,30 @@ ${m}`)),d&&(r.includes("<footer>")?r=r.replace(/<footer>/i,`${d}
                         <div class="text-3xl mb-2">💡</div>
                         <div class="font-bold mb-1">맞춤 추천</div>
                         <div class="text-sm text-white/90">개인별 학습 전략 제시</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 사용량 표시 배너 (새로 추가) -->
+            <div id="usageBanner" class="bg-gradient-to-r from-indigo-500 to-purple-500 rounded-2xl p-6 mb-8 text-white hidden">
+                <div class="flex items-center justify-between flex-wrap gap-4">
+                    <div class="flex items-center gap-4">
+                        <div class="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center flex-shrink-0">
+                            <span class="text-3xl">🤖</span>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold mb-1">이번 달 AI 리포트 사용량</h3>
+                            <p class="text-white/90 text-sm">아래 사용량을 확인하고 리포트를 생성하세요</p>
+                        </div>
+                    </div>
+                    <div class="bg-white/20 backdrop-blur-sm rounded-xl px-6 py-4">
+                        <div class="text-sm text-white/80 mb-1">사용 현황</div>
+                        <div class="text-3xl font-bold">
+                            <span id="currentReportUsage">-</span> / <span id="maxReportLimit">-</span>
+                        </div>
+                        <div class="w-48 bg-white/20 rounded-full h-2 mt-3">
+                            <div id="reportUsageBar" class="bg-white h-2 rounded-full transition-all" style="width: 0%"></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -20167,10 +20573,46 @@ ${m}`)),d&&(r.includes("<footer>")?r=r.replace(/<footer>/i,`${d}
                     return;
                 }
                 currentUser = JSON.parse(userData);
+                loadUsage();
                 loadFolders();
                 loadStudents();
                 setDefaultMonth();
             });
+
+            // 사용량 로드 함수
+            async function loadUsage() {
+                try {
+                    const response = await fetch('/api/usage/check', {
+                        method: 'GET',
+                        credentials: 'include'
+                    });
+                    const data = await response.json();
+                    
+                    if (data.success && data.limits && data.usage) {
+                        const currentUsage = data.usage.aiReports || 0;
+                        const maxLimit = data.limits.aiReports || 0;
+                        const percentage = maxLimit > 0 ? Math.min((currentUsage / maxLimit) * 100, 100) : 0;
+                        
+                        // 배너 표시
+                        const usageBanner = document.getElementById('usageBanner');
+                        if (usageBanner) {
+                            usageBanner.classList.remove('hidden');
+                            document.getElementById('currentReportUsage').textContent = currentUsage;
+                            document.getElementById('maxReportLimit').textContent = maxLimit;
+                            document.getElementById('reportUsageBar').style.width = percentage + '%';
+                            
+                            // 한도 초과 시 경고 색상
+                            if (currentUsage >= maxLimit) {
+                                usageBanner.className = 'bg-gradient-to-r from-red-500 to-orange-500 rounded-2xl p-6 mb-8 text-white';
+                            } else if (percentage >= 80) {
+                                usageBanner.className = 'bg-gradient-to-r from-orange-500 to-yellow-500 rounded-2xl p-6 mb-8 text-white';
+                            }
+                        }
+                    }
+                } catch (err) {
+                    console.error('사용량 조회 실패:', err);
+                }
+            }
 
             // 폴더 목록 로드
             async function loadFolders() {
@@ -21141,7 +21583,7 @@ ${m}`)),d&&(r.includes("<footer>")?r=r.replace(/<footer>/i,`${d}
         <\/script>
     </body>
     </html>
-  `));c.get("/api/students/has-data/:student_id",async e=>{try{const t=e.req.param("student_id"),s=e.req.query("month")||new Date().toISOString().slice(0,7);console.log("🔍 [CheckData] Checking data for student:",t,"month:",s);let a=!1,r=!1,o=!1;try{const i=await e.env.DB.prepare(`
+  `));c.get("/api/students/has-data/:student_id",async e=>{try{const t=e.req.param("student_id"),s=e.req.query("month")||new Date().toISOString().slice(0,7);console.log("🔍 [CheckData] Checking data for student:",t,"month:",s);let a=!1,r=!1,n=!1;try{const i=await e.env.DB.prepare(`
         SELECT COUNT(*) as count FROM grades 
         WHERE student_id = ? AND strftime('%Y-%m', test_date) = ?
       `).bind(t,s).first();a=i&&i.count>0,console.log("📝 [CheckData] Grades:",a,"(count:",i==null?void 0:i.count,")")}catch(i){console.warn("⚠️ [CheckData] Grades table not found:",i.message)}try{const i=await e.env.DB.prepare(`
@@ -21150,7 +21592,7 @@ ${m}`)),d&&(r.includes("<footer>")?r=r.replace(/<footer>/i,`${d}
       `).bind(t,s).first();r=i&&i.count>0,console.log("📅 [CheckData] Attendance:",r,"(count:",i==null?void 0:i.count,")")}catch(i){console.warn("⚠️ [CheckData] Attendance table not found:",i.message)}try{const i=await e.env.DB.prepare(`
         SELECT COUNT(*) as count FROM daily_records 
         WHERE student_id = ? AND strftime('%Y-%m', record_date) = ?
-      `).bind(t,s).first();o=i&&i.count>0,console.log("📋 [CheckData] Daily records:",o,"(count:",i==null?void 0:i.count,")")}catch(i){console.warn("⚠️ [CheckData] Daily records table not found:",i.message)}const n=a||r||o;return console.log("✅ [CheckData] Final result - hasData:",n),e.json({success:!0,hasData:n,details:{hasGrades:a,hasAttendance:r,hasDailyRecords:o,month:s}})}catch(t){return console.error("❌ [CheckData] Error:",t),console.error("❌ [CheckData] Stack:",t.stack),e.json({success:!0,hasData:!0,error:"데이터 확인 실패 - 기본적으로 선택 가능"},200)}});c.get("/api/learning-reports/:student_id",async e=>{try{const t=e.req.param("student_id"),{results:s}=await e.env.DB.prepare(`
+      `).bind(t,s).first();n=i&&i.count>0,console.log("📋 [CheckData] Daily records:",n,"(count:",i==null?void 0:i.count,")")}catch(i){console.warn("⚠️ [CheckData] Daily records table not found:",i.message)}const o=a||r||n;return console.log("✅ [CheckData] Final result - hasData:",o),e.json({success:!0,hasData:o,details:{hasGrades:a,hasAttendance:r,hasDailyRecords:n,month:s}})}catch(t){return console.error("❌ [CheckData] Error:",t),console.error("❌ [CheckData] Stack:",t.stack),e.json({success:!0,hasData:!0,error:"데이터 확인 실패 - 기본적으로 선택 가능"},200)}});c.get("/api/learning-reports/:student_id",async e=>{try{const t=e.req.param("student_id"),{results:s}=await e.env.DB.prepare(`
       SELECT * FROM learning_reports 
       WHERE student_id = ? 
       ORDER BY report_month DESC
@@ -21158,14 +21600,14 @@ ${m}`)),d&&(r.includes("<footer>")?r=r.replace(/<footer>/i,`${d}
         SELECT * FROM report_folders
         WHERE academy_id = ?
         ORDER BY created_at DESC
-      `).bind(t).all();return e.json({success:!0,folders:s.results||[]})}catch(s){return console.warn("⚠️ report_folders table not found:",s.message),e.json({success:!0,folders:[]})}}catch(t){return console.error("❌ Get report folders error:",t),e.json({success:!1,error:t.message},500)}});c.post("/api/report-folders",async e=>{try{const{academyId:t,folderName:s,description:a,color:r}=await e.req.json();if(console.log("📁 [CreateFolder] Creating folder"),console.log("📁 [CreateFolder] academyId:",t),console.log("📁 [CreateFolder] folderName:",s),console.log("📁 [CreateFolder] description:",a),console.log("📁 [CreateFolder] color:",r),!t||!s)return console.error("❌ [CreateFolder] Missing required fields"),e.json({success:!1,error:"학원 ID와 폴더 이름이 필요합니다."},400);const o=await e.env.DB.prepare(`
+      `).bind(t).all();return e.json({success:!0,folders:s.results||[]})}catch(s){return console.warn("⚠️ report_folders table not found:",s.message),e.json({success:!0,folders:[]})}}catch(t){return console.error("❌ Get report folders error:",t),e.json({success:!1,error:t.message},500)}});c.post("/api/report-folders",async e=>{try{const{academyId:t,folderName:s,description:a,color:r}=await e.req.json();if(console.log("📁 [CreateFolder] Creating folder"),console.log("📁 [CreateFolder] academyId:",t),console.log("📁 [CreateFolder] folderName:",s),console.log("📁 [CreateFolder] description:",a),console.log("📁 [CreateFolder] color:",r),!t||!s)return console.error("❌ [CreateFolder] Missing required fields"),e.json({success:!1,error:"학원 ID와 폴더 이름이 필요합니다."},400);const n=await e.env.DB.prepare(`
       INSERT INTO report_folders (academy_id, folder_name, description, color)
       VALUES (?, ?, ?, ?)
-    `).bind(t,s,a||"",r||"#6366f1").run();return console.log("✅ [CreateFolder] Folder created successfully, ID:",o.meta.last_row_id),e.json({success:!0,folderId:o.meta.last_row_id})}catch(t){return console.error("❌ [CreateFolder] Error:",t),console.error("❌ [CreateFolder] Error message:",t.message),console.error("❌ [CreateFolder] Error stack:",t.stack),e.json({success:!1,error:t.message},500)}});c.delete("/api/report-folders/:folderId",async e=>{try{const t=e.req.param("folderId");return await e.env.DB.prepare(`
+    `).bind(t,s,a||"",r||"#6366f1").run();return console.log("✅ [CreateFolder] Folder created successfully, ID:",n.meta.last_row_id),e.json({success:!0,folderId:n.meta.last_row_id})}catch(t){return console.error("❌ [CreateFolder] Error:",t),console.error("❌ [CreateFolder] Error message:",t.message),console.error("❌ [CreateFolder] Error stack:",t.stack),e.json({success:!1,error:t.message},500)}});c.delete("/api/report-folders/:folderId",async e=>{try{const t=e.req.param("folderId");return await e.env.DB.prepare(`
       UPDATE learning_reports SET folder_id = NULL WHERE folder_id = ?
     `).bind(t).run(),await e.env.DB.prepare(`
       DELETE FROM report_folders WHERE id = ?
-    `).bind(t).run(),e.json({success:!0})}catch(t){return e.json({success:!1,error:t.message},500)}});c.post("/api/learning-reports/generate",async e=>{var t,s;try{const{student_id:a,start_date:r,end_date:o,folder_id:n}=await e.req.json(),i=`${r} ~ ${o}`;console.log("📊 [GenerateReport] Starting report generation"),console.log("📊 [GenerateReport] Student ID:",a),console.log("📊 [GenerateReport] Date range:",i);const l=await e.env.DB.prepare(`
+    `).bind(t).run(),e.json({success:!0})}catch(t){return e.json({success:!1,error:t.message},500)}});c.post("/api/learning-reports/generate",async e=>{var t,s;try{const{student_id:a,start_date:r,end_date:n,folder_id:o}=await e.req.json(),i=`${r} ~ ${n}`;console.log("📊 [GenerateReport] Starting report generation"),console.log("📊 [GenerateReport] Student ID:",a),console.log("📊 [GenerateReport] Date range:",i);const l=await e.env.DB.prepare(`
       SELECT * FROM students WHERE id = ?
     `).bind(a).first();if(!l)return console.error("❌ [GenerateReport] Student not found:",a),e.json({success:!1,error:"학생을 찾을 수 없습니다."},404);console.log("✅ [GenerateReport] Student found:",l.name),console.log("🔍 [GenerateReport] Checking AI report limit...");const d=await e.env.DB.prepare(`
       SELECT * FROM subscriptions 
@@ -21174,7 +21616,13 @@ ${m}`)),d&&(r.includes("<footer>")?r=r.replace(/<footer>/i,`${d}
     `).bind(l.academy_id).first();if(!d)return e.json({success:!1,error:"활성 구독이 없습니다. 요금제를 구매해주세요."},403);const p=await e.env.DB.prepare(`
       SELECT * FROM usage_tracking 
       WHERE academy_id = ? AND subscription_id = ?
-    `).bind(l.academy_id,d.id).first(),u=(p==null?void 0:p.ai_reports_used_this_month)||0;if(u>=d.ai_report_limit)return e.json({success:!1,error:`⛔ 사용 한도가 모두 소진되었습니다.
+    `).bind(l.academy_id,d.id).first();let u=0;if(p)u=p.ai_reports_used_this_month||0;else{console.log("⚠️ [GenerateReport] No usage_tracking record, creating...");try{await e.env.DB.prepare(`
+          INSERT INTO usage_tracking (
+            academy_id, subscription_id, current_students, ai_reports_used_this_month,
+            landing_pages_created, current_teachers, sms_sent_this_month,
+            created_at, updated_at
+          ) VALUES (?, ?, 0, 0, 0, 0, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+        `).bind(l.academy_id,d.id).run(),console.log("✅ [GenerateReport] Auto-created usage_tracking"),u=0}catch(D){console.error("❌ [GenerateReport] Failed to create usage_tracking:",D.message),u=0}}if(u>=d.ai_report_limit)return e.json({success:!1,error:`⛔ 사용 한도가 모두 소진되었습니다.
 
 이번 달 AI 리포트 생성 수: ${u}개 / 한도: ${d.ai_report_limit}개
 
@@ -21183,42 +21631,42 @@ ${m}`)),d&&(r.includes("<footer>")?r=r.replace(/<footer>/i,`${d}
         WHERE student_id = ? 
         AND DATE(test_date) BETWEEN ? AND ?
         ORDER BY test_date DESC
-      `).bind(a,r,o).all()).results||[],console.log("📝 [GenerateReport] Grades found:",m.length)}catch(D){console.warn("⚠️ [GenerateReport] Grades table not found or error:",D.message)}let g=[];try{g=(await e.env.DB.prepare(`
+      `).bind(a,r,n).all()).results||[],console.log("📝 [GenerateReport] Grades found:",m.length)}catch(D){console.warn("⚠️ [GenerateReport] Grades table not found or error:",D.message)}let g=[];try{g=(await e.env.DB.prepare(`
         SELECT status, COUNT(*) as count
         FROM attendance 
         WHERE student_id = ? 
         AND DATE(attendance_date) BETWEEN ? AND ?
         GROUP BY status
-      `).bind(a,r,o).all()).results||[],console.log("📅 [GenerateReport] Attendance records found:",g.length)}catch(D){console.warn("⚠️ [GenerateReport] Attendance table not found or error:",D.message)}let x=[];try{x=(await e.env.DB.prepare(`
+      `).bind(a,r,n).all()).results||[],console.log("📅 [GenerateReport] Attendance records found:",g.length)}catch(D){console.warn("⚠️ [GenerateReport] Attendance table not found or error:",D.message)}let x=[];try{x=(await e.env.DB.prepare(`
         SELECT * FROM counseling 
         WHERE student_id = ? 
         AND DATE(counseling_date) BETWEEN ? AND ?
         ORDER BY counseling_date DESC
         LIMIT 3
-      `).bind(a,r,o).all()).results||[],console.log("💬 [GenerateReport] Counseling records found:",x.length)}catch(D){console.warn("⚠️ [GenerateReport] Counseling table not found or error:",D.message)}let b=[];try{b=(await e.env.DB.prepare(`
+      `).bind(a,r,n).all()).results||[],console.log("💬 [GenerateReport] Counseling records found:",x.length)}catch(D){console.warn("⚠️ [GenerateReport] Counseling table not found or error:",D.message)}let b=[];try{b=(await e.env.DB.prepare(`
         SELECT * FROM daily_records 
         WHERE student_id = ? 
         AND DATE(record_date) BETWEEN ? AND ?
         ORDER BY record_date DESC
-      `).bind(a,r,o).all()).results||[],console.log("📋 [GenerateReport] Daily records found:",b.length)}catch(D){console.warn("⚠️ [GenerateReport] Daily records table not found or error:",D.message)}if(!(m.length>0||g.length>0||b.length>0))return console.warn("⚠️ [GenerateReport] No data available for this period"),e.json({success:!1,error:`${r} ~ ${o} 기간에 해당하는 데이터가 없습니다.
+      `).bind(a,r,n).all()).results||[],console.log("📋 [GenerateReport] Daily records found:",b.length)}catch(D){console.warn("⚠️ [GenerateReport] Daily records table not found or error:",D.message)}if(!(m.length>0||g.length>0||b.length>0))return console.warn("⚠️ [GenerateReport] No data available for this period"),e.json({success:!1,error:`${r} ~ ${n} 기간에 해당하는 데이터가 없습니다.
 
 다음을 확인해주세요:
 1. 성적 데이터가 입력되었는지
 2. 출석 데이터가 입력되었는지
 3. 일일 성과 기록이 있는지
 
-데이터를 먼저 입력한 후 리포트를 생성해주세요.`},400);console.log("✅ [GenerateReport] Data found - proceeding with report generation");let v=null,_=0,y=0,w="none";if(g.length>0)_=g.reduce((D,B)=>D+(B.count||0),0),y=((t=g.find(D=>D.status==="present"))==null?void 0:t.count)||0,v=_>0?(y/_*100).toFixed(1):0,w="attendance";else if(b.length>0){const D=b.filter(B=>B.attendance);_=D.length,y=D.filter(B=>B.attendance==="출석").length,_>0&&(v=(y/_*100).toFixed(1),w="daily_records")}if(v===null)return console.error("❌ [GenerateReport] No attendance data available"),e.json({success:!1,error:`${i} 기간에 출석 데이터가 없습니다.
+데이터를 먼저 입력한 후 리포트를 생성해주세요.`},400);console.log("✅ [GenerateReport] Data found - proceeding with report generation");let v=null,E=0,y=0,w="none";if(g.length>0)E=g.reduce((D,B)=>D+(B.count||0),0),y=((t=g.find(D=>D.status==="present"))==null?void 0:t.count)||0,v=E>0?(y/E*100).toFixed(1):0,w="attendance";else if(b.length>0){const D=b.filter(B=>B.attendance);E=D.length,y=D.filter(B=>B.attendance==="출석").length,E>0&&(v=(y/E*100).toFixed(1),w="daily_records")}if(v===null)return console.error("❌ [GenerateReport] No attendance data available"),e.json({success:!1,error:`${i} 기간에 출석 데이터가 없습니다.
 
-출석 데이터를 먼저 입력한 후 리포트를 생성해주세요.`},400);console.log("📊 [GenerateReport] Attendance rate:",v+"%","(source:",w+")");let E=null,k="none";if(m.length>0)E=(m.reduce((D,B)=>D+B.score/B.max_score*100,0)/m.length).toFixed(1),k="grades";else if(b.length>0){const D=b.filter(Y=>Y.lesson_understanding).map(Y=>parseFloat(Y.lesson_understanding)),B=b.filter(Y=>Y.lesson_participation).map(Y=>parseFloat(Y.lesson_participation));if(D.length>0||B.length>0){const Y=[...D,...B];E=(Y.reduce((Ot,Ut)=>Ot+Ut,0)/Y.length*10).toFixed(1),k="daily_records"}}if(E===null)return console.error("❌ [GenerateReport] No score data available"),e.json({success:!1,error:`${i} 기간에 성적/학습 데이터가 없습니다.
+출석 데이터를 먼저 입력한 후 리포트를 생성해주세요.`},400);console.log("📊 [GenerateReport] Attendance rate:",v+"%","(source:",w+")");let _=null,k="none";if(m.length>0)_=(m.reduce((D,B)=>D+B.score/B.max_score*100,0)/m.length).toFixed(1),k="grades";else if(b.length>0){const D=b.filter(Y=>Y.lesson_understanding).map(Y=>parseFloat(Y.lesson_understanding)),B=b.filter(Y=>Y.lesson_participation).map(Y=>parseFloat(Y.lesson_participation));if(D.length>0||B.length>0){const Y=[...D,...B];_=(Y.reduce((Ot,Ut)=>Ot+Ut,0)/Y.length*10).toFixed(1),k="daily_records"}}if(_===null)return console.error("❌ [GenerateReport] No score data available"),e.json({success:!1,error:`${i} 기간에 성적/학습 데이터가 없습니다.
 
-성적 데이터 또는 일일 성과 기록을 먼저 입력한 후 리포트를 생성해주세요.`},400);console.log("📊 [GenerateReport] Average score:",E,"(source:",k+")");let S="평가 불가";v>=95&&E>=85?S="매우 우수":v>=90&&E>=80?S="우수":v>=80&&E>=70?S="양호":S="개선 필요";let j="";const L=m.length>0?m.reduce((D,B)=>B.score/B.max_score>D.score/D.max_score?B:D):null;L?j=L.subject+" 과목에서 "+(L.score/L.max_score*100).toFixed(1)+"점으로 우수한 성적을 보였습니다. 꾸준한 노력이 돋보입니다.":b.length>0&&b.filter(D=>D.lesson_participation).length>0?j="수업 참여도가 평균 "+(b.filter(B=>B.lesson_participation).reduce((B,Y)=>B+parseFloat(Y.lesson_participation),0)/b.filter(B=>B.lesson_participation).length).toFixed(1)+"점으로 적극적인 학습 태도를 보이고 있습니다.":j="현재 기간의 성적 데이터가 부족하여 강점을 파악하기 어렵습니다. 지속적인 학습 활동 기록이 필요합니다.";let F="";const N=m.length>0?m.reduce((D,B)=>B.score/B.max_score<D.score/D.max_score?B:D):null;N&&N.score/N.max_score*100<75?F=N.subject+" 과목에서 "+(N.score/N.max_score*100).toFixed(1)+"점으로 보완이 필요합니다.":b.length>0&&b.filter(D=>D.homework_status==="미완료").length>0?F="과제 완성률이 낮습니다. 복습 시간을 늘려 과제를 완료하는 습관을 기르면 좋겠습니다.":F="전반적으로 균형잡힌 학습을 하고 있습니다.";const W=v<90?"출석률 개선이 필요합니다. 규칙적인 수업 참여가 성적 향상의 기본입니다.":E<80?"기본 개념 복습에 더 많은 시간을 투자하면 좋겠습니다.":"현재 학습 패턴을 유지하면서 심화 학습으로 나아가면 좋겠습니다.",O=E>=85?"상위권 유지를 위해 심화 문제 풀이를 추천합니다. 경시대회 준비도 고려해볼 만합니다.":E>=75?"기본기 강화와 함께 문제 풀이 속도를 높이는 연습이 필요합니다.":"개념 이해를 위한 1:1 보충 수업을 추천합니다. 기초부터 차근차근 다져가면 충분히 성적이 오를 수 있습니다.",ce=E>=85?"현재 평균 "+E+"점 수준을 유지하면서, "+((N==null?void 0:N.subject)||"취약 과목")+"에서 5점 이상 향상 목표":"평균 점수 "+E+"점에서 "+Math.min(100,parseFloat(E)+10).toFixed(0)+"점으로 향상, 출석률 "+v+"%에서 95% 이상 달성",Ke=l.name+" 학생은 이번 달 평균 "+E+"점의 성적을 기록했으며, 출석률은 "+v+"%입니다. "+(S==="매우 우수"||S==="우수"?"전반적으로 성실하게 학업에 임하고 있으며, 지속적인 성장이 기대됩니다.":"학습 태도와 출석 관리에 더 많은 관심이 필요합니다.")+(L?" 특히 "+L.subject+" 과목에서 강점을 보이고 있습니다.":"")+" 꾸준한 노력으로 더욱 발전할 수 있습니다.",Mt=`학부모님, 안녕하세요.
+성적 데이터 또는 일일 성과 기록을 먼저 입력한 후 리포트를 생성해주세요.`},400);console.log("📊 [GenerateReport] Average score:",_,"(source:",k+")");let T="평가 불가";v>=95&&_>=85?T="매우 우수":v>=90&&_>=80?T="우수":v>=80&&_>=70?T="양호":T="개선 필요";let j="";const L=m.length>0?m.reduce((D,B)=>B.score/B.max_score>D.score/D.max_score?B:D):null;L?j=L.subject+" 과목에서 "+(L.score/L.max_score*100).toFixed(1)+"점으로 우수한 성적을 보였습니다. 꾸준한 노력이 돋보입니다.":b.length>0&&b.filter(D=>D.lesson_participation).length>0?j="수업 참여도가 평균 "+(b.filter(B=>B.lesson_participation).reduce((B,Y)=>B+parseFloat(Y.lesson_participation),0)/b.filter(B=>B.lesson_participation).length).toFixed(1)+"점으로 적극적인 학습 태도를 보이고 있습니다.":j="현재 기간의 성적 데이터가 부족하여 강점을 파악하기 어렵습니다. 지속적인 학습 활동 기록이 필요합니다.";let F="";const N=m.length>0?m.reduce((D,B)=>B.score/B.max_score<D.score/D.max_score?B:D):null;N&&N.score/N.max_score*100<75?F=N.subject+" 과목에서 "+(N.score/N.max_score*100).toFixed(1)+"점으로 보완이 필요합니다.":b.length>0&&b.filter(D=>D.homework_status==="미완료").length>0?F="과제 완성률이 낮습니다. 복습 시간을 늘려 과제를 완료하는 습관을 기르면 좋겠습니다.":F="전반적으로 균형잡힌 학습을 하고 있습니다.";const W=v<90?"출석률 개선이 필요합니다. 규칙적인 수업 참여가 성적 향상의 기본입니다.":_<80?"기본 개념 복습에 더 많은 시간을 투자하면 좋겠습니다.":"현재 학습 패턴을 유지하면서 심화 학습으로 나아가면 좋겠습니다.",U=_>=85?"상위권 유지를 위해 심화 문제 풀이를 추천합니다. 경시대회 준비도 고려해볼 만합니다.":_>=75?"기본기 강화와 함께 문제 풀이 속도를 높이는 연습이 필요합니다.":"개념 이해를 위한 1:1 보충 수업을 추천합니다. 기초부터 차근차근 다져가면 충분히 성적이 오를 수 있습니다.",ce=_>=85?"현재 평균 "+_+"점 수준을 유지하면서, "+((N==null?void 0:N.subject)||"취약 과목")+"에서 5점 이상 향상 목표":"평균 점수 "+_+"점에서 "+Math.min(100,parseFloat(_)+10).toFixed(0)+"점으로 향상, 출석률 "+v+"%에서 95% 이상 달성",Ke=l.name+" 학생은 이번 달 평균 "+_+"점의 성적을 기록했으며, 출석률은 "+v+"%입니다. "+(T==="매우 우수"||T==="우수"?"전반적으로 성실하게 학업에 임하고 있으며, 지속적인 성장이 기대됩니다.":"학습 태도와 출석 관리에 더 많은 관심이 필요합니다.")+(L?" 특히 "+L.subject+" 과목에서 강점을 보이고 있습니다.":"")+" 꾸준한 노력으로 더욱 발전할 수 있습니다.",Mt=`학부모님, 안녕하세요.
 
 ${l.name} 학생의 ${i} 학습 분석 리포트를 전달드립니다.
 
 📊 이번 달 성과
-- 평균 점수: ${E}점
+- 평균 점수: ${_}점
 - 출석률: ${v}%
-- 학습 태도: ${S}
+- 학습 태도: ${T}
 
 💪 강점
 ${j}
@@ -21227,40 +21675,46 @@ ${j}
 ${F}
 
 📝 선생님의 추천
-${O}
+${U}
 
 다음 달 목표: ${ce}
 
 앞으로도 ${l.name} 학생이 더욱 성장할 수 있도록 최선을 다하겠습니다.
 궁금하신 점은 언제든 연락 주세요!
 
-- 슈퍼플레이스 ${((s=x[0])==null?void 0:s.counselor_name)||"선생님"}`;console.log("💾 [GenerateReport] Saving report to database");const ot=await e.env.DB.prepare(`
+- 슈퍼플레이스 ${((s=x[0])==null?void 0:s.counselor_name)||"선생님"}`;console.log("💾 [GenerateReport] Saving report to database");const nt=await e.env.DB.prepare(`
       INSERT INTO learning_reports 
       (student_id, report_month, overall_score, study_attitude, strengths, weaknesses, improvements, recommendations, next_month_goals, ai_analysis, parent_message, folder_id)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).bind(a,i,E,S,j,F,W,O,ce,Ke,Mt,n||null).run();console.log("✅ [GenerateReport] Report saved successfully, ID:",ot.meta.last_row_id);try{await e.env.DB.prepare(`
+    `).bind(a,i,_,T,j,F,W,U,ce,Ke,Mt,o||null).run();console.log("✅ [GenerateReport] Report saved successfully, ID:",nt.meta.last_row_id);try{(await e.env.DB.prepare(`
         UPDATE usage_tracking 
         SET ai_reports_used_this_month = ai_reports_used_this_month + 1, updated_at = CURRENT_TIMESTAMP
         WHERE academy_id = ? AND subscription_id = ?
-      `).bind(l.academy_id,d.id).run(),console.log("📈 [GenerateReport] Usage incremented successfully")}catch(D){console.error("⚠️ [GenerateReport] Failed to increment usage:",D)}return e.json({success:!0,message:"AI 학습 분석 리포트가 생성되었습니다.",report_id:ot.meta.last_row_id,preview:{overall_score:E,attendance_rate:v,study_attitude:S}})}catch(a){return console.error("❌ [GenerateReport] Fatal error:",a),console.error("❌ [GenerateReport] Error message:",a.message),console.error("❌ [GenerateReport] Error stack:",a.stack),e.json({success:!1,error:"AI 리포트 생성 실패: "+a.message},500)}});c.get("/api/learning-reports/detail/:report_id",async e=>{try{const t=e.req.param("report_id"),s=await e.env.DB.prepare(`
+      `).bind(l.academy_id,d.id).run()).meta.changes===0?(console.log("⚠️ [GenerateReport] No usage_tracking to update, creating with count=1..."),await e.env.DB.prepare(`
+          INSERT INTO usage_tracking (
+            academy_id, subscription_id, current_students, ai_reports_used_this_month,
+            landing_pages_created, current_teachers, sms_sent_this_month,
+            created_at, updated_at
+          ) VALUES (?, ?, 0, 1, 0, 0, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+        `).bind(l.academy_id,d.id).run(),console.log("✅ [GenerateReport] Auto-created usage_tracking with ai_reports=1")):console.log("📈 [GenerateReport] Usage incremented successfully")}catch(D){console.error("⚠️ [GenerateReport] Failed to increment usage:",D)}return e.json({success:!0,message:"AI 학습 분석 리포트가 생성되었습니다.",report_id:nt.meta.last_row_id,preview:{overall_score:_,attendance_rate:v,study_attitude:T}})}catch(a){return console.error("❌ [GenerateReport] Fatal error:",a),console.error("❌ [GenerateReport] Error message:",a.message),console.error("❌ [GenerateReport] Error stack:",a.stack),e.json({success:!1,error:"AI 리포트 생성 실패: "+a.message},500)}});c.get("/api/learning-reports/detail/:report_id",async e=>{try{const t=e.req.param("report_id"),s=await e.env.DB.prepare(`
       SELECT lr.*, s.name as student_name, s.parent_name, s.parent_phone
       FROM learning_reports lr
       JOIN students s ON lr.student_id = s.id
       WHERE lr.id = ?
-    `).bind(t).first();return s?e.json({success:!0,report:s}):e.json({success:!1,error:"리포트를 찾을 수 없습니다."},404)}catch(t){return console.error("Get report detail error:",t),e.json({success:!1,error:"리포트 조회 실패"},500)}});c.put("/api/learning-reports/:report_id/update-field",async e=>{try{const t=e.req.param("report_id"),{field:s,value:a}=await e.req.json();if(!["strengths","weaknesses","improvements","recommendations","next_month_goals","ai_analysis","parent_message","study_attitude"].includes(s))return e.json({success:!1,error:"허용되지 않은 필드입니다."},400);if(!await e.env.DB.prepare("SELECT id FROM learning_reports WHERE id = ?").bind(t).first())return e.json({success:!1,error:"리포트를 찾을 수 없습니다."},404);try{await e.env.DB.prepare(`UPDATE learning_reports SET ${s} = ?, updated_at = datetime('now') WHERE id = ?`).bind(a,t).run()}catch{console.warn("⚠️ updated_at column not found, trying without it"),await e.env.DB.prepare(`UPDATE learning_reports SET ${s} = ? WHERE id = ?`).bind(a,t).run()}return console.log(`Report ${t} field ${s} updated`),e.json({success:!0,message:"저장되었습니다.",field:s,value:a})}catch(t){return console.error("Update report field error:",t),e.json({success:!1,error:"저장 중 오류가 발생했습니다."},500)}});c.put("/api/learning-reports/:report_id",async e=>{try{const t=e.req.param("report_id"),s=await e.req.json();if(console.log("✏️ [UpdateReport] Updating report:",t),console.log("✏️ [UpdateReport] Data:",JSON.stringify(s)),!await e.env.DB.prepare("SELECT id FROM learning_reports WHERE id = ?").bind(t).first())return console.error("❌ [UpdateReport] Report not found:",t),e.json({success:!1,error:"리포트를 찾을 수 없습니다."},404);console.log("✅ [UpdateReport] Report found:",t);const{overall_score:r,study_attitude:o,strengths:n,weaknesses:i,improvements:l,recommendations:d,next_month_goals:p,ai_analysis:u,parent_message:m}=s;if(r===void 0||!o)return console.error("❌ [UpdateReport] Missing required fields"),e.json({success:!1,error:"필수 필드가 누락되었습니다."},400);console.log("✏️ [UpdateReport] Executing UPDATE query...");try{const g=await e.env.DB.prepare(`
+    `).bind(t).first();return s?e.json({success:!0,report:s}):e.json({success:!1,error:"리포트를 찾을 수 없습니다."},404)}catch(t){return console.error("Get report detail error:",t),e.json({success:!1,error:"리포트 조회 실패"},500)}});c.put("/api/learning-reports/:report_id/update-field",async e=>{try{const t=e.req.param("report_id"),{field:s,value:a}=await e.req.json();if(!["strengths","weaknesses","improvements","recommendations","next_month_goals","ai_analysis","parent_message","study_attitude"].includes(s))return e.json({success:!1,error:"허용되지 않은 필드입니다."},400);if(!await e.env.DB.prepare("SELECT id FROM learning_reports WHERE id = ?").bind(t).first())return e.json({success:!1,error:"리포트를 찾을 수 없습니다."},404);try{await e.env.DB.prepare(`UPDATE learning_reports SET ${s} = ?, updated_at = datetime('now') WHERE id = ?`).bind(a,t).run()}catch{console.warn("⚠️ updated_at column not found, trying without it"),await e.env.DB.prepare(`UPDATE learning_reports SET ${s} = ? WHERE id = ?`).bind(a,t).run()}return console.log(`Report ${t} field ${s} updated`),e.json({success:!0,message:"저장되었습니다.",field:s,value:a})}catch(t){return console.error("Update report field error:",t),e.json({success:!1,error:"저장 중 오류가 발생했습니다."},500)}});c.put("/api/learning-reports/:report_id",async e=>{try{const t=e.req.param("report_id"),s=await e.req.json();if(console.log("✏️ [UpdateReport] Updating report:",t),console.log("✏️ [UpdateReport] Data:",JSON.stringify(s)),!await e.env.DB.prepare("SELECT id FROM learning_reports WHERE id = ?").bind(t).first())return console.error("❌ [UpdateReport] Report not found:",t),e.json({success:!1,error:"리포트를 찾을 수 없습니다."},404);console.log("✅ [UpdateReport] Report found:",t);const{overall_score:r,study_attitude:n,strengths:o,weaknesses:i,improvements:l,recommendations:d,next_month_goals:p,ai_analysis:u,parent_message:m}=s;if(r===void 0||!n)return console.error("❌ [UpdateReport] Missing required fields"),e.json({success:!1,error:"필수 필드가 누락되었습니다."},400);console.log("✏️ [UpdateReport] Executing UPDATE query...");try{const g=await e.env.DB.prepare(`
         UPDATE learning_reports 
         SET overall_score = ?, study_attitude = ?, strengths = ?, 
             weaknesses = ?, improvements = ?, recommendations = ?, 
             next_month_goals = ?, ai_analysis = ?, parent_message = ?,
             updated_at = datetime('now')
         WHERE id = ?
-      `).bind(r,o,n,i,l,d,p,u,m,t).run();console.log("✅ [UpdateReport] UPDATE result:",JSON.stringify(g.meta))}catch(g){console.warn("⚠️ [UpdateReport] updated_at column not found, trying without it:",g.message);const x=await e.env.DB.prepare(`
+      `).bind(r,n,o,i,l,d,p,u,m,t).run();console.log("✅ [UpdateReport] UPDATE result:",JSON.stringify(g.meta))}catch(g){console.warn("⚠️ [UpdateReport] updated_at column not found, trying without it:",g.message);const x=await e.env.DB.prepare(`
         UPDATE learning_reports 
         SET overall_score = ?, study_attitude = ?, strengths = ?, 
             weaknesses = ?, improvements = ?, recommendations = ?, 
             next_month_goals = ?, ai_analysis = ?, parent_message = ?
         WHERE id = ?
-      `).bind(r,o,n,i,l,d,p,u,m,t).run();console.log("✅ [UpdateReport] UPDATE result (without updated_at):",JSON.stringify(x.meta))}return console.log("✅ [UpdateReport] Report updated successfully"),e.json({success:!0,message:"리포트가 수정되었습니다."})}catch(t){return console.error("❌ [UpdateReport] Fatal error:",t),console.error("❌ [UpdateReport] Error message:",t.message),console.error("❌ [UpdateReport] Error stack:",t.stack),e.json({success:!1,error:"리포트 수정 중 오류가 발생했습니다.",details:t.message},500)}});c.get("/profile",e=>e.html(`
+      `).bind(r,n,o,i,l,d,p,u,m,t).run();console.log("✅ [UpdateReport] UPDATE result (without updated_at):",JSON.stringify(x.meta))}return console.log("✅ [UpdateReport] Report updated successfully"),e.json({success:!0,message:"리포트가 수정되었습니다."})}catch(t){return console.error("❌ [UpdateReport] Fatal error:",t),console.error("❌ [UpdateReport] Error message:",t.message),console.error("❌ [UpdateReport] Error stack:",t.stack),e.json({success:!1,error:"리포트 수정 중 오류가 발생했습니다.",details:t.message},500)}});c.get("/profile",e=>e.html(`
     <!DOCTYPE html>
     <html lang="ko">
     <head>
@@ -21500,15 +21954,15 @@ ${O}
         <\/script>
     </body>
     </html>
-  `));c.get("/api/user/profile",async e=>{try{let t=e.req.header("X-User-Id");if(!t)try{const a=e.req.header("Cookie");if(a){const r=a.split(";").find(o=>o.trim().startsWith("session_id="));if(r){const o=r.split("=")[1],n=await e.env.DB.prepare("SELECT user_id FROM sessions WHERE id = ?").bind(o).first();n&&(t=n.user_id.toString())}}}catch(a){console.error("Error parsing cookies:",a)}if(!t)return e.json({success:!1,error:"로그인이 필요합니다."},401);const s=await e.env.DB.prepare(`
+  `));c.get("/api/user/profile",async e=>{try{let t=e.req.header("X-User-Id");if(!t)try{const a=e.req.header("Cookie");if(a){const r=a.split(";").find(n=>n.trim().startsWith("session_id="));if(r){const n=r.split("=")[1],o=await e.env.DB.prepare("SELECT user_id FROM sessions WHERE id = ?").bind(n).first();o&&(t=o.user_id.toString())}}}catch(a){console.error("Error parsing cookies:",a)}if(!t)return e.json({success:!1,error:"로그인이 필요합니다."},401);const s=await e.env.DB.prepare(`
       SELECT id, email, name, phone, academy_name, role, created_at, 
              user_type, academy_id, parent_user_id, points
       FROM users WHERE id = ?
-    `).bind(t).first();return s?e.json({success:!0,user:s}):e.json({success:!1,error:"사용자를 찾을 수 없습니다."},404)}catch(t){return console.error("Get profile error:",t),console.error("Error stack:",t.stack),e.json({success:!1,error:"프로필 조회 실패",details:t.message},500)}});c.put("/api/user/profile",async e=>{try{const t=e.req.header("X-User-Id");if(!t)return e.json({success:!1,error:"로그인이 필요합니다."},401);const{name:s,phone:a,academy_name:r,academy_location:o}=await e.req.json();return!s||!a||!r||!o?e.json({success:!1,error:"모든 필드를 입력해주세요."},400):(await e.env.DB.prepare(`
+    `).bind(t).first();return s?e.json({success:!0,user:s}):e.json({success:!1,error:"사용자를 찾을 수 없습니다."},404)}catch(t){return console.error("Get profile error:",t),console.error("Error stack:",t.stack),e.json({success:!1,error:"프로필 조회 실패",details:t.message},500)}});c.put("/api/user/profile",async e=>{try{const t=e.req.header("X-User-Id");if(!t)return e.json({success:!1,error:"로그인이 필요합니다."},401);const{name:s,phone:a,academy_name:r,academy_location:n}=await e.req.json();return!s||!a||!r||!n?e.json({success:!1,error:"모든 필드를 입력해주세요."},400):(await e.env.DB.prepare(`
       UPDATE users 
       SET name = ?, phone = ?, academy_name = ?, academy_location = ?, updated_at = CURRENT_TIMESTAMP
       WHERE id = ?
-    `).bind(s,a,r,o,t).run(),e.json({success:!0,message:"프로필이 수정되었습니다."}))}catch(t){return console.error("Update profile error:",t),e.json({success:!1,error:"프로필 수정 실패"},500)}});c.put("/api/user/change-password",async e=>{try{const t=e.req.header("X-User-Id");if(!t)return e.json({success:!1,error:"로그인이 필요합니다."},401);const{current_password:s,new_password:a}=await e.req.json();return!s||!a?e.json({success:!1,error:"현재 비밀번호와 새 비밀번호를 입력해주세요."},400):a.length<6?e.json({success:!1,error:"새 비밀번호는 최소 6자 이상이어야 합니다."},400):await e.env.DB.prepare(`
+    `).bind(s,a,r,n,t).run(),e.json({success:!0,message:"프로필이 수정되었습니다."}))}catch(t){return console.error("Update profile error:",t),e.json({success:!1,error:"프로필 수정 실패"},500)}});c.put("/api/user/change-password",async e=>{try{const t=e.req.header("X-User-Id");if(!t)return e.json({success:!1,error:"로그인이 필요합니다."},401);const{current_password:s,new_password:a}=await e.req.json();return!s||!a?e.json({success:!1,error:"현재 비밀번호와 새 비밀번호를 입력해주세요."},400):a.length<6?e.json({success:!1,error:"새 비밀번호는 최소 6자 이상이어야 합니다."},400):await e.env.DB.prepare(`
       SELECT id FROM users WHERE id = ? AND password = ?
     `).bind(t,s).first()?(await e.env.DB.prepare(`
       UPDATE users SET password = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?
@@ -23852,26 +24306,26 @@ ${O}
         </div>
     </body>
     </html>
-  `));c.post("/api/search-analysis",async e=>{try{const{userId:t,keyword:s,placeUrl:a}=await e.req.json();if(!s)return e.json({success:!1,error:"키워드를 입력해주세요"},400);const r="https://web-production-14c4.up.railway.app/analyze";try{const o=fetch(r,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({keyword:s,placeUrl:a||null})}),n=new Promise((p,u)=>setTimeout(()=>u(new Error("Request timeout")),5e4)),i=await Promise.race([o,n]);if(!i.ok)throw new Error(`Crawler API error: ${i.status}`);const l=await i.json(),{env:d}=e;if(t)try{await d.DB.prepare(`
+  `));c.post("/api/search-analysis",async e=>{try{const{userId:t,keyword:s,placeUrl:a}=await e.req.json();if(!s)return e.json({success:!1,error:"키워드를 입력해주세요"},400);const r="https://web-production-14c4.up.railway.app/analyze";try{const n=fetch(r,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({keyword:s,placeUrl:a||null})}),o=new Promise((p,u)=>setTimeout(()=>u(new Error("Request timeout")),5e4)),i=await Promise.race([n,o]);if(!i.ok)throw new Error(`Crawler API error: ${i.status}`);const l=await i.json(),{env:d}=e;if(t)try{await d.DB.prepare(`
             INSERT INTO search_analysis_logs (user_id, keyword, place_url, result_data, created_at)
             VALUES (?, ?, ?, ?, datetime('now'))
-          `).bind(t,s,a||"",JSON.stringify(l)).run()}catch(p){console.error("DB save error:",p)}return e.json(l)}catch(o){console.error("Crawler API error:",o);const n={success:!1,error:"크롤링 서버 연결 실패",message:`오류: ${o instanceof Error?o.message:"알 수 없는 오류"}`,searchVolume:{monthlyAvg:0,competition:"분석 불가",recommendation:"서버 오류"},ranking:{myRank:null,competitors:[]},keywords:[]};return e.json(n)}}catch(t){return console.error("Search analysis error:",t),e.json({success:!1,error:"분석 중 오류가 발생했습니다"},500)}});c.post("/api/contact",async e=>{try{const{type:t,academy:s,name:a,phone:r,email:o,programs:n,message:i}=await e.req.json(),{env:l}=e;return await l.DB.prepare(`
+          `).bind(t,s,a||"",JSON.stringify(l)).run()}catch(p){console.error("DB save error:",p)}return e.json(l)}catch(n){console.error("Crawler API error:",n);const o={success:!1,error:"크롤링 서버 연결 실패",message:`오류: ${n instanceof Error?n.message:"알 수 없는 오류"}`,searchVolume:{monthlyAvg:0,competition:"분석 불가",recommendation:"서버 오류"},ranking:{myRank:null,competitors:[]},keywords:[]};return e.json(o)}}catch(t){return console.error("Search analysis error:",t),e.json({success:!1,error:"분석 중 오류가 발생했습니다"},500)}});c.post("/api/contact",async e=>{try{const{type:t,academy:s,name:a,phone:r,email:n,programs:o,message:i}=await e.req.json(),{env:l}=e;return await l.DB.prepare(`
       INSERT INTO contacts (inquiry, academy, name, phone, email, programs, message, created_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))
-    `).bind(t,s,a,r,o||"",JSON.stringify(n||[]),i).run(),e.json({success:!0,message:"문의가 접수되었습니다"})}catch(t){return console.error("Contact error:",t),e.json({success:!1,error:"문의 접수 실패"},500)}});c.post("/api/login",async e=>{try{const{email:t,password:s}=await e.req.json(),{env:a}=e,r=await a.DB.prepare("SELECT * FROM users WHERE email = ?").bind(t).first();if(!r)return e.json({success:!1,error:"이메일 또는 비밀번호가 일치하지 않습니다"},401);if(r.password!==s)return e.json({success:!1,error:"이메일 또는 비밀번호가 일치하지 않습니다"},401);const o={id:r.id,email:r.email,name:r.name,phone:r.phone,academy_id:r.academy_id,academy_name:r.academy_name,role:r.role,user_type:r.user_type||r.role,parent_user_id:r.parent_user_id||null},n=r.user_type==="director"||r.role==="director"||!r.user_type||r.role==="user",i=r.user_type==="teacher"||r.role==="teacher";if(n&&!o.academy_id){console.log("🔧 [Login] Director without academy_id, setting to user.id:",r.id),o.academy_id=r.id;try{await a.DB.prepare("UPDATE users SET academy_id = ? WHERE id = ?").bind(r.id,r.id).run(),console.log("✅ [Login] Updated director academy_id in DB:",r.id)}catch(l){console.error("Failed to update director academy_id:",l)}}if(i&&!o.academy_id&&r.parent_user_id)try{const l=await a.DB.prepare("SELECT id, academy_id FROM users WHERE id = ?").bind(r.parent_user_id).first();if(l){const d=l.academy_id||l.id;o.academy_id=d,console.log("🔧 [Login] Set teacher academy_id from director:",d),await a.DB.prepare("UPDATE users SET academy_id = ? WHERE id = ?").bind(d,r.id).run(),console.log("✅ [Login] Updated teacher academy_id in DB"),l.academy_id||(await a.DB.prepare("UPDATE users SET academy_id = ? WHERE id = ?").bind(l.id,l.id).run(),console.log("✅ [Login] Also updated director academy_id in DB:",l.id))}}catch(l){console.error("Failed to fetch director academy_id:",l)}if(console.log("🔐 [Login] Final user info:",{id:o.id,academy_id:o.academy_id,user_type:o.user_type,role:o.role}),i)try{const l=await a.DB.prepare(`
+    `).bind(t,s,a,r,n||"",JSON.stringify(o||[]),i).run(),e.json({success:!0,message:"문의가 접수되었습니다"})}catch(t){return console.error("Contact error:",t),e.json({success:!1,error:"문의 접수 실패"},500)}});c.post("/api/login",async e=>{try{const{email:t,password:s}=await e.req.json(),{env:a}=e,r=await a.DB.prepare("SELECT * FROM users WHERE email = ?").bind(t).first();if(!r)return e.json({success:!1,error:"이메일 또는 비밀번호가 일치하지 않습니다"},401);if(r.password!==s)return e.json({success:!1,error:"이메일 또는 비밀번호가 일치하지 않습니다"},401);const n={id:r.id,email:r.email,name:r.name,phone:r.phone,academy_id:r.academy_id,academy_name:r.academy_name,role:r.role,user_type:r.user_type||r.role,parent_user_id:r.parent_user_id||null},o=r.user_type==="director"||r.role==="director"||!r.user_type||r.role==="user",i=r.user_type==="teacher"||r.role==="teacher";if(o&&!n.academy_id){console.log("🔧 [Login] Director without academy_id, setting to user.id:",r.id),n.academy_id=r.id;try{await a.DB.prepare("UPDATE users SET academy_id = ? WHERE id = ?").bind(r.id,r.id).run(),console.log("✅ [Login] Updated director academy_id in DB:",r.id)}catch(l){console.error("Failed to update director academy_id:",l)}}if(i&&!n.academy_id&&r.parent_user_id)try{const l=await a.DB.prepare("SELECT id, academy_id FROM users WHERE id = ?").bind(r.parent_user_id).first();if(l){const d=l.academy_id||l.id;n.academy_id=d,console.log("🔧 [Login] Set teacher academy_id from director:",d),await a.DB.prepare("UPDATE users SET academy_id = ? WHERE id = ?").bind(d,r.id).run(),console.log("✅ [Login] Updated teacher academy_id in DB"),l.academy_id||(await a.DB.prepare("UPDATE users SET academy_id = ? WHERE id = ?").bind(l.id,l.id).run(),console.log("✅ [Login] Also updated director academy_id in DB:",l.id))}}catch(l){console.error("Failed to fetch director academy_id:",l)}if(console.log("🔐 [Login] Final user info:",{id:n.id,academy_id:n.academy_id,user_type:n.user_type,role:n.role}),i)try{const l=await a.DB.prepare(`
           SELECT permissions 
           FROM teacher_permissions 
           WHERE teacher_id = ?
-        `).bind(r.id).first();l&&l.permissions?(o.permissions=JSON.parse(l.permissions),console.log("Teacher permissions loaded:",o.permissions)):(o.permissions={canViewAllStudents:!1,canWriteDailyReports:!1,assignedClasses:[]},console.log("No permissions found, using defaults"))}catch(l){console.error("Error loading teacher permissions:",l),o.permissions={canViewAllStudents:!1,canWriteDailyReports:!1,assignedClasses:[]}}return e.json({success:!0,message:"로그인 성공",user:o})}catch(t){return console.error("Login error:",t),e.json({success:!1,error:"로그인 처리 중 오류가 발생했습니다"},500)}});c.post("/api/sms/send",async e=>{try{const{userId:t,receivers:s,message:a,subject:r}=await e.req.json();if(!s||s.length===0)return e.json({success:!1,error:"수신자 번호를 입력해주세요"},400);if(!a)return e.json({success:!1,error:"메시지 내용을 입력해주세요"},400);const o="4bbi3l27pb5qh11tkujl578bttz6vb5j",n="wangholy",i="010-8739-9697",l=s.map(x=>x.replace(/-/g,"")),d="https://apis.aligo.in/send/",p=new URLSearchParams;p.append("key",o),p.append("user_id",n),p.append("sender",i.replace(/-/g,"")),p.append("receiver",l.join(",")),p.append("msg",a),r&&p.append("title",r);const u=a.length<=90?"SMS":"LMS";p.append("msg_type",u),console.log("알리고 SMS 발송 시도:",{receivers:l,messageLength:a.length,msgType:u});const g=await(await fetch(d,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:p.toString()})).json();if(console.log("알리고 API 응답:",g),g.result_code==="1"){const{env:x}=e;for(const b of l)try{await x.DB.prepare(`
+        `).bind(r.id).first();l&&l.permissions?(n.permissions=JSON.parse(l.permissions),console.log("Teacher permissions loaded:",n.permissions)):(n.permissions={canViewAllStudents:!1,canWriteDailyReports:!1,assignedClasses:[]},console.log("No permissions found, using defaults"))}catch(l){console.error("Error loading teacher permissions:",l),n.permissions={canViewAllStudents:!1,canWriteDailyReports:!1,assignedClasses:[]}}return e.json({success:!0,message:"로그인 성공",user:n})}catch(t){return console.error("Login error:",t),e.json({success:!1,error:"로그인 처리 중 오류가 발생했습니다"},500)}});c.post("/api/sms/send",async e=>{try{const{userId:t,receivers:s,message:a,subject:r}=await e.req.json();if(!s||s.length===0)return e.json({success:!1,error:"수신자 번호를 입력해주세요"},400);if(!a)return e.json({success:!1,error:"메시지 내용을 입력해주세요"},400);const n="4bbi3l27pb5qh11tkujl578bttz6vb5j",o="wangholy",i="010-8739-9697",l=s.map(x=>x.replace(/-/g,"")),d="https://apis.aligo.in/send/",p=new URLSearchParams;p.append("key",n),p.append("user_id",o),p.append("sender",i.replace(/-/g,"")),p.append("receiver",l.join(",")),p.append("msg",a),r&&p.append("title",r);const u=a.length<=90?"SMS":"LMS";p.append("msg_type",u),console.log("알리고 SMS 발송 시도:",{receivers:l,messageLength:a.length,msgType:u});const g=await(await fetch(d,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:p.toString()})).json();if(console.log("알리고 API 응답:",g),g.result_code==="1"){const{env:x}=e;for(const b of l)try{await x.DB.prepare(`
             INSERT INTO sms_history (
               recipient_phone, message_content, status, sent_at, 
               result_code, result_message, cost, created_by, created_at
             )
             VALUES (?, ?, ?, datetime('now'), ?, ?, ?, ?, datetime('now'))
-          `).bind(b,a,"sent",g.result_code,g.message||"발송 성공",20,t||null).run()}catch(f){console.error("SMS 로그 저장 오류:",f)}return e.json({success:!0,message:"문자 발송 성공",data:{sentCount:g.success_cnt||l.length,failCount:g.error_cnt||0,msgType:u,details:g}})}else{const{env:x}=e;for(const b of l)try{await x.DB.prepare(`
+          `).bind(b,a,"sent",g.result_code,g.message||"발송 성공",20,t||null).run()}catch(h){console.error("SMS 로그 저장 오류:",h)}return e.json({success:!0,message:"문자 발송 성공",data:{sentCount:g.success_cnt||l.length,failCount:g.error_cnt||0,msgType:u,details:g}})}else{const{env:x}=e;for(const b of l)try{await x.DB.prepare(`
             INSERT INTO sms_logs (user_id, receiver, message, subject, status, result_code, result_message, created_at)
             VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))
-          `).bind(t||null,b,a,r||"","failed",g.result_code||"-1",g.message||"발송 실패").run()}catch(f){console.error("SMS 로그 저장 오류:",f)}return e.json({success:!1,error:"문자 발송 실패",message:g.message||"알 수 없는 오류",resultCode:g.result_code},400)}}catch(t){return console.error("SMS 발송 오류:",t),e.json({success:!1,error:"문자 발송 중 오류가 발생했습니다",details:error instanceof Error?error.message:"알 수 없는 오류"},500)}});c.get("/api/sms/logs",async e=>{try{const t=e.req.query("userId"),{env:s}=e;let a="SELECT * FROM sms_history",r=[];t&&(a+=" WHERE created_by = ?",r.push(t)),a+=" ORDER BY created_at DESC LIMIT 100";const{results:o}=await s.DB.prepare(a).bind(...r).all();return e.json({success:!0,logs:o||[]})}catch(t){return console.error("SMS 로그 조회 오류:",t),e.json({success:!1,error:"SMS 로그 조회 실패"},500)}});c.get("/tools/place-keyword-analyzer",e=>e.html(`
+          `).bind(t||null,b,a,r||"","failed",g.result_code||"-1",g.message||"발송 실패").run()}catch(h){console.error("SMS 로그 저장 오류:",h)}return e.json({success:!1,error:"문자 발송 실패",message:g.message||"알 수 없는 오류",resultCode:g.result_code},400)}}catch(t){return console.error("SMS 발송 오류:",t),e.json({success:!1,error:"문자 발송 중 오류가 발생했습니다",details:error instanceof Error?error.message:"알 수 없는 오류"},500)}});c.get("/api/sms/logs",async e=>{try{const t=e.req.query("userId"),{env:s}=e;let a="SELECT * FROM sms_history",r=[];t&&(a+=" WHERE created_by = ?",r.push(t)),a+=" ORDER BY created_at DESC LIMIT 100";const{results:n}=await s.DB.prepare(a).bind(...r).all();return e.json({success:!0,logs:n||[]})}catch(t){return console.error("SMS 로그 조회 오류:",t),e.json({success:!1,error:"SMS 로그 조회 실패"},500)}});c.get("/tools/place-keyword-analyzer",e=>e.html(`
     <!DOCTYPE html>
     <html lang="ko">
     <head>
@@ -24972,7 +25426,7 @@ ${O}
         </div>
     </body>
     </html>
-  `));c.get("/admin",async e=>e.redirect("/admin/dashboard",301));c.get("/admin/users",async e=>{var a,r,o;const{env:t}=e,s=await t.DB.prepare("SELECT id, email, name, phone, academy_name, role, points, created_at FROM users ORDER BY created_at DESC").all();return e.html(`
+  `));c.get("/admin",async e=>e.redirect("/admin/dashboard",301));c.get("/admin/users",async e=>{var a,r,n;const{env:t}=e,s=await t.DB.prepare("SELECT id, email, name, phone, academy_name, role, points, created_at FROM users ORDER BY created_at DESC").all();return e.html(`
     <!DOCTYPE html>
     <html lang="ko">
     <head>
@@ -25333,45 +25787,45 @@ ${O}
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
-                            ${((o=s==null?void 0:s.results)==null?void 0:o.map(n=>{const i=(n.name||"").replace(/"/g,"&quot;");return`
-                                <tr class="hover:bg-gray-50" data-user="${n.id}">
-                                    <td class="px-3 py-3 whitespace-nowrap text-xs text-gray-900">${n.id}</td>
-                                    <td class="px-3 py-3 whitespace-nowrap text-xs text-gray-900">${n.email}</td>
-                                    <td class="px-3 py-3 whitespace-nowrap text-xs font-medium text-gray-900">${n.name}</td>
-                                    <td class="px-3 py-3 whitespace-nowrap text-xs text-gray-600">${n.phone||"-"}</td>
-                                    <td class="px-3 py-3 whitespace-nowrap text-xs text-gray-600">${n.academy_name||"-"}</td>
-                                    <td class="px-3 py-3 whitespace-nowrap text-xs font-medium text-blue-600">${(n.points||0).toLocaleString()}P</td>
+                            ${((n=s==null?void 0:s.results)==null?void 0:n.map(o=>{const i=(o.name||"").replace(/"/g,"&quot;");return`
+                                <tr class="hover:bg-gray-50" data-user="${o.id}">
+                                    <td class="px-3 py-3 whitespace-nowrap text-xs text-gray-900">${o.id}</td>
+                                    <td class="px-3 py-3 whitespace-nowrap text-xs text-gray-900">${o.email}</td>
+                                    <td class="px-3 py-3 whitespace-nowrap text-xs font-medium text-gray-900">${o.name}</td>
+                                    <td class="px-3 py-3 whitespace-nowrap text-xs text-gray-600">${o.phone||"-"}</td>
+                                    <td class="px-3 py-3 whitespace-nowrap text-xs text-gray-600">${o.academy_name||"-"}</td>
+                                    <td class="px-3 py-3 whitespace-nowrap text-xs font-medium text-blue-600">${(o.points||0).toLocaleString()}P</td>
                                     <td class="px-3 py-3 whitespace-nowrap">
-                                        <span class="px-2 py-1 text-xs font-medium rounded-full ${n.role==="admin"?"bg-purple-100 text-purple-700":"bg-gray-100 text-gray-700"}">
-                                            ${n.role==="admin"?"관리자":"회원"}
+                                        <span class="px-2 py-1 text-xs font-medium rounded-full ${o.role==="admin"?"bg-purple-100 text-purple-700":"bg-gray-100 text-gray-700"}">
+                                            ${o.role==="admin"?"관리자":"회원"}
                                         </span>
                                     </td>
-                                    <td class="px-3 py-3 whitespace-nowrap text-xs text-gray-600">${new Date(n.created_at).toLocaleString("ko-KR",{timeZone:"Asia/Seoul",year:"numeric",month:"2-digit",day:"2-digit"})}</td>
+                                    <td class="px-3 py-3 whitespace-nowrap text-xs text-gray-600">${new Date(o.created_at).toLocaleString("ko-KR",{timeZone:"Asia/Seoul",year:"numeric",month:"2-digit",day:"2-digit"})}</td>
                                     <td class="px-3 py-3 whitespace-nowrap text-xs">
-                                        ${n.role!=="admin"?`
+                                        ${o.role!=="admin"?`
                                             <div class="flex gap-1">
-                                                <button onclick="changePassword(${n.id}, '${i}')" class="px-2 py-1 bg-orange-600 text-white rounded hover:bg-orange-700 text-xs" title="비밀번호">
+                                                <button onclick="changePassword(${o.id}, '${i}')" class="px-2 py-1 bg-orange-600 text-white rounded hover:bg-orange-700 text-xs" title="비밀번호">
                                                     🔑
                                                 </button>
-                                                <button onclick="givePoints(${n.id}, '${i}', ${n.points||0})" class="px-2 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-xs" title="포인트 지급">
+                                                <button onclick="givePoints(${o.id}, '${i}', ${o.points||0})" class="px-2 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-xs" title="포인트 지급">
                                                     💰
                                                 </button>
-                                                <button onclick="deductPoints(${n.id}, '${i}', ${n.points||0})" class="px-2 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-xs" title="포인트 차감">
+                                                <button onclick="deductPoints(${o.id}, '${i}', ${o.points||0})" class="px-2 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-xs" title="포인트 차감">
                                                     ❌
                                                 </button>
-                                                <button onclick="loginAs(${n.id}, '${i}')" class="px-2 py-1 bg-purple-600 text-white rounded hover:bg-purple-700 text-xs" title="로그인">
+                                                <button onclick="loginAs(${o.id}, '${i}')" class="px-2 py-1 bg-purple-600 text-white rounded hover:bg-purple-700 text-xs" title="로그인">
                                                     👤
                                                 </button>
-                                                <button onclick="managePermissions(${n.id}, '${i}')" class="px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-xs" title="권한">
+                                                <button onclick="managePermissions(${o.id}, '${i}')" class="px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-xs" title="권한">
                                                     ⚙️
                                                 </button>
-                                                <button onclick="manageUsageLimits(${n.id}, '${i}')" class="px-2 py-1 bg-teal-600 text-white rounded hover:bg-teal-700 text-xs" title="사용 한도">
+                                                <button onclick="manageUsageLimits(${o.id}, '${i}')" class="px-2 py-1 bg-teal-600 text-white rounded hover:bg-teal-700 text-xs" title="사용 한도">
                                                     📊
                                                 </button>
-                                                <a href="/admin/users/${n.id}" class="px-2 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700 text-xs inline-block" title="상세">
+                                                <a href="/admin/users/${o.id}" class="px-2 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700 text-xs inline-block" title="상세">
                                                     📋
                                                 </a>
-                                                <button onclick="deleteUser(${n.id}, '${i}')" class="px-2 py-1 bg-red-700 text-white rounded hover:bg-red-800 text-xs" title="삭제">
+                                                <button onclick="deleteUser(${o.id}, '${i}')" class="px-2 py-1 bg-red-700 text-white rounded hover:bg-red-800 text-xs" title="삭제">
                                                     🗑️
                                                 </button>
                                             </div>
@@ -25674,39 +26128,39 @@ ${O}
         CREATE INDEX IF NOT EXISTS idx_teacher_applications_status ON teacher_applications(status)
       `).run(),await e.env.DB.prepare(`
         CREATE INDEX IF NOT EXISTS idx_teacher_applications_email ON teacher_applications(email)
-      `).run(),console.log("[Migration] teacher_applications indexes created")}catch{}const{email:t,password:s,name:a,phone:r,academyName:o,verificationCode:n}=await e.req.json();if(!t||!s||!a||!o||!n)return e.json({success:!1,error:"필수 정보를 모두 입력해주세요."},400);const i=await e.env.DB.prepare(`
+      `).run(),console.log("[Migration] teacher_applications indexes created")}catch{}const{email:t,password:s,name:a,phone:r,academyName:n,verificationCode:o}=await e.req.json();if(!t||!s||!a||!n||!o)return e.json({success:!1,error:"필수 정보를 모두 입력해주세요."},400);const i=await e.env.DB.prepare(`
       SELECT avc.*, u.id as director_id, u.email as director_email, u.name as director_name, u.academy_name
       FROM academy_verification_codes avc
       JOIN users u ON avc.user_id = u.id
       WHERE avc.code = ? AND avc.is_active = 1
-    `).bind(n.toUpperCase()).first();if(!i)return e.json({success:!1,error:"유효하지 않은 인증 코드입니다."},400);const l=i.academy_name||o,d=await e.env.DB.prepare("SELECT id, email, name FROM users WHERE email = ?").bind(t).first();if(d){console.log("[TeacherApply] Existing user found, creating connection request:",d);const m=await e.env.DB.prepare('SELECT id, name, phone FROM teacher_applications WHERE email = ? AND director_email = ? AND status = "pending"').bind(t,i.director_email).first();if(m)return console.log("[TeacherApply] Updating existing pending application:",m.id),await e.env.DB.prepare(`
+    `).bind(o.toUpperCase()).first();if(!i)return e.json({success:!1,error:"유효하지 않은 인증 코드입니다."},400);const l=i.academy_name||n,d=await e.env.DB.prepare("SELECT id, email, name FROM users WHERE email = ?").bind(t).first();if(d){console.log("[TeacherApply] Existing user found, creating connection request:",d);const m=await e.env.DB.prepare('SELECT id, name, phone FROM teacher_applications WHERE email = ? AND director_email = ? AND status = "pending"').bind(t,i.director_email).first();if(m)return console.log("[TeacherApply] Updating existing pending application:",m.id),await e.env.DB.prepare(`
           UPDATE teacher_applications 
           SET name = ?, phone = ?, academy_name = ?, verification_code = ?, applied_at = datetime('now')
           WHERE id = ?
-        `).bind(d.name||a,r||null,l,n.toUpperCase(),m.id).run(),e.json({success:!0,applicationId:m.id,message:`이미 신청하신 내역이 있습니다.
+        `).bind(d.name||a,r||null,l,o.toUpperCase(),m.id).run(),e.json({success:!0,applicationId:m.id,message:`이미 신청하신 내역이 있습니다.
 신청 정보가 업데이트되었으며, ${i.director_name} 원장님의 승인을 기다리고 있습니다.`,directorName:i.director_name,isExistingUser:!0,updated:!0});const g=await e.env.DB.prepare(`
         INSERT INTO teacher_applications (
           email, password, name, phone, academy_name, 
           director_email, verification_code, status, applied_at
         )
         VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', datetime('now'))
-      `).bind(t,"EXISTING_USER",d.name||a,r||null,l,i.director_email,n.toUpperCase()).run();return e.json({success:!0,applicationId:g.meta.last_row_id,message:`기존 계정으로 학원 연결 신청이 완료되었습니다.
+      `).bind(t,"EXISTING_USER",d.name||a,r||null,l,i.director_email,o.toUpperCase()).run();return e.json({success:!0,applicationId:g.meta.last_row_id,message:`기존 계정으로 학원 연결 신청이 완료되었습니다.
 ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.director_name,isExistingUser:!0})}const p=await e.env.DB.prepare('SELECT id FROM teacher_applications WHERE email = ? AND director_email = ? AND status = "pending"').bind(t,i.director_email).first();if(p)return console.log("[TeacherApply] Updating existing pending application for new user:",p.id),await e.env.DB.prepare(`
         UPDATE teacher_applications 
         SET name = ?, phone = ?, password = ?, academy_name = ?, verification_code = ?, applied_at = datetime('now')
         WHERE id = ?
-      `).bind(a,r||null,s,l,n.toUpperCase(),p.id).run(),e.json({success:!0,applicationId:p.id,message:`이미 신청하신 내역이 있습니다.
+      `).bind(a,r||null,s,l,o.toUpperCase(),p.id).run(),e.json({success:!0,applicationId:p.id,message:`이미 신청하신 내역이 있습니다.
 신청 정보가 업데이트되었으며, ${i.director_name} 원장님의 승인을 기다리고 있습니다.`,directorName:i.director_name,updated:!0});const u=await e.env.DB.prepare(`
       INSERT INTO teacher_applications (
         email, password, name, phone, academy_name, 
         director_email, verification_code, status, applied_at
       )
       VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', datetime('now'))
-    `).bind(t,s,a,r||null,l,i.director_email,n.toUpperCase()).run();return e.json({success:!0,applicationId:u.meta.last_row_id,message:`등록 신청이 완료되었습니다. ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.director_name})}catch(t){return console.error("[TeacherApply] Error:",t),console.error("[TeacherApply] Error stack:",t.stack),console.error("[TeacherApply] Error message:",t.message),e.json({success:!1,error:"등록 신청 중 오류가 발생했습니다.",details:t.message,stack:t.stack},500)}});c.get("/api/teachers/applications",async e=>{var t,s;try{const a=e.req.query("directorId"),r=e.req.query("status")||"pending";if(!a)return e.json({success:!1,error:"원장님 ID가 필요합니다."},400);const o=await e.env.DB.prepare("SELECT email FROM users WHERE id = ?").bind(a).first();if(!o)return e.json({success:!1,error:"원장님 정보를 찾을 수 없습니다."},404);console.log("[GetApplications] Director:",o.email,"Status:",r);const n=await e.env.DB.prepare(`
+    `).bind(t,s,a,r||null,l,i.director_email,o.toUpperCase()).run();return e.json({success:!0,applicationId:u.meta.last_row_id,message:`등록 신청이 완료되었습니다. ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.director_name})}catch(t){return console.error("[TeacherApply] Error:",t),console.error("[TeacherApply] Error stack:",t.stack),console.error("[TeacherApply] Error message:",t.message),e.json({success:!1,error:"등록 신청 중 오류가 발생했습니다.",details:t.message,stack:t.stack},500)}});c.get("/api/teachers/applications",async e=>{var t,s;try{const a=e.req.query("directorId"),r=e.req.query("status")||"pending";if(!a)return e.json({success:!1,error:"원장님 ID가 필요합니다."},400);const n=await e.env.DB.prepare("SELECT email FROM users WHERE id = ?").bind(a).first();if(!n)return e.json({success:!1,error:"원장님 정보를 찾을 수 없습니다."},404);console.log("[GetApplications] Director:",n.email,"Status:",r);const o=await e.env.DB.prepare(`
       SELECT * FROM teacher_applications
       WHERE director_email = ? AND status = ?
       ORDER BY applied_at DESC
-    `).bind(o.email,r).all();return console.log("[GetApplications] Found applications:",((t=n.results)==null?void 0:t.length)||0),e.json({success:!0,applications:n.results||[],debug:{directorEmail:o.email,status:r,count:((s=n.results)==null?void 0:s.length)||0}})}catch(a){return console.error("Get applications error:",a),e.json({success:!1,error:"신청 목록 조회 중 오류가 발생했습니다."},500)}});c.post("/api/teachers/applications/:id/approve",async e=>{try{const t=e.req.param("id"),{directorId:s}=await e.req.json();if(!s)return e.json({success:!1,error:"원장님 ID가 필요합니다."},400);const a=await e.env.DB.prepare('SELECT * FROM teacher_applications WHERE id = ? AND status = "pending"').bind(t).first();if(!a)return e.json({success:!1,error:"신청을 찾을 수 없거나 이미 처리되었습니다."},404);const r=await e.env.DB.prepare("SELECT id, academy_name FROM users WHERE id = ?").bind(s).first();if(!r)return e.json({success:!1,error:"원장님 정보를 찾을 수 없습니다."},404);const o=await e.env.DB.prepare("SELECT id, email, name, user_type, parent_user_id FROM users WHERE email = ?").bind(a.email).first();if(!o){console.log("[ApproveTeacher] New teacher - checking limit");const i=await e.env.DB.prepare(`
+    `).bind(n.email,r).all();return console.log("[GetApplications] Found applications:",((t=o.results)==null?void 0:t.length)||0),e.json({success:!0,applications:o.results||[],debug:{directorEmail:n.email,status:r,count:((s=o.results)==null?void 0:s.length)||0}})}catch(a){return console.error("Get applications error:",a),e.json({success:!1,error:"신청 목록 조회 중 오류가 발생했습니다."},500)}});c.post("/api/teachers/applications/:id/approve",async e=>{try{const t=e.req.param("id"),{directorId:s}=await e.req.json();if(!s)return e.json({success:!1,error:"원장님 ID가 필요합니다."},400);const a=await e.env.DB.prepare('SELECT * FROM teacher_applications WHERE id = ? AND status = "pending"').bind(t).first();if(!a)return e.json({success:!1,error:"신청을 찾을 수 없거나 이미 처리되었습니다."},404);const r=await e.env.DB.prepare("SELECT id, academy_name FROM users WHERE id = ?").bind(s).first();if(!r)return e.json({success:!1,error:"원장님 정보를 찾을 수 없습니다."},404);const n=await e.env.DB.prepare("SELECT id, email, name, user_type, parent_user_id FROM users WHERE email = ?").bind(a.email).first();if(!n){console.log("[ApproveTeacher] New teacher - checking limit");const i=await e.env.DB.prepare(`
         SELECT * FROM subscriptions 
         WHERE academy_id = ? AND status = 'active'
         ORDER BY created_at DESC LIMIT 1
@@ -25717,28 +26171,28 @@ ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.di
         SELECT COUNT(*) as count FROM users 
         WHERE parent_user_id = ? AND user_type = 'teacher'
       `).bind(s).first(),p=Math.max((l==null?void 0:l.count)||0,(d==null?void 0:d.count)||0),u=i.teacher_limit;if(console.log("[ApproveTeacher] By academy_id:",l==null?void 0:l.count,"By parent_user_id:",d==null?void 0:d.count),console.log("[ApproveTeacher] Current teachers:",p,"Limit:",u),p>=u)return e.json({success:!1,error:`선생님 계정 한도에 도달했습니다. (${p}/${u})
-플랜을 업그레이드하거나 기존 선생님을 삭제해주세요.`,currentTeachers:p,teacherLimit:u},403)}let n;return o?(console.log("[ApproveTeacher] Existing user found, updating connection:",o),n=o.id,await e.env.DB.prepare(`
+플랜을 업그레이드하거나 기존 선생님을 삭제해주세요.`,currentTeachers:p,teacherLimit:u},403)}let o;return n?(console.log("[ApproveTeacher] Existing user found, updating connection:",n),o=n.id,await e.env.DB.prepare(`
         UPDATE users 
         SET parent_user_id = ?, academy_name = ?, academy_id = ?, user_type = 'teacher', role = 'teacher'
         WHERE id = ?
-      `).bind(s,r.academy_name,s,o.id).run(),console.log("[ApproveTeacher] User connected to academy")):(console.log("[ApproveTeacher] New user, creating account"),n=(await e.env.DB.prepare(`
+      `).bind(s,r.academy_name,s,n.id).run(),console.log("[ApproveTeacher] User connected to academy")):(console.log("[ApproveTeacher] New user, creating account"),o=(await e.env.DB.prepare(`
         INSERT INTO users (
           email, password, name, phone, role, user_type,
           parent_user_id, academy_name, academy_id, created_at
         )
         VALUES (?, ?, ?, ?, 'teacher', 'teacher', ?, ?, ?, datetime('now'))
-      `).bind(a.email,a.password,a.name,a.phone,s,r.academy_name,s).run()).meta.last_row_id,console.log("[ApproveTeacher] New teacher created with ID:",n)),await e.env.DB.prepare(`
+      `).bind(a.email,a.password,a.name,a.phone,s,r.academy_name,s).run()).meta.last_row_id,console.log("[ApproveTeacher] New teacher created with ID:",o)),await e.env.DB.prepare(`
       UPDATE teacher_applications 
       SET status = 'approved', processed_at = datetime('now'), processed_by = ?
       WHERE id = ?
-    `).bind(s,t).run(),e.json({success:!0,teacherId:n,message:`${a.name} 선생님의 등록이 승인되었습니다.`})}catch(t){return console.error("[ApproveTeacher] Error:",t),console.error("[ApproveTeacher] Error message:",t.message),console.error("[ApproveTeacher] Error stack:",t.stack),e.json({success:!1,error:"승인 처리 중 오류가 발생했습니다.",details:t.message,stack:t.stack},500)}});c.post("/api/teachers/applications/:id/reject",async e=>{try{const t=e.req.param("id"),{directorId:s,reason:a}=await e.req.json();if(!s)return e.json({success:!1,error:"원장님 ID가 필요합니다."},400);const r=await e.env.DB.prepare('SELECT * FROM teacher_applications WHERE id = ? AND status = "pending"').bind(t).first();return r?(await e.env.DB.prepare(`
+    `).bind(s,t).run(),e.json({success:!0,teacherId:o,message:`${a.name} 선생님의 등록이 승인되었습니다.`})}catch(t){return console.error("[ApproveTeacher] Error:",t),console.error("[ApproveTeacher] Error message:",t.message),console.error("[ApproveTeacher] Error stack:",t.stack),e.json({success:!1,error:"승인 처리 중 오류가 발생했습니다.",details:t.message,stack:t.stack},500)}});c.post("/api/teachers/applications/:id/reject",async e=>{try{const t=e.req.param("id"),{directorId:s,reason:a}=await e.req.json();if(!s)return e.json({success:!1,error:"원장님 ID가 필요합니다."},400);const r=await e.env.DB.prepare('SELECT * FROM teacher_applications WHERE id = ? AND status = "pending"').bind(t).first();return r?(await e.env.DB.prepare(`
       UPDATE teacher_applications 
       SET status = 'rejected', processed_at = datetime('now'), 
           processed_by = ?, reject_reason = ?
       WHERE id = ?
     `).bind(s,a||"원장님에 의해 거부됨",t).run(),e.json({success:!0,message:`${r.name} 선생님의 등록 신청이 거부되었습니다.`})):e.json({success:!1,error:"신청을 찾을 수 없거나 이미 처리되었습니다."},404)}catch(t){return console.error("Reject application error:",t),e.json({success:!1,error:"거부 처리 중 오류가 발생했습니다."},500)}});c.post("/api/teachers/add",async e=>{try{try{await e.env.DB.prepare(`
         ALTER TABLE users ADD COLUMN assigned_class TEXT
-      `).run(),console.log("[Migration] assigned_class column added to users table")}catch{console.log("[Migration] assigned_class column already exists or migration skipped")}const{name:t,email:s,phone:a,assigned_class:r,user_id:o,directorId:n,password:i}=await e.req.json(),l=o||n;if(!l||!t||!s)return e.json({success:!1,error:"필수 정보를 모두 입력해주세요."},400);const d=await e.env.DB.prepare("SELECT id, academy_id FROM users WHERE id = ?").bind(l).first();let p=d==null?void 0:d.academy_id;if(!p){p=l;try{await e.env.DB.prepare("UPDATE users SET academy_id = ? WHERE id = ?").bind(p,l).run(),console.log("🔧 [AddTeacher] Auto-set academy_id for director:",l)}catch(E){console.error("Failed to set academy_id:",E)}}const u=await e.env.DB.prepare(`
+      `).run(),console.log("[Migration] assigned_class column added to users table")}catch{console.log("[Migration] assigned_class column already exists or migration skipped")}const{name:t,email:s,phone:a,assigned_class:r,user_id:n,directorId:o,password:i}=await e.req.json(),l=n||o;if(!l||!t||!s)return e.json({success:!1,error:"필수 정보를 모두 입력해주세요."},400);const d=await e.env.DB.prepare("SELECT id, academy_id FROM users WHERE id = ?").bind(l).first();let p=d==null?void 0:d.academy_id;if(!p){p=l;try{await e.env.DB.prepare("UPDATE users SET academy_id = ? WHERE id = ?").bind(p,l).run(),console.log("🔧 [AddTeacher] Auto-set academy_id for director:",l)}catch(_){console.error("Failed to set academy_id:",_)}}const u=await e.env.DB.prepare(`
       SELECT id, teacher_limit 
       FROM subscriptions 
       WHERE academy_id = ?
@@ -25756,17 +26210,17 @@ ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.di
 
 현재 선생님 계정 수: ${x}명 / 한도: ${b}명
 
-더 많은 선생님을 추가하시려면 상위 플랜으로 업그레이드해주세요.`},403);const f=await e.env.DB.prepare("SELECT id, academy_name, email FROM users WHERE id = ?").bind(l).first();if(!f)return e.json({success:!1,error:"원장님 정보를 찾을 수 없습니다."},404);const v=await e.env.DB.prepare("SELECT id, name, user_type, parent_user_id FROM users WHERE email = ?").bind(s).first();let _;if(v)return console.log("[AddTeacher] Existing user found, connecting to academy:",v),v.parent_user_id===parseInt(l)?e.json({success:!1,error:"이미 이 학원의 선생님입니다."},400):(_=v.id,await e.env.DB.prepare(`
+더 많은 선생님을 추가하시려면 상위 플랜으로 업그레이드해주세요.`},403);const h=await e.env.DB.prepare("SELECT id, academy_name, email FROM users WHERE id = ?").bind(l).first();if(!h)return e.json({success:!1,error:"원장님 정보를 찾을 수 없습니다."},404);const v=await e.env.DB.prepare("SELECT id, name, user_type, parent_user_id FROM users WHERE email = ?").bind(s).first();let E;if(v)return console.log("[AddTeacher] Existing user found, connecting to academy:",v),v.parent_user_id===parseInt(l)?e.json({success:!1,error:"이미 이 학원의 선생님입니다."},400):(E=v.id,await e.env.DB.prepare(`
         UPDATE users 
         SET parent_user_id = ?, academy_name = ?, academy_id = ?, user_type = 'teacher', assigned_class = ?, updated_at = datetime('now')
         WHERE id = ?
-      `).bind(l,f.academy_name,p,r||null,v.id).run(),console.log("✅ [AddTeacher] Existing teacher connected. Total teachers:",x+1,"/",b),e.json({success:!0,teacherId:_,message:`${v.name||t} 선생님이 이 학원에 연결되었습니다.`,isExistingUser:!0,usage:{current:x+1,limit:b}}));const y=i||"teacher123";return _=(await e.env.DB.prepare(`
+      `).bind(l,h.academy_name,p,r||null,v.id).run(),console.log("✅ [AddTeacher] Existing teacher connected. Total teachers:",x+1,"/",b),e.json({success:!0,teacherId:E,message:`${v.name||t} 선생님이 이 학원에 연결되었습니다.`,isExistingUser:!0,usage:{current:x+1,limit:b}}));const y=i||"teacher123";return E=(await e.env.DB.prepare(`
       INSERT INTO users (
         email, password, name, phone, role, user_type, 
         parent_user_id, academy_name, academy_id, assigned_class, created_at
       )
       VALUES (?, ?, ?, ?, 'user', 'teacher', ?, ?, ?, ?, datetime('now'))
-    `).bind(s,y,t,a||null,l,f.academy_name,p,r||null).run()).meta.last_row_id,console.log("✅ [AddTeacher] New teacher added. Total teachers:",x+1,"/",b),e.json({success:!0,teacherId:_,message:`${t} 선생님이 추가되었습니다.`,isExistingUser:!1,usage:{current:x+1,limit:b}})}catch(t){return console.error("Add teacher error:",t),e.json({success:!1,error:"선생님 추가 중 오류가 발생했습니다.",details:t.message},500)}});c.get("/api/teachers/verification-code",async e=>{try{const t=e.req.query("directorId");if(!t)return e.json({success:!1,error:"원장님 ID가 필요합니다."},400);console.log("[VerificationCode] GET request for directorId:",t);try{await e.env.DB.prepare(`
+    `).bind(s,y,t,a||null,l,h.academy_name,p,r||null).run()).meta.last_row_id,console.log("✅ [AddTeacher] New teacher added. Total teachers:",x+1,"/",b),e.json({success:!0,teacherId:E,message:`${t} 선생님이 추가되었습니다.`,isExistingUser:!1,usage:{current:x+1,limit:b}})}catch(t){return console.error("Add teacher error:",t),e.json({success:!1,error:"선생님 추가 중 오류가 발생했습니다.",details:t.message},500)}});c.get("/api/teachers/verification-code",async e=>{try{const t=e.req.query("directorId");if(!t)return e.json({success:!1,error:"원장님 ID가 필요합니다."},400);console.log("[VerificationCode] GET request for directorId:",t);try{await e.env.DB.prepare(`
         CREATE TABLE IF NOT EXISTS academy_verification_codes (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           user_id INTEGER NOT NULL,
@@ -25780,16 +26234,16 @@ ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.di
         CREATE INDEX IF NOT EXISTS idx_verification_codes_user ON academy_verification_codes(user_id)
       `).run(),await e.env.DB.prepare(`
         CREATE INDEX IF NOT EXISTS idx_verification_codes_code ON academy_verification_codes(code)
-      `).run(),console.log("[VerificationCode] Table and indexes ensured")}catch{console.log("[VerificationCode] Table already exists or creation skipped")}const s=await e.env.DB.prepare("SELECT id, academy_name, email FROM users WHERE id = ?").bind(t).first();if(!s)return console.error("[VerificationCode] Director not found:",t),e.json({success:!1,error:"원장님 정보를 찾을 수 없습니다."},404);console.log("[VerificationCode] Director found:",s);let a=null;try{a=await e.env.DB.prepare("SELECT * FROM academy_verification_codes WHERE user_id = ? AND is_active = 1 ORDER BY created_at DESC LIMIT 1").bind(t).first()}catch(o){console.log("[VerificationCode] SELECT error (table might not exist):",o)}if(console.log("[VerificationCode] Existing code:",a),!a||!a.code&&!a.verification_code){console.log("[VerificationCode] Creating new code for director:",t);const o="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";let n="";for(let i=0;i<6;i++)n+=o.charAt(Math.floor(Math.random()*o.length));console.log("[VerificationCode] Generated new code:",n);try{const i=await e.env.DB.prepare(`
+      `).run(),console.log("[VerificationCode] Table and indexes ensured")}catch{console.log("[VerificationCode] Table already exists or creation skipped")}const s=await e.env.DB.prepare("SELECT id, academy_name, email FROM users WHERE id = ?").bind(t).first();if(!s)return console.error("[VerificationCode] Director not found:",t),e.json({success:!1,error:"원장님 정보를 찾을 수 없습니다."},404);console.log("[VerificationCode] Director found:",s);let a=null;try{a=await e.env.DB.prepare("SELECT * FROM academy_verification_codes WHERE user_id = ? AND is_active = 1 ORDER BY created_at DESC LIMIT 1").bind(t).first()}catch(n){console.log("[VerificationCode] SELECT error (table might not exist):",n)}if(console.log("[VerificationCode] Existing code:",a),!a||!a.code&&!a.verification_code){console.log("[VerificationCode] Creating new code for director:",t);const n="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";let o="";for(let i=0;i<6;i++)o+=n.charAt(Math.floor(Math.random()*n.length));console.log("[VerificationCode] Generated new code:",o);try{const i=await e.env.DB.prepare(`
           INSERT INTO academy_verification_codes (user_id, code, is_active, created_at)
           VALUES (?, ?, 1, datetime('now'))
-        `).bind(t,n).run();console.log("[VerificationCode] Insert result:",i),a={id:i.meta.last_row_id,user_id:parseInt(t),code:n,is_active:1,created_at:new Date().toISOString()}}catch(i){throw console.error("[VerificationCode] Insert error:",i),i}}const r=a.code||a.verification_code||"ERROR";return console.log("[VerificationCode] Final response code:",r),e.json({success:!0,code:r,codeData:a,debug:{directorId:t,directorEmail:s.email,hasCode:!!a,codeValue:r}})}catch(t){return console.error("[VerificationCode] Error:",t),e.json({success:!1,error:"인증 코드 조회 중 오류가 발생했습니다.",details:t.message,stack:t.stack},500)}});c.post("/api/teachers/verification-code/regenerate",async e=>{try{const{directorId:t}=await e.req.json();if(!t)return e.json({success:!1,error:"원장님 ID가 필요합니다."},400);console.log("[RegenerateCode] POST request for directorId:",t);const s=await e.env.DB.prepare("SELECT id, academy_name, email FROM users WHERE id = ?").bind(t).first();if(!s)return console.error("[RegenerateCode] Director not found:",t),e.json({success:!1,error:"원장님 정보를 찾을 수 없습니다."},404);console.log("[RegenerateCode] Director found:",s),await e.env.DB.prepare("UPDATE academy_verification_codes SET is_active = 0 WHERE user_id = ?").bind(t).run();const a="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";let r="";for(let n=0;n<6;n++)r+=a.charAt(Math.floor(Math.random()*a.length));console.log("[RegenerateCode] Generated new code:",r);const o=await e.env.DB.prepare(`
+        `).bind(t,o).run();console.log("[VerificationCode] Insert result:",i),a={id:i.meta.last_row_id,user_id:parseInt(t),code:o,is_active:1,created_at:new Date().toISOString()}}catch(i){throw console.error("[VerificationCode] Insert error:",i),i}}const r=a.code||a.verification_code||"ERROR";return console.log("[VerificationCode] Final response code:",r),e.json({success:!0,code:r,codeData:a,debug:{directorId:t,directorEmail:s.email,hasCode:!!a,codeValue:r}})}catch(t){return console.error("[VerificationCode] Error:",t),e.json({success:!1,error:"인증 코드 조회 중 오류가 발생했습니다.",details:t.message,stack:t.stack},500)}});c.post("/api/teachers/verification-code/regenerate",async e=>{try{const{directorId:t}=await e.req.json();if(!t)return e.json({success:!1,error:"원장님 ID가 필요합니다."},400);console.log("[RegenerateCode] POST request for directorId:",t);const s=await e.env.DB.prepare("SELECT id, academy_name, email FROM users WHERE id = ?").bind(t).first();if(!s)return console.error("[RegenerateCode] Director not found:",t),e.json({success:!1,error:"원장님 정보를 찾을 수 없습니다."},404);console.log("[RegenerateCode] Director found:",s),await e.env.DB.prepare("UPDATE academy_verification_codes SET is_active = 0 WHERE user_id = ?").bind(t).run();const a="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";let r="";for(let o=0;o<6;o++)r+=a.charAt(Math.floor(Math.random()*a.length));console.log("[RegenerateCode] Generated new code:",r);const n=await e.env.DB.prepare(`
       INSERT INTO academy_verification_codes (user_id, code, is_active, created_at)
       VALUES (?, ?, 1, datetime('now'))
-    `).bind(t,r).run();return console.log("[RegenerateCode] Insert result:",o),e.json({success:!0,code:r,codeData:{id:o.meta.last_row_id,code:r,verification_code:r,user_id:parseInt(t),is_active:1,created_at:new Date().toISOString()},message:"새로운 인증 코드가 생성되었습니다.",debug:{directorId:t,directorEmail:s.email,newCode:r}})}catch(t){return console.error("[RegenerateCode] Error:",t),e.json({success:!1,error:"인증 코드 재생성 중 오류가 발생했습니다.",details:t.message,stack:t.stack},500)}});c.post("/api/teachers/create",async e=>{try{const{email:t,password:s,name:a,phone:r,directorId:o}=await e.req.json();if(!t||!s||!a||!o)return e.json({success:!1,error:"필수 정보를 모두 입력해주세요."},400);const n=await e.env.DB.prepare("SELECT id, academy_id, academy_name, user_type FROM users WHERE id = ?").bind(o).first();if(!n)return e.json({success:!1,error:"원장님 정보를 찾을 수 없습니다."},404);if(console.log("🏫 [CreateTeacher] Director info:",{id:n.id,academy_id:n.academy_id,academy_name:n.academy_name,user_type:n.user_type}),await e.env.DB.prepare("SELECT id FROM users WHERE email = ?").bind(t).first())return e.json({success:!1,error:"이미 사용 중인 이메일입니다."},400);const l=await e.env.DB.prepare(`
+    `).bind(t,r).run();return console.log("[RegenerateCode] Insert result:",n),e.json({success:!0,code:r,codeData:{id:n.meta.last_row_id,code:r,verification_code:r,user_id:parseInt(t),is_active:1,created_at:new Date().toISOString()},message:"새로운 인증 코드가 생성되었습니다.",debug:{directorId:t,directorEmail:s.email,newCode:r}})}catch(t){return console.error("[RegenerateCode] Error:",t),e.json({success:!1,error:"인증 코드 재생성 중 오류가 발생했습니다.",details:t.message,stack:t.stack},500)}});c.post("/api/teachers/create",async e=>{try{const{email:t,password:s,name:a,phone:r,directorId:n}=await e.req.json();if(!t||!s||!a||!n)return e.json({success:!1,error:"필수 정보를 모두 입력해주세요."},400);const o=await e.env.DB.prepare("SELECT id, academy_id, academy_name, user_type FROM users WHERE id = ?").bind(n).first();if(!o)return e.json({success:!1,error:"원장님 정보를 찾을 수 없습니다."},404);if(console.log("🏫 [CreateTeacher] Director info:",{id:o.id,academy_id:o.academy_id,academy_name:o.academy_name,user_type:o.user_type}),await e.env.DB.prepare("SELECT id FROM users WHERE email = ?").bind(t).first())return e.json({success:!1,error:"이미 사용 중인 이메일입니다."},400);const l=await e.env.DB.prepare(`
       INSERT INTO users (email, password, name, phone, role, user_type, parent_user_id, academy_id, academy_name, created_at)
       VALUES (?, ?, ?, ?, 'user', 'teacher', ?, ?, ?, datetime('now'))
-    `).bind(t,s,a,r||null,o,n.academy_id,n.academy_name).run();return console.log("✅ [CreateTeacher] Teacher created with academy_id:",n.academy_id),e.json({success:!0,teacherId:l.meta.last_row_id,message:"선생님 계정이 생성되었습니다."})}catch(t){return console.error("Create teacher error:",t),e.json({success:!1,error:"선생님 계정 생성 중 오류가 발생했습니다."},500)}});c.get("/api/teachers/list",async e=>{try{const t=e.req.query("directorId");if(!t)return e.json({success:!1,error:"원장님 ID가 필요합니다."},400);const s=await e.env.DB.prepare(`
+    `).bind(t,s,a,r||null,n,o.academy_id,o.academy_name).run();return console.log("✅ [CreateTeacher] Teacher created with academy_id:",o.academy_id),e.json({success:!0,teacherId:l.meta.last_row_id,message:"선생님 계정이 생성되었습니다."})}catch(t){return console.error("Create teacher error:",t),e.json({success:!1,error:"선생님 계정 생성 중 오류가 발생했습니다."},500)}});c.get("/api/teachers/list",async e=>{try{const t=e.req.query("directorId");if(!t)return e.json({success:!1,error:"원장님 ID가 필요합니다."},400);const s=await e.env.DB.prepare(`
       SELECT id, email, name, phone, created_at
       FROM users 
       WHERE parent_user_id = ? AND user_type = 'teacher'
@@ -25814,7 +26268,7 @@ ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.di
       UPDATE users 
       SET parent_user_id = NULL, user_type = 'user', assigned_class = NULL
       WHERE id = ? AND user_type = 'teacher'
-    `).bind(t).run(),e.json({success:!0,message:"선생님이 삭제되었습니다."})):e.json({success:!1,error:"선생님 ID가 필요합니다."},400)}catch(t){return console.error("[DeleteTeacher] Error:",t),e.json({success:!1,error:"선생님 삭제 중 오류가 발생했습니다.",details:t.message},500)}});c.get("/api/teachers/:id/permissions",async e=>{var t;try{const s=e.req.param("id"),a=e.req.query("directorId");if(console.log("🔍 [GetPermissions] teacherId:",s,"directorId:",a),!a)return e.json({success:!1,error:"원장님 ID가 필요합니다."},400);const r=await e.env.DB.prepare("SELECT id, name, email, user_type, parent_user_id FROM users WHERE id = ?").bind(s).first();if(!r)return console.error("❌ [GetPermissions] Teacher not found:",s),e.json({success:!1,error:"선생님을 찾을 수 없습니다."},404);if(console.log("✅ [GetPermissions] Teacher found:",r),r.user_type!=="teacher")return e.json({success:!1,error:"선생님 계정이 아닙니다."},400);if(r.parent_user_id&&r.parent_user_id!==parseInt(a))return console.error("❌ [GetPermissions] Permission denied:",r.parent_user_id,"!=",a),e.json({success:!1,error:"권한이 없습니다."},403);const o=await e.env.DB.prepare("SELECT permission_key, permission_value FROM teacher_permissions WHERE teacher_id = ?").bind(s).all();console.log("📋 [GetPermissions] Found permission rows:",((t=o.results)==null?void 0:t.length)||0);const n={canViewAllStudents:!1,canWriteDailyReports:!1,assignedClasses:[]};if(o.results)for(const i of o.results){const l=i.permission_key,d=i.permission_value;if(l==="assignedClasses"&&typeof d=="string")try{n[l]=JSON.parse(d),console.log("🔄 [GetPermissions] Parsed JSON:",l,"=",n[l])}catch(p){console.error("❌ [GetPermissions] JSON parse error:",p),n[l]=[]}else typeof d=="string"&&(d==="1"||d==="0")?n[l]=d==="1":typeof d=="number"?n[l]=d===1:n[l]=!!d;console.log("➡️ [GetPermissions] Permission:",l,"=",n[l])}return console.log("✅ [GetPermissions] Final permissions:",n),e.json({success:!0,teacher:{id:r.id,name:r.name,email:r.email},permissions:n})}catch(s){return console.error("❌ [GetPermissions] Error:",s),console.error("❌ [GetPermissions] Stack:",s.stack),e.json({success:!1,error:"권한 조회 중 오류가 발생했습니다.",details:s.message},500)}});c.post("/api/teachers/:id/permissions",async e=>{try{const t=e.req.param("id"),{directorId:s,permissions:a}=await e.req.json();if(console.log("📝 [SaveTeacherPermissions] teacherId:",t,"directorId:",s),console.log("📝 [SaveTeacherPermissions] permissions:",a),!s)return e.json({success:!1,error:"원장님 ID가 필요합니다."},400);const r=await e.env.DB.prepare("SELECT id, user_type, parent_user_id FROM users WHERE id = ?").bind(t).first();if(!r)return e.json({success:!1,error:"선생님을 찾을 수 없습니다."},404);if(r.user_type!=="teacher")return e.json({success:!1,error:"선생님 계정이 아닙니다."},400);if(r.parent_user_id&&r.parent_user_id!==parseInt(s))return e.json({success:!1,error:"권한이 없습니다."},403);console.log("✅ [SaveTeacherPermissions] Teacher verified:",r);try{await e.env.DB.prepare(`
+    `).bind(t).run(),e.json({success:!0,message:"선생님이 삭제되었습니다."})):e.json({success:!1,error:"선생님 ID가 필요합니다."},400)}catch(t){return console.error("[DeleteTeacher] Error:",t),e.json({success:!1,error:"선생님 삭제 중 오류가 발생했습니다.",details:t.message},500)}});c.get("/api/teachers/:id/permissions",async e=>{var t;try{const s=e.req.param("id"),a=e.req.query("directorId");if(console.log("🔍 [GetPermissions] teacherId:",s,"directorId:",a),!a)return e.json({success:!1,error:"원장님 ID가 필요합니다."},400);const r=await e.env.DB.prepare("SELECT id, name, email, user_type, parent_user_id FROM users WHERE id = ?").bind(s).first();if(!r)return console.error("❌ [GetPermissions] Teacher not found:",s),e.json({success:!1,error:"선생님을 찾을 수 없습니다."},404);if(console.log("✅ [GetPermissions] Teacher found:",r),r.user_type!=="teacher")return e.json({success:!1,error:"선생님 계정이 아닙니다."},400);if(r.parent_user_id&&r.parent_user_id!==parseInt(a))return console.error("❌ [GetPermissions] Permission denied:",r.parent_user_id,"!=",a),e.json({success:!1,error:"권한이 없습니다."},403);const n=await e.env.DB.prepare("SELECT permission_key, permission_value FROM teacher_permissions WHERE teacher_id = ?").bind(s).all();console.log("📋 [GetPermissions] Found permission rows:",((t=n.results)==null?void 0:t.length)||0);const o={canViewAllStudents:!1,canWriteDailyReports:!1,assignedClasses:[]};if(n.results)for(const i of n.results){const l=i.permission_key,d=i.permission_value;if(l==="assignedClasses"&&typeof d=="string")try{o[l]=JSON.parse(d),console.log("🔄 [GetPermissions] Parsed JSON:",l,"=",o[l])}catch(p){console.error("❌ [GetPermissions] JSON parse error:",p),o[l]=[]}else typeof d=="string"&&(d==="1"||d==="0")?o[l]=d==="1":typeof d=="number"?o[l]=d===1:o[l]=!!d;console.log("➡️ [GetPermissions] Permission:",l,"=",o[l])}return console.log("✅ [GetPermissions] Final permissions:",o),e.json({success:!0,teacher:{id:r.id,name:r.name,email:r.email},permissions:o})}catch(s){return console.error("❌ [GetPermissions] Error:",s),console.error("❌ [GetPermissions] Stack:",s.stack),e.json({success:!1,error:"권한 조회 중 오류가 발생했습니다.",details:s.message},500)}});c.post("/api/teachers/:id/permissions",async e=>{try{const t=e.req.param("id"),{directorId:s,permissions:a}=await e.req.json();if(console.log("📝 [SaveTeacherPermissions] teacherId:",t,"directorId:",s),console.log("📝 [SaveTeacherPermissions] permissions:",a),!s)return e.json({success:!1,error:"원장님 ID가 필요합니다."},400);const r=await e.env.DB.prepare("SELECT id, user_type, parent_user_id FROM users WHERE id = ?").bind(t).first();if(!r)return e.json({success:!1,error:"선생님을 찾을 수 없습니다."},404);if(r.user_type!=="teacher")return e.json({success:!1,error:"선생님 계정이 아닙니다."},400);if(r.parent_user_id&&r.parent_user_id!==parseInt(s))return e.json({success:!1,error:"권한이 없습니다."},403);console.log("✅ [SaveTeacherPermissions] Teacher verified:",r);try{await e.env.DB.prepare(`
         CREATE TABLE IF NOT EXISTS teacher_permissions (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           teacher_id INTEGER NOT NULL,
@@ -25825,10 +26279,10 @@ ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.di
           FOREIGN KEY (teacher_id) REFERENCES users(id),
           UNIQUE(teacher_id, permission_key)
         )
-      `).run(),console.log("✅ [SaveTeacherPermissions] Table ensured")}catch(o){console.error("⚠️ [SaveTeacherPermissions] Table creation warning:",o.message)}if(await e.env.DB.prepare("DELETE FROM teacher_permissions WHERE teacher_id = ?").bind(t).run(),console.log("🗑️ [SaveTeacherPermissions] Old permissions deleted"),a&&typeof a=="object")for(const[o,n]of Object.entries(a)){let i=n;Array.isArray(n)?(i=JSON.stringify(n),console.log("🔄 [SaveTeacherPermissions] Converting array to JSON:",o,"=",i)):typeof n=="boolean"?i=n?1:0:typeof n=="string"?i=n:i=n?1:0,await e.env.DB.prepare(`
+      `).run(),console.log("✅ [SaveTeacherPermissions] Table ensured")}catch(n){console.error("⚠️ [SaveTeacherPermissions] Table creation warning:",n.message)}if(await e.env.DB.prepare("DELETE FROM teacher_permissions WHERE teacher_id = ?").bind(t).run(),console.log("🗑️ [SaveTeacherPermissions] Old permissions deleted"),a&&typeof a=="object")for(const[n,o]of Object.entries(a)){let i=o;Array.isArray(o)?(i=JSON.stringify(o),console.log("🔄 [SaveTeacherPermissions] Converting array to JSON:",n,"=",i)):typeof o=="boolean"?i=o?1:0:typeof o=="string"?i=o:i=o?1:0,await e.env.DB.prepare(`
           INSERT INTO teacher_permissions (teacher_id, permission_key, permission_value, created_at, updated_at)
           VALUES (?, ?, ?, datetime('now'), datetime('now'))
-        `).bind(t,o,i).run(),console.log("➕ [SaveTeacherPermissions] Added permission:",o,"=",i)}return console.log("✅ [SaveTeacherPermissions] All permissions saved successfully"),e.json({success:!0,message:"권한이 저장되었습니다."})}catch(t){return console.error("❌ [SaveTeacherPermissions] Error:",t),console.error("❌ [SaveTeacherPermissions] Stack:",t.stack),e.json({success:!1,error:"권한 저장 중 오류가 발생했습니다: "+t.message},500)}});c.post("/api/classes/create",async e=>{try{const{name:t,description:s,userId:a,teacherId:r,gradeLevel:o,subject:n,maxStudents:i}=await e.req.json();if(!t||!a)return e.json({success:!1,error:"반 이름과 원장님 정보가 필요합니다."},400);try{await e.env.DB.prepare(`
+        `).bind(t,n,i).run(),console.log("➕ [SaveTeacherPermissions] Added permission:",n,"=",i)}return console.log("✅ [SaveTeacherPermissions] All permissions saved successfully"),e.json({success:!0,message:"권한이 저장되었습니다."})}catch(t){return console.error("❌ [SaveTeacherPermissions] Error:",t),console.error("❌ [SaveTeacherPermissions] Stack:",t.stack),e.json({success:!1,error:"권한 저장 중 오류가 발생했습니다: "+t.message},500)}});c.post("/api/classes/create",async e=>{try{const{name:t,description:s,userId:a,teacherId:r,gradeLevel:n,subject:o,maxStudents:i}=await e.req.json();if(!t||!a)return e.json({success:!1,error:"반 이름과 원장님 정보가 필요합니다."},400);try{await e.env.DB.prepare(`
         CREATE TABLE IF NOT EXISTS classes (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           name TEXT NOT NULL,
@@ -25847,7 +26301,7 @@ ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.di
       `).run()}catch(d){console.error("Create classes table error:",d)}const l=await e.env.DB.prepare(`
       INSERT INTO classes (name, description, user_id, teacher_id, grade_level, subject, max_students, status, created_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, 'active', datetime('now'))
-    `).bind(t,s||null,a,r||null,o||null,n||null,i||20).run();return e.json({success:!0,classId:l.meta.last_row_id,message:"반이 생성되었습니다."})}catch(t){return console.error("Create class error:",t),e.json({success:!1,error:"반 생성 중 오류가 발생했습니다.",details:t.message},500)}});c.get("/api/classes/list",async e=>{try{const t=e.req.query("userId"),s=e.req.query("userType");if(!t)return e.json({success:!1,error:"사용자 ID가 필요합니다."},400);try{let a="";a=`
+    `).bind(t,s||null,a,r||null,n||null,o||null,i||20).run();return e.json({success:!0,classId:l.meta.last_row_id,message:"반이 생성되었습니다."})}catch(t){return console.error("Create class error:",t),e.json({success:!1,error:"반 생성 중 오류가 발생했습니다.",details:t.message},500)}});c.get("/api/classes/list",async e=>{try{const t=e.req.query("userId"),s=e.req.query("userType");if(!t)return e.json({success:!1,error:"사용자 ID가 필요합니다."},400);try{let a="";a=`
         SELECT c.id, c.class_name as name, c.grade as grade_level, c.description, 
                c.created_at,
                (SELECT COUNT(*) FROM students WHERE class_id = c.id AND status = 'active') as student_count
@@ -25855,9 +26309,9 @@ ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.di
         WHERE c.academy_id = ?
         ORDER BY c.created_at DESC
       `;const r=await e.env.DB.prepare(a).bind(t).all();return e.json({success:!0,classes:r.results||[]})}catch(a){if(a.message&&a.message.includes("no such table"))return e.json({success:!0,classes:[]});throw a}}catch(t){return console.error("[ClassesList] Error:",t),console.error("[ClassesList] Error message:",t.message),e.json({success:!0,classes:[],warning:"반 목록을 불러올 수 없습니다. 먼저 반을 생성해주세요.",debug:t.message})}});c.put("/api/classes/:id/assign-teacher",async e=>{try{const t=e.req.param("id"),{teacherId:s,userId:a}=await e.req.json(),r=await e.env.DB.prepare("SELECT user_id FROM classes WHERE id = ?").bind(t).first();return!r||r.user_id!==a?e.json({success:!1,error:"권한이 없습니다."},403):(await e.env.DB.prepare("UPDATE classes SET teacher_id = ?, updated_at = datetime('now') WHERE id = ?").bind(s,t).run(),e.json({success:!0,message:"선생님이 배정되었습니다."}))}catch(t){return console.error("Assign teacher error:",t),e.json({success:!1,error:"선생님 배정 중 오류가 발생했습니다."},500)}});c.get("/api/classes",async e=>{console.log(`
-🔍 [GetClasses] ==========================================`),console.log("🔍 [GetClasses] Request started");try{if(!e.env.DB)return console.error("❌ [GetClasses] FATAL: DB not available"),e.json({success:!1,error:"DB 연결 실패"},500);console.log("✅ [GetClasses] DB connection OK");let t=e.req.query("academyId")||e.req.query("userId");console.log("🔍 [GetClasses] Query params - userId:",t);const s=e.req.header("X-User-Data-Base64");if(console.log("🔍 [GetClasses] Header present:",!!s),s&&!t)try{const r=atob(s);console.log("🔍 [GetClasses] Header decoded (first 100 chars):",r.substring(0,100));const o=JSON.parse(r);t=o.id||o.academy_id,console.log("🔍 [GetClasses] Extracted from header - userId:",t)}catch(r){console.error("❌ [GetClasses] Header parse failed:",r.message)}if(!t)return console.error("❌ [GetClasses] No userId found"),e.json({success:!1,error:"사용자 ID가 필요합니다."},400);console.log("🔍 [GetClasses] Final userId:",t);let a=[];try{console.log("🔍 [GetClasses] Attempting: SELECT * FROM classes WHERE academy_id =",t),a=(await e.env.DB.prepare("SELECT * FROM classes WHERE academy_id = ? ORDER BY id DESC").bind(t).all()).results||[],console.log("✅ [GetClasses] SUCCESS with academy_id! Found",a.length,"classes"),a.length>0&&console.log("✅ [GetClasses] First class:",JSON.stringify(a[0]))}catch(r){console.log("⚠️  [GetClasses] academy_id failed:",r.message);try{console.log("🔍 [GetClasses] Attempting: SELECT * FROM classes WHERE user_id =",t),a=(await e.env.DB.prepare("SELECT * FROM classes WHERE user_id = ? ORDER BY id DESC").bind(t).all()).results||[],console.log("✅ [GetClasses] SUCCESS with user_id! Found",a.length,"classes"),a.length>0&&console.log("✅ [GetClasses] First class:",JSON.stringify(a[0]))}catch(o){console.log("⚠️  [GetClasses] user_id failed:",o.message);try{console.log("🔍 [GetClasses] Attempting: SELECT * FROM classes (all)"),a=(await e.env.DB.prepare("SELECT * FROM classes ORDER BY id DESC LIMIT 100").all()).results||[],console.log("✅ [GetClasses] Got all classes:",a.length),a.length>0&&console.log("✅ [GetClasses] First class fields:",Object.keys(a[0]))}catch(n){throw console.error("❌ [GetClasses] ALL queries failed!"),console.error("❌ [GetClasses] Error 1 (academy_id):",r.message),console.error("❌ [GetClasses] Error 2 (user_id):",o.message),console.error("❌ [GetClasses] Error 3 (all):",n.message),n}}}for(const r of a)try{const o=await e.env.DB.prepare("SELECT COUNT(*) as cnt FROM students WHERE class_id = ? AND status = 'active'").bind(r.id).first();r.student_count=(o==null?void 0:o.cnt)||0}catch{console.log("⚠️  [GetClasses] Student count failed for class",r.id),r.student_count=0}return console.log("✅ [GetClasses] Returning",a.length,"classes with student counts"),console.log(`🔍 [GetClasses] ==========================================
+🔍 [GetClasses] ==========================================`),console.log("🔍 [GetClasses] Request started");try{if(!e.env.DB)return console.error("❌ [GetClasses] FATAL: DB not available"),e.json({success:!1,error:"DB 연결 실패"},500);console.log("✅ [GetClasses] DB connection OK");let t=e.req.query("academyId")||e.req.query("userId");console.log("🔍 [GetClasses] Query params - userId:",t);const s=e.req.header("X-User-Data-Base64");if(console.log("🔍 [GetClasses] Header present:",!!s),s&&!t)try{const r=atob(s);console.log("🔍 [GetClasses] Header decoded (first 100 chars):",r.substring(0,100));const n=JSON.parse(r);t=n.id||n.academy_id,console.log("🔍 [GetClasses] Extracted from header - userId:",t)}catch(r){console.error("❌ [GetClasses] Header parse failed:",r.message)}if(!t)return console.error("❌ [GetClasses] No userId found"),e.json({success:!1,error:"사용자 ID가 필요합니다."},400);console.log("🔍 [GetClasses] Final userId:",t);let a=[];try{console.log("🔍 [GetClasses] Attempting: SELECT * FROM classes WHERE academy_id =",t),a=(await e.env.DB.prepare("SELECT * FROM classes WHERE academy_id = ? ORDER BY id DESC").bind(t).all()).results||[],console.log("✅ [GetClasses] SUCCESS with academy_id! Found",a.length,"classes"),a.length>0&&console.log("✅ [GetClasses] First class:",JSON.stringify(a[0]))}catch(r){console.log("⚠️  [GetClasses] academy_id failed:",r.message);try{console.log("🔍 [GetClasses] Attempting: SELECT * FROM classes WHERE user_id =",t),a=(await e.env.DB.prepare("SELECT * FROM classes WHERE user_id = ? ORDER BY id DESC").bind(t).all()).results||[],console.log("✅ [GetClasses] SUCCESS with user_id! Found",a.length,"classes"),a.length>0&&console.log("✅ [GetClasses] First class:",JSON.stringify(a[0]))}catch(n){console.log("⚠️  [GetClasses] user_id failed:",n.message);try{console.log("🔍 [GetClasses] Attempting: SELECT * FROM classes (all)"),a=(await e.env.DB.prepare("SELECT * FROM classes ORDER BY id DESC LIMIT 100").all()).results||[],console.log("✅ [GetClasses] Got all classes:",a.length),a.length>0&&console.log("✅ [GetClasses] First class fields:",Object.keys(a[0]))}catch(o){throw console.error("❌ [GetClasses] ALL queries failed!"),console.error("❌ [GetClasses] Error 1 (academy_id):",r.message),console.error("❌ [GetClasses] Error 2 (user_id):",n.message),console.error("❌ [GetClasses] Error 3 (all):",o.message),o}}}for(const r of a)try{const n=await e.env.DB.prepare("SELECT COUNT(*) as cnt FROM students WHERE class_id = ? AND status = 'active'").bind(r.id).first();r.student_count=(n==null?void 0:n.cnt)||0}catch{console.log("⚠️  [GetClasses] Student count failed for class",r.id),r.student_count=0}return console.log("✅ [GetClasses] Returning",a.length,"classes with student counts"),console.log(`🔍 [GetClasses] ==========================================
 `),e.json({success:!0,classes:a,debug:{userId:t,count:a.length}})}catch(t){return console.error("❌ [GetClasses] FATAL ERROR:",t),console.error("❌ [GetClasses] Message:",t.message),console.error("❌ [GetClasses] Stack:",t.stack),console.log(`🔍 [GetClasses] ==========================================
-`),e.json({success:!1,error:"반 목록 조회 실패: "+t.message,stack:t.stack},500)}});c.post("/api/classes",async e=>{try{let{academyId:t,userId:s,className:a,grade:r,description:o,scheduleDays:n,startTime:i,endTime:l,color:d,daySchedule:p}=await e.req.json();console.log("➕ [CreateClass] Received payload:",{academyId:t,userId:s,className:a,color:d,daySchedule:p}),s=s||t;const u=e.req.header("X-User-Data-Base64");if(console.log("➕ [CreateClass] Header present:",!!u),u&&!s)try{s=JSON.parse(decodeURIComponent(escape(atob(u)))).id,console.log("➕ [CreateClass] Extracted userId from header:",s)}catch(g){console.error("[CreateClass] Failed to parse user header:",g)}if(console.log("➕ [CreateClass] Final userId:",s),!s)return e.json({success:!1,error:"사용자 ID가 필요합니다."},400);if(!a)return e.json({success:!1,error:"반 이름은 필수입니다."},400);console.log("➕ [CreateClass] Creating class for academy_id:",s,"name:",a);let m;try{m=await e.env.DB.prepare("INSERT INTO classes (academy_id, class_name, grade, description, schedule_days, start_time, end_time, color, day_schedule, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))").bind(s,a,r||null,o||null,n||null,i||null,l||null,d||"#8B5CF6",p||null).run()}catch{console.log("⚠️ [CreateClass] new columns not found, trying without them");try{m=await e.env.DB.prepare("INSERT INTO classes (academy_id, class_name, grade, description, schedule_days, start_time, end_time, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))").bind(s,a,r||null,o||null,n||null,i||null,l||null).run()}catch{m=await e.env.DB.prepare("INSERT INTO classes (academy_id, class_name, grade, description, created_at) VALUES (?, ?, ?, ?, datetime('now'))").bind(s,a,r||null,o||null).run()}}return console.log("✅ [CreateClass] Class created with id:",m.meta.last_row_id),e.json({success:!0,classId:m.meta.last_row_id,message:"반이 추가되었습니다."})}catch(t){return console.error("❌ [CreateClass] Error:",t),console.error("❌ [CreateClass] Error stack:",t.stack),e.json({success:!1,error:"반 추가 중 오류가 발생했습니다.",details:t.message},500)}});c.put("/api/classes/:id",async e=>{try{const t=e.req.param("id"),{className:s,grade:a,description:r,scheduleDays:o,startTime:n,endTime:i,color:l,daySchedule:d}=await e.req.json();if(console.log("🔧 [UpdateClass] Received classId:",t,"className:",s,"color:",l),!s)return e.json({success:!1,error:"반 이름은 필수입니다."},400);if(!await e.env.DB.prepare("SELECT id FROM classes WHERE id = ?").bind(t).first())return e.json({success:!1,error:"반을 찾을 수 없습니다."},404);let u;try{u=await e.env.DB.prepare("UPDATE classes SET class_name = ?, grade = ?, description = ?, schedule_days = ?, start_time = ?, end_time = ?, color = ?, day_schedule = ? WHERE id = ?").bind(s,a||null,r||null,o||null,n||null,i||null,l||"#8B5CF6",d||null,t).run()}catch{console.log("⚠️ [UpdateClass] new columns not found, trying without them");try{u=await e.env.DB.prepare("UPDATE classes SET class_name = ?, grade = ?, description = ?, schedule_days = ?, start_time = ?, end_time = ? WHERE id = ?").bind(s,a||null,r||null,o||null,n||null,i||null,t).run()}catch{u=await e.env.DB.prepare("UPDATE classes SET class_name = ?, grade = ?, description = ? WHERE id = ?").bind(s,a||null,r||null,t).run()}}return u.meta.changes===0?e.json({success:!1,error:"반 수정에 실패했습니다."},400):(console.log("✅ [UpdateClass] Class updated successfully"),e.json({success:!0,message:"반이 수정되었습니다."}))}catch(t){return console.error("Update class error:",t),e.json({success:!1,error:"반 수정 중 오류가 발생했습니다."},500)}});c.delete("/api/classes/:id",async e=>{try{const t=e.req.param("id");if(console.log("🗑️ [DeleteClass] ==================== START ===================="),console.log("🗑️ [DeleteClass] Deleting class ID:",t),!t)return console.error("🗑️ [DeleteClass] ❌ No class ID"),e.json({success:!1,error:"반 ID가 필요합니다."},400);const s=await e.env.DB.prepare("SELECT id, class_name FROM classes WHERE id = ?").bind(t).first();if(!s)return console.error("🗑️ [DeleteClass] ❌ Class not found"),e.json({success:!1,error:"반을 찾을 수 없습니다."},404);console.log("🗑️ [DeleteClass] Found class:",s.class_name);try{const a=await e.env.DB.prepare("UPDATE students SET class_id = NULL WHERE class_id = ?").bind(t).run();console.log("🗑️ [DeleteClass] Updated",a.meta.changes,"students")}catch(a){console.error("🗑️ [DeleteClass] ⚠️ Student update error:",a.message)}try{const a=await e.env.DB.prepare("DELETE FROM classes WHERE id = ?").bind(t).run();return console.log("🗑️ [DeleteClass] Delete changes:",a.meta.changes),a.meta.changes===0?e.json({success:!1,error:"반 삭제에 실패했습니다."},400):(console.log("🗑️ [DeleteClass] ✅ SUCCESS"),e.json({success:!0,message:"반이 삭제되었습니다."}))}catch(a){return console.error("🗑️ [DeleteClass] ❌ Delete error:",a),e.json({success:!1,error:"삭제 중 오류: "+a.message},500)}}catch(t){return console.error("🗑️ [DeleteClass] ❌ Fatal error:",t),e.json({success:!1,error:"반 삭제 중 오류가 발생했습니다: "+t.message},500)}});c.get("/api/daily-records",async e=>{try{const t=e.req.query("studentId"),s=e.req.query("date"),a=e.req.query("startDate"),r=e.req.query("endDate");let o="SELECT * FROM daily_records WHERE 1=1";const n=[];t&&(o+=" AND student_id = ?",n.push(t)),s?(o+=" AND record_date = ?",n.push(s)):a&&r&&(o+=" AND record_date BETWEEN ? AND ?",n.push(a,r)),o+=" ORDER BY record_date DESC, id DESC";const i=await e.env.DB.prepare(o).bind(...n).all();return e.json({success:!0,records:i.results||[]})}catch(t){return console.error("Get daily records error:",t),e.json({success:!1,error:"일일 성과 조회 중 오류가 발생했습니다."},500)}});c.post("/api/daily-records",async e=>{try{const t=await e.req.json(),s=JSON.parse(e.req.header("X-User-Data-Base64")?decodeURIComponent(escape(atob(e.req.header("X-User-Data-Base64")||""))):'{"id":1}');console.log("📝 [AddDailyRecord] User:",s.id,"Student:",t.studentId);const a=await e.env.DB.prepare("SELECT id, user_type FROM users WHERE id = ?").bind(s.id).first();if(console.log("📝 [AddDailyRecord] UserInfo:",a),a&&a.user_type==="teacher"){console.log("📝 [AddDailyRecord] Teacher detected, checking permissions...");const o=await e.env.DB.prepare("SELECT permission_key, permission_value FROM teacher_permissions WHERE teacher_id = ?").bind(s.id).all();let n={canWriteDailyReports:!1,canViewAllStudents:!1,assignedClasses:[]};if(o.results)for(const d of o.results){const p=d.permission_key,u=d.permission_value;if(p==="canWriteDailyReports")n.canWriteDailyReports=u==="1"||u===1||u===!0;else if(p==="canViewAllStudents")n.canViewAllStudents=u==="1"||u===1||u===!0;else if(p==="assignedClasses"&&typeof u=="string")try{n.assignedClasses=JSON.parse(u)}catch(m){console.error("📝 [AddDailyRecord] Failed to parse assignedClasses:",m)}}if(console.log("📝 [AddDailyRecord] Parsed permissions:",n),!n.canWriteDailyReports)return console.log("📝 [AddDailyRecord] No write permission"),e.json({success:!1,error:"일일 성과 작성 권한이 없습니다."},403);const i=await e.env.DB.prepare("SELECT class_id FROM students WHERE id = ?").bind(t.studentId).first();if(!i)return console.log("📝 [AddDailyRecord] Student not found"),e.json({success:!1,error:"학생을 찾을 수 없습니다."},404);console.log("📝 [AddDailyRecord] Student class_id:",i.class_id);const l=n.assignedClasses||[];if(!n.canViewAllStudents&&!l.includes(i.class_id))return console.log("📝 [AddDailyRecord] Class not assigned:",i.class_id,"Assigned:",l),e.json({success:!1,error:"이 학생의 성과를 작성할 권한이 없습니다."},403);console.log("📝 [AddDailyRecord] Permission granted")}const r=await e.env.DB.prepare(`
+`),e.json({success:!1,error:"반 목록 조회 실패: "+t.message,stack:t.stack},500)}});c.post("/api/classes",async e=>{try{let{academyId:t,userId:s,className:a,grade:r,description:n,scheduleDays:o,startTime:i,endTime:l,color:d,daySchedule:p}=await e.req.json();console.log("➕ [CreateClass] Received payload:",{academyId:t,userId:s,className:a,color:d,daySchedule:p}),s=s||t;const u=e.req.header("X-User-Data-Base64");if(console.log("➕ [CreateClass] Header present:",!!u),u&&!s)try{s=JSON.parse(decodeURIComponent(escape(atob(u)))).id,console.log("➕ [CreateClass] Extracted userId from header:",s)}catch(g){console.error("[CreateClass] Failed to parse user header:",g)}if(console.log("➕ [CreateClass] Final userId:",s),!s)return e.json({success:!1,error:"사용자 ID가 필요합니다."},400);if(!a)return e.json({success:!1,error:"반 이름은 필수입니다."},400);console.log("➕ [CreateClass] Creating class for academy_id:",s,"name:",a);let m;try{m=await e.env.DB.prepare("INSERT INTO classes (academy_id, class_name, grade, description, schedule_days, start_time, end_time, color, day_schedule, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))").bind(s,a,r||null,n||null,o||null,i||null,l||null,d||"#8B5CF6",p||null).run()}catch{console.log("⚠️ [CreateClass] new columns not found, trying without them");try{m=await e.env.DB.prepare("INSERT INTO classes (academy_id, class_name, grade, description, schedule_days, start_time, end_time, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))").bind(s,a,r||null,n||null,o||null,i||null,l||null).run()}catch{m=await e.env.DB.prepare("INSERT INTO classes (academy_id, class_name, grade, description, created_at) VALUES (?, ?, ?, ?, datetime('now'))").bind(s,a,r||null,n||null).run()}}return console.log("✅ [CreateClass] Class created with id:",m.meta.last_row_id),e.json({success:!0,classId:m.meta.last_row_id,message:"반이 추가되었습니다."})}catch(t){return console.error("❌ [CreateClass] Error:",t),console.error("❌ [CreateClass] Error stack:",t.stack),e.json({success:!1,error:"반 추가 중 오류가 발생했습니다.",details:t.message},500)}});c.put("/api/classes/:id",async e=>{try{const t=e.req.param("id"),{className:s,grade:a,description:r,scheduleDays:n,startTime:o,endTime:i,color:l,daySchedule:d}=await e.req.json();if(console.log("🔧 [UpdateClass] Received classId:",t,"className:",s,"color:",l),!s)return e.json({success:!1,error:"반 이름은 필수입니다."},400);if(!await e.env.DB.prepare("SELECT id FROM classes WHERE id = ?").bind(t).first())return e.json({success:!1,error:"반을 찾을 수 없습니다."},404);let u;try{u=await e.env.DB.prepare("UPDATE classes SET class_name = ?, grade = ?, description = ?, schedule_days = ?, start_time = ?, end_time = ?, color = ?, day_schedule = ? WHERE id = ?").bind(s,a||null,r||null,n||null,o||null,i||null,l||"#8B5CF6",d||null,t).run()}catch{console.log("⚠️ [UpdateClass] new columns not found, trying without them");try{u=await e.env.DB.prepare("UPDATE classes SET class_name = ?, grade = ?, description = ?, schedule_days = ?, start_time = ?, end_time = ? WHERE id = ?").bind(s,a||null,r||null,n||null,o||null,i||null,t).run()}catch{u=await e.env.DB.prepare("UPDATE classes SET class_name = ?, grade = ?, description = ? WHERE id = ?").bind(s,a||null,r||null,t).run()}}return u.meta.changes===0?e.json({success:!1,error:"반 수정에 실패했습니다."},400):(console.log("✅ [UpdateClass] Class updated successfully"),e.json({success:!0,message:"반이 수정되었습니다."}))}catch(t){return console.error("Update class error:",t),e.json({success:!1,error:"반 수정 중 오류가 발생했습니다."},500)}});c.delete("/api/classes/:id",async e=>{try{const t=e.req.param("id");if(console.log("🗑️ [DeleteClass] ==================== START ===================="),console.log("🗑️ [DeleteClass] Deleting class ID:",t),!t)return console.error("🗑️ [DeleteClass] ❌ No class ID"),e.json({success:!1,error:"반 ID가 필요합니다."},400);const s=await e.env.DB.prepare("SELECT id, class_name FROM classes WHERE id = ?").bind(t).first();if(!s)return console.error("🗑️ [DeleteClass] ❌ Class not found"),e.json({success:!1,error:"반을 찾을 수 없습니다."},404);console.log("🗑️ [DeleteClass] Found class:",s.class_name);try{const a=await e.env.DB.prepare("UPDATE students SET class_id = NULL WHERE class_id = ?").bind(t).run();console.log("🗑️ [DeleteClass] Updated",a.meta.changes,"students")}catch(a){console.error("🗑️ [DeleteClass] ⚠️ Student update error:",a.message)}try{const a=await e.env.DB.prepare("DELETE FROM classes WHERE id = ?").bind(t).run();return console.log("🗑️ [DeleteClass] Delete changes:",a.meta.changes),a.meta.changes===0?e.json({success:!1,error:"반 삭제에 실패했습니다."},400):(console.log("🗑️ [DeleteClass] ✅ SUCCESS"),e.json({success:!0,message:"반이 삭제되었습니다."}))}catch(a){return console.error("🗑️ [DeleteClass] ❌ Delete error:",a),e.json({success:!1,error:"삭제 중 오류: "+a.message},500)}}catch(t){return console.error("🗑️ [DeleteClass] ❌ Fatal error:",t),e.json({success:!1,error:"반 삭제 중 오류가 발생했습니다: "+t.message},500)}});c.get("/api/daily-records",async e=>{try{const t=e.req.query("studentId"),s=e.req.query("date"),a=e.req.query("startDate"),r=e.req.query("endDate");let n="SELECT * FROM daily_records WHERE 1=1";const o=[];t&&(n+=" AND student_id = ?",o.push(t)),s?(n+=" AND record_date = ?",o.push(s)):a&&r&&(n+=" AND record_date BETWEEN ? AND ?",o.push(a,r)),n+=" ORDER BY record_date DESC, id DESC";const i=await e.env.DB.prepare(n).bind(...o).all();return e.json({success:!0,records:i.results||[]})}catch(t){return console.error("Get daily records error:",t),e.json({success:!1,error:"일일 성과 조회 중 오류가 발생했습니다."},500)}});c.post("/api/daily-records",async e=>{try{const t=await e.req.json(),s=JSON.parse(e.req.header("X-User-Data-Base64")?decodeURIComponent(escape(atob(e.req.header("X-User-Data-Base64")||""))):'{"id":1}');console.log("📝 [AddDailyRecord] User:",s.id,"Student:",t.studentId);const a=await e.env.DB.prepare("SELECT id, user_type FROM users WHERE id = ?").bind(s.id).first();if(console.log("📝 [AddDailyRecord] UserInfo:",a),a&&a.user_type==="teacher"){console.log("📝 [AddDailyRecord] Teacher detected, checking permissions...");const n=await e.env.DB.prepare("SELECT permission_key, permission_value FROM teacher_permissions WHERE teacher_id = ?").bind(s.id).all();let o={canWriteDailyReports:!1,canViewAllStudents:!1,assignedClasses:[]};if(n.results)for(const d of n.results){const p=d.permission_key,u=d.permission_value;if(p==="canWriteDailyReports")o.canWriteDailyReports=u==="1"||u===1||u===!0;else if(p==="canViewAllStudents")o.canViewAllStudents=u==="1"||u===1||u===!0;else if(p==="assignedClasses"&&typeof u=="string")try{o.assignedClasses=JSON.parse(u)}catch(m){console.error("📝 [AddDailyRecord] Failed to parse assignedClasses:",m)}}if(console.log("📝 [AddDailyRecord] Parsed permissions:",o),!o.canWriteDailyReports)return console.log("📝 [AddDailyRecord] No write permission"),e.json({success:!1,error:"일일 성과 작성 권한이 없습니다."},403);const i=await e.env.DB.prepare("SELECT class_id FROM students WHERE id = ?").bind(t.studentId).first();if(!i)return console.log("📝 [AddDailyRecord] Student not found"),e.json({success:!1,error:"학생을 찾을 수 없습니다."},404);console.log("📝 [AddDailyRecord] Student class_id:",i.class_id);const l=o.assignedClasses||[];if(!o.canViewAllStudents&&!l.includes(i.class_id))return console.log("📝 [AddDailyRecord] Class not assigned:",i.class_id,"Assigned:",l),e.json({success:!1,error:"이 학생의 성과를 작성할 권한이 없습니다."},403);console.log("📝 [AddDailyRecord] Permission granted")}const r=await e.env.DB.prepare(`
       INSERT INTO daily_records (
         student_id, course_id, record_date, attendance, homework_status,
         understanding_level, participation_level, achievement, memo,
@@ -25866,7 +26320,7 @@ ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.di
         next_homework_type, next_homework_start_page, next_homework_end_page, next_homework_details,
         created_at
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
-    `).bind(t.studentId,t.courseId||null,t.recordDate,t.attendance||null,t.homeworkStatus||null,t.understandingLevel||null,t.participationLevel||null,t.achievement||null,t.memo||null,t.classId||null,t.lessonConcept||null,t.lessonUnderstanding||null,t.lessonParticipation||null,t.lessonAchievement||null,t.homeworkContent||null,t.homeworkAchievement||null,t.nextHomeworkType||null,t.nextHomeworkStartPage||null,t.nextHomeworkEndPage||null,t.nextHomeworkDetails||null).run();return console.log("✅ [AddDailyRecord] Success, id:",r.meta.last_row_id),e.json({success:!0,id:r.meta.last_row_id,message:"일일 성과가 기록되었습니다."})}catch(t){return console.error("❌ [AddDailyRecord] Error:",t),console.error("❌ [AddDailyRecord] Stack:",t.stack),e.json({success:!1,error:"일일 성과 기록 중 오류가 발생했습니다."},500)}});c.put("/api/daily-records/:id",async e=>{try{const t=e.req.param("id"),s=await e.req.json(),a=JSON.parse(e.req.header("X-User-Data-Base64")?decodeURIComponent(escape(atob(e.req.header("X-User-Data-Base64")||""))):'{"id":1}'),r=await e.env.DB.prepare("SELECT id, user_type, permissions FROM users WHERE id = ?").bind(a.id).first();if(r&&r.user_type==="teacher"){let o={canWriteDailyReports:!1,assignedClasses:[]};if(r.permissions)try{o=JSON.parse(r.permissions)}catch(d){console.error("Failed to parse permissions:",d)}if(!o.canWriteDailyReports)return e.json({success:!1,error:"일일 성과 수정 권한이 없습니다."},403);const n=await e.env.DB.prepare("SELECT student_id FROM daily_records WHERE id = ?").bind(t).first();if(!n)return e.json({success:!1,error:"기록을 찾을 수 없습니다."},404);const i=await e.env.DB.prepare("SELECT class_id FROM students WHERE id = ?").bind(n.student_id).first(),l=o.assignedClasses||[];if(!o.canViewAllStudents&&!l.includes(i.class_id))return e.json({success:!1,error:"이 학생의 성과를 수정할 권한이 없습니다."},403)}return await e.env.DB.prepare(`
+    `).bind(t.studentId,t.courseId||null,t.recordDate,t.attendance||null,t.homeworkStatus||null,t.understandingLevel||null,t.participationLevel||null,t.achievement||null,t.memo||null,t.classId||null,t.lessonConcept||null,t.lessonUnderstanding||null,t.lessonParticipation||null,t.lessonAchievement||null,t.homeworkContent||null,t.homeworkAchievement||null,t.nextHomeworkType||null,t.nextHomeworkStartPage||null,t.nextHomeworkEndPage||null,t.nextHomeworkDetails||null).run();return console.log("✅ [AddDailyRecord] Success, id:",r.meta.last_row_id),e.json({success:!0,id:r.meta.last_row_id,message:"일일 성과가 기록되었습니다."})}catch(t){return console.error("❌ [AddDailyRecord] Error:",t),console.error("❌ [AddDailyRecord] Stack:",t.stack),e.json({success:!1,error:"일일 성과 기록 중 오류가 발생했습니다."},500)}});c.put("/api/daily-records/:id",async e=>{try{const t=e.req.param("id"),s=await e.req.json(),a=JSON.parse(e.req.header("X-User-Data-Base64")?decodeURIComponent(escape(atob(e.req.header("X-User-Data-Base64")||""))):'{"id":1}'),r=await e.env.DB.prepare("SELECT id, user_type, permissions FROM users WHERE id = ?").bind(a.id).first();if(r&&r.user_type==="teacher"){let n={canWriteDailyReports:!1,assignedClasses:[]};if(r.permissions)try{n=JSON.parse(r.permissions)}catch(d){console.error("Failed to parse permissions:",d)}if(!n.canWriteDailyReports)return e.json({success:!1,error:"일일 성과 수정 권한이 없습니다."},403);const o=await e.env.DB.prepare("SELECT student_id FROM daily_records WHERE id = ?").bind(t).first();if(!o)return e.json({success:!1,error:"기록을 찾을 수 없습니다."},404);const i=await e.env.DB.prepare("SELECT class_id FROM students WHERE id = ?").bind(o.student_id).first(),l=n.assignedClasses||[];if(!n.canViewAllStudents&&!l.includes(i.class_id))return e.json({success:!1,error:"이 학생의 성과를 수정할 권한이 없습니다."},403)}return await e.env.DB.prepare(`
       UPDATE daily_records SET
         course_id = ?,
         record_date = ?,
@@ -25888,47 +26342,47 @@ ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.di
         next_homework_end_page = ?,
         next_homework_details = ?
       WHERE id = ?
-    `).bind(s.courseId||null,s.recordDate,s.attendance||null,s.homeworkStatus||null,s.understandingLevel||null,s.participationLevel||null,s.achievement||null,s.memo||null,s.classId||null,s.lessonConcept||null,s.lessonUnderstanding||null,s.lessonParticipation||null,s.lessonAchievement||null,s.homeworkContent||null,s.homeworkAchievement||null,s.nextHomeworkType||null,s.nextHomeworkStartPage||null,s.nextHomeworkEndPage||null,s.nextHomeworkDetails||null,t).run(),e.json({success:!0,message:"일일 성과가 수정되었습니다."})}catch(t){return console.error("Update daily record error:",t),e.json({success:!1,error:"일일 성과 수정 중 오류가 발생했습니다."},500)}});c.delete("/api/daily-records/:id",async e=>{try{const t=e.req.param("id"),s=JSON.parse(e.req.header("X-User-Data-Base64")?decodeURIComponent(escape(atob(e.req.header("X-User-Data-Base64")||""))):'{"id":1}'),a=await e.env.DB.prepare("SELECT id, user_type, permissions FROM users WHERE id = ?").bind(s.id).first();if(a&&a.user_type==="teacher"){let r={canWriteDailyReports:!1,assignedClasses:[]};if(a.permissions)try{r=JSON.parse(a.permissions)}catch(l){console.error("Failed to parse permissions:",l)}if(!r.canWriteDailyReports)return e.json({success:!1,error:"일일 성과 삭제 권한이 없습니다."},403);const o=await e.env.DB.prepare("SELECT student_id FROM daily_records WHERE id = ?").bind(t).first();if(!o)return e.json({success:!1,error:"기록을 찾을 수 없습니다."},404);const n=await e.env.DB.prepare("SELECT class_id FROM students WHERE id = ?").bind(o.student_id).first(),i=r.assignedClasses||[];if(!r.canViewAllStudents&&!i.includes(n.class_id))return e.json({success:!1,error:"이 학생의 성과를 삭제할 권한이 없습니다."},403)}return await e.env.DB.prepare(`
+    `).bind(s.courseId||null,s.recordDate,s.attendance||null,s.homeworkStatus||null,s.understandingLevel||null,s.participationLevel||null,s.achievement||null,s.memo||null,s.classId||null,s.lessonConcept||null,s.lessonUnderstanding||null,s.lessonParticipation||null,s.lessonAchievement||null,s.homeworkContent||null,s.homeworkAchievement||null,s.nextHomeworkType||null,s.nextHomeworkStartPage||null,s.nextHomeworkEndPage||null,s.nextHomeworkDetails||null,t).run(),e.json({success:!0,message:"일일 성과가 수정되었습니다."})}catch(t){return console.error("Update daily record error:",t),e.json({success:!1,error:"일일 성과 수정 중 오류가 발생했습니다."},500)}});c.delete("/api/daily-records/:id",async e=>{try{const t=e.req.param("id"),s=JSON.parse(e.req.header("X-User-Data-Base64")?decodeURIComponent(escape(atob(e.req.header("X-User-Data-Base64")||""))):'{"id":1}'),a=await e.env.DB.prepare("SELECT id, user_type, permissions FROM users WHERE id = ?").bind(s.id).first();if(a&&a.user_type==="teacher"){let r={canWriteDailyReports:!1,assignedClasses:[]};if(a.permissions)try{r=JSON.parse(a.permissions)}catch(l){console.error("Failed to parse permissions:",l)}if(!r.canWriteDailyReports)return e.json({success:!1,error:"일일 성과 삭제 권한이 없습니다."},403);const n=await e.env.DB.prepare("SELECT student_id FROM daily_records WHERE id = ?").bind(t).first();if(!n)return e.json({success:!1,error:"기록을 찾을 수 없습니다."},404);const o=await e.env.DB.prepare("SELECT class_id FROM students WHERE id = ?").bind(n.student_id).first(),i=r.assignedClasses||[];if(!r.canViewAllStudents&&!i.includes(o.class_id))return e.json({success:!1,error:"이 학생의 성과를 삭제할 권한이 없습니다."},403)}return await e.env.DB.prepare(`
       DELETE FROM daily_records WHERE id = ?
-    `).bind(t).run(),e.json({success:!0,message:"일일 성과가 삭제되었습니다."})}catch(t){return console.error("Delete daily record error:",t),e.json({success:!1,error:"일일 성과 삭제 중 오류가 발생했습니다."},500)}});c.get("/api/teachers/my-permissions",async e=>{try{const t=e.req.query("teacherId");if(!t)return e.json({success:!1,error:"선생님 ID가 필요합니다."},400);const s=await e.env.DB.prepare("SELECT permission_key, permission_value FROM teacher_permissions WHERE teacher_id = ?").bind(t).all(),a={};return s.results&&s.results.forEach(r=>{const o=r.permission_key,n=r.permission_value;if(o==="assignedClasses"&&typeof n=="string")try{a[o]=JSON.parse(n)}catch(i){console.error("JSON Parse Error:",o,i),a[o]=[]}else typeof n=="string"&&(n==="1"||n==="0")?a[o]=n==="1":typeof n=="number"?a[o]=n===1:a[o]=!!n}),e.json({success:!0,permissions:a})}catch(t){return console.error("Get my permissions error:",t),e.json({success:!1,error:"권한 조회 중 오류가 발생했습니다."},500)}});c.get("/api/students/list",async e=>{try{const t=e.req.query("userId"),s=e.req.query("userType"),a=e.req.query("classId");if(!t)return e.json({success:!1,error:"사용자 ID가 필요합니다."},400);let r="",o=[];if(s==="teacher"){console.log("👨‍🏫 [StudentsList] Loading permissions for teacher:",t);let i={canViewAllStudents:!1,assignedClasses:[]};try{const l=await e.env.DB.prepare("SELECT permission_key, permission_value FROM teacher_permissions WHERE teacher_id = ?").bind(t).all();l.results&&l.results.length>0&&l.results.forEach(d=>{if(d.permission_key==="canViewAllStudents")i.canViewAllStudents=d.permission_value==="1"||d.permission_value===1||d.permission_value===!0;else if(d.permission_key==="assignedClasses"&&typeof d.permission_value=="string")try{i.assignedClasses=JSON.parse(d.permission_value)}catch(p){console.error("Failed to parse assignedClasses:",p)}}),console.log("👨‍🏫 [StudentsList] Teacher permissions:",i)}catch(l){console.error("Failed to load teacher permissions:",l)}if(i.canViewAllStudents)console.log("👨‍🏫 [StudentsList] Teacher can view all students"),a?(r=`
+    `).bind(t).run(),e.json({success:!0,message:"일일 성과가 삭제되었습니다."})}catch(t){return console.error("Delete daily record error:",t),e.json({success:!1,error:"일일 성과 삭제 중 오류가 발생했습니다."},500)}});c.get("/api/teachers/my-permissions",async e=>{try{const t=e.req.query("teacherId");if(!t)return e.json({success:!1,error:"선생님 ID가 필요합니다."},400);const s=await e.env.DB.prepare("SELECT permission_key, permission_value FROM teacher_permissions WHERE teacher_id = ?").bind(t).all(),a={};return s.results&&s.results.forEach(r=>{const n=r.permission_key,o=r.permission_value;if(n==="assignedClasses"&&typeof o=="string")try{a[n]=JSON.parse(o)}catch(i){console.error("JSON Parse Error:",n,i),a[n]=[]}else typeof o=="string"&&(o==="1"||o==="0")?a[n]=o==="1":typeof o=="number"?a[n]=o===1:a[n]=!!o}),e.json({success:!0,permissions:a})}catch(t){return console.error("Get my permissions error:",t),e.json({success:!1,error:"권한 조회 중 오류가 발생했습니다."},500)}});c.get("/api/students/list",async e=>{try{const t=e.req.query("userId"),s=e.req.query("userType"),a=e.req.query("classId");if(!t)return e.json({success:!1,error:"사용자 ID가 필요합니다."},400);let r="",n=[];if(s==="teacher"){console.log("👨‍🏫 [StudentsList] Loading permissions for teacher:",t);let i={canViewAllStudents:!1,assignedClasses:[]};try{const l=await e.env.DB.prepare("SELECT permission_key, permission_value FROM teacher_permissions WHERE teacher_id = ?").bind(t).all();l.results&&l.results.length>0&&l.results.forEach(d=>{if(d.permission_key==="canViewAllStudents")i.canViewAllStudents=d.permission_value==="1"||d.permission_value===1||d.permission_value===!0;else if(d.permission_key==="assignedClasses"&&typeof d.permission_value=="string")try{i.assignedClasses=JSON.parse(d.permission_value)}catch(p){console.error("Failed to parse assignedClasses:",p)}}),console.log("👨‍🏫 [StudentsList] Teacher permissions:",i)}catch(l){console.error("Failed to load teacher permissions:",l)}if(i.canViewAllStudents)console.log("👨‍🏫 [StudentsList] Teacher can view all students"),a?(r=`
             SELECT s.*, c.name as class_name
             FROM students s
             LEFT JOIN classes c ON s.class_id = c.id
             WHERE s.class_id = ? AND s.status = 'active' AND s.id NOT IN (4)
             ORDER BY s.name
-          `,o=[a]):(r=`
+          `,n=[a]):(r=`
             SELECT s.*, c.name as class_name
             FROM students s
             LEFT JOIN classes c ON s.class_id = c.id
             WHERE s.status = 'active' AND s.id NOT IN (4)
             ORDER BY c.name, s.name
-          `,o=[]);else if(i.assignedClasses&&i.assignedClasses.length>0){console.log("👨‍🏫 [StudentsList] Teacher can view assigned classes:",i.assignedClasses);const l=i.assignedClasses,d=l.map(()=>"?").join(",");if(a){if(!l.includes(parseInt(a)))return console.log("👨‍🏫 [StudentsList] Class not assigned to teacher:",a),e.json({success:!0,students:[]});r=`
+          `,n=[]);else if(i.assignedClasses&&i.assignedClasses.length>0){console.log("👨‍🏫 [StudentsList] Teacher can view assigned classes:",i.assignedClasses);const l=i.assignedClasses,d=l.map(()=>"?").join(",");if(a){if(!l.includes(parseInt(a)))return console.log("👨‍🏫 [StudentsList] Class not assigned to teacher:",a),e.json({success:!0,students:[]});r=`
             SELECT s.*, c.name as class_name
             FROM students s
             LEFT JOIN classes c ON s.class_id = c.id
             WHERE s.class_id = ? AND s.status = 'active' AND s.id NOT IN (4)
             ORDER BY s.name
-          `,o=[a]}else r=`
+          `,n=[a]}else r=`
             SELECT s.*, c.name as class_name
             FROM students s
             LEFT JOIN classes c ON s.class_id = c.id
             WHERE s.class_id IN (${d}) AND s.status = 'active' AND s.id NOT IN (4)
             ORDER BY c.name, s.name
-          `,o=l}else return console.log("👨‍🏫 [StudentsList] No permissions assigned, returning empty list"),e.json({success:!0,students:[]})}else a?(r=`
+          `,n=l}else return console.log("👨‍🏫 [StudentsList] No permissions assigned, returning empty list"),e.json({success:!0,students:[]})}else a?(r=`
           SELECT s.*, c.name as class_name, u.name as teacher_name
           FROM students s
           LEFT JOIN classes c ON s.class_id = c.id
           LEFT JOIN users u ON c.teacher_id = u.id
           WHERE s.academy_id = ? AND s.class_id = ? AND s.status = 'active'
           ORDER BY s.name
-        `,o=[t,a]):(r=`
+        `,n=[t,a]):(r=`
           SELECT s.*, c.name as class_name, u.name as teacher_name
           FROM students s
           LEFT JOIN classes c ON s.class_id = c.id
           LEFT JOIN users u ON c.teacher_id = u.id
           WHERE s.academy_id = ? AND s.status = 'active'
           ORDER BY c.name, s.name
-        `,o=[t]);const n=await e.env.DB.prepare(r).bind(...o).all();return e.json({success:!0,students:n.results||[]})}catch(t){return console.error("Get students error:",t),e.json({success:!1,error:"학생 목록 조회 중 오류가 발생했습니다."},500)}});c.get("/api/admin/users/:id/detail",async e=>{try{const t=e.req.param("id"),s=await e.env.DB.prepare(`
+        `,n=[t]);const o=await e.env.DB.prepare(r).bind(...n).all();return e.json({success:!0,students:o.results||[]})}catch(t){return console.error("Get students error:",t),e.json({success:!1,error:"학생 목록 조회 중 오류가 발생했습니다."},500)}});c.get("/api/admin/users/:id/detail",async e=>{try{const t=e.req.param("id"),s=await e.env.DB.prepare(`
       SELECT id, email, name, phone, academy_name, role, points, created_at
       FROM users WHERE id = ?
     `).bind(t).first();if(!s)return e.json({success:!1,error:"사용자를 찾을 수 없습니다."},404);let a={results:[]};try{a=await e.env.DB.prepare(`
@@ -25942,13 +26396,13 @@ ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.di
         FROM sender_ids
         WHERE user_id = ?
         ORDER BY created_at DESC
-      `).bind(t).all()}catch(l){console.error("Sender numbers error (non-critical):",l)}let o={results:[]};try{o=await e.env.DB.prepare(`
+      `).bind(t).all()}catch(l){console.error("Sender numbers error (non-critical):",l)}let n={results:[]};try{n=await e.env.DB.prepare(`
         SELECT id, title, slug, status, view_count, created_at, updated_at
         FROM landing_pages
         WHERE user_id = ?
         ORDER BY created_at DESC
         LIMIT 10
-      `).bind(t).all()}catch(l){console.error("Landing pages error (non-critical):",l)}let n={results:[]};try{n=await e.env.DB.prepare(`
+      `).bind(t).all()}catch(l){console.error("Landing pages error (non-critical):",l)}let o={results:[]};try{o=await e.env.DB.prepare(`
         SELECT program_key, granted_at, expires_at
         FROM user_permissions
         WHERE user_id = ? AND is_active = 1
@@ -25960,7 +26414,7 @@ ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.di
           SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) as failed_count
         FROM sms_logs
         WHERE user_id = ?
-      `).bind(t).first();l&&(i=l)}catch(l){console.error("SMS stats error (non-critical):",l)}return e.json({success:!0,user:s,verificationRequests:a.results||[],senderNumbers:r.results||[],landingPages:o.results||[],permissions:n.results||[],smsStats:i||{total_sent:0,success_count:0,failed_count:0}})}catch(t){return console.error("Get user detail error:",t),e.json({success:!1,error:"사용자 정보 조회 중 오류가 발생했습니다."},500)}});c.get("/admin/users/:id",async e=>{const{env:t}=e,s=e.req.param("id");try{const a=await t.DB.prepare("SELECT * FROM users WHERE id = ?").bind(s).first();if(!a)return e.html("<h1>사용자를 찾을 수 없습니다</h1>",404);let r={results:[]};try{r=await t.DB.prepare("SELECT program_key, granted_at FROM user_permissions WHERE user_id = ? AND is_active = 1").bind(s).all()}catch(l){console.log("user_permissions 테이블 없음:",l.message)}let o={results:[]};try{o=await t.DB.prepare("SELECT * FROM contacts WHERE email = ? ORDER BY created_at DESC").bind(a.email).all()}catch(l){console.log("contacts 테이블 없음:",l.message)}let n={results:[]};try{n=await t.DB.prepare("SELECT * FROM deposits WHERE user_id = ? ORDER BY created_at DESC").bind(s).all()}catch(l){console.log("deposits 테이블 없음:",l.message)}const i={search_volume:"네이버 검색량 조회",parent_message:"학부모 소통 메시지",blog_writer:"블로그 자동 작성",landing_builder:"랜딩페이지 생성기",sms_sender:"SMS 문자 발송",student_management:"학생 관리",dashboard_analytics:"통합 분석 대시보드",ai_learning_report:"AI 학습 리포트",landing_manager:"랜딩페이지 관리",keyword_analyzer:"키워드 분석기",review_template:"후기 템플릿",ad_copy_generator:"광고 문구 생성기",photo_optimizer:"사진 최적화",competitor_analysis:"경쟁사 분석",blog_checklist:"블로그 체크리스트",content_calendar:"콘텐츠 캘린더",consultation_script:"상담 스크립트",place_optimization:"플레이스 최적화",roi_calculator:"ROI 계산기"};return e.html(`
+      `).bind(t).first();l&&(i=l)}catch(l){console.error("SMS stats error (non-critical):",l)}return e.json({success:!0,user:s,verificationRequests:a.results||[],senderNumbers:r.results||[],landingPages:n.results||[],permissions:o.results||[],smsStats:i||{total_sent:0,success_count:0,failed_count:0}})}catch(t){return console.error("Get user detail error:",t),e.json({success:!1,error:"사용자 정보 조회 중 오류가 발생했습니다."},500)}});c.get("/admin/users/:id",async e=>{const{env:t}=e,s=e.req.param("id");try{const a=await t.DB.prepare("SELECT * FROM users WHERE id = ?").bind(s).first();if(!a)return e.html("<h1>사용자를 찾을 수 없습니다</h1>",404);let r={results:[]};try{r=await t.DB.prepare("SELECT program_key, granted_at FROM user_permissions WHERE user_id = ? AND is_active = 1").bind(s).all()}catch(l){console.log("user_permissions 테이블 없음:",l.message)}let n={results:[]};try{n=await t.DB.prepare("SELECT * FROM contacts WHERE email = ? ORDER BY created_at DESC").bind(a.email).all()}catch(l){console.log("contacts 테이블 없음:",l.message)}let o={results:[]};try{o=await t.DB.prepare("SELECT * FROM deposits WHERE user_id = ? ORDER BY created_at DESC").bind(s).all()}catch(l){console.log("deposits 테이블 없음:",l.message)}const i={search_volume:"네이버 검색량 조회",parent_message:"학부모 소통 메시지",blog_writer:"블로그 자동 작성",landing_builder:"랜딩페이지 생성기",sms_sender:"SMS 문자 발송",student_management:"학생 관리",dashboard_analytics:"통합 분석 대시보드",ai_learning_report:"AI 학습 리포트",landing_manager:"랜딩페이지 관리",keyword_analyzer:"키워드 분석기",review_template:"후기 템플릿",ad_copy_generator:"광고 문구 생성기",photo_optimizer:"사진 최적화",competitor_analysis:"경쟁사 분석",blog_checklist:"블로그 체크리스트",content_calendar:"콘텐츠 캘린더",consultation_script:"상담 스크립트",place_optimization:"플레이스 최적화",roi_calculator:"ROI 계산기"};return e.html(`
       <!DOCTYPE html>
       <html lang="ko">
       <head>
@@ -26366,48 +26820,48 @@ ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.di
 
             <!-- 문의 목록 -->
             <div class="space-y-4">
-                ${((r=s==null?void 0:s.results)==null?void 0:r.map(o=>`
-                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition" data-status="${o.status||"pending"}">
+                ${((r=s==null?void 0:s.results)==null?void 0:r.map(n=>`
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition" data-status="${n.status||"pending"}">
                         <div class="flex justify-between items-start mb-4">
                             <div class="flex-1">
                                 <div class="flex items-center gap-3 mb-2">
-                                    <h3 class="text-lg font-bold text-gray-900">${o.name}</h3>
-                                    <span class="px-3 py-1 text-xs font-medium rounded-full ${o.status==="completed"?"bg-green-100 text-green-700":"bg-orange-100 text-orange-700"}">
-                                        ${o.status==="completed"?"처리완료":"대기중"}
+                                    <h3 class="text-lg font-bold text-gray-900">${n.name}</h3>
+                                    <span class="px-3 py-1 text-xs font-medium rounded-full ${n.status==="completed"?"bg-green-100 text-green-700":"bg-orange-100 text-orange-700"}">
+                                        ${n.status==="completed"?"처리완료":"대기중"}
                                     </span>
                                     <span class="px-3 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-700">
-                                        ${o.inquiry||"일반문의"}
+                                        ${n.inquiry||"일반문의"}
                                     </span>
                                 </div>
                                 <div class="flex gap-4 text-sm text-gray-600">
-                                    <span><i class="fas fa-building mr-1"></i>${o.academy||"-"}</span>
-                                    <span><i class="fas fa-phone mr-1"></i>${o.phone}</span>
-                                    <span><i class="fas fa-envelope mr-1"></i>${o.email}</span>
+                                    <span><i class="fas fa-building mr-1"></i>${n.academy||"-"}</span>
+                                    <span><i class="fas fa-phone mr-1"></i>${n.phone}</span>
+                                    <span><i class="fas fa-envelope mr-1"></i>${n.email}</span>
                                 </div>
                             </div>
                             <div class="text-sm text-gray-500">
-                                ${new Date(o.created_at).toLocaleString("ko-KR",{timeZone:"Asia/Seoul"})}
+                                ${new Date(n.created_at).toLocaleString("ko-KR",{timeZone:"Asia/Seoul"})}
                             </div>
                         </div>
 
                         <div class="bg-gray-50 rounded-xl p-4 mb-4">
-                            <div class="text-sm text-gray-700 whitespace-pre-wrap">${o.message}</div>
+                            <div class="text-sm text-gray-700 whitespace-pre-wrap">${n.message}</div>
                         </div>
 
-                        ${o.programs?`
+                        ${n.programs?`
                             <div class="flex gap-2 mb-4">
                                 <span class="text-sm text-gray-600">관심 프로그램:</span>
-                                ${JSON.parse(o.programs||"[]").map(n=>`
-                                    <span class="px-2 py-1 bg-purple-50 text-purple-700 text-xs rounded-lg">${n}</span>
+                                ${JSON.parse(n.programs||"[]").map(o=>`
+                                    <span class="px-2 py-1 bg-purple-50 text-purple-700 text-xs rounded-lg">${o}</span>
                                 `).join("")}
                             </div>
                         `:""}
 
                         <div class="flex gap-2">
-                            <button onclick="updateStatus(${o.id}, 'completed')" class="px-4 py-2 bg-green-500 text-white rounded-lg text-sm font-medium hover:bg-green-600">
+                            <button onclick="updateStatus(${n.id}, 'completed')" class="px-4 py-2 bg-green-500 text-white rounded-lg text-sm font-medium hover:bg-green-600">
                                 <i class="fas fa-check mr-1"></i>처리완료
                             </button>
-                            <button onclick="updateStatus(${o.id}, 'pending')" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-300">
+                            <button onclick="updateStatus(${n.id}, 'pending')" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-300">
                                 <i class="fas fa-undo mr-1"></i>대기중으로
                             </button>
                         </div>
@@ -26877,39 +27331,39 @@ ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.di
       FROM user_permissions
       WHERE user_id = ? AND is_active = 1
       ORDER BY granted_at DESC
-    `).bind(s).all();return e.json({permissions:a.results})}catch(t){return console.error("Get permissions error:",t),e.json({success:!1,error:"권한 조회 실패"},500)}});c.post("/api/admin/permissions/grant",async e=>{try{const{env:t}=e,{userId:s,permissionType:a,permissionName:r,expiresAt:o}=await e.req.json(),n=await t.DB.prepare(`
+    `).bind(s).all();return e.json({permissions:a.results})}catch(t){return console.error("Get permissions error:",t),e.json({success:!1,error:"권한 조회 실패"},500)}});c.post("/api/admin/permissions/grant",async e=>{try{const{env:t}=e,{userId:s,permissionType:a,permissionName:r,expiresAt:n}=await e.req.json(),o=await t.DB.prepare(`
       INSERT INTO user_permissions (user_id, permission_type, permission_name, granted_by, expires_at, is_active)
       VALUES (?, ?, ?, 1, ?, 1)
-    `).bind(s,a,r,o||null).run();return e.json({success:!0,message:"권한이 부여되었습니다"})}catch(t){return console.error("Grant permission error:",t),e.json({success:!1,error:"권한 부여 실패"},500)}});c.post("/api/admin/permissions/revoke",async e=>{try{const{env:t}=e,{userId:s,permissionType:a,permissionName:r}=await e.req.json();return await t.DB.prepare(`
+    `).bind(s,a,r,n||null).run();return e.json({success:!0,message:"권한이 부여되었습니다"})}catch(t){return console.error("Grant permission error:",t),e.json({success:!1,error:"권한 부여 실패"},500)}});c.post("/api/admin/permissions/revoke",async e=>{try{const{env:t}=e,{userId:s,permissionType:a,permissionName:r}=await e.req.json();return await t.DB.prepare(`
       UPDATE user_permissions
       SET is_active = 0
       WHERE user_id = ? AND permission_type = ? AND permission_name = ?
-    `).bind(s,a,r).run(),e.json({success:!0,message:"권한이 회수되었습니다"})}catch(t){return console.error("Revoke permission error:",t),e.json({success:!1,error:"권한 회수 실패"},500)}});c.patch("/api/admin/contacts/:id",async e=>{try{const t=e.req.param("id"),{status:s}=await e.req.json(),{env:a}=e;return await a.DB.prepare("UPDATE contacts SET status = ? WHERE id = ?").bind(s,t).run(),e.json({success:!0})}catch(t){return console.error("Update contact status error:",t),e.json({success:!1},500)}});c.post("/api/payment/verify",async e=>{try{const{imp_uid:t,merchant_uid:s,plan:a,amount:r,user_id:o}=await e.req.json(),{DB:n}=e.env;console.log("[Payment Verify] User:",o,"Plan:",a,"Amount:",r);const i={"스타터 플랜":{student:50,ai_report:50,landing_page:50,teacher:2,price:55e3},"베이직 플랜":{student:150,ai_report:150,landing_page:160,teacher:6,price:143e3},"프로 플랜":{student:500,ai_report:500,landing_page:530,teacher:20,price:187e3},"프리미엄 플랜":{student:1e3,ai_report:1e3,landing_page:1100,teacher:40,price:33e4},"엔터프라이즈 플랜":{student:3e3,ai_report:3e3,landing_page:5e3,teacher:999,price:75e4}},l=i[a]||i["스타터 플랜"],d=await n.prepare("SELECT id, name, email FROM users WHERE id = ?").bind(o).first();if(!d)return e.json({success:!1,error:"사용자를 찾을 수 없습니다"},404);let p=await n.prepare(`
+    `).bind(s,a,r).run(),e.json({success:!0,message:"권한이 회수되었습니다"})}catch(t){return console.error("Revoke permission error:",t),e.json({success:!1,error:"권한 회수 실패"},500)}});c.patch("/api/admin/contacts/:id",async e=>{try{const t=e.req.param("id"),{status:s}=await e.req.json(),{env:a}=e;return await a.DB.prepare("UPDATE contacts SET status = ? WHERE id = ?").bind(s,t).run(),e.json({success:!0})}catch(t){return console.error("Update contact status error:",t),e.json({success:!1},500)}});c.post("/api/payment/verify",async e=>{try{const{imp_uid:t,merchant_uid:s,plan:a,amount:r,user_id:n}=await e.req.json(),{DB:o}=e.env;console.log("[Payment Verify] User:",n,"Plan:",a,"Amount:",r);const i={"스타터 플랜":{student:50,ai_report:50,landing_page:50,teacher:2,price:55e3},"베이직 플랜":{student:150,ai_report:150,landing_page:160,teacher:6,price:143e3},"프로 플랜":{student:500,ai_report:500,landing_page:530,teacher:20,price:187e3},"프리미엄 플랜":{student:1e3,ai_report:1e3,landing_page:1100,teacher:40,price:33e4},"엔터프라이즈 플랜":{student:3e3,ai_report:3e3,landing_page:5e3,teacher:999,price:75e4}},l=i[a]||i["스타터 플랜"],d=await o.prepare("SELECT id, name, email FROM users WHERE id = ?").bind(n).first();if(!d)return e.json({success:!1,error:"사용자를 찾을 수 없습니다"},404);let p=await o.prepare(`
       SELECT id FROM academies WHERE owner_id = ?
-    `).bind(o).first();p||(p={id:(await n.prepare(`
+    `).bind(n).first();p||(p={id:(await o.prepare(`
         INSERT INTO academies (academy_name, owner_id, created_at)
         VALUES (?, ?, CURRENT_TIMESTAMP)
-      `).bind(d.name+" 학원",o).run()).meta.last_row_id},await n.prepare(`
+      `).bind(d.name+" 학원",n).run()).meta.last_row_id},await o.prepare(`
         UPDATE users SET academy_id = ? WHERE id = ?
-      `).bind(p.id,o).run(),console.log("[Payment Verify] Created academy:",p.id));const u=p.id,m=new Date,g=new Date;g.setMonth(g.getMonth()+1);const b=(await n.prepare(`
+      `).bind(p.id,n).run(),console.log("[Payment Verify] Created academy:",p.id));const u=p.id,m=new Date,g=new Date;g.setMonth(g.getMonth()+1);const b=(await o.prepare(`
       INSERT INTO subscriptions (
         academy_id, plan_name, plan_price, student_limit, ai_report_limit,
         landing_page_limit, teacher_limit, subscription_start_date,
         subscription_end_date, status, payment_method, merchant_uid, imp_uid,
         created_at, updated_at
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', 'card', ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-    `).bind(u,a,l.price,l.student,l.ai_report,l.landing_page,l.teacher,m.toISOString(),g.toISOString(),s,t).run()).meta.last_row_id;console.log("[Payment Verify] Created subscription:",b),await n.prepare(`
+    `).bind(u,a,l.price,l.student,l.ai_report,l.landing_page,l.teacher,m.toISOString(),g.toISOString(),s,t).run()).meta.last_row_id;console.log("[Payment Verify] Created subscription:",b),await o.prepare(`
       INSERT INTO usage_tracking (
         academy_id, subscription_id, current_students, ai_reports_used_this_month,
         landing_pages_created, current_teachers, updated_at
       ) VALUES (?, ?, 0, 0, 0, 0, CURRENT_TIMESTAMP)
-    `).bind(u,b).run(),console.log("[Payment Verify] Created usage_tracking");const f="PAY_"+Date.now();await n.prepare(`
+    `).bind(u,b).run(),console.log("[Payment Verify] Created usage_tracking");const h="PAY_"+Date.now();await o.prepare(`
       INSERT INTO payments (id, subscription_id, user_id, amount, payment_method, merchant_uid, imp_uid, status, created_at)
       VALUES (?, ?, ?, ?, 'card', ?, ?, 'completed', datetime('now'))
-    `).bind(f,b,o,r,s,t).run();const v=[{route:"/students",name:"학생 관리"},{route:"/tools/ai-learning-report",name:"AI학습 분석 리포트"},{route:"/tools/dashboard-analytics",name:"통합 분석 대시보드"},{route:"/tools/search-volume",name:"네이버 검색량 조회"}];for(const _ of v)try{await n.prepare(`
+    `).bind(h,b,n,r,s,t).run();const v=[{route:"/students",name:"학생 관리"},{route:"/tools/ai-learning-report",name:"AI학습 분석 리포트"},{route:"/tools/dashboard-analytics",name:"통합 분석 대시보드"},{route:"/tools/search-volume",name:"네이버 검색량 조회"}];for(const E of v)try{await o.prepare(`
           INSERT OR IGNORE INTO user_programs (user_id, program_route, program_name, enabled, created_at)
           VALUES (?, ?, ?, 1, CURRENT_TIMESTAMP)
-        `).bind(o,_.route,_.name).run()}catch(y){console.error("[Payment Verify] Failed to add program:",_.name,y)}return console.log("[Payment Verify] Added 4 basic programs for user:",o),e.json({success:!0,message:"결제가 성공적으로 처리되었습니다",subscription_id:b,academy_id:u,subscription:{id:b,plan:a,startDate:m.toISOString(),endDate:g.toISOString()}})}catch(t){return console.error("Payment verification error:",t),e.json({success:!1,error:t.message||"결제 검증에 실패했습니다"},500)}});c.get("/api/subscription/:userId",async e=>{try{const t=e.req.param("userId"),{DB:s}=e.env,a=await s.prepare(`
+        `).bind(n,E.route,E.name).run()}catch(y){console.error("[Payment Verify] Failed to add program:",E.name,y)}return console.log("[Payment Verify] Added 4 basic programs for user:",n),e.json({success:!0,message:"결제가 성공적으로 처리되었습니다",subscription_id:b,academy_id:u,subscription:{id:b,plan:a,startDate:m.toISOString(),endDate:g.toISOString()}})}catch(t){return console.error("Payment verification error:",t),e.json({success:!1,error:t.message||"결제 검증에 실패했습니다"},500)}});c.get("/api/subscription/:userId",async e=>{try{const t=e.req.param("userId"),{DB:s}=e.env,a=await s.prepare(`
       SELECT * FROM subscriptions WHERE user_id = ? AND status = 'active' ORDER BY created_at DESC LIMIT 1
     `).bind(t).first();return e.json({success:!0,subscription:a||null})}catch(t){return console.error("Get subscription error:",t),e.json({success:!1,error:t.message},500)}});c.get("/api/payments/:userId",async e=>{try{const t=e.req.param("userId"),{DB:s}=e.env,{results:a}=await s.prepare(`
       SELECT p.*, s.plan_type FROM payments p
@@ -27892,12 +28346,12 @@ ${i.director_name} 원장님의 승인을 기다려주세요.`,directorName:i.di
         </div>
     </body>
     </html>
-  `));c.get("/admin/dashboard",async e=>{var b,f,v,_,y,w,E,k;const{env:t}=e;if(!(t!=null&&t.DB))return e.html('<h1>DB Error</h1><a href="/admin/users">Users</a>');let s=0,a=0,r=0,o=0,n=0,i=0,l=0;try{s=((b=await t.DB.prepare("SELECT COUNT(*)c FROM users").first())==null?void 0:b.c)||0}catch{}try{a=((f=await t.DB.prepare("SELECT COUNT(*)c FROM contacts").first())==null?void 0:f.c)||0}catch{}try{r=((v=await t.DB.prepare("SELECT COUNT(*)c FROM contacts WHERE status=?").bind("pending").first())==null?void 0:v.c)||0}catch{}try{o=((_=await t.DB.prepare("SELECT COUNT(*)c FROM deposit_requests WHERE status=?").bind("pending").first())==null?void 0:_.c)||0}catch{}try{n=((y=await t.DB.prepare("SELECT COUNT(*)c FROM sender_verification_requests WHERE status=?").bind("pending").first())==null?void 0:y.c)||0}catch{}try{i=((w=await t.DB.prepare("SELECT COUNT(*)c FROM bank_transfer_requests WHERE status=?").bind("pending").first())==null?void 0:w.c)||0}catch{}try{l=((E=await t.DB.prepare("SELECT COUNT(*)c FROM free_plan_requests WHERE status=?").bind("pending").first())==null?void 0:E.c)||0}catch{}let d=0;try{d=((k=await t.DB.prepare("SELECT COUNT(*)c FROM card_payment_requests WHERE status=?").bind("pending").first())==null?void 0:k.c)||0}catch{}const p='<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>관리자 대시보드</title><script src="https://cdn.tailwindcss.com"><\/script><link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet"></head><body class="bg-gray-50">',u=`<nav class="bg-white border-b"><div class="max-w-7xl mx-auto px-6 py-4"><div class="flex justify-between items-center"><div class="flex items-center gap-8"><a href="/" class="text-2xl font-bold text-purple-600">슈퍼플레이스 관리자</a><div class="flex gap-4"><a href="/admin/dashboard" class="text-purple-600 font-semibold">대시보드</a><a href="/admin/users" class="text-gray-600 hover:text-purple-600">사용자</a><a href="/admin/contacts" class="text-gray-600 hover:text-purple-600">문의</a><a href="/admin/active-sessions" class="text-gray-600 hover:text-purple-600">실시간 접속자</a><a href="/admin/bank-transfers" class="text-gray-600 hover:text-purple-600">계좌이체</a><a href="/admin/sms" class="text-gray-600 hover:text-purple-600">문자</a><a href="/admin/sender/verification" class="text-gray-600 hover:text-purple-600">발신번호</a><a href="/admin/free-plan-requests" class="text-gray-600 hover:text-purple-600">무료 플랜</a></div></div><button onclick="localStorage.removeItem('user');
+  `));c.get("/admin/dashboard",async e=>{var b,h,v,E,y,w,_,k;const{env:t}=e;if(!(t!=null&&t.DB))return e.html('<h1>DB Error</h1><a href="/admin/users">Users</a>');let s=0,a=0,r=0,n=0,o=0,i=0,l=0;try{s=((b=await t.DB.prepare("SELECT COUNT(*)c FROM users").first())==null?void 0:b.c)||0}catch{}try{a=((h=await t.DB.prepare("SELECT COUNT(*)c FROM contacts").first())==null?void 0:h.c)||0}catch{}try{r=((v=await t.DB.prepare("SELECT COUNT(*)c FROM contacts WHERE status=?").bind("pending").first())==null?void 0:v.c)||0}catch{}try{n=((E=await t.DB.prepare("SELECT COUNT(*)c FROM deposit_requests WHERE status=?").bind("pending").first())==null?void 0:E.c)||0}catch{}try{o=((y=await t.DB.prepare("SELECT COUNT(*)c FROM sender_verification_requests WHERE status=?").bind("pending").first())==null?void 0:y.c)||0}catch{}try{i=((w=await t.DB.prepare("SELECT COUNT(*)c FROM bank_transfer_requests WHERE status=?").bind("pending").first())==null?void 0:w.c)||0}catch{}try{l=((_=await t.DB.prepare("SELECT COUNT(*)c FROM free_plan_requests WHERE status=?").bind("pending").first())==null?void 0:_.c)||0}catch{}let d=0;try{d=((k=await t.DB.prepare("SELECT COUNT(*)c FROM card_payment_requests WHERE status=?").bind("pending").first())==null?void 0:k.c)||0}catch{}const p='<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>관리자 대시보드</title><script src="https://cdn.tailwindcss.com"><\/script><link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet"></head><body class="bg-gray-50">',u=`<nav class="bg-white border-b"><div class="max-w-7xl mx-auto px-6 py-4"><div class="flex justify-between items-center"><div class="flex items-center gap-8"><a href="/" class="text-2xl font-bold text-purple-600">슈퍼플레이스 관리자</a><div class="flex gap-4"><a href="/admin/dashboard" class="text-purple-600 font-semibold">대시보드</a><a href="/admin/users" class="text-gray-600 hover:text-purple-600">사용자</a><a href="/admin/contacts" class="text-gray-600 hover:text-purple-600">문의</a><a href="/admin/active-sessions" class="text-gray-600 hover:text-purple-600">실시간 접속자</a><a href="/admin/bank-transfers" class="text-gray-600 hover:text-purple-600">계좌이체</a><a href="/admin/sms" class="text-gray-600 hover:text-purple-600">문자</a><a href="/admin/sender/verification" class="text-gray-600 hover:text-purple-600">발신번호</a><a href="/admin/free-plan-requests" class="text-gray-600 hover:text-purple-600">무료 플랜</a></div></div><button onclick="localStorage.removeItem('user');
                 localStorage.removeItem('loginTime');location.href='/'" class="text-gray-600 hover:text-red-600"><i class="fas fa-sign-out-alt mr-2"></i>로그아웃</button></div></div></nav>`,m=`<div class="max-w-7xl mx-auto px-6 py-8"><h1 class="text-3xl font-bold mb-8">관리자 대시보드</h1><div class="grid md:grid-cols-4 gap-6 mb-8"><div class="bg-white rounded-xl shadow p-6 border"><div class="flex items-center justify-between mb-2"><span class="text-gray-600">전체 사용자</span><i class="fas fa-users text-blue-600 text-2xl"></i></div><p class="text-3xl font-bold">${s}</p></div><div class="bg-white rounded-xl shadow p-6 border"><div class="flex items-center justify-between mb-2"><span class="text-gray-600">전체 문의</span><i class="fas fa-envelope text-green-600 text-2xl"></i></div><p class="text-3xl font-bold">${a}</p></div><div class="bg-white rounded-xl shadow p-6 border"><div class="flex items-center justify-between mb-2"><span class="text-gray-600">대기중 문의</span><i class="fas fa-clock text-orange-600 text-2xl"></i></div><p class="text-3xl font-bold">${r}</p></div><a href="/admin/active-sessions" class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg p-6 text-white hover:shadow-xl transition border-0"><div class="flex items-center justify-between mb-2"><span class="font-semibold">실시간 접속자</span><i class="fas fa-signal text-2xl"></i></div><p class="text-3xl font-bold" id="totalActive">-</p><p class="text-sm opacity-90 mt-2"><i class="fas fa-arrow-right mr-1"></i>자세히 보기</p></a></div><script>
 async function loadActiveSessionCount(){try{const user=JSON.parse(localStorage.getItem('user')||'null');if(!user||!user.is_admin){return;}const base64=(str)=>btoa(unescape(encodeURIComponent(str)));const r=await fetch('/api/admin/active-sessions',{headers:{'X-User-Data-Base64':base64(JSON.stringify(user))}});const d=await r.json();if(d.success&&d.activeSessions){document.getElementById('totalActive').textContent=d.activeSessions.total||0;}}catch(e){console.error('Failed to load active session count:',e);}}
 loadActiveSessionCount();
 setInterval(loadActiveSessionCount,30000);
-<\/script>`,g=`<div class="mb-8"><h2 class="text-xl font-bold mb-4">신청 대기</h2><div class="grid md:grid-cols-5 gap-6"><div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow p-6 text-white"><div class="flex items-center justify-between mb-2"><span>입금 대기</span><i class="fas fa-money-bill-wave text-2xl"></i></div><p class="text-3xl font-bold">${o}</p></div><div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow p-6 text-white"><div class="flex items-center justify-between mb-2"><span>발신번호 대기</span><i class="fas fa-phone text-2xl"></i></div><p class="text-3xl font-bold">${n}</p></div><a href="/admin/bank-transfers" class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow p-6 text-white hover:shadow-lg transition"><div class="flex items-center justify-between mb-2"><span>계좌이체 대기</span><i class="fas fa-university text-2xl"></i></div><p class="text-3xl font-bold">${i}</p><p class="text-sm text-blue-100 mt-2">클릭하여 관리</p></a><a href="/admin/free-plan-requests" class="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl shadow p-6 text-white hover:shadow-lg transition"><div class="flex items-center justify-between mb-2"><span>무료 플랜 대기</span><i class="fas fa-gift text-2xl"></i></div><p class="text-3xl font-bold">${l}</p><p class="text-sm text-emerald-100 mt-2">클릭하여 관리</p></a><a href="/admin/card-payments" class="bg-gradient-to-br from-pink-500 to-pink-600 rounded-xl shadow p-6 text-white hover:shadow-lg transition"><div class="flex items-center justify-between mb-2"><span>카드결제 신청</span><i class="fas fa-credit-card text-2xl"></i></div><p class="text-3xl font-bold">${d}</p><p class="text-sm text-pink-100 mt-2">클릭하여 관리</p></a></div></div>`;return e.html(p+u+m+g+`<div class="grid md:grid-cols-3 gap-6"><a href="/admin/users" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"><i class="fas fa-user-cog text-blue-600 text-xl"></i></div><div><h3 class="text-lg font-bold">사용자 관리</h3><p class="text-gray-600 text-sm">권한 관리</p></div></div></a><a href="/admin/contacts" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center"><i class="fas fa-comments text-green-600 text-xl"></i></div><div><h3 class="text-lg font-bold">문의 관리</h3><p class="text-gray-600 text-sm">문의 처리</p></div></div></a><a href="/admin/revenue" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center"><i class="fas fa-chart-line text-yellow-600 text-xl"></i></div><div><h3 class="text-lg font-bold">매출 관리</h3><p class="text-gray-600 text-sm">매출 통계</p></div></div></a><a href="/admin/sms" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"><i class="fas fa-sms text-blue-600 text-xl"></i></div><div><h3 class="text-lg font-bold">문자 관리</h3><p class="text-gray-600 text-sm">SMS 발송</p></div></div></a><a href="/admin/sender/verification" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center"><i class="fas fa-phone text-purple-600 text-xl"></i></div><div><h3 class="text-lg font-bold">발신번호</h3><p class="text-gray-600 text-sm">인증 승인</p></div></div></a><a href="/admin/deposits" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center"><i class="fas fa-money-bill-wave text-green-600 text-xl"></i></div><div><h3 class="text-lg font-bold">입금 관리</h3><p class="text-gray-600 text-sm">포인트 승인</p></div></div></a><a href="/admin/bank-transfers" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"><i class="fas fa-university text-blue-600 text-xl"></i></div><div><h3 class="text-lg font-bold">계좌이체</h3><p class="text-gray-600 text-sm">승인 관리</p></div></div></a><a href="/admin/programs" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center"><i class="fas fa-graduation-cap text-purple-600 text-xl"></i></div><div><h3 class="text-lg font-bold">프로그램</h3><p class="text-gray-600 text-sm">교육 관리</p></div></div></a><a href="/admin/card-payments" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-pink-100 rounded-lg flex items-center justify-center"><i class="fas fa-credit-card text-pink-600 text-xl"></i></div><div><h3 class="text-lg font-bold">카드결제 신청</h3><p class="text-gray-600 text-sm">결제 승인 관리</p></div></div></a></div></div><script>(function(){try{let sessionId=localStorage.getItem('sessionId');if(!sessionId){sessionId='session_'+Date.now()+'_'+Math.random().toString(36).substr(2,9);localStorage.setItem('sessionId',sessionId);}const user=JSON.parse(localStorage.getItem('user')||'null');fetch('/api/session/track',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:sessionId,userId:user?.id||null})}).catch(err=>console.log('Session track error:',err));setInterval(()=>{fetch('/api/session/track',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:sessionId,userId:user?.id||null})}).catch(err=>console.log('Session track error:',err));},5*60*1000);}catch(e){console.log('Session tracking init error:',e);}})();<\/script></body></html>`)});c.get("/api/admin/pending-counts",async e=>{var o,n,i;const{env:t}=e;if(!(t!=null&&t.DB))return e.json({success:!1,error:"DB Error"},500);let s=0,a=0,r=0;try{s=((o=await t.DB.prepare("SELECT COUNT(*) c FROM deposit_requests WHERE status=?").bind("pending").first())==null?void 0:o.c)||0}catch{}try{a=((n=await t.DB.prepare("SELECT COUNT(*) c FROM sender_verification_requests WHERE status=?").bind("pending").first())==null?void 0:n.c)||0}catch{}try{r=((i=await t.DB.prepare("SELECT COUNT(*) c FROM bank_transfer_requests WHERE status=?").bind("pending").first())==null?void 0:i.c)||0}catch{}return e.json({success:!0,deposits:s,senders:a,bankTransfers:r})});c.get("/admin/active-sessions",async e=>e.html(`<!DOCTYPE html>
+<\/script>`,g=`<div class="mb-8"><h2 class="text-xl font-bold mb-4">신청 대기</h2><div class="grid md:grid-cols-5 gap-6"><div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow p-6 text-white"><div class="flex items-center justify-between mb-2"><span>입금 대기</span><i class="fas fa-money-bill-wave text-2xl"></i></div><p class="text-3xl font-bold">${n}</p></div><div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow p-6 text-white"><div class="flex items-center justify-between mb-2"><span>발신번호 대기</span><i class="fas fa-phone text-2xl"></i></div><p class="text-3xl font-bold">${o}</p></div><a href="/admin/bank-transfers" class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow p-6 text-white hover:shadow-lg transition"><div class="flex items-center justify-between mb-2"><span>계좌이체 대기</span><i class="fas fa-university text-2xl"></i></div><p class="text-3xl font-bold">${i}</p><p class="text-sm text-blue-100 mt-2">클릭하여 관리</p></a><a href="/admin/free-plan-requests" class="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl shadow p-6 text-white hover:shadow-lg transition"><div class="flex items-center justify-between mb-2"><span>무료 플랜 대기</span><i class="fas fa-gift text-2xl"></i></div><p class="text-3xl font-bold">${l}</p><p class="text-sm text-emerald-100 mt-2">클릭하여 관리</p></a><a href="/admin/card-payments" class="bg-gradient-to-br from-pink-500 to-pink-600 rounded-xl shadow p-6 text-white hover:shadow-lg transition"><div class="flex items-center justify-between mb-2"><span>카드결제 신청</span><i class="fas fa-credit-card text-2xl"></i></div><p class="text-3xl font-bold">${d}</p><p class="text-sm text-pink-100 mt-2">클릭하여 관리</p></a></div></div>`;return e.html(p+u+m+g+`<div class="grid md:grid-cols-3 gap-6"><a href="/admin/users" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"><i class="fas fa-user-cog text-blue-600 text-xl"></i></div><div><h3 class="text-lg font-bold">사용자 관리</h3><p class="text-gray-600 text-sm">권한 관리</p></div></div></a><a href="/admin/contacts" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center"><i class="fas fa-comments text-green-600 text-xl"></i></div><div><h3 class="text-lg font-bold">문의 관리</h3><p class="text-gray-600 text-sm">문의 처리</p></div></div></a><a href="/admin/revenue" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center"><i class="fas fa-chart-line text-yellow-600 text-xl"></i></div><div><h3 class="text-lg font-bold">매출 관리</h3><p class="text-gray-600 text-sm">매출 통계</p></div></div></a><a href="/admin/sms" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"><i class="fas fa-sms text-blue-600 text-xl"></i></div><div><h3 class="text-lg font-bold">문자 관리</h3><p class="text-gray-600 text-sm">SMS 발송</p></div></div></a><a href="/admin/sender/verification" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center"><i class="fas fa-phone text-purple-600 text-xl"></i></div><div><h3 class="text-lg font-bold">발신번호</h3><p class="text-gray-600 text-sm">인증 승인</p></div></div></a><a href="/admin/deposits" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center"><i class="fas fa-money-bill-wave text-green-600 text-xl"></i></div><div><h3 class="text-lg font-bold">입금 관리</h3><p class="text-gray-600 text-sm">포인트 승인</p></div></div></a><a href="/admin/bank-transfers" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"><i class="fas fa-university text-blue-600 text-xl"></i></div><div><h3 class="text-lg font-bold">계좌이체</h3><p class="text-gray-600 text-sm">승인 관리</p></div></div></a><a href="/admin/programs" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center"><i class="fas fa-graduation-cap text-purple-600 text-xl"></i></div><div><h3 class="text-lg font-bold">프로그램</h3><p class="text-gray-600 text-sm">교육 관리</p></div></div></a><a href="/admin/card-payments" class="bg-white rounded-xl shadow p-6 hover:shadow-md transition border"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-pink-100 rounded-lg flex items-center justify-center"><i class="fas fa-credit-card text-pink-600 text-xl"></i></div><div><h3 class="text-lg font-bold">카드결제 신청</h3><p class="text-gray-600 text-sm">결제 승인 관리</p></div></div></a></div></div><script>(function(){try{let sessionId=localStorage.getItem('sessionId');if(!sessionId){sessionId='session_'+Date.now()+'_'+Math.random().toString(36).substr(2,9);localStorage.setItem('sessionId',sessionId);}const user=JSON.parse(localStorage.getItem('user')||'null');fetch('/api/session/track',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:sessionId,userId:user?.id||null})}).catch(err=>console.log('Session track error:',err));setInterval(()=>{fetch('/api/session/track',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:sessionId,userId:user?.id||null})}).catch(err=>console.log('Session track error:',err));},5*60*1000);}catch(e){console.log('Session tracking init error:',e);}})();<\/script></body></html>`)});c.get("/api/admin/pending-counts",async e=>{var n,o,i;const{env:t}=e;if(!(t!=null&&t.DB))return e.json({success:!1,error:"DB Error"},500);let s=0,a=0,r=0;try{s=((n=await t.DB.prepare("SELECT COUNT(*) c FROM deposit_requests WHERE status=?").bind("pending").first())==null?void 0:n.c)||0}catch{}try{a=((o=await t.DB.prepare("SELECT COUNT(*) c FROM sender_verification_requests WHERE status=?").bind("pending").first())==null?void 0:o.c)||0}catch{}try{r=((i=await t.DB.prepare("SELECT COUNT(*) c FROM bank_transfer_requests WHERE status=?").bind("pending").first())==null?void 0:i.c)||0}catch{}return e.json({success:!0,deposits:s,senders:a,bankTransfers:r})});c.get("/admin/active-sessions",async e=>e.html(`<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
@@ -31793,14 +32247,14 @@ setInterval(loadActiveSessionCount,30000);
     FROM sms_logs 
     ORDER BY created_at DESC 
     LIMIT 10
-  `).all(),o=await t.DB.prepare(`
+  `).all(),n=await t.DB.prepare(`
     SELECT 
       id, user_id, sender_key, template_code, 
       status, created_at
     FROM kakao_logs 
     ORDER BY created_at DESC 
     LIMIT 10
-  `).all(),n=s.results[0]||{total:0,success:0,failed:0},i=a.results[0]||{total:0,success:0,failed:0};return e.html(`
+  `).all(),o=s.results[0]||{total:0,success:0,failed:0},i=a.results[0]||{total:0,success:0,failed:0};return e.html(`
     <!DOCTYPE html>
     <html lang="ko">
     <head>
@@ -31842,8 +32296,8 @@ setInterval(loadActiveSessionCount,30000);
                         <span class="text-blue-100">SMS 발송</span>
                         <i class="fas fa-sms text-2xl"></i>
                     </div>
-                    <p class="text-3xl font-bold mb-1">${n.total}</p>
-                    <p class="text-sm text-blue-100">성공 ${n.success} / 실패 ${n.failed}</p>
+                    <p class="text-3xl font-bold mb-1">${o.total}</p>
+                    <p class="text-sm text-blue-100">성공 ${o.success} / 실패 ${o.failed}</p>
                 </div>
                 
                 <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-sm p-6 text-white">
@@ -31851,8 +32305,8 @@ setInterval(loadActiveSessionCount,30000);
                         <span class="text-green-100">SMS 성공</span>
                         <i class="fas fa-check-circle text-2xl"></i>
                     </div>
-                    <p class="text-3xl font-bold mb-1">${n.success||0}</p>
-                    <p class="text-sm text-green-100">성공률 ${n.total>0?Math.round(n.success/n.total*100):0}%</p>
+                    <p class="text-3xl font-bold mb-1">${o.success||0}</p>
+                    <p class="text-sm text-green-100">성공률 ${o.total>0?Math.round(o.success/o.total*100):0}%</p>
                 </div>
                 
                 <div class="bg-gradient-to-br from-yellow-400 to-yellow-500 rounded-xl shadow-sm p-6 text-white">
@@ -31929,7 +32383,7 @@ setInterval(loadActiveSessionCount,30000);
                             </tr>
                         </thead>
                         <tbody>
-                            ${o.results.map(l=>`
+                            ${n.results.map(l=>`
                                 <tr class="border-b border-gray-100 hover:bg-gray-50">
                                     <td class="py-3 px-4">#${l.id}</td>
                                     <td class="py-3 px-4">User ${l.user_id}</td>
@@ -32123,7 +32577,7 @@ setInterval(loadActiveSessionCount,30000);
           END,
           created_at DESC
         LIMIT 100
-      `).all()}catch(l){console.error("DB query error:",l),s={results:[]}}const a=l=>{if(!l)return"-";const d=new Date(l),p=new Date(d.getTime()+540*60*1e3),u=p.getFullYear(),m=String(p.getMonth()+1).padStart(2,"0"),g=String(p.getDate()).padStart(2,"0"),x=String(p.getHours()).padStart(2,"0"),b=String(p.getMinutes()).padStart(2,"0");return`${u}-${m}-${g} ${x}:${b}`},r=s.results.filter(l=>l.status==="pending").length,o=s.results.filter(l=>l.status==="approved").length,n=s.results.filter(l=>l.status==="rejected").length,i=s.results.map(l=>{const d=l.status==="pending"?'<span class="px-3 py-1 text-xs font-semibold text-yellow-800 bg-yellow-100 rounded-full">대기 중</span>':l.status==="approved"?'<span class="px-3 py-1 text-xs font-semibold text-green-800 bg-green-100 rounded-full">승인 완료</span>':'<span class="px-3 py-1 text-xs font-semibold text-red-800 bg-red-100 rounded-full">거절</span>',p=l.status==="pending"?`<button onclick="approveRequest(${l.id}, '${l.academy_name.replace(/'/g,"\\'")}')" class="px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700 mr-2">
+      `).all()}catch(l){console.error("DB query error:",l),s={results:[]}}const a=l=>{if(!l)return"-";const d=new Date(l),p=new Date(d.getTime()+540*60*1e3),u=p.getFullYear(),m=String(p.getMonth()+1).padStart(2,"0"),g=String(p.getDate()).padStart(2,"0"),x=String(p.getHours()).padStart(2,"0"),b=String(p.getMinutes()).padStart(2,"0");return`${u}-${m}-${g} ${x}:${b}`},r=s.results.filter(l=>l.status==="pending").length,n=s.results.filter(l=>l.status==="approved").length,o=s.results.filter(l=>l.status==="rejected").length,i=s.results.map(l=>{const d=l.status==="pending"?'<span class="px-3 py-1 text-xs font-semibold text-yellow-800 bg-yellow-100 rounded-full">대기 중</span>':l.status==="approved"?'<span class="px-3 py-1 text-xs font-semibold text-green-800 bg-green-100 rounded-full">승인 완료</span>':'<span class="px-3 py-1 text-xs font-semibold text-red-800 bg-red-100 rounded-full">거절</span>',p=l.status==="pending"?`<button onclick="approveRequest(${l.id}, '${l.academy_name.replace(/'/g,"\\'")}')" class="px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700 mr-2">
              <i class="fas fa-check mr-1"></i>승인
            </button>
            <button onclick="rejectRequest(${l.id}, '${l.academy_name.replace(/'/g,"\\'")}')" class="px-3 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700">
@@ -32221,7 +32675,7 @@ setInterval(loadActiveSessionCount,30000);
                             <h3 class="text-lg font-bold text-gray-900">승인 완료</h3>
                         </div>
                     </div>
-                    <p class="text-4xl font-black text-green-600 mb-1">${o}</p>
+                    <p class="text-4xl font-black text-green-600 mb-1">${n}</p>
                     <p class="text-sm text-green-700">무료 플랜 이용 중</p>
                 </div>
                 <div class="bg-gradient-to-br from-red-50 to-red-100 border-2 border-red-300 rounded-2xl p-6 hover-lift">
@@ -32233,7 +32687,7 @@ setInterval(loadActiveSessionCount,30000);
                             <h3 class="text-lg font-bold text-gray-900">거절</h3>
                         </div>
                     </div>
-                    <p class="text-4xl font-black text-red-600 mb-1">${n}</p>
+                    <p class="text-4xl font-black text-red-600 mb-1">${o}</p>
                     <p class="text-sm text-red-700">거절된 신청</p>
                 </div>
             </div>
@@ -32380,7 +32834,7 @@ setInterval(loadActiveSessionCount,30000);
           END,
           created_at DESC
         LIMIT 100
-      `).all()}catch(n){console.error("DB query error:",n),r={results:[]}}const o=n=>{if(!n)return"-";const i=new Date(n),l=new Date(i.getTime()+540*60*1e3),d=l.getFullYear(),p=String(l.getMonth()+1).padStart(2,"0"),u=String(l.getDate()).padStart(2,"0"),m=String(l.getHours()).padStart(2,"0"),g=String(l.getMinutes()).padStart(2,"0"),x=String(l.getSeconds()).padStart(2,"0");return`${d}-${p}-${u} ${m}:${g}:${x}`};return e.html(`
+      `).all()}catch(o){console.error("DB query error:",o),r={results:[]}}const n=o=>{if(!o)return"-";const i=new Date(o),l=new Date(i.getTime()+540*60*1e3),d=l.getFullYear(),p=String(l.getMonth()+1).padStart(2,"0"),u=String(l.getDate()).padStart(2,"0"),m=String(l.getHours()).padStart(2,"0"),g=String(l.getMinutes()).padStart(2,"0"),x=String(l.getSeconds()).padStart(2,"0");return`${d}-${p}-${u} ${m}:${g}:${x}`};return e.html(`
     <!DOCTYPE html>
     <html lang="ko">
     <head>
@@ -32497,17 +32951,17 @@ setInterval(loadActiveSessionCount,30000);
                         </tr>
                     </thead>
                     <tbody id="transferList">
-                        ${((s=r.results)==null?void 0:s.map(n=>{const i=n.status==="pending"?'<span class="px-3 py-1 bg-yellow-100 text-yellow-800 text-xs font-semibold rounded-full">대기중</span>':n.status==="approved"?'<span class="px-3 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-full">승인완료</span>':'<span class="px-3 py-1 bg-red-100 text-red-800 text-xs font-semibold rounded-full">거절</span>',l=n.status==="pending"?'<button onclick="approve('+n.id+')" class="px-3 py-1.5 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 mr-2"><i class="fas fa-check mr-1"></i>승인</button><button onclick="reject('+n.id+')" class="px-3 py-1.5 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700"><i class="fas fa-times mr-1"></i>거절</button>':'<span class="text-gray-400 text-sm">완료</span>';return`
-                            <tr class="border-b hover:bg-gray-50 transfer-row" data-name="${n.user_name}" data-email="${n.user_email}" data-phone="${n.user_phone}" data-status="${n.status}">
-                              <td class="px-6 py-4 text-sm text-gray-900 font-mono">#${n.id}</td>
+                        ${((s=r.results)==null?void 0:s.map(o=>{const i=o.status==="pending"?'<span class="px-3 py-1 bg-yellow-100 text-yellow-800 text-xs font-semibold rounded-full">대기중</span>':o.status==="approved"?'<span class="px-3 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-full">승인완료</span>':'<span class="px-3 py-1 bg-red-100 text-red-800 text-xs font-semibold rounded-full">거절</span>',l=o.status==="pending"?'<button onclick="approve('+o.id+')" class="px-3 py-1.5 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 mr-2"><i class="fas fa-check mr-1"></i>승인</button><button onclick="reject('+o.id+')" class="px-3 py-1.5 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700"><i class="fas fa-times mr-1"></i>거절</button>':'<span class="text-gray-400 text-sm">완료</span>';return`
+                            <tr class="border-b hover:bg-gray-50 transfer-row" data-name="${o.user_name}" data-email="${o.user_email}" data-phone="${o.user_phone}" data-status="${o.status}">
+                              <td class="px-6 py-4 text-sm text-gray-900 font-mono">#${o.id}</td>
                               <td class="px-6 py-4">
-                                <div class="text-sm font-medium text-gray-900">${n.user_name}</div>
-                                <div class="text-xs text-gray-500">${n.user_email}</div>
+                                <div class="text-sm font-medium text-gray-900">${o.user_name}</div>
+                                <div class="text-xs text-gray-500">${o.user_email}</div>
                               </td>
-                              <td class="px-6 py-4 text-sm text-gray-900">${n.plan_name}</td>
-                              <td class="px-6 py-4 text-sm font-bold text-purple-600">₩${parseInt(n.amount).toLocaleString()}</td>
-                              <td class="px-6 py-4 text-sm text-gray-600">${n.user_phone}</td>
-                              <td class="px-6 py-4 text-sm text-gray-600">${o(n.created_at)}</td>
+                              <td class="px-6 py-4 text-sm text-gray-900">${o.plan_name}</td>
+                              <td class="px-6 py-4 text-sm font-bold text-purple-600">₩${parseInt(o.amount).toLocaleString()}</td>
+                              <td class="px-6 py-4 text-sm text-gray-600">${o.user_phone}</td>
+                              <td class="px-6 py-4 text-sm text-gray-600">${n(o.created_at)}</td>
                               <td class="px-6 py-4">${i}</td>
                               <td class="px-6 py-4 text-center">${l}</td>
                             </tr>
@@ -34157,24 +34611,24 @@ setInterval(loadActiveSessionCount,30000);
         <\/script>
     </body>
     </html>
-  `));c.post("/api/store/purchase-instagram",async e=>{try{const t=U(e,"session_id");if(!t)return e.json({success:!1,error:"로그인이 필요합니다"},401);const s=e.env.DB,a=await s.prepare(`
+  `));c.post("/api/store/purchase-instagram",async e=>{try{const t=A(e,"session_id");if(!t)return e.json({success:!1,error:"로그인이 필요합니다"},401);const s=e.env.DB,a=await s.prepare(`
       SELECT user_id FROM sessions WHERE session_id = ?
-    `).bind(t).first();if(!a)return e.json({success:!1,error:"유효하지 않은 세션입니다"},401);const r=a.user_id,{productKey:o,optionName:n,price:i,quantity:l,targetUrl:d,apiKey:p}=await e.req.json();if(!o||!n||!i||!l||!d)return e.json({success:!1,error:"필수 정보가 누락되었습니다"},400);const u=i*l,m=await s.prepare(`
+    `).bind(t).first();if(!a)return e.json({success:!1,error:"유효하지 않은 세션입니다"},401);const r=a.user_id,{productKey:n,optionName:o,price:i,quantity:l,targetUrl:d,apiKey:p}=await e.req.json();if(!n||!o||!i||!l||!d)return e.json({success:!1,error:"필수 정보가 누락되었습니다"},400);const u=i*l,m=await s.prepare(`
       SELECT balance FROM users WHERE id = ?
     `).bind(r).first();if(!m)return e.json({success:!1,error:"사용자를 찾을 수 없습니다"},404);if(m.balance<u)return e.json({success:!1,error:`포인트가 부족합니다. (보유: ${m.balance.toLocaleString()}원, 필요: ${u.toLocaleString()}원)`},400);const g=m.balance-u;await s.prepare(`
       UPDATE users SET balance = ? WHERE id = ?
-    `).bind(g,r).run();const x=`인스타그램 ${o} - ${n}`,f=(await s.prepare(`
+    `).bind(g,r).run();const x=`인스타그램 ${n} - ${o}`,h=(await s.prepare(`
       INSERT INTO store_orders (
         user_id, product_name, product_key, option_name, 
         quantity, unit_price, total_price, target_url,
         status, created_at
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', CURRENT_TIMESTAMP)
-    `).bind(r,x,o,n,l,i,u,d).run()).meta.last_row_id,v=m.balance,_=g;return await s.prepare(`
+    `).bind(r,x,n,o,l,i,u,d).run()).meta.last_row_id,v=m.balance,E=g;return await s.prepare(`
       INSERT INTO point_transactions (
         user_id, amount, balance_before, balance_after,
         transaction_type, description, created_at
       ) VALUES (?, ?, ?, ?, 'purchase', ?, CURRENT_TIMESTAMP)
-    `).bind(r,-u,v,_,`스토어 구매: ${x}`).run(),console.log(`[Store] Instagram purchase - User: ${r}, Product: ${x}, Quantity: ${l}, Cost: ${u}`),e.json({success:!0,message:"구매가 완료되었습니다",orderId:f,remainingPoints:g})}catch(t){return console.error("[Store] Purchase error:",t),e.json({success:!1,error:"구매 처리 중 오류가 발생했습니다: "+t.message},500)}});c.get("/store",e=>e.html(`<!DOCTYPE html>
+    `).bind(r,-u,v,E,`스토어 구매: ${x}`).run(),console.log(`[Store] Instagram purchase - User: ${r}, Product: ${x}, Quantity: ${l}, Cost: ${u}`),e.json({success:!0,message:"구매가 완료되었습니다",orderId:h,remainingPoints:g})}catch(t){return console.error("[Store] Purchase error:",t),e.json({success:!1,error:"구매 처리 중 오류가 발생했습니다: "+t.message},500)}});c.get("/store",e=>e.html(`<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
@@ -36737,10 +37191,10 @@ setInterval(loadActiveSessionCount,30000);
         memo TEXT,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )
-    `).run();try{await t.prepare("ALTER TABLE daily_records ADD COLUMN class_id INTEGER").run()}catch{console.log("class_id column already exists")}try{await t.prepare("ALTER TABLE daily_records ADD COLUMN lesson_concept TEXT").run()}catch{console.log("lesson_concept column already exists")}try{await t.prepare("ALTER TABLE daily_records ADD COLUMN lesson_understanding INTEGER").run()}catch{console.log("lesson_understanding column already exists")}try{await t.prepare("ALTER TABLE daily_records ADD COLUMN lesson_participation INTEGER").run()}catch{console.log("lesson_participation column already exists")}try{await t.prepare("ALTER TABLE daily_records ADD COLUMN lesson_achievement TEXT").run()}catch{console.log("lesson_achievement column already exists")}try{await t.prepare("ALTER TABLE daily_records ADD COLUMN homework_content TEXT").run()}catch{console.log("homework_content column already exists")}try{await t.prepare("ALTER TABLE daily_records ADD COLUMN homework_achievement TEXT").run()}catch{console.log("homework_achievement column already exists")}try{await t.prepare("ALTER TABLE daily_records ADD COLUMN next_homework_type TEXT").run()}catch{console.log("next_homework_type column already exists")}try{await t.prepare("ALTER TABLE daily_records ADD COLUMN next_homework_start_page INTEGER").run()}catch{console.log("next_homework_start_page column already exists")}try{await t.prepare("ALTER TABLE daily_records ADD COLUMN next_homework_end_page INTEGER").run()}catch{console.log("next_homework_end_page column already exists")}try{await t.prepare("ALTER TABLE daily_records ADD COLUMN next_homework_details TEXT").run()}catch{console.log("next_homework_details column already exists")}return await t.prepare("CREATE INDEX IF NOT EXISTS idx_students_academy_id ON students(academy_id)").run(),await t.prepare("CREATE INDEX IF NOT EXISTS idx_classes_academy_id ON classes(academy_id)").run(),await t.prepare("CREATE INDEX IF NOT EXISTS idx_courses_academy_id ON courses(academy_id)").run(),await t.prepare("CREATE INDEX IF NOT EXISTS idx_students_class_id ON students(class_id)").run(),await t.prepare("CREATE INDEX IF NOT EXISTS idx_daily_records_student_id ON daily_records(student_id)").run(),await t.prepare("CREATE INDEX IF NOT EXISTS idx_daily_records_date ON daily_records(record_date)").run(),e.json({success:!0,message:"학생 관리 테이블이 성공적으로 생성되었습니다! (students, classes, courses, daily_records)"})}catch(t){return e.json({success:!1,error:t.message},500)}});c.get("/api/debug/student-references/:studentId",async e=>{try{const t=e.req.param("studentId"),{DB:s}=e.env,a={},r=await s.prepare("SELECT COUNT(*) as count FROM daily_records WHERE student_id = ?").bind(t).first();a.daily_records=r;const o=await s.prepare("SELECT * FROM students WHERE id = ?").bind(t).first();return a.student=o,e.json({success:!0,studentId:t,references:a})}catch(t){return e.json({success:!1,error:t.message},500)}});c.get("/api/debug/my-permissions",async e=>{var t;try{const s=JSON.parse(e.req.header("X-User-Data-Base64")?decodeURIComponent(escape(atob(e.req.header("X-User-Data-Base64")||""))):'{"id":1}');console.log("🔍 [DebugPermissions] User ID:",s.id);const a=await e.env.DB.prepare("SELECT permission_key, permission_value FROM teacher_permissions WHERE teacher_id = ?").bind(s.id).all();console.log("🔍 [DebugPermissions] Found",((t=a.results)==null?void 0:t.length)||0,"permission rows");const r={};if(a.results)for(const o of a.results){const n=o.permission_key,i=o.permission_value;if(n==="assignedClasses"&&typeof i=="string")try{r[n]=JSON.parse(i)}catch{r[n]=i}else n==="canViewAllStudents"||n==="canWriteDailyReports"?r[n]=i==="1"||i===1||i===!0:r[n]=i}return e.json({success:!0,userId:s.id,rawRows:a.results,parsedPermissions:r})}catch(s){return console.error("❌ [DebugPermissions] Error:",s),e.json({success:!1,error:s.message},500)}});c.post("/api/admin/init-sample-classes",async e=>{try{const{userId:t}=await e.req.json();if(!t)return e.json({success:!1,error:"사용자 ID가 필요합니다."},400);console.log("[InitClasses] Creating sample classes for userId:",t);const s=[{name:"초등 3학년 수학반",grade:"3학년",description:"초등학교 3학년 수학 수업"},{name:"초등 4학년 수학반",grade:"4학년",description:"초등학교 4학년 수학 수업"},{name:"초등 5학년 수학반",grade:"5학년",description:"초등학교 5학년 수학 수업"}],a=[];for(const r of s){const o=await e.env.DB.prepare(`
+    `).run();try{await t.prepare("ALTER TABLE daily_records ADD COLUMN class_id INTEGER").run()}catch{console.log("class_id column already exists")}try{await t.prepare("ALTER TABLE daily_records ADD COLUMN lesson_concept TEXT").run()}catch{console.log("lesson_concept column already exists")}try{await t.prepare("ALTER TABLE daily_records ADD COLUMN lesson_understanding INTEGER").run()}catch{console.log("lesson_understanding column already exists")}try{await t.prepare("ALTER TABLE daily_records ADD COLUMN lesson_participation INTEGER").run()}catch{console.log("lesson_participation column already exists")}try{await t.prepare("ALTER TABLE daily_records ADD COLUMN lesson_achievement TEXT").run()}catch{console.log("lesson_achievement column already exists")}try{await t.prepare("ALTER TABLE daily_records ADD COLUMN homework_content TEXT").run()}catch{console.log("homework_content column already exists")}try{await t.prepare("ALTER TABLE daily_records ADD COLUMN homework_achievement TEXT").run()}catch{console.log("homework_achievement column already exists")}try{await t.prepare("ALTER TABLE daily_records ADD COLUMN next_homework_type TEXT").run()}catch{console.log("next_homework_type column already exists")}try{await t.prepare("ALTER TABLE daily_records ADD COLUMN next_homework_start_page INTEGER").run()}catch{console.log("next_homework_start_page column already exists")}try{await t.prepare("ALTER TABLE daily_records ADD COLUMN next_homework_end_page INTEGER").run()}catch{console.log("next_homework_end_page column already exists")}try{await t.prepare("ALTER TABLE daily_records ADD COLUMN next_homework_details TEXT").run()}catch{console.log("next_homework_details column already exists")}return await t.prepare("CREATE INDEX IF NOT EXISTS idx_students_academy_id ON students(academy_id)").run(),await t.prepare("CREATE INDEX IF NOT EXISTS idx_classes_academy_id ON classes(academy_id)").run(),await t.prepare("CREATE INDEX IF NOT EXISTS idx_courses_academy_id ON courses(academy_id)").run(),await t.prepare("CREATE INDEX IF NOT EXISTS idx_students_class_id ON students(class_id)").run(),await t.prepare("CREATE INDEX IF NOT EXISTS idx_daily_records_student_id ON daily_records(student_id)").run(),await t.prepare("CREATE INDEX IF NOT EXISTS idx_daily_records_date ON daily_records(record_date)").run(),e.json({success:!0,message:"학생 관리 테이블이 성공적으로 생성되었습니다! (students, classes, courses, daily_records)"})}catch(t){return e.json({success:!1,error:t.message},500)}});c.get("/api/debug/student-references/:studentId",async e=>{try{const t=e.req.param("studentId"),{DB:s}=e.env,a={},r=await s.prepare("SELECT COUNT(*) as count FROM daily_records WHERE student_id = ?").bind(t).first();a.daily_records=r;const n=await s.prepare("SELECT * FROM students WHERE id = ?").bind(t).first();return a.student=n,e.json({success:!0,studentId:t,references:a})}catch(t){return e.json({success:!1,error:t.message},500)}});c.get("/api/debug/my-permissions",async e=>{var t;try{const s=JSON.parse(e.req.header("X-User-Data-Base64")?decodeURIComponent(escape(atob(e.req.header("X-User-Data-Base64")||""))):'{"id":1}');console.log("🔍 [DebugPermissions] User ID:",s.id);const a=await e.env.DB.prepare("SELECT permission_key, permission_value FROM teacher_permissions WHERE teacher_id = ?").bind(s.id).all();console.log("🔍 [DebugPermissions] Found",((t=a.results)==null?void 0:t.length)||0,"permission rows");const r={};if(a.results)for(const n of a.results){const o=n.permission_key,i=n.permission_value;if(o==="assignedClasses"&&typeof i=="string")try{r[o]=JSON.parse(i)}catch{r[o]=i}else o==="canViewAllStudents"||o==="canWriteDailyReports"?r[o]=i==="1"||i===1||i===!0:r[o]=i}return e.json({success:!0,userId:s.id,rawRows:a.results,parsedPermissions:r})}catch(s){return console.error("❌ [DebugPermissions] Error:",s),e.json({success:!1,error:s.message},500)}});c.post("/api/admin/init-sample-classes",async e=>{try{const{userId:t}=await e.req.json();if(!t)return e.json({success:!1,error:"사용자 ID가 필요합니다."},400);console.log("[InitClasses] Creating sample classes for userId:",t);const s=[{name:"초등 3학년 수학반",grade:"3학년",description:"초등학교 3학년 수학 수업"},{name:"초등 4학년 수학반",grade:"4학년",description:"초등학교 4학년 수학 수업"},{name:"초등 5학년 수학반",grade:"5학년",description:"초등학교 5학년 수학 수업"}],a=[];for(const r of s){const n=await e.env.DB.prepare(`
         INSERT INTO classes (name, description, user_id, grade_level, max_students, status, created_at)
         VALUES (?, ?, ?, ?, 20, 'active', datetime('now'))
-      `).bind(r.name,r.description,t,r.grade).run();a.push({id:o.meta.last_row_id,name:r.name,grade:r.grade}),console.log("[InitClasses] Created class:",r.name,"with ID:",o.meta.last_row_id)}return e.json({success:!0,message:`${a.length}개의 샘플 반이 생성되었습니다.`,classes:a})}catch(t){return console.error("[InitClasses] Error:",t),e.json({success:!1,error:t.message},500)}});c.get("/api/fix-teacher-classes-error",async e=>{try{return await e.env.DB.prepare(`
+      `).bind(r.name,r.description,t,r.grade).run();a.push({id:n.meta.last_row_id,name:r.name,grade:r.grade}),console.log("[InitClasses] Created class:",r.name,"with ID:",n.meta.last_row_id)}return e.json({success:!0,message:`${a.length}개의 샘플 반이 생성되었습니다.`,classes:a})}catch(t){return console.error("[InitClasses] Error:",t),e.json({success:!1,error:t.message},500)}});c.get("/api/fix-teacher-classes-error",async e=>{try{return await e.env.DB.prepare(`
       CREATE TABLE IF NOT EXISTS teacher_classes (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         teacher_id INTEGER NOT NULL,
@@ -36755,7 +37209,7 @@ setInterval(loadActiveSessionCount,30000);
       WHERE c.academy_id = ?
       GROUP BY c.id
       ORDER BY c.class_name
-    `).bind(a.id).all();return e.json({success:!0,user:a,classes:r.results||[]})}catch(t){return e.json({success:!1,error:t.message},500)}});c.post("/api/admin/transfer-classes",async e=>{try{const{DB:t}=e.env,{fromEmail:s,toEmail:a,classIds:r}=await e.req.json();if(!s||!a||!r||!Array.isArray(r))return e.json({success:!1,error:"fromEmail, toEmail, and classIds array required"},400);const o=await t.prepare("SELECT id, email, name FROM users WHERE email = ?").bind(s).first(),n=await t.prepare("SELECT id, email, name FROM users WHERE email = ?").bind(a).first();if(!o||!n)return e.json({success:!1,error:o?"To user not found":"From user not found"},404);const i=[];for(const l of r){const d=await t.prepare("SELECT * FROM classes WHERE id = ? AND academy_id = ?").bind(l,o.id).first();d&&(await t.prepare("UPDATE classes SET academy_id = ? WHERE id = ?").bind(n.id,l).run(),await t.prepare("UPDATE students SET academy_id = ? WHERE class_id = ?").bind(n.id,l).run(),i.push({classId:l,className:d.class_name,studentCount:d.student_count||0}))}return e.json({success:!0,message:`${i.length}개 반 이전 완료`,transferred:i,from:{id:o.id,email:o.email,name:o.name},to:{id:n.id,email:n.email,name:n.name}})}catch(t){return e.json({success:!1,error:t.message},500)}});c.get("/tools/form-builder",async e=>e.html(`<!DOCTYPE html>
+    `).bind(a.id).all();return e.json({success:!0,user:a,classes:r.results||[]})}catch(t){return e.json({success:!1,error:t.message},500)}});c.post("/api/admin/transfer-classes",async e=>{try{const{DB:t}=e.env,{fromEmail:s,toEmail:a,classIds:r}=await e.req.json();if(!s||!a||!r||!Array.isArray(r))return e.json({success:!1,error:"fromEmail, toEmail, and classIds array required"},400);const n=await t.prepare("SELECT id, email, name FROM users WHERE email = ?").bind(s).first(),o=await t.prepare("SELECT id, email, name FROM users WHERE email = ?").bind(a).first();if(!n||!o)return e.json({success:!1,error:n?"To user not found":"From user not found"},404);const i=[];for(const l of r){const d=await t.prepare("SELECT * FROM classes WHERE id = ? AND academy_id = ?").bind(l,n.id).first();d&&(await t.prepare("UPDATE classes SET academy_id = ? WHERE id = ?").bind(o.id,l).run(),await t.prepare("UPDATE students SET academy_id = ? WHERE class_id = ?").bind(o.id,l).run(),i.push({classId:l,className:d.class_name,studentCount:d.student_count||0}))}return e.json({success:!0,message:`${i.length}개 반 이전 완료`,transferred:i,from:{id:n.id,email:n.email,name:n.name},to:{id:o.id,email:o.email,name:o.name}})}catch(t){return e.json({success:!1,error:t.message},500)}});c.get("/tools/form-builder",async e=>e.html(`<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
@@ -36930,90 +37384,90 @@ setInterval(loadActiveSessionCount,30000);
       SELECT * FROM subscriptions 
       WHERE academy_id = ? AND status = 'active'
       ORDER BY created_at DESC LIMIT 1
-    `).bind(s.academy_id||s.id).first(),o=await e.env.DB.prepare(`
+    `).bind(s.academy_id||s.id).first(),n=await e.env.DB.prepare(`
       SELECT * FROM subscriptions 
       WHERE academy_id = ? AND plan_name = '관리자 설정 플랜'
       ORDER BY created_at DESC LIMIT 1
-    `).bind(s.academy_id||s.id).first(),n=await e.env.DB.prepare(`
+    `).bind(s.academy_id||s.id).first(),o=await e.env.DB.prepare(`
       SELECT * FROM usage_tracking WHERE academy_id = ? ORDER BY updated_at DESC LIMIT 1
     `).bind(s.academy_id||s.id).first();let i={};try{let l=0;try{const u=await e.env.DB.prepare(`
           SELECT COUNT(*) as count FROM students WHERE academy_id = ?
-        `).bind(s.academy_id||s.id).first();l=(u==null?void 0:u.count)||0}catch{l="table_not_found"}let d=0;try{d=(n==null?void 0:n.landing_pages_created)||0}catch{d="table_not_found"}let p=0;try{const u=await e.env.DB.prepare(`
+        `).bind(s.academy_id||s.id).first();l=(u==null?void 0:u.count)||0}catch{l="table_not_found"}let d=0;try{d=(o==null?void 0:o.landing_pages_created)||0}catch{d="table_not_found"}let p=0;try{const u=await e.env.DB.prepare(`
           SELECT COUNT(*) as count FROM teacher_applications WHERE academy_id = ?
-        `).bind(s.academy_id||s.id).first();p=(u==null?void 0:u.count)||0}catch{p="table_not_found"}i={students:l,landingPages:d,teachers:p}}catch(l){i={error:l.message}}return e.json({user:s,subscriptions:{all:a.results,active:r,admin:o},usageTracking:n,actualData:i,debug:{academyIdUsedForQuery:s.academy_id||s.id,totalSubscriptions:a.results.length}})}catch(t){return e.json({error:t.message},500)}});c.get("/api/points/balance",async e=>{try{const t=U(e,"session_id");if(!t)return e.json({success:!1,error:"Not authenticated"},401);const s=await e.env.DB.prepare(`
+        `).bind(s.academy_id||s.id).first();p=(u==null?void 0:u.count)||0}catch{p="table_not_found"}i={students:l,landingPages:d,teachers:p}}catch(l){i={error:l.message}}return e.json({user:s,subscriptions:{all:a.results,active:r,admin:n},usageTracking:o,actualData:i,debug:{academyIdUsedForQuery:s.academy_id||s.id,totalSubscriptions:a.results.length}})}catch(t){return e.json({error:t.message},500)}});c.get("/api/points/balance",async e=>{try{const t=A(e,"session_id");if(!t)return e.json({success:!1,error:"Not authenticated"},401);const s=await e.env.DB.prepare(`
       SELECT user_id FROM sessions WHERE session_id = ? AND expires_at > datetime('now')
     `).bind(t).first();if(!s)return e.json({success:!1,error:"Session expired"},401);const a=s.user_id,r=await e.env.DB.prepare(`
       SELECT id, email, name, points FROM users WHERE id = ?
-    `).bind(a).first();if(!r)return e.json({success:!1,error:"User not found"},404);const o=await e.env.DB.prepare(`
+    `).bind(a).first();if(!r)return e.json({success:!1,error:"User not found"},404);const n=await e.env.DB.prepare(`
       SELECT * FROM point_transactions 
       WHERE user_id = ? 
       ORDER BY created_at DESC 
       LIMIT 50
-    `).bind(a).all();return e.json({success:!0,balance:r.points||0,history:o.results||[]})}catch(t){return console.error("[Points Balance] Error:",t),e.json({success:!1,error:t.message},500)}});c.get("/api/store/products",async e=>{try{const t=U(e,"session_id");if(!t)return e.json({success:!1,error:"Not authenticated"},401);const s=await e.env.DB.prepare(`
+    `).bind(a).all();return e.json({success:!0,balance:r.points||0,history:n.results||[]})}catch(t){return console.error("[Points Balance] Error:",t),e.json({success:!1,error:t.message},500)}});c.get("/api/store/products",async e=>{try{const t=A(e,"session_id");if(!t)return e.json({success:!1,error:"Not authenticated"},401);const s=await e.env.DB.prepare(`
       SELECT user_id FROM sessions WHERE session_id = ? AND expires_at > datetime('now')
     `).bind(t).first();if(!s)return e.json({success:!1,error:"Session expired"},401);const a=s.user_id,r=await e.env.DB.prepare(`
       SELECT id, email, role FROM users WHERE id = ?
-    `).bind(a).first();if(!r)return e.json({success:!1,error:"User not found"},404);const o=await e.env.DB.prepare(`
+    `).bind(a).first();if(!r)return e.json({success:!1,error:"User not found"},404);const n=await e.env.DB.prepare(`
       SELECT * FROM store_access WHERE user_id = ?
-    `).bind(a).first(),n=r.email==="admin@superplace.co.kr";if(!(n||(o==null?void 0:o.enabled)===1))return e.json({success:!1,error:"스토어 접근 권한이 없습니다.",message:"관리자에게 문의하세요."},403);const l=await e.env.DB.prepare(`
+    `).bind(a).first(),o=r.email==="admin@superplace.co.kr";if(!(o||(n==null?void 0:n.enabled)===1))return e.json({success:!1,error:"스토어 접근 권한이 없습니다.",message:"관리자에게 문의하세요."},403);const l=await e.env.DB.prepare(`
       SELECT * FROM store_products 
       WHERE enabled = 1 
       ORDER BY category, display_order, id
-    `).all();return e.json({success:!0,products:l.results||[],isAdmin:n})}catch(t){return console.error("[Store Products] Error:",t),e.json({success:!1,error:t.message},500)}});c.post("/api/store/purchase",async e=>{try{const t=U(e,"session_id");if(!t)return e.json({success:!1,error:"Not authenticated"},401);const s=await e.env.DB.prepare(`
+    `).all();return e.json({success:!0,products:l.results||[],isAdmin:o})}catch(t){return console.error("[Store Products] Error:",t),e.json({success:!1,error:t.message},500)}});c.post("/api/store/purchase",async e=>{try{const t=A(e,"session_id");if(!t)return e.json({success:!1,error:"Not authenticated"},401);const s=await e.env.DB.prepare(`
       SELECT user_id FROM sessions WHERE session_id = ? AND expires_at > datetime('now')
-    `).bind(t).first();if(!s)return e.json({success:!1,error:"Session expired"},401);const a=s.user_id,{productId:r,quantity:o,targetUrl:n}=await e.req.json();if(!r||!o||o<=0)return e.json({success:!1,error:"잘못된 요청입니다."},400);const i=await e.env.DB.prepare(`
+    `).bind(t).first();if(!s)return e.json({success:!1,error:"Session expired"},401);const a=s.user_id,{productId:r,quantity:n,targetUrl:o}=await e.req.json();if(!r||!n||n<=0)return e.json({success:!1,error:"잘못된 요청입니다."},400);const i=await e.env.DB.prepare(`
       SELECT id, email, points FROM users WHERE id = ?
     `).bind(a).first();if(!i)return e.json({success:!1,error:"User not found"},404);const l=await e.env.DB.prepare(`
       SELECT * FROM store_products WHERE id = ? AND enabled = 1
-    `).bind(r).first();if(!l)return e.json({success:!1,error:"상품을 찾을 수 없습니다."},404);const d=l.price*o,p=i.points||0;if(p<d)return e.json({success:!1,error:"포인트가 부족합니다.",required:d,current:p,shortage:d-p},400);const u=p-d;await e.env.DB.prepare(`
+    `).bind(r).first();if(!l)return e.json({success:!1,error:"상품을 찾을 수 없습니다."},404);const d=l.price*n,p=i.points||0;if(p<d)return e.json({success:!1,error:"포인트가 부족합니다.",required:d,current:p,shortage:d-p},400);const u=p-d;await e.env.DB.prepare(`
       UPDATE users SET points = ? WHERE id = ?
     `).bind(u,a).run(),await e.env.DB.prepare(`
       INSERT INTO point_transactions (
         user_id, type, amount, balance_after, description, created_at
       ) VALUES (?, 'purchase', ?, ?, ?, datetime('now'))
-    `).bind(a,-d,u,`${l.name} x${o} 구매`).run();const g=(await e.env.DB.prepare(`
+    `).bind(a,-d,u,`${l.name} x${n} 구매`).run();const g=(await e.env.DB.prepare(`
       INSERT INTO store_orders (
         user_id, product_id, product_name, quantity, 
         price_per_unit, total_price, target_url, 
         status, created_at
       ) VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', datetime('now'))
-    `).bind(a,r,l.name,o,l.price,d,n||null).run()).meta.last_row_id;return e.json({success:!0,message:"구매가 완료되었습니다.",order:{id:g,product:l.name,quantity:o,totalCost:d,remainingPoints:u}})}catch(t){return console.error("[Store Purchase] Error:",t),e.json({success:!1,error:t.message},500)}});c.get("/api/store/orders",async e=>{try{const t=U(e,"session_id");if(!t)return e.json({success:!1,error:"Not authenticated"},401);const s=await e.env.DB.prepare(`
+    `).bind(a,r,l.name,n,l.price,d,o||null).run()).meta.last_row_id;return e.json({success:!0,message:"구매가 완료되었습니다.",order:{id:g,product:l.name,quantity:n,totalCost:d,remainingPoints:u}})}catch(t){return console.error("[Store Purchase] Error:",t),e.json({success:!1,error:t.message},500)}});c.get("/api/store/orders",async e=>{try{const t=A(e,"session_id");if(!t)return e.json({success:!1,error:"Not authenticated"},401);const s=await e.env.DB.prepare(`
       SELECT user_id FROM sessions WHERE session_id = ? AND expires_at > datetime('now')
     `).bind(t).first();if(!s)return e.json({success:!1,error:"Session expired"},401);const a=s.user_id,r=await e.env.DB.prepare(`
       SELECT * FROM store_orders 
       WHERE user_id = ? 
       ORDER BY created_at DESC 
       LIMIT 100
-    `).bind(a).all();return e.json({success:!0,orders:r.results||[]})}catch(t){return console.error("[Store Orders] Error:",t),e.json({success:!1,error:t.message},500)}});c.post("/api/admin/store-access",async e=>{try{const t=U(e,"session_id");if(!t)return e.json({success:!1,error:"Not authenticated"},401);const s=await e.env.DB.prepare(`
+    `).bind(a).all();return e.json({success:!0,orders:r.results||[]})}catch(t){return console.error("[Store Orders] Error:",t),e.json({success:!1,error:t.message},500)}});c.post("/api/admin/store-access",async e=>{try{const t=A(e,"session_id");if(!t)return e.json({success:!1,error:"Not authenticated"},401);const s=await e.env.DB.prepare(`
       SELECT user_id FROM sessions WHERE session_id = ? AND expires_at > datetime('now')
     `).bind(t).first();if(!s)return e.json({success:!1,error:"Session expired"},401);const a=s.user_id,r=await e.env.DB.prepare(`
       SELECT email FROM users WHERE id = ?
-    `).bind(a).first();if(!r||r.email!=="admin@superplace.co.kr")return e.json({success:!1,error:"관리자 권한이 없습니다."},403);const{targetUserId:o,enabled:n}=await e.req.json();return o?(await e.env.DB.prepare(`
+    `).bind(a).first();if(!r||r.email!=="admin@superplace.co.kr")return e.json({success:!1,error:"관리자 권한이 없습니다."},403);const{targetUserId:n,enabled:o}=await e.req.json();return n?(await e.env.DB.prepare(`
       SELECT * FROM store_access WHERE user_id = ?
-    `).bind(o).first()?await e.env.DB.prepare(`
+    `).bind(n).first()?await e.env.DB.prepare(`
         UPDATE store_access 
         SET enabled = ?, updated_at = datetime('now'), updated_by = ?
         WHERE user_id = ?
-      `).bind(n?1:0,a,o).run():await e.env.DB.prepare(`
+      `).bind(o?1:0,a,n).run():await e.env.DB.prepare(`
         INSERT INTO store_access (user_id, enabled, created_at, updated_by)
         VALUES (?, ?, datetime('now'), ?)
-      `).bind(o,n?1:0,a).run(),e.json({success:!0,message:n?"스토어 접근 권한이 부여되었습니다.":"스토어 접근 권한이 제거되었습니다."})):e.json({success:!1,error:"사용자 ID가 필요합니다."},400)}catch(t){return console.error("[Admin Store Access] Error:",t),e.json({success:!1,error:t.message},500)}});c.post("/api/admin/points",async e=>{try{const t=U(e,"session_id");if(!t)return e.json({success:!1,error:"Not authenticated"},401);const s=await e.env.DB.prepare(`
+      `).bind(n,o?1:0,a).run(),e.json({success:!0,message:o?"스토어 접근 권한이 부여되었습니다.":"스토어 접근 권한이 제거되었습니다."})):e.json({success:!1,error:"사용자 ID가 필요합니다."},400)}catch(t){return console.error("[Admin Store Access] Error:",t),e.json({success:!1,error:t.message},500)}});c.post("/api/admin/points",async e=>{try{const t=A(e,"session_id");if(!t)return e.json({success:!1,error:"Not authenticated"},401);const s=await e.env.DB.prepare(`
       SELECT user_id FROM sessions WHERE session_id = ? AND expires_at > datetime('now')
     `).bind(t).first();if(!s)return e.json({success:!1,error:"Session expired"},401);const a=s.user_id,r=await e.env.DB.prepare(`
       SELECT email FROM users WHERE id = ?
-    `).bind(a).first();if(!r||r.email!=="admin@superplace.co.kr")return e.json({success:!1,error:"관리자 권한이 없습니다."},403);const{targetUserId:o,amount:n,description:i}=await e.req.json();if(!o||!n||n===0)return e.json({success:!1,error:"잘못된 요청입니다."},400);const l=await e.env.DB.prepare(`
+    `).bind(a).first();if(!r||r.email!=="admin@superplace.co.kr")return e.json({success:!1,error:"관리자 권한이 없습니다."},403);const{targetUserId:n,amount:o,description:i}=await e.req.json();if(!n||!o||o===0)return e.json({success:!1,error:"잘못된 요청입니다."},400);const l=await e.env.DB.prepare(`
       SELECT id, points FROM users WHERE id = ?
-    `).bind(o).first();if(!l)return e.json({success:!1,error:"User not found"},404);const d=l.points||0,p=d+n;return p<0?e.json({success:!1,error:"포인트가 부족합니다.",current:d,requested:n},400):(await e.env.DB.prepare(`
+    `).bind(n).first();if(!l)return e.json({success:!1,error:"User not found"},404);const d=l.points||0,p=d+o;return p<0?e.json({success:!1,error:"포인트가 부족합니다.",current:d,requested:o},400):(await e.env.DB.prepare(`
       UPDATE users SET points = ? WHERE id = ?
-    `).bind(p,o).run(),await e.env.DB.prepare(`
+    `).bind(p,n).run(),await e.env.DB.prepare(`
       INSERT INTO point_transactions (
         user_id, type, amount, balance_after, description, admin_id, created_at
       ) VALUES (?, ?, ?, ?, ?, ?, datetime('now'))
-    `).bind(o,n>0?"admin_grant":"admin_deduct",n,p,i||(n>0?"관리자 지급":"관리자 회수"),a).run(),e.json({success:!0,message:n>0?"포인트가 지급되었습니다.":"포인트가 회수되었습니다.",newBalance:p}))}catch(t){return console.error("[Admin Points] Error:",t),e.json({success:!1,error:t.message},500)}});c.get("/api/debug/teachers",async e=>{var t,s,a;try{const r=U(e,"session_id");if(!r)return e.json({success:!1,error:"Not authenticated"},401);const o=await e.env.DB.prepare(`
+    `).bind(n,o>0?"admin_grant":"admin_deduct",o,p,i||(o>0?"관리자 지급":"관리자 회수"),a).run(),e.json({success:!0,message:o>0?"포인트가 지급되었습니다.":"포인트가 회수되었습니다.",newBalance:p}))}catch(t){return console.error("[Admin Points] Error:",t),e.json({success:!1,error:t.message},500)}});c.get("/api/debug/teachers",async e=>{var t,s,a;try{const r=A(e,"session_id");if(!r)return e.json({success:!1,error:"Not authenticated"},401);const n=await e.env.DB.prepare(`
       SELECT user_id FROM sessions WHERE session_id = ? AND expires_at > datetime('now')
-    `).bind(r).first();if(!o)return e.json({success:!1,error:"Session expired"},401);const n=o.user_id,i=await e.env.DB.prepare(`
+    `).bind(r).first();if(!n)return e.json({success:!1,error:"Session expired"},401);const o=n.user_id,i=await e.env.DB.prepare(`
       SELECT id, name, email, user_type, academy_id, parent_user_id FROM users WHERE id = ?
-    `).bind(n).first();if(!i)return e.json({success:!1,error:"User not found"},404);let l;i.user_type==="teacher"?l=i.academy_id||i.parent_user_id:l=i.id;const d=await e.env.DB.prepare(`
+    `).bind(o).first();if(!i)return e.json({success:!1,error:"User not found"},404);let l;i.user_type==="teacher"?l=i.academy_id||i.parent_user_id:l=i.id;const d=await e.env.DB.prepare(`
       SELECT id, name, email, user_type, academy_id, parent_user_id, created_at 
       FROM users 
       WHERE academy_id = ? AND user_type = 'teacher'
@@ -37089,7 +37543,7 @@ setInterval(loadActiveSessionCount,30000);
         `).bind(r.name).first()||(await e.env.DB.prepare(`
             INSERT INTO store_products (name, description, category, price, display_order, enabled)
             VALUES (?, ?, ?, ?, ?, 1)
-          `).bind(r.name,r.description,r.category,r.price,r.order).run(),a++)}catch(o){console.error("Failed to insert product:",r.name,o)}return t.push("✅ Inserted "+a+" initial products"),e.json({success:!0,message:"스토어 시스템 초기화 완료",results:t})}catch(t){return console.error("[Store Init] Error:",t),e.json({success:!1,error:t.message},500)}});c.get("/services/landing-page",e=>e.html(`
+          `).bind(r.name,r.description,r.category,r.price,r.order).run(),a++)}catch(n){console.error("Failed to insert product:",r.name,n)}return t.push("✅ Inserted "+a+" initial products"),e.json({success:!0,message:"스토어 시스템 초기화 완료",results:t})}catch(t){return console.error("[Store Init] Error:",t),e.json({success:!1,error:t.message},500)}});c.get("/services/landing-page",e=>e.html(`
     <!DOCTYPE html>
     <html lang="ko">
     <head>
@@ -37462,7 +37916,7 @@ setInterval(loadActiveSessionCount,30000);
         <\/script>
     </body>
     </html>
-  `));c.post("/api/service-inquiry",async e=>{try{const{academy_name:t,name:s,phone:a,email:r,message:o,service_type:n,student_count:i}=await e.req.json();if(!t||!s||!a||!r||!o||!n)return e.json({success:!1,error:"필수 항목을 모두 입력해주세요."},400);const d=`[${{landing_page:"랜딩페이지 제작",marketing:"학원마케팅 대행"}[n]}]
+  `));c.post("/api/service-inquiry",async e=>{try{const{academy_name:t,name:s,phone:a,email:r,message:n,service_type:o,student_count:i}=await e.req.json();if(!t||!s||!a||!r||!n||!o)return e.json({success:!1,error:"필수 항목을 모두 입력해주세요."},400);const d=`[${{landing_page:"랜딩페이지 제작",marketing:"학원마케팅 대행"}[o]}]
 
 학원명: ${t}
 담당자: ${s}
@@ -37471,7 +37925,7 @@ setInterval(loadActiveSessionCount,30000);
 현재 학생 수: ${i}명`:""}
 
 문의 내용:
-${o}`;return await e.env.DB.prepare(`
+${n}`;return await e.env.DB.prepare(`
       INSERT INTO contacts (name, email, phone, message, status, created_at)
       VALUES (?, ?, ?, ?, 'pending', CURRENT_TIMESTAMP)
     `).bind(s,r,a,d).run(),e.json({success:!0,message:"문의가 성공적으로 제출되었습니다."})}catch(t){return console.error("Service inquiry error:",t),e.json({success:!1,error:"문의 제출 중 오류가 발생했습니다."},500)}});c.get("/tools/tuition-management",async e=>e.html(`<!DOCTYPE html>
@@ -38695,33 +39149,33 @@ ${o}`;return await e.env.DB.prepare(`
                             </tr>
                         </thead>
                         <tbody class="divide-y">
-                            ${((r=s.results)==null?void 0:r.map(o=>{var i;return`
+                            ${((r=s.results)==null?void 0:r.map(n=>{var i;return`
                                 <tr class="hover:bg-gray-50">
-                                    <td class="px-4 py-3">${o.status==="pending"?'<span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium">대기중</span>':o.status==="approved"?'<span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">승인됨</span>':'<span class="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium">거부됨</span>'}</td>
-                                    <td class="px-4 py-3 text-sm" data-utc="${o.created_at}">
-                                        <div class="kst-time">${o.created_at}</div>
+                                    <td class="px-4 py-3">${n.status==="pending"?'<span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium">대기중</span>':n.status==="approved"?'<span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">승인됨</span>':'<span class="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium">거부됨</span>'}</td>
+                                    <td class="px-4 py-3 text-sm" data-utc="${n.created_at}">
+                                        <div class="kst-time">${n.created_at}</div>
                                     </td>
                                     <td class="px-4 py-3">
-                                        <div class="font-medium">${o.user_name||"알 수 없음"}</div>
-                                        <div class="text-xs text-gray-500">${o.user_email||""}</div>
+                                        <div class="font-medium">${n.user_name||"알 수 없음"}</div>
+                                        <div class="text-xs text-gray-500">${n.user_email||""}</div>
                                     </td>
-                                    <td class="px-4 py-3 text-sm">${o.user_phone||"-"}</td>
+                                    <td class="px-4 py-3 text-sm">${n.user_phone||"-"}</td>
                                     <td class="px-4 py-3">
                                         <span class="px-2 py-1 bg-pink-100 text-pink-800 rounded text-xs font-medium">
-                                            ${o.plan_name}
+                                            ${n.plan_name}
                                         </span>
                                     </td>
                                     <td class="px-4 py-3 text-right font-semibold">
-                                        ₩${((i=o.amount)==null?void 0:i.toLocaleString())||0}
+                                        ₩${((i=n.amount)==null?void 0:i.toLocaleString())||0}
                                     </td>
-                                    <td class="px-4 py-3 text-sm text-gray-600">${o.note||"-"}</td>
+                                    <td class="px-4 py-3 text-sm text-gray-600">${n.note||"-"}</td>
                                     <td class="px-4 py-3 text-center">
-                                        ${o.status==="pending"?`
-                                            <button onclick="approveRequest(${o.id}, '${o.user_name}', '${o.plan_name}')" 
+                                        ${n.status==="pending"?`
+                                            <button onclick="approveRequest(${n.id}, '${n.user_name}', '${n.plan_name}')" 
                                                     class="px-3 py-1 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 mr-2">
                                                 승인
                                             </button>
-                                            <button onclick="rejectRequest(${o.id}, '${o.user_name}')" 
+                                            <button onclick="rejectRequest(${n.id}, '${n.user_name}')" 
                                                     class="px-3 py-1 bg-red-600 text-white rounded-lg text-sm hover:bg-red-700">
                                                 거부
                                             </button>
