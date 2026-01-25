@@ -177,7 +177,7 @@ app.get('/api/tuition/students/:studentId/payments', requireDirector, async (c) 
     
     // 학생이 해당 학원 소속인지 확인
     const student = await c.env.DB.prepare(`
-      SELECT * FROM students WHERE id = ? AND user_id = ?
+      SELECT * FROM students WHERE id = ? AND academy_id = ?
     `).bind(studentId, user.id).first()
     
     if (!student) {
@@ -387,7 +387,7 @@ app.post('/api/tuition/payments', requireDirector, async (c) => {
     
     // 학생 확인
     const student = await c.env.DB.prepare(`
-      SELECT * FROM students WHERE id = ? AND user_id = ?
+      SELECT * FROM students WHERE id = ? AND academy_id = ?
     `).bind(student_id, user.id).first()
     
     if (!student) {
@@ -444,7 +444,7 @@ app.put('/api/tuition/payments/:id', requireDirector, async (c) => {
     
     // 기존 기록 확인
     const existing: any = await c.env.DB.prepare(`
-      SELECT * FROM tuition_payments WHERE id = ? AND user_id = ?
+      SELECT * FROM tuition_payments WHERE id = ? AND academy_id = ?
     `).bind(paymentId, user.id).first()
     
     if (!existing) {
@@ -484,7 +484,7 @@ app.delete('/api/tuition/payments/:id', requireDirector, async (c) => {
     const paymentId = c.req.param('id')
     
     await c.env.DB.prepare(`
-      DELETE FROM tuition_payments WHERE id = ? AND user_id = ?
+      DELETE FROM tuition_payments WHERE id = ? AND academy_id = ?
     `).bind(paymentId, user.id).run()
     
     return c.json({
@@ -515,7 +515,7 @@ app.post('/api/tuition/rates', requireDirector, async (c) => {
     
     // 학생 확인
     const student = await c.env.DB.prepare(`
-      SELECT * FROM students WHERE id = ? AND user_id = ?
+      SELECT * FROM students WHERE id = ? AND academy_id = ?
     `).bind(student_id, user.id).first()
     
     if (!student) {
@@ -804,7 +804,7 @@ app.put('/api/tuition/classes/:id/fee', requireDirector, async (c) => {
     
     // 반 소유권 확인
     const classInfo = await c.env.DB.prepare(`
-      SELECT * FROM classes WHERE id = ? AND user_id = ?
+      SELECT * FROM classes WHERE id = ? AND academy_id = ?
     `).bind(classId, user.id).first()
     
     if (!classInfo) {

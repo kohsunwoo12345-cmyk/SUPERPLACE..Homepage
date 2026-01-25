@@ -2938,7 +2938,7 @@ var Pt=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Ft=(e,t,s)=>t in
           FOREIGN KEY (academy_id) REFERENCES users(id) ON DELETE CASCADE
         )
       `).run(),t.push({table:"tuition_rates",status:"success"})}catch(r){t.push({table:"tuition_rates",status:"error",error:r.message})}const s=["CREATE INDEX IF NOT EXISTS idx_tuition_payments_student ON tuition_payments(student_id)","CREATE INDEX IF NOT EXISTS idx_tuition_payments_academy ON tuition_payments(academy_id)","CREATE INDEX IF NOT EXISTS idx_tuition_payments_year_month ON tuition_payments(year, month)","CREATE INDEX IF NOT EXISTS idx_tuition_payments_status ON tuition_payments(status)","CREATE INDEX IF NOT EXISTS idx_tuition_rates_student ON tuition_rates(student_id)","CREATE INDEX IF NOT EXISTS idx_tuition_rates_academy ON tuition_rates(academy_id)"];for(const r of s)try{await e.env.DB.prepare(r).run()}catch{}const a=[{table:"classes",column:"monthly_fee",sql:"ALTER TABLE classes ADD COLUMN monthly_fee INTEGER DEFAULT 0"},{table:"classes",column:"user_id",sql:"ALTER TABLE classes ADD COLUMN user_id INTEGER"},{table:"classes",column:"teacher_id",sql:"ALTER TABLE classes ADD COLUMN teacher_id INTEGER"},{table:"classes",column:"name",sql:"ALTER TABLE classes ADD COLUMN name TEXT"},{table:"students",column:"user_id",sql:"ALTER TABLE students ADD COLUMN user_id INTEGER"},{table:"users",column:"user_type",sql:"ALTER TABLE users ADD COLUMN user_type TEXT DEFAULT 'director'"},{table:"users",column:"parent_user_id",sql:"ALTER TABLE users ADD COLUMN parent_user_id INTEGER"}];for(const{table:r,column:o,sql:n}of a)try{await e.env.DB.prepare(n).run(),t.push({action:`add_column_${r}.${o}`,status:"success"})}catch(i){t.push({action:`add_column_${r}.${o}`,status:"exists",error:i.message})}return e.json({success:!0,message:"교육비 테이블 초기화 완료",results:t})}catch(t){return console.error("Error initializing tables:",t),e.json({error:"테이블 초기화 실패",details:t.message},500)}});H.get("/api/tuition/students/:studentId/payments",X,async e=>{try{const t=e.get("user"),s=e.req.param("studentId"),a=await e.env.DB.prepare(`
-      SELECT * FROM students WHERE id = ? AND user_id = ?
+      SELECT * FROM students WHERE id = ? AND academy_id = ?
     `).bind(s,t.id).first();if(!a)return e.json({error:"학생을 찾을 수 없습니다"},404);const r=await e.env.DB.prepare(`
       SELECT * FROM tuition_payments 
       WHERE student_id = ? 
@@ -3007,7 +3007,7 @@ var Pt=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Ft=(e,t,s)=>t in
       WHERE s.academy_id = ?
         AND s.status = 'active'
     `;const d=[s,a,s,a,t.id];r&&(l+=" AND COALESCE(tp.status, 'unpaid') = ?",d.push(r)),l+=" ORDER BY COALESCE(tp.status, 'unpaid') DESC, s.name ASC";const p=await e.env.DB.prepare(l).bind(...d).all();return e.json({success:!0,year:parseInt(s),month:parseInt(a),payments:p.results||[]})}catch(t){return console.error("Error fetching payments:",t),e.json({error:"납입 현황 조회 실패",details:t.message},500)}});H.post("/api/tuition/payments",X,async e=>{try{const t=e.get("user"),s=await e.req.json(),{student_id:a,year:r,month:o,amount:n,status:i,paid_amount:l,paid_date:d,memo:p,payment_method:u}=s;if(!a||!r||!o||!n)return e.json({error:"필수 항목을 입력해주세요"},400);if(!await e.env.DB.prepare(`
-      SELECT * FROM students WHERE id = ? AND user_id = ?
+      SELECT * FROM students WHERE id = ? AND academy_id = ?
     `).bind(a,t.id).first())return e.json({error:"학생을 찾을 수 없습니다"},404);if(await e.env.DB.prepare(`
       SELECT id FROM tuition_payments 
       WHERE student_id = ? AND year = ? AND month = ?
@@ -3017,16 +3017,16 @@ var Pt=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Ft=(e,t,s)=>t in
         status, paid_amount, paid_date, memo, payment_method, created_by
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).bind(a,t.id,r,o,n,i||"unpaid",l||0,d||null,p||null,u||null,t.id).run();return e.json({success:!0,id:x.meta.last_row_id,message:"납입 기록이 등록되었습니다"})}catch(t){return console.error("Error creating payment:",t),e.json({error:"납입 기록 등록 실패"},500)}});H.put("/api/tuition/payments/:id",X,async e=>{try{const t=e.get("user"),s=e.req.param("id"),a=await e.req.json(),r=await e.env.DB.prepare(`
-      SELECT * FROM tuition_payments WHERE id = ? AND user_id = ?
+      SELECT * FROM tuition_payments WHERE id = ? AND academy_id = ?
     `).bind(s,t.id).first();if(!r)return e.json({error:"납입 기록을 찾을 수 없습니다"},404);const{status:o,paid_amount:n,paid_date:i,memo:l,payment_method:d}=a;return await e.env.DB.prepare(`
       UPDATE tuition_payments 
       SET status = ?, paid_amount = ?, paid_date = ?, memo = ?, payment_method = ?,
           updated_at = CURRENT_TIMESTAMP
       WHERE id = ?
     `).bind(o||r.status,n!==void 0?n:r.paid_amount,i||r.paid_date,l!==void 0?l:r.memo,d||r.payment_method,s).run(),e.json({success:!0,message:"납입 기록이 수정되었습니다"})}catch(t){return console.error("Error updating payment:",t),e.json({error:"납입 기록 수정 실패"},500)}});H.delete("/api/tuition/payments/:id",X,async e=>{try{const t=e.get("user"),s=e.req.param("id");return await e.env.DB.prepare(`
-      DELETE FROM tuition_payments WHERE id = ? AND user_id = ?
+      DELETE FROM tuition_payments WHERE id = ? AND academy_id = ?
     `).bind(s,t.id).run(),e.json({success:!0,message:"납입 기록이 삭제되었습니다"})}catch(t){return console.error("Error deleting payment:",t),e.json({error:"납입 기록 삭제 실패"},500)}});H.post("/api/tuition/rates",X,async e=>{try{const t=e.get("user"),s=await e.req.json(),{student_id:a,monthly_fee:r,start_date:o,end_date:n}=s;if(!a||!r||!o)return e.json({error:"필수 항목을 입력해주세요"},400);if(!await e.env.DB.prepare(`
-      SELECT * FROM students WHERE id = ? AND user_id = ?
+      SELECT * FROM students WHERE id = ? AND academy_id = ?
     `).bind(a,t.id).first())return e.json({error:"학생을 찾을 수 없습니다"},404);await e.env.DB.prepare(`
       UPDATE tuition_rates 
       SET end_date = date('now', '-1 day')
@@ -3121,7 +3121,7 @@ var Pt=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Ft=(e,t,s)=>t in
       GROUP BY c.id, c.class_name, c.description, c.academy_id, c.teacher_id, c.monthly_fee, u.name
       ORDER BY c.class_name ASC
     `).bind(s.id,s.id).all();return console.log("Classes found:",((t=a.results)==null?void 0:t.length)||0),a.results&&a.results.length>0&&console.log("First class:",JSON.stringify(a.results[0])),e.json({success:!0,classes:a.results||[]})}catch(s){return console.error("Error fetching classes:",s),e.json({error:"반 목록 조회 실패",details:s.message,stack:s.stack},500)}});H.put("/api/tuition/classes/:id/fee",X,async e=>{try{const t=e.get("user"),s=e.req.param("id"),{monthly_fee:a}=await e.req.json();return a==null?e.json({error:"월 교육비를 입력해주세요"},400):await e.env.DB.prepare(`
-      SELECT * FROM classes WHERE id = ? AND user_id = ?
+      SELECT * FROM classes WHERE id = ? AND academy_id = ?
     `).bind(s,t.id).first()?(await e.env.DB.prepare(`
       UPDATE classes SET monthly_fee = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?
     `).bind(a,s).run(),e.json({success:!0,message:"반 교육비가 설정되었습니다"})):e.json({error:"반을 찾을 수 없습니다"},404)}catch(t){return console.error("Error updating class fee:",t),e.json({error:"반 교육비 설정 실패",details:t.message},500)}});H.get("/api/tuition/student-fees/:studentId",X,async e=>{try{const t=e.get("user"),s=e.req.param("studentId"),a=e.req.query("year")||new Date().getFullYear().toString(),r=e.req.query("month")||(new Date().getMonth()+1).toString(),o=await e.env.DB.prepare(`
