@@ -35020,7 +35020,7 @@ setInterval(loadActiveSessionCount,30000);
     <\/script>
 </body>
 </html>
-`));c.get("/students",e=>(e.header("Cache-Control","no-cache, no-store, must-revalidate"),e.header("Pragma","no-cache"),e.header("Expires","0"),e.header("X-Build-Version","2.0.8"),e.header("X-Build-Time",new Date().toISOString()),e.html(`
+`));c.get("/students/",e=>e.redirect("/students",301));c.get("/students",e=>(e.header("Cache-Control","no-cache, no-store, must-revalidate"),e.header("Pragma","no-cache"),e.header("Expires","0"),e.header("X-Build-Version","2.0.8"),e.header("X-Build-Time",new Date().toISOString()),e.html(`
     <!DOCTYPE html>
     <html lang="ko">
     <head>
