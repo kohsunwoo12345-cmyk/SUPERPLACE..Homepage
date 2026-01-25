@@ -18020,12 +18020,14 @@ app.get('/dashboard', (c) => {
                         // 교육비 관리는 구독 없이도 표시 (무료 기능)
                         const tuitionCard = document.getElementById('tuitionManagementCard')
                         if (tuitionCard) {
-                            if (user.user_type === 'director' || user.user_type === 'academy' || user.role === 'admin') {
-                                console.log('✅ 구독 없음 but 학원장/관리자 - 교육비 관리 카드 표시')
-                                tuitionCard.style.display = 'block'
-                            } else {
-                                console.log('❌ 구독 없음 and 선생님 - 교육비 관리 카드 숨김')
+                            // 선생님만 숨김, 나머지는 모두 표시
+                            if (user.user_type === 'teacher') {
+                                console.log('❌ 선생님 계정 - 교육비 관리 카드 숨김')
                                 tuitionCard.style.display = 'none'
+                            } else {
+                                console.log('✅ 학원장/관리자 계정 - 교육비 관리 카드 표시')
+                                console.log('   user.role:', user.role, 'user.user_type:', user.user_type)
+                                tuitionCard.style.display = 'block'
                             }
                         }
                         return
@@ -18057,15 +18059,16 @@ app.get('/dashboard', (c) => {
                             return
                         }
                         
-                        // 교육비 관리 카드 - 학원장과 관리자만 표시 (선생님은 100% 숨김)
+                        // 교육비 관리 카드 - 선생님만 숨김
                         const tuitionCard = document.getElementById('tuitionManagementCard')
                         if (tuitionCard) {
-                            if (user.user_type === 'director' || user.user_type === 'academy' || user.role === 'admin') {
-                                console.log('✅ 학원장/관리자 계정 - 교육비 관리 카드 표시')
-                                tuitionCard.style.display = 'block'
-                            } else {
+                            if (user.user_type === 'teacher') {
                                 console.log('❌ 선생님 계정 - 교육비 관리 카드 숨김')
                                 tuitionCard.style.display = 'none'
+                            } else {
+                                console.log('✅ 학원장/관리자 계정 - 교육비 관리 카드 표시')
+                                console.log('   user.role:', user.role, 'user.user_type:', user.user_type)
+                                tuitionCard.style.display = 'block'
                             }
                         }
                         
