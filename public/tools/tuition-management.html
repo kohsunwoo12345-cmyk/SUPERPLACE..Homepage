@@ -9,9 +9,20 @@
     <style>
         @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
         * { font-family: 'Pretendard Variable', sans-serif; }
-        .calendar-cell { min-height: 120px; }
+        .calendar-cell { 
+            min-height: 120px; 
+            position: relative;
+        }
         .calendar-cell:hover { background-color: #f9fafb; }
-        .student-badge { font-size: 11px; }
+        .student-badge { 
+            font-size: 11px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        #calendarBody {
+            min-height: 600px;
+        }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -116,15 +127,15 @@
         <!-- 달력 -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <div class="grid grid-cols-7 border-b border-gray-200">
-                <div class="p-3 text-center font-semibold text-red-600 bg-red-50">일</div>
-                <div class="p-3 text-center font-semibold text-gray-700 bg-gray-50">월</div>
-                <div class="p-3 text-center font-semibold text-gray-700 bg-gray-50">화</div>
-                <div class="p-3 text-center font-semibold text-gray-700 bg-gray-50">수</div>
-                <div class="p-3 text-center font-semibold text-gray-700 bg-gray-50">목</div>
-                <div class="p-3 text-center font-semibold text-gray-700 bg-gray-50">금</div>
+                <div class="p-3 text-center font-semibold text-red-600 bg-red-50 border-r border-gray-200">일</div>
+                <div class="p-3 text-center font-semibold text-gray-700 bg-gray-50 border-r border-gray-200">월</div>
+                <div class="p-3 text-center font-semibold text-gray-700 bg-gray-50 border-r border-gray-200">화</div>
+                <div class="p-3 text-center font-semibold text-gray-700 bg-gray-50 border-r border-gray-200">수</div>
+                <div class="p-3 text-center font-semibold text-gray-700 bg-gray-50 border-r border-gray-200">목</div>
+                <div class="p-3 text-center font-semibold text-gray-700 bg-gray-50 border-r border-gray-200">금</div>
                 <div class="p-3 text-center font-semibold text-blue-600 bg-blue-50">토</div>
             </div>
-            <div id="calendarBody" class="grid grid-cols-7">
+            <div id="calendarBody" class="grid grid-cols-7 auto-rows-fr">
                 <!-- 동적으로 생성 -->
             </div>
         </div>
@@ -410,14 +421,17 @@
             // 이전 달의 빈 칸
             for (let i = 0; i < firstDay; i++) {
                 const cell = document.createElement('div');
-                cell.className = 'calendar-cell border-r border-b border-gray-200 bg-gray-50';
+                cell.className = 'calendar-cell border-b border-gray-200 bg-gray-50';
+                if (i < 6) cell.className += ' border-r';
                 calendarBody.appendChild(cell);
             }
             
             // 날짜 셀
             for (let day = 1; day <= lastDate; day++) {
+                const dayOfWeek = (firstDay + day - 1) % 7;
                 const cell = document.createElement('div');
-                cell.className = 'calendar-cell border-r border-b border-gray-200 p-2 cursor-pointer';
+                cell.className = 'calendar-cell border-b border-gray-200 p-2 cursor-pointer';
+                if (dayOfWeek < 6) cell.className += ' border-r';
                 
                 // 오늘 날짜 강조
                 if (isCurrentMonth && day === todayDate) {

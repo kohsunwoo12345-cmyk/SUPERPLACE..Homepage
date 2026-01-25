@@ -409,6 +409,34 @@ app.get('/api/tuition/stats', requireDirector, async (c) => {
   }
 })
 
+// ========================================
+// 학생 목록 조회 (반 정보 포함)
+// ========================================
+app.get('/api/students', requireDirector, async (c) => {
+  try {
+    const user = c.get('user')
+    
+    const students = await c.env.DB.prepare(`
+      SELECT 
+        s.*,
+        c.name as class_name,
+        c.monthly_fee as class_fee
+      FROM students s
+      LEFT JOIN classes c ON s.class_id = c.id
+      WHERE s.user_id = ? AND s.status = 'active'
+      ORDER BY s.name ASC
+    `).bind(user.id).all()
+    
+    return c.json({
+      success: true,
+      students: students.results || []
+    })
+  } catch (error) {
+    console.error('Error fetching students:', error)
+    return c.json({ error: '학생 목록 조회 실패', details: error.message }, 500)
+  }
+})
+
 export default app
 
 // ========================================
