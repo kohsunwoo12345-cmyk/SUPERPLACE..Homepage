@@ -23848,36 +23848,57 @@ app.get('/landing/:slug', async (c) => {
           console.error('Failed to parse form fields:', e)
         }
         
-        // 커스텀 필드 HTML 생성
-        let customFieldsHtml = ''
+        // 모든 필드 HTML 생성 (커스텀 필드만 사용, 중복 제거)
+        let allFieldsHtml = ''
         for (const field of customFields) {
           const required = field.required ? 'required' : ''
           const requiredStar = field.required ? ' *' : ''
+          const fieldName = field.name || field.label.replace(/\s+/g, '_')
           
           if (field.type === 'textarea') {
-            customFieldsHtml += `
+            allFieldsHtml += `
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-2">${field.label}${requiredStar}</label>
-                        <textarea name="custom_${field.label}" ${required} class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="${field.placeholder || ''}" rows="4"></textarea>
+                        <textarea name="${fieldName}" ${required} class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="${field.placeholder || ''}" rows="4"></textarea>
                     </div>`
           } else if (field.type === 'select') {
             let options = '<option value="">선택하세요</option>'
             for (const opt of (field.options || [])) {
               options += `<option value="${opt}">${opt}</option>`
             }
-            customFieldsHtml += `
+            allFieldsHtml += `
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-2">${field.label}${requiredStar}</label>
-                        <select name="custom_${field.label}" ${required} class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        <select name="${fieldName}" ${required} class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent">
                             ${options}
                         </select>
                     </div>`
-          } else {
-            const inputType = field.type || 'text'
-            customFieldsHtml += `
+          } else if (field.type === 'radio') {
+            let radioOptions = ''
+            for (const opt of (field.options || [])) {
+              radioOptions += `
+                        <div class="flex items-center mb-2">
+                            <input type="radio" name="${fieldName}" value="${opt}" ${required} class="mr-2 h-4 w-4 text-purple-600 focus:ring-purple-500">
+                            <label class="text-sm text-gray-700">${opt}</label>
+                        </div>`
+            }
+            allFieldsHtml += `
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-2">${field.label}${requiredStar}</label>
-                        <input type="${inputType}" name="custom_${field.label}" ${required} class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="${field.placeholder || ''}">
+                        ${radioOptions}
+                    </div>`
+          } else if (field.type === 'checkbox') {
+            allFieldsHtml += `
+                    <div class="flex items-start">
+                        <input type="checkbox" name="${fieldName}" ${required} class="mt-1 mr-3 h-5 w-5 text-purple-600 focus:ring-purple-500 border-gray-300 rounded">
+                        <label class="text-sm text-gray-700">${field.label}</label>
+                    </div>`
+          } else {
+            const inputType = field.type || 'text'
+            allFieldsHtml += `
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">${field.label}${requiredStar}</label>
+                        <input type="${inputType}" name="${fieldName}" ${required} class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="${field.placeholder || ''}">
                     </div>`
           }
         }
@@ -23888,24 +23909,14 @@ app.get('/landing/:slug', async (c) => {
         <div class="container mx-auto px-4 py-12" id="apply-form-section">
             <div class="max-w-2xl mx-auto bg-white rounded-2xl shadow-2xl p-8">
                 <h2 class="text-3xl font-bold text-center mb-2 bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-pink-600">
-                    📝 신청하기
+                    📝 ${form.name || '신청하기'}
                 </h2>
-                <p class="text-center text-gray-600 mb-8">아래 정보를 입력하고 신청해주세요</p>
+                <p class="text-center text-gray-600 mb-8">${form.description || '아래 정보를 입력하고 신청해주세요'}</p>
                 
                 ${form.custom_html || ''}
                 
                 <form id="applicationForm" class="space-y-6">
-                    <div>
-                        <label class="block text-sm font-bold text-gray-700 mb-2">이름 *</label>
-                        <input type="text" name="name" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="홍길동">
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-bold text-gray-700 mb-2">연락처 *</label>
-                        <input type="tel" name="phone" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="010-1234-5678">
-                    </div>
-                    
-                    ${customFieldsHtml}
+                    ${allFieldsHtml}
                     
                     <div class="flex items-start">
                         <input type="checkbox" name="agreedToTerms" required class="mt-1 mr-3 h-5 w-5 text-purple-600 focus:ring-purple-500 border-gray-300 rounded">
@@ -23928,21 +23939,16 @@ app.get('/landing/:slug', async (c) => {
             e.preventDefault();
             
             const formData = new FormData(e.target);
-            const customData = {};
+            const allData = {};
             for (const [key, value] of formData.entries()) {
-                if (key.startsWith('custom_')) {
-                    customData[key.replace('custom_', '')] = value;
-                }
+                allData[key] = value;
             }
             
             const data = {
                 form_template_id: ${form.id},
                 landing_page_id: null,
                 submission_data: JSON.stringify({
-                    name: formData.get('name'),
-                    phone: formData.get('phone'),
-                    ...customData,
-                    agreedToTerms: formData.get('agreedToTerms') ? 1 : 0,
+                    ...allData,
                     submittedFrom: 'landing_page',
                     landingPageSlug: '${slug}'
                 })
@@ -23978,13 +23984,15 @@ app.get('/landing/:slug', async (c) => {
                     }
                 } else {
                     resultDiv.className = 'mt-6 p-4 rounded-xl bg-red-100 border-2 border-red-500 text-red-800';
-                    resultDiv.innerHTML = '<p class="font-bold text-center">❌ ' + (result.error || '신청에 실패했습니다.') + '</p>';
+                    resultDiv.innerHTML = '<p class="font-bold text-center">❌ ' + (result.error || result.message || '신청에 실패했습니다.') + '</p>';
+                    console.error('Form submission failed:', result);
                 }
             } catch (error) {
+                console.error('Form submission error:', error);
                 const resultDiv = document.getElementById('formResult');
                 resultDiv.classList.remove('hidden');
                 resultDiv.className = 'mt-6 p-4 rounded-xl bg-red-100 border-2 border-red-500 text-red-800';
-                resultDiv.innerHTML = '<p class="font-bold text-center">❌ 오류가 발생했습니다.</p>';
+                resultDiv.innerHTML = '<p class="font-bold text-center">❌ 오류가 발생했습니다: ' + error.message + '</p>';
             }
         });
         </script>
