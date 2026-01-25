@@ -9,168 +9,246 @@
     <style>
         @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
         * { font-family: 'Pretendard Variable', sans-serif; }
+        .calendar-cell { min-height: 120px; }
+        .calendar-cell:hover { background-color: #f9fafb; }
+        .student-badge { font-size: 11px; }
     </style>
 </head>
 <body class="bg-gray-50">
-    <div class="max-w-7xl mx-auto px-4 py-8">
+    <div class="max-w-[1600px] mx-auto px-4 py-8">
         <!-- 헤더 -->
         <div class="mb-8 flex items-center justify-between">
             <div>
-                <h1 class="text-3xl font-bold text-gray-900 mb-2">💰 교육비 관리</h1>
-                <p class="text-gray-600">학생별 교육비 납입 현황을 관리하세요</p>
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">💰 교육비 관리 달력</h1>
+                <p class="text-gray-600">월별 학생 교육비 납입 현황을 한눈에 확인하세요</p>
             </div>
-            <a href="/dashboard" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium">
-                <i class="fas fa-arrow-left mr-2"></i> 대시보드
-            </a>
+            <div class="flex gap-3">
+                <button onclick="showClassManagement()" class="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition font-medium">
+                    <i class="fas fa-cog mr-2"></i> 반 교육비 설정
+                </button>
+                <a href="/dashboard" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium">
+                    <i class="fas fa-arrow-left mr-2"></i> 대시보드
+                </a>
+            </div>
         </div>
 
         <!-- 통계 카드 -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <div class="flex items-center justify-between mb-2">
-                    <span class="text-sm font-medium text-gray-600">총 학생 수</span>
-                    <i class="fas fa-users text-blue-500"></i>
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+                <div class="flex items-center justify-between mb-1">
+                    <span class="text-xs font-medium text-gray-600">총 학생 수</span>
+                    <i class="fas fa-users text-blue-500 text-sm"></i>
                 </div>
-                <div class="text-3xl font-bold text-gray-900" id="totalStudents">0</div>
+                <div class="text-2xl font-bold text-gray-900" id="totalStudents">0</div>
             </div>
             
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <div class="flex items-center justify-between mb-2">
-                    <span class="text-sm font-medium text-gray-600">완납 학생</span>
-                    <i class="fas fa-check-circle text-green-500"></i>
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+                <div class="flex items-center justify-between mb-1">
+                    <span class="text-xs font-medium text-gray-600">완납</span>
+                    <i class="fas fa-check-circle text-green-500 text-sm"></i>
                 </div>
-                <div class="text-3xl font-bold text-green-600" id="paidStudents">0</div>
+                <div class="text-2xl font-bold text-green-600" id="paidStudents">0</div>
             </div>
             
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <div class="flex items-center justify-between mb-2">
-                    <span class="text-sm font-medium text-gray-600">미납 학생</span>
-                    <i class="fas fa-exclamation-circle text-red-500"></i>
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+                <div class="flex items-center justify-between mb-1">
+                    <span class="text-xs font-medium text-gray-600">미납</span>
+                    <i class="fas fa-exclamation-circle text-red-500 text-sm"></i>
                 </div>
-                <div class="text-3xl font-bold text-red-600" id="unpaidStudents">0</div>
+                <div class="text-2xl font-bold text-red-600" id="unpaidStudents">0</div>
             </div>
             
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <div class="flex items-center justify-between mb-2">
-                    <span class="text-sm font-medium text-gray-600">총 금액</span>
-                    <i class="fas fa-won-sign text-purple-500"></i>
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+                <div class="flex items-center justify-between mb-1">
+                    <span class="text-xs font-medium text-gray-600">예상 매출</span>
+                    <i class="fas fa-won-sign text-purple-500 text-sm"></i>
                 </div>
-                <div class="text-3xl font-bold text-gray-900" id="totalAmount">0원</div>
+                <div class="text-2xl font-bold text-gray-900" id="totalAmount">0원</div>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+                <div class="flex items-center justify-between mb-1">
+                    <span class="text-xs font-medium text-gray-600">실납입액</span>
+                    <i class="fas fa-coins text-yellow-500 text-sm"></i>
+                </div>
+                <div class="text-2xl font-bold text-blue-600" id="totalPaid">0원</div>
             </div>
         </div>
 
-        <!-- 필터 영역 -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">년도</label>
-                    <select id="yearFilter" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                        <!-- 동적으로 생성 -->
-                    </select>
+        <!-- 달력 헤더 -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <button onclick="prevMonth()" class="p-2 hover:bg-gray-100 rounded-lg transition">
+                        <i class="fas fa-chevron-left text-gray-600"></i>
+                    </button>
+                    <div class="flex gap-3">
+                        <select id="yearFilter" onchange="loadCalendar()" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 font-semibold">
+                            <!-- 동적으로 생성 -->
+                        </select>
+                        <select id="monthFilter" onchange="loadCalendar()" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 font-semibold">
+                            <option value="1">1월</option>
+                            <option value="2">2월</option>
+                            <option value="3">3월</option>
+                            <option value="4">4월</option>
+                            <option value="5">5월</option>
+                            <option value="6">6월</option>
+                            <option value="7">7월</option>
+                            <option value="8">8월</option>
+                            <option value="9">9월</option>
+                            <option value="10">10월</option>
+                            <option value="11">11월</option>
+                            <option value="12">12월</option>
+                        </select>
+                    </div>
+                    <button onclick="nextMonth()" class="p-2 hover:bg-gray-100 rounded-lg transition">
+                        <i class="fas fa-chevron-right text-gray-600"></i>
+                    </button>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">월</label>
-                    <select id="monthFilter" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                        <option value="1">1월</option>
-                        <option value="2">2월</option>
-                        <option value="3">3월</option>
-                        <option value="4">4월</option>
-                        <option value="5">5월</option>
-                        <option value="6">6월</option>
-                        <option value="7">7월</option>
-                        <option value="8">8월</option>
-                        <option value="9">9월</option>
-                        <option value="10">10월</option>
-                        <option value="11">11월</option>
-                        <option value="12">12월</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">상태</label>
-                    <select id="statusFilter" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                        <option value="">전체</option>
-                        <option value="paid">완납</option>
-                        <option value="unpaid">미납</option>
-                        <option value="partial">부분납</option>
-                        <option value="overdue">연체</option>
-                    </select>
-                </div>
-                <div class="flex items-end">
-                    <button onclick="loadPayments()" class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium">
-                        <i class="fas fa-search mr-2"></i>조회
+                <div class="flex items-center gap-2">
+                    <button onclick="goToday()" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition font-medium">
+                        오늘
                     </button>
                 </div>
             </div>
         </div>
 
-        <!-- 학생 목록 -->
+        <!-- 달력 -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            <div class="overflow-x-auto">
-                <table class="w-full">
-                    <thead class="bg-gray-50 border-b border-gray-200">
-                        <tr>
-                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">학생명</th>
-                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">학년</th>
-                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">교육비</th>
-                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">납입액</th>
-                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">상태</th>
-                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">납입일</th>
-                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">관리</th>
-                        </tr>
-                    </thead>
-                    <tbody id="paymentList" class="divide-y divide-gray-200">
-                        <tr>
-                            <td colspan="7" class="px-6 py-12 text-center text-gray-500">
-                                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                                로딩 중...
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+            <div class="grid grid-cols-7 border-b border-gray-200">
+                <div class="p-3 text-center font-semibold text-red-600 bg-red-50">일</div>
+                <div class="p-3 text-center font-semibold text-gray-700 bg-gray-50">월</div>
+                <div class="p-3 text-center font-semibold text-gray-700 bg-gray-50">화</div>
+                <div class="p-3 text-center font-semibold text-gray-700 bg-gray-50">수</div>
+                <div class="p-3 text-center font-semibold text-gray-700 bg-gray-50">목</div>
+                <div class="p-3 text-center font-semibold text-gray-700 bg-gray-50">금</div>
+                <div class="p-3 text-center font-semibold text-blue-600 bg-blue-50">토</div>
+            </div>
+            <div id="calendarBody" class="grid grid-cols-7">
+                <!-- 동적으로 생성 -->
             </div>
         </div>
     </div>
 
-    <!-- 납입 처리 모달 -->
+    <!-- 학생 추가/결제 처리 모달 -->
     <div id="paymentModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-white rounded-xl shadow-xl max-w-md w-full mx-4">
-            <div class="p-6 border-b border-gray-200">
-                <h3 class="text-xl font-bold text-gray-900">납입 처리</h3>
+        <div class="bg-white rounded-xl shadow-xl max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="p-6 border-b border-gray-200 flex items-center justify-between">
+                <h3 class="text-xl font-bold text-gray-900" id="modalTitle">납입 처리</h3>
+                <button onclick="closePaymentModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
             </div>
             <div class="p-6">
-                <input type="hidden" id="modalStudentId">
+                <input type="hidden" id="modalDay">
+                
+                <!-- 학생 선택 -->
                 <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">학생명</label>
-                    <input type="text" id="modalStudentName" readonly class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50">
-                </div>
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">교육비</label>
-                    <input type="text" id="modalAmount" readonly class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50">
-                </div>
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">납입액</label>
-                    <input type="number" id="modalPaidAmount" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                </div>
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">납입 방법</label>
-                    <select id="modalPaymentMethod" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                        <option value="">선택</option>
-                        <option value="계좌이체">계좌이체</option>
-                        <option value="카드">카드</option>
-                        <option value="현금">현금</option>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">학생 선택</label>
+                    <select id="modalStudent" onchange="onStudentChange()" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        <option value="">학생을 선택하세요</option>
                     </select>
                 </div>
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">메모</label>
-                    <textarea id="modalMemo" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"></textarea>
+
+                <div id="paymentForm" class="hidden">
+                    <!-- 반 정보 -->
+                    <div class="mb-4 p-4 bg-blue-50 rounded-lg">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-sm font-medium text-gray-700">소속 반</span>
+                            <span id="modalClassName" class="text-sm font-bold text-blue-600">-</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm font-medium text-gray-700">반 교육비</span>
+                            <span id="modalClassFee" class="text-sm font-bold text-blue-600">0원</span>
+                        </div>
+                    </div>
+
+                    <!-- 납입액 -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">납입액</label>
+                        <input type="number" id="modalPaidAmount" placeholder="납입액을 입력하세요" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                    </div>
+
+                    <!-- 납입 방법 -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">납입 방법</label>
+                        <select id="modalPaymentMethod" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            <option value="">선택</option>
+                            <option value="계좌이체">계좌이체</option>
+                            <option value="카드">카드</option>
+                            <option value="현금">현금</option>
+                        </select>
+                    </div>
+
+                    <!-- 메모 -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">메모</label>
+                        <textarea id="modalMemo" rows="3" placeholder="메모를 입력하세요 (선택사항)" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"></textarea>
+                    </div>
+
+                    <!-- 현재 상태 -->
+                    <div id="currentStatus" class="hidden mb-4 p-4 bg-yellow-50 rounded-lg">
+                        <div class="text-sm font-medium text-gray-700 mb-2">현재 납입 상태</div>
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-gray-600">기납입액</span>
+                            <span id="currentPaidAmount" class="font-bold text-gray-900">0원</span>
+                        </div>
+                        <div class="flex items-center justify-between text-sm mt-1">
+                            <span class="text-gray-600">납입일</span>
+                            <span id="currentPaidDate" class="text-gray-600">-</span>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="p-6 border-t border-gray-200 flex justify-end space-x-3">
-                <button onclick="closeModal()" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition">
+                <button onclick="closePaymentModal()" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition">
                     취소
                 </button>
                 <button onclick="savePayment()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium">
-                    저장
+                    <i class="fas fa-save mr-2"></i>저장
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 반 교육비 설정 모달 -->
+    <div id="classManagementModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-xl shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="p-6 border-b border-gray-200 flex items-center justify-between">
+                <h3 class="text-xl font-bold text-gray-900">반별 교육비 설정</h3>
+                <button onclick="closeClassManagement()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div class="p-6">
+                <div class="mb-4">
+                    <p class="text-sm text-gray-600">각 반의 월 교육비를 설정하세요. 학생이 소속된 반의 교육비가 자동으로 적용됩니다.</p>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50 border-b border-gray-200">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">반 이름</th>
+                                <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">담당 선생님</th>
+                                <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">학생 수</th>
+                                <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">월 교육비</th>
+                                <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">관리</th>
+                            </tr>
+                        </thead>
+                        <tbody id="classList" class="divide-y divide-gray-200">
+                            <tr>
+                                <td colspan="5" class="px-6 py-12 text-center text-gray-500">
+                                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                                    로딩 중...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="p-6 border-t border-gray-200 flex justify-end">
+                <button onclick="closeClassManagement()" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition font-medium">
+                    닫기
                 </button>
             </div>
         </div>
@@ -178,6 +256,8 @@
 
     <script>
         let currentUser = null;
+        let allStudents = [];
+        let allPayments = {};
 
         // 사용자 정보 확인 및 권한 체크
         function checkAuth() {
@@ -219,6 +299,42 @@
             monthFilter.value = currentMonth;
         }
 
+        // 이전 달
+        function prevMonth() {
+            const year = parseInt(document.getElementById('yearFilter').value);
+            const month = parseInt(document.getElementById('monthFilter').value);
+            
+            if (month === 1) {
+                document.getElementById('yearFilter').value = year - 1;
+                document.getElementById('monthFilter').value = 12;
+            } else {
+                document.getElementById('monthFilter').value = month - 1;
+            }
+            loadCalendar();
+        }
+
+        // 다음 달
+        function nextMonth() {
+            const year = parseInt(document.getElementById('yearFilter').value);
+            const month = parseInt(document.getElementById('monthFilter').value);
+            
+            if (month === 12) {
+                document.getElementById('yearFilter').value = year + 1;
+                document.getElementById('monthFilter').value = 1;
+            } else {
+                document.getElementById('monthFilter').value = month + 1;
+            }
+            loadCalendar();
+        }
+
+        // 오늘로 이동
+        function goToday() {
+            const now = new Date();
+            document.getElementById('yearFilter').value = now.getFullYear();
+            document.getElementById('monthFilter').value = now.getMonth() + 1;
+            loadCalendar();
+        }
+
         // 통계 로드
         async function loadStats() {
             const year = document.getElementById('yearFilter').value;
@@ -238,26 +354,24 @@
                     document.getElementById('paidStudents').textContent = data.stats.paid_count || 0;
                     document.getElementById('unpaidStudents').textContent = data.stats.unpaid_count || 0;
                     document.getElementById('totalAmount').textContent = ((data.stats.total_amount || 0).toLocaleString()) + '원';
+                    document.getElementById('totalPaid').textContent = ((data.stats.total_paid || 0).toLocaleString()) + '원';
                 }
             } catch (error) {
                 console.error('통계 로드 실패:', error);
             }
         }
 
-        // 납입 현황 로드
-        async function loadPayments() {
-            const year = document.getElementById('yearFilter').value;
-            const month = document.getElementById('monthFilter').value;
-            const status = document.getElementById('statusFilter').value;
+        // 달력 로드
+        async function loadCalendar() {
+            const year = parseInt(document.getElementById('yearFilter').value);
+            const month = parseInt(document.getElementById('monthFilter').value);
             
-            const paymentList = document.getElementById('paymentList');
-            paymentList.innerHTML = '<tr><td colspan="7" class="px-6 py-12 text-center text-gray-500"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>로딩 중...</td></tr>';
+            // 통계 로드
+            loadStats();
             
+            // 해당 월의 학생 납입 현황 로드
             try {
-                let url = `/api/tuition/payments?year=${year}&month=${month}`;
-                if (status) url += `&status=${status}`;
-                
-                const response = await fetch(url, {
+                const response = await fetch(`/api/tuition/payments?year=${year}&month=${month}`, {
                     headers: {
                         'X-User-Data-Base64': btoa(JSON.stringify(currentUser))
                     }
@@ -265,74 +379,193 @@
                 
                 const data = await response.json();
                 
-                if (!data.success || !data.payments || data.payments.length === 0) {
-                    paymentList.innerHTML = '<tr><td colspan="7" class="px-6 py-12 text-center text-gray-500"><i class="fas fa-inbox text-4xl text-gray-300 mb-4"></i><div>납입 내역이 없습니다</div></td></tr>';
-                    return;
+                if (data.success) {
+                    allPayments = {};
+                    allStudents = data.payments || [];
+                    
+                    // 학생별로 정리
+                    allStudents.forEach(payment => {
+                        allPayments[payment.student_id] = payment;
+                    });
                 }
                 
-                paymentList.innerHTML = data.payments.map(payment => {
-                    let statusBadge = '';
-                    if (payment.status === 'paid') {
-                        statusBadge = '<span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">완납</span>';
-                    } else if (payment.status === 'partial') {
-                        statusBadge = '<span class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-sm font-medium">부분납</span>';
-                    } else if (payment.status === 'overdue') {
-                        statusBadge = '<span class="px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-medium">연체</span>';
-                    } else {
-                        statusBadge = '<span class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-medium">미납</span>';
-                    }
-                    
-                    return `<tr class="hover:bg-gray-50">
-                        <td class="px-6 py-4 text-sm font-medium text-gray-900">${payment.student_name}</td>
-                        <td class="px-6 py-4 text-sm text-gray-600">${payment.grade || '-'}</td>
-                        <td class="px-6 py-4 text-sm font-bold text-blue-600">${(payment.amount || 0).toLocaleString()}원</td>
-                        <td class="px-6 py-4 text-sm text-gray-900">${(payment.paid_amount || 0).toLocaleString()}원</td>
-                        <td class="px-6 py-4">${statusBadge}</td>
-                        <td class="px-6 py-4 text-sm text-gray-600">${payment.paid_date || '-'}</td>
-                        <td class="px-6 py-4">
-                            <button onclick="openModal(${payment.student_id}, '${payment.student_name}', ${payment.amount})" 
-                                    class="px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm">
-                                <i class="fas fa-edit mr-1"></i>처리
-                            </button>
-                        </td>
-                    </tr>`;
-                }).join('');
-                
-                // 통계도 함께 로드
-                loadStats();
+                // 달력 그리기
+                renderCalendar(year, month);
             } catch (error) {
                 console.error('납입 현황 로드 실패:', error);
-                paymentList.innerHTML = '<tr><td colspan="7" class="px-6 py-12 text-center text-red-500"><i class="fas fa-exclamation-circle text-4xl mb-4"></i><div>납입 현황을 불러오는데 실패했습니다</div></td></tr>';
             }
         }
 
-        // 모달 열기
-        function openModal(studentId, studentName, amount) {
-            document.getElementById('modalStudentId').value = studentId;
-            document.getElementById('modalStudentName').value = studentName;
-            document.getElementById('modalAmount').value = amount.toLocaleString() + '원';
-            document.getElementById('modalPaidAmount').value = amount;
+        // 달력 렌더링
+        function renderCalendar(year, month) {
+            const firstDay = new Date(year, month - 1, 1).getDay();
+            const lastDate = new Date(year, month, 0).getDate();
+            const today = new Date();
+            const isCurrentMonth = today.getFullYear() === year && today.getMonth() + 1 === month;
+            const todayDate = today.getDate();
+            
+            const calendarBody = document.getElementById('calendarBody');
+            calendarBody.innerHTML = '';
+            
+            // 이전 달의 빈 칸
+            for (let i = 0; i < firstDay; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'calendar-cell border-r border-b border-gray-200 bg-gray-50';
+                calendarBody.appendChild(cell);
+            }
+            
+            // 날짜 셀
+            for (let day = 1; day <= lastDate; day++) {
+                const cell = document.createElement('div');
+                cell.className = 'calendar-cell border-r border-b border-gray-200 p-2 cursor-pointer';
+                
+                // 오늘 날짜 강조
+                if (isCurrentMonth && day === todayDate) {
+                    cell.classList.add('bg-blue-50');
+                }
+                
+                // 날짜 헤더
+                const dateHeader = document.createElement('div');
+                dateHeader.className = 'flex items-center justify-between mb-2 pb-1 border-b border-gray-200';
+                dateHeader.innerHTML = `
+                    <span class="text-sm font-bold ${isCurrentMonth && day === todayDate ? 'text-blue-600' : 'text-gray-700'}">${day}일</span>
+                    <button onclick="openPaymentModal(${day})" class="text-xs px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                `;
+                cell.appendChild(dateHeader);
+                
+                // 학생 목록 (해당 날짜에 납입한 학생들)
+                const studentList = document.createElement('div');
+                studentList.className = 'space-y-1 max-h-20 overflow-y-auto';
+                
+                // 해당 날짜에 납입한 학생 필터링
+                const studentsOnThisDay = allStudents.filter(payment => {
+                    if (!payment.paid_date) return false;
+                    const paidDate = new Date(payment.paid_date);
+                    return paidDate.getFullYear() === year && 
+                           paidDate.getMonth() + 1 === month && 
+                           paidDate.getDate() === day;
+                });
+                
+                studentsOnThisDay.forEach(payment => {
+                    const badge = document.createElement('div');
+                    badge.className = `student-badge px-2 py-1 rounded text-white cursor-pointer ${
+                        payment.status === 'paid' ? 'bg-green-500' :
+                        payment.status === 'partial' ? 'bg-yellow-500' : 'bg-gray-400'
+                    }`;
+                    badge.innerHTML = `
+                        <div class="flex items-center justify-between">
+                            <span class="font-medium">${payment.student_name}</span>
+                            <span class="ml-1">${(payment.paid_amount || 0).toLocaleString()}원</span>
+                        </div>
+                    `;
+                    badge.onclick = (e) => {
+                        e.stopPropagation();
+                        editPayment(payment.student_id, day);
+                    };
+                    studentList.appendChild(badge);
+                });
+                
+                cell.appendChild(studentList);
+                calendarBody.appendChild(cell);
+            }
+        }
+
+        // 납입 처리 모달 열기
+        async function openPaymentModal(day) {
+            document.getElementById('modalDay').value = day;
+            document.getElementById('modalTitle').textContent = `${day}일 납입 처리`;
+            
+            // 학생 목록 로드
+            try {
+                const response = await fetch('/api/students', {
+                    headers: {
+                        'X-User-Data-Base64': btoa(JSON.stringify(currentUser))
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success && data.students) {
+                    const select = document.getElementById('modalStudent');
+                    select.innerHTML = '<option value="">학생을 선택하세요</option>';
+                    
+                    data.students.forEach(student => {
+                        const option = document.createElement('option');
+                        option.value = student.id;
+                        option.textContent = `${student.name} (${student.grade || '-'})`;
+                        option.dataset.classId = student.class_id;
+                        option.dataset.className = student.class_name || '-';
+                        option.dataset.classFee = student.class_fee || 0;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('학생 목록 로드 실패:', error);
+            }
+            
+            // 폼 초기화
+            document.getElementById('paymentForm').classList.add('hidden');
+            document.getElementById('currentStatus').classList.add('hidden');
+            document.getElementById('modalPaidAmount').value = '';
+            document.getElementById('modalPaymentMethod').value = '';
+            document.getElementById('modalMemo').value = '';
+            
             document.getElementById('paymentModal').classList.remove('hidden');
         }
 
-        // 모달 닫기
-        function closeModal() {
-            document.getElementById('paymentModal').classList.add('hidden');
+        // 학생 선택 시
+        function onStudentChange() {
+            const select = document.getElementById('modalStudent');
+            const option = select.options[select.selectedIndex];
+            
+            if (!option.value) {
+                document.getElementById('paymentForm').classList.add('hidden');
+                return;
+            }
+            
+            // 반 정보 표시
+            document.getElementById('modalClassName').textContent = option.dataset.className;
+            document.getElementById('modalClassFee').textContent = parseInt(option.dataset.classFee).toLocaleString() + '원';
+            document.getElementById('modalPaidAmount').value = option.dataset.classFee;
+            
+            // 기존 납입 내역 확인
+            const studentId = option.value;
+            const payment = allPayments[studentId];
+            
+            if (payment && payment.paid_amount > 0) {
+                document.getElementById('currentStatus').classList.remove('hidden');
+                document.getElementById('currentPaidAmount').textContent = payment.paid_amount.toLocaleString() + '원';
+                document.getElementById('currentPaidDate').textContent = payment.paid_date || '-';
+            } else {
+                document.getElementById('currentStatus').classList.add('hidden');
+            }
+            
+            document.getElementById('paymentForm').classList.remove('hidden');
         }
 
         // 납입 저장
         async function savePayment() {
-            const studentId = document.getElementById('modalStudentId').value;
+            const studentId = document.getElementById('modalStudent').value;
             const paidAmount = parseInt(document.getElementById('modalPaidAmount').value);
             const paymentMethod = document.getElementById('modalPaymentMethod').value;
             const memo = document.getElementById('modalMemo').value;
             const year = document.getElementById('yearFilter').value;
             const month = document.getElementById('monthFilter').value;
+            const day = document.getElementById('modalDay').value;
+            
+            if (!studentId) {
+                alert('학생을 선택해주세요.');
+                return;
+            }
             
             if (!paidAmount) {
                 alert('납입액을 입력해주세요.');
                 return;
             }
+            
+            const paidDate = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
             
             try {
                 const response = await fetch('/api/tuition/mark-paid', {
@@ -355,8 +588,8 @@
                 
                 if (data.success) {
                     alert('납입 처리가 완료되었습니다.');
-                    closeModal();
-                    loadPayments();
+                    closePaymentModal();
+                    loadCalendar();
                 } else {
                     alert(data.error || '납입 처리에 실패했습니다.');
                 }
@@ -366,6 +599,117 @@
             }
         }
 
+        // 납입 수정
+        function editPayment(studentId, day) {
+            openPaymentModal(day);
+            
+            // 학생 자동 선택
+            setTimeout(() => {
+                document.getElementById('modalStudent').value = studentId;
+                onStudentChange();
+                
+                const payment = allPayments[studentId];
+                if (payment) {
+                    document.getElementById('modalPaidAmount').value = payment.paid_amount || 0;
+                    document.getElementById('modalPaymentMethod').value = payment.payment_method || '';
+                    document.getElementById('modalMemo').value = payment.memo || '';
+                }
+            }, 100);
+        }
+
+        // 모달 닫기
+        function closePaymentModal() {
+            document.getElementById('paymentModal').classList.add('hidden');
+        }
+
+        // 반 관리 모달 열기
+        async function showClassManagement() {
+            document.getElementById('classManagementModal').classList.remove('hidden');
+            loadClasses();
+        }
+
+        // 반 목록 로드
+        async function loadClasses() {
+            const classList = document.getElementById('classList');
+            classList.innerHTML = '<tr><td colspan="5" class="px-6 py-12 text-center text-gray-500"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>로딩 중...</td></tr>';
+            
+            try {
+                const response = await fetch('/api/tuition/classes', {
+                    headers: {
+                        'X-User-Data-Base64': btoa(JSON.stringify(currentUser))
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (!data.success || !data.classes || data.classes.length === 0) {
+                    classList.innerHTML = '<tr><td colspan="5" class="px-6 py-12 text-center text-gray-500"><i class="fas fa-inbox text-4xl text-gray-300 mb-4"></i><div>등록된 반이 없습니다</div></td></tr>';
+                    return;
+                }
+                
+                classList.innerHTML = data.classes.map(cls => `
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 text-sm font-medium text-gray-900">${cls.name}</td>
+                        <td class="px-6 py-4 text-sm text-gray-600">${cls.teacher_name || '-'}</td>
+                        <td class="px-6 py-4 text-sm text-gray-600">${cls.student_count || 0}명</td>
+                        <td class="px-6 py-4">
+                            <input type="number" 
+                                   id="classFee${cls.id}" 
+                                   value="${cls.monthly_fee || 0}" 
+                                   class="w-32 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                   placeholder="금액">
+                        </td>
+                        <td class="px-6 py-4">
+                            <button onclick="updateClassFee(${cls.id})" class="px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm">
+                                <i class="fas fa-save mr-1"></i>저장
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('반 목록 로드 실패:', error);
+                classList.innerHTML = '<tr><td colspan="5" class="px-6 py-12 text-center text-red-500"><i class="fas fa-exclamation-circle text-4xl mb-4"></i><div>반 목록을 불러오는데 실패했습니다</div></td></tr>';
+            }
+        }
+
+        // 반 교육비 업데이트
+        async function updateClassFee(classId) {
+            const fee = parseInt(document.getElementById(`classFee${classId}`).value);
+            
+            if (isNaN(fee) || fee < 0) {
+                alert('올바른 금액을 입력해주세요.');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/tuition/classes/${classId}/fee`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-User-Data-Base64': btoa(JSON.stringify(currentUser))
+                    },
+                    body: JSON.stringify({ monthly_fee: fee })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('반 교육비가 설정되었습니다.');
+                    loadClasses();
+                } else {
+                    alert(data.error || '교육비 설정에 실패했습니다.');
+                }
+            } catch (error) {
+                console.error('교육비 설정 실패:', error);
+                alert('교육비 설정 중 오류가 발생했습니다.');
+            }
+        }
+
+        // 반 관리 모달 닫기
+        function closeClassManagement() {
+            document.getElementById('classManagementModal').classList.add('hidden');
+        }
+
         // 페이지 로드 시 초기화
         window.addEventListener('DOMContentLoaded', function() {
             currentUser = checkAuth();
@@ -373,7 +717,7 @@
             
             initYearFilter();
             initMonthFilter();
-            loadPayments();
+            loadCalendar();
         });
     </script>
 </body>
