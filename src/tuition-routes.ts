@@ -760,11 +760,11 @@ app.get('/api/tuition/classes', requireDirector, async (c) => {
       console.error('Auto-init error (non-fatal):', initError)
     }
     
-    // classes 테이블 구조: id, class_name (or name), description, user_id, teacher_id, monthly_fee
+    // classes 테이블 구조: id, class_name, description, user_id, teacher_id, monthly_fee
     const classes = await c.env.DB.prepare(`
       SELECT 
         c.id,
-        COALESCE(c.name, c.class_name) as name,
+        c.class_name as name,
         c.description,
         c.user_id,
         c.teacher_id,
@@ -775,8 +775,8 @@ app.get('/api/tuition/classes', requireDirector, async (c) => {
       LEFT JOIN users u ON c.teacher_id = u.id
       LEFT JOIN students s ON (s.class_id = c.id AND s.status = 'active' AND s.user_id = ?)
       WHERE c.user_id = ?
-      GROUP BY c.id, c.class_name, c.name, c.description, c.user_id, c.teacher_id, c.monthly_fee, u.name
-      ORDER BY COALESCE(c.name, c.class_name) ASC
+      GROUP BY c.id, c.class_name, c.description, c.user_id, c.teacher_id, c.monthly_fee, u.name
+      ORDER BY c.class_name ASC
     `).bind(user.id, user.id).all()
     
     console.log('Classes found:', classes.results?.length || 0)
