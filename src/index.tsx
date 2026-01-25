@@ -26867,9 +26867,12 @@ app.post('/api/learning-reports/generate', async (c) => {
   try {
     const { student_id, start_date, end_date, folder_id } = await c.req.json()
     
+    // 리포트 기간 문자열 생성 (맨 앞에 정의)
+    const reportPeriod = `${start_date} ~ ${end_date}`;
+    
     console.log('📊 [GenerateReport] Starting report generation')
     console.log('📊 [GenerateReport] Student ID:', student_id)
-    console.log('📊 [GenerateReport] Date range:', start_date, 'to', end_date)
+    console.log('📊 [GenerateReport] Date range:', reportPeriod)
     
     // 학생 정보 조회
     const student = await c.env.DB.prepare(`
@@ -27138,9 +27141,6 @@ ${recommendations}
 - 슈퍼플레이스 ${counselings[0]?.counselor_name || '선생님'}`
     
     console.log('💾 [GenerateReport] Saving report to database')
-    
-    // 리포트 기간 문자열 생성 (예: "2024-01-01 ~ 2024-01-31")
-    const reportPeriod = `${start_date} ~ ${end_date}`;
     
     // 리포트 저장
     const result = await c.env.DB.prepare(`
