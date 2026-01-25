@@ -1,7 +1,7 @@
 import tuitionApp from '../../../src/tuition-routes'
 
 export const onRequest: PagesFunction = async (context) => {
-  // Log the URL for debugging
+  // Updated: 2026-01-25 - Fixed class_name column references
   console.log('Tuition route called with URL:', context.request.url)
   console.log('Path:', new URL(context.request.url).pathname)
   
