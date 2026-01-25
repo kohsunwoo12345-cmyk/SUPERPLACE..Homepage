@@ -4740,15 +4740,38 @@ app.post('/api/landing/create', async (c) => {
       .bind(user.id, slug, title, template_type, JSON.stringify(input_data), htmlContent, qrCodeUrl, thumbnail_url || null, og_title || null, og_description || null, folder_id || null, form_id || null)
       .run()
     
-    // 🔥 사용량 증가
-    await c.env.DB.prepare(`
-      UPDATE usage_tracking 
-      SET landing_pages_created = landing_pages_created + 1, 
-          updated_at = CURRENT_TIMESTAMP
-      WHERE subscription_id = ?
-    `).bind(activeSubscription.id).run()
-    
-    console.log('✅ Landing page created and usage incremented:', currentPages + 1, '/', pageLimit)
+    // 🔥 사용량 증가 (레코드가 없으면 자동 생성)
+    try {
+      // 먼저 usage_tracking 레코드 존재 여부 확인
+      const usageExists = await c.env.DB.prepare(`
+        SELECT id FROM usage_tracking WHERE subscription_id = ?
+      `).bind(activeSubscription.id).first()
+      
+      if (!usageExists) {
+        // 레코드가 없으면 생성
+        console.log('⚠️ [Landing] usage_tracking record not found, creating...')
+        await c.env.DB.prepare(`
+          INSERT INTO usage_tracking (
+            academy_id, subscription_id, current_students, ai_reports_used_this_month,
+            landing_pages_created, current_teachers, sms_sent_this_month,
+            created_at, updated_at
+          ) VALUES (?, ?, 0, 0, 1, 0, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+        `).bind(academyIdToUse, activeSubscription.id).run()
+        console.log('✅ [Landing] Created usage_tracking with landing_pages_created = 1')
+      } else {
+        // 레코드가 있으면 업데이트
+        await c.env.DB.prepare(`
+          UPDATE usage_tracking 
+          SET landing_pages_created = landing_pages_created + 1, 
+              updated_at = CURRENT_TIMESTAMP
+          WHERE subscription_id = ?
+        `).bind(activeSubscription.id).run()
+        console.log('✅ [Landing] Updated landing_pages_created:', currentPages + 1, '/', pageLimit)
+      }
+    } catch (usageErr) {
+      console.error('❌ [Landing] Failed to update usage:', usageErr)
+      // 에러가 나도 랜딩페이지 생성 자체는 성공으로 처리
+    }
     
     return c.json({ 
       success: true, 
@@ -10279,15 +10302,41 @@ app.get('/api/usage/check', async (c) => {
     
     // 🔥 누적 랜딩페이지 개수 조회: usage_tracking에서 누적 생성 개수 사용 (삭제해도 누적 유지)
     let actualLandingPagesCount = 0
+    let usage = null
     try {
-      // usage가 아직 조회되지 않은 경우를 대비해 미리 조회
-      if (!usage) {
-        usage = await c.env.DB.prepare(`
-          SELECT * FROM usage_tracking 
-          WHERE academy_id = ? AND subscription_id = ?
-        `).bind(academyId, subscription.id).first()
+      // usage_tracking에서 먼저 조회
+      usage = await c.env.DB.prepare(`
+        SELECT * FROM usage_tracking 
+        WHERE academy_id = ? AND subscription_id = ?
+      `).bind(academyId, subscription.id).first()
+      
+      if (usage && usage.landing_pages_created !== null && usage.landing_pages_created !== undefined) {
+        actualLandingPagesCount = usage.landing_pages_created
+        console.log('[Usage Check] ✅ Landing pages from usage_tracking:', actualLandingPagesCount)
+      } else {
+        // 🔥 Fallback: usage_tracking에 레코드가 없으면 실제 landing_pages 테이블에서 COUNT
+        console.log('[Usage Check] ⚠️ No usage_tracking record, counting from landing_pages table...')
+        const countResult = await c.env.DB.prepare(`
+          SELECT COUNT(*) as count FROM landing_pages 
+          WHERE user_id = ?
+        `).bind(academyId).first()
+        actualLandingPagesCount = countResult?.count || 0
+        console.log('[Usage Check] ✅ Landing pages from actual table:', actualLandingPagesCount)
+        
+        // 자동으로 usage_tracking 레코드 생성
+        try {
+          await c.env.DB.prepare(`
+            INSERT INTO usage_tracking (
+              academy_id, subscription_id, current_students, ai_reports_used_this_month,
+              landing_pages_created, current_teachers, sms_sent_this_month,
+              created_at, updated_at
+            ) VALUES (?, ?, 0, 0, ?, 0, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+          `).bind(academyId, subscription.id, actualLandingPagesCount).run()
+          console.log('[Usage Check] ✅ Auto-created usage_tracking with', actualLandingPagesCount, 'landing pages')
+        } catch (insertErr) {
+          console.error('[Usage Check] ❌ Failed to auto-create usage_tracking:', insertErr.message)
+        }
       }
-      actualLandingPagesCount = usage?.landing_pages_created || 0
     } catch (err) {
       console.error('[Usage] landing_pages_created error:', err.message)
     }
@@ -10348,16 +10397,14 @@ app.get('/api/usage/check', async (c) => {
       console.error('[Usage] teachers count error:', err.message)
     }
 
-    // 사용량 조회 (AI 리포트는 usage_tracking에서 조회)
-    let usage = await c.env.DB.prepare(`
-      SELECT * FROM usage_tracking 
-      WHERE academy_id = ? AND subscription_id = ?
-    `).bind(academyId, subscription.id).first()
-
+    // 🔥 usage는 이미 위에서 조회되었음 (line 10308)
     // AI 리포트 사용량 (usage_tracking에서만 조회)
     let aiReportsCount = 0
     if (usage) {
       aiReportsCount = usage.ai_reports_used_this_month || 0
+      console.log('[Usage Check] ✅ AI reports:', aiReportsCount)
+    } else {
+      console.log('[Usage Check] ⚠️ No usage_tracking for AI reports')
     }
 
     // 📊 최종 응답: 실제 데이터 반환
