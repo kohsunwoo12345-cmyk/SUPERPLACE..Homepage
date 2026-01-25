@@ -17874,6 +17874,43 @@ app.get('/dashboard', (c) => {
                     <p class="text-xl text-gray-600">학원 마케팅 현황을 확인하세요</p>
                 </div>
 
+                <!-- 플랜 사용량 빠른 보기 (새로 추가) -->
+                <div id="quickUsageStats" class="hidden mb-8">
+                    <div class="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl p-6 text-white">
+                        <h2 class="text-2xl font-bold mb-4">📊 이번 달 사용량</h2>
+                        <div class="grid md:grid-cols-4 gap-4">
+                            <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4">
+                                <div class="text-sm text-purple-100 mb-1">랜딩페이지</div>
+                                <div class="text-3xl font-bold mb-1"><span id="quickLandingUsage">0</span> / <span id="quickLandingLimit">0</span></div>
+                                <div class="w-full bg-white/20 rounded-full h-2 mt-2">
+                                    <div id="quickLandingBar" class="bg-white h-2 rounded-full transition-all" style="width: 0%"></div>
+                                </div>
+                            </div>
+                            <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4">
+                                <div class="text-sm text-purple-100 mb-1">AI 리포트</div>
+                                <div class="text-3xl font-bold mb-1"><span id="quickReportUsage">0</span> / <span id="quickReportLimit">0</span></div>
+                                <div class="w-full bg-white/20 rounded-full h-2 mt-2">
+                                    <div id="quickReportBar" class="bg-white h-2 rounded-full transition-all" style="width: 0%"></div>
+                                </div>
+                            </div>
+                            <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4">
+                                <div class="text-sm text-purple-100 mb-1">학생 수</div>
+                                <div class="text-3xl font-bold mb-1"><span id="quickStudentUsage">0</span> / <span id="quickStudentLimit">0</span></div>
+                                <div class="w-full bg-white/20 rounded-full h-2 mt-2">
+                                    <div id="quickStudentBar" class="bg-white h-2 rounded-full transition-all" style="width: 0%"></div>
+                                </div>
+                            </div>
+                            <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4">
+                                <div class="text-sm text-purple-100 mb-1">선생님 수</div>
+                                <div class="text-3xl font-bold mb-1"><span id="quickTeacherUsage">0</span> / <span id="quickTeacherLimit">0</span></div>
+                                <div class="w-full bg-white/20 rounded-full h-2 mt-2">
+                                    <div id="quickTeacherBar" class="bg-white h-2 rounded-full transition-all" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Stats Grid -->
                 <div class="grid md:grid-cols-3 gap-6 mb-12">
                     <div class="bg-gradient-to-br from-blue-300 to-blue-400 rounded-2xl p-6 text-white shadow-lg">
@@ -18523,6 +18560,24 @@ app.get('/dashboard', (c) => {
                                 const reportUsage = calcUsage(usage.aiReports || 0, limits.aiReports || 0)
                                 const landingUsage = calcUsage(usage.landingPages || 0, limits.landingPages || 0)
                                 const teacherUsage = calcUsage(usage.teachers || 0, limits.teachers || 0)
+                                
+                                // 빠른 사용량 통계 업데이트
+                                const quickUsageStats = document.getElementById('quickUsageStats')
+                                if (quickUsageStats) {
+                                    quickUsageStats.classList.remove('hidden')
+                                    document.getElementById('quickLandingUsage').textContent = landingUsage.current
+                                    document.getElementById('quickLandingLimit').textContent = landingUsage.limit
+                                    document.getElementById('quickLandingBar').style.width = landingUsage.percent + '%'
+                                    document.getElementById('quickReportUsage').textContent = reportUsage.current
+                                    document.getElementById('quickReportLimit').textContent = reportUsage.limit
+                                    document.getElementById('quickReportBar').style.width = reportUsage.percent + '%'
+                                    document.getElementById('quickStudentUsage').textContent = studentUsage.current
+                                    document.getElementById('quickStudentLimit').textContent = studentUsage.limit
+                                    document.getElementById('quickStudentBar').style.width = studentUsage.percent + '%'
+                                    document.getElementById('quickTeacherUsage').textContent = teacherUsage.current
+                                    document.getElementById('quickTeacherLimit').textContent = teacherUsage.limit
+                                    document.getElementById('quickTeacherBar').style.width = teacherUsage.percent + '%'
+                                }
                                 
                                 const renderUsageCard = (icon, title, usage) => {
                                     return '<div class="bg-white rounded-2xl p-6 shadow-lg border-2 ' + 
@@ -20475,6 +20530,30 @@ app.get('/tools/landing-builder', (c) => {
                     </div>
                 </div>
 
+                <!-- 사용량 표시 배너 (새로 추가) -->
+                <div id="usageBanner" class="bg-gradient-to-r from-purple-500 to-indigo-500 rounded-xl p-6 mb-8 text-white hidden">
+                    <div class="flex items-center justify-between flex-wrap gap-4">
+                        <div class="flex items-center gap-4">
+                            <div class="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center flex-shrink-0">
+                                <span class="text-3xl">🎯</span>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold mb-1">이번 달 랜딩페이지 사용량</h3>
+                                <p class="text-white/90 text-sm">아래 사용량을 확인하고 페이지를 생성하세요</p>
+                            </div>
+                        </div>
+                        <div class="bg-white/20 backdrop-blur-sm rounded-xl px-6 py-4">
+                            <div class="text-sm text-white/80 mb-1">사용 현황</div>
+                            <div class="text-3xl font-bold">
+                                <span id="currentUsage">-</span> / <span id="maxLimit">-</span>
+                            </div>
+                            <div class="w-48 bg-white/20 rounded-full h-2 mt-3">
+                                <div id="usageBar" class="bg-white h-2 rounded-full transition-all" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- 템플릿 선택 -->
                 <div class="bg-white rounded-xl p-8 border border-gray-200 mb-6">
                     <h2 class="text-2xl font-bold text-gray-900 mb-6">1️⃣ 템플릿 선택</h2>
@@ -20824,9 +20903,45 @@ app.get('/tools/landing-builder', (c) => {
                 }
             }, 100);
             
+            loadUsage();
             loadUserFolders();
             loadUserForms();
             loadStats();
+        }
+
+        // 사용량 로드 함수
+        async function loadUsage() {
+            try {
+                const response = await fetch('/api/usage/check', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                const data = await response.json();
+                
+                if (data.success && data.limits && data.usage) {
+                    const currentUsage = data.usage.landingPages || 0;
+                    const maxLimit = data.limits.landingPages || 0;
+                    const percentage = maxLimit > 0 ? Math.min((currentUsage / maxLimit) * 100, 100) : 0;
+                    
+                    // 배너 표시
+                    const usageBanner = document.getElementById('usageBanner');
+                    if (usageBanner) {
+                        usageBanner.classList.remove('hidden');
+                        document.getElementById('currentUsage').textContent = currentUsage;
+                        document.getElementById('maxLimit').textContent = maxLimit;
+                        document.getElementById('usageBar').style.width = percentage + '%';
+                        
+                        // 한도 초과 시 경고 색상
+                        if (currentUsage >= maxLimit) {
+                            usageBanner.className = 'bg-gradient-to-r from-red-500 to-orange-500 rounded-xl p-6 mb-8 text-white';
+                        } else if (percentage >= 80) {
+                            usageBanner.className = 'bg-gradient-to-r from-orange-500 to-yellow-500 rounded-xl p-6 mb-8 text-white';
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error('사용량 조회 실패:', err);
+            }
         }
 
         // 통계 로드
@@ -26283,6 +26398,30 @@ app.get('/tools/ai-learning-report', (c) => {
                 </div>
             </div>
 
+            <!-- 사용량 표시 배너 (새로 추가) -->
+            <div id="usageBanner" class="bg-gradient-to-r from-indigo-500 to-purple-500 rounded-2xl p-6 mb-8 text-white hidden">
+                <div class="flex items-center justify-between flex-wrap gap-4">
+                    <div class="flex items-center gap-4">
+                        <div class="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center flex-shrink-0">
+                            <span class="text-3xl">🤖</span>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold mb-1">이번 달 AI 리포트 사용량</h3>
+                            <p class="text-white/90 text-sm">아래 사용량을 확인하고 리포트를 생성하세요</p>
+                        </div>
+                    </div>
+                    <div class="bg-white/20 backdrop-blur-sm rounded-xl px-6 py-4">
+                        <div class="text-sm text-white/80 mb-1">사용 현황</div>
+                        <div class="text-3xl font-bold">
+                            <span id="currentReportUsage">-</span> / <span id="maxReportLimit">-</span>
+                        </div>
+                        <div class="w-48 bg-white/20 rounded-full h-2 mt-3">
+                            <div id="reportUsageBar" class="bg-white h-2 rounded-full transition-all" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- 폴더 관리 섹션 -->
             <div class="bg-white rounded-2xl p-8 border border-gray-200 mb-8">
                 <div class="flex justify-between items-center mb-6">
@@ -26426,10 +26565,46 @@ app.get('/tools/ai-learning-report', (c) => {
                     return;
                 }
                 currentUser = JSON.parse(userData);
+                loadUsage();
                 loadFolders();
                 loadStudents();
                 setDefaultMonth();
             });
+
+            // 사용량 로드 함수
+            async function loadUsage() {
+                try {
+                    const response = await fetch('/api/usage/check', {
+                        method: 'GET',
+                        credentials: 'include'
+                    });
+                    const data = await response.json();
+                    
+                    if (data.success && data.limits && data.usage) {
+                        const currentUsage = data.usage.aiReports || 0;
+                        const maxLimit = data.limits.aiReports || 0;
+                        const percentage = maxLimit > 0 ? Math.min((currentUsage / maxLimit) * 100, 100) : 0;
+                        
+                        // 배너 표시
+                        const usageBanner = document.getElementById('usageBanner');
+                        if (usageBanner) {
+                            usageBanner.classList.remove('hidden');
+                            document.getElementById('currentReportUsage').textContent = currentUsage;
+                            document.getElementById('maxReportLimit').textContent = maxLimit;
+                            document.getElementById('reportUsageBar').style.width = percentage + '%';
+                            
+                            // 한도 초과 시 경고 색상
+                            if (currentUsage >= maxLimit) {
+                                usageBanner.className = 'bg-gradient-to-r from-red-500 to-orange-500 rounded-2xl p-6 mb-8 text-white';
+                            } else if (percentage >= 80) {
+                                usageBanner.className = 'bg-gradient-to-r from-orange-500 to-yellow-500 rounded-2xl p-6 mb-8 text-white';
+                            }
+                        }
+                    }
+                } catch (err) {
+                    console.error('사용량 조회 실패:', err);
+                }
+            }
 
             // 폴더 목록 로드
             async function loadFolders() {
