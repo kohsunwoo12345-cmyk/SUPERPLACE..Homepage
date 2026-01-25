@@ -233,7 +233,7 @@ export const classesPage = `
                     scheduleDisplay = '';
                 }
                 
-                const escapedClassName = (cls.class_name || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                const escapedClassName = (cls.class_name || '').replace(/'/g, "\\'").replace(/"/g, '&quot;').replace(/\\/g, '\\\\');
                 const escapedGrade = (cls.grade || '학년 미지정').replace(/'/g, "\\'").replace(/"/g, '&quot;');
                 const escapedDescription = (cls.description || '설명 없음').replace(/'/g, "\\'").replace(/"/g, '&quot;');
                 
@@ -242,7 +242,7 @@ export const classesPage = `
                         '<div>' +
                             '<div class="flex items-center space-x-2">' +
                                 '<div class="w-4 h-4 rounded-full" style="background-color: ' + (cls.color || '#8B5CF6') + '"></div>' +
-                                '<h3 class="text-xl font-bold text-gray-900">' + escapedClassName + '</h3>' +
+                                '<h3 class="text-xl font-bold text-gray-900">' + escapedClassName.replace(/\\\\/g, '\\') + '</h3>' +
                             '</div>' +
                             '<p class="text-sm text-gray-500 mt-1">' + escapedGrade + '</p>' +
                         '</div>' +
@@ -250,7 +250,7 @@ export const classesPage = `
                             '<button onclick="editClass(' + cls.id + ')" class="text-blue-600 hover:text-blue-800">' +
                                 '<i class="fas fa-edit"></i>' +
                             '</button>' +
-                            '<button onclick="deleteClass(' + cls.id + ', \'' + escapedClassName + '\')" class="text-red-600 hover:text-red-800">' +
+                            '<button onclick="deleteClass(' + cls.id + ', ' + JSON.stringify(cls.class_name || '') + ')" class="text-red-600 hover:text-red-800">' +
                                 '<i class="fas fa-trash"></i>' +
                             '</button>' +
                         '</div>' +
