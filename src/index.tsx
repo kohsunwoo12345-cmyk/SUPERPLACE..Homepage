@@ -1308,6 +1308,105 @@ app.post('/api/emergency-sync-usage', async (c) => {
   }
 })
 
+// 🔥 긴급: 세션으로 본인의 랜딩페이지 강제 동기화
+app.post('/api/emergency/sync-my-landing-pages', async (c) => {
+  try {
+    const sessionId = getCookie(c, 'session_id')
+    if (!sessionId) {
+      return c.json({ success: false, error: 'Not authenticated' }, 401)
+    }
+
+    // 세션에서 user_id 조회
+    const session = await c.env.DB.prepare(`
+      SELECT user_id FROM sessions WHERE session_id = ? AND expires_at > datetime('now')
+    `).bind(sessionId).first()
+    
+    if (!session) {
+      return c.json({ success: false, error: 'Session expired' }, 401)
+    }
+    
+    const userId = session.user_id
+    
+    // 사용자 정보
+    const user = await c.env.DB.prepare(`
+      SELECT id, email, academy_id, user_type FROM users WHERE id = ?
+    `).bind(userId).first()
+    
+    if (!user) {
+      return c.json({ success: false, error: 'User not found' }, 404)
+    }
+    
+    const academyId = user.academy_id || user.id
+    
+    // 활성 구독
+    const subscription = await c.env.DB.prepare(`
+      SELECT * FROM subscriptions 
+      WHERE academy_id = ? AND status = 'active'
+      ORDER BY created_at DESC LIMIT 1
+    `).bind(academyId).first()
+    
+    if (!subscription) {
+      return c.json({ success: false, error: 'No active subscription' }, 403)
+    }
+    
+    // 현재 플랜 기간 내 랜딩페이지 개수 (원장 + 선생님)
+    const countResult = await c.env.DB.prepare(`
+      SELECT COUNT(*) as count FROM landing_pages 
+      WHERE user_id IN (
+        SELECT id FROM users WHERE id = ? OR academy_id = ?
+      )
+      AND created_at >= ?
+    `).bind(academyId, academyId, subscription.subscription_start_date).first()
+    
+    const actualCount = countResult?.count || 0
+    
+    console.log('[Emergency Sync] User:', user.email, 'Academy:', academyId, 'Actual count:', actualCount)
+    
+    // usage_tracking 업데이트 또는 생성
+    const existing = await c.env.DB.prepare(`
+      SELECT * FROM usage_tracking 
+      WHERE academy_id = ? AND subscription_id = ?
+    `).bind(academyId, subscription.id).first()
+    
+    if (existing) {
+      // 업데이트
+      await c.env.DB.prepare(`
+        UPDATE usage_tracking 
+        SET landing_pages_created = ?, updated_at = CURRENT_TIMESTAMP
+        WHERE academy_id = ? AND subscription_id = ?
+      `).bind(actualCount, academyId, subscription.id).run()
+      
+      console.log('[Emergency Sync] UPDATED usage_tracking to:', actualCount)
+    } else {
+      // 생성
+      await c.env.DB.prepare(`
+        INSERT INTO usage_tracking (
+          academy_id, subscription_id, current_students, 
+          ai_reports_used_this_month, landing_pages_created, 
+          current_teachers, sms_sent_this_month, created_at, updated_at
+        ) VALUES (?, ?, 0, 0, ?, 0, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+      `).bind(academyId, subscription.id, actualCount).run()
+      
+      console.log('[Emergency Sync] CREATED usage_tracking with:', actualCount)
+    }
+    
+    return c.json({
+      success: true,
+      message: '동기화 완료! 페이지를 새로고침하세요.',
+      data: {
+        user_email: user.email,
+        academy_id: academyId,
+        subscription_id: subscription.id,
+        landing_pages_count: actualCount,
+        action: existing ? 'UPDATED' : 'CREATED'
+      }
+    })
+  } catch (error) {
+    console.error('[Emergency Sync] Error:', error)
+    return c.json({ success: false, error: error.message }, 500)
+  }
+})
+
 // 🔧 디버그: 이메일로 랜딩페이지 정보 조회
 app.get('/api/debug/user-by-email', async (c) => {
   try {
