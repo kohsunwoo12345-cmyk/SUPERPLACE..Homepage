@@ -49812,6 +49812,7 @@ app.get('/tools/tuition-management', async (c) => {
                     <form id="paymentForm" onsubmit="submitPayment(event)">
                         <input type="hidden" id="selectedStudentId">
                         <input type="hidden" id="selectedPaymentId">
+                        <input type="hidden" id="selectedMonthlyFee">
                         
                         <div class="space-y-5">
                             <div>
@@ -50112,6 +50113,7 @@ app.get('/tools/tuition-management', async (c) => {
             const classFee = parseInt(selectedOption.dataset.classFee) || 0;
             
             document.getElementById('selectedStudentId').value = studentId;
+            document.getElementById('selectedMonthlyFee').value = classFee; // 월 교육비 저장
             document.getElementById('infoStudentName').textContent = studentName;
             document.getElementById('infoClassName').textContent = className;
             document.getElementById('infoMonthlyFee').textContent = classFee.toLocaleString() + '원';
@@ -50135,10 +50137,19 @@ app.get('/tools/tuition-management', async (c) => {
             event.preventDefault();
             
             const studentId = document.getElementById('selectedStudentId').value;
+            const monthlyFee = parseInt(document.getElementById('selectedMonthlyFee').value) || 0;
             const paidAmount = parseInt(document.getElementById('paidAmount').value);
             const paidDate = document.getElementById('paidDate').value;
             const paymentMethod = document.getElementById('paymentMethod').value;
             const memo = document.getElementById('paymentMemo').value;
+            
+            // 상태 자동 계산
+            let status = 'unpaid';
+            if (paidAmount >= monthlyFee && monthlyFee > 0) {
+                status = 'paid';
+            } else if (paidAmount > 0) {
+                status = 'partial';
+            }
             
             try {
                 const response = await fetch('/api/tuition/payments', {
@@ -50148,9 +50159,11 @@ app.get('/tools/tuition-management', async (c) => {
                         student_id: studentId,
                         year: currentYear,
                         month: currentMonth,
+                        amount: monthlyFee, // 월 교육비 추가
                         paid_amount: paidAmount,
                         paid_date: paidDate,
                         payment_method: paymentMethod,
+                        status: status,
                         memo: memo
                     })
                 });
