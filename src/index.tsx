@@ -27009,7 +27009,7 @@ app.post('/api/learning-reports/generate', async (c) => {
       console.error('❌ [GenerateReport] No attendance data available')
       return c.json({ 
         success: false, 
-        error: `${report_month}에 출석 데이터가 없습니다.\n\n출석 데이터를 먼저 입력한 후 리포트를 생성해주세요.` 
+        error: `${reportPeriod} 기간에 출석 데이터가 없습니다.\n\n출석 데이터를 먼저 입력한 후 리포트를 생성해주세요.` 
       }, 400)
     }
     
@@ -27038,7 +27038,7 @@ app.post('/api/learning-reports/generate', async (c) => {
       console.error('❌ [GenerateReport] No score data available')
       return c.json({ 
         success: false, 
-        error: `${report_month}에 성적/학습 데이터가 없습니다.\n\n성적 데이터 또는 일일 성과 기록을 먼저 입력한 후 리포트를 생성해주세요.` 
+        error: `${reportPeriod} 기간에 성적/학습 데이터가 없습니다.\n\n성적 데이터 또는 일일 성과 기록을 먼저 입력한 후 리포트를 생성해주세요.` 
       }, 400)
     }
     
@@ -27110,7 +27110,7 @@ app.post('/api/learning-reports/generate', async (c) => {
     // 학부모 메시지
     const parentMessage = `학부모님, 안녕하세요.
 
-${student.name} 학생의 ${report_month} 학습 분석 리포트를 전달드립니다.
+${student.name} 학생의 ${reportPeriod} 학습 분석 리포트를 전달드립니다.
 
 📊 이번 달 성과
 - 평균 점수: ${avgScore}점
