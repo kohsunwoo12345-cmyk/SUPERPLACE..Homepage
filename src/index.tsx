@@ -48379,13 +48379,18 @@ app.get('/tools/tuition-management', async (c) => {
         <style>
           @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
           * { font-family: 'Pretendard Variable', sans-serif; }
+          .student-card { transition: all 0.2s; }
+          .student-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+          .paid { background: #d1fae5; border-color: #10b981; }
+          .unpaid { background: #fee2e2; border-color: #ef4444; }
+          .partial { background: #fef3c7; border-color: #f59e0b; }
         </style>
     </head>
     <body class="bg-gray-50">
-        <nav class="fixed w-full top-0 z-50 bg-white border-b border-gray-100">
+        <nav class="fixed w-full top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
             <div class="max-w-7xl mx-auto px-6">
                 <div class="flex justify-between items-center h-16">
-                    <span class="text-xl font-bold text-gray-900">💰 교육비 관리</span>
+                    <span class="text-xl font-bold text-purple-600">💰 교육비 관리</span>
                     <div class="flex gap-4">
                         <a href="/dashboard" class="text-gray-600 hover:text-purple-600">대시보드</a>
                         <button onclick="logout()" class="text-gray-600 hover:text-red-600">로그아웃</button>
@@ -48394,83 +48399,101 @@ app.get('/tools/tuition-management', async (c) => {
             </div>
         </nav>
 
-        <div class="pt-24 pb-12 px-6">
+        <div class="pt-20 pb-12 px-6">
             <div class="max-w-7xl mx-auto">
-                <!-- 월 선택 -->
-                <div class="mb-6 flex items-center gap-4">
-                    <select id="yearSelect" class="px-4 py-2 border border-gray-300 rounded-lg">
-                    </select>
-                    <select id="monthSelect" class="px-4 py-2 border border-gray-300 rounded-lg">
-                        <option value="1">1월</option>
-                        <option value="2">2월</option>
-                        <option value="3">3월</option>
-                        <option value="4">4월</option>
-                        <option value="5">5월</option>
-                        <option value="6">6월</option>
-                        <option value="7">7월</option>
-                        <option value="8">8월</option>
-                        <option value="9">9월</option>
-                        <option value="10">10월</option>
-                        <option value="11">11월</option>
-                        <option value="12">12월</option>
-                    </select>
-                    <button onclick="loadData()" class="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
-                        <i class="fas fa-sync mr-2"></i>조회
-                    </button>
-                </div>
-
-                <!-- 통계 카드 -->
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-                        <div class="text-sm text-gray-600 mb-2">총 학생</div>
-                        <div id="totalStudents" class="text-3xl font-bold text-gray-900">0</div>
+                <!-- 월 선택 및 통계 -->
+                <div class="mb-6 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-4">
+                            <select id="yearSelect" class="px-4 py-2 border border-gray-300 rounded-lg"></select>
+                            <select id="monthSelect" class="px-4 py-2 border border-gray-300 rounded-lg">
+                                <option value="1">1월</option><option value="2">2월</option><option value="3">3월</option>
+                                <option value="4">4월</option><option value="5">5월</option><option value="6">6월</option>
+                                <option value="7">7월</option><option value="8">8월</option><option value="9">9월</option>
+                                <option value="10">10월</option><option value="11">11월</option><option value="12">12월</option>
+                            </select>
+                            <button onclick="loadData()" class="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
+                                <i class="fas fa-sync mr-2"></i>조회
+                            </button>
+                        </div>
+                        <button onclick="showClassManagement()" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                            <i class="fas fa-cog mr-2"></i>반 관리
+                        </button>
                     </div>
-                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-                        <div class="text-sm text-gray-600 mb-2">납입 완료</div>
-                        <div id="paidCount" class="text-3xl font-bold text-green-600">0</div>
-                    </div>
-                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-                        <div class="text-sm text-gray-600 mb-2">미납</div>
-                        <div id="unpaidCount" class="text-3xl font-bold text-red-600">0</div>
-                    </div>
-                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-                        <div class="text-sm text-gray-600 mb-2">납입 금액</div>
-                        <div id="totalPaid" class="text-2xl font-bold text-blue-600">0원</div>
+                    
+                    <div class="grid grid-cols-4 gap-4">
+                        <div class="text-center">
+                            <div class="text-sm text-gray-600">총 학생</div>
+                            <div id="totalStudents" class="text-2xl font-bold text-gray-900">0</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-sm text-gray-600">납입 완료</div>
+                            <div id="paidCount" class="text-2xl font-bold text-green-600">0</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-sm text-gray-600">미납</div>
+                            <div id="unpaidCount" class="text-2xl font-bold text-red-600">0</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-sm text-gray-600">납입 금액</div>
+                            <div id="totalPaid" class="text-2xl font-bold text-blue-600">0원</div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- 미납 학생 섹션 -->
-                <div id="unpaidSection" class="mb-8 bg-red-50 border border-red-200 rounded-xl p-6">
-                    <h2 class="text-xl font-bold text-red-900 mb-4">
-                        <i class="fas fa-exclamation-triangle mr-2"></i>미납 학생 (<span id="unpaidStudentCount">0</span>명)
-                    </h2>
-                    <div id="unpaidList" class="space-y-3">
-                        <p class="text-gray-500">로딩 중...</p>
-                    </div>
-                </div>
-
-                <!-- 전체 학생 납입 현황 -->
+                <!-- 학생 달력식 카드 뷰 -->
                 <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                    <h2 class="text-xl font-bold text-gray-900 mb-4">전체 납입 현황</h2>
-                    <div id="paymentsList" class="space-y-3">
-                        <p class="text-gray-500">로딩 중...</p>
+                    <h2 class="text-xl font-bold text-gray-900 mb-4">
+                        <i class="fas fa-calendar-alt mr-2"></i>학생별 납입 현황
+                    </h2>
+                    <div id="studentGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                        <p class="text-gray-500 col-span-full text-center py-8">로딩 중...</p>
                     </div>
                 </div>
             </div>
         </div>
 
+        <!-- 반 관리 모달 -->
+        <div id="classModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+            <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
+                <div class="p-6 border-b border-gray-200">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-xl font-bold text-gray-900">반 교육비 설정</h3>
+                        <button onclick="closeClassModal()" class="text-gray-500 hover:text-gray-700">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+                </div>
+                <div id="classList" class="p-6"></div>
+            </div>
+        </div>
+
+        <!-- 납입 상세 모달 -->
+        <div id="paymentModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+            <div class="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4">
+                <div class="p-6 border-b border-gray-200">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-xl font-bold text-gray-900">납입 처리</h3>
+                        <button onclick="closePaymentModal()" class="text-gray-500 hover:text-gray-700">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+                </div>
+                <div id="paymentDetails" class="p-6"></div>
+            </div>
+        </div>
+
         <script>
         let user = null;
+        let currentYear, currentMonth;
 
-        // 로그인 체크 및 선생님 차단
+        // 로그인 체크
         const userData = localStorage.getItem('user');
         if (!userData) {
             alert('로그인이 필요합니다.');
             window.location.href = '/login';
         } else {
             user = JSON.parse(userData);
-            
-            // 선생님은 100% 차단
             if (user.user_type === 'teacher') {
                 alert('접근 권한이 없습니다.');
                 window.location.href = '/dashboard';
@@ -48491,7 +48514,6 @@ app.get('/tools/tuition-management', async (c) => {
         }
 
         function initPage() {
-            // 연도 선택 초기화
             const now = new Date();
             const yearSelect = document.getElementById('yearSelect');
             for (let i = now.getFullYear() - 2; i <= now.getFullYear() + 1; i++) {
@@ -48501,22 +48523,17 @@ app.get('/tools/tuition-management', async (c) => {
                 if (i === now.getFullYear()) option.selected = true;
                 yearSelect.appendChild(option);
             }
-
-            // 월 선택 초기화
             document.getElementById('monthSelect').value = now.getMonth() + 1;
-
-            // 데이터 로드
             loadData();
         }
 
         async function loadData() {
-            const year = document.getElementById('yearSelect').value;
-            const month = document.getElementById('monthSelect').value;
-
+            currentYear = document.getElementById('yearSelect').value;
+            currentMonth = document.getElementById('monthSelect').value;
+            
             await Promise.all([
-                loadStats(year, month),
-                loadUnpaidStudents(year, month),
-                loadPayments(year, month)
+                loadStats(currentYear, currentMonth),
+                loadStudents(currentYear, currentMonth)
             ]);
         }
 
@@ -48528,54 +48545,19 @@ app.get('/tools/tuition-management', async (c) => {
                 });
                 const data = await response.json();
 
-                if (data.success) {
+                if (data.success && data.stats) {
                     document.getElementById('totalStudents').textContent = data.stats.total_students || 0;
                     document.getElementById('paidCount').textContent = data.stats.paid_count || 0;
-                    document.getElementById('unpaidCount').textContent = (data.stats.unpaid_count || 0) + (data.stats.partial_count || 0) + (data.stats.overdue_count || 0);
-                    document.getElementById('totalPaid').textContent = ((data.stats.total_paid || 0).toLocaleString()) + '원';
+                    document.getElementById('unpaidCount').textContent = 
+                        (data.stats.unpaid_count || 0) + (data.stats.partial_count || 0) + (data.stats.overdue_count || 0);
+                    document.getElementById('totalPaid').textContent = (data.stats.total_paid || 0).toLocaleString() + '원';
                 }
             } catch (err) {
                 console.error('Stats error:', err);
             }
         }
 
-        async function loadUnpaidStudents(year, month) {
-            try {
-                const userDataBase64 = base64Encode(JSON.stringify(user));
-                const response = await fetch(\`/api/tuition/unpaid-students?year=\${year}&month=\${month}\`, {
-                    headers: { 'X-User-Data-Base64': userDataBase64 }
-                });
-                const data = await response.json();
-
-                if (data.success) {
-                    document.getElementById('unpaidStudentCount').textContent = data.unpaidStudents.length;
-                    
-                    const html = data.unpaidStudents.length === 0 
-                        ? '<p class="text-green-600">미납 학생이 없습니다! 👏</p>'
-                        : data.unpaidStudents.map(s => \`
-                            <div class="bg-white p-4 rounded-lg border border-red-300">
-                                <div class="flex justify-between items-center">
-                                    <div>
-                                        <div class="font-bold text-gray-900">\${s.student_name} (\${s.grade || '-'})</div>
-                                        <div class="text-sm text-gray-600">학부모: \${s.parent_name} / \${s.parent_phone}</div>
-                                        <div class="text-sm text-red-600 mt-1">미납금: \${(s.unpaid_amount || s.amount || 0).toLocaleString()}원</div>
-                                    </div>
-                                    <button onclick="quickPay(\${s.id})" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
-                                        납입 처리
-                                    </button>
-                                </div>
-                            </div>
-                        \`).join('');
-                    
-                    document.getElementById('unpaidList').innerHTML = html;
-                }
-            } catch (err) {
-                console.error('Unpaid students error:', err);
-                document.getElementById('unpaidList').innerHTML = '<p class="text-red-600">오류가 발생했습니다.</p>';
-            }
-        }
-
-        async function loadPayments(year, month) {
+        async function loadStudents(year, month) {
             try {
                 const userDataBase64 = base64Encode(JSON.stringify(user));
                 const response = await fetch(\`/api/tuition/payments?year=\${year}&month=\${month}\`, {
@@ -48584,71 +48566,215 @@ app.get('/tools/tuition-management', async (c) => {
                 const data = await response.json();
 
                 if (data.success) {
-                    const statusColors = {
-                        'paid': 'green',
-                        'unpaid': 'red',
-                        'partial': 'yellow',
-                        'overdue': 'orange'
-                    };
-                    
-                    const statusTexts = {
-                        'paid': '완납',
-                        'unpaid': '미납',
-                        'partial': '부분납',
-                        'overdue': '연체'
-                    };
+                    const grid = document.getElementById('studentGrid');
+                    if (data.payments.length === 0) {
+                        grid.innerHTML = '<p class="text-gray-500 col-span-full text-center py-8">등록된 학생이 없습니다.</p>';
+                        return;
+                    }
 
-                    const html = data.payments.length === 0
-                        ? '<p class="text-gray-500">납입 기록이 없습니다.</p>'
-                        : data.payments.map(p => \`
-                            <div class="bg-gray-50 p-4 rounded-lg">
-                                <div class="flex justify-between items-center">
-                                    <div class="flex-1">
-                                        <div class="font-bold text-gray-900">\${p.student_name} (\${p.grade || '-'})</div>
-                                        <div class="text-sm text-gray-600 mt-1">
-                                            금액: \${(p.amount || 0).toLocaleString()}원 / 
-                                            납입: \${(p.paid_amount || 0).toLocaleString()}원
-                                        </div>
-                                        \${p.memo ? \`<div class="text-xs text-gray-500 mt-1">메모: \${p.memo}</div>\` : ''}
+                    const html = data.payments.map(p => {
+                        const statusClass = p.status === 'paid' ? 'paid' : p.status === 'partial' ? 'partial' : 'unpaid';
+                        const statusText = p.status === 'paid' ? '완납' : p.status === 'partial' ? '부분납' : '미납';
+                        const statusIcon = p.status === 'paid' ? 'check-circle' : p.status === 'partial' ? 'exclamation-circle' : 'times-circle';
+                        
+                        return \`
+                            <div class="student-card \${statusClass} border-2 rounded-lg p-4 cursor-pointer"
+                                 onclick="showPaymentDetails(\${p.student_id})">
+                                <div class="flex justify-between items-start mb-2">
+                                    <div>
+                                        <div class="font-bold text-gray-900">\${p.student_name}</div>
+                                        <div class="text-sm text-gray-600">\${p.grade || '-'}</div>
                                     </div>
-                                    <div class="flex items-center gap-3">
-                                        <span class="px-3 py-1 bg-\${statusColors[p.status]}-100 text-\${statusColors[p.status]}-700 text-sm rounded-full">
-                                            \${statusTexts[p.status]}
-                                        </span>
-                                        <button onclick="editPayment(\${p.id})" class="text-blue-600 hover:text-blue-800">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                    </div>
+                                    <i class="fas fa-\${statusIcon} text-xl \${
+                                        p.status === 'paid' ? 'text-green-600' : 
+                                        p.status === 'partial' ? 'text-yellow-600' : 'text-red-600'
+                                    }"></i>
+                                </div>
+                                <div class="text-sm space-y-1">
+                                    <div>금액: <span class="font-semibold">\${(p.amount || 0).toLocaleString()}원</span></div>
+                                    <div>납입: <span class="font-semibold">\${(p.paid_amount || 0).toLocaleString()}원</span></div>
+                                </div>
+                                <div class="mt-3 pt-3 border-t border-gray-300">
+                                    <span class="inline-block px-2 py-1 text-xs font-medium rounded-full \${
+                                        p.status === 'paid' ? 'bg-green-100 text-green-800' : 
+                                        p.status === 'partial' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'
+                                    }">\${statusText}</span>
                                 </div>
                             </div>
-                        \`).join('');
-                    
-                    document.getElementById('paymentsList').innerHTML = html;
+                        \`;
+                    }).join('');
+
+                    grid.innerHTML = html;
                 }
             } catch (err) {
-                console.error('Payments error:', err);
-                document.getElementById('paymentsList').innerHTML = '<p class="text-red-600">오류가 발생했습니다.</p>';
+                console.error('Students error:', err);
+                document.getElementById('studentGrid').innerHTML = 
+                    '<p class="text-red-600 col-span-full text-center py-8">오류가 발생했습니다.</p>';
             }
         }
 
-        function quickPay(studentId) {
-            // 간단 납입 처리 (추후 모달로 개선 가능)
-            alert('납입 처리 기능은 추후 추가됩니다. 학생 ID: ' + studentId);
+        async function showPaymentDetails(studentId) {
+            try {
+                const userDataBase64 = base64Encode(JSON.stringify(user));
+                const response = await fetch(\`/api/tuition/student-fees/\${studentId}?year=\${currentYear}&month=\${currentMonth}\`, {
+                    headers: { 'X-User-Data-Base64': userDataBase64 }
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    const details = document.getElementById('paymentDetails');
+                    details.innerHTML = \`
+                        <div class="space-y-4">
+                            <div>
+                                <div class="text-sm text-gray-600">학생</div>
+                                <div class="text-lg font-bold">\${data.student.name} (\${data.student.grade || '-'})</div>
+                            </div>
+                            <div>
+                                <div class="text-sm text-gray-600">반</div>
+                                <div class="font-medium">\${data.student.class_name || '미배정'}</div>
+                            </div>
+                            <div>
+                                <div class="text-sm text-gray-600">월 교육비</div>
+                                <div class="text-xl font-bold text-blue-600">\${data.amount_due.toLocaleString()}원</div>
+                            </div>
+                            <div>
+                                <div class="text-sm text-gray-600">납입액</div>
+                                <div class="text-xl font-bold text-green-600">\${data.amount_paid.toLocaleString()}원</div>
+                            </div>
+                            <div class="pt-4 border-t">
+                                \${data.status === 'paid' ? 
+                                    '<div class="text-center text-green-600 font-bold"><i class="fas fa-check-circle mr-2"></i>납입 완료</div>' :
+                                    \`<button onclick="markPaid(\${studentId})" class="w-full py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-bold">
+                                        <i class="fas fa-check mr-2"></i>납입 완료 처리
+                                    </button>\`
+                                }
+                            </div>
+                        </div>
+                    \`;
+                    document.getElementById('paymentModal').classList.remove('hidden');
+                }
+            } catch (err) {
+                console.error('Payment details error:', err);
+                alert('학생 정보를 불러올 수 없습니다.');
+            }
         }
 
-        function editPayment(paymentId) {
-            // 납입 기록 수정 (추후 모달로 개선 가능)
-            alert('수정 기능은 추후 추가됩니다. Payment ID: ' + paymentId);
+        async function markPaid(studentId) {
+            try {
+                const userDataBase64 = base64Encode(JSON.stringify(user));
+                const response = await fetch('/api/tuition/mark-paid', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-User-Data-Base64': userDataBase64
+                    },
+                    body: JSON.stringify({
+                        student_id: studentId,
+                        year: currentYear,
+                        month: currentMonth
+                    })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    alert('납입 완료 처리되었습니다.');
+                    closePaymentModal();
+                    loadData();
+                } else {
+                    alert('처리 실패: ' + (data.error || '알 수 없는 오류'));
+                }
+            } catch (err) {
+                console.error('Mark paid error:', err);
+                alert('납입 처리 중 오류가 발생했습니다.');
+            }
+        }
+
+        function closePaymentModal() {
+            document.getElementById('paymentModal').classList.add('hidden');
+        }
+
+        async function showClassManagement() {
+            try {
+                const userDataBase64 = base64Encode(JSON.stringify(user));
+                const response = await fetch('/api/tuition/classes', {
+                    headers: { 'X-User-Data-Base64': userDataBase64 }
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    const list = document.getElementById('classList');
+                    if (data.classes.length === 0) {
+                        list.innerHTML = '<p class="text-gray-500 text-center py-8">등록된 반이 없습니다.</p>';
+                    } else {
+                        const html = data.classes.map(c => \`
+                            <div class="border border-gray-200 rounded-lg p-4 mb-3">
+                                <div class="flex justify-between items-start mb-2">
+                                    <div>
+                                        <div class="font-bold text-lg">\${c.name}</div>
+                                        <div class="text-sm text-gray-600">학생: \${c.student_count}명</div>
+                                        <div class="text-sm text-gray-600">선생님: \${c.teacher_name || '미배정'}</div>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="text-sm text-gray-600">월 교육비</div>
+                                        <div class="text-xl font-bold text-blue-600">\${(c.monthly_fee || 0).toLocaleString()}원</div>
+                                    </div>
+                                </div>
+                                <div class="mt-3 flex gap-2">
+                                    <input type="number" id="fee_\${c.id}" value="\${c.monthly_fee || 0}" 
+                                           class="flex-1 px-3 py-2 border border-gray-300 rounded-lg" placeholder="교육비 입력">
+                                    <button onclick="updateClassFee(\${c.id})" 
+                                            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                                        저장
+                                    </button>
+                                </div>
+                            </div>
+                        \`).join('');
+                        list.innerHTML = html;
+                    }
+                    document.getElementById('classModal').classList.remove('hidden');
+                }
+            } catch (err) {
+                console.error('Classes error:', err);
+                alert('반 목록을 불러올 수 없습니다.');
+            }
+        }
+
+        async function updateClassFee(classId) {
+            const feeInput = document.getElementById(\`fee_\${classId}\`);
+            const fee = parseInt(feeInput.value) || 0;
+
+            try {
+                const userDataBase64 = base64Encode(JSON.stringify(user));
+                const response = await fetch(\`/api/tuition/classes/\${classId}/fee\`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-User-Data-Base64': userDataBase64
+                    },
+                    body: JSON.stringify({ monthly_fee: fee })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    alert('반 교육비가 저장되었습니다.');
+                    showClassManagement(); // 새로고침
+                } else {
+                    alert('저장 실패: ' + (data.error || '알 수 없는 오류'));
+                }
+            } catch (err) {
+                console.error('Update fee error:', err);
+                alert('교육비 저장 중 오류가 발생했습니다.');
+            }
+        }
+
+        function closeClassModal() {
+            document.getElementById('classModal').classList.add('hidden');
         }
         </script>
     </body>
     </html>
   `)
 })
-
-// ========================================
-// 매출 관리 페이지 (원장님 전용 - 선생님 100% 차단)
-// ========================================
 app.get('/tools/revenue-management', async (c) => {
   return c.html(`
     <!DOCTYPE html>
@@ -48704,7 +48830,7 @@ app.get('/tools/revenue-management', async (c) => {
                 </div>
 
                 <!-- 대시보드 통계 카드 -->
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
                     <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
                         <div class="text-sm text-gray-600 mb-2">이번 달 매출</div>
                         <div id="thisMonthRevenue" class="text-3xl font-bold text-green-600">0원</div>
@@ -48723,6 +48849,10 @@ app.get('/tools/revenue-management', async (c) => {
                         <div class="text-sm text-gray-600 mb-2">총 학생</div>
                         <div id="totalStudents" class="text-3xl font-bold text-gray-900">0명</div>
                         <div class="text-sm text-gray-500 mt-2">납입: <span id="payingStudents">0</span>명</div>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                        <div class="text-sm text-gray-600 mb-2">선생님 수</div>
+                        <div id="totalTeachers" class="text-3xl font-bold text-purple-600">0명</div>
                     </div>
                 </div>
 
@@ -48804,8 +48934,25 @@ app.get('/tools/revenue-management', async (c) => {
             await Promise.all([
                 loadMonthlyRevenue(year, month),
                 loadYearlyRevenue(year),
-                loadStudentRevenue(year, month)
+                loadStudentRevenue(year, month),
+                loadDashboard()
             ]);
+        }
+        
+        async function loadDashboard() {
+            try {
+                const userDataBase64 = base64Encode(JSON.stringify(user));
+                const response = await fetch('/api/revenue/dashboard', {
+                    headers: { 'X-User-Data-Base64': userDataBase64 }
+                });
+                const data = await response.json();
+
+                if (data.success && data.dashboard) {
+                    document.getElementById('totalTeachers').textContent = data.dashboard.total_teachers + '명';
+                }
+            } catch (err) {
+                console.error('Dashboard error:', err);
+            }
         }
 
         async function loadMonthlyRevenue(year, month) {
