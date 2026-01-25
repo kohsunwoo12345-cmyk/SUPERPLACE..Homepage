@@ -636,3 +636,335 @@
     </script>
 </body>
 </html>
+`
+
+export const dailyRecordPage = `
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>일일 성과 기록 - 꾸메땅학원</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .calendar-day { cursor: pointer; transition: all 0.2s; }
+        .calendar-day:hover { background-color: #e0e7ff; }
+        .calendar-day.selected { background-color: #818cf8; color: white; }
+        .calendar-day.today { border: 2px solid #6366f1; }
+        .calendar-day.has-record { background-color: #dbeafe; }
+        
+        /* 모달 스크롤 문제 해결 */
+        #recordModal { overflow: hidden !important; }
+        #recordModal > div { overflow: hidden !important; }
+        #recordModal .bg-white.rounded-xl { overflow-y: auto !important; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <nav class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-4">
+                    <a href="/students" class="text-gray-600 hover:text-gray-900">
+                        <i class="fas fa-arrow-left mr-2"></i>돌아가기
+                    </a>
+                    <h1 class="text-2xl font-bold text-gray-900">📅 일일 성과 기록</h1>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <span id="selectedDateDisplay" class="text-lg font-semibold text-gray-700"></span>
+                    <button onclick="showRecordModal()" class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700">
+                        <i class="fas fa-plus mr-2"></i>성과 기록 추가
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- 달력 -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <button onclick="previousMonth()" class="p-2 hover:bg-gray-100 rounded">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <h2 id="calendarTitle" class="text-xl font-bold text-gray-900"></h2>
+                        <button onclick="nextMonth()" class="p-2 hover:bg-gray-100 rounded">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-7 gap-1 text-center text-sm">
+                        <div class="font-semibold text-red-500">일</div>
+                        <div class="font-semibold">월</div>
+                        <div class="font-semibold">화</div>
+                        <div class="font-semibold">수</div>
+                        <div class="font-semibold">목</div>
+                        <div class="font-semibold">금</div>
+                        <div class="font-semibold text-blue-500">토</div>
+                    </div>
+                    <div id="calendarDays" class="grid grid-cols-7 gap-1 mt-2"></div>
+                </div>
+
+                <!-- 빠른 통계 -->
+                <div class="bg-white rounded-xl shadow-lg p-6 mt-6">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">📊 이번 달 통계</h3>
+                    <div class="space-y-3">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">총 기록 수</span>
+                            <span id="monthlyTotal" class="font-bold text-blue-600">0건</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">평균 출석률</span>
+                            <span id="monthlyAttendance" class="font-bold text-green-600">0%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 탭과 컨텐츠 -->
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-xl shadow-lg">
+                    <!-- 탭 헤더 -->
+                    <div class="flex border-b">
+                        <button onclick="switchTab('records')" id="recordsTab" class="flex-1 px-6 py-4 font-semibold text-gray-600 hover:text-gray-900 hover:bg-gray-50 border-b-2 border-transparent">
+                            <i class="fas fa-list mr-2"></i>일일 기록
+                        </button>
+                        <button onclick="switchTab('todayClasses')" id="todayClassesTab" class="flex-1 px-6 py-4 font-semibold text-gray-600 hover:text-gray-900 hover:bg-gray-50 border-b-2 border-transparent">
+                            <i class="fas fa-clock mr-2"></i>오늘 수업
+                        </button>
+                    </div>
+                    
+                    <!-- 탭 컨텐츠 -->
+                    <div class="p-6">
+                        <!-- 일일 기록 탭 -->
+                        <div id="recordsContent" class="tab-content">
+                            <h2 class="text-xl font-bold text-gray-900 mb-6">
+                                <span id="recordDateTitle">오늘의 기록</span>
+                            </h2>
+                            <div id="recordsList" class="space-y-4">
+                                <div class="text-center text-gray-500 py-12">날짜를 선택하면 기록이 표시됩니다.</div>
+                            </div>
+                        </div>
+                        
+                        <!-- 오늘 수업 탭 -->
+                        <div id="todayClassesContent" class="tab-content hidden">
+                            <h2 class="text-xl font-bold text-gray-900 mb-6">
+                                <i class="fas fa-calendar-day mr-2"></i>오늘 수업하는 아이들
+                                <span id="todayKoreanDate" class="text-base font-normal text-gray-600 ml-2"></span>
+                            </h2>
+                            <div id="todayClassesList" class="space-y-6">
+                                <div class="text-center text-gray-500 py-12">
+                                    <i class="fas fa-spinner fa-spin text-4xl mb-4"></i>
+                                    <p>로딩 중...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 성과 기록 추가/수정 모달 -->
+    <div id="recordModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl p-6 max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+            <h2 id="recordModalTitle" class="text-2xl font-bold mb-6 sticky top-0 bg-white pb-4 border-b -mx-6 px-6 -mt-6 pt-6">성과 기록 추가</h2>
+            <form id="recordForm">
+            <input type="hidden" id="recordId">
+            
+            <div class="space-y-6">
+                <!-- 기본 정보 -->
+                <div class="bg-gray-50 p-4 rounded-lg space-y-4">
+                    <h3 class="text-lg font-semibold text-gray-900">기본 정보</h3>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">학생 선택 *</label>
+                        <select id="recordStudent" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                            <option value="">선택하세요</option>
+                        </select>
+                    </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">반 선택</label>
+                            <select id="recordClass" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                                <option value="">선택하세요</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">출석</label>
+                            <div class="grid grid-cols-4 gap-2">
+                                <label class="flex items-center justify-center px-4 py-3 border-2 border-gray-300 rounded-lg cursor-pointer hover:bg-green-50 has-[:checked]:border-green-500 has-[:checked]:bg-green-50">
+                                    <input type="radio" name="attendance" value="출석" class="mr-2">
+                                    <span class="text-sm font-medium">✅ 출석</span>
+                                </label>
+                                <label class="flex items-center justify-center px-4 py-3 border-2 border-gray-300 rounded-lg cursor-pointer hover:bg-yellow-50 has-[:checked]:border-yellow-500 has-[:checked]:bg-yellow-50">
+                                    <input type="radio" name="attendance" value="지각" class="mr-2">
+                                    <span class="text-sm font-medium">⏰ 지각</span>
+                                </label>
+                                <label class="flex items-center justify-center px-4 py-3 border-2 border-gray-300 rounded-lg cursor-pointer hover:bg-red-50 has-[:checked]:border-red-500 has-[:checked]:bg-red-50">
+                                    <input type="radio" name="attendance" value="결석" class="mr-2">
+                                    <span class="text-sm font-medium">❌ 결석</span>
+                                </label>
+                                <label class="flex items-center justify-center px-4 py-3 border-2 border-gray-300 rounded-lg cursor-pointer hover:bg-orange-50 has-[:checked]:border-orange-500 has-[:checked]:bg-orange-50">
+                                    <input type="radio" name="attendance" value="조퇴" class="mr-2">
+                                    <span class="text-sm font-medium">🏃 조퇴</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 수업 섹션 -->
+                    <div class="bg-blue-50 p-4 rounded-lg space-y-4">
+                        <h3 class="text-lg font-semibold text-blue-900">📚 오늘 수업은 어땠나요?</h3>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">학습 개념</label>
+                            <input type="text" id="lessonConcept" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="예: 이차방정식, 현재완료 시제 등">
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">이해도 (1~5)</label>
+                                <div class="flex items-center space-x-2">
+                                    <input type="range" id="lessonUnderstanding" min="1" max="5" value="3" class="flex-1">
+                                    <span id="lessonUnderstandingValue" class="text-xl font-bold text-blue-600 w-8 text-center">3</span>
+                                </div>
+                                <div class="flex justify-between text-xs text-gray-500 mt-1">
+                                    <span>낮음</span>
+                                    <span>높음</span>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">참여도 (1~5)</label>
+                                <div class="flex items-center space-x-2">
+                                    <input type="range" id="lessonParticipation" min="1" max="5" value="3" class="flex-1">
+                                    <span id="lessonParticipationValue" class="text-xl font-bold text-purple-600 w-8 text-center">3</span>
+                                </div>
+                                <div class="flex justify-between text-xs text-gray-500 mt-1">
+                                    <span>낮음</span>
+                                    <span>높음</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">수업 성과/특이사항</label>
+                            <textarea id="lessonAchievement" rows="2" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="수업 내용과 학생의 반응을 기록하세요"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- 숙제 섹션 -->
+                    <div class="bg-purple-50 p-4 rounded-lg space-y-4">
+                        <h3 class="text-lg font-semibold text-purple-900">✏️ 오늘 숙제는 어땠나요?</h3>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">숙제 완성도</label>
+                            <div class="grid grid-cols-3 gap-2">
+                                <label class="flex items-center justify-center px-4 py-3 border-2 border-gray-300 rounded-lg cursor-pointer hover:bg-green-50 has-[:checked]:border-green-500 has-[:checked]:bg-green-50">
+                                    <input type="radio" name="homework" value="완료" class="mr-2">
+                                    <span class="text-sm font-medium">✅ 완료</span>
+                                </label>
+                                <label class="flex items-center justify-center px-4 py-3 border-2 border-gray-300 rounded-lg cursor-pointer hover:bg-yellow-50 has-[:checked]:border-yellow-500 has-[:checked]:bg-yellow-50">
+                                    <input type="radio" name="homework" value="부분완료" class="mr-2">
+                                    <span class="text-sm font-medium">⚠️ 부분</span>
+                                </label>
+                                <label class="flex items-center justify-center px-4 py-3 border-2 border-gray-300 rounded-lg cursor-pointer hover:bg-red-50 has-[:checked]:border-red-500 has-[:checked]:bg-red-50">
+                                    <input type="radio" name="homework" value="미완료" class="mr-2">
+                                    <span class="text-sm font-medium">❌ 미완료</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">숙제 내용</label>
+                            <input type="text" id="homeworkContent" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500" placeholder="예: 수학 문제 풀이 10문제, 영어 단어 외우기 등">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">숙제 성과/특이사항</label>
+                            <textarea id="homeworkAchievement" rows="2" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500" placeholder="숙제 수행 상황과 결과를 기록하세요"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- 다음 숙제 섹션 -->
+                    <div class="bg-orange-50 p-4 rounded-lg space-y-4">
+                        <h3 class="text-lg font-semibold text-orange-900">📝 다음 숙제 내용</h3>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">숙제 유형</label>
+                            <input type="text" id="nextHomeworkType" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500" placeholder="예: 수학 문제집, 영어 단어, 과학 실험 보고서 등">
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">시작 페이지</label>
+                                <input type="number" id="nextHomeworkStartPage" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500" placeholder="예: 45" min="1">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">끝 페이지</label>
+                                <input type="number" id="nextHomeworkEndPage" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500" placeholder="예: 50" min="1">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">세부 내용</label>
+                            <textarea id="nextHomeworkDetails" rows="2" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500" placeholder="숙제에 대한 추가 설명이나 주의사항을 입력하세요"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- 추가 메모 -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">추가 메모</label>
+                        <textarea id="recordMemo" rows="2" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500" placeholder="기타 전달사항이나 메모"></textarea>
+                    </div>
+                </div>
+                
+                <div class="flex space-x-3 mt-6">
+                    <button type="submit" class="flex-1 bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700">
+                        저장
+                    </button>
+                    <button type="button" onclick="hideRecordModal()" class="flex-1 bg-gray-300 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-400">
+                        취소
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // 로컬 스토리지에서 사용자 정보 가져오기
+        const userStr = localStorage.getItem('user');
+        if (!userStr) {
+            alert('⚠️ 로그인이 필요합니다.\\n\\n일일 성과를 보려면 먼저 로그인해주세요.');
+            window.location.href = '/login';
+            throw new Error('Not logged in');
+        }
+        const currentUser = JSON.parse(userStr);
+        const academyId = currentUser.id;
+        const userId = currentUser.id;
+        const userType = currentUser.user_type || 'director'; // 기본값은 원장님
+        console.log('👤 Current User:', currentUser);
+        console.log('🏫 Academy ID:', academyId);
+        
+        let currentDate = new Date();
+        let selectedDate = new Date();
+        let students = [];
+        let classes = [];
+        let records = [];
+        let monthlyRecords = [];
+
+        // 슬라이더 값 표시
+        document.getElementById('lessonUnderstanding').addEventListener('input', (e) => {
+            document.getElementById('lessonUnderstandingValue').textContent = e.target.value;
+        });
+        document.getElementById('lessonParticipation').addEventListener('input', (e) => {
+            document.getElementById('lessonParticipationValue').textContent = e.target.value;
+        });
+
+        function formatDate(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return \`\${year}-\${month}-\${day}\
