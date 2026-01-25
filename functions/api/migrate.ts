@@ -1,4 +1,4 @@
-export const onRequestGet: PagesFunction = async (context) => {
+export const onRequest: PagesFunction = async (context) => {
   try {
     const { DB } = context.env as { DB: D1Database }
     
