@@ -692,8 +692,6 @@ app.get('/api/students', requireDirector, async (c) => {
   }
 })
 
-export default app
-
 // ========================================
 // 반(클래스) 관리 API
 // ========================================
@@ -968,3 +966,4 @@ app.post('/api/tuition/mark-paid', requireDirector, async (c) => {
   }
 })
 
+export default app
