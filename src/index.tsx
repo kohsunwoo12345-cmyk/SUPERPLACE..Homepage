@@ -20132,18 +20132,21 @@ app.get('/tools/landing-builder', (c) => {
         // 사용자 폼 목록 로드
         async function loadUserForms() {
             try {
-                const response = await fetch('/api/forms/list', {
-                    headers: {
-                        'X-User-Data-Base64': btoa(JSON.stringify({ id: user.id }))
-                    }
+                const response = await fetch('/api/form-templates', {
+                    credentials: 'include'
                 });
                 
-                const data = await response.json();
-                
-                if (data.success) {
-                    allForms = data.forms || [];
-                    updateFormSelect();
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        console.log('로그인이 필요합니다');
+                        return;
+                    }
+                    throw new Error('폼 목록을 불러올 수 없습니다');
                 }
+                
+                const templates = await response.json();
+                allForms = templates || [];
+                updateFormSelect();
             } catch (error) {
                 console.error('폼 목록 로드 실패:', error);
             }
@@ -21260,18 +21263,21 @@ app.get('/tools/landing-builder', (c) => {
         // 폼 목록 로드
         async function loadForms() {
             try {
-                const response = await fetch('/api/forms/list', {
-                    headers: {
-                        'X-User-Data-Base64': btoa(JSON.stringify({ id: user.id }))
-                    }
+                const response = await fetch('/api/form-templates', {
+                    credentials: 'include'
                 });
                 
-                const data = await response.json();
-                
-                if (data.success) {
-                    allForms = data.forms || [];
-                    populateFormSelect();
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        console.log('로그인이 필요합니다');
+                        return;
+                    }
+                    throw new Error('폼 목록을 불러올 수 없습니다');
                 }
+                
+                const templates = await response.json();
+                allForms = templates || [];
+                populateFormSelect();
             } catch (error) {
                 console.error('폼 목록 로드 실패:', error);
             }
@@ -23826,7 +23832,7 @@ app.get('/landing/:slug', async (c) => {
     let formHeaderScript = ''
     if (page.form_id) {
       console.log('[Landing Page Debug] Fetching form with ID:', page.form_id)
-      const form = await c.env.DB.prepare('SELECT * FROM forms WHERE id = ?').bind(page.form_id).first()
+      const form = await c.env.DB.prepare('SELECT * FROM form_templates WHERE id = ?').bind(page.form_id).first()
       console.log('[Landing Page Debug] Form found:', !!form)
       if (form) {
         // 헤더 스크립트 (픽셀 등)
@@ -23930,16 +23936,20 @@ app.get('/landing/:slug', async (c) => {
             }
             
             const data = {
-                formId: ${form.id},
-                landingPageSlug: '${slug}',
-                name: formData.get('name'),
-                phone: formData.get('phone'),
-                data: customData,
-                agreedToTerms: formData.get('agreedToTerms') ? 1 : 0
+                form_template_id: ${form.id},
+                landing_page_id: null,
+                submission_data: JSON.stringify({
+                    name: formData.get('name'),
+                    phone: formData.get('phone'),
+                    ...customData,
+                    agreedToTerms: formData.get('agreedToTerms') ? 1 : 0,
+                    submittedFrom: 'landing_page',
+                    landingPageSlug: '${slug}'
+                })
             };
             
             try {
-                const response = await fetch('/api/forms/submit', {
+                const response = await fetch('/api/form-submissions', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
