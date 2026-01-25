@@ -3006,17 +3006,17 @@ var Ft=Object.defineProperty;var nt=e=>{throw TypeError(e)};var Pt=(e,t,s)=>t in
       LEFT JOIN classes c ON s.class_id = c.id
       WHERE s.academy_id = ?
         AND s.status = 'active'
-    `;const d=[s,a,s,a,t.id];r&&(l+=" AND COALESCE(tp.status, 'unpaid') = ?",d.push(r)),l+=" ORDER BY COALESCE(tp.status, 'unpaid') DESC, s.name ASC";const p=await e.env.DB.prepare(l).bind(...d).all();return e.json({success:!0,year:parseInt(s),month:parseInt(a),payments:p.results||[]})}catch(t){return console.error("Error fetching payments:",t),e.json({error:"납입 현황 조회 실패",details:t.message},500)}});H.post("/api/tuition/payments",X,async e=>{try{const t=e.get("user"),s=await e.req.json(),{student_id:a,year:r,month:o,amount:n,status:i,paid_amount:l,paid_date:d,memo:p,payment_method:u}=s;if(!a||!r||!o||!n)return e.json({error:"필수 항목을 입력해주세요"},400);if(!await e.env.DB.prepare(`
+    `;const d=[s,a,s,a,t.id];r&&(l+=" AND COALESCE(tp.status, 'unpaid') = ?",d.push(r)),l+=" ORDER BY COALESCE(tp.status, 'unpaid') DESC, s.name ASC";const p=await e.env.DB.prepare(l).bind(...d).all();return e.json({success:!0,year:parseInt(s),month:parseInt(a),payments:p.results||[]})}catch(t){return console.error("Error fetching payments:",t),e.json({error:"납입 현황 조회 실패",details:t.message},500)}});H.post("/api/tuition/payments",X,async e=>{try{const t=e.get("user"),s=await e.req.json();console.log("📥 [Payment] 납입 요청 데이터:",JSON.stringify(s)),console.log("👤 [Payment] 사용자:",{id:t.id,academy_id:t.academy_id});const{student_id:a,year:r,month:o,amount:n,status:i,paid_amount:l,paid_date:d,memo:p,payment_method:u}=s;if(!a||!r||!o||!n)return console.error("❌ [Payment] 필수 항목 누락:",{student_id:a,year:r,month:o,amount:n}),e.json({error:"필수 항목을 입력해주세요",details:{student_id:!!a,year:!!r,month:!!o,amount:!!n}},400);const m=t.academy_id||t.id,g=await e.env.DB.prepare(`
       SELECT * FROM students WHERE id = ? AND academy_id = ?
-    `).bind(a,t.id).first())return e.json({error:"학생을 찾을 수 없습니다"},404);if(await e.env.DB.prepare(`
+    `).bind(a,m).first();if(console.log("🔍 [Payment] 학생 조회:",g?"찾음":"없음"),!g)return e.json({error:"학생을 찾을 수 없습니다"},404);const x=await e.env.DB.prepare(`
       SELECT id FROM tuition_payments 
-      WHERE student_id = ? AND year = ? AND month = ?
-    `).bind(a,r,o).first())return e.json({error:"해당 월의 납입 기록이 이미 존재합니다"},400);const x=await e.env.DB.prepare(`
+      WHERE student_id = ? AND academy_id = ? AND year = ? AND month = ?
+    `).bind(a,m,r,o).first();if(x)return console.log("⚠️ [Payment] 중복 납입 기록:",x.id),e.json({error:"해당 월의 납입 기록이 이미 존재합니다"},400);const b=await e.env.DB.prepare(`
       INSERT INTO tuition_payments (
         student_id, academy_id, year, month, amount,
         status, paid_amount, paid_date, memo, payment_method, created_by
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).bind(a,t.id,r,o,n,i||"unpaid",l||0,d||null,p||null,u||null,t.id).run();return e.json({success:!0,id:x.meta.last_row_id,message:"납입 기록이 등록되었습니다"})}catch(t){return console.error("Error creating payment:",t),e.json({error:"납입 기록 등록 실패"},500)}});H.put("/api/tuition/payments/:id",X,async e=>{try{const t=e.get("user"),s=e.req.param("id"),a=await e.req.json(),r=await e.env.DB.prepare(`
+    `).bind(a,m,r,o,n,i||"unpaid",l||0,d||null,p||null,u||null,t.id).run();return console.log("✅ [Payment] 납입 기록 생성 성공:",b.meta.last_row_id),e.json({success:!0,id:b.meta.last_row_id,message:"납입 기록이 등록되었습니다"})}catch(t){return console.error("❌ [Payment] Error creating payment:",t),e.json({error:"납입 기록 등록 실패",details:t.message},500)}});H.put("/api/tuition/payments/:id",X,async e=>{try{const t=e.get("user"),s=e.req.param("id"),a=await e.req.json(),r=await e.env.DB.prepare(`
       SELECT * FROM tuition_payments WHERE id = ? AND academy_id = ?
     `).bind(s,t.id).first();if(!r)return e.json({error:"납입 기록을 찾을 수 없습니다"},404);const{status:o,paid_amount:n,paid_date:i,memo:l,payment_method:d}=a;return await e.env.DB.prepare(`
       UPDATE tuition_payments 
@@ -37665,6 +37665,7 @@ ${o}`;return await e.env.DB.prepare(`
                     <form id="paymentForm" onsubmit="submitPayment(event)">
                         <input type="hidden" id="selectedStudentId">
                         <input type="hidden" id="selectedPaymentId">
+                        <input type="hidden" id="selectedMonthlyFee">
                         
                         <div class="space-y-5">
                             <div>
@@ -37965,6 +37966,7 @@ ${o}`;return await e.env.DB.prepare(`
             const classFee = parseInt(selectedOption.dataset.classFee) || 0;
             
             document.getElementById('selectedStudentId').value = studentId;
+            document.getElementById('selectedMonthlyFee').value = classFee; // 월 교육비 저장
             document.getElementById('infoStudentName').textContent = studentName;
             document.getElementById('infoClassName').textContent = className;
             document.getElementById('infoMonthlyFee').textContent = classFee.toLocaleString() + '원';
@@ -37988,34 +37990,69 @@ ${o}`;return await e.env.DB.prepare(`
             event.preventDefault();
             
             const studentId = document.getElementById('selectedStudentId').value;
+            const monthlyFee = parseInt(document.getElementById('selectedMonthlyFee').value) || 0;
             const paidAmount = parseInt(document.getElementById('paidAmount').value);
             const paidDate = document.getElementById('paidDate').value;
             const paymentMethod = document.getElementById('paymentMethod').value;
             const memo = document.getElementById('paymentMemo').value;
             
+            // 유효성 검증
+            if (!studentId) {
+                alert('❌ 학생을 선택해주세요.');
+                return;
+            }
+            if (!paidAmount || paidAmount <= 0) {
+                alert('❌ 납입 금액을 입력해주세요.');
+                return;
+            }
+            if (!paidDate) {
+                alert('❌ 납입일을 선택해주세요.');
+                return;
+            }
+            if (!paymentMethod) {
+                alert('❌ 결제 방법을 선택해주세요.');
+                return;
+            }
+            
+            // 상태 자동 계산
+            let status = 'unpaid';
+            if (paidAmount >= monthlyFee && monthlyFee > 0) {
+                status = 'paid';
+            } else if (paidAmount > 0) {
+                status = 'partial';
+            }
+            
+            const requestData = {
+                student_id: parseInt(studentId),
+                year: currentYear,
+                month: currentMonth,
+                amount: monthlyFee, // 월 교육비
+                paid_amount: paidAmount,
+                paid_date: paidDate,
+                payment_method: paymentMethod,
+                status: status,
+                memo: memo || ''
+            };
+            
+            console.log('📤 납입 처리 요청:', requestData);
+            
             try {
                 const response = await fetch('/api/tuition/payments', {
                     method: 'POST',
                     headers: getApiHeaders(),
-                    body: JSON.stringify({
-                        student_id: studentId,
-                        year: currentYear,
-                        month: currentMonth,
-                        paid_amount: paidAmount,
-                        paid_date: paidDate,
-                        payment_method: paymentMethod,
-                        memo: memo
-                    })
+                    body: JSON.stringify(requestData)
                 });
                 
                 const data = await response.json();
+                console.log('📥 API 응답:', data);
                 
                 if (data.success) {
                     alert('✅ 납입 처리가 완료되었습니다!');
                     closePaymentModal();
-                    loadCalendar();
+                    await loadCalendar();
                 } else {
                     alert('❌ 납입 처리 실패: ' + (data.error || '알 수 없는 오류'));
+                    console.error('API 오류 상세:', data);
                 }
             } catch (error) {
                 console.error('납입 처리 실패:', error);

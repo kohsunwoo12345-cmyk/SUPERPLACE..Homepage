@@ -49812,6 +49812,7 @@ app.get('/tools/tuition-management', async (c) => {
                     <form id="paymentForm" onsubmit="submitPayment(event)">
                         <input type="hidden" id="selectedStudentId">
                         <input type="hidden" id="selectedPaymentId">
+                        <input type="hidden" id="selectedMonthlyFee">
                         
                         <div class="space-y-5">
                             <div>
@@ -50112,6 +50113,7 @@ app.get('/tools/tuition-management', async (c) => {
             const classFee = parseInt(selectedOption.dataset.classFee) || 0;
             
             document.getElementById('selectedStudentId').value = studentId;
+            document.getElementById('selectedMonthlyFee').value = classFee; // 월 교육비 저장
             document.getElementById('infoStudentName').textContent = studentName;
             document.getElementById('infoClassName').textContent = className;
             document.getElementById('infoMonthlyFee').textContent = classFee.toLocaleString() + '원';
@@ -50135,34 +50137,69 @@ app.get('/tools/tuition-management', async (c) => {
             event.preventDefault();
             
             const studentId = document.getElementById('selectedStudentId').value;
+            const monthlyFee = parseInt(document.getElementById('selectedMonthlyFee').value) || 0;
             const paidAmount = parseInt(document.getElementById('paidAmount').value);
             const paidDate = document.getElementById('paidDate').value;
             const paymentMethod = document.getElementById('paymentMethod').value;
             const memo = document.getElementById('paymentMemo').value;
             
+            // 유효성 검증
+            if (!studentId) {
+                alert('❌ 학생을 선택해주세요.');
+                return;
+            }
+            if (!paidAmount || paidAmount <= 0) {
+                alert('❌ 납입 금액을 입력해주세요.');
+                return;
+            }
+            if (!paidDate) {
+                alert('❌ 납입일을 선택해주세요.');
+                return;
+            }
+            if (!paymentMethod) {
+                alert('❌ 결제 방법을 선택해주세요.');
+                return;
+            }
+            
+            // 상태 자동 계산
+            let status = 'unpaid';
+            if (paidAmount >= monthlyFee && monthlyFee > 0) {
+                status = 'paid';
+            } else if (paidAmount > 0) {
+                status = 'partial';
+            }
+            
+            const requestData = {
+                student_id: parseInt(studentId),
+                year: currentYear,
+                month: currentMonth,
+                amount: monthlyFee, // 월 교육비
+                paid_amount: paidAmount,
+                paid_date: paidDate,
+                payment_method: paymentMethod,
+                status: status,
+                memo: memo || ''
+            };
+            
+            console.log('📤 납입 처리 요청:', requestData);
+            
             try {
                 const response = await fetch('/api/tuition/payments', {
                     method: 'POST',
                     headers: getApiHeaders(),
-                    body: JSON.stringify({
-                        student_id: studentId,
-                        year: currentYear,
-                        month: currentMonth,
-                        paid_amount: paidAmount,
-                        paid_date: paidDate,
-                        payment_method: paymentMethod,
-                        memo: memo
-                    })
+                    body: JSON.stringify(requestData)
                 });
                 
                 const data = await response.json();
+                console.log('📥 API 응답:', data);
                 
                 if (data.success) {
                     alert('✅ 납입 처리가 완료되었습니다!');
                     closePaymentModal();
-                    loadCalendar();
+                    await loadCalendar();
                 } else {
                     alert('❌ 납입 처리 실패: ' + (data.error || '알 수 없는 오류'));
+                    console.error('API 오류 상세:', data);
                 }
             } catch (error) {
                 console.error('납입 처리 실패:', error);
