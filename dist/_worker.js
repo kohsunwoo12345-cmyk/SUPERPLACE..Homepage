@@ -2852,7 +2852,7 @@ var Mt=Object.defineProperty;var st=e=>{throw TypeError(e)};var At=(e,t,s)=>t in
       SELECT * FROM form_templates WHERE id = ?
     `).bind(t.form_template_id).first();if(!s)return console.log("[Form Submission] Template not found"),e.json({error:"폼을 찾을 수 없습니다"},404);console.log("[Form Submission] Template found, inserting...");const r=e.req.header("cf-connecting-ip")||e.req.header("x-forwarded-for")||"unknown",a=e.req.header("user-agent")||"unknown",o=await e.env.DB.prepare(`
       INSERT INTO form_submissions (
-        form_template_id, landing_page_id, submission_data,
+        form_id, landing_page_id, submission_data,
         ip_address, user_agent, status
       ) VALUES (?, ?, ?, ?, ?, 'new')
     `).bind(t.form_template_id,t.landing_page_id||null,t.submission_data,r,a).run();return console.log("[Form Submission] Success!"),e.json({success:!0,id:o.meta.last_row_id,message:s.success_message||"신청이 완료되었습니다!"})}catch(t){console.error("Error submitting form:",t);const s=t instanceof Error?t.message:"알 수 없는 오류";return e.json({error:"제출에 실패했습니다",details:s,stack:t instanceof Error?t.stack:void 0},500)}});W.get("/api/form-submissions",J,async e=>{try{const t=e.get("userId"),s=e.req.query("template_id"),r=e.req.query("status");let a=`
@@ -2861,23 +2861,23 @@ var Mt=Object.defineProperty;var st=e=>{throw TypeError(e)};var At=(e,t,s)=>t in
         ft.name as template_name,
         lp.title as landing_page_title
       FROM form_submissions fs
-      JOIN form_templates ft ON fs.form_template_id = ft.id
+      JOIN form_templates ft ON fs.form_id = ft.id
       LEFT JOIN landing_pages lp ON fs.landing_page_id = lp.id
       WHERE ft.user_id = ?
-    `;const o=[t];s&&(a+=" AND fs.form_template_id = ?",o.push(s)),r&&(a+=" AND fs.status = ?",o.push(r)),a+=" ORDER BY fs.submitted_at DESC";const n=await e.env.DB.prepare(a).bind(...o).all();return e.json(n.results||[])}catch(t){return console.error("Error fetching submissions:",t),e.json({error:"제출 내역을 불러올 수 없습니다"},500)}});W.get("/api/form-submissions/:id",J,async e=>{try{const t=e.get("userId"),s=e.req.param("id"),r=await e.env.DB.prepare(`
+    `;const o=[t];s&&(a+=" AND fs.form_id = ?",o.push(s)),r&&(a+=" AND fs.status = ?",o.push(r)),a+=" ORDER BY fs.submitted_at DESC";const n=await e.env.DB.prepare(a).bind(...o).all();return e.json(n.results||[])}catch(t){return console.error("Error fetching submissions:",t),e.json({error:"제출 내역을 불러올 수 없습니다"},500)}});W.get("/api/form-submissions/:id",J,async e=>{try{const t=e.get("userId"),s=e.req.param("id"),r=await e.env.DB.prepare(`
       SELECT 
         fs.*,
         ft.name as template_name,
         ft.user_id as template_owner
       FROM form_submissions fs
-      JOIN form_templates ft ON fs.form_template_id = ft.id
+      JOIN form_templates ft ON fs.form_id = ft.id
       WHERE fs.id = ?
     `).bind(s).first();return!r||r.template_owner!==t?e.json({error:"제출 내역을 찾을 수 없거나 권한이 없습니다"},404):(r.viewed_at||await e.env.DB.prepare(`
         UPDATE form_submissions SET viewed_at = CURRENT_TIMESTAMP WHERE id = ?
       `).bind(s).run(),e.json(r))}catch(t){return console.error("Error fetching submission:",t),e.json({error:"제출 내역을 불러올 수 없습니다"},500)}});W.patch("/api/form-submissions/:id",J,async e=>{try{const t=e.get("userId"),s=e.req.param("id"),r=await e.req.json(),a=await e.env.DB.prepare(`
       SELECT ft.user_id 
       FROM form_submissions fs
-      JOIN form_templates ft ON fs.form_template_id = ft.id
+      JOIN form_templates ft ON fs.form_id = ft.id
       WHERE fs.id = ?
     `).bind(s).first();return!a||a.user_id!==t?e.json({error:"제출 내역을 찾을 수 없거나 권한이 없습니다"},404):(await e.env.DB.prepare(`
       UPDATE form_submissions 
@@ -2886,7 +2886,7 @@ var Mt=Object.defineProperty;var st=e=>{throw TypeError(e)};var At=(e,t,s)=>t in
     `).bind(r.status||"new",r.notes||"",s).run(),e.json({success:!0,message:"상태가 변경되었습니다"}))}catch(t){return console.error("Error updating submission:",t),e.json({error:"상태 변경에 실패했습니다"},500)}});W.delete("/api/form-submissions/:id",J,async e=>{try{const t=e.get("userId"),s=e.req.param("id"),r=await e.env.DB.prepare(`
       SELECT ft.user_id 
       FROM form_submissions fs
-      JOIN form_templates ft ON fs.form_template_id = ft.id
+      JOIN form_templates ft ON fs.form_id = ft.id
       WHERE fs.id = ?
     `).bind(s).first();return!r||r.user_id!==t?e.json({error:"제출 내역을 찾을 수 없거나 권한이 없습니다"},404):(await e.env.DB.prepare(`
       DELETE FROM form_submissions WHERE id = ?
@@ -2898,9 +2898,9 @@ var Mt=Object.defineProperty;var st=e=>{throw TypeError(e)};var At=(e,t,s)=>t in
         SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed_count,
         SUM(CASE WHEN status = 'rejected' THEN 1 ELSE 0 END) as rejected_count
       FROM form_submissions fs
-      JOIN form_templates ft ON fs.form_template_id = ft.id
+      JOIN form_templates ft ON fs.form_id = ft.id
       WHERE ft.user_id = ?
-    `;const a=[t];s&&(r+=" AND fs.form_template_id = ?",a.push(s));const o=await e.env.DB.prepare(r).bind(...a).first();return e.json(o||{total:0,new_count:0,contacted_count:0,completed_count:0,rejected_count:0})}catch(t){return console.error("Error fetching stats:",t),e.json({error:"통계를 불러올 수 없습니다"},500)}});const c=new et;c.use("/api/*",fs());c.use("/static/*",Rs({root:"./public"}));c.route("/",W);c.post("/api/contact",async e=>{try{const{name:t,email:s,phone:r,academy_name:a,message:o}=await e.req.json();if(!t||!s||!r||!o)return e.json({success:!1,error:"필수 항목을 입력해주세요."},400);const n=await e.env.DB.prepare(`
+    `;const a=[t];s&&(r+=" AND fs.form_id = ?",a.push(s));const o=await e.env.DB.prepare(r).bind(...a).first();return e.json(o||{total:0,new_count:0,contacted_count:0,completed_count:0,rejected_count:0})}catch(t){return console.error("Error fetching stats:",t),e.json({error:"통계를 불러올 수 없습니다"},500)}});const c=new et;c.use("/api/*",fs());c.use("/static/*",Rs({root:"./public"}));c.route("/",W);c.post("/api/contact",async e=>{try{const{name:t,email:s,phone:r,academy_name:a,message:o}=await e.req.json();if(!t||!s||!r||!o)return e.json({success:!1,error:"필수 항목을 입력해주세요."},400);const n=await e.env.DB.prepare(`
       INSERT INTO contacts (name, email, phone, academy_name, message)
       VALUES (?, ?, ?, ?, ?)
     `).bind(t,s,r,a||"",o).run();return e.json({success:!0,message:"문의가 접수되었습니다. 빠른 시일 내에 연락드리겠습니다.",id:n.meta.last_row_id})}catch(t){return console.error("Contact submission error:",t),e.json({success:!1,error:"문의 접수 중 오류가 발생했습니다."},500)}});c.post("/api/signup",async e=>{try{const{email:t,password:s,name:r,phone:a,academy_name:o,academy_location:n,marketing_consent:l}=await e.req.json();if(!t||!s||!r||!a||!o)return e.json({success:!1,error:"필수 항목을 입력해주세요."},400);if(await e.env.DB.prepare(`
