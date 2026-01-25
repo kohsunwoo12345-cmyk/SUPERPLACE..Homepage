@@ -48,8 +48,8 @@ app.get('/api/tuition/students/:studentId/payments', requireDirector, async (c) 
     
     // 학생이 해당 학원 소속인지 확인
     const student = await c.env.DB.prepare(`
-      SELECT * FROM students WHERE id = ? AND academy_id = ?
-    `).bind(studentId, user.academy_id || user.id).first()
+      SELECT * FROM students WHERE id = ? AND user_id = ?
+    `).bind(studentId, user.id).first()
     
     if (!student) {
       return c.json({ error: '학생을 찾을 수 없습니다' }, 404)
@@ -105,7 +105,7 @@ app.get('/api/tuition/payments', requireDirector, async (c) => {
       WHERE tp.academy_id = ? AND tp.year = ? AND tp.month = ?
     `
     
-    const params: any[] = [user.academy_id || user.id, year, month]
+    const params: any[] = [user.id, year, month]
     
     if (status) {
       query += ` AND tp.status = ?`
@@ -142,8 +142,8 @@ app.post('/api/tuition/payments', requireDirector, async (c) => {
     
     // 학생 확인
     const student = await c.env.DB.prepare(`
-      SELECT * FROM students WHERE id = ? AND academy_id = ?
-    `).bind(student_id, user.academy_id || user.id).first()
+      SELECT * FROM students WHERE id = ? AND user_id = ?
+    `).bind(student_id, user.id).first()
     
     if (!student) {
       return c.json({ error: '학생을 찾을 수 없습니다' }, 404)
@@ -167,7 +167,7 @@ app.post('/api/tuition/payments', requireDirector, async (c) => {
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).bind(
       student_id,
-      user.academy_id || user.id,
+      user.id,
       year,
       month,
       amount,
@@ -199,8 +199,8 @@ app.put('/api/tuition/payments/:id', requireDirector, async (c) => {
     
     // 기존 기록 확인
     const existing: any = await c.env.DB.prepare(`
-      SELECT * FROM tuition_payments WHERE id = ? AND academy_id = ?
-    `).bind(paymentId, user.academy_id || user.id).first()
+      SELECT * FROM tuition_payments WHERE id = ? AND user_id = ?
+    `).bind(paymentId, user.id).first()
     
     if (!existing) {
       return c.json({ error: '납입 기록을 찾을 수 없습니다' }, 404)
@@ -239,8 +239,8 @@ app.delete('/api/tuition/payments/:id', requireDirector, async (c) => {
     const paymentId = c.req.param('id')
     
     await c.env.DB.prepare(`
-      DELETE FROM tuition_payments WHERE id = ? AND academy_id = ?
-    `).bind(paymentId, user.academy_id || user.id).run()
+      DELETE FROM tuition_payments WHERE id = ? AND user_id = ?
+    `).bind(paymentId, user.id).run()
     
     return c.json({
       success: true,
@@ -270,8 +270,8 @@ app.post('/api/tuition/rates', requireDirector, async (c) => {
     
     // 학생 확인
     const student = await c.env.DB.prepare(`
-      SELECT * FROM students WHERE id = ? AND academy_id = ?
-    `).bind(student_id, user.academy_id || user.id).first()
+      SELECT * FROM students WHERE id = ? AND user_id = ?
+    `).bind(student_id, user.id).first()
     
     if (!student) {
       return c.json({ error: '학생을 찾을 수 없습니다' }, 404)
@@ -290,7 +290,7 @@ app.post('/api/tuition/rates', requireDirector, async (c) => {
       VALUES (?, ?, ?, ?, ?)
     `).bind(
       student_id,
-      user.academy_id || user.id,
+      user.id,
       monthly_fee,
       start_date,
       end_date || null
@@ -335,11 +335,11 @@ app.get('/api/tuition/unpaid-students', requireDirector, async (c) => {
       FROM students s
       LEFT JOIN tuition_payments tp ON s.id = tp.student_id 
         AND tp.year = ? AND tp.month = ?
-      WHERE s.academy_id = ? 
+      WHERE s.user_id = ? 
         AND s.status = 'active'
         AND (tp.status = 'unpaid' OR tp.status = 'partial' OR tp.status = 'overdue' OR tp.id IS NULL)
       ORDER BY s.name ASC
-    `).bind(year, month, user.academy_id || user.id).all()
+    `).bind(year, month, user.id).all()
     
     return c.json({
       success: true,
@@ -371,7 +371,7 @@ app.get('/api/tuition/stats', requireDirector, async (c) => {
         SUM(paid_amount) as total_paid
       FROM tuition_payments
       WHERE academy_id = ? AND year = ? AND month = ?
-    `).bind(user.academy_id || user.id, year, month).first()
+    `).bind(user.id, year, month).first()
     
     return c.json({
       success: true,

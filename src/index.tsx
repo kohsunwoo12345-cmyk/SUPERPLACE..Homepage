@@ -17569,8 +17569,8 @@ app.get('/dashboard', (c) => {
                             </div>
                         </div>
 
-                        <!-- 교육비 관리 카드 (원장님 전용 - 선생님에게는 표시 안 됨) -->
-                        <div id="tuitionManagementCard" class="hidden bg-gradient-to-br from-green-500 to-emerald-700 rounded-2xl p-8 hover:shadow-2xl transition-all hover:-translate-y-1">
+                        <!-- 교육비 관리 카드 (관리자와 학원장 전용) -->
+                        <div id="tuitionManagementCard" class="bg-gradient-to-br from-green-500 to-emerald-700 rounded-2xl p-8 hover:shadow-2xl transition-all hover:-translate-y-1" style="display: none;">
                             <div class="flex items-center gap-4 mb-4">
                                 <div class="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
                                     <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -18032,23 +18032,24 @@ app.get('/dashboard', (c) => {
                             if (smsSection) smsSection.style.display = 'block'
                             const smsNavDropdown = document.getElementById('smsNavDropdown')
                             if (smsNavDropdown) smsNavDropdown.classList.remove('hidden')
-                            // 교육비 관리는 원장님만 표시
+                            // 교육비 관리 카드 표시
                             const tuitionCard = document.getElementById('tuitionManagementCard')
-                            if (tuitionCard && user.user_type !== 'teacher') {
-                                tuitionCard.classList.remove('hidden')
+                            if (tuitionCard) {
+                                tuitionCard.style.display = 'block'
+                                console.log('✅ 관리자 - 교육비 관리 카드 표시')
                             }
                             return
                         }
                         
-                        // 교육비 관리 카드 - 원장님만 표시 (선생님은 100% 숨김)
+                        // 교육비 관리 카드 - 학원장과 관리자만 표시 (선생님은 100% 숨김)
                         const tuitionCard = document.getElementById('tuitionManagementCard')
                         if (tuitionCard) {
-                            if (user.user_type === 'director' || user.role === 'admin') {
-                                console.log('✅ 원장님 계정 - 교육비 관리 카드 표시')
-                                tuitionCard.classList.remove('hidden')
+                            if (user.user_type === 'director' || user.user_type === 'academy' || user.role === 'admin') {
+                                console.log('✅ 학원장/관리자 계정 - 교육비 관리 카드 표시')
+                                tuitionCard.style.display = 'block'
                             } else {
                                 console.log('❌ 선생님 계정 - 교육비 관리 카드 숨김')
-                                tuitionCard.classList.add('hidden')
+                                tuitionCard.style.display = 'none'
                             }
                         }
                         
