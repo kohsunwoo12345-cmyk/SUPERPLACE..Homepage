@@ -207,6 +207,23 @@
     </div>
 
     <script>
+        // 🔥 VERSION CONTROL - Force cache busting
+        const APP_VERSION = 'v20260126-b2bb4da';
+        const CACHE_BUSTER = Date.now();
+        console.log('🚀 APP VERSION:', APP_VERSION, 'Cache Buster:', CACHE_BUSTER);
+        
+        // Clear old cache on version change
+        const storedVersion = localStorage.getItem('app_version');
+        if (storedVersion !== APP_VERSION) {
+            console.log('🔄 Version changed from', storedVersion, 'to', APP_VERSION, '- clearing cache');
+            localStorage.setItem('app_version', APP_VERSION);
+            // Force hard reload on next access if needed
+            if (storedVersion && performance.navigation.type !== 1) {
+                console.log('🔃 Forcing reload for cache clear');
+                window.location.reload(true);
+            }
+        }
+        
         // 현재 로그인한 사용자 정보 가져오기
         const userStr = localStorage.getItem('user');
         if (!userStr) {
@@ -243,9 +260,11 @@
         async function loadClasses() {
             try {
                 const userDataHeader = btoa(unescape(encodeURIComponent(JSON.stringify(currentUser))));
-                const res = await fetch('/api/classes', {
+                const res = await fetch('/api/classes?v=' + CACHE_BUSTER, {
                     headers: {
-                        'X-User-Data-Base64': userDataHeader
+                        'X-User-Data-Base64': userDataHeader,
+                        'Cache-Control': 'no-cache',
+                        'Pragma': 'no-cache'
                     }
                 });
                 const data = await res.json();
@@ -334,14 +353,19 @@
                 
                 const classId = document.getElementById('classFilter').value;
                 let url = '/api/students';
-                if (classId) url += '?classId=' + classId;
+                const urlParams = new URLSearchParams();
+                if (classId) urlParams.append('classId', classId);
+                urlParams.append('v', CACHE_BUSTER); // Cache busting
+                url += '?' + urlParams.toString();
                 
                 console.log('🔍 [LoadStudents] Fetching:', url);
                 console.log('🔍 [LoadStudents] User header length:', userDataHeader.length);
                 
                 const res = await fetch(url, {
                     headers: {
-                        'X-User-Data-Base64': userDataHeader
+                        'X-User-Data-Base64': userDataHeader,
+                        'Cache-Control': 'no-cache',
+                        'Pragma': 'no-cache'
                     }
                 });
                 
