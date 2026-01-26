@@ -26106,9 +26106,10 @@ app.get('/api/students', async (c) => {
         
         console.log('✅ [GetStudents] SUCCESS! Found', students.length, 'students')
         
-        // ✅ 디버그: 만약 0명이면 전체 학생 수 확인
+        // 🔍 디버그: 항상 전체 학생 데이터 확인 (문제 해결용)
         if (students.length === 0) {
           console.log('⚠️ [GetStudents] No students for academy_id:', academyId)
+          console.log('🔍 [GetStudents] DEBUG MODE - Checking all students...')
           
           // 전체 학생 수 확인
           const totalResult = await c.env.DB.prepare(
@@ -26121,6 +26122,18 @@ app.get('/api/students', async (c) => {
             "SELECT academy_id, COUNT(*) as count FROM students GROUP BY academy_id"
           ).all()
           console.log('📊 [GetStudents] Students by academy_id:', byAcademyResult.results)
+          
+          // 🔍 실제 학생 데이터 샘플 확인
+          const sampleStudents = await c.env.DB.prepare(
+            "SELECT id, name, academy_id, class_id FROM students LIMIT 10"
+          ).all()
+          console.log('📊 [GetStudents] Sample students:', sampleStudents.results)
+          
+          // 🔍 사용자 정보 확인
+          const userInfo = await c.env.DB.prepare(
+            "SELECT id, email, academy_name, academy_id FROM users WHERE id = ?"
+          ).bind(userId).first()
+          console.log('📊 [GetStudents] Current user info:', userInfo)
         }
       } catch (err1) {
         console.error('❌ [GetStudents] Query failed:', err1.message)
