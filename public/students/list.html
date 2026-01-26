@@ -207,6 +207,23 @@
     </div>
 
     <script>
+        // 🔥 VERSION CONTROL - Force cache busting
+        const APP_VERSION = 'v20260126-b2bb4da';
+        const CACHE_BUSTER = Date.now();
+        console.log('🚀 APP VERSION:', APP_VERSION, 'Cache Buster:', CACHE_BUSTER);
+        
+        // Clear old cache on version change
+        const storedVersion = localStorage.getItem('app_version');
+        if (storedVersion !== APP_VERSION) {
+            console.log('🔄 Version changed from', storedVersion, 'to', APP_VERSION, '- clearing cache');
+            localStorage.setItem('app_version', APP_VERSION);
+            // Force hard reload on next access if needed
+            if (storedVersion && performance.navigation.type !== 1) {
+                console.log('🔃 Forcing reload for cache clear');
+                window.location.reload(true);
+            }
+        }
+        
         // 현재 로그인한 사용자 정보 가져오기
         const userStr = localStorage.getItem('user');
         if (!userStr) {
@@ -243,9 +260,11 @@
         async function loadClasses() {
             try {
                 const userDataHeader = btoa(unescape(encodeURIComponent(JSON.stringify(currentUser))));
-                const res = await fetch('/api/classes', {
+                const res = await fetch('/api/classes?v=' + CACHE_BUSTER, {
                     headers: {
-                        'X-User-Data-Base64': userDataHeader
+                        'X-User-Data-Base64': userDataHeader,
+                        'Cache-Control': 'no-cache',
+                        'Pragma': 'no-cache'
                     }
                 });
                 const data = await res.json();
@@ -334,27 +353,49 @@
                 
                 const classId = document.getElementById('classFilter').value;
                 let url = '/api/students';
-                if (classId) url += '?classId=' + classId;
+                const urlParams = new URLSearchParams();
+                if (classId) urlParams.append('classId', classId);
+                urlParams.append('v', CACHE_BUSTER); // Cache busting
+                url += '?' + urlParams.toString();
+                
+                console.log('🔍 [LoadStudents] Fetching:', url);
+                console.log('🔍 [LoadStudents] User header length:', userDataHeader.length);
                 
                 const res = await fetch(url, {
                     headers: {
-                        'X-User-Data-Base64': userDataHeader
+                        'X-User-Data-Base64': userDataHeader,
+                        'Cache-Control': 'no-cache',
+                        'Pragma': 'no-cache'
                     }
                 });
+                
+                console.log('🔍 [LoadStudents] Response status:', res.status);
                 const data = await res.json();
+                console.log('🔍 [LoadStudents] Response data:', data);
+                console.log('🔍 [LoadStudents] Students count:', data.students?.length || 0);
+                
                 if (data.success) {
                     allStudents = data.students;
                     students = allStudents;
+                    console.log('✅ [LoadStudents] Loaded', allStudents.length, 'students');
                     filterStudents();
+                } else {
+                    console.error('❌ [LoadStudents] API returned success=false:', data.error);
                 }
             } catch (error) {
-                console.error('학생 목록 로딩 실패:', error);
+                console.error('❌ [LoadStudents] Exception:', error);
             }
         }
 
         function filterStudents() {
+            console.log('🔍 [FilterStudents] START');
+            console.log('🔍 [FilterStudents] allStudents:', allStudents);
+            console.log('🔍 [FilterStudents] allStudents.length:', allStudents?.length || 0);
+            
             const gradeFilter = document.getElementById('gradeFilter').value;
             const searchText = document.getElementById('searchInput').value.toLowerCase();
+            
+            console.log('🔍 [FilterStudents] Filters - grade:', gradeFilter, 'search:', searchText);
             
             students = allStudents.filter(student => {
                 // current_grade 또는 grade 사용
@@ -369,15 +410,23 @@
                 return matchGrade && matchSearch;
             });
             
+            console.log('🔍 [FilterStudents] Filtered students count:', students.length);
+            
             renderStudents();
         }
 
         function renderStudents() {
+            console.log('🔍 [RenderStudents] START');
+            console.log('🔍 [RenderStudents] students.length:', students.length);
+            
             const container = document.getElementById('studentsList');
             if (students.length === 0) {
+                console.log('⚠️ [RenderStudents] No students to display!');
                 container.innerHTML = '<div class="text-center text-gray-500 py-12 bg-white rounded-xl">학생이 없습니다.<br>새 학생을 등록해보세요!</div>';
                 return;
             }
+            
+            console.log('✅ [RenderStudents] Rendering', students.length, 'students');
 
             container.innerHTML = students.map(student => `
                 <div class="bg-white rounded-xl shadow p-6 hover:shadow-lg transition">

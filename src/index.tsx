@@ -26045,13 +26045,13 @@ app.get('/api/students', async (c) => {
       
       console.log('👥 [GetStudents] Teacher with assigned classes only:', userPermissions.assignedClasses)
       
-      // 배정된 반의 학생만 조회
+      // 🚨 보안: 배정된 반의 학생 + academy_id 필터 추가
       const placeholders = userPermissions.assignedClasses.map(() => '?').join(',')
-      const query = `SELECT * FROM students WHERE class_id IN (${placeholders}) AND (status IS NULL OR status != 'deleted') ORDER BY id DESC`
+      const query = `SELECT * FROM students WHERE academy_id = ? AND class_id IN (${placeholders}) AND (status IS NULL OR status != 'deleted') ORDER BY id DESC`
       
       try {
         const result = await c.env.DB.prepare(query)
-          .bind(...userPermissions.assignedClasses)
+          .bind(academyId, ...userPermissions.assignedClasses)
           .all()
         
         students = result.results || []
@@ -26066,49 +26066,29 @@ app.get('/api/students', async (c) => {
       console.log('👥 [GetStudents] Full access - loading all students')
       console.log('👥 [GetStudents] Using academyId:', academyId)
       
-      // ✅ academy_id로 조회 + student_classes JOIN으로 모든 반 정보 가져오기
+      // ✅ 간단한 쿼리로 변경 - JOIN 문제 해결
       try {
         console.log('👥 [GetStudents] Query: WHERE academy_id =', academyId)
         const result1 = await c.env.DB.prepare(`
           SELECT 
             s.*,
             c.class_name,
-            c.monthly_fee as class_fee,
-            GROUP_CONCAT(
-              CASE 
-                WHEN sc.status = 'active' AND (sc.end_date IS NULL OR sc.end_date >= date('now'))
-                THEN c2.id || ':' || c2.class_name || ':' || COALESCE(sc.monthly_fee, c2.monthly_fee)
-              END
-            ) as all_classes
+            c.monthly_fee as class_fee
           FROM students s
           LEFT JOIN classes c ON s.class_id = c.id
-          LEFT JOIN student_classes sc ON s.id = sc.student_id
-          LEFT JOIN classes c2 ON sc.class_id = c2.id
           WHERE s.academy_id = ? 
-            AND (s.status IS NULL OR s.status != 'deleted') 
-          GROUP BY s.id
+            AND s.status = 'active'
           ORDER BY s.id DESC
         `).bind(academyId).all()
         
         students = result1.results || []
         
-        // all_classes 파싱하여 배열로 변환
-        students = students.map(student => {
-          if (student.all_classes) {
-            const classes = student.all_classes.split(',').map(cls => {
-              const [id, name, fee] = cls.split(':')
-              return { id: parseInt(id), name, fee: parseInt(fee) }
-            })
-            return { ...student, classes }
-          }
-          return student
-        })
-        
         console.log('✅ [GetStudents] SUCCESS! Found', students.length, 'students')
         
-        // ✅ 디버그: 만약 0명이면 전체 학생 수 확인
+        // 🔍 디버그: 항상 전체 학생 데이터 확인 (문제 해결용)
         if (students.length === 0) {
           console.log('⚠️ [GetStudents] No students for academy_id:', academyId)
+          console.log('🔍 [GetStudents] DEBUG MODE - Checking all students...')
           
           // 전체 학생 수 확인
           const totalResult = await c.env.DB.prepare(
@@ -26121,36 +26101,24 @@ app.get('/api/students', async (c) => {
             "SELECT academy_id, COUNT(*) as count FROM students GROUP BY academy_id"
           ).all()
           console.log('📊 [GetStudents] Students by academy_id:', byAcademyResult.results)
+          
+          // 🔍 실제 학생 데이터 샘플 확인
+          const sampleStudents = await c.env.DB.prepare(
+            "SELECT id, name, academy_id, class_id FROM students LIMIT 10"
+          ).all()
+          console.log('📊 [GetStudents] Sample students:', sampleStudents.results)
+          
+          // 🔍 사용자 정보 확인
+          const userInfo = await c.env.DB.prepare(
+            "SELECT id, email, academy_name, academy_id FROM users WHERE id = ?"
+          ).bind(userId).first()
+          console.log('📊 [GetStudents] Current user info:', userInfo)
         }
       } catch (err1) {
-        console.log('⚠️  [GetStudents] Try 1 failed:', err1.message)
-        
-        // Try 2: 모든 active 학생
-        try {
-          console.log('👥 [GetStudents] Try 2: All active students')
-          const result2 = await c.env.DB.prepare(
-            "SELECT * FROM students WHERE (status IS NULL OR status != 'deleted') ORDER BY id DESC LIMIT 1000"
-          ).all()
-          
-          students = result2.results || []
-          console.log('✅ [GetStudents] Found', students.length, 'active students')
-        } catch (err2) {
-          console.log('⚠️  [GetStudents] Try 2 failed:', err2.message)
-          
-          // Try 3: 모든 학생 (필터 없이)
-          try {
-            console.log('👥 [GetStudents] Try 3: All students (no filter)')
-            const result3 = await c.env.DB.prepare(
-              'SELECT * FROM students ORDER BY id DESC LIMIT 1000'
-            ).all()
-            
-            students = result3.results || []
-            console.log('✅ [GetStudents] Found', students.length, 'total students')
-          } catch (err3) {
-            console.error('❌ [GetStudents] ALL queries failed!')
-            throw err3
-          }
-        }
+        console.error('❌ [GetStudents] Query failed:', err1.message)
+        console.error('❌ [GetStudents] 🚨 SECURITY: Returning empty array - NO FALLBACK TO ALL STUDENTS!')
+        // 🚨 보안: academy_id 필터링 실패 시 절대 모든 학생을 반환하지 않음!
+        students = []
       }
     }
     
@@ -26657,8 +26625,8 @@ app.post('/api/init-test-data', async (c) => {
           await c.env.DB.prepare(`
             INSERT INTO students (
               academy_id, name, phone, parent_name, parent_phone, 
-              grade, class_id, enrollment_date, status, created_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'active', datetime('now'))
+              grade, subjects, class_id, enrollment_date, status, created_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', datetime('now'))
           `).bind(
             academyId,
             name,
@@ -26666,6 +26634,7 @@ app.post('/api/init-test-data', async (c) => {
             `${studentNames[i]} 학부모`,
             `010-5678-${String(classIdx * 10 + i).padStart(4, '0')}`,
             classNames[classIdx].includes('중') ? classNames[classIdx].substring(0, 2) : classNames[classIdx].substring(0, 2),
+            classNames[classIdx].split(' ')[1] || '수학', // subjects 추가
             classId,
             new Date().toISOString().split('T')[0]
           ).run()
@@ -26727,7 +26696,8 @@ app.post('/api/students', async (c) => {
       const userHeader = c.req.header('X-User-Data-Base64')
       if (userHeader && !finalAcademyId) {
         const userData = JSON.parse(decodeURIComponent(escape(atob(userHeader))))
-        finalAcademyId = userData.id || userData.academy_id
+        // ✅ FIX: academy_id를 우선 사용 (선생님의 경우 userData.id는 선생님 자신의 ID이므로)
+        finalAcademyId = userData.academy_id || userData.id
         console.log('➕ [AddStudent] Academy ID from header:', finalAcademyId)
       }
     } catch (err) {

@@ -1,39 +1,42 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>API Test</title>
+    <title>API 테스트</title>
 </head>
 <body>
-    <h1>인증 코드 API 테스트</h1>
-    <button onclick="testAPI()">API 테스트</button>
+    <h1>학생 목록 API 테스트</h1>
+    <button onclick="testAPI()">API 호출</button>
     <pre id="result"></pre>
-    
+
     <script>
     async function testAPI() {
         const result = document.getElementById('result');
+        result.textContent = '로딩 중...';
         
-        // 로컬스토리지에서 사용자 정보 가져오기
-        const userStr = localStorage.getItem('user');
-        let userId = 999; // 기본값
-        
-        if (userStr) {
-            const user = JSON.parse(userStr);
-            userId = user.id;
-            result.textContent = 'User ID: ' + userId + '\n\n';
-        } else {
-            result.textContent = 'No user in localStorage, using ID: 999\n\n';
-        }
-        
-        // API 호출
         try {
-            const response = await fetch('/api/teachers/verification-code?directorId=' + userId);
+            const response = await fetch('/api/students', {
+                method: 'GET',
+                credentials: 'include'
+            });
+            
             const data = await response.json();
             
-            result.textContent += 'API Response:\n' + JSON.stringify(data, null, 2);
-        } catch (error) {
-            result.textContent += 'Error: ' + error.message;
+            result.textContent = JSON.stringify({
+                success: data.success,
+                studentCount: data.students?.length || 0,
+                students: data.students,
+                error: data.error
+            }, null, 2);
+            
+            console.log('📊 Full Response:', data);
+        } catch (err) {
+            result.textContent = 'Error: ' + err.message;
+            console.error('❌ Error:', err);
         }
     }
+    
+    // 자동 실행
+    window.onload = () => testAPI();
     </script>
 </body>
 </html>
