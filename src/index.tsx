@@ -26727,7 +26727,8 @@ app.post('/api/students', async (c) => {
       const userHeader = c.req.header('X-User-Data-Base64')
       if (userHeader && !finalAcademyId) {
         const userData = JSON.parse(decodeURIComponent(escape(atob(userHeader))))
-        finalAcademyId = userData.id || userData.academy_id
+        // ✅ FIX: academy_id를 우선 사용 (선생님의 경우 userData.id는 선생님 자신의 ID이므로)
+        finalAcademyId = userData.academy_id || userData.id
         console.log('➕ [AddStudent] Academy ID from header:', finalAcademyId)
       }
     } catch (err) {
