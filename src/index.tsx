@@ -26625,8 +26625,8 @@ app.post('/api/init-test-data', async (c) => {
           await c.env.DB.prepare(`
             INSERT INTO students (
               academy_id, name, phone, parent_name, parent_phone, 
-              grade, class_id, enrollment_date, status, created_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'active', datetime('now'))
+              grade, subjects, class_id, enrollment_date, status, created_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', datetime('now'))
           `).bind(
             academyId,
             name,
@@ -26634,6 +26634,7 @@ app.post('/api/init-test-data', async (c) => {
             `${studentNames[i]} 학부모`,
             `010-5678-${String(classIdx * 10 + i).padStart(4, '0')}`,
             classNames[classIdx].includes('중') ? classNames[classIdx].substring(0, 2) : classNames[classIdx].substring(0, 2),
+            classNames[classIdx].split(' ')[1] || '수학', // subjects 추가
             classId,
             new Date().toISOString().split('T')[0]
           ).run()
