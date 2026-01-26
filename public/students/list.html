@@ -336,19 +336,30 @@
                 let url = '/api/students';
                 if (classId) url += '?classId=' + classId;
                 
+                console.log('🔍 [LoadStudents] Fetching:', url);
+                console.log('🔍 [LoadStudents] User header length:', userDataHeader.length);
+                
                 const res = await fetch(url, {
                     headers: {
                         'X-User-Data-Base64': userDataHeader
                     }
                 });
+                
+                console.log('🔍 [LoadStudents] Response status:', res.status);
                 const data = await res.json();
+                console.log('🔍 [LoadStudents] Response data:', data);
+                console.log('🔍 [LoadStudents] Students count:', data.students?.length || 0);
+                
                 if (data.success) {
                     allStudents = data.students;
                     students = allStudents;
+                    console.log('✅ [LoadStudents] Loaded', allStudents.length, 'students');
                     filterStudents();
+                } else {
+                    console.error('❌ [LoadStudents] API returned success=false:', data.error);
                 }
             } catch (error) {
-                console.error('학생 목록 로딩 실패:', error);
+                console.error('❌ [LoadStudents] Exception:', error);
             }
         }
 
