@@ -26045,13 +26045,13 @@ app.get('/api/students', async (c) => {
       
       console.log('👥 [GetStudents] Teacher with assigned classes only:', userPermissions.assignedClasses)
       
-      // 배정된 반의 학생만 조회
+      // 🚨 보안: 배정된 반의 학생 + academy_id 필터 추가
       const placeholders = userPermissions.assignedClasses.map(() => '?').join(',')
-      const query = `SELECT * FROM students WHERE class_id IN (${placeholders}) AND (status IS NULL OR status != 'deleted') ORDER BY id DESC`
+      const query = `SELECT * FROM students WHERE academy_id = ? AND class_id IN (${placeholders}) AND (status IS NULL OR status != 'deleted') ORDER BY id DESC`
       
       try {
         const result = await c.env.DB.prepare(query)
-          .bind(...userPermissions.assignedClasses)
+          .bind(academyId, ...userPermissions.assignedClasses)
           .all()
         
         students = result.results || []
@@ -26123,34 +26123,10 @@ app.get('/api/students', async (c) => {
           console.log('📊 [GetStudents] Students by academy_id:', byAcademyResult.results)
         }
       } catch (err1) {
-        console.log('⚠️  [GetStudents] Try 1 failed:', err1.message)
-        
-        // Try 2: 모든 active 학생
-        try {
-          console.log('👥 [GetStudents] Try 2: All active students')
-          const result2 = await c.env.DB.prepare(
-            "SELECT * FROM students WHERE (status IS NULL OR status != 'deleted') ORDER BY id DESC LIMIT 1000"
-          ).all()
-          
-          students = result2.results || []
-          console.log('✅ [GetStudents] Found', students.length, 'active students')
-        } catch (err2) {
-          console.log('⚠️  [GetStudents] Try 2 failed:', err2.message)
-          
-          // Try 3: 모든 학생 (필터 없이)
-          try {
-            console.log('👥 [GetStudents] Try 3: All students (no filter)')
-            const result3 = await c.env.DB.prepare(
-              'SELECT * FROM students ORDER BY id DESC LIMIT 1000'
-            ).all()
-            
-            students = result3.results || []
-            console.log('✅ [GetStudents] Found', students.length, 'total students')
-          } catch (err3) {
-            console.error('❌ [GetStudents] ALL queries failed!')
-            throw err3
-          }
-        }
+        console.error('❌ [GetStudents] Query failed:', err1.message)
+        console.error('❌ [GetStudents] 🚨 SECURITY: Returning empty array - NO FALLBACK TO ALL STUDENTS!')
+        // 🚨 보안: academy_id 필터링 실패 시 절대 모든 학생을 반환하지 않음!
+        students = []
       }
     }
     
