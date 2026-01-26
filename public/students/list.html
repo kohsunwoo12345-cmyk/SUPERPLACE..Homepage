@@ -364,8 +364,14 @@
         }
 
         function filterStudents() {
+            console.log('🔍 [FilterStudents] START');
+            console.log('🔍 [FilterStudents] allStudents:', allStudents);
+            console.log('🔍 [FilterStudents] allStudents.length:', allStudents?.length || 0);
+            
             const gradeFilter = document.getElementById('gradeFilter').value;
             const searchText = document.getElementById('searchInput').value.toLowerCase();
+            
+            console.log('🔍 [FilterStudents] Filters - grade:', gradeFilter, 'search:', searchText);
             
             students = allStudents.filter(student => {
                 // current_grade 또는 grade 사용
@@ -380,15 +386,23 @@
                 return matchGrade && matchSearch;
             });
             
+            console.log('🔍 [FilterStudents] Filtered students count:', students.length);
+            
             renderStudents();
         }
 
         function renderStudents() {
+            console.log('🔍 [RenderStudents] START');
+            console.log('🔍 [RenderStudents] students.length:', students.length);
+            
             const container = document.getElementById('studentsList');
             if (students.length === 0) {
+                console.log('⚠️ [RenderStudents] No students to display!');
                 container.innerHTML = '<div class="text-center text-gray-500 py-12 bg-white rounded-xl">학생이 없습니다.<br>새 학생을 등록해보세요!</div>';
                 return;
             }
+            
+            console.log('✅ [RenderStudents] Rendering', students.length, 'students');
 
             container.innerHTML = students.map(student => `
                 <div class="bg-white rounded-xl shadow p-6 hover:shadow-lg transition">

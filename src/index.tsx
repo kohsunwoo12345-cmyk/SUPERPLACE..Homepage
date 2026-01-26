@@ -26068,7 +26068,16 @@ app.get('/api/students', async (c) => {
       
       // ✅ academy_id로 조회 + student_classes JOIN으로 모든 반 정보 가져오기
       try {
+        console.log('👥 [GetStudents] ===== EXECUTING QUERY =====')
+        console.log('👥 [GetStudents] academyId:', academyId)
         console.log('👥 [GetStudents] Query: WHERE academy_id =', academyId)
+        
+        // 🔥 먼저 간단한 쿼리로 테스트
+        const simpleTest = await c.env.DB.prepare(
+          'SELECT COUNT(*) as count FROM students WHERE academy_id = ?'
+        ).bind(academyId).first()
+        console.log('👥 [GetStudents] Simple count test:', simpleTest)
+        
         const result1 = await c.env.DB.prepare(`
           SELECT 
             s.*,
