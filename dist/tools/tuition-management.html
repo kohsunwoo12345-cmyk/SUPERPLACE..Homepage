@@ -258,7 +258,10 @@
 
                             <div class="flex gap-3 pt-4">
                                 <button type="submit" class="flex-1 bg-blue-600 text-white py-4 rounded-xl hover:bg-blue-700 transition font-bold text-lg shadow-lg">
-                                    <i class="fas fa-check mr-2"></i>납입 처리
+                                    <i class="fas fa-check mr-2"></i><span id="submitButtonText">납입 처리</span>
+                                </button>
+                                <button type="button" id="deletePaymentBtn" onclick="deletePayment()" class="hidden px-8 bg-red-600 text-white py-4 rounded-xl hover:bg-red-700 transition font-bold text-lg">
+                                    <i class="fas fa-trash mr-2"></i>삭제
                                 </button>
                                 <button type="button" onclick="closePaymentModal()" class="px-8 bg-gray-200 text-gray-700 py-4 rounded-xl hover:bg-gray-300 transition font-bold text-lg">
                                     취소
@@ -424,9 +427,9 @@
                 
                 studentsOnThisDay.forEach(payment => {
                     const statusColors = {
-                        'paid': { bg: 'bg-green-500', text: '완납' },
-                        'partial': { bg: 'bg-yellow-500', text: '부분' },
-                        'unpaid': { bg: 'bg-red-500', text: '미납' }
+                        'paid': { bg: 'bg-green-500', text: '완납', icon: 'check' },
+                        'partial': { bg: 'bg-yellow-500', text: '부분', icon: 'minus' },
+                        'unpaid': { bg: 'bg-red-500', text: '미납', icon: 'exclamation' }
                     };
                     const status = statusColors[payment.status] || statusColors['unpaid'];
                     
@@ -435,11 +438,20 @@
                     studentItem.innerHTML = `
                         <div class="flex items-center justify-between">
                             <span class="truncate">${payment.student_name}</span>
-                            <span class="text-xs ml-2">${status.text}</span>
+                            <span class="text-xs ml-2"><i class="fas fa-${status.icon}-circle"></i> ${status.text}</span>
                         </div>
                     `;
                     studentItem.onclick = () => openPaymentModal(payment.student_id);
-                    studentItem.title = `${payment.student_name} - ${(payment.amount || 0).toLocaleString()}원`;
+                    
+                    // 다음 달 납입 알림 (미납 시에만)
+                    let tooltipText = `${payment.student_name} - ${(payment.amount || 0).toLocaleString()}원`;
+                    if (payment.status !== 'paid') {
+                        const nextMonthPaymentDay = day;
+                        const nextMonth = currentMonth === 12 ? 1 : currentMonth + 1;
+                        const nextYear = currentMonth === 12 ? currentYear + 1 : currentYear;
+                        tooltipText += `\n⏰ 다음 납입: ${nextYear}년 ${nextMonth}월 ${nextMonthPaymentDay}일`;
+                    }
+                    studentItem.title = tooltipText;
                     studentList.appendChild(studentItem);
                 });
                 
@@ -493,6 +505,40 @@
             document.getElementById('paymentModal').classList.add('hidden');
             document.getElementById('paymentInfo').classList.add('hidden');
             document.getElementById('paymentForm').reset();
+            document.getElementById('deletePaymentBtn').classList.add('hidden');
+            document.getElementById('submitButtonText').textContent = '납입 처리';
+        }
+
+        async function deletePayment() {
+            const paymentId = document.getElementById('selectedPaymentId').value;
+            if (!paymentId) {
+                alert('❌ 삭제할 납입 내역이 없습니다.');
+                return;
+            }
+            
+            if (!confirm('⚠️ 정말 이 납입 내역을 삭제하시겠습니까?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/tuition/payments/${paymentId}`, {
+                    method: 'DELETE',
+                    headers: getApiHeaders()
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('✅ 납입 내역이 삭제되었습니다!');
+                    closePaymentModal();
+                    await loadCalendar();
+                } else {
+                    alert('❌ 삭제 실패: ' + (data.error || '알 수 없는 오류'));
+                }
+            } catch (error) {
+                console.error('삭제 실패:', error);
+                alert('❌ 삭제 중 오류가 발생했습니다.');
+            }
         }
 
         async function loadStudentPaymentInfo() {
@@ -522,8 +568,28 @@
                 const statusText = payment.status === 'paid' ? '완납' : payment.status === 'partial' ? '부분납입' : '미납';
                 const statusClass = payment.status === 'paid' ? 'text-green-600' : payment.status === 'partial' ? 'text-yellow-600' : 'text-red-600';
                 document.getElementById('infoPaymentStatus').innerHTML = `<span class="${statusClass}">${statusText} (${(payment.paid_amount || 0).toLocaleString()}원)</span>`;
+                
+                // 기존 납입 정보를 폼에 채우기 (수정 가능하도록)
+                if (payment.paid_amount) {
+                    document.getElementById('paidAmount').value = payment.paid_amount;
+                }
+                if (payment.paid_date) {
+                    document.getElementById('paidDate').value = payment.paid_date;
+                }
+                if (payment.payment_method) {
+                    document.getElementById('paymentMethod').value = payment.payment_method;
+                }
+                if (payment.memo) {
+                    document.getElementById('paymentMemo').value = payment.memo;
+                }
+                
+                // 버튼 텍스트 변경 및 삭제 버튼 표시
+                document.getElementById('submitButtonText').textContent = '납입 수정';
+                document.getElementById('deletePaymentBtn').classList.remove('hidden');
             } else {
                 document.getElementById('infoPaymentStatus').innerHTML = '<span class="text-red-600">미납 (0원)</span>';
+                document.getElementById('submitButtonText').textContent = '납입 처리';
+                document.getElementById('deletePaymentBtn').classList.add('hidden');
             }
             
             document.getElementById('paymentInfo').classList.remove('hidden');
@@ -556,9 +622,9 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    alert('✅ 납입 처리가 완료되었습니다!');
+                    alert('✅ 납입 처리가 완료되었습니다!\n달력이 즉시 업데이트됩니다.');
                     closePaymentModal();
-                    loadCalendar();
+                    await loadCalendar(); // 즉시 업데이트
                 } else {
                     alert('❌ 납입 처리 실패: ' + (data.error || '알 수 없는 오류'));
                 }
