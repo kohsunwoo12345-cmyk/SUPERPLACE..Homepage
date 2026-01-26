@@ -26066,52 +26066,22 @@ app.get('/api/students', async (c) => {
       console.log('👥 [GetStudents] Full access - loading all students')
       console.log('👥 [GetStudents] Using academyId:', academyId)
       
-      // ✅ academy_id로 조회 + student_classes JOIN으로 모든 반 정보 가져오기
+      // ✅ 간단한 쿼리로 변경 - JOIN 문제 해결
       try {
-        console.log('👥 [GetStudents] ===== EXECUTING QUERY =====')
-        console.log('👥 [GetStudents] academyId:', academyId)
         console.log('👥 [GetStudents] Query: WHERE academy_id =', academyId)
-        
-        // 🔥 먼저 간단한 쿼리로 테스트
-        const simpleTest = await c.env.DB.prepare(
-          'SELECT COUNT(*) as count FROM students WHERE academy_id = ?'
-        ).bind(academyId).first()
-        console.log('👥 [GetStudents] Simple count test:', simpleTest)
-        
         const result1 = await c.env.DB.prepare(`
           SELECT 
             s.*,
             c.class_name,
-            c.monthly_fee as class_fee,
-            GROUP_CONCAT(
-              CASE 
-                WHEN sc.status = 'active' AND (sc.end_date IS NULL OR sc.end_date >= date('now'))
-                THEN c2.id || ':' || c2.class_name || ':' || COALESCE(sc.monthly_fee, c2.monthly_fee)
-              END
-            ) as all_classes
+            c.monthly_fee as class_fee
           FROM students s
           LEFT JOIN classes c ON s.class_id = c.id
-          LEFT JOIN student_classes sc ON s.id = sc.student_id
-          LEFT JOIN classes c2 ON sc.class_id = c2.id
           WHERE s.academy_id = ? 
-            AND (s.status IS NULL OR s.status != 'deleted') 
-          GROUP BY s.id
+            AND s.status = 'active'
           ORDER BY s.id DESC
         `).bind(academyId).all()
         
         students = result1.results || []
-        
-        // all_classes 파싱하여 배열로 변환
-        students = students.map(student => {
-          if (student.all_classes) {
-            const classes = student.all_classes.split(',').map(cls => {
-              const [id, name, fee] = cls.split(':')
-              return { id: parseInt(id), name, fee: parseInt(fee) }
-            })
-            return { ...student, classes }
-          }
-          return student
-        })
         
         console.log('✅ [GetStudents] SUCCESS! Found', students.length, 'students')
         
