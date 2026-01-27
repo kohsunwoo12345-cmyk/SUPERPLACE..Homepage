@@ -66,31 +66,31 @@
 
         <!-- 통계 카드 -->
         <div class="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
-            <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-lg p-6 text-white">
+            <div onclick="filterStudents('all')" class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-lg p-6 text-white cursor-pointer hover:scale-105 transition-transform">
                 <div class="flex items-center justify-between mb-2">
                     <span class="text-sm font-medium opacity-90">총 학생 수</span>
                     <i class="fas fa-users text-2xl opacity-80"></i>
                 </div>
                 <div class="text-3xl font-bold" id="totalStudents">0</div>
-                <div class="text-xs opacity-75 mt-1">명</div>
+                <div class="text-xs opacity-75 mt-1">명 <i class="fas fa-filter ml-1"></i></div>
             </div>
             
-            <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl shadow-lg p-6 text-white">
+            <div onclick="filterStudents('paid')" class="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl shadow-lg p-6 text-white cursor-pointer hover:scale-105 transition-transform">
                 <div class="flex items-center justify-between mb-2">
                     <span class="text-sm font-medium opacity-90">완납</span>
                     <i class="fas fa-check-circle text-2xl opacity-80"></i>
                 </div>
                 <div class="text-3xl font-bold" id="paidStudents">0</div>
-                <div class="text-xs opacity-75 mt-1">명</div>
+                <div class="text-xs opacity-75 mt-1">명 <i class="fas fa-filter ml-1"></i></div>
             </div>
             
-            <div class="bg-gradient-to-br from-red-500 to-red-600 rounded-2xl shadow-lg p-6 text-white">
+            <div onclick="filterStudents('unpaid')" class="bg-gradient-to-br from-red-500 to-red-600 rounded-2xl shadow-lg p-6 text-white cursor-pointer hover:scale-105 transition-transform">
                 <div class="flex items-center justify-between mb-2">
                     <span class="text-sm font-medium opacity-90">미납</span>
                     <i class="fas fa-exclamation-circle text-2xl opacity-80"></i>
                 </div>
                 <div class="text-3xl font-bold" id="unpaidStudents">0</div>
-                <div class="text-xs opacity-75 mt-1">명</div>
+                <div class="text-xs opacity-75 mt-1">명 <i class="fas fa-filter ml-1"></i></div>
             </div>
             
             <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl shadow-lg p-6 text-white">
@@ -304,6 +304,7 @@
         let currentYear, currentMonth;
         let allStudents = [];
         let allPayments = {};
+        let currentFilter = 'all'; // 'all', 'paid', 'unpaid'
 
         // 초기화
         document.addEventListener('DOMContentLoaded', () => {
@@ -371,6 +372,15 @@
             }
         }
 
+        function filterStudents(filter) {
+            currentFilter = filter;
+            renderCalendar();
+            
+            // 버튼 스타일 업데이트 (시각적 피드백)
+            const filterText = filter === 'all' ? '전체' : filter === 'paid' ? '완납' : '미납';
+            console.log(`🔍 필터 적용: ${filterText}`);
+        }
+
         function renderCalendar() {
             const firstDay = new Date(currentYear, currentMonth - 1, 1).getDay();
             const lastDate = new Date(currentYear, currentMonth, 0).getDate();
@@ -419,11 +429,20 @@
                 const studentList = document.createElement('div');
                 studentList.className = 'space-y-1 overflow-y-auto max-h-24';
                 
-                // 해당 날짜가 결제일인 학생 필터링
+                // 해당 날짜가 결제일인 학생 필터링 + 납입 상태 필터
                 const studentsOnThisDay = allStudents.filter(payment => {
                     if (!payment.enrollment_date) return false;
                     const enrollDate = new Date(payment.enrollment_date);
-                    return enrollDate.getDate() === day;
+                    const isMatchingDay = enrollDate.getDate() === day;
+                    
+                    // 납입 상태 필터 적용
+                    if (currentFilter === 'paid') {
+                        return isMatchingDay && payment.status === 'paid';
+                    } else if (currentFilter === 'unpaid') {
+                        return isMatchingDay && payment.status === 'unpaid';
+                    } else {
+                        return isMatchingDay; // 'all'
+                    }
                 });
                 
                 studentsOnThisDay.forEach(payment => {
