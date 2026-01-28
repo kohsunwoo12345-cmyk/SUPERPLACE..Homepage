@@ -49640,7 +49640,6 @@ app.get('/api/store/init-db', async (c) => {
   }
 })
 
-export default app
 // Force rebuild: Sun Jan 18 18:13:00 UTC 2026
 // Cache buster: 1768863600
 // Force deploy: Mon Jan 20 00:00:00 UTC 2026
@@ -51443,3 +51442,4 @@ app.get('/admin/card-payments', async (c) => {
   `)
 })
 
+export default app

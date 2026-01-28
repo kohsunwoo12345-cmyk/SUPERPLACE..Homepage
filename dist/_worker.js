@@ -39265,4 +39265,3 @@ ${n}`;return await e.env.DB.prepare(`
     </body>
     </html>
   `)});const ut=new Fe,ea=Object.assign({"/src/index.tsx":c});let At=!1;for(const[,e]of Object.entries(ea))e&&(ut.all("*",t=>{let s;try{s=t.executionCtx}catch{}return e.fetch(t.req.raw,t.env,s)}),ut.notFound(t=>{let s;try{s=t.executionCtx}catch{}return e.fetch(t.req.raw,t.env,s)}),At=!0);if(!At)throw new Error("Can't import modules from ['/src/index.ts','/src/index.tsx','/app/server.ts']");export{ut as default};
-Wed Jan 28 22:30:25 UTC 2026
