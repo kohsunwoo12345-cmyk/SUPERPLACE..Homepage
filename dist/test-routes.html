@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>라우트 테스트</title>
+</head>
+<body>
+    <h1>라우트 테스트</h1>
+    <ul>
+        <li><a href="/tools/landing-builder">랜딩페이지 생성기</a></li>
+        <li><a href="/tools/ai-learning-report">AI 학습 분석 리포트</a></li>
+        <li><a href="/dashboard">대시보드</a></li>
+    </ul>
+    
+    <script>
+        async function testRoutes() {
+            const routes = [
+                '/tools/landing-builder',
+                '/tools/ai-learning-report',
+                '/dashboard'
+            ];
+            
+            console.log('=== 라우트 테스트 시작 ===');
+            for (const route of routes) {
+                try {
+                    const response = await fetch(route);
+                    console.log(`${route}: ${response.status}`);
+                } catch (error) {
+                    console.error(`${route}: 오류`, error);
+                }
+            }
+        }
+        
+        testRoutes();
+    </script>
+</body>
+</html>
