@@ -15800,7 +15800,7 @@ app.get('/consulting', async (c) => {
               program_id: 'naver-place-consulting',
               name: '네이버 플레이스 상위노출 컨설팅',
               description: '실제 포스팅의 집중 컨설팅 시작하실 마케팅!',
-              image_url: '/static/images/naver-place-consulting.jpg',
+              image_url: '/thumbnail.jpg',
               price: 1210000,
               sessions: 6,
               details: '네이버 플레이스 상위노출을 위한 1:1 맞춤 컨설팅 프로그램입니다. 6회에 걸쳐 플레이스 등록부터 상위노출 전략, 리뷰 관리, 키워드 최적화까지 실전 노하우를 전수받으실 수 있습니다.',
@@ -15811,7 +15811,7 @@ app.get('/consulting', async (c) => {
               program_id: 'blog-consulting',
               name: '블로그 1:1 컨설팅',
               description: '실제 포스팅의 집중 컨설팅 시작하실 마케팅!',
-              image_url: '/static/images/blog-consulting.jpg',
+              image_url: '/thumbnail.jpg',
               price: 1210000,
               sessions: 6,
               details: '블로그 상위노출을 위한 1:1 맞춤 컨설팅 프로그램입니다. 6회에 걸쳐 SEO 최적화, 콘텐츠 작성법, 키워드 전략, 유입 증대 방법까지 블로그 마케팅의 모든 것을 배우실 수 있습니다.',
@@ -15940,7 +15940,7 @@ app.get('/consulting/:programId', async (c) => {
               program_id: 'naver-place-consulting',
               name: '네이버 플레이스 상위노출 컨설팅',
               description: '실제 포스팅의 집중 컨설팅 시작하실 마케팅!',
-              image_url: '/static/images/naver-place-consulting.jpg',
+              image_url: '/thumbnail.jpg',
               price: 1210000,
               sessions: 6,
               details: '네이버 플레이스 상위노출을 위한 1:1 맞춤 컨설팅 프로그램입니다. 6회에 걸쳐 플레이스 등록부터 상위노출 전략, 리뷰 관리, 키워드 최적화까지 실전 노하우를 전수받으실 수 있습니다.',
@@ -15951,7 +15951,7 @@ app.get('/consulting/:programId', async (c) => {
               program_id: 'blog-consulting',
               name: '블로그 1:1 컨설팅',
               description: '실제 포스팅의 집중 컨설팅 시작하실 마케팅!',
-              image_url: '/static/images/blog-consulting.jpg',
+              image_url: '/thumbnail.jpg',
               price: 1210000,
               sessions: 6,
               details: '블로그 상위노출을 위한 1:1 맞춤 컨설팅 프로그램입니다. 6회에 걸쳐 SEO 최적화, 콘텐츠 작성법, 키워드 전략, 유입 증대 방법까지 블로그 마케팅의 모든 것을 배우실 수 있습니다.',
@@ -17634,7 +17634,7 @@ app.get('/programs', async (c) => {
               program_id: 'naver-place-consulting',
               name: '네이버 플레이스 상위노출 컨설팅',
               description: '실제 포스팅의 집중 컨설팅 시작하실 마케팅!',
-              image_url: '/static/images/naver-place-consulting.jpg',
+              image_url: '/thumbnail.jpg',
               price: 1210000,
               sessions: 6,
               details: '네이버 플레이스 상위노출을 위한 1:1 맞춤 컨설팅 프로그램입니다. 6회에 걸쳐 플레이스 등록부터 상위노출 전략, 리뷰 관리, 키워드 최적화까지 실전 노하우를 전수받으실 수 있습니다.',
@@ -17645,7 +17645,7 @@ app.get('/programs', async (c) => {
               program_id: 'blog-consulting',
               name: '블로그 1:1 컨설팅',
               description: '실제 포스팅의 집중 컨설팅 시작하실 마케팅!',
-              image_url: '/static/images/blog-consulting.jpg',
+              image_url: '/thumbnail.jpg',
               price: 1210000,
               sessions: 6,
               details: '블로그 상위노출을 위한 1:1 맞춤 컨설팅 프로그램입니다. 6회에 걸쳐 SEO 최적화, 콘텐츠 작성법, 키워드 전략, 유입 증대 방법까지 블로그 마케팅의 모든 것을 배우실 수 있습니다.',
@@ -17720,7 +17720,8 @@ app.get('/programs', async (c) => {
             }).join('');
           }
 
-          loadPrograms();
+          // 페이지 로드 시 실행
+          fetchPrograms();
         </script>
     </body>
     </html>
@@ -51440,6 +51441,230 @@ app.get('/admin/card-payments', async (c) => {
     </body>
     </html>
   `)
+})
+
+// ==================== 프로그램 관리 API ====================
+
+// 프로그램 목록 조회 (공개 API)
+app.get('/api/programs/list', async (c) => {
+  try {
+    const { env } = c
+    const result = await env.DB.prepare(`
+      SELECT * FROM programs 
+      WHERE status = 'active' 
+      ORDER BY display_order ASC, created_at DESC
+    `).all()
+    
+    const programs = result.results.map(p => ({
+      ...p,
+      features: p.features ? JSON.parse(p.features) : []
+    }))
+    
+    return c.json({ success: true, programs })
+  } catch (error) {
+    return c.json({ success: false, error: error.message }, 500)
+  }
+})
+
+// 프로그램 상세 조회
+app.get('/api/programs/:id', async (c) => {
+  try {
+    const { env } = c
+    const id = c.req.param('id')
+    
+    const program = await env.DB.prepare(`
+      SELECT * FROM programs WHERE program_id = ? OR id = ?
+    `).bind(id, id).first()
+    
+    if (!program) {
+      return c.json({ success: false, error: 'Program not found' }, 404)
+    }
+    
+    return c.json({ 
+      success: true, 
+      program: {
+        ...program,
+        features: program.features ? JSON.parse(program.features) : []
+      }
+    })
+  } catch (error) {
+    return c.json({ success: false, error: error.message }, 500)
+  }
+})
+
+// 프로그램 생성 (관리자 전용)
+app.post('/api/admin/programs', async (c) => {
+  try {
+    const session = getCookie(c, 'session')
+    if (!session) {
+      return c.json({ success: false, error: 'Unauthorized' }, 401)
+    }
+    
+    const { env } = c
+    const sessionData = await env.DB.prepare('SELECT user_id FROM sessions WHERE session_token = ?')
+      .bind(session).first()
+    
+    if (!sessionData) {
+      return c.json({ success: false, error: 'Invalid session' }, 401)
+    }
+    
+    const user = await env.DB.prepare('SELECT role FROM users WHERE id = ?')
+      .bind(sessionData.user_id).first()
+    
+    if (user.role !== 'admin') {
+      return c.json({ success: false, error: 'Admin access required' }, 403)
+    }
+    
+    const body = await c.req.json()
+    const { program_id, name, description, details, image_url, price, sessions, type, features } = body
+    
+    await env.DB.prepare(`
+      INSERT INTO programs (program_id, name, description, details, image_url, price, sessions, type, features)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).bind(
+      program_id,
+      name,
+      description || '',
+      details || '',
+      image_url || '/thumbnail.jpg',
+      price || null,
+      sessions || null,
+      type || 'consulting',
+      JSON.stringify(features || [])
+    ).run()
+    
+    return c.json({ success: true, message: 'Program created successfully' })
+  } catch (error) {
+    return c.json({ success: false, error: error.message }, 500)
+  }
+})
+
+// 프로그램 수정 (관리자 전용)
+app.put('/api/admin/programs/:id', async (c) => {
+  try {
+    const session = getCookie(c, 'session')
+    if (!session) {
+      return c.json({ success: false, error: 'Unauthorized' }, 401)
+    }
+    
+    const { env } = c
+    const sessionData = await env.DB.prepare('SELECT user_id FROM sessions WHERE session_token = ?')
+      .bind(session).first()
+    
+    if (!sessionData) {
+      return c.json({ success: false, error: 'Invalid session' }, 401)
+    }
+    
+    const user = await env.DB.prepare('SELECT role FROM users WHERE id = ?')
+      .bind(sessionData.user_id).first()
+    
+    if (user.role !== 'admin') {
+      return c.json({ success: false, error: 'Admin access required' }, 403)
+    }
+    
+    const id = c.req.param('id')
+    const body = await c.req.json()
+    const { name, description, details, image_url, price, sessions, type, features, status } = body
+    
+    await env.DB.prepare(`
+      UPDATE programs 
+      SET name = ?, description = ?, details = ?, image_url = ?, price = ?, 
+          sessions = ?, type = ?, features = ?, status = ?, updated_at = CURRENT_TIMESTAMP
+      WHERE id = ? OR program_id = ?
+    `).bind(
+      name,
+      description || '',
+      details || '',
+      image_url || '/thumbnail.jpg',
+      price || null,
+      sessions || null,
+      type || 'consulting',
+      JSON.stringify(features || []),
+      status || 'active',
+      id,
+      id
+    ).run()
+    
+    return c.json({ success: true, message: 'Program updated successfully' })
+  } catch (error) {
+    return c.json({ success: false, error: error.message }, 500)
+  }
+})
+
+// 프로그램 삭제 (관리자 전용)
+app.delete('/api/admin/programs/:id', async (c) => {
+  try {
+    const session = getCookie(c, 'session')
+    if (!session) {
+      return c.json({ success: false, error: 'Unauthorized' }, 401)
+    }
+    
+    const { env } = c
+    const sessionData = await env.DB.prepare('SELECT user_id FROM sessions WHERE session_token = ?')
+      .bind(session).first()
+    
+    if (!sessionData) {
+      return c.json({ success: false, error: 'Invalid session' }, 401)
+    }
+    
+    const user = await env.DB.prepare('SELECT role FROM users WHERE id = ?')
+      .bind(sessionData.user_id).first()
+    
+    if (user.role !== 'admin') {
+      return c.json({ success: false, error: 'Admin access required' }, 403)
+    }
+    
+    const id = c.req.param('id')
+    
+    // Soft delete
+    await env.DB.prepare(`
+      UPDATE programs SET status = 'deleted', updated_at = CURRENT_TIMESTAMP
+      WHERE id = ? OR program_id = ?
+    `).bind(id, id).run()
+    
+    return c.json({ success: true, message: 'Program deleted successfully' })
+  } catch (error) {
+    return c.json({ success: false, error: error.message }, 500)
+  }
+})
+
+// 관리자용 프로그램 목록 (삭제된 것 포함)
+app.get('/api/admin/programs/all', async (c) => {
+  try {
+    const session = getCookie(c, 'session')
+    if (!session) {
+      return c.json({ success: false, error: 'Unauthorized' }, 401)
+    }
+    
+    const { env } = c
+    const sessionData = await env.DB.prepare('SELECT user_id FROM sessions WHERE session_token = ?')
+      .bind(session).first()
+    
+    if (!sessionData) {
+      return c.json({ success: false, error: 'Invalid session' }, 401)
+    }
+    
+    const user = await env.DB.prepare('SELECT role FROM users WHERE id = ?')
+      .bind(sessionData.user_id).first()
+    
+    if (user.role !== 'admin') {
+      return c.json({ success: false, error: 'Admin access required' }, 403)
+    }
+    
+    const result = await env.DB.prepare(`
+      SELECT * FROM programs 
+      ORDER BY display_order ASC, created_at DESC
+    `).all()
+    
+    const programs = result.results.map(p => ({
+      ...p,
+      features: p.features ? JSON.parse(p.features) : []
+    }))
+    
+    return c.json({ success: true, programs })
+  } catch (error) {
+    return c.json({ success: false, error: error.message }, 500)
+  }
 })
 
 export default app
