@@ -1,6 +1,8 @@
-{
-  "version": 1,
-  "include": [
+import { writeFileSync } from 'fs';
+
+const routesConfig = {
+  version: 1,
+  include: [
     "/",
     "/api/*",
     "/admin/*",
@@ -14,7 +16,7 @@
     "/tools/*",
     "/consulting/*"
   ],
-  "exclude": [
+  exclude: [
     "/*.jpg",
     "/*.png",
     "/*.gif",
@@ -26,4 +28,7 @@
     "/static/*",
     "/downloads/*"
   ]
-}
+};
+
+writeFileSync('dist/_routes.json', JSON.stringify(routesConfig, null, 2));
+console.log('✅ _routes.json 수정 완료');
