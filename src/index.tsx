@@ -17628,8 +17628,8 @@ app.get('/programs', async (c) => {
         </footer>
 
         <script>
-          // 하드코딩된 프로그램 데이터
-          const programs = [
+          // 프로그램 데이터 (DB에서 가져오기, fallback으로 하드코딩 사용)
+          let programs = [
             {
               program_id: 'naver-place-consulting',
               name: '네이버 플레이스 상위노출 컨설팅',
@@ -17675,6 +17675,20 @@ app.get('/programs', async (c) => {
               type: 'inquiry'
             }
           ];
+
+          // DB에서 프로그램 가져오기
+          async function fetchPrograms() {
+            try {
+              const response = await fetch('/api/programs/list');
+              const data = await response.json();
+              if (data.success && data.programs && data.programs.length > 0) {
+                programs = data.programs;
+              }
+            } catch (error) {
+              console.log('Using default programs:', error);
+            }
+            loadPrograms();
+          }
 
           function loadPrograms() {
             const grid = document.getElementById('productsGrid');
@@ -40249,12 +40263,10 @@ app.get('/admin/revenue', async (c) => {
 })
 
 // 관리자 프로그램 관리 페이지
-app.get('/admin/programs', async (c) => {
-  const { env } = c
-  
-  // 모든 사용자와 프로그램 목록 조회
-  const users = await env.DB.prepare('SELECT id, email, name, role FROM users WHERE role != ? ORDER BY created_at DESC').bind('admin').all()
+// 새로운 /admin/programs 라우트
+// 이 코드를 src/index.tsx의 40252-40467 라인과 교체하세요
 
+app.get('/admin/programs', async (c) => {
   return c.html(`
     <!DOCTYPE html>
     <html lang="ko">
@@ -40264,9 +40276,13 @@ app.get('/admin/programs', async (c) => {
         <title>프로그램 관리 - 슈퍼플레이스</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+        <style>
+          @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
+          * { font-family: 'Pretendard Variable', Pretendard, sans-serif; }
+        </style>
     </head>
     <body class="bg-gray-50">
-        <nav class="bg-white border-b border-gray-200 sticky top-0 z-50">
+        <nav class="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
             <div class="max-w-7xl mx-auto px-6 py-4">
                 <div class="flex justify-between items-center">
                     <div class="flex items-center gap-8">
@@ -40276,7 +40292,7 @@ app.get('/admin/programs', async (c) => {
                             <a href="/admin/users" class="text-gray-600 hover:text-purple-600">사용자</a>
                             <a href="/admin/contacts" class="text-gray-600 hover:text-purple-600">문의</a>
                             <a href="/admin/bank-transfers" class="text-gray-600 hover:text-purple-600">계좌이체</a>
-                            <a href="/admin/programs" class="text-purple-600 font-semibold">프로그램</a>
+                            <a href="/admin/programs" class="text-purple-600 font-semibold border-b-2 border-purple-600">프로그램</a>
                         </div>
                     </div>
                     <button onclick="logout()" class="text-gray-600 hover:text-red-600">
@@ -40287,184 +40303,285 @@ app.get('/admin/programs', async (c) => {
         </nav>
 
         <div class="max-w-7xl mx-auto px-6 py-8">
-            <div class="mb-8">
-                <h1 class="text-3xl font-bold text-gray-900 mb-2">프로그램 관리</h1>
-                <p class="text-gray-600">총 13개의 교육 프로그램이 등록되어 있습니다. 클릭하여 권한을 관리하세요.</p>
+            <div class="flex justify-between items-center mb-8">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900 mb-2">프로그램 관리</h1>
+                    <p class="text-gray-600">학원 컨설팅 프로그램을 등록하고 관리하세요.</p>
+                </div>
+                <button onclick="openAddModal()" class="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-semibold shadow-sm">
+                    <i class="fas fa-plus mr-2"></i>프로그램 추가
+                </button>
             </div>
 
+            <!-- 프로그램 목록 -->
             <div id="programsGrid" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
         </div>
 
-        <!-- 권한 관리 모달 -->
-        <div id="permissionModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div class="bg-white rounded-2xl p-8 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <!-- 프로그램 추가/수정 모달 -->
+        <div id="programModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div class="bg-white rounded-2xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
                 <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold text-gray-900">
-                        <span id="modalProgramIcon"></span>
-                        <span id="modalProgramName"></span> 권한 관리
-                    </h2>
+                    <h2 id="modalTitle" class="text-2xl font-bold text-gray-900">프로그램 추가</h2>
                     <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700">
                         <i class="fas fa-times text-2xl"></i>
                     </button>
                 </div>
 
-                <div class="mb-6">
-                    <h3 class="text-lg font-bold mb-4">사용자별 권한 설정</h3>
-                    <div id="usersList" class="space-y-3 max-h-96 overflow-y-auto"></div>
-                </div>
+                <form id="programForm" class="space-y-6">
+                    <input type="hidden" id="programId">
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">프로그램 ID*</label>
+                        <input type="text" id="program_id" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="예: naver-place-consulting" required>
+                        <p class="text-xs text-gray-500 mt-1">영문, 숫자, 하이픈만 사용 (수정 불가)</p>
+                    </div>
 
-                <div class="flex gap-4">
-                    <button onclick="savePermissions()" class="flex-1 px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-semibold">
-                        <i class="fas fa-save mr-2"></i>저장
-                    </button>
-                    <button onclick="closeModal()" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-semibold">
-                        취소
-                    </button>
-                </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">프로그램 이름*</label>
+                        <input type="text" id="name" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="예: 네이버 플레이스 상위노출 컨설팅" required>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">간단한 설명*</label>
+                        <input type="text" id="description" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="예: 실제 포스팅의 집중 컨설팅 시작하실 마케팅!" required>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">상세 설명</label>
+                        <textarea id="details" rows="4" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="프로그램의 상세한 내용을 입력하세요"></textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">이미지 URL</label>
+                        <input type="text" id="image_url" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="/thumbnail.jpg">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">가격 (원)</label>
+                            <input type="number" id="price" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="1210000">
+                            <p class="text-xs text-gray-500 mt-1">비우면 "가격 문의"로 표시</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">회차</label>
+                            <input type="number" id="sessions" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="6">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">유형*</label>
+                        <select id="type" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                            <option value="consulting">컨설팅 (수강하기)</option>
+                            <option value="inquiry">문의형 (문의하기)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">특징 (한 줄에 하나씩)</label>
+                        <textarea id="features" rows="6" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="플레이스 최적화 전략
+리뷰 관리 노하우
+키워드 분석 및 타겟팅"></textarea>
+                    </div>
+
+                    <div class="flex gap-4">
+                        <button type="submit" class="flex-1 px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-semibold">
+                            <i class="fas fa-save mr-2"></i>저장
+                        </button>
+                        <button type="button" onclick="closeModal()" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-semibold">
+                            취소
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
 
         <script>
-            const programs = [
-                { id: 'naver-place', name: '네이버 플레이스 상위노출', desc: '지역 검색 1위를 위한 실전 노하우', icon: '🗺️', url: '/programs/naver-place' },
-                { id: 'blog', name: '블로그 상위노출', desc: '검색 1페이지 진입을 위한 블로그 마케팅', icon: '📝', url: '/programs/blog' },
-                { id: 'funnel', name: '퍼널 마케팅', desc: '자동화된 학생 모집 시스템 구축', icon: '🎯', url: '/programs/funnel' },
-                { id: 'sns', name: 'SNS 마케팅', desc: '인스타그램, 페이스북 활용 전략', icon: '📱', url: '/programs/sns' },
-                { id: 'video', name: '영상 마케팅', desc: '유튜브, 숏폼 콘텐츠 제작', icon: '🎥', url: '/programs/video' },
-                { id: 'ad', name: '온라인 광고', desc: '네이버, 구글 광고 운영 전략', icon: '💰', url: '/programs/ad' },
-                { id: 'community', name: '커뮤니티 마케팅', desc: '학부모 커뮤니티 활성화 전략', icon: '👥', url: '/programs/community' },
-                { id: 'branding', name: '브랜딩', desc: '학원 브랜드 아이덴티티 구축', icon: '🎨', url: '/programs/branding' },
-                { id: 'data', name: '데이터 분석', desc: '마케팅 성과 분석 및 최적화', icon: '📊', url: '/programs/data' },
-                { id: 'carrot', name: '당근 비즈니스 마케팅', desc: '지역 기반 당근마켓 활용 전략', icon: '🥕', url: '/programs/carrot' },
-                { id: 'meta', name: '메타 광고', desc: 'Facebook/Instagram 광고 운영', icon: '📘', url: '/programs/meta' },
-                { id: 'youtube-ad', name: '유튜브 광고', desc: '유튜브 광고 캠페인 운영', icon: '📺', url: '/programs/youtube-ad' },
-                { id: 'threads', name: '쓰레드 마케팅', desc: 'Meta Threads 활용 전략', icon: '🧵', url: '/programs/threads' }
-            ];
+            let programs = [];
+            let editingProgramId = null;
 
-            const users = ${JSON.stringify(users.results || [])};
-            let currentProgram = null;
-            let userPermissions = {};
+            // 프로그램 목록 로드
+            async function loadPrograms() {
+                try {
+                    const response = await fetch('/api/admin/programs/all');
+                    const data = await response.json();
+                    if (data.success) {
+                        programs = data.programs;
+                        renderPrograms();
+                    }
+                } catch (error) {
+                    console.error('Failed to load programs:', error);
+                }
+            }
 
-            // 프로그램 카드 렌더링
+            // 프로그램 렌더링
             function renderPrograms() {
                 const grid = document.getElementById('programsGrid');
-                grid.innerHTML = programs.map(p => 
-                    '<div onclick="openPermissionModal(\\'' + p.id + '\\')" ' +
-                         'class="bg-white rounded-xl shadow-sm p-6 border border-gray-200 hover:border-purple-300 hover:shadow-lg transition cursor-pointer">' +
-                        '<div class="text-4xl mb-3">' + p.icon + '</div>' +
-                        '<h3 class="text-xl font-bold text-gray-900 mb-2">' + p.name + '</h3>' +
-                        '<p class="text-gray-600 text-sm mb-4">' + p.desc + '</p>' +
-                        '<div class="flex gap-2">' +
-                            '<span class="px-3 py-1 bg-green-100 text-green-700 text-xs rounded-full">활성화</span>' +
-                            '<a href="' + p.url + '" target="_blank" onclick="event.stopPropagation()" ' +
-                               'class="px-3 py-1 bg-blue-100 text-blue-700 text-xs rounded-full hover:bg-blue-200">' +
-                                '<i class="fas fa-external-link-alt mr-1"></i>보기' +
-                            '</a>' +
-                        '</div>' +
-                    '</div>'
-                ).join('');
-            }
-
-            // 권한 관리 모달 열기
-            async function openPermissionModal(programId) {
-                currentProgram = programs.find(p => p.id === programId);
-                document.getElementById('modalProgramIcon').textContent = currentProgram.icon;
-                document.getElementById('modalProgramName').textContent = currentProgram.name;
-
-                // 사용자별 권한 조회
-                userPermissions = {};
-                for (const user of users) {
-                    const response = await fetch('/api/user/' + user.id + '/permissions');
-                    const data = await response.json();
-                    const permissions = data.permissions || [];
-                    userPermissions[user.id] = permissions.some(
-                        p => p.permission_type === 'program' && p.permission_name === programId && p.is_active === 1
-                    );
-                }
-
-                renderUsersList();
-                document.getElementById('permissionModal').classList.remove('hidden');
-            }
-
-            // 사용자 목록 렌더링
-            function renderUsersList() {
-                const list = document.getElementById('usersList');
-                list.innerHTML = users.map(user =>
-                    '<div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">' +
-                        '<div class="flex-1">' +
-                            '<p class="font-semibold text-gray-900">' + user.name + '</p>' +
-                            '<p class="text-sm text-gray-600">' + user.email + '</p>' +
-                        '</div>' +
-                        '<label class="flex items-center cursor-pointer">' +
-                            '<input type="checkbox" ' +
-                                   'id="user-' + user.id + '" ' +
-                                   (userPermissions[user.id] ? 'checked' : '') +
-                                   ' class="w-5 h-5 text-purple-600 rounded focus:ring-purple-500">' +
-                            '<span class="ml-3 text-sm font-medium text-gray-900">권한 부여</span>' +
-                        '</label>' +
-                    '</div>'
-                ).join('');
-            }
-
-            // 권한 저장
-            async function savePermissions() {
-                const updates = [];
-                
-                for (const user of users) {
-                    const checkbox = document.getElementById('user-' + user.id);
-                    const hasPermission = checkbox.checked;
-                    const hadPermission = userPermissions[user.id];
-
-                    if (hasPermission !== hadPermission) {
-                        updates.push({ userId: user.id, hasPermission });
-                    }
-                }
-
-                if (updates.length === 0) {
-                    alert('변경사항이 없습니다.');
+                if (programs.length === 0) {
+                    grid.innerHTML = \`
+                        <div class="col-span-full text-center py-16">
+                            <i class="fas fa-folder-open text-6xl text-gray-300 mb-4"></i>
+                            <p class="text-gray-500 text-lg">등록된 프로그램이 없습니다.</p>
+                            <button onclick="openAddModal()" class="mt-4 px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
+                                첫 프로그램 추가하기
+                            </button>
+                        </div>
+                    \`;
                     return;
                 }
 
-                for (const update of updates) {
-                    const url = update.hasPermission 
-                        ? '/api/admin/permissions/grant'
-                        : '/api/admin/permissions/revoke';
-
-                    await fetch(url, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            userId: update.userId,
-                            permissionType: 'program',
-                            permissionName: currentProgram.id
-                        })
-                    });
-                }
-
-                alert('권한이 성공적으로 저장되었습니다.');
-                closeModal();
+                grid.innerHTML = programs.map(p => \`
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-lg transition">
+                        <div class="aspect-video bg-gray-200 relative">
+                            <img src="\${p.image_url}" alt="\${p.name}" class="w-full h-full object-cover">
+                            \${p.status === 'deleted' ? '<div class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center"><span class="text-white font-bold text-xl">삭제됨</span></div>' : ''}
+                        </div>
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold text-gray-900 mb-2">\${p.name}</h3>
+                            <p class="text-gray-600 text-sm mb-4">\${p.description}</p>
+                            <div class="flex items-center justify-between mb-4">
+                                <div>
+                                    \${p.price ? \`<span class="text-2xl font-bold text-purple-600">\${(p.price / 10000).toFixed(0)}만원</span>\` : '<span class="text-lg font-semibold text-gray-600">가격 문의</span>'}
+                                    \${p.sessions ? \`<p class="text-sm text-gray-500">총 \${p.sessions}회</p>\` : ''}
+                                </div>
+                                <span class="px-3 py-1 bg-\${p.status === 'active' ? 'green' : 'red'}-100 text-\${p.status === 'active' ? 'green' : 'red'}-700 text-xs rounded-full font-semibold">
+                                    \${p.status === 'active' ? '활성화' : '삭제됨'}
+                                </span>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="editProgram(\${p.id})" class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-semibold">
+                                    <i class="fas fa-edit mr-1"></i>수정
+                                </button>
+                                <button onclick="deleteProgram(\${p.id})" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm font-semibold">
+                                    <i class="fas fa-trash mr-1"></i>삭제
+                                </button>
+                                <a href="/programs" target="_blank" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 text-sm font-semibold">
+                                    <i class="fas fa-external-link-alt"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                \`).join('');
             }
 
+            // 모달 열기 (추가)
+            function openAddModal() {
+                editingProgramId = null;
+                document.getElementById('modalTitle').textContent = '프로그램 추가';
+                document.getElementById('programForm').reset();
+                document.getElementById('program_id').disabled = false;
+                document.getElementById('programModal').classList.remove('hidden');
+            }
+
+            // 모달 열기 (수정)
+            function editProgram(id) {
+                const program = programs.find(p => p.id === id);
+                if (!program) return;
+
+                editingProgramId = id;
+                document.getElementById('modalTitle').textContent = '프로그램 수정';
+                document.getElementById('programId').value = id;
+                document.getElementById('program_id').value = program.program_id;
+                document.getElementById('program_id').disabled = true;
+                document.getElementById('name').value = program.name;
+                document.getElementById('description').value = program.description || '';
+                document.getElementById('details').value = program.details || '';
+                document.getElementById('image_url').value = program.image_url || '';
+                document.getElementById('price').value = program.price || '';
+                document.getElementById('sessions').value = program.sessions || '';
+                document.getElementById('type').value = program.type || 'consulting';
+                document.getElementById('features').value = program.features ? program.features.join('\\n') : '';
+                
+                document.getElementById('programModal').classList.remove('hidden');
+            }
+
+            // 모달 닫기
             function closeModal() {
-                document.getElementById('permissionModal').classList.add('hidden');
-                currentProgram = null;
+                document.getElementById('programModal').classList.add('hidden');
+                document.getElementById('programForm').reset();
+                editingProgramId = null;
+            }
+
+            // 폼 제출
+            document.getElementById('programForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const programData = {
+                    program_id: document.getElementById('program_id').value.trim(),
+                    name: document.getElementById('name').value.trim(),
+                    description: document.getElementById('description').value.trim(),
+                    details: document.getElementById('details').value.trim(),
+                    image_url: document.getElementById('image_url').value.trim() || '/thumbnail.jpg',
+                    price: document.getElementById('price').value ? parseInt(document.getElementById('price').value) : null,
+                    sessions: document.getElementById('sessions').value ? parseInt(document.getElementById('sessions').value) : null,
+                    type: document.getElementById('type').value,
+                    features: document.getElementById('features').value.split('\\n').map(f => f.trim()).filter(f => f),
+                    status: 'active'
+                };
+
+                try {
+                    const url = editingProgramId 
+                        ? \`/api/admin/programs/\${editingProgramId}\`
+                        : '/api/admin/programs';
+                    const method = editingProgramId ? 'PUT' : 'POST';
+
+                    const response = await fetch(url, {
+                        method,
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(programData)
+                    });
+
+                    const result = await response.json();
+                    if (result.success) {
+                        alert(editingProgramId ? '✅ 프로그램이 수정되었습니다.' : '✅ 프로그램이 추가되었습니다.');
+                        closeModal();
+                        loadPrograms();
+                    } else {
+                        alert('❌ 오류: ' + (result.error || '알 수 없는 오류'));
+                    }
+                } catch (error) {
+                    alert('❌ 오류가 발생했습니다.');
+                    console.error(error);
+                }
+            });
+
+            // 프로그램 삭제
+            async function deleteProgram(id) {
+                if (!confirm('정말 이 프로그램을 삭제하시겠습니까?')) return;
+
+                try {
+                    const response = await fetch(\`/api/admin/programs/\${id}\`, {
+                        method: 'DELETE'
+                    });
+
+                    const result = await response.json();
+                    if (result.success) {
+                        alert('✅ 프로그램이 삭제되었습니다.');
+                        loadPrograms();
+                    } else {
+                        alert('❌ 삭제 실패: ' + (result.error || '알 수 없는 오류'));
+                    }
+                } catch (error) {
+                    alert('❌ 오류가 발생했습니다.');
+                    console.error(error);
+                }
             }
 
             function logout() {
-                if(confirm('로그아웃 하시겠습니까?')) {
-                    localStorage.removeItem('user');
-                localStorage.removeItem('loginTime');
+                if (confirm('로그아웃 하시겠습니까?')) {
+                    document.cookie = 'session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
                     window.location.href = '/';
                 }
             }
 
-            // 페이지 로드 시 프로그램 렌더링
-            renderPrograms();
+            // 페이지 로드 시 프로그램 로드
+            loadPrograms();
         </script>
     </body>
     </html>
   `)
 })
+
 
 // ========================================
 // SMS 페이지 라우트
