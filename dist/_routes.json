@@ -1,5 +1,28 @@
 {
   "version": 1,
-  "include": ["/*"],
-  "exclude": []
+  "include": [
+    "/api/*",
+    "/admin/*",
+    "/login",
+    "/signup",
+    "/dashboard",
+    "/my-page",
+    "/programs",
+    "/programs/*",
+    "/store",
+    "/tools/*",
+    "/consulting/*"
+  ],
+  "exclude": [
+    "/*.jpg",
+    "/*.png",
+    "/*.gif",
+    "/*.ico",
+    "/*.svg",
+    "/*.webp",
+    "/*.css",
+    "/*.js",
+    "/static/*",
+    "/downloads/*"
+  ]
 }
