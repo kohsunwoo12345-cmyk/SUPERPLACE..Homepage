@@ -1,33 +1,49 @@
 #!/bin/bash
 
-# Cloudflare 계정 정보
-ACCOUNT_ID="9b3c0b6f3a8eedd2c0796ab41519fc43"
+# Cloudflare Pages 직접 배포 스크립트
+# 사용법: ./deploy-direct.sh
+
+set -e
+
 PROJECT_NAME="superplace-academy"
-API_TOKEN=$(cat .cloudflare-api-key)
+ACCOUNT_ID="117379ce5c9d9af026b16c9cf21b10d5"
+DIST_DIR="./dist"
 
-echo "🚀 Starting direct deployment to Cloudflare Pages..."
-echo "📦 Project: $PROJECT_NAME"
-echo "🔑 Using API token"
+echo "🚀 Cloudflare Pages 직접 배포 시작..."
+echo ""
 
-# dist 디렉토리를 tar.gz로 압축
-echo "📦 Creating deployment package..."
-cd dist
-tar -czf ../deploy.tar.gz .
-cd ..
+# 1. API 토큰 확인
+if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+    echo "❌ CLOUDFLARE_API_TOKEN 환경 변수가 설정되지 않았습니다."
+    echo ""
+    echo "사용 방법:"
+    echo "export CLOUDFLARE_API_TOKEN='your_token_here'"
+    echo "./deploy-direct.sh"
+    exit 1
+fi
 
-echo "📤 Uploading to Cloudflare Pages..."
+# 2. 빌드 확인
+if [ ! -d "$DIST_DIR" ]; then
+    echo "❌ dist 디렉토리가 없습니다. 먼저 빌드를 실행하세요:"
+    echo "npm run build"
+    exit 1
+fi
 
-# Cloudflare Pages API를 사용하여 배포
-RESPONSE=$(curl -X POST \
-  "https://api.cloudflare.com/client/v4/accounts/$ACCOUNT_ID/pages/projects/$PROJECT_NAME/deployments" \
-  -H "Authorization: Bearer $API_TOKEN" \
-  -H "Content-Type: application/json" \
-  --form 'manifest={"/":{"/":{"id":"index.html"}}}' \
-  --form 'file=@deploy.tar.gz')
+echo "✅ 환경 확인 완료"
+echo ""
 
-echo "📥 Response: $RESPONSE"
+# 3. Wrangler 배포
+echo "📦 배포 중..."
+npx wrangler pages deploy $DIST_DIR \
+  --project-name=$PROJECT_NAME \
+  --branch=production \
+  --commit-dirty=true
 
-# 정리
-rm -f deploy.tar.gz
-
-echo "✅ Deployment complete!"
+echo ""
+echo "✅ 배포 완료!"
+echo ""
+echo "확인 URL:"
+echo "- 메인: https://superplace-academy.pages.dev/"
+echo "- Production: https://production.superplace-academy.pages.dev/"
+echo ""
+echo "⏳ 배포가 완전히 적용되려면 2-3분 정도 소요됩니다."
