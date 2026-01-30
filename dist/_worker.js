@@ -29823,8 +29823,26 @@ setInterval(loadActiveSessionCount,30000);
                     </div>
 
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">이미지 URL</label>
-                        <input type="text" id="image_url" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="/thumbnail.jpg">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">썸네일 이미지</label>
+                        <div class="space-y-2">
+                            <div class="flex items-center gap-3">
+                                <input type="file" id="thumbnailFile" accept="image/*" class="hidden" onchange="handleThumbnailUpload(event)">
+                                <button type="button" onclick="document.getElementById('thumbnailFile').click()" class="px-3 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg text-sm">
+                                    <i class="fas fa-upload mr-1"></i>업로드
+                                </button>
+                                <span id="thumbnailFileName" class="text-xs text-gray-500">또는 URL 입력</span>
+                            </div>
+                            <input type="text" id="image_url" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="/thumbnail.jpg">
+                            <div id="thumbnailPreview" class="hidden mt-2">
+                                <img id="thumbnailPreviewImg" src="" alt="미리보기" class="w-24 h-24 object-cover rounded border">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">상세 페이지 HTML (선택)</label>
+                        <textarea id="html_content" rows="6" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent font-mono text-sm" placeholder="<div class='p-6'><h2>프로그램 소개</h2><p>내용...</p></div>"></textarea>
+                        <p class="text-xs text-gray-500 mt-1">HTML을 입력하면 상세 페이지에 표시됩니다. 비우면 기본 템플릿 사용.</p>
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
@@ -29962,6 +29980,13 @@ setInterval(loadActiveSessionCount,30000);
                 document.getElementById('sessions').value = program.sessions || '';
                 document.getElementById('type').value = program.type || 'consulting';
                 document.getElementById('features').value = program.features ? program.features.join('\\n') : '';
+                document.getElementById('html_content').value = program.html_content || '';
+                
+                // 썸네일 미리보기
+                if (program.image_url) {
+                    document.getElementById('thumbnailPreviewImg').src = program.image_url;
+                    document.getElementById('thumbnailPreview').classList.remove('hidden');
+                }
                 
                 document.getElementById('programModal').classList.remove('hidden');
             }
@@ -29987,6 +30012,8 @@ setInterval(loadActiveSessionCount,30000);
                     sessions: document.getElementById('sessions').value ? parseInt(document.getElementById('sessions').value) : null,
                     type: document.getElementById('type').value,
                     features: document.getElementById('features').value.split('\\n').map(f => f.trim()).filter(f => f),
+                    html_content: document.getElementById('html_content').value.trim() || '',
+                    content_type: 'html',
                     status: 'active'
                 };
 
@@ -30035,6 +30062,38 @@ setInterval(loadActiveSessionCount,30000);
                 } catch (error) {
                     alert('❌ 오류가 발생했습니다.');
                     console.error(error);
+                }
+            }
+
+            // 썸네일 이미지 업로드
+            async function handleThumbnailUpload(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+                
+                document.getElementById('thumbnailFileName').textContent = file.name;
+                
+                try {
+                    const formData = new FormData();
+                    formData.append('image', file);
+                    formData.append('type', 'thumbnail');
+                    
+                    const response = await fetch('/api/admin/upload-image', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    const result = await response.json();
+                    if (result.success && result.url) {
+                        document.getElementById('image_url').value = result.url;
+                        document.getElementById('thumbnailPreviewImg').src = result.url;
+                        document.getElementById('thumbnailPreview').classList.remove('hidden');
+                        alert('✅ 이미지가 업로드되었습니다.');
+                    } else {
+                        alert('❌ 이미지 업로드 실패');
+                    }
+                } catch (error) {
+                    console.error('Upload error:', error);
+                    alert('❌ 이미지 업로드 중 오류가 발생했습니다.');
                 }
             }
 
