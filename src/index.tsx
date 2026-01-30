@@ -52278,11 +52278,11 @@ app.post('/api/admin/programs', async (c) => {
     }
     
     const body = await c.req.json()
-    const { program_id, name, description, details, image_url, price, sessions, type, features } = body
+    const { program_id, name, description, details, image_url, price, sessions, type, features, html_content, content_type } = body
     
     await env.DB.prepare(`
-      INSERT INTO programs (program_id, name, description, details, image_url, price, sessions, type, features)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO programs (program_id, name, description, details, image_url, price, sessions, type, features, html_content, content_type)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).bind(
       program_id,
       name,
@@ -52292,7 +52292,9 @@ app.post('/api/admin/programs', async (c) => {
       price || null,
       sessions || null,
       type || 'consulting',
-      JSON.stringify(features || [])
+      JSON.stringify(features || []),
+      html_content || '',
+      content_type || 'html'
     ).run()
     
     return c.json({ success: true, message: 'Program created successfully' })
@@ -52326,12 +52328,12 @@ app.put('/api/admin/programs/:id', async (c) => {
     
     const id = c.req.param('id')
     const body = await c.req.json()
-    const { name, description, details, image_url, price, sessions, type, features, status } = body
+    const { name, description, details, image_url, price, sessions, type, features, status, html_content, content_type } = body
     
     await env.DB.prepare(`
       UPDATE programs 
       SET name = ?, description = ?, details = ?, image_url = ?, price = ?, 
-          sessions = ?, type = ?, features = ?, status = ?, updated_at = CURRENT_TIMESTAMP
+          sessions = ?, type = ?, features = ?, status = ?, html_content = ?, content_type = ?, updated_at = CURRENT_TIMESTAMP
       WHERE id = ? OR program_id = ?
     `).bind(
       name,
@@ -52343,6 +52345,8 @@ app.put('/api/admin/programs/:id', async (c) => {
       type || 'consulting',
       JSON.stringify(features || []),
       status || 'active',
+      html_content || '',
+      content_type || 'html',
       id,
       id
     ).run()
@@ -52588,6 +52592,47 @@ app.delete('/api/admin/applications/:id', async (c) => {
     await env.DB.prepare('DELETE FROM program_applications WHERE id = ?').bind(id).run()
     
     return c.json({ success: true, message: '신청이 삭제되었습니다.' })
+  } catch (error) {
+    return c.json({ success: false, error: error.message }, 500)
+  }
+})
+
+
+// 이미지 업로드 API (관리자 전용) - base64 인코딩
+app.post('/api/admin/upload-image', async (c) => {
+  try {
+    const session = getCookie(c, 'session')
+    if (!session) {
+      return c.json({ success: false, error: 'Unauthorized' }, 401)
+    }
+    
+    const { env } = c
+    const sessionData = await env.DB.prepare('SELECT user_id FROM sessions WHERE session_token = ?')
+      .bind(session).first()
+    
+    if (!sessionData) {
+      return c.json({ success: false, error: 'Invalid session' }, 401)
+    }
+    
+    const user = await env.DB.prepare('SELECT role FROM users WHERE id = ?')
+      .bind(sessionData.user_id).first()
+    
+    if (user.role !== 'admin') {
+      return c.json({ success: false, error: 'Admin access required' }, 403)
+    }
+    
+    const formData = await c.req.formData()
+    const image = formData.get('image')
+    
+    if (!image || !(image instanceof File)) {
+      return c.json({ success: false, error: 'No image file provided' }, 400)
+    }
+    
+    const arrayBuffer = await image.arrayBuffer()
+    const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)))
+    const dataUrl = `data:${image.type};base64,${base64}`
+    
+    return c.json({ success: true, url: dataUrl })
   } catch (error) {
     return c.json({ success: false, error: error.message }, 500)
   }
