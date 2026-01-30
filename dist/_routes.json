@@ -1,29 +1,7 @@
 {
   "version": 1,
-  "include": [
-    "/",
-    "/api/*",
-    "/admin/*",
-    "/login",
-    "/signup",
-    "/dashboard",
-    "/my-page",
-    "/programs",
-    "/programs/*",
-    "/store",
-    "/tools/*",
-    "/consulting/*"
-  ],
+  "include": ["/*"],
   "exclude": [
-    "/*.jpg",
-    "/*.png",
-    "/*.gif",
-    "/*.ico",
-    "/*.svg",
-    "/*.webp",
-    "/*.css",
-    "/*.js",
-    "/static/*",
-    "/downloads/*"
+    "/admin-programs.html"
   ]
 }
