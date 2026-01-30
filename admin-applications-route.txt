@@ -1,0 +1,393 @@
+// 관리자 - 프로그램 신청 내역 페이지
+app.get('/admin/applications', async (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>프로그램 신청 관리 - 슈퍼플레이스</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+        <style>
+          @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
+          * { font-family: 'Pretendard Variable', Pretendard, sans-serif; }
+        </style>
+    </head>
+    <body class="bg-gray-50">
+        <nav class="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+            <div class="max-w-7xl mx-auto px-6 py-4">
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center gap-8">
+                        <a href="/admin/dashboard" class="text-2xl font-bold text-purple-600">슈퍼플레이스 관리자</a>
+                        <div class="flex gap-4">
+                            <a href="/admin/dashboard" class="text-gray-600 hover:text-purple-600">대시보드</a>
+                            <a href="/admin/users" class="text-gray-600 hover:text-purple-600">사용자</a>
+                            <a href="/admin/contacts" class="text-gray-600 hover:text-purple-600">문의</a>
+                            <a href="/admin/programs" class="text-gray-600 hover:text-purple-600">프로그램</a>
+                            <a href="/admin/applications" class="text-purple-600 font-semibold border-b-2 border-purple-600">신청 관리</a>
+                        </div>
+                    </div>
+                    <button onclick="logout()" class="text-gray-600 hover:text-red-600">
+                        <i class="fas fa-sign-out-alt mr-2"></i>로그아웃
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <div class="max-w-7xl mx-auto px-6 py-8">
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">프로그램 신청 관리</h1>
+                <p class="text-gray-600">교육 프로그램 신청 내역을 확인하고 관리하세요.</p>
+            </div>
+
+            <!-- 필터 -->
+            <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+                <div class="grid md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">상태</label>
+                        <select id="statusFilter" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                            <option value="">전체</option>
+                            <option value="pending">대기중</option>
+                            <option value="contacted">연락완료</option>
+                            <option value="completed">완료</option>
+                            <option value="cancelled">취소</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">프로그램</label>
+                        <select id="programFilter" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                            <option value="">전체</option>
+                        </select>
+                    </div>
+                    <div class="flex items-end">
+                        <button onclick="loadApplications()" class="w-full px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-semibold">
+                            <i class="fas fa-search mr-2"></i>검색
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 통계 카드 -->
+            <div class="grid md:grid-cols-4 gap-6 mb-6">
+                <div class="bg-white rounded-xl shadow-sm p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-600 mb-1">전체 신청</p>
+                            <p id="statTotal" class="text-3xl font-bold text-gray-900">0</p>
+                        </div>
+                        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-clipboard-list text-blue-600 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-600 mb-1">대기중</p>
+                            <p id="statPending" class="text-3xl font-bold text-yellow-600">0</p>
+                        </div>
+                        <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-clock text-yellow-600 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-600 mb-1">연락완료</p>
+                            <p id="statContacted" class="text-3xl font-bold text-green-600">0</p>
+                        </div>
+                        <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-phone text-green-600 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-600 mb-1">완료</p>
+                            <p id="statCompleted" class="text-3xl font-bold text-purple-600">0</p>
+                        </div>
+                        <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-check-circle text-purple-600 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 신청 목록 -->
+            <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50 border-b">
+                            <tr>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">신청일시</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">프로그램</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">신청자</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">연락처</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">상태</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">관리</th>
+                            </tr>
+                        </thead>
+                        <tbody id="applicationsTable" class="divide-y divide-gray-200">
+                            <!-- 데이터가 여기에 로드됩니다 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 상세보기 모달 -->
+        <div id="detailModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div class="bg-white rounded-2xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-900">신청 상세</h2>
+                    <button onclick="closeDetailModal()" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-times text-2xl"></i>
+                    </button>
+                </div>
+
+                <div id="detailContent" class="space-y-6">
+                    <!-- 상세 내용이 여기에 로드됩니다 -->
+                </div>
+
+                <div class="mt-8 flex gap-3">
+                    <button onclick="closeDetailModal()" class="flex-1 px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-semibold">
+                        닫기
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            let applications = [];
+            let programs = [];
+
+            // 프로그램 목록 로드
+            async function loadPrograms() {
+                try {
+                    const response = await fetch('/api/admin/programs/all');
+                    const data = await response.json();
+                    if (data.success) {
+                        programs = data.programs;
+                        const select = document.getElementById('programFilter');
+                        programs.forEach(p => {
+                            const option = document.createElement('option');
+                            option.value = p.id;
+                            option.textContent = p.name;
+                            select.appendChild(option);
+                        });
+                    }
+                } catch (error) {
+                    console.error('Failed to load programs:', error);
+                }
+            }
+
+            // 신청 목록 로드
+            async function loadApplications() {
+                const status = document.getElementById('statusFilter').value;
+                const program_id = document.getElementById('programFilter').value;
+                
+                let url = '/api/admin/applications?';
+                if (status) url += \`status=\${status}&\`;
+                if (program_id) url += \`program_id=\${program_id}&\`;
+                
+                try {
+                    const response = await fetch(url);
+                    const data = await response.json();
+                    if (data.success) {
+                        applications = data.applications;
+                        renderApplications();
+                        updateStats();
+                    }
+                } catch (error) {
+                    console.error('Failed to load applications:', error);
+                }
+            }
+
+            // 통계 업데이트
+            function updateStats() {
+                const stats = {
+                    total: applications.length,
+                    pending: applications.filter(a => a.status === 'pending').length,
+                    contacted: applications.filter(a => a.status === 'contacted').length,
+                    completed: applications.filter(a => a.status === 'completed').length
+                };
+                
+                document.getElementById('statTotal').textContent = stats.total;
+                document.getElementById('statPending').textContent = stats.pending;
+                document.getElementById('statContacted').textContent = stats.contacted;
+                document.getElementById('statCompleted').textContent = stats.completed;
+            }
+
+            // 신청 목록 렌더링
+            function renderApplications() {
+                const tbody = document.getElementById('applicationsTable');
+                
+                if (applications.length === 0) {
+                    tbody.innerHTML = \`
+                        <tr>
+                            <td colspan="6" class="px-6 py-12 text-center text-gray-500">
+                                <i class="fas fa-inbox text-4xl mb-2"></i>
+                                <p>신청 내역이 없습니다.</p>
+                            </td>
+                        </tr>
+                    \`;
+                    return;
+                }
+
+                tbody.innerHTML = applications.map(app => \`
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 text-sm text-gray-600">
+                            \${new Date(app.created_at).toLocaleDateString('ko-KR', {
+                                year: 'numeric',
+                                month: '2-digit',
+                                day: '2-digit',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                            })}
+                        </td>
+                        <td class="px-6 py-4">
+                            <p class="text-sm font-semibold text-gray-900">\${app.program_name}</p>
+                        </td>
+                        <td class="px-6 py-4">
+                            <p class="text-sm font-semibold text-gray-900">\${app.applicant_name}</p>
+                            \${app.academy_name ? \`<p class="text-xs text-gray-500">\${app.academy_name}</p>\` : ''}
+                        </td>
+                        <td class="px-6 py-4">
+                            <p class="text-sm text-gray-900">\${app.phone}</p>
+                            \${app.email ? \`<p class="text-xs text-gray-500">\${app.email}</p>\` : ''}
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="px-3 py-1 text-xs font-semibold rounded-full \${getStatusClass(app.status)}">
+                                \${getStatusText(app.status)}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex gap-2">
+                                <button onclick="showDetail(\${app.id})" class="px-3 py-1 bg-blue-600 text-white text-xs rounded-lg hover:bg-blue-700">
+                                    <i class="fas fa-eye mr-1"></i>상세
+                                </button>
+                                <button onclick="updateStatus(\${app.id})" class="px-3 py-1 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700">
+                                    <i class="fas fa-edit mr-1"></i>상태
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                \`).join('');
+            }
+
+            function getStatusClass(status) {
+                const classes = {
+                    'pending': 'bg-yellow-100 text-yellow-700',
+                    'contacted': 'bg-green-100 text-green-700',
+                    'completed': 'bg-purple-100 text-purple-700',
+                    'cancelled': 'bg-red-100 text-red-700'
+                };
+                return classes[status] || 'bg-gray-100 text-gray-700';
+            }
+
+            function getStatusText(status) {
+                const texts = {
+                    'pending': '대기중',
+                    'contacted': '연락완료',
+                    'completed': '완료',
+                    'cancelled': '취소'
+                };
+                return texts[status] || status;
+            }
+
+            // 상세보기
+            function showDetail(id) {
+                const app = applications.find(a => a.id === id);
+                if (!app) return;
+
+                const content = document.getElementById('detailContent');
+                content.innerHTML = \`
+                    <div class="space-y-4">
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <h3 class="font-bold text-gray-900 mb-3">프로그램 정보</h3>
+                            <p class="text-gray-700">\${app.program_name}</p>
+                        </div>
+
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <h3 class="font-bold text-gray-900 mb-3">신청자 정보</h3>
+                            <div class="space-y-2">
+                                <p><span class="font-semibold">이름:</span> \${app.applicant_name}</p>
+                                <p><span class="font-semibold">연락처:</span> \${app.phone}</p>
+                                \${app.email ? \`<p><span class="font-semibold">이메일:</span> \${app.email}</p>\` : ''}
+                                \${app.academy_name ? \`<p><span class="font-semibold">학원명:</span> \${app.academy_name}</p>\` : ''}
+                            </div>
+                        </div>
+
+                        \${app.message ? \`
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <h3 class="font-bold text-gray-900 mb-3">문의사항</h3>
+                            <p class="text-gray-700 whitespace-pre-line">\${app.message}</p>
+                        </div>
+                        \` : ''}
+
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <h3 class="font-bold text-gray-900 mb-3">관리 정보</h3>
+                            <div class="space-y-2">
+                                <p><span class="font-semibold">상태:</span> <span class="px-2 py-1 text-xs font-semibold rounded-full \${getStatusClass(app.status)}">\${getStatusText(app.status)}</span></p>
+                                <p><span class="font-semibold">신청일시:</span> \${new Date(app.created_at).toLocaleString('ko-KR')}</p>
+                                \${app.admin_note ? \`<p><span class="font-semibold">관리자 메모:</span> \${app.admin_note}</p>\` : ''}
+                            </div>
+                        </div>
+                    </div>
+                \`;
+
+                document.getElementById('detailModal').classList.remove('hidden');
+            }
+
+            function closeDetailModal() {
+                document.getElementById('detailModal').classList.add('hidden');
+            }
+
+            // 상태 업데이트
+            async function updateStatus(id) {
+                const app = applications.find(a => a.id === id);
+                if (!app) return;
+
+                const newStatus = prompt('상태를 선택하세요:\\n\\npending - 대기중\\ncontacted - 연락완료\\ncompleted - 완료\\ncancelled - 취소', app.status);
+                if (!newStatus) return;
+
+                const note = prompt('관리자 메모 (선택사항):', app.admin_note || '');
+
+                try {
+                    const response = await fetch(\`/api/admin/applications/\${id}\`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ status: newStatus, admin_note: note })
+                    });
+
+                    const result = await response.json();
+                    if (result.success) {
+                        alert('✅ 상태가 업데이트되었습니다.');
+                        loadApplications();
+                    } else {
+                        alert('❌ 업데이트 실패: ' + (result.error || '알 수 없는 오류'));
+                    }
+                } catch (error) {
+                    alert('❌ 오류가 발생했습니다.');
+                    console.error(error);
+                }
+            }
+
+            function logout() {
+                if (confirm('로그아웃 하시겠습니까?')) {
+                    document.cookie = 'session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+                    window.location.href = '/';
+                }
+            }
+
+            // 초기 로드
+            loadPrograms();
+            loadApplications();
+        </script>
+    </body>
+    </html>
+  `)
+})

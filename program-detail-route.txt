@@ -1,0 +1,248 @@
+// 프로그램 상세 페이지
+app.get('/programs/:program_id', async (c) => {
+  const { env } = c
+  const program_id = c.req.param('program_id')
+  
+  // 프로그램 정보 조회
+  const program = await env.DB.prepare(`
+    SELECT * FROM programs 
+    WHERE program_id = ? AND status = 'active'
+  `).bind(program_id).first()
+  
+  if (!program) {
+    return c.redirect('/programs')
+  }
+  
+  const features = program.features ? JSON.parse(program.features) : []
+  
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>${program.name} - 우리는 슈퍼플레이스다</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+        <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css" rel="stylesheet">
+        <style>
+          * { font-family: 'Pretendard Variable', Pretendard, sans-serif; }
+        </style>
+    </head>
+    <body class="bg-gray-50">
+        <!-- Header -->
+        <header class="bg-white shadow-sm border-b sticky top-0 z-50">
+            <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+                <div class="flex justify-between items-center">
+                    <a href="/" class="text-2xl font-bold text-blue-600">SUPER PLACE</a>
+                    <div class="flex gap-6 items-center">
+                        <a href="/" class="text-gray-600 hover:text-blue-600">홈</a>
+                        <a href="/programs" class="text-gray-600 hover:text-blue-600">교육 프로그램</a>
+                        <a href="/dashboard" class="text-gray-600 hover:text-blue-600">대시보드</a>
+                        <a href="/login" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">로그인</a>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="grid lg:grid-cols-2 gap-12">
+                <!-- 프로그램 정보 -->
+                <div>
+                    <div class="mb-6">
+                        <a href="/programs" class="text-blue-600 hover:text-blue-700 inline-flex items-center mb-4">
+                            <i class="fas fa-arrow-left mr-2"></i>목록으로
+                        </a>
+                        <h1 class="text-4xl font-bold text-gray-900 mb-4">${program.name}</h1>
+                        <p class="text-xl text-gray-600 mb-6">${program.description}</p>
+                    </div>
+
+                    <div class="bg-white rounded-2xl shadow-lg overflow-hidden mb-6">
+                        <img src="${program.image_url}" alt="${program.name}" class="w-full h-80 object-cover">
+                    </div>
+
+                    <div class="bg-white rounded-2xl shadow-sm p-8 mb-6">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-4">프로그램 소개</h2>
+                        <p class="text-gray-700 leading-relaxed whitespace-pre-line">${program.details || program.description}</p>
+                    </div>
+
+                    ${features.length > 0 ? `
+                    <div class="bg-white rounded-2xl shadow-sm p-8 mb-6">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-4">프로그램 특징</h2>
+                        <div class="space-y-3">
+                            ${features.map(f => `
+                                <div class="flex items-start">
+                                    <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
+                                    <span class="text-gray-700">${f}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    ` : ''}
+
+                    <div class="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl shadow-lg p-8 text-white">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-blue-100 mb-2">${program.type === 'consulting' && program.sessions ? `총 ${program.sessions}회 컨설팅` : '맞춤형 서비스'}</p>
+                                <p class="text-4xl font-bold">
+                                    ${program.price ? `${(program.price / 10000).toFixed(0)}만원` : '가격 문의'}
+                                </p>
+                            </div>
+                            <div class="text-6xl opacity-20">
+                                <i class="fas fa-graduation-cap"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 신청 폼 -->
+                <div>
+                    <div class="sticky top-24">
+                        <div class="bg-white rounded-2xl shadow-lg p-8">
+                            <h2 class="text-2xl font-bold text-gray-900 mb-2">프로그램 신청하기</h2>
+                            <p class="text-gray-600 mb-6">정보를 입력하시면 빠르게 연락드리겠습니다.</p>
+
+                            <form id="applicationForm" class="space-y-6">
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">이름 *</label>
+                                    <input type="text" id="applicant_name" required 
+                                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                           placeholder="홍길동">
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">연락처 *</label>
+                                    <input type="tel" id="phone" required 
+                                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                           placeholder="010-1234-5678">
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">이메일</label>
+                                    <input type="email" id="email" 
+                                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                           placeholder="example@email.com">
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">학원명</label>
+                                    <input type="text" id="academy_name" 
+                                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                           placeholder="OO학원">
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">문의사항</label>
+                                    <textarea id="message" rows="4" 
+                                              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                              placeholder="궁금하신 내용을 자유롭게 작성해주세요."></textarea>
+                                </div>
+
+                                <button type="submit" 
+                                        class="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg font-bold text-lg hover:from-blue-700 hover:to-indigo-700 transition shadow-lg">
+                                    <i class="fas fa-paper-plane mr-2"></i>신청하기
+                                </button>
+
+                                <p class="text-sm text-gray-500 text-center">
+                                    <i class="fas fa-lock mr-1"></i>
+                                    개인정보는 안전하게 보호됩니다.
+                                </p>
+                            </form>
+                        </div>
+
+                        <div class="mt-6 bg-blue-50 rounded-xl p-6">
+                            <h3 class="font-bold text-gray-900 mb-3">신청 후 절차</h3>
+                            <div class="space-y-2 text-sm text-gray-600">
+                                <div class="flex items-center">
+                                    <span class="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold mr-3">1</span>
+                                    <span>신청서 접수</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <span class="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold mr-3">2</span>
+                                    <span>담당자 연락 (1-2일 내)</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <span class="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold mr-3">3</span>
+                                    <span>상담 및 프로그램 안내</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <span class="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold mr-3">4</span>
+                                    <span>교육 시작</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-gray-900 text-white py-12 mt-16">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid md:grid-cols-3 gap-8">
+                    <div>
+                        <h3 class="text-xl font-bold mb-4">주식회사 우리는 슈퍼플레이스다</h3>
+                        <p class="text-gray-400 text-sm">사업자등록번호: 142-88-02445</p>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold mb-2">주소</h4>
+                        <p class="text-gray-400 text-sm">인천광역시 서구 청라커낼로 270, 2층</p>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold mb-2">문의</h4>
+                        <p class="text-gray-400 text-sm">이메일: wangholy1@naver.com</p>
+                        <p class="text-gray-400 text-sm">전화: 010-8739-9697</p>
+                    </div>
+                </div>
+                <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-500 text-sm">
+                    © 2024 우리는 슈퍼플레이스다. All rights reserved.
+                </div>
+            </div>
+        </footer>
+
+        <script>
+            document.getElementById('applicationForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const submitBtn = e.target.querySelector('button[type="submit"]');
+                const originalText = submitBtn.innerHTML;
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>신청 중...';
+                
+                const formData = {
+                    program_id: '${program.program_id}',
+                    applicant_name: document.getElementById('applicant_name').value.trim(),
+                    phone: document.getElementById('phone').value.trim(),
+                    email: document.getElementById('email').value.trim(),
+                    academy_name: document.getElementById('academy_name').value.trim(),
+                    message: document.getElementById('message').value.trim()
+                };
+                
+                try {
+                    const response = await fetch('/api/programs/apply', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(formData)
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        alert('✅ ' + result.message);
+                        document.getElementById('applicationForm').reset();
+                    } else {
+                        alert('❌ ' + (result.error || '신청 중 오류가 발생했습니다.'));
+                    }
+                } catch (error) {
+                    alert('❌ 신청 중 오류가 발생했습니다. 다시 시도해주세요.');
+                    console.error(error);
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
+                }
+            });
+        </script>
+    </body>
+    </html>
+  `)
+})
